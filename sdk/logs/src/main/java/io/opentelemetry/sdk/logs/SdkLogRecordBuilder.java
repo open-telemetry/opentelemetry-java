@@ -103,7 +103,7 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
                 loggerSharedState.getLogLimits(),
                 loggerSharedState.getResource(),
                 instrumentationScopeInfo,
-                timestampEpochNanos,
+                this.timestampEpochNanos,
                 Span.fromContext(context).getSpanContext(),
                 severity,
                 severityText,

@@ -424,6 +424,7 @@ class OpenTelemetrySdkTest {
                 + "views=[RegisteredView{instrumentSelector=InstrumentSelector{instrumentName=instrument}, view=View{name=new-instrument, aggregation=DefaultAggregation, attributesProcessor=NoopAttributesProcessor{}}}]"
                 + "}, "
                 + "loggerProvider=SdkLoggerProvider{"
+                + "clock=SystemClock{}, "
                 + "resource=Resource{schemaUrl=null, attributes={service.name=\"otel-test\"}}, "
                 + "logLimits=LogLimits{maxNumberOfAttributes=128, maxAttributeValueLength=2147483647}, "
                 + "logRecordProcessor=SimpleLogRecordProcessor{logRecordExporter=MultiLogRecordExporter{logRecordExporters=[MockLogRecordExporter{}, MockLogRecordExporter{}]}}"

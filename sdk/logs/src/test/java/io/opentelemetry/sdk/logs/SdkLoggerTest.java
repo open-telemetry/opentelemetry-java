@@ -22,6 +22,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.logs.LogRecordBuilder;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -38,9 +39,11 @@ class SdkLoggerTest {
     InstrumentationScopeInfo info = InstrumentationScopeInfo.create("foo");
     AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
     LogRecordProcessor logRecordProcessor = (context, logRecord) -> seenLog.set(logRecord);
+    Clock clock = mock(Clock.class);
 
     when(state.getResource()).thenReturn(Resource.getDefault());
     when(state.getLogRecordProcessor()).thenReturn(logRecordProcessor);
+    when(state.getClock()).thenReturn(clock);
 
     SdkLogger logger = new SdkLogger(state, info);
     LogRecordBuilder logRecordBuilder = logger.logRecordBuilder();
