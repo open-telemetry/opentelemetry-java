@@ -19,6 +19,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
@@ -73,7 +75,7 @@ public final class JaegerRemoteSamplerBuilder {
   /** Sets trusted certificate. */
   public JaegerRemoteSamplerBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
     requireNonNull(trustedCertificatesPem, "trustedCertificatesPem");
-    tlsConfigHelper.createTrustManager(trustedCertificatesPem);
+    tlsConfigHelper.setTrustManagerFromCerts(trustedCertificatesPem);
     return this;
   }
 
@@ -86,7 +88,7 @@ public final class JaegerRemoteSamplerBuilder {
   public JaegerRemoteSamplerBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
     requireNonNull(privateKeyPem, "privateKeyPem");
     requireNonNull(certificatePem, "certificatePem");
-    tlsConfigHelper.createKeyManager(privateKeyPem, certificatePem);
+    tlsConfigHelper.setKeyManagerFromCerts(privateKeyPem, certificatePem);
     return this;
   }
 
@@ -153,7 +155,11 @@ public final class JaegerRemoteSamplerBuilder {
 
     clientBuilder.callTimeout(Duration.ofNanos(TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS)));
 
-    tlsConfigHelper.configureWithSocketFactory(clientBuilder::sslSocketFactory);
+    SSLContext sslContext = tlsConfigHelper.getSslContext();
+    X509TrustManager trustManager = tlsConfigHelper.getTrustManager();
+    if (sslContext != null && trustManager != null) {
+      clientBuilder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+    }
 
     String endpoint = this.endpoint.resolve(GRPC_ENDPOINT_PATH).toString();
     if (endpoint.startsWith("http://")) {

@@ -18,6 +18,9 @@ dependencies {
 
   // Must be compileOnly so gRPC isn't on the classpath for non-gRPC tests.
   compileOnly("io.grpc:grpc-stub")
+  compileOnly("io.grpc:grpc-netty")
+  compileOnly("io.grpc:grpc-netty-shaded")
+  compileOnly("io.grpc:grpc-okhttp")
 
   implementation(project(":testing-internal"))
 

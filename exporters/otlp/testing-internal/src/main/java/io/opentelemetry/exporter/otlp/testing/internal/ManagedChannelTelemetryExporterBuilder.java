@@ -9,6 +9,9 @@ import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.NettyChannelBuilder;
+import io.netty.handler.ssl.SslContext;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
@@ -19,6 +22,9 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * Wraps a {@link TelemetryExporterBuilder}, delegating methods to upstream gRPC's {@link
@@ -87,13 +93,13 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
 
   @Override
   public TelemetryExporterBuilder<T> setTrustedCertificates(byte[] certificates) {
-    tlsConfigHelper.createTrustManager(certificates);
+    tlsConfigHelper.setTrustManagerFromCerts(certificates);
     return this;
   }
 
   @Override
   public TelemetryExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
-    tlsConfigHelper.createKeyManager(privateKeyPem, certificatePem);
+    tlsConfigHelper.setKeyManagerFromCerts(privateKeyPem, certificatePem);
     return this;
   }
 
@@ -124,11 +130,11 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   public TelemetryExporter<T> build() {
     requireNonNull(channelBuilder, "channel");
 
-    tlsConfigHelper.configureWithKeyManager(
-        (tm, km) -> {
-          requireNonNull(channelBuilder, "channel");
-          ManagedChannelUtil.setClientKeysAndTrustedCertificatesPem(channelBuilder, tm, km);
-        });
+    try {
+      setSslContext(channelBuilder, tlsConfigHelper);
+    } catch (SSLException e) {
+      throw new IllegalStateException(e);
+    }
 
     ManagedChannel channel = channelBuilder.build();
     delegate.setChannel(channel);
@@ -150,5 +156,62 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
         return delegateExporter.shutdown();
       }
     };
+  }
+
+  /**
+   * Configure the channel builder to trust the certificates. The {@code byte[]} should contain an
+   * X.509 certificate collection in PEM format.
+   *
+   * @throws SSLException if error occur processing the certificates
+   */
+  private static void setSslContext(
+      ManagedChannelBuilder<?> managedChannelBuilder, TlsConfigHelper tlsConfigHelper)
+      throws SSLException {
+    X509TrustManager trustManager = tlsConfigHelper.getTrustManager();
+    if (trustManager == null) {
+      return;
+    }
+
+    // gRPC does not abstract TLS configuration so we need to check the implementation and act
+    // accordingly.
+    String channelBuilderClassName = managedChannelBuilder.getClass().getName();
+    switch (channelBuilderClassName) {
+      case "io.grpc.netty.NettyChannelBuilder":
+        {
+          NettyChannelBuilder nettyBuilder = (NettyChannelBuilder) managedChannelBuilder;
+          SslContext sslContext =
+              GrpcSslContexts.forClient()
+                  .keyManager(tlsConfigHelper.getKeyManager())
+                  .trustManager(trustManager)
+                  .build();
+          nettyBuilder.sslContext(sslContext);
+          break;
+        }
+      case "io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder":
+        {
+          io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder nettyBuilder =
+              (io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder) managedChannelBuilder;
+          io.grpc.netty.shaded.io.netty.handler.ssl.SslContext sslContext =
+              io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts.forClient()
+                  .trustManager(trustManager)
+                  .keyManager(tlsConfigHelper.getKeyManager())
+                  .build();
+          nettyBuilder.sslContext(sslContext);
+          break;
+        }
+      case "io.grpc.okhttp.OkHttpChannelBuilder":
+        SSLContext sslContext = tlsConfigHelper.getSslContext();
+        if (sslContext == null) {
+          return;
+        }
+        io.grpc.okhttp.OkHttpChannelBuilder okHttpBuilder =
+            (io.grpc.okhttp.OkHttpChannelBuilder) managedChannelBuilder;
+        okHttpBuilder.sslSocketFactory(sslContext.getSocketFactory());
+        break;
+      default:
+        throw new SSLException(
+            "TLS certificate configuration not supported for unrecognized ManagedChannelBuilder "
+                + channelBuilderClassName);
+    }
   }
 }

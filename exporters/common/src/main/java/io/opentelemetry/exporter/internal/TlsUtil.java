@@ -12,7 +12,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
-import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -27,12 +26,9 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import javax.annotation.Nullable;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509KeyManager;
@@ -66,27 +62,6 @@ public final class TlsUtil {
   }
 
   private TlsUtil() {}
-
-  /** Returns a {@link SSLSocketFactory} configured to use the given key and trust manager. */
-  public static SSLSocketFactory sslSocketFactory(
-      @Nullable KeyManager keyManager, TrustManager trustManager) throws SSLException {
-
-    SSLContext sslContext;
-    try {
-      sslContext = SSLContext.getInstance("TLS");
-      if (keyManager == null) {
-        sslContext.init(null, new TrustManager[] {trustManager}, null);
-      } else {
-        sslContext.init(new KeyManager[] {keyManager}, new TrustManager[] {trustManager}, null);
-      }
-    } catch (NoSuchAlgorithmException | KeyManagementException e) {
-      throw new SSLException(
-          "Could not set trusted certificates for TLS connection, are they valid "
-              + "X.509 in PEM format?",
-          e);
-    }
-    return sslContext.getSocketFactory();
-  }
 
   /**
    * Creates {@link KeyManager} initiated by keystore containing single private key with matching

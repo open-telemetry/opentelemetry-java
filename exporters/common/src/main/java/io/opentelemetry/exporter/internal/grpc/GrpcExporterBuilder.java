@@ -29,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
@@ -98,13 +100,14 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public GrpcExporterBuilder<T> configureTrustManager(byte[] trustedCertificatesPem) {
-    tlsConfigHelper.createTrustManager(trustedCertificatesPem);
+  public GrpcExporterBuilder<T> setTrustManagerFromCerts(byte[] trustedCertificatesPem) {
+    tlsConfigHelper.setTrustManagerFromCerts(trustedCertificatesPem);
     return this;
   }
 
-  public GrpcExporterBuilder<T> configureKeyManager(byte[] privateKeyPem, byte[] certificatePem) {
-    tlsConfigHelper.createKeyManager(privateKeyPem, certificatePem);
+  public GrpcExporterBuilder<T> setKeyManagerFromCerts(
+      byte[] privateKeyPem, byte[] certificatePem) {
+    tlsConfigHelper.setKeyManagerFromCerts(privateKeyPem, certificatePem);
     return this;
   }
 
@@ -133,7 +136,11 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
     clientBuilder.callTimeout(Duration.ofNanos(timeoutNanos));
 
-    tlsConfigHelper.configureWithSocketFactory(clientBuilder::sslSocketFactory);
+    SSLContext sslContext = tlsConfigHelper.getSslContext();
+    X509TrustManager trustManager = tlsConfigHelper.getTrustManager();
+    if (sslContext != null && trustManager != null) {
+      clientBuilder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+    }
 
     String endpoint = this.endpoint.resolve(grpcEndpointPath).toString();
     if (endpoint.startsWith("http://")) {
