@@ -40,7 +40,6 @@ class SdkLoggerTest {
     AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
     LogRecordProcessor logRecordProcessor = (context, logRecord) -> seenLog.set(logRecord);
     Clock clock = mock(Clock.class);
-    when(clock.now()).thenReturn(5L);
 
     when(state.getResource()).thenReturn(Resource.getDefault());
     when(state.getLogRecordProcessor()).thenReturn(logRecordProcessor);
@@ -52,7 +51,7 @@ class SdkLoggerTest {
 
     // Have to test through the builder
     logRecordBuilder.emit();
-    assertThat(seenLog.get().toLogRecordData()).hasBody("foo").hasTimestamp(5);
+    assertThat(seenLog.get().toLogRecordData()).hasBody("foo").hasTimestamp(0);
   }
 
   @Test

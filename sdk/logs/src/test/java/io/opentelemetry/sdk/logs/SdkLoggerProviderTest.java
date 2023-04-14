@@ -30,8 +30,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -331,23 +329,6 @@ class SdkLoggerProviderTest {
   void close() {
     sdkLoggerProvider.close();
     verify(logRecordProcessor).shutdown();
-  }
-
-  @Test
-  void canSetClock() {
-    long now = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
-    Clock clock = mock(Clock.class);
-    when(clock.now()).thenReturn(now);
-    List<ReadWriteLogRecord> seenLogs = new ArrayList<>();
-    logRecordProcessor = (context, logRecord) -> seenLogs.add(logRecord);
-    sdkLoggerProvider =
-        SdkLoggerProvider.builder()
-            .setClock(clock)
-            .addLogRecordProcessor(logRecordProcessor)
-            .build();
-    sdkLoggerProvider.loggerBuilder(null).build().logRecordBuilder().emit();
-    assertThat(seenLogs.size()).isEqualTo(1);
-    assertThat(seenLogs.get(0).toLogRecordData().getTimestampEpochNanos()).isEqualTo(now);
   }
 
   @Test

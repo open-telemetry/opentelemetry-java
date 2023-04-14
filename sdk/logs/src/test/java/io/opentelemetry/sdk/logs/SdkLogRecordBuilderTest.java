@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.logs;
 
 import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -17,7 +16,6 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.resources.Resource;
@@ -50,7 +48,6 @@ class SdkLogRecordBuilderTest {
     when(loggerSharedState.getLogRecordProcessor())
         .thenReturn((context, logRecord) -> emittedLog.set(logRecord));
     when(loggerSharedState.getResource()).thenReturn(RESOURCE);
-    when(loggerSharedState.getClock()).thenReturn(Clock.getDefault());
 
     builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO);
   }
@@ -92,17 +89,13 @@ class SdkLogRecordBuilderTest {
 
   @Test
   void emit_NoFields() {
-    Clock clock = mock(Clock.class);
-    when(clock.now()).thenReturn(10L);
-    when(loggerSharedState.getClock()).thenReturn(clock);
-
     builder.emit();
 
     assertThat(emittedLog.get().toLogRecordData())
         .hasResource(RESOURCE)
         .hasInstrumentationScope(SCOPE_INFO)
         .hasBody(Body.empty().asString())
-        .hasTimestamp(10L)
+        .hasTimestamp(0L)
         .hasAttributes(Attributes.empty())
         .hasSpanContext(SpanContext.getInvalid())
         .hasSeverity(Severity.UNDEFINED_SEVERITY_NUMBER);
