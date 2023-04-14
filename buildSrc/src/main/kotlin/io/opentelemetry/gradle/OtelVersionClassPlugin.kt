@@ -23,8 +23,16 @@ class OtelVersionClassPlugin : Plugin<Project> {
         writeFile(project)
       }
     }
-    addTaskDependency(project)
-    addSourceDependency(project)
+    // Add dependency on this task
+    project.tasks.getByName("compileJava") {
+      dependsOn("generateOtelVersionClass")
+    }
+    // Add new source dir to the "main" source set
+    val outDir = buildOutDir(project)
+    val java = project.the<JavaPluginExtension>()
+    java.sourceSets.getByName("main").java {
+      srcDir(outDir)
+    }
   }
 
   private fun writeFile(project: Project) {
@@ -54,20 +62,6 @@ class OtelVersionClassPlugin : Plugin<Project> {
         private OtelVersion() {}
       }
     """.trimIndent()
-  }
-
-  private fun addTaskDependency(project: Project) {
-    project.tasks.getByName("compileJava") {
-      dependsOn("generateOtelVersionClass")
-    }
-  }
-
-  private fun addSourceDependency(project: Project) {
-    val outDir = buildOutDir(project)
-    val java = project.the<JavaPluginExtension>()
-    java.sourceSets.getByName("main").java {
-        srcDir(outDir)
-    }
   }
 
   private fun buildOutDir(project: Project): File {
