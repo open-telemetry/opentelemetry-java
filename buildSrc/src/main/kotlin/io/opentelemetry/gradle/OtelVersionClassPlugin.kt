@@ -71,6 +71,6 @@ class OtelVersionClassPlugin : Plugin<Project> {
   }
 
   private fun buildOutDir(project: Project): File {
-    return File(project.buildDir, "generated-src/version/java")
+    return File(project.buildDir, "generated/sources/version/java/main")
   }
 }
