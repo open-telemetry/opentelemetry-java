@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
@@ -46,7 +47,8 @@ class SdkObservableInstrumentTest {
                         "description",
                         "unit",
                         InstrumentType.COUNTER,
-                        InstrumentValueType.DOUBLE),
+                        InstrumentValueType.DOUBLE,
+                        Advice.empty()),
                     Collections.emptyList())),
             () -> {});
 
@@ -80,7 +82,8 @@ class SdkObservableInstrumentTest {
                 + "description=description, "
                 + "unit=unit, "
                 + "type=COUNTER, "
-                + "valueType=DOUBLE}"
+                + "valueType=DOUBLE, "
+                + "advice=Advice{explicitBucketBoundaries=null}}"
                 + "]}}");
   }
 }

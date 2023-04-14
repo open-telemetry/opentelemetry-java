@@ -157,7 +157,8 @@ class PeriodicMetricReaderTest {
   @Timeout(2)
   @SuppressLogger(PeriodicMetricReader.class)
   public void intervalExport_exporterThrowsException() throws Exception {
-    WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter(/* shouldThrow=*/ true);
+    WaitingMetricExporter waitingMetricExporter =
+        new WaitingMetricExporter(/* shouldThrow= */ true);
     PeriodicMetricReader reader =
         PeriodicMetricReader.builder(waitingMetricExporter)
             .setInterval(Duration.ofMillis(100))

@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +15,12 @@ import org.junit.jupiter.api.Test;
 class AbstractInstrumentTest {
   private static final InstrumentDescriptor INSTRUMENT_DESCRIPTOR =
       InstrumentDescriptor.create(
-          "name", "description", "1", InstrumentType.COUNTER, InstrumentValueType.LONG);
+          "name",
+          "description",
+          "1",
+          InstrumentType.COUNTER,
+          InstrumentValueType.LONG,
+          Advice.empty());
 
   @Test
   void getValues() {

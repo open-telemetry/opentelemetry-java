@@ -180,11 +180,3 @@ jobs:
           gh pr create --title "$message" \
                        --body "$body" \
                        --base main
-
-  create-website-pull-request:
-    needs: release
-    uses: ./.github/workflows/reusable-create-website-pull-request.yml
-    with:
-      version: ${{ needs.release.outputs.version }}
-    secrets:
-      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}

@@ -44,12 +44,15 @@ import io.opentelemetry.context.Context;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 import javax.annotation.Nullable;
 
 class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
+
+  private static final String OPENCENSUSSHIM_VERSION = readVersion();
   private static final Tracer OTEL_TRACER =
-      GlobalOpenTelemetry.getTracer("io.opentelemetry.opencensusshim");
+      GlobalOpenTelemetry.getTracer("io.opentelemetry.opencensusshim", OPENCENSUSSHIM_VERSION);
   private static final Tracestate OC_TRACESTATE_DEFAULT = Tracestate.builder().build();
   private static final TraceOptions OC_SAMPLED_TRACE_OPTIONS =
       TraceOptions.builder().setIsSampled(true).build();
@@ -207,6 +210,20 @@ class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
       }
     }
     return false;
+  }
+
+  private static String readVersion() {
+    Properties properties = new Properties();
+    String version;
+    try {
+      properties.load(
+          OpenTelemetrySpanBuilderImpl.class.getResourceAsStream(
+              "/io/opentelemetry/opencensusshim/version.properties"));
+      version = properties.getProperty("sdk.version", "unknown");
+    } catch (Exception e) {
+      version = "unknown";
+    }
+    return version;
   }
 
   static final class Options {

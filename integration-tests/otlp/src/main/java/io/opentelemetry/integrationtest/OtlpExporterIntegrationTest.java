@@ -71,11 +71,11 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.UncheckedIOException;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -530,11 +530,11 @@ abstract class OtlpExporterIntegrationTest {
     try (Scope unused = Span.wrap(spanContext).makeCurrent()) {
       logger
           .logRecordBuilder()
+          .setTimestamp(100, TimeUnit.NANOSECONDS)
           .setBody("log body")
           .setAllAttributes(Attributes.builder().put("key", "value").build())
           .setSeverity(Severity.DEBUG)
           .setSeverityText("DEBUG")
-          .setEpoch(Instant.now())
           .setContext(Context.current())
           .emit();
       eventEmitter.emit("event-name", Attributes.builder().put("key", "value").build());
@@ -582,7 +582,7 @@ abstract class OtlpExporterIntegrationTest {
         .isEqualTo(spanContext.getSpanId());
     assertThat(TraceFlags.fromByte((byte) protoLog1.getFlags()))
         .isEqualTo(spanContext.getTraceFlags());
-    assertThat(protoLog1.getTimeUnixNano()).isGreaterThan(0);
+    assertThat(protoLog1.getTimeUnixNano()).isEqualTo(100);
 
     // LogRecord via EventEmitter.emit(String, Attributes)
     io.opentelemetry.proto.logs.v1.LogRecord protoLog2 = ilLogs.getLogRecords(1);

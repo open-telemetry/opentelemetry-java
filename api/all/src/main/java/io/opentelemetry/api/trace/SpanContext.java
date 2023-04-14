@@ -56,8 +56,8 @@ public interface SpanContext {
         spanIdHex,
         traceFlags,
         traceState,
-        /* remote=*/ false,
-        /* skipIdValidation=*/ false);
+        /* remote= */ false,
+        /* skipIdValidation= */ false);
   }
 
   /**
@@ -82,8 +82,8 @@ public interface SpanContext {
         spanIdHex,
         traceFlags,
         traceState,
-        /* remote=*/ true,
-        /* skipIdValidation=*/ false);
+        /* remote= */ true,
+        /* skipIdValidation= */ false);
   }
 
   /**

@@ -40,7 +40,12 @@ public abstract class MetricDescriptor {
         View.builder().build(),
         SourceInfo.fromCurrentStack(),
         InstrumentDescriptor.create(
-            name, description, unit, InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.DOUBLE));
+            name,
+            description,
+            unit,
+            InstrumentType.OBSERVABLE_GAUGE,
+            InstrumentValueType.DOUBLE,
+            Advice.empty()));
   }
 
   /** Constructs a metric descriptor for a given View + instrument. */

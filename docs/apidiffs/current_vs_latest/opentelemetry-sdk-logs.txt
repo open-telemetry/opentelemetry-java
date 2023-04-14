@@ -21,13 +21,13 @@ Comparing source compatibility of  against
 	+++  NEW SUPERCLASS: java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.Attributes getAttributes()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.logs.data.Body getBody()
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getEpochNanos()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.InstrumentationScopeInfo getInstrumentationScopeInfo()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.resources.Resource getResource()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.Severity getSeverity()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getSeverityText()
 		+++  NEW ANNOTATION: javax.annotation.Nullable
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.trace.SpanContext getSpanContext()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getTimestampEpochNanos()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int getTotalAttributeCount()
 +++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.

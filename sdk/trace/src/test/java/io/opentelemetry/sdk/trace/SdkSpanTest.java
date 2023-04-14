@@ -117,7 +117,7 @@ class SdkSpanTest {
         START_EPOCH_NANOS,
         START_EPOCH_NANOS,
         StatusData.unset(),
-        /*hasEnded=*/ true);
+        /* hasEnded= */ true);
   }
 
   @Test
@@ -148,7 +148,7 @@ class SdkSpanTest {
           START_EPOCH_NANOS,
           0,
           StatusData.unset(),
-          /*hasEnded=*/ false);
+          /* hasEnded= */ false);
       assertThat(span.hasEnded()).isFalse();
       assertThat(span.isRecording()).isTrue();
     } finally {
@@ -179,7 +179,7 @@ class SdkSpanTest {
         START_EPOCH_NANOS,
         testClock.now(),
         StatusData.create(StatusCode.ERROR, "CANCELLED"),
-        /*hasEnded=*/ true);
+        /* hasEnded= */ true);
   }
 
   @Test

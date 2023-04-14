@@ -23,10 +23,10 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setAttribute(io.opentelemetry.api.common.AttributeKey, java.lang.Object)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setBody(java.lang.String)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setContext(io.opentelemetry.context.Context)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setEpoch(long, java.util.concurrent.TimeUnit)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setEpoch(java.time.Instant)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setSeverity(io.opentelemetry.api.logs.Severity)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setSeverityText(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setTimestamp(long, java.util.concurrent.TimeUnit)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setTimestamp(java.time.Instant)
 +++  NEW ENUM: PUBLIC(+) FINAL(+) io.opentelemetry.api.logs.Severity  (compatible)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW INTERFACE: java.lang.constant.Constable

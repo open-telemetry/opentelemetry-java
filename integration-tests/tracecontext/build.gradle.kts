@@ -11,6 +11,8 @@ dependencies {
   implementation(project(":sdk:all"))
   implementation(project(":extensions:trace-propagators"))
 
+  compileOnly("com.google.errorprone:error_prone_annotations")
+
   implementation("com.linecorp.armeria:armeria")
 
   testImplementation("org.testcontainers:junit-jupiter")

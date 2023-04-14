@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
+import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
@@ -72,7 +73,8 @@ class AsynchronousMetricStorageTest {
                 "description",
                 "unit",
                 InstrumentType.COUNTER,
-                InstrumentValueType.LONG));
+                InstrumentValueType.LONG,
+                Advice.empty()));
     doubleCounterStorage =
         AsynchronousMetricStorage.create(
             registeredReader,
@@ -82,7 +84,8 @@ class AsynchronousMetricStorageTest {
                 "description",
                 "unit",
                 InstrumentType.COUNTER,
-                InstrumentValueType.DOUBLE));
+                InstrumentValueType.DOUBLE,
+                Advice.empty()));
   }
 
   @Test
@@ -148,7 +151,12 @@ class AsynchronousMetricStorageTest {
                 AttributesProcessor.filterByKeyName(key -> key.equals("key1")),
                 SourceInfo.noSourceInfo()),
             InstrumentDescriptor.create(
-                "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
+                "name",
+                "description",
+                "unit",
+                InstrumentType.COUNTER,
+                InstrumentValueType.LONG,
+                Advice.empty()));
 
     storage.record(
         longMeasurement(0, 1, 1, Attributes.builder().put("key1", "a").put("key2", "b").build()));
@@ -275,7 +283,8 @@ class AsynchronousMetricStorageTest {
                 "description",
                 "unit",
                 InstrumentType.COUNTER,
-                InstrumentValueType.LONG));
+                InstrumentValueType.LONG,
+                Advice.empty()));
 
     // Record measurement and collect at time 10
     longCounterStorage.record(longMeasurement(0, 10, 3, Attributes.empty()));

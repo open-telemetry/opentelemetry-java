@@ -72,11 +72,7 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
-   * Assign a {@link Clock}. The {@link Clock} may be used to determine "now" in the event that the
-   * epoch millis are not set directly.
-   *
-   * <p>The {@code clock} must be thread-safe and return immediately (no remote calls, as contention
-   * free as possible).
+   * Assign a {@link Clock}.
    *
    * @param clock The clock to use for all temporal needs.
    * @return this

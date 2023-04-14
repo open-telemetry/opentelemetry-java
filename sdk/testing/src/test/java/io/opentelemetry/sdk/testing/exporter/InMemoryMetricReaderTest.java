@@ -92,7 +92,6 @@ class InMemoryMetricReaderTest {
 
   @Test
   void stringRepresentation() {
-    assertThat(deltaReader.toString())
-        .isEqualTo("InMemoryMetricReader{aggregationTemporality=DELTA}");
+    assertThat(deltaReader.toString()).isEqualTo("InMemoryMetricReader{}");
   }
 }

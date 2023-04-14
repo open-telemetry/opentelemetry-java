@@ -13,6 +13,8 @@ dependencies {
   implementation(project(":api:events"))
   implementation(project(":semconv"))
 
+  compileOnly("com.google.errorprone:error_prone_annotations")
+
   implementation("com.linecorp.armeria:armeria-grpc-protocol")
   implementation("com.linecorp.armeria:armeria-junit5")
   implementation("io.opentelemetry.proto:opentelemetry-proto")

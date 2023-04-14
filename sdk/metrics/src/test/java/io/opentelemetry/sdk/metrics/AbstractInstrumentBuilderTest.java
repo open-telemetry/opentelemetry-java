@@ -40,7 +40,8 @@ class AbstractInstrumentBuilderTest {
                 + "description=instrument-description, "
                 + "unit=instrument-unit, "
                 + "type=COUNTER, "
-                + "valueType=LONG"
+                + "valueType=LONG, "
+                + "advice=Advice{explicitBucketBoundaries=null}"
                 + "}}");
   }
 

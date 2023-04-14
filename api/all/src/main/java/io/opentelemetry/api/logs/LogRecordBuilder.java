@@ -19,11 +19,21 @@ import java.util.concurrent.TimeUnit;
  */
 public interface LogRecordBuilder {
 
-  /** Set the epoch timestamp using the timestamp and unit. */
-  LogRecordBuilder setEpoch(long timestamp, TimeUnit unit);
+  /**
+   * Set the epoch {@code timestamp}, using the timestamp and unit.
+   *
+   * <p>The {@code timestamp} is the time at which the log record occurred. If unset, it will be set
+   * to the current time when {@link #emit()} is called.
+   */
+  LogRecordBuilder setTimestamp(long timestamp, TimeUnit unit);
 
-  /** Set the epoch timestamp using the instant. */
-  LogRecordBuilder setEpoch(Instant instant);
+  /**
+   * Set the epoch {@code timestamp}, using the instant.
+   *
+   * <p>The {@code timestamp} is the time at which the log record occurred. If unset, it will be set
+   * to the current time when {@link #emit()} is called.
+   */
+  LogRecordBuilder setTimestamp(Instant instant);
 
   /** Set the context. */
   LogRecordBuilder setContext(Context context);
