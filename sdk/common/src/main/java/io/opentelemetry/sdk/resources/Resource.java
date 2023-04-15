@@ -16,8 +16,8 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.internal.Utils;
+import io.opentelemetry.sdk.common.internal.OtelVersion;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -54,7 +54,7 @@ public abstract class Resource {
             Attributes.builder()
                 .put(TELEMETRY_SDK_NAME, "opentelemetry")
                 .put(TELEMETRY_SDK_LANGUAGE, "java")
-                .put(TELEMETRY_SDK_VERSION, readVersion())
+                .put(TELEMETRY_SDK_VERSION, OtelVersion.VERSION)
                 .build());
   }
 
@@ -107,18 +107,6 @@ public abstract class Resource {
   public static Resource create(Attributes attributes, @Nullable String schemaUrl) {
     checkAttributes(Objects.requireNonNull(attributes, "attributes"));
     return new AutoValue_Resource(schemaUrl, attributes);
-  }
-
-  private static String readVersion() {
-    Properties properties = new Properties();
-    try {
-      properties.load(
-          Resource.class.getResourceAsStream("/io/opentelemetry/sdk/common/version.properties"));
-    } catch (Exception e) {
-      // we left the attribute empty
-      return "unknown";
-    }
-    return properties.getProperty("sdk.version", "unknown");
   }
 
   /**
