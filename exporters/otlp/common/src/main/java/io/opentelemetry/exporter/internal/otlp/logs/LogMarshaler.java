@@ -27,6 +27,7 @@ final class LogMarshaler extends MarshalerWithSize {
   private static final String INVALID_SPAN_ID = SpanId.getInvalid();
 
   private final long timeUnixNano;
+  private final long observedTimeUnixNano;
   private final ProtoEnumInfo severityNumber;
   private final byte[] severityText;
   private final MarshalerWithSize anyValueMarshaler;
@@ -47,6 +48,7 @@ final class LogMarshaler extends MarshalerWithSize {
     SpanContext spanContext = logRecordData.getSpanContext();
     return new LogMarshaler(
         logRecordData.getTimestampEpochNanos(),
+        logRecordData.getObservedTimestampEpochNanos(),
         toProtoSeverityNumber(logRecordData.getSeverity()),
         MarshalerUtil.toBytes(logRecordData.getSeverityText()),
         anyValueMarshaler,
@@ -59,6 +61,7 @@ final class LogMarshaler extends MarshalerWithSize {
 
   private LogMarshaler(
       long timeUnixNano,
+      long observedTimeUnixNano,
       ProtoEnumInfo severityNumber,
       byte[] severityText,
       MarshalerWithSize anyValueMarshaler,
@@ -70,6 +73,7 @@ final class LogMarshaler extends MarshalerWithSize {
     super(
         calculateSize(
             timeUnixNano,
+            observedTimeUnixNano,
             severityNumber,
             severityText,
             anyValueMarshaler,
@@ -79,6 +83,7 @@ final class LogMarshaler extends MarshalerWithSize {
             traceId,
             spanId));
     this.timeUnixNano = timeUnixNano;
+    this.observedTimeUnixNano = observedTimeUnixNano;
     this.traceId = traceId;
     this.spanId = spanId;
     this.traceFlags = traceFlags;
@@ -92,6 +97,8 @@ final class LogMarshaler extends MarshalerWithSize {
   @Override
   protected void writeTo(Serializer output) throws IOException {
     output.serializeFixed64(LogRecord.TIME_UNIX_NANO, timeUnixNano);
+
+    output.serializeFixed64(LogRecord.OBSERVED_TIME_UNIX_NANO, observedTimeUnixNano);
 
     output.serializeEnum(LogRecord.SEVERITY_NUMBER, severityNumber);
 
@@ -109,6 +116,7 @@ final class LogMarshaler extends MarshalerWithSize {
 
   private static int calculateSize(
       long timeUnixNano,
+      long observedTimeUnixNano,
       ProtoEnumInfo severityNumber,
       byte[] severityText,
       MarshalerWithSize anyValueMarshaler,
@@ -119,6 +127,8 @@ final class LogMarshaler extends MarshalerWithSize {
       @Nullable String spanId) {
     int size = 0;
     size += MarshalerUtil.sizeFixed64(LogRecord.TIME_UNIX_NANO, timeUnixNano);
+
+    size += MarshalerUtil.sizeFixed64(LogRecord.OBSERVED_TIME_UNIX_NANO, observedTimeUnixNano);
 
     size += MarshalerUtil.sizeEnum(LogRecord.SEVERITY_NUMBER, severityNumber);
 
