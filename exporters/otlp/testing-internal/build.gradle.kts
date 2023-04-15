@@ -34,3 +34,8 @@ dependencies {
   implementation("io.github.netmikey.logunit:logunit-jul")
   implementation("org.assertj:assertj-core")
 }
+
+// Skip OWASP dependencyCheck task on test module
+dependencyCheck {
+  skip = true
+}
