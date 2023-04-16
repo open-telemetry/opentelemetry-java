@@ -48,7 +48,8 @@ class OtlpJsonLoggingLogRecordExporterTest {
           .setBody("body1")
           .setSeverity(Severity.INFO)
           .setSeverityText("INFO")
-          .setTimestamp(1631533710L, TimeUnit.MILLISECONDS)
+          .setTimestamp(100L, TimeUnit.NANOSECONDS)
+          .setObservedTimestamp(200L, TimeUnit.NANOSECONDS)
           .setAttributes(Attributes.of(stringKey("animal"), "cat", longKey("lives"), 9L))
           .setSpanContext(
               SpanContext.create(
@@ -66,7 +67,8 @@ class OtlpJsonLoggingLogRecordExporterTest {
           .setBody("body2")
           .setSeverity(Severity.INFO)
           .setSeverityText("INFO")
-          .setTimestamp(1631533710L, TimeUnit.MILLISECONDS)
+          .setTimestamp(100L, TimeUnit.NANOSECONDS)
+          .setObservedTimestamp(200L, TimeUnit.NANOSECONDS)
           .setAttributes(Attributes.of(booleanKey("important"), true))
           .setSpanContext(
               SpanContext.create(
@@ -110,7 +112,8 @@ class OtlpJsonLoggingLogRecordExporterTest {
             + "       \"version\":\"2\""
             + "     },"
             + "     \"logRecords\": [{"
-            + "       \"timeUnixNano\":\"1631533710000000\","
+            + "       \"timeUnixNano\":\"100\","
+            + "       \"observedTimeUnixNano\":\"200\","
             + "       \"severityNumber\":9,"
             + "       \"severityText\":\"INFO\","
             + "       \"body\": {"
@@ -137,7 +140,8 @@ class OtlpJsonLoggingLogRecordExporterTest {
             + "       }]"
             + "     },"
             + "     \"logRecords\": [{"
-            + "       \"timeUnixNano\":\"1631533710000000\","
+            + "       \"timeUnixNano\":\"100\","
+            + "       \"observedTimeUnixNano\":\"200\","
             + "       \"severityNumber\":9,"
             + "       \"severityText\":\"INFO\","
             + "       \"body\": {"

@@ -71,6 +71,7 @@ class LogsRequestMarshalerTest {
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
                     .setTotalAttributeCount(2)
                     .setTimestamp(12345, TimeUnit.NANOSECONDS)
+                    .setObservedTimestamp(6789, TimeUnit.NANOSECONDS)
                     .build()));
 
     assertThat(resourceLogsMarshalers).hasSize(1);
@@ -114,6 +115,7 @@ class LogsRequestMarshalerTest {
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
                     .setTotalAttributeCount(2)
                     .setTimestamp(12345, TimeUnit.NANOSECONDS)
+                    .setObservedTimestamp(6789, TimeUnit.NANOSECONDS)
                     .build()));
 
     assertThat(logRecord.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
@@ -128,6 +130,7 @@ class LogsRequestMarshalerTest {
                 .build());
     assertThat(logRecord.getDroppedAttributesCount()).isEqualTo(1);
     assertThat(logRecord.getTimeUnixNano()).isEqualTo(12345);
+    assertThat(logRecord.getObservedTimeUnixNano()).isEqualTo(6789);
   }
 
   @Test
@@ -142,6 +145,7 @@ class LogsRequestMarshalerTest {
                     .setInstrumentationScopeInfo(
                         InstrumentationScopeInfo.builder("instrumentation").setVersion("1").build())
                     .setTimestamp(12345, TimeUnit.NANOSECONDS)
+                    .setObservedTimestamp(6789, TimeUnit.NANOSECONDS)
                     .build()));
 
     assertThat(logRecord.getTraceId()).isEmpty();
@@ -153,6 +157,7 @@ class LogsRequestMarshalerTest {
     assertThat(logRecord.getAttributesList()).isEmpty();
     assertThat(logRecord.getDroppedAttributesCount()).isZero();
     assertThat(logRecord.getTimeUnixNano()).isEqualTo(12345);
+    assertThat(logRecord.getObservedTimeUnixNano()).isEqualTo(6789);
   }
 
   @SuppressWarnings("unchecked")
