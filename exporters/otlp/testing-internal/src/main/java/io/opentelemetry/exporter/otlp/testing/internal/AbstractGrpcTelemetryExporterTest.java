@@ -55,7 +55,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 import org.assertj.core.api.iterable.ThrowingExtractor;
@@ -323,18 +325,19 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
-  void tlsViaSslSocketFactory() throws Exception {
+  void tlsViaSslContext() throws Exception {
     X509TrustManager trustManager = TlsUtil.trustManager(certificate.certificate().getEncoded());
 
     X509KeyManager keyManager =
         TlsUtil.keyManager(
             certificate.privateKey().getEncoded(), certificate.certificate().getEncoded());
 
-    SSLSocketFactory sslSocketFactory = TlsUtil.sslSocketFactory(keyManager, trustManager);
+    SSLContext sslContext = SSLContext.getInstance("TLS");
+    sslContext.init(new KeyManager[] {keyManager}, new TrustManager[] {trustManager}, null);
 
     TelemetryExporter<T> exporter =
         exporterBuilder()
-            .setSslSocketFactory(sslSocketFactory, trustManager)
+            .setSslContext(sslContext, trustManager)
             .setEndpoint(server.httpsUri().toString())
             .build();
     try {

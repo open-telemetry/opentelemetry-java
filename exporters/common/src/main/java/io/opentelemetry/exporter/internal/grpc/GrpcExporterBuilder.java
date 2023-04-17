@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
@@ -111,17 +111,9 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public GrpcExporterBuilder<T> setSslSocketFactory(
-      SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
-    tlsConfigHelper.setSslSocketFactory(sslSocketFactory);
-    tlsConfigHelper.setTrustManager(trustManager);
-    return this;
-  }
-
-  public GrpcExporterBuilder<T> setSslSocketFactory(
-      SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
-    tlsConfigHelper.setSslSocketFactory(sslSocketFactory);
-    tlsConfigHelper.setTrustManager(trustManager);
+  public GrpcExporterBuilder<T> setSslContext(
+      SSLContext sslContext, X509TrustManager trustManager) {
+    tlsConfigHelper.setSslContext(sslContext, trustManager);
     return this;
   }
 

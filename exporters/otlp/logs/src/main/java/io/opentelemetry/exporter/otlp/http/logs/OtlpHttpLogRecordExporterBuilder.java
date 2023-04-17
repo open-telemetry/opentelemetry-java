@@ -15,11 +15,7 @@ import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.X509TrustManager;
-import java.time.Duration;
-import java.util.concurrent.TimeUnit;
-import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
 /** Builder utility for {@link OtlpHttpLogRecordExporter}. */
@@ -104,22 +100,12 @@ public final class OtlpHttpLogRecordExporterBuilder {
   }
 
   /**
-   * Sets the "bring-your-own" SSLSocketFactory and X509TrustManager for use with TLS. Users should
-   * call this _or_ set raw certificate bytes, but not both.
+   * Sets the "bring-your-own" SSLContext. Users should call this _or_ set raw certificate bytes,
+   * but not both.
    */
   public OtlpHttpLogRecordExporterBuilder setSslSocketFactory(
-      SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
-    delegate.setSslSocketFactory(sslSocketFactory, trustManager);
-    return this;
-  }
-
-  /**
-   * Sets the "bring-your-own" SSLSocketFactory and X509TrustManager for use with TLS. Users should
-   * call this _or_ set raw certificate bytes, but not both.
-   */
-  public OtlpHttpLogRecordExporterBuilder setSslSocketFactory(
-      SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
-    delegate.setSslSocketFactory(sslSocketFactory, trustManager);
+      SSLContext sslContext, X509TrustManager trustManager) {
+    delegate.setSslContext(sslContext, trustManager);
     return this;
   }
 

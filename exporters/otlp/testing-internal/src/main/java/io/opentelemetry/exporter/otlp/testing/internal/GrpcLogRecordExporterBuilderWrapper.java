@@ -12,7 +12,7 @@ import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
 final class GrpcLogRecordExporterBuilderWrapper implements TelemetryExporterBuilder<LogRecordData> {
@@ -66,9 +66,9 @@ final class GrpcLogRecordExporterBuilderWrapper implements TelemetryExporterBuil
   }
 
   @Override
-  public TelemetryExporterBuilder<LogRecordData> setSslSocketFactory(
-      SSLSocketFactory socketFactory, X509TrustManager trustManager) {
-    builder.setSslSocketFactory(socketFactory, trustManager);
+  public TelemetryExporterBuilder<LogRecordData> setSslContext(
+      SSLContext sslContext, X509TrustManager trustManager) {
+    builder.setSslContext(sslContext, trustManager);
     return this;
   }
 

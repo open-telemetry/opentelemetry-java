@@ -18,7 +18,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
 class OtlpHttpSpanExporterTest extends AbstractHttpTelemetryExporterTest<SpanData, ResourceSpans> {
@@ -68,9 +68,9 @@ class OtlpHttpSpanExporterTest extends AbstractHttpTelemetryExporterTest<SpanDat
       }
 
       @Override
-      public TelemetryExporterBuilder<SpanData> setSslSocketFactory(
-          SSLSocketFactory socketFactory, X509TrustManager trustManager) {
-        builder.setSslSocketFactory(socketFactory, trustManager);
+      public TelemetryExporterBuilder<SpanData> setSslContext(
+          SSLContext sslContext, X509TrustManager trustManager) {
+        builder.setSslContext(sslContext, trustManager);
         return this;
       }
 

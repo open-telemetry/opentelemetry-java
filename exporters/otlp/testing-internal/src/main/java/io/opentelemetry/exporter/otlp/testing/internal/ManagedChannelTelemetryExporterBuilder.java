@@ -22,7 +22,8 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
-import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.X509TrustManager;
 
 /**
@@ -103,22 +104,6 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   }
 
   @Override
-  public TelemetryExporterBuilder<T> setSslSocketFactory(
-      SSLSocketFactory socketFactory, X509TrustManager trustManager) {
-    tlsConfigHelper.setSslSocketFactory(socketFactory);
-    tlsConfigHelper.setTrustManager(trustManager);
-    return this;
-  }
-
-  @Override
-  public TelemetryExporterBuilder<T> setSslSocketFactory(
-      SSLSocketFactory socketFactory, X509TrustManager trustManager) {
-    tlsConfigHelper.setSslSocketFactory(socketFactory);
-    tlsConfigHelper.setTrustManager(trustManager);
-    return this;
-  }
-
-  @Override
   public TelemetryExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy) {
     String grpcServiceName;
     if (delegate instanceof GrpcLogRecordExporterBuilderWrapper) {
@@ -171,6 +156,13 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
         return delegateExporter.shutdown();
       }
     };
+  }
+
+  @Override
+  public TelemetryExporterBuilder<T> setSslContext(
+      SSLContext sslContext, X509TrustManager trustManager) {
+    tlsConfigHelper.setSslContext(sslContext, trustManager);
+    return this;
   }
 
   /**
