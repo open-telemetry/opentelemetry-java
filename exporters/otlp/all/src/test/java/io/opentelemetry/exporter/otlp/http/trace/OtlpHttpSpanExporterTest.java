@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.http.trace;
 
+import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.traces.ResourceSpansMarshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
@@ -56,6 +57,12 @@ class OtlpHttpSpanExporterTest extends AbstractHttpTelemetryExporterTest<SpanDat
       @Override
       public TelemetryExporterBuilder<SpanData> addHeader(String key, String value) {
         builder.addHeader(key, value);
+        return this;
+      }
+
+      @Override
+      public TelemetryExporterBuilder<SpanData> setAuthenticator(Authenticator authenticator) {
+        Authenticator.setAuthenticatorOnDelegate(builder, authenticator);
         return this;
       }
 
