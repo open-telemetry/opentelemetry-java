@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.ResourceMetricsMarshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
@@ -111,6 +112,12 @@ class OtlpHttpMetricExporterTest
       @Override
       public TelemetryExporterBuilder<MetricData> addHeader(String key, String value) {
         builder.addHeader(key, value);
+        return this;
+      }
+
+      @Override
+      public TelemetryExporterBuilder<MetricData> setAuthenticator(Authenticator authenticator) {
+        Authenticator.setAuthenticatorOnDelegate(builder, authenticator);
         return this;
       }
 

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.http.logs;
 
+import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
@@ -57,6 +58,12 @@ class OtlpHttpLogRecordExporterTest
       @Override
       public TelemetryExporterBuilder<LogRecordData> addHeader(String key, String value) {
         builder.addHeader(key, value);
+        return this;
+      }
+
+      @Override
+      public TelemetryExporterBuilder<LogRecordData> setAuthenticator(Authenticator authenticator) {
+        Authenticator.setAuthenticatorOnDelegate(builder, authenticator);
         return this;
       }
 

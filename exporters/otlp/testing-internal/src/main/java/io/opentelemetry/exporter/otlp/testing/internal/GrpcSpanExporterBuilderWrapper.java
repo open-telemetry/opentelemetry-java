@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.grpc.ManagedChannel;
+import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
@@ -48,6 +49,11 @@ final class GrpcSpanExporterBuilderWrapper implements TelemetryExporterBuilder<S
   @Override
   public TelemetryExporterBuilder<SpanData> addHeader(String key, String value) {
     builder.addHeader(key, value);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<SpanData> setAuthenticator(Authenticator authenticator) {
     return this;
   }
 
