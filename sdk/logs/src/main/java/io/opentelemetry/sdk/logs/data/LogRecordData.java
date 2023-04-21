@@ -31,6 +31,9 @@ public interface LogRecordData {
   /** Returns the timestamp at which the log record occurred, in epoch nanos. */
   long getTimestampEpochNanos();
 
+  /** Returns the timestamp at which the log record was observed, in epoch nanos. */
+  long getObservedTimestampEpochNanos();
+
   /** Return the span context for this log, or {@link SpanContext#getInvalid()} if unset. */
   SpanContext getSpanContext();
 

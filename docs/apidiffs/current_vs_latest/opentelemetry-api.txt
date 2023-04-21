@@ -23,6 +23,8 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setAttribute(io.opentelemetry.api.common.AttributeKey, java.lang.Object)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setBody(java.lang.String)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setContext(io.opentelemetry.context.Context)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setObservedTimestamp(long, java.util.concurrent.TimeUnit)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setObservedTimestamp(java.time.Instant)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setSeverity(io.opentelemetry.api.logs.Severity)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setSeverityText(java.lang.String)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setTimestamp(long, java.util.concurrent.TimeUnit)

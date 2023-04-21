@@ -22,6 +22,7 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.Attributes getAttributes()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.logs.data.Body getBody()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.InstrumentationScopeInfo getInstrumentationScopeInfo()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getObservedTimestampEpochNanos()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.resources.Resource getResource()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.Severity getSeverity()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getSeverityText()

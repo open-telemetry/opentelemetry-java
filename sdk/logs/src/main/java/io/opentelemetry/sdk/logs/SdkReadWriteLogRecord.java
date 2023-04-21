@@ -24,7 +24,8 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
   private final LogLimits logLimits;
   private final Resource resource;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
-  private final long epochNanos;
+  private final long timestampEpochNanos;
+  private final long observedTimestampEpochNanos;
   private final SpanContext spanContext;
   private final Severity severity;
   @Nullable private final String severityText;
@@ -39,7 +40,8 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       LogLimits logLimits,
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
-      long epochNanos,
+      long timestampEpochNanos,
+      long observedTimestampEpochNanos,
       SpanContext spanContext,
       Severity severity,
       @Nullable String severityText,
@@ -48,7 +50,8 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
     this.logLimits = logLimits;
     this.resource = resource;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
-    this.epochNanos = epochNanos;
+    this.timestampEpochNanos = timestampEpochNanos;
+    this.observedTimestampEpochNanos = observedTimestampEpochNanos;
     this.spanContext = spanContext;
     this.severity = severity;
     this.severityText = severityText;
@@ -61,7 +64,8 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       LogLimits logLimits,
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
-      long epochNanos,
+      long timestampEpochNanos,
+      long observedTimestampEpochNanos,
       SpanContext spanContext,
       Severity severity,
       @Nullable String severityText,
@@ -71,7 +75,8 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
         logLimits,
         resource,
         instrumentationScopeInfo,
-        epochNanos,
+        timestampEpochNanos,
+        observedTimestampEpochNanos,
         spanContext,
         severity,
         severityText,
@@ -110,7 +115,8 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       return SdkLogRecordData.create(
           resource,
           instrumentationScopeInfo,
-          epochNanos,
+          timestampEpochNanos,
+          observedTimestampEpochNanos,
           spanContext,
           severity,
           severityText,

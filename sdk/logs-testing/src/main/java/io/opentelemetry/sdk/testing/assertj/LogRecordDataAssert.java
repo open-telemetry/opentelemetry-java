@@ -71,6 +71,20 @@ public class LogRecordDataAssert extends AbstractAssert<LogRecordDataAssert, Log
     return this;
   }
 
+  /** Asserts the log has the given epoch {@code observedTimestamp}. */
+  public LogRecordDataAssert hasObservedTimestamp(long observedEpochNanos) {
+    isNotNull();
+    if (actual.getObservedTimestampEpochNanos() != observedEpochNanos) {
+      failWithActualExpectedAndMessage(
+          actual.getObservedTimestampEpochNanos(),
+          observedEpochNanos,
+          "Expected log to have observed timestamp <%s> nanos but was <%s>",
+          observedEpochNanos,
+          actual.getObservedTimestampEpochNanos());
+    }
+    return this;
+  }
+
   /** Asserts the log has the given span context. */
   public LogRecordDataAssert hasSpanContext(SpanContext spanContext) {
     isNotNull();

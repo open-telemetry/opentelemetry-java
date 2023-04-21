@@ -49,6 +49,7 @@ public class LogAssertionsTest {
           .setResource(RESOURCE)
           .setInstrumentationScopeInfo(INSTRUMENTATION_SCOPE_INFO)
           .setTimestamp(100, TimeUnit.NANOSECONDS)
+          .setObservedTimestamp(200, TimeUnit.NANOSECONDS)
           .setSpanContext(
               SpanContext.create(
                   TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
@@ -65,6 +66,7 @@ public class LogAssertionsTest {
         .hasResource(RESOURCE)
         .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
         .hasTimestamp(100)
+        .hasObservedTimestamp(200)
         .hasSpanContext(
             SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
         .hasSeverity(Severity.INFO)
@@ -133,6 +135,7 @@ public class LogAssertionsTest {
     assertThatThrownBy(
         () -> assertThat(LOG_DATA).hasInstrumentationScope(InstrumentationScopeInfo.empty()));
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasTimestamp(200));
+    assertThatThrownBy(() -> assertThat(LOG_DATA).hasObservedTimestamp(100));
     assertThatThrownBy(
         () ->
             assertThat(LOG_DATA)

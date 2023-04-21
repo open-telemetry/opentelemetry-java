@@ -334,6 +334,34 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  void withAuthenticator() {
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpUri() + path)
+            .setAuthenticator(() -> Collections.singletonMap("key", "value"))
+            .build();
+
+    addHttpError(401);
+
+    try {
+      assertThat(
+              exporter
+                  .export(Collections.singletonList(generateFakeTelemetry()))
+                  .join(10, TimeUnit.SECONDS)
+                  .isSuccess())
+          .isTrue();
+      assertThat(httpRequests)
+          .element(0)
+          .satisfies(req -> assertThat(req.headers().get("key")).isNull());
+      assertThat(httpRequests)
+          .element(1)
+          .satisfies(req -> assertThat(req.headers().get("key")).isEqualTo("value"));
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
   void tls() throws Exception {
     TelemetryExporter<T> exporter =
         exporterBuilder()

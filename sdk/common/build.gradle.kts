@@ -1,9 +1,11 @@
+import io.opentelemetry.gradle.OtelVersionClassPlugin
+
 plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
-
   id("otel.animalsniffer-conventions")
 }
+apply<OtelVersionClassPlugin>()
 
 description = "OpenTelemetry SDK Common"
 otelJava.moduleName.set("io.opentelemetry.sdk.common")

@@ -247,7 +247,8 @@ class JaegerRemoteSamplerGrpcNettyTest {
         JaegerRemoteSampler.builder()
             .setChannel(managedChannel())
             .setServiceName(SERVICE_NAME)
-            .setPollingInterval(50, TimeUnit.MILLISECONDS)
+            // Make sure only polls once.
+            .setPollingInterval(500, TimeUnit.SECONDS)
             .build()) {
       assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
 
@@ -272,7 +273,8 @@ class JaegerRemoteSamplerGrpcNettyTest {
         JaegerRemoteSampler.builder()
             .setChannel(managedChannel())
             .setServiceName(SERVICE_NAME)
-            .setPollingInterval(50, TimeUnit.MILLISECONDS)
+            // Make sure only polls once.
+            .setPollingInterval(500, TimeUnit.SECONDS)
             .build()) {
       assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
 
@@ -296,7 +298,8 @@ class JaegerRemoteSamplerGrpcNettyTest {
         JaegerRemoteSampler.builder()
             .setChannel(managedChannel())
             .setServiceName(SERVICE_NAME)
-            .setPollingInterval(50, TimeUnit.MILLISECONDS)
+            // Make sure only polls once.
+            .setPollingInterval(500, TimeUnit.SECONDS)
             .build()) {
       assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
 
