@@ -6,8 +6,6 @@
 package io.opentelemetry.exporter.prometheus;
 
 import io.opentelemetry.api.internal.StringUtils;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -103,37 +101,42 @@ public final class PrometheusUnitsHelper {
   }
 
   /**
-   * A utility function that returns the equivalent Prometheus name for the provided metric's unit.
+   * A utility function that returns the equivalent Prometheus name for the provided OTLP metric
+   * unit.
    *
-   * @param metric The raw {@link MetricData} for which Prometheus metric unit needs to be computed.
-   * @return the computed Prometheus metric unit equivalent.
+   * @param rawMetricUnitName The raw metric unit for which Prometheus metric unit needs to be
+   *     computed.
+   * @param metricType The {@link PrometheusType} of the metric whose unit is to be converted.
+   * @return the computed Prometheus metric unit equivalent of the OTLP metric unit.
    */
-  public static String getEquivalentPrometheusUnit(MetricData metric) {
-    String unit = metric.getUnit();
-    if (StringUtils.isNullOrEmpty(unit)) {
-      return unit;
+  public static String getEquivalentPrometheusUnit(
+      String rawMetricUnitName, PrometheusType metricType) {
+    if (StringUtils.isNullOrEmpty(rawMetricUnitName)) {
+      return rawMetricUnitName;
     }
-    unit = INVALID_CHARACTERS_PATTERN.matcher(unit).replaceAll("_").replaceAll("[_]{2,}", "_");
+    rawMetricUnitName =
+        INVALID_CHARACTERS_PATTERN
+            .matcher(rawMetricUnitName)
+            .replaceAll("_")
+            .replaceAll("[_]{2,}", "_");
 
     // special case
-    if (unit.equals("1")
-        && (metric.getType() == MetricDataType.DOUBLE_GAUGE
-            || metric.getType() == MetricDataType.LONG_GAUGE)) {
+    if (rawMetricUnitName.equals("1") && metricType == PrometheusType.GAUGE) {
       return "ratio";
     }
 
     // Drop units specified between curly braces
-    if (unit.matches(CHARACTERS_BETWEEN_BRACES_REGEX)) {
-      return removeUnitPortionInBrackets(unit);
+    if (rawMetricUnitName.matches(CHARACTERS_BETWEEN_BRACES_REGEX)) {
+      return removeUnitPortionInBrackets(rawMetricUnitName);
     }
 
     // Handling for the "per" unit(s), e.g. foo/bar -> foo_per_bar
-    if (unit.contains("/")) {
-      return convertRateExpressedToPrometheusUnit(unit);
+    if (rawMetricUnitName.contains("/")) {
+      return convertRateExpressedToPrometheusUnit(rawMetricUnitName);
     }
 
     // Converting abbreviated unit names to full names
-    return PROMETHEUS_UNIT_MAP.getOrDefault(unit, unit);
+    return PROMETHEUS_UNIT_MAP.getOrDefault(rawMetricUnitName, rawMetricUnitName);
   }
 
   private static String convertRateExpressedToPrometheusUnit(String rateExpressedUnit) {

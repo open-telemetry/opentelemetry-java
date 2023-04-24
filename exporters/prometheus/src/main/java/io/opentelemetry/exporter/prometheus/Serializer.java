@@ -653,7 +653,8 @@ abstract class Serializer {
 
   private static String metricName(MetricData rawMetric, PrometheusType type) {
     String name = NameSanitizer.INSTANCE.apply(rawMetric.getName());
-    String prometheusEquivalentUnit = PrometheusUnitsHelper.getEquivalentPrometheusUnit(rawMetric);
+    String prometheusEquivalentUnit =
+        PrometheusUnitsHelper.getEquivalentPrometheusUnit(rawMetric.getUnit(), type);
     if (!StringUtils.isNullOrEmpty(prometheusEquivalentUnit)
         && !name.contains(prometheusEquivalentUnit)) {
       name = name + "_" + prometheusEquivalentUnit;
