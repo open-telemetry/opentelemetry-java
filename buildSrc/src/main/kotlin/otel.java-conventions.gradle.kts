@@ -1,4 +1,5 @@
 import io.opentelemetry.gradle.OtelJavaExtension
+import org.gradle.api.plugins.quality.internal.CheckstyleAction
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
