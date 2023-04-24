@@ -372,10 +372,10 @@ class SerializerTest {
                 + "non_monotonic_cumulative_long_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcls\"} 5.0 1633950672000\n"
                 + "# TYPE double_gauge gauge\n"
                 + "# HELP double_gauge unused\n"
-                + "double_gauge{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"dg\"} 5.0 1633950672000\n"
+                + "double_gauge_ratio{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"dg\"} 5.0 1633950672000\n"
                 + "# TYPE long_gauge gauge\n"
                 + "# HELP long_gauge unused\n"
-                + "long_gauge{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"lg\"} 5.0 1633950672000\n"
+                + "long_gauge_ratio{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"lg\"} 5.0 1633950672000\n"
                 + "# TYPE summary summary\n"
                 + "# HELP summary unused\n"
                 + "summary_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\"} 5.0 1633950672000\n"
@@ -394,10 +394,10 @@ class SerializerTest {
                 + "cumulative_histogram_single_attribute_bucket{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\",le=\"+Inf\"} 2.0 1633950672000\n"
                 + "# TYPE double_gauge_no_attributes gauge\n"
                 + "# HELP double_gauge_no_attributes unused\n"
-                + "double_gauge_no_attributes{otel_scope_name=\"full\",otel_scope_version=\"version\"} 7.0 1633950672000\n"
+                + "double_gauge_no_attributes_ratio{otel_scope_name=\"full\",otel_scope_version=\"version\"} 7.0 1633950672000\n"
                 + "# TYPE double_gauge_multiple_attributes gauge\n"
                 + "# HELP double_gauge_multiple_attributes unused\n"
-                + "double_gauge_multiple_attributes{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672000\n");
+                + "double_gauge_multiple_attributes_ratio{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672000\n");
   }
 
   @Test
@@ -439,10 +439,10 @@ class SerializerTest {
                 + "non_monotonic_cumulative_long_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcls\"} 5.0 1633950672.000\n"
                 + "# TYPE double_gauge gauge\n"
                 + "# HELP double_gauge unused\n"
-                + "double_gauge{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"dg\"} 5.0 1633950672.000\n"
+                + "double_gauge_ratio{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"dg\"} 5.0 1633950672.000\n"
                 + "# TYPE long_gauge gauge\n"
                 + "# HELP long_gauge unused\n"
-                + "long_gauge{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"lg\"} 5.0 1633950672.000\n"
+                + "long_gauge_ratio{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"lg\"} 5.0 1633950672.000\n"
                 + "# TYPE summary summary\n"
                 + "# HELP summary unused\n"
                 + "summary_count{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"s\"} 5.0 1633950672.000\n"
@@ -461,10 +461,10 @@ class SerializerTest {
                 + "cumulative_histogram_single_attribute_bucket{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"hs\",le=\"+Inf\"} 2.0 1633950672.000 # {span_id=\"0000000000000002\",trace_id=\"00000000000000000000000000000001\"} 4.0 0.001\n"
                 + "# TYPE double_gauge_no_attributes gauge\n"
                 + "# HELP double_gauge_no_attributes unused\n"
-                + "double_gauge_no_attributes{otel_scope_name=\"full\",otel_scope_version=\"version\"} 7.0 1633950672.000\n"
+                + "double_gauge_no_attributes_ratio{otel_scope_name=\"full\",otel_scope_version=\"version\"} 7.0 1633950672.000\n"
                 + "# TYPE double_gauge_multiple_attributes gauge\n"
                 + "# HELP double_gauge_multiple_attributes unused\n"
-                + "double_gauge_multiple_attributes{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672.000\n"
+                + "double_gauge_multiple_attributes_ratio{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672.000\n"
                 + "# EOF\n");
   }
 

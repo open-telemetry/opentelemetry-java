@@ -23,6 +23,7 @@ package io.opentelemetry.exporter.prometheus;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -118,7 +119,7 @@ abstract class Serializer {
         continue;
       }
       PrometheusType prometheusType = PrometheusType.forMetric(metric);
-      String metricName = metricName(metric.getName(), prometheusType);
+      String metricName = metricName(metric, prometheusType);
       // Skip metrics which do not pass metricNameFilter
       if (!metricNameFilter.test(metricName)) {
         continue;
@@ -650,8 +651,14 @@ abstract class Serializer {
     return Collections.emptyList();
   }
 
-  private static String metricName(String rawMetricName, PrometheusType type) {
-    String name = NameSanitizer.INSTANCE.apply(rawMetricName);
+  private static String metricName(MetricData rawMetric, PrometheusType type) {
+    String name = NameSanitizer.INSTANCE.apply(rawMetric.getName());
+    String prometheusEquivalentUnit = PrometheusUnitsHelper.getEquivalentPrometheusUnit(rawMetric);
+    if (!StringUtils.isNullOrEmpty(prometheusEquivalentUnit)
+        && !name.contains(prometheusEquivalentUnit)) {
+      name = name + "_" + prometheusEquivalentUnit;
+    }
+
     if (type == PrometheusType.COUNTER) {
       name = name + "_total";
     }
