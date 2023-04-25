@@ -15,14 +15,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 class PrometheusUnitsHelperTest {
 
   @ParameterizedTest
-  @MethodSource("providePrometheusOTLPUnitEquivalentPairs")
+  @MethodSource("providePrometheusOTelUnitEquivalentPairs")
   public void testPrometheusUnitEquivalency(
       String otlpUnit, String prometheusUnit, PrometheusType metricType) {
     assertEquals(
         prometheusUnit, PrometheusUnitsHelper.getEquivalentPrometheusUnit(otlpUnit, metricType));
   }
 
-  private static Stream<Arguments> providePrometheusOTLPUnitEquivalentPairs() {
+  private static Stream<Arguments> providePrometheusOTelUnitEquivalentPairs() {
     return Stream.of(
         // Simple expansion - storage Bytes
         Arguments.of("By", "bytes", PrometheusType.GAUGE),
