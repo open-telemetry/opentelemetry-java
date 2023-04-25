@@ -41,7 +41,7 @@ dependencies {
   testImplementation("com.google.guava:guava-testlib")
 }
 
-val configurationRef = "74607f261e1f9a2ef356b7f87e394b6e9dd90285"
+val configurationRef = "d018613a1bbac1ca5bbd6edbc7e6effeab3a71d0"
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 
 val downloadConfigurationSchema by tasks.registering(Download::class) {
@@ -65,7 +65,7 @@ jsonSchema2Pojo {
   sourceFiles = setOf(file("$buildDir/configuration/schema"))
   targetDirectory = file("$buildDir/generated/sources/js2p/java/main")
   targetPackage = "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model"
-  includeSetters = false
+  includeSetters = true
   removeOldOutput = true
 }
 
