@@ -135,9 +135,6 @@ public final class PrometheusUnitsHelper {
 
   private static String convertRateExpressedToPrometheusUnit(String rateExpressedUnit) {
     String[] rateEntities = rateExpressedUnit.split("/", 2);
-    if (rateEntities.length < 1) {
-      return rateExpressedUnit;
-    }
     // Only convert rate expressed units if it's a valid expression
     if (rateEntities[1].equals("")) {
       return rateExpressedUnit;
