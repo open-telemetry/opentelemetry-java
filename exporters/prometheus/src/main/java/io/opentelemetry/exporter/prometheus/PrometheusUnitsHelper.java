@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 
 /**
  * A utility class that is used to maintain mappings between OTLP unit and Prometheus units. The
@@ -27,7 +26,7 @@ import javax.annotation.Nonnull;
  */
 public final class PrometheusUnitsHelper {
 
-  private static final Pattern INVALID_CHARACTERS_PATTERN = Pattern.compile("[^a-zA-Z0-9_:]");
+  private static final Pattern INVALID_CHARACTERS_PATTERN = Pattern.compile("[^a-zA-Z0-9]");
   private static final String CHARACTERS_BETWEEN_BRACES_REGEX =
       "\\{(.*?)}"; // matches all characters between {}
 
@@ -114,44 +113,57 @@ public final class PrometheusUnitsHelper {
     if (StringUtils.isNullOrEmpty(rawMetricUnitName)) {
       return rawMetricUnitName;
     }
-    rawMetricUnitName =
-        INVALID_CHARACTERS_PATTERN
-            .matcher(rawMetricUnitName)
-            .replaceAll("_")
-            .replaceAll("[_]{2,}", "_");
 
     // special case
     if (rawMetricUnitName.equals("1") && metricType == PrometheusType.GAUGE) {
       return "ratio";
     }
 
+    String convertedMetricUnitName = rawMetricUnitName;
     // Drop units specified between curly braces
-    if (rawMetricUnitName.matches(CHARACTERS_BETWEEN_BRACES_REGEX)) {
-      return removeUnitPortionInBrackets(rawMetricUnitName);
-    }
+    convertedMetricUnitName = removeUnitPortionInBrackets(convertedMetricUnitName);
 
     // Handling for the "per" unit(s), e.g. foo/bar -> foo_per_bar
-    if (rawMetricUnitName.contains("/")) {
-      return convertRateExpressedToPrometheusUnit(rawMetricUnitName);
+    if (convertedMetricUnitName.contains("/")) {
+      convertedMetricUnitName = convertRateExpressedToPrometheusUnit(convertedMetricUnitName);
     }
 
     // Converting abbreviated unit names to full names
-    return PROMETHEUS_UNIT_MAP.getOrDefault(rawMetricUnitName, rawMetricUnitName);
+    return cleanUpString(
+        PROMETHEUS_UNIT_MAP.getOrDefault(convertedMetricUnitName, convertedMetricUnitName));
   }
 
   private static String convertRateExpressedToPrometheusUnit(String rateExpressedUnit) {
     String[] rateEntities = rateExpressedUnit.split("/", 2);
+    if (rateEntities.length < 1) {
+      return rateExpressedUnit;
+    }
     // Only convert rate expressed units if it's a valid expression
     if (rateEntities[1].equals("")) {
       return rateExpressedUnit;
     }
-    return PROMETHEUS_PER_UNIT_MAP.getOrDefault(rateEntities[0], rateEntities[0])
+    return PROMETHEUS_UNIT_MAP.getOrDefault(rateEntities[0], rateEntities[0])
         + "_per_"
         + PROMETHEUS_PER_UNIT_MAP.getOrDefault(rateEntities[1], rateEntities[1]);
   }
 
-  private static String removeUnitPortionInBrackets(@Nonnull String unit) {
+  private static String removeUnitPortionInBrackets(String unit) {
     // This does not handle nested braces
     return unit.replaceAll(CHARACTERS_BETWEEN_BRACES_REGEX, "");
+  }
+
+  /**
+   * Replaces all characters that are not a letter or a digit with '_' to make the resulting string
+   * Prometheus compliant. This method also removes leading and trailing underscores.
+   *
+   * @param string The string input that needs to be made Prometheus compliant.
+   * @return the cleaned-up Prometheus compliant string.
+   */
+  private static String cleanUpString(String string) {
+    String prometheusCompliant =
+        INVALID_CHARACTERS_PATTERN.matcher(string).replaceAll("_").replaceAll("[_]{2,}", "_");
+    prometheusCompliant = prometheusCompliant.replaceAll("_+$", ""); // remove trailing underscore
+    prometheusCompliant = prometheusCompliant.replaceAll("^_+", ""); // remove leading underscore
+    return prometheusCompliant;
   }
 }
