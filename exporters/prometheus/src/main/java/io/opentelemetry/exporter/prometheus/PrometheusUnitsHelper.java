@@ -124,9 +124,7 @@ public final class PrometheusUnitsHelper {
     convertedMetricUnitName = removeUnitPortionInBrackets(convertedMetricUnitName);
 
     // Handling for the "per" unit(s), e.g. foo/bar -> foo_per_bar
-    if (convertedMetricUnitName.contains("/")) {
-      convertedMetricUnitName = convertRateExpressedToPrometheusUnit(convertedMetricUnitName);
-    }
+    convertedMetricUnitName = convertRateExpressedToPrometheusUnit(convertedMetricUnitName);
 
     // Converting abbreviated unit names to full names
     return cleanUpString(
@@ -134,6 +132,9 @@ public final class PrometheusUnitsHelper {
   }
 
   private static String convertRateExpressedToPrometheusUnit(String rateExpressedUnit) {
+    if (!rateExpressedUnit.contains("/")) {
+      return rateExpressedUnit;
+    }
     String[] rateEntities = rateExpressedUnit.split("/", 2);
     // Only convert rate expressed units if it's a valid expression
     if (rateEntities[1].equals("")) {
