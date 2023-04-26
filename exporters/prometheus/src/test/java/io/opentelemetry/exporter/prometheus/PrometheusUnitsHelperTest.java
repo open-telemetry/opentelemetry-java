@@ -84,6 +84,11 @@ class PrometheusUnitsHelperTest {
         Arguments.of("GiBy", "gibibytes", PrometheusType.COUNTER),
         Arguments.of("GiBy", "gibibytes", PrometheusType.SUMMARY),
         Arguments.of("GiBy", "gibibytes", PrometheusType.HISTOGRAM),
+        // Simple expansion - storage TiBy
+        Arguments.of("TiBy", "tibibytes", PrometheusType.GAUGE),
+        Arguments.of("TiBy", "tibibytes", PrometheusType.COUNTER),
+        Arguments.of("TiBy", "tibibytes", PrometheusType.SUMMARY),
+        Arguments.of("TiBy", "tibibytes", PrometheusType.HISTOGRAM),
         // Simple expansion - Time unit d
         Arguments.of("d", "days", PrometheusType.GAUGE),
         Arguments.of("d", "days", PrometheusType.COUNTER),
