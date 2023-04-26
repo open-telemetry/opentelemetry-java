@@ -6,11 +6,7 @@
 package io.opentelemetry.exporter.prometheus;
 
 import io.opentelemetry.api.internal.StringUtils;
-import java.util.Collections;
-import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A utility class that is used to maintain mappings between OTLP unit and Prometheus units. The
@@ -29,71 +25,6 @@ public final class PrometheusUnitsHelper {
   private static final Pattern INVALID_CHARACTERS_PATTERN = Pattern.compile("[^a-zA-Z0-9]");
   private static final String CHARACTERS_BETWEEN_BRACES_REGEX =
       "\\{(.*?)}"; // matches all characters between {}
-
-  private static final Map<String, String> PROMETHEUS_UNIT_MAP =
-      Stream.of(
-              new String[][] {
-                // Time
-                {"d", "days"},
-                {"h", "hours"},
-                {"min", "minutes"},
-                {"s", "seconds"},
-                {"ms", "milliseconds"},
-                {"us", "microseconds"},
-                {"ns", "nanoseconds"},
-                // Bytes
-                {"By", "bytes"},
-                {"KiBy", "kibibytes"},
-                {"MiBy", "mebibytes"},
-                {"GiBy", "gibibytes"},
-                {"TiBy", "tibibytes"},
-                {"KBy", "kilobytes"},
-                {"MBy", "megabytes"},
-                {"GBy", "gigabytes"},
-                {"TBy", "terabytes"},
-                {"B", "bytes"},
-                {"KB", "kilobytes"},
-                {"MB", "megabytes"},
-                {"GB", "gigabytes"},
-                {"TB", "terabytes"},
-                // SI
-                {"m", "meters"},
-                {"V", "volts"},
-                {"A", "amperes"},
-                {"J", "joules"},
-                {"W", "watts"},
-                {"g", "grams"},
-                // Misc
-                {"Cel", "celsius"},
-                {"Hz", "hertz"},
-                {"1", ""},
-                {"%", "percent"},
-                {"$", "dollars"}
-              })
-          .collect(
-              Collectors.collectingAndThen(
-                  Collectors.toMap(
-                      keyValuePair -> keyValuePair[0], keyValuePair -> keyValuePair[1]),
-                  Collections::unmodifiableMap));
-
-  // The map that translates the "per" unit
-  // Example: s => per second (singular)
-  private static final Map<String, String> PROMETHEUS_PER_UNIT_MAP =
-      Stream.of(
-              new String[][] {
-                {"s", "second"},
-                {"m", "minute"},
-                {"h", "hour"},
-                {"d", "day"},
-                {"w", "week"},
-                {"mo", "month"},
-                {"y", "year"}
-              })
-          .collect(
-              Collectors.collectingAndThen(
-                  Collectors.toMap(
-                      keyValuePair -> keyValuePair[0], keyValuePair -> keyValuePair[1]),
-                  Collections::unmodifiableMap));
 
   private PrometheusUnitsHelper() {
     // Prevent object creation for utility classes
@@ -127,8 +58,7 @@ public final class PrometheusUnitsHelper {
     convertedMetricUnitName = convertRateExpressedToPrometheusUnit(convertedMetricUnitName);
 
     // Converting abbreviated unit names to full names
-    return cleanUpString(
-        PROMETHEUS_UNIT_MAP.getOrDefault(convertedMetricUnitName, convertedMetricUnitName));
+    return cleanUpString(getPrometheusUnit(convertedMetricUnitName));
   }
 
   private static String convertRateExpressedToPrometheusUnit(String rateExpressedUnit) {
@@ -140,9 +70,7 @@ public final class PrometheusUnitsHelper {
     if (rateEntities[1].equals("")) {
       return rateExpressedUnit;
     }
-    return PROMETHEUS_UNIT_MAP.getOrDefault(rateEntities[0], rateEntities[0])
-        + "_per_"
-        + PROMETHEUS_PER_UNIT_MAP.getOrDefault(rateEntities[1], rateEntities[1]);
+    return getPrometheusUnit(rateEntities[0]) + "_per_" + getPrometheusPerUnit(rateEntities[1]);
   }
 
   private static String removeUnitPortionInBrackets(String unit) {
@@ -163,5 +91,116 @@ public final class PrometheusUnitsHelper {
     prometheusCompliant = prometheusCompliant.replaceAll("_+$", ""); // remove trailing underscore
     prometheusCompliant = prometheusCompliant.replaceAll("^_+", ""); // remove leading underscore
     return prometheusCompliant;
+  }
+
+  /**
+   * This method retrieves the expanded Prometheus unit name for known abbreviations.
+   *
+   * @param unitAbbreviation The unit that name that needs to be expanded/converted to Prometheus
+   *     units.
+   * @return The expanded/converted unit name if known, otherwise returns the input unit name as-is.
+   */
+  private static String getPrometheusUnit(String unitAbbreviation) {
+    switch (unitAbbreviation) {
+        // Time
+      case "d":
+        return "days";
+      case "h":
+        return "hours";
+      case "min":
+        return "minutes";
+      case "s":
+        return "seconds";
+      case "ms":
+        return "milliseconds";
+      case "us":
+        return "microseconds";
+      case "ns":
+        return "nanoseconds";
+        // Bytes
+      case "By":
+        return "bytes";
+      case "KiBy":
+        return "kibibytes";
+      case "MiBy":
+        return "mebibytes";
+      case "GiBy":
+        return "gibibytes";
+      case "TiBy":
+        return "tibibytes";
+      case "KBy":
+        return "kilobytes";
+      case "MBy":
+        return "megabytes";
+      case "GBy":
+        return "gigabytes";
+      case "TBy":
+        return "terabytes";
+      case "B":
+        return "bytes";
+      case "KB":
+        return "kilobytes";
+      case "MB":
+        return "megabytes";
+      case "GB":
+        return "gigabytes";
+      case "TB":
+        return "terabytes";
+        // SI
+      case "m":
+        return "meters";
+      case "V":
+        return "volts";
+      case "A":
+        return "amperes";
+      case "J":
+        return "joules";
+      case "W":
+        return "watts";
+      case "g":
+        return "grams";
+        // Misc
+      case "Cel":
+        return "celsius";
+      case "Hz":
+        return "hertz";
+      case "1":
+        return "";
+      case "%":
+        return "percent";
+      case "$":
+        return "dollars";
+      default:
+        return unitAbbreviation;
+    }
+  }
+
+  /**
+   * This method retrieves the expanded Prometheus unit name to be used with "per" units for known
+   * units. For example: s => per second (singular)
+   *
+   * @param perUnitAbbreviation The unit abbreviation used in a 'per' unit.
+   * @return The expanded unit equivalent to be used in 'per' unit if the input is a known unit,
+   *     otherwise returns the input as-is.
+   */
+  private static String getPrometheusPerUnit(String perUnitAbbreviation) {
+    switch (perUnitAbbreviation) {
+      case "s":
+        return "second";
+      case "m":
+        return "minute";
+      case "h":
+        return "hour";
+      case "d":
+        return "day";
+      case "w":
+        return "week";
+      case "mo":
+        return "month";
+      case "y":
+        return "year";
+      default:
+        return perUnitAbbreviation;
+    }
   }
 }
