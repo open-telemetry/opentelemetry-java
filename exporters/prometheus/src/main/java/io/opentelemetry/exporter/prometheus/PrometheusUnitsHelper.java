@@ -9,10 +9,8 @@ import io.opentelemetry.api.internal.StringUtils;
 import java.util.regex.Pattern;
 
 /**
- * A utility class that is used to maintain mappings between OTLP unit and Prometheus units. The
- * list of mappings is adopted from <a
- * href="https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/pkg/translator/prometheus/normalize_name.go#L30">OpenTelemetry
- * Collector Contrib</a>.
+ * A utility class that contains helper function(s) to perform conversion from OTLP to Prometheus
+ * units.
  *
  * @see <a
  *     href="https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md#units-and-base-units">OpenMetrics
@@ -50,17 +48,25 @@ public final class PrometheusUnitsHelper {
       return "ratio";
     }
 
-    String convertedMetricUnitName = rawMetricUnitName;
     // Drop units specified between curly braces
-    convertedMetricUnitName = removeUnitPortionInBrackets(convertedMetricUnitName);
-
+    String convertedMetricUnitName = removeUnitPortionInBraces(rawMetricUnitName);
     // Handling for the "per" unit(s), e.g. foo/bar -> foo_per_bar
     convertedMetricUnitName = convertRateExpressedToPrometheusUnit(convertedMetricUnitName);
-
     // Converting abbreviated unit names to full names
     return cleanUpString(getPrometheusUnit(convertedMetricUnitName));
   }
 
+  /**
+   * This method is used to convert the units expressed as a rate via '/' symbol in their name to
+   * their expanded text equivalent. For instance, km/h => km_per_hour. The method operates on the
+   * input by splitting it in 2 parts - before and after '/' symbol and will attempt to expand any
+   * known unit abbreviation in both parts. Unknown abbreviation will remain unchanged in the final
+   * output.
+   *
+   * @param rateExpressedUnit The rate unit input that needs to be converted to its text equivalent.
+   * @return The text equivalent of unit expressed as rate. If the input does not contain '/', the
+   *     function returns it as-is.
+   */
   private static String convertRateExpressedToPrometheusUnit(String rateExpressedUnit) {
     if (!rateExpressedUnit.contains("/")) {
       return rateExpressedUnit;
@@ -73,8 +79,17 @@ public final class PrometheusUnitsHelper {
     return getPrometheusUnit(rateEntities[0]) + "_per_" + getPrometheusPerUnit(rateEntities[1]);
   }
 
-  private static String removeUnitPortionInBrackets(String unit) {
-    // This does not handle nested braces
+  /**
+   * This method drops all characters enclosed within '{}' (including the curly braces) by replacing
+   * them with an empty string. Note that this method will not produce the intended effect if there
+   * are nested curly braces within the outer enclosure of '{}'.
+   *
+   * <p>For instance, {packet{s}s} => s}.
+   *
+   * @param unit The input unit from which text within curly braces needs to be removed.
+   * @return The resulting unit after removing the text within '{}'.
+   */
+  private static String removeUnitPortionInBraces(String unit) {
     return unit.replaceAll(CHARACTERS_BETWEEN_BRACES_REGEX, "");
   }
 
@@ -94,7 +109,11 @@ public final class PrometheusUnitsHelper {
   }
 
   /**
-   * This method retrieves the expanded Prometheus unit name for known abbreviations.
+   * This method retrieves the expanded Prometheus unit name for known abbreviations. OTLP metrics
+   * use the c/s notation as specified at <a href="https://ucum.org/ucum.html">UCUM</a>. The list of
+   * mappings is adopted from <a
+   * href="https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/9a9d4778bbbf242dba233db28e2fbcfda3416959/pkg/translator/prometheus/normalize_name.go#L30">OpenTelemetry
+   * Collector Contrib</a>.
    *
    * @param unitAbbreviation The unit that name that needs to be expanded/converted to Prometheus
    *     units.
