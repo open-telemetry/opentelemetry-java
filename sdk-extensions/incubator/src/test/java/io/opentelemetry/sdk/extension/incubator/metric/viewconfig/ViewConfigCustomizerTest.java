@@ -37,7 +37,7 @@ class ViewConfigCustomizerTest {
                     "otel.metrics.exporter",
                     "none",
                     "otel.experimental.metrics.view.config",
-                    "classpath:/view-config-customizer-views.yaml"))
+                    "classpath:/view-config-customizer-test.yaml"))
         .addMeterProviderCustomizer(
             (meterProviderBuilder, configProperties) ->
                 meterProviderBuilder.registerMetricReader(reader))
@@ -78,7 +78,7 @@ class ViewConfigCustomizerTest {
   void customizeMeterProvider_MultipleFiles() {
     ConfigProperties properties =
         withConfigFileLocations(
-            "classpath:/view-config-customizer-views.yaml", "classpath:/full-config.yaml");
+            "classpath:/view-config-customizer-test.yaml", "classpath:/full-config.yaml");
 
     assertThatCode(
             () ->
