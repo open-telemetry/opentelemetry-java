@@ -21,8 +21,7 @@ import java.util.regex.Pattern;
 final class PrometheusUnitsHelper {
 
   private static final Pattern INVALID_CHARACTERS_PATTERN = Pattern.compile("[^a-zA-Z0-9]");
-  private static final String CHARACTERS_BETWEEN_BRACES_REGEX =
-      "\\{(.*?)}"; // matches all characters between {}
+  private static final Pattern CHARACTERS_BETWEEN_BRACES_PATTERN = Pattern.compile("\\{(.*?)}");
 
   private PrometheusUnitsHelper() {
     // Prevent object creation for utility classes
@@ -90,7 +89,7 @@ final class PrometheusUnitsHelper {
    * @return The resulting unit after removing the text within '{}'.
    */
   private static String removeUnitPortionInBraces(String unit) {
-    return unit.replaceAll(CHARACTERS_BETWEEN_BRACES_REGEX, "");
+    return CHARACTERS_BETWEEN_BRACES_PATTERN.matcher(unit).replaceAll("");
   }
 
   /**
