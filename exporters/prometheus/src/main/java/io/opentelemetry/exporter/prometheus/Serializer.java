@@ -652,18 +652,24 @@ abstract class Serializer {
   }
 
   private static String metricName(MetricData rawMetric, PrometheusType type) {
-    String name = NameSanitizer.INSTANCE.apply(rawMetric.getName());
+    String name = rawMetric.getName();
     String prometheusEquivalentUnit =
-        PrometheusUnitsHelper.getEquivalentPrometheusUnit(rawMetric.getUnit(), type);
-    if (!StringUtils.isNullOrEmpty(prometheusEquivalentUnit)
-        && !name.contains(prometheusEquivalentUnit)) {
+        PrometheusUnitsHelper.getEquivalentPrometheusUnit(rawMetric.getUnit());
+    // append prometheus unit if not null or empty.
+    if (!StringUtils.isNullOrEmpty(prometheusEquivalentUnit)) {
       name = name + "_" + prometheusEquivalentUnit;
     }
 
+    // special case - counter
     if (type == PrometheusType.COUNTER) {
       name = name + "_total";
     }
-    return name;
+    // special case - gauge
+    if (rawMetric.getUnit().equals("1") && type == PrometheusType.GAUGE) {
+      name = name + "_ratio";
+    }
+
+    return NameSanitizer.INSTANCE.apply(name);
   }
 
   private static double getExemplarValue(ExemplarData exemplar) {

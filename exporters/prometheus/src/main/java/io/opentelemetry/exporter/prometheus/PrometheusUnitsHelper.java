@@ -9,8 +9,7 @@ import io.opentelemetry.api.internal.StringUtils;
 import java.util.regex.Pattern;
 
 /**
- * A utility class that contains helper function(s) to perform conversion from OTLP to Prometheus
- * units.
+ * A utility class that contains helper function(s) to aid conversion from OTLP to Prometheus units.
  *
  * @see <a
  *     href="https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md#units-and-base-units">OpenMetrics
@@ -20,7 +19,6 @@ import java.util.regex.Pattern;
  */
 final class PrometheusUnitsHelper {
 
-  private static final Pattern INVALID_CHARACTERS_PATTERN = Pattern.compile("[^a-zA-Z0-9]");
   private static final Pattern CHARACTERS_BETWEEN_BRACES_PATTERN = Pattern.compile("\\{(.*?)}");
 
   private PrometheusUnitsHelper() {
@@ -29,38 +27,34 @@ final class PrometheusUnitsHelper {
 
   /**
    * A utility function that returns the equivalent Prometheus name for the provided OTLP metric
-   * unit.
+   * unit. This function does not handle the unsupported characters that it may find within the
+   * string.
    *
    * @param rawMetricUnitName The raw metric unit for which Prometheus metric unit needs to be
    *     computed.
-   * @param metricType The {@link PrometheusType} of the metric whose unit is to be converted.
    * @return the computed Prometheus metric unit equivalent of the OTLP metric unit.
+   * @see <a
+   *     href="https://prometheus.io/docs/concepts/data_model/#metric-names-and-labels">Prometheus
+   *     metric names and labels</a> for supported characters.
    */
-  public static String getEquivalentPrometheusUnit(
-      String rawMetricUnitName, PrometheusType metricType) {
+  public static String getEquivalentPrometheusUnit(String rawMetricUnitName) {
     if (StringUtils.isNullOrEmpty(rawMetricUnitName)) {
       return rawMetricUnitName;
     }
-
-    // special case
-    if (rawMetricUnitName.equals("1") && metricType == PrometheusType.GAUGE) {
-      return "ratio";
-    }
-
     // Drop units specified between curly braces
     String convertedMetricUnitName = removeUnitPortionInBraces(rawMetricUnitName);
     // Handling for the "per" unit(s), e.g. foo/bar -> foo_per_bar
     convertedMetricUnitName = convertRateExpressedToPrometheusUnit(convertedMetricUnitName);
     // Converting abbreviated unit names to full names
-    return cleanUpString(getPrometheusUnit(convertedMetricUnitName));
+    return getPrometheusUnit(convertedMetricUnitName);
   }
 
   /**
    * This method is used to convert the units expressed as a rate via '/' symbol in their name to
    * their expanded text equivalent. For instance, km/h => km_per_hour. The method operates on the
    * input by splitting it in 2 parts - before and after '/' symbol and will attempt to expand any
-   * known unit abbreviation in both parts. Unknown abbreviation will remain unchanged in the final
-   * output.
+   * known unit abbreviation in both parts. Unknown abbreviations & unsupported characters will
+   * remain unchanged in the final output of this function.
    *
    * @param rateExpressedUnit The rate unit input that needs to be converted to its text equivalent.
    * @return The text equivalent of unit expressed as rate. If the input does not contain '/', the
@@ -90,21 +84,6 @@ final class PrometheusUnitsHelper {
    */
   private static String removeUnitPortionInBraces(String unit) {
     return CHARACTERS_BETWEEN_BRACES_PATTERN.matcher(unit).replaceAll("");
-  }
-
-  /**
-   * Replaces all characters that are not a letter or a digit with '_' to make the resulting string
-   * Prometheus compliant. This method also removes leading and trailing underscores.
-   *
-   * @param string The string input that needs to be made Prometheus compliant.
-   * @return the cleaned-up Prometheus compliant string.
-   */
-  private static String cleanUpString(String string) {
-    String prometheusCompliant =
-        INVALID_CHARACTERS_PATTERN.matcher(string).replaceAll("_").replaceAll("[_]{2,}", "_");
-    prometheusCompliant = prometheusCompliant.replaceAll("_+$", ""); // remove trailing underscore
-    prometheusCompliant = prometheusCompliant.replaceAll("^_+", ""); // remove leading underscore
-    return prometheusCompliant;
   }
 
   /**
