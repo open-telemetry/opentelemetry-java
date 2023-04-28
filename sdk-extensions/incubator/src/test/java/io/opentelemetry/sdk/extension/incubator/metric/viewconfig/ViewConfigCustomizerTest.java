@@ -102,11 +102,14 @@ class ViewConfigCustomizerTest {
   void customizeMeterProvider_Directory() {
     ConfigProperties properties =
         withConfigFileLocations(
-            ViewConfigTest.class.getResource("/views/view-config-customizer-views.yaml").getPath().replace("/view-config-customizer-views.yaml",""));
+            ViewConfigTest.class
+                .getResource("/views/view-config-customizer-views.yaml")
+                .getPath()
+                .replace("/view-config-customizer-views.yaml", ""));
 
     assertThatCode(
-        () ->
-            ViewConfigCustomizer.customizeMeterProvider(SdkMeterProvider.builder(), properties))
+            () ->
+                ViewConfigCustomizer.customizeMeterProvider(SdkMeterProvider.builder(), properties))
         .doesNotThrowAnyException();
   }
 
