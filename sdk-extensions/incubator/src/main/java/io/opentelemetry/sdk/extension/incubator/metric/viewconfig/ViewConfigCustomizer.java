@@ -10,10 +10,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvide
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.List;
 
 /** SPI implementation for loading view configuration YAML. */
@@ -48,16 +45,32 @@ public final class ViewConfigCustomizer implements AutoConfigurationCustomizerPr
               e);
         }
       } else {
-        try (FileInputStream fileInputStream = new FileInputStream(configFileLocation)) {
-          ViewConfig.registerViews(meterProviderBuilder, fileInputStream);
-        } catch (FileNotFoundException e) {
-          throw new ConfigurationException("View config file not found: " + configFileLocation, e);
-        } catch (IOException e) {
-          throw new ConfigurationException(
-              "An error occurred reading view config file: " + configFileLocation, e);
+        File configFile = new File(configFileLocation);
+        if (configFile.isDirectory()) {
+          File[] files = configFile.listFiles();
+          if (files != null) {
+            for (File file : files) {
+              if (file.isFile() && file.getName().endsWith(".yaml")) {
+                registerViews(meterProviderBuilder, file.getAbsolutePath());
+              }
+            }
+          }
+        } else {
+          registerViews(meterProviderBuilder,configFileLocation);
         }
       }
     }
     return meterProviderBuilder;
+  }
+
+  private static void registerViews(SdkMeterProviderBuilder meterProviderBuilder,String configFileLocation) {
+    try (FileInputStream fileInputStream = new FileInputStream(configFileLocation)) {
+      ViewConfig.registerViews(meterProviderBuilder, fileInputStream);
+    } catch (FileNotFoundException e) {
+      throw new ConfigurationException("View config file not found: " + configFileLocation, e);
+    } catch (IOException e) {
+      throw new ConfigurationException(
+          "An error occurred reading view config file: " + configFileLocation, e);
+    }
   }
 }

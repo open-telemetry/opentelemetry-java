@@ -99,6 +99,19 @@ class ViewConfigCustomizerTest {
   }
 
   @Test
+  void customizeMeterProvider_Directory() {
+    // before do this test, you should remove other views file
+    ConfigProperties properties =
+        withConfigFileLocations(
+            ViewConfigTest.class.getResource("/view-config-customizer-test.yaml").getPath().replace("/view-config-customizer-test.yaml",""));
+
+    assertThatCode(
+        () ->
+            ViewConfigCustomizer.customizeMeterProvider(SdkMeterProvider.builder(), properties))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
   void customizeMeterProvider_Invalid() {
     assertThatThrownBy(
             () ->
