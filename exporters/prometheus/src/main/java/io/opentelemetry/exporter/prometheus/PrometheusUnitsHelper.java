@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
  * @see <a href="https://prometheus.io/docs/practices/naming/#base-units">Prometheus best practices
  *     for units</a>
  */
-public final class PrometheusUnitsHelper {
+final class PrometheusUnitsHelper {
 
   private static final Pattern INVALID_CHARACTERS_PATTERN = Pattern.compile("[^a-zA-Z0-9]");
   private static final String CHARACTERS_BETWEEN_BRACES_REGEX =
