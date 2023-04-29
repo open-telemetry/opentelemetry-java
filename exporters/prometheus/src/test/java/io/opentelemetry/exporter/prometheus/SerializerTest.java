@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.prometheus;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -34,7 +35,11 @@ import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class SerializerTest {
 
@@ -468,6 +473,49 @@ class SerializerTest {
                 + "# EOF\n");
   }
 
+  @ParameterizedTest
+  @MethodSource("provideRawMetricDataForTest")
+  void metricNameSerializationTest(MetricData metricData, String expectedSerializedName) {
+    assertEquals(
+        expectedSerializedName,
+        Serializer.metricName(metricData, PrometheusType.forMetric(metricData)));
+  }
+
+  private static Stream<Arguments> provideRawMetricDataForTest() {
+    return Stream.of(
+        // special case for gauge
+        Arguments.of(
+            sampleMetricDataGenerator("sample", "1", PrometheusType.GAUGE), "sample_ratio"),
+        // special case for gauge with drop eligible unit
+        Arguments.of(
+            sampleMetricDataGenerator("sample", "1{dropped}", PrometheusType.GAUGE), "sample"),
+        // Gauge without "1" as unit
+        Arguments.of(
+            sampleMetricDataGenerator("sample", "unit", PrometheusType.GAUGE), "sample_unit"),
+        // special case with counter
+        Arguments.of(
+            sampleMetricDataGenerator("sample", "unit", PrometheusType.COUNTER),
+            "sample_unit_total"),
+        // special case unit "1", but no gauge
+        Arguments.of(
+            sampleMetricDataGenerator("sample", "1", PrometheusType.COUNTER), "sample_total"),
+        // metric name with unsupported characters
+        Arguments.of(
+            sampleMetricDataGenerator("s%%ple", "%/m", PrometheusType.SUMMARY),
+            "s_ple_percent_per_minute"),
+        // metric name with dropped portions
+        Arguments.of(
+            sampleMetricDataGenerator("s%%ple", "%/m", PrometheusType.SUMMARY),
+            "s_ple_percent_per_minute"),
+        // metric unit as a number other than 1 is not treated specially
+        Arguments.of(
+            sampleMetricDataGenerator("metric_name", "2", PrometheusType.SUMMARY), "metric_name_2"),
+        // metric name cannot start with a number
+        Arguments.of(
+            sampleMetricDataGenerator("2_metric_name", "By", PrometheusType.SUMMARY),
+            "_metric_name_bytes"));
+  }
+
   private static String serialize004(MetricData... metrics) {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     try {
@@ -486,5 +534,44 @@ class SerializerTest {
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
+  }
+
+  private static MetricData sampleMetricDataGenerator(
+      String metricName, String metricUnit, PrometheusType prometheusType) {
+    switch (prometheusType) {
+      case SUMMARY:
+        return ImmutableMetricData.createDoubleSummary(
+            SUMMARY.getResource(),
+            SUMMARY.getInstrumentationScopeInfo(),
+            metricName,
+            SUMMARY.getDescription(),
+            metricUnit,
+            SUMMARY.getSummaryData());
+      case COUNTER:
+        return ImmutableMetricData.createLongSum(
+            MONOTONIC_CUMULATIVE_LONG_SUM.getResource(),
+            MONOTONIC_CUMULATIVE_LONG_SUM.getInstrumentationScopeInfo(),
+            metricName,
+            MONOTONIC_CUMULATIVE_LONG_SUM.getDescription(),
+            metricUnit,
+            MONOTONIC_CUMULATIVE_LONG_SUM.getLongSumData());
+      case GAUGE:
+        return ImmutableMetricData.createDoubleGauge(
+            DOUBLE_GAUGE.getResource(),
+            DOUBLE_GAUGE.getInstrumentationScopeInfo(),
+            metricName,
+            DOUBLE_GAUGE.getDescription(),
+            metricUnit,
+            DOUBLE_GAUGE.getDoubleGaugeData());
+      case HISTOGRAM:
+        return ImmutableMetricData.createDoubleHistogram(
+            DELTA_HISTOGRAM.getResource(),
+            DELTA_HISTOGRAM.getInstrumentationScopeInfo(),
+            metricName,
+            DELTA_HISTOGRAM.getDescription(),
+            metricUnit,
+            DELTA_HISTOGRAM.getHistogramData());
+    }
+    throw new IllegalArgumentException();
   }
 }

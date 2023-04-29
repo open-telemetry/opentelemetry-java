@@ -651,7 +651,8 @@ abstract class Serializer {
     return Collections.emptyList();
   }
 
-  private static String metricName(MetricData rawMetric, PrometheusType type) {
+  // Visible for testing
+  static String metricName(MetricData rawMetric, PrometheusType type) {
     String name = rawMetric.getName();
     String prometheusEquivalentUnit =
         PrometheusUnitsHelper.getEquivalentPrometheusUnit(rawMetric.getUnit());
