@@ -486,7 +486,7 @@ class SerializerTest {
         // special case for gauge
         Arguments.of(
             sampleMetricDataGenerator("sample", "1", PrometheusType.GAUGE), "sample_ratio"),
-        // special case for gauge with drop eligible unit
+        // special case for gauge with drop - metric unit should match "1"
         Arguments.of(
             sampleMetricDataGenerator("sample", "1{dropped}", PrometheusType.GAUGE), "sample"),
         // Gauge without "1" as unit
@@ -496,9 +496,12 @@ class SerializerTest {
         Arguments.of(
             sampleMetricDataGenerator("sample", "unit", PrometheusType.COUNTER),
             "sample_unit_total"),
-        // special case unit "1", but no gauge
+        // special case unit "1", but no gauge - "1" is dropped
         Arguments.of(
             sampleMetricDataGenerator("sample", "1", PrometheusType.COUNTER), "sample_total"),
+        // units expressed as numbers other than 1 are retained
+        Arguments.of(
+            sampleMetricDataGenerator("sample", "2", PrometheusType.COUNTER), "sample_2_total"),
         // metric name with unsupported characters
         Arguments.of(
             sampleMetricDataGenerator("s%%ple", "%/m", PrometheusType.SUMMARY),
@@ -510,6 +513,36 @@ class SerializerTest {
         // metric unit as a number other than 1 is not treated specially
         Arguments.of(
             sampleMetricDataGenerator("metric_name", "2", PrometheusType.SUMMARY), "metric_name_2"),
+        // metric unit is not appended if the name already contains the unit
+        Arguments.of(
+            sampleMetricDataGenerator("metric_name_total", "total", PrometheusType.COUNTER),
+            "metric_name_total"),
+        // metric unit is not appended if the name already contains the unit - special case for
+        // total with non-counter type
+        Arguments.of(
+            sampleMetricDataGenerator("metric_name_total", "total", PrometheusType.SUMMARY),
+            "metric_name_total"),
+        // metric unit not appended if present in metric name - special case for ratio
+        Arguments.of(
+            sampleMetricDataGenerator("metric_name_ratio", "1", PrometheusType.GAUGE),
+            "metric_name_ratio"),
+        // metric unit not appended if present in metric name - special case for ratio - unit not
+        // gauge
+        Arguments.of(
+            sampleMetricDataGenerator("metric_name_ratio", "1", PrometheusType.SUMMARY),
+            "metric_name_ratio"),
+        // metric unit is not appended if the name already contains the unit - unit can be anywhere
+        Arguments.of(
+            sampleMetricDataGenerator("metric_hertz", "hertz", PrometheusType.GAUGE),
+            "metric_hertz"),
+        // metric unit is not appended if the name already contains the unit - applies to every unit
+        Arguments.of(
+            sampleMetricDataGenerator("metric_hertz_total", "hertz_total", PrometheusType.COUNTER),
+            "metric_hertz_total"),
+        // metric unit is not appended if the name already contains the unit - order matters
+        Arguments.of(
+            sampleMetricDataGenerator("metric_total_hertz", "hertz_total", PrometheusType.COUNTER),
+            "metric_total_hertz_hertz_total"),
         // metric name cannot start with a number
         Arguments.of(
             sampleMetricDataGenerator("2_metric_name", "By", PrometheusType.SUMMARY),
