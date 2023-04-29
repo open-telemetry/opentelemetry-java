@@ -15,9 +15,10 @@ class NameSanitizer implements Function<String, String> {
 
   static final NameSanitizer INSTANCE = new NameSanitizer();
 
+  static final Pattern SANITIZE_CONSECUTIVE_UNDERSCORES = Pattern.compile("[_]{2,}");
+
   private static final Pattern SANITIZE_PREFIX_PATTERN = Pattern.compile("^[^a-zA-Z_:]");
   private static final Pattern SANITIZE_BODY_PATTERN = Pattern.compile("[^a-zA-Z0-9_:]");
-  private static final Pattern SANITIZE_CONSECUTIVE_UNDERSCORES = Pattern.compile("[_]{2,}");
 
   private final Function<String, String> delegate;
   private final Map<String, String> cache = new ConcurrentHashMap<>();

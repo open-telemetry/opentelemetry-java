@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import static io.opentelemetry.exporter.prometheus.NameSanitizer.SANITIZE_CONSECUTIVE_UNDERSCORES;
+
 import io.opentelemetry.api.internal.StringUtils;
 import java.util.regex.Pattern;
 
@@ -19,7 +21,10 @@ import java.util.regex.Pattern;
  */
 final class PrometheusUnitsHelper {
 
+  private static final Pattern INVALID_CHARACTERS_PATTERN = Pattern.compile("[^a-zA-Z0-9]");
   private static final Pattern CHARACTERS_BETWEEN_BRACES_PATTERN = Pattern.compile("\\{(.*?)}");
+  private static final Pattern SANITIZE_LEADING_UNDERSCORES = Pattern.compile("^_+");
+  private static final Pattern SANITIZE_TRAILING_UNDERSCORES = Pattern.compile("_+$");
 
   private PrometheusUnitsHelper() {
     // Prevent object creation for utility classes
@@ -27,15 +32,11 @@ final class PrometheusUnitsHelper {
 
   /**
    * A utility function that returns the equivalent Prometheus name for the provided OTLP metric
-   * unit. This function does not handle the unsupported characters that it may find within the
-   * string.
+   * unit.
    *
    * @param rawMetricUnitName The raw metric unit for which Prometheus metric unit needs to be
    *     computed.
-   * @return the computed Prometheus metric unit equivalent of the OTLP metric unit.
-   * @see <a
-   *     href="https://prometheus.io/docs/concepts/data_model/#metric-names-and-labels">Prometheus
-   *     metric names and labels</a> for supported characters.
+   * @return the computed Prometheus metric unit equivalent of the OTLP metric un
    */
   public static String getEquivalentPrometheusUnit(String rawMetricUnitName) {
     if (StringUtils.isNullOrEmpty(rawMetricUnitName)) {
@@ -46,7 +47,7 @@ final class PrometheusUnitsHelper {
     // Handling for the "per" unit(s), e.g. foo/bar -> foo_per_bar
     convertedMetricUnitName = convertRateExpressedToPrometheusUnit(convertedMetricUnitName);
     // Converting abbreviated unit names to full names
-    return getPrometheusUnit(convertedMetricUnitName);
+    return cleanUpString(getPrometheusUnit(convertedMetricUnitName));
   }
 
   /**
@@ -84,6 +85,26 @@ final class PrometheusUnitsHelper {
    */
   private static String removeUnitPortionInBraces(String unit) {
     return CHARACTERS_BETWEEN_BRACES_PATTERN.matcher(unit).replaceAll("");
+  }
+
+  /**
+   * Replaces all characters that are not a letter or a digit with '_' to make the resulting string
+   * Prometheus compliant. This method also removes leading and trailing underscores - this is done
+   * to keep the resulting unit similar to what is produced from the collector's implementation.
+   *
+   * @param string The string input that needs to be made Prometheus compliant.
+   * @return the cleaned-up Prometheus compliant string.
+   */
+  private static String cleanUpString(String string) {
+    return SANITIZE_LEADING_UNDERSCORES
+        .matcher(
+            SANITIZE_TRAILING_UNDERSCORES
+                .matcher(
+                    SANITIZE_CONSECUTIVE_UNDERSCORES
+                        .matcher(INVALID_CHARACTERS_PATTERN.matcher(string).replaceAll("_"))
+                        .replaceAll("_"))
+                .replaceAll(""))
+        .replaceAll("");
   }
 
   /**

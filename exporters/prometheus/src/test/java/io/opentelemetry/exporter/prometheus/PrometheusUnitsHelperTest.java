@@ -76,9 +76,9 @@ class PrometheusUnitsHelperTest {
         // Special Case - Dropped metric units only in {}
         Arguments.of("{packets}V", "volts"),
         // Special Case - Dropped metric units with 'per' unit handling applicable
-        Arguments.of("{scanned}/{returned}", "/"),
+        Arguments.of("{scanned}/{returned}", ""),
         // Special Case - Dropped metric units with 'per' unit handling applicable
-        Arguments.of("{objects}/s", "_per_second"),
+        Arguments.of("{objects}/s", "per_second"),
         // Units expressing rate - 'per' units, both units expanded
         Arguments.of("m/s", "meters_per_second"),
         // Units expressing rate - per minute
@@ -100,16 +100,16 @@ class PrometheusUnitsHelperTest {
         // Misc - unit containing known abbreviations improperly formatted
         Arguments.of("watts_W", "watts_W"),
         // Unsupported symbols
-        Arguments.of("°F", "°F"),
+        Arguments.of("°F", "F"),
         // Unsupported symbols - multiple
-        Arguments.of("unit+=.:,!* & #unused", "unit+=.:,!* & #unused"),
+        Arguments.of("unit+=.:,!* & #unused", "unit_unused"),
         // Unsupported symbols - 'per' units
-        Arguments.of("__test $/°C", "__test $_per_°C"),
+        Arguments.of("__test $/°C", "test_per_C"),
         // Unsupported symbols - whitespace
-        Arguments.of("\t", "\t"),
+        Arguments.of("\t", ""),
         // Null unit
         Arguments.of(null, null),
         // Misc - unit cleanup - no case match special char
-        Arguments.of("$1000", "$1000"));
+        Arguments.of("$1000", "1000"));
   }
 }
