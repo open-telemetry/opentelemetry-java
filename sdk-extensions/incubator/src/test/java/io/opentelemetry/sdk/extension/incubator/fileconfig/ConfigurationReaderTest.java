@@ -8,10 +8,12 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimits;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimits;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Attributes;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LoggerProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogrecordLimits;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpentelemetryConfiguration;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Resource;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimits;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProvider;
 import java.io.FileInputStream;
@@ -25,6 +27,12 @@ class ConfigurationReaderTest {
     OpentelemetryConfiguration expected = new OpentelemetryConfiguration();
 
     expected.setFileFormat("0.1");
+
+    Resource resource = new Resource();
+    expected.setResource(resource);
+    Attributes attributes = new Attributes();
+    resource.setAttributes(attributes);
+    attributes.setServiceName("unknown_service");
 
     AttributeLimits attributeLimits = new AttributeLimits();
     expected.setAttributeLimits(attributeLimits);
@@ -48,8 +56,8 @@ class ConfigurationReaderTest {
     LoggerProvider loggerProvider = new LoggerProvider();
     expected.setLoggerProvider(loggerProvider);
 
-    LogRecordLimits logRecordLimits = new LogRecordLimits();
-    loggerProvider.setLogRecordLimits(logRecordLimits);
+    LogrecordLimits logRecordLimits = new LogrecordLimits();
+    loggerProvider.setLogrecordLimits(logRecordLimits);
     logRecordLimits.setAttributeValueLengthLimit(4096);
     logRecordLimits.setAttributeCountLimit(128);
 

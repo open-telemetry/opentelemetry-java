@@ -41,7 +41,7 @@ dependencies {
   testImplementation("com.google.guava:guava-testlib")
 }
 
-val configurationRef = "565af0d91f5fd3c1f01d9842d3ac6bc6068a7c00"
+val configurationRef = "280d92434e27b5a3385e527c51f84f5d90280321"
 val configurationRepoZip = "https://github.com/jack-berg/opentelemetry-configuration/archive/$configurationRef.zip"
 
 val downloadConfigurationSchema by tasks.registering(Download::class) {
