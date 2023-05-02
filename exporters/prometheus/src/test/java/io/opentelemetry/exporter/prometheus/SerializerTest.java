@@ -59,6 +59,26 @@ class SerializerTest {
                       1633950672000000000L,
                       Attributes.of(TYPE, "mcds"),
                       5))));
+
+  private static final MetricData MONOTONIC_CUMULATIVE_DOUBLE_SUM_WITH_SUFFIX_TOTAL =
+      ImmutableMetricData.createDoubleSum(
+          Resource.create(Attributes.of(stringKey("kr"), "vr")),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
+          "monotonic.cumulative.double.sum.suffix.total",
+          "description",
+          "1",
+          ImmutableSumData.create(
+              /* isMonotonic= */ true,
+              AggregationTemporality.CUMULATIVE,
+              Collections.singletonList(
+                  ImmutableDoublePointData.create(
+                      1633947011000000000L,
+                      1633950672000000000L,
+                      Attributes.of(TYPE, "mcds"),
+                      5))));
   private static final MetricData NON_MONOTONIC_CUMULATIVE_DOUBLE_SUM =
       ImmutableMetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -338,6 +358,7 @@ class SerializerTest {
     assertThat(
             serialize004(
                 MONOTONIC_CUMULATIVE_DOUBLE_SUM,
+                MONOTONIC_CUMULATIVE_DOUBLE_SUM_WITH_SUFFIX_TOTAL,
                 NON_MONOTONIC_CUMULATIVE_DOUBLE_SUM,
                 DELTA_DOUBLE_SUM, // Deltas are dropped
                 MONOTONIC_CUMULATIVE_LONG_SUM,
@@ -361,6 +382,9 @@ class SerializerTest {
                 + "# TYPE monotonic_cumulative_double_sum_total counter\n"
                 + "# HELP monotonic_cumulative_double_sum_total description\n"
                 + "monotonic_cumulative_double_sum_total{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mcds\"} 5.0 1633950672000\n"
+                + "# TYPE monotonic_cumulative_double_sum_suffix_total counter\n"
+                + "# HELP monotonic_cumulative_double_sum_suffix_total description\n"
+                + "monotonic_cumulative_double_sum_suffix_total{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mcds\"} 5.0 1633950672000\n"
                 + "# TYPE non_monotonic_cumulative_double_sum gauge\n"
                 + "# HELP non_monotonic_cumulative_double_sum description\n"
                 + "non_monotonic_cumulative_double_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcds\"} 5.0 1633950672000\n"
@@ -405,6 +429,7 @@ class SerializerTest {
     assertThat(
             serializeOpenMetrics(
                 MONOTONIC_CUMULATIVE_DOUBLE_SUM,
+                MONOTONIC_CUMULATIVE_DOUBLE_SUM_WITH_SUFFIX_TOTAL,
                 NON_MONOTONIC_CUMULATIVE_DOUBLE_SUM,
                 DELTA_DOUBLE_SUM, // Deltas are dropped
                 MONOTONIC_CUMULATIVE_LONG_SUM,
@@ -428,6 +453,9 @@ class SerializerTest {
                 + "# TYPE monotonic_cumulative_double_sum counter\n"
                 + "# HELP monotonic_cumulative_double_sum description\n"
                 + "monotonic_cumulative_double_sum_total{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mcds\"} 5.0 1633950672.000\n"
+                + "# TYPE monotonic_cumulative_double_sum_suffix_total counter\n"
+                + "# HELP monotonic_cumulative_double_sum_suffix_total description\n"
+                + "monotonic_cumulative_double_sum_suffix_total{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"mcds\"} 5.0 1633950672.000\n"
                 + "# TYPE non_monotonic_cumulative_double_sum gauge\n"
                 + "# HELP non_monotonic_cumulative_double_sum description\n"
                 + "non_monotonic_cumulative_double_sum{otel_scope_name=\"full\",otel_scope_version=\"version\",type=\"nmcds\"} 5.0 1633950672.000\n"
