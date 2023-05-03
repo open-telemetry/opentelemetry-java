@@ -17,7 +17,7 @@ public class JaegerRemoteSamplerProvider implements ConfigurableSamplerProvider 
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
   static final String SERVICE_NAME_PROPERTY = "otel.service.name";
   static final String SAMPLER_ARG_PROPERTY = "otel.traces.sampler.arg";
-
+  static final String RESOURCE_ATTRIBUTE_SERVICE_NAME_PROPERTY = "service.name";
   private static final String ENDPOINT_KEY = "endpoint";
   private static final String POLLING_INTERVAL = "pollingInterval";
   private static final String INITIAL_SAMPLING_RATE = "initialSamplingRate";
@@ -29,7 +29,7 @@ public class JaegerRemoteSamplerProvider implements ConfigurableSamplerProvider 
     String serviceName = config.getString(SERVICE_NAME_PROPERTY);
     if (serviceName == null) {
       Map<String, String> resourceAttributes = config.getMap(ATTRIBUTE_PROPERTY);
-      serviceName = resourceAttributes.get(SERVICE_NAME_PROPERTY);
+      serviceName = resourceAttributes.get(RESOURCE_ATTRIBUTE_SERVICE_NAME_PROPERTY);
     }
     if (serviceName != null) {
       builder.setServiceName(serviceName);
