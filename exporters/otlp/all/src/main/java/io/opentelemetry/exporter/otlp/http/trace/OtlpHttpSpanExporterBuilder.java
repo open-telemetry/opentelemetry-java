@@ -15,6 +15,8 @@ import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * Builder utility for {@link OtlpHttpSpanExporter}.
@@ -97,6 +99,16 @@ public final class OtlpHttpSpanExporterBuilder {
    */
   public OtlpHttpSpanExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
     delegate.setKeyManagerFromCerts(privateKeyPem, certificatePem);
+    return this;
+  }
+
+  /**
+   * Sets the "bring-your-own" SSLContext for use with TLS. Users should call this _or_ set raw
+   * certificate bytes, but not both.
+   */
+  public OtlpHttpSpanExporterBuilder setSslContext(
+      SSLContext sslContext, X509TrustManager trustManager) {
+    delegate.setSslContext(sslContext, trustManager);
     return this;
   }
 

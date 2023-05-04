@@ -26,6 +26,7 @@ import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.grpc.UpstreamGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
@@ -56,6 +57,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509KeyManager;
+import javax.net.ssl.X509TrustManager;
 import okio.Buffer;
 import okio.GzipSource;
 import okio.Okio;
@@ -378,6 +384,31 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  void tlsViaSslContext() throws Exception {
+    X509TrustManager trustManager = TlsUtil.trustManager(certificate.certificate().getEncoded());
+
+    X509KeyManager keyManager =
+        TlsUtil.keyManager(
+            certificate.privateKey().getEncoded(), certificate.certificate().getEncoded());
+
+    SSLContext sslContext = SSLContext.getInstance("TLS");
+    sslContext.init(new KeyManager[] {keyManager}, new TrustManager[] {trustManager}, null);
+
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpsUri() + path)
+            .setSslContext(sslContext, trustManager)
+            .build();
+    try {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
   @SuppressLogger(OkHttpExporter.class)
   void tls_untrusted() {
     TelemetryExporter<T> exporter = exporterBuilder().setEndpoint(server.httpsUri() + path).build();
@@ -464,9 +495,11 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(OkHttpExporter.class)
   void doubleShutdown() {
+    int logsSizeBefore = logs.getEvents().size();
     TelemetryExporter<T> exporter = exporterBuilder().setEndpoint(server.httpUri() + path).build();
     assertThat(exporter.shutdown().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-    assertThat(logs.getEvents()).isEmpty();
+    assertThat(logs.getEvents()).hasSize(logsSizeBefore);
+    logs.assertDoesNotContain("Calling shutdown() multiple times.");
     assertThat(exporter.shutdown().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
     logs.assertContains("Calling shutdown() multiple times.");
   }

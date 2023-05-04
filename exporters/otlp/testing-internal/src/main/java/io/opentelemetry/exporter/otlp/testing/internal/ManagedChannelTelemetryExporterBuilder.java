@@ -164,6 +164,13 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
     };
   }
 
+  @Override
+  public TelemetryExporterBuilder<T> setSslContext(
+      SSLContext sslContext, X509TrustManager trustManager) {
+    tlsConfigHelper.setSslContext(sslContext, trustManager);
+    return this;
+  }
+
   /**
    * Configure the channel builder to trust the certificates. The {@code byte[]} should contain an
    * X.509 certificate collection in PEM format.
