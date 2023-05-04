@@ -46,7 +46,7 @@ class InMemoryLogRecordExporterTest {
     logger.logRecordBuilder().setSeverity(DEBUG).setBody("message 2").emit();
     logger.logRecordBuilder().setSeverity(DEBUG).setBody("message 3").emit();
 
-    List<LogRecordData> logItems = exporter.getFinishedLogItems();
+    List<LogRecordData> logItems = exporter.getFinishedLogRecordItems();
     assertThat(logItems).isNotNull();
     assertThat(logItems.size()).isEqualTo(3);
     LogAssertions.assertThat(logItems.get(0)).hasBody("message 1");
@@ -59,12 +59,12 @@ class InMemoryLogRecordExporterTest {
     logger.logRecordBuilder().setSeverity(DEBUG).setBody("message 1").emit();
     logger.logRecordBuilder().setSeverity(DEBUG).setBody("message 2").emit();
     logger.logRecordBuilder().setSeverity(DEBUG).setBody("message 3").emit();
-    List<LogRecordData> logItems = exporter.getFinishedLogItems();
+    List<LogRecordData> logItems = exporter.getFinishedLogRecordItems();
     assertThat(logItems).isNotNull();
     assertThat(logItems.size()).isEqualTo(3);
     // Reset then expect no items in memory.
     exporter.reset();
-    assertThat(exporter.getFinishedLogItems()).isEmpty();
+    assertThat(exporter.getFinishedLogRecordItems()).isEmpty();
   }
 
   @Test
@@ -72,15 +72,15 @@ class InMemoryLogRecordExporterTest {
     logger.logRecordBuilder().setSeverity(DEBUG).setBody("message 1").emit();
     logger.logRecordBuilder().setSeverity(DEBUG).setBody("message 2").emit();
     logger.logRecordBuilder().setSeverity(DEBUG).setBody("message 3").emit();
-    List<LogRecordData> logItems = exporter.getFinishedLogItems();
+    List<LogRecordData> logItems = exporter.getFinishedLogRecordItems();
     assertThat(logItems).isNotNull();
     assertThat(logItems.size()).isEqualTo(3);
     // Shutdown then expect no items in memory.
     exporter.shutdown();
-    assertThat(exporter.getFinishedLogItems()).isEmpty();
+    assertThat(exporter.getFinishedLogRecordItems()).isEmpty();
     // Cannot add new elements after the shutdown.
     logger.logRecordBuilder().setSeverity(DEBUG).setBody("message 1").emit();
-    assertThat(exporter.getFinishedLogItems()).isEmpty();
+    assertThat(exporter.getFinishedLogRecordItems()).isEmpty();
   }
 
   @Test

@@ -37,7 +37,7 @@ public final class InMemoryLogRecordExporter implements LogRecordExporter {
    *
    * @return a {@code List} of the finished {@code Log}s.
    */
-  public List<LogRecordData> getFinishedLogItems() {
+  public List<LogRecordData> getFinishedLogRecordItems() {
     return Collections.unmodifiableList(new ArrayList<>(finishedLogItems));
   }
 

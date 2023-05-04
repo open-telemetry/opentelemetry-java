@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.logs.internal.SdkEventEmitterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
