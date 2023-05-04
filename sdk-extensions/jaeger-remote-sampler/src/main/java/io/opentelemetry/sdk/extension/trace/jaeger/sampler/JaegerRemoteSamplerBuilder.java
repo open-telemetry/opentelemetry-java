@@ -93,6 +93,16 @@ public final class JaegerRemoteSamplerBuilder {
   }
 
   /**
+   * Sets the "bring-your-own" SSLContext for use with TLS. Users should call this _or_ set raw
+   * certificate bytes, but not both.
+   */
+  public JaegerRemoteSamplerBuilder setSslContext(
+      SSLContext sslContext, X509TrustManager trustManager) {
+    tlsConfigHelper.setSslContext(sslContext, trustManager);
+    return this;
+  }
+
+  /**
    * Sets the polling interval for configuration updates. If unset, defaults to {@value
    * DEFAULT_POLLING_INTERVAL_MILLIS}ms. Must be positive.
    */
