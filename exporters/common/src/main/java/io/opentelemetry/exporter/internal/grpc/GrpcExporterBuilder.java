@@ -111,6 +111,12 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  public GrpcExporterBuilder<T> setSslContext(
+      SSLContext sslContext, X509TrustManager trustManager) {
+    tlsConfigHelper.setSslContext(sslContext, trustManager);
+    return this;
+  }
+
   public GrpcExporterBuilder<T> addHeader(String key, String value) {
     headers.put(key, value);
     return this;

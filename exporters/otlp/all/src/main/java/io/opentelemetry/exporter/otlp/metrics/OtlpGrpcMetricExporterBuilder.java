@@ -21,6 +21,8 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * Builder utility for this exporter.
@@ -141,6 +143,16 @@ public final class OtlpGrpcMetricExporterBuilder {
    */
   public OtlpGrpcMetricExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
     delegate.setKeyManagerFromCerts(privateKeyPem, certificatePem);
+    return this;
+  }
+
+  /**
+   * Sets the "bring-your-own" SSLContext for use with TLS. Users should call this _or_ set raw
+   * certificate bytes, but not both.
+   */
+  public OtlpGrpcMetricExporterBuilder setSslContext(
+      SSLContext sslContext, X509TrustManager trustManager) {
+    delegate.setSslContext(sslContext, trustManager);
     return this;
   }
 

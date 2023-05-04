@@ -23,6 +23,7 @@ import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.UpstreamGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
@@ -54,6 +55,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509KeyManager;
+import javax.net.ssl.X509TrustManager;
 import org.assertj.core.api.iterable.ThrowingExtractor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -307,6 +313,31 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
             .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
             .setClientTls(
                 certificate.privateKey().getEncoded(), certificate.certificate().getEncoded())
+            .setEndpoint(server.httpsUri().toString())
+            .build();
+    try {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void tlsViaSslContext() throws Exception {
+    X509TrustManager trustManager = TlsUtil.trustManager(certificate.certificate().getEncoded());
+
+    X509KeyManager keyManager =
+        TlsUtil.keyManager(
+            certificate.privateKey().getEncoded(), certificate.certificate().getEncoded());
+
+    SSLContext sslContext = SSLContext.getInstance("TLS");
+    sslContext.init(new KeyManager[] {keyManager}, new TrustManager[] {trustManager}, null);
+
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setSslContext(sslContext, trustManager)
             .setEndpoint(server.httpsUri().toString())
             .build();
     try {
