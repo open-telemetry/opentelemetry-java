@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.26.0 (2023-05-05)
+
 This release represents the release candidate ("RC") release for the Logs Bridge API / SDK. In the
 next release (1.27.0), `opentelemetry-api-logs` will be merged into `opentelemetry-api`,
 `opentelemetry-sdk-logs` will be marked as stable, `opentelemetry-exporter-otlp-logs` will be
