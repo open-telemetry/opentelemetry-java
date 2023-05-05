@@ -514,7 +514,7 @@ abstract class Serializer {
 
     @Override
     String headerName(String name, PrometheusType type) {
-      if (type == PrometheusType.COUNTER) {
+      if (type == PrometheusType.COUNTER && !name.endsWith("_total")) {
         return name + "_total";
       }
       return name;

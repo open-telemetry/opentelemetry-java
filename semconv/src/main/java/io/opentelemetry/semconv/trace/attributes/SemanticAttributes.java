@@ -1716,8 +1716,8 @@ public final class SemanticAttributes {
   /**
    * The name of the transport protocol.
    *
-   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. There is no
-   *     replacement.
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link
+   *     SemanticAttributes#NET_APP_PROTOCOL_NAME} instead.
    */
   @Deprecated
   public static final AttributeKey<String> MESSAGING_PROTOCOL = stringKey("messaging.protocol");
@@ -1725,8 +1725,8 @@ public final class SemanticAttributes {
   /**
    * The version of the transport protocol.
    *
-   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. There is no
-   *     replacement.
+   * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link
+   *     SemanticAttributes#NET_APP_PROTOCOL_VERSION} instead.
    */
   @Deprecated
   public static final AttributeKey<String> MESSAGING_PROTOCOL_VERSION =

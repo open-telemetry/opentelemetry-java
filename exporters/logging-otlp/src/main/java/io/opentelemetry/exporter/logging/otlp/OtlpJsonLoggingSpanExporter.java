@@ -51,7 +51,11 @@ public final class OtlpJsonLoggingSpanExporter implements SpanExporter {
         // Shouldn't happen in practice, just skip it.
         continue;
       }
-      logger.log(Level.INFO, sw.getAndClear());
+      try {
+        logger.log(Level.INFO, sw.getAndClear());
+      } catch (IOException e) {
+        logger.log(Level.WARNING, "Unable to read OTLP JSON spans", e);
+      }
     }
     return CompletableResultCode.ofSuccess();
   }

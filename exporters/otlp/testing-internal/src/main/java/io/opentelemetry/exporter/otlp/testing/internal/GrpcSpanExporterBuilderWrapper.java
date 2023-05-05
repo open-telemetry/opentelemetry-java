@@ -13,6 +13,8 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 
 /** Wrapper of {@link OtlpGrpcSpanExporterBuilder} for use in integration tests. */
 final class GrpcSpanExporterBuilderWrapper implements TelemetryExporterBuilder<SpanData> {
@@ -67,6 +69,13 @@ final class GrpcSpanExporterBuilderWrapper implements TelemetryExporterBuilder<S
   public TelemetryExporterBuilder<SpanData> setClientTls(
       byte[] privateKeyPem, byte[] certificatePem) {
     builder.setClientTls(privateKeyPem, certificatePem);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<SpanData> setSslContext(
+      SSLContext sslContext, X509TrustManager trustManager) {
+    builder.setSslContext(sslContext, trustManager);
     return this;
   }
 
