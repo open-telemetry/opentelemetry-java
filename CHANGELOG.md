@@ -3,7 +3,7 @@
 ## Unreleased
 
 This release represents the release candidate ("RC") release for the Logs Bridge API / SDK. In the
-following release, `opentelemetry-api-logs` will be merged into `opentelemetry-api`, 
+following release, `opentelemetry-api-logs` will be merged into `opentelemetry-api`,
 `opentelemetry-sdk-logs` will be marked as stable, `opentelemetry-exporter-otlp-logs` will be
 merged into `opentelemetry-exporter-otlp`, `opentelemetry-sdk-logs-testing` will be merged
 into `opentelemetry-sdk-testing`, `opentelemetry-sdk-extension-autoconfigure` will enable `otlp`
