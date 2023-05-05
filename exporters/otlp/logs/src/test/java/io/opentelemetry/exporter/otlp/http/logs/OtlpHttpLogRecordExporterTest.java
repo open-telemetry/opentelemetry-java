@@ -78,7 +78,7 @@ class OtlpHttpLogRecordExporterTest
       @Override
       public TelemetryExporterBuilder<LogRecordData> setSslContext(
           SSLContext ssLContext, X509TrustManager trustManager) {
-        builder.setSslSocketFactory(ssLContext, trustManager);
+        builder.setSslContext(ssLContext, trustManager);
         return this;
       }
 
