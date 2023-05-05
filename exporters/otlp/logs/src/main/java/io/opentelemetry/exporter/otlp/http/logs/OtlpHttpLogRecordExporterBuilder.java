@@ -100,10 +100,10 @@ public final class OtlpHttpLogRecordExporterBuilder {
   }
 
   /**
-   * Sets the "bring-your-own" SSLContext. Users should call this _or_ set raw certificate bytes,
-   * but not both.
+   * Sets the "bring-your-own" SSLContext for use with TLS. Users should call this _or_ set raw
+   * certificate bytes, but not both.
    */
-  public OtlpHttpLogRecordExporterBuilder setSslSocketFactory(
+  public OtlpHttpLogRecordExporterBuilder setSslContext(
       SSLContext sslContext, X509TrustManager trustManager) {
     delegate.setSslContext(sslContext, trustManager);
     return this;
