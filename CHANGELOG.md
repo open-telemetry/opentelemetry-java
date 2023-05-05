@@ -36,13 +36,18 @@ dictate how logs are processed and exported.
   ([#5364](https://github.com/open-telemetry/opentelemetry-java/pull/5364))
 * Rename setEpoch to setTimestamp.
   ([#5368](https://github.com/open-telemetry/opentelemetry-java/pull/5368))
+* Log SDK cleanup. Move `InMemoryLogRecordExporter` to `opentelemetry-sdk-logs-testing`.
+  Rename `InMemoryLogRecordExporter#getFinishedLogItems` to `getFinishedLogRecordItems`.
+  Move `SdkEventEmitterProvder` to internal package.
+  ([#5368](https://github.com/open-telemetry/opentelemetry-java/pull/5368))
 
 ### Exporters
 
 * Add scaffolding for low level exporter TLS API.
   ([#5362](https://github.com/open-telemetry/opentelemetry-java/pull/5362))
-* Add new low level TLS APIs on OTLP exporter builders.
-  ([#5280](https://github.com/open-telemetry/opentelemetry-java/pull/5280))
+* Add new low level TLS APIs on OTLP and Jaeger gRPC exporter builders.
+  ([#5280](https://github.com/open-telemetry/opentelemetry-java/pull/5280),
+   [#5422](https://github.com/open-telemetry/opentelemetry-java/pull/5422))
 * OTLP LogRecord exporters serialize observed timestamp.
   ([#5382](https://github.com/open-telemetry/opentelemetry-java/pull/5382))
 * Update prometheus test to reflect new collector behavior.
@@ -61,8 +66,10 @@ dictate how logs are processed and exported.
 
 * Fixes jaeger remote sampler service strategies bug resolving service name.
   ([#5418](https://github.com/open-telemetry/opentelemetry-java/pull/5418))
-* Fix flaky JaegerRemoteSamplerGrpcNettyTest
+* Fix flaky JaegerRemoteSamplerGrpcNettyTest.
   ([#5385](https://github.com/open-telemetry/opentelemetry-java/pull/5385))
+* Add new log level TLS APIs on JaegerRemoteSamplerBuilder.
+  ([#5422](https://github.com/open-telemetry/opentelemetry-java/pull/5422))
 * Fix a parameter name typo in autoconfigure-spi module.
   ([#5409](https://github.com/open-telemetry/opentelemetry-java/pull/5409))
 
