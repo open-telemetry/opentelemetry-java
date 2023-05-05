@@ -149,6 +149,8 @@ public final class OtlpGrpcMetricExporterBuilder {
   /**
    * Sets the "bring-your-own" SSLContext for use with TLS. Users should call this _or_ set raw
    * certificate bytes, but not both.
+   *
+   * @since 1.26.0
    */
   public OtlpGrpcMetricExporterBuilder setSslContext(
       SSLContext sslContext, X509TrustManager trustManager) {
