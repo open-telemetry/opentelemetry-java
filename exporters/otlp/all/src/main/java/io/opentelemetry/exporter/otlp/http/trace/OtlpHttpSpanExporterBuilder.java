@@ -105,6 +105,8 @@ public final class OtlpHttpSpanExporterBuilder {
   /**
    * Sets the "bring-your-own" SSLContext for use with TLS. Users should call this _or_ set raw
    * certificate bytes, but not both.
+   *
+   * @since 1.26.0
    */
   public OtlpHttpSpanExporterBuilder setSslContext(
       SSLContext sslContext, X509TrustManager trustManager) {
