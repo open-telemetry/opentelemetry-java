@@ -16,6 +16,8 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 
 public interface TelemetryExporterBuilder<T> {
 
@@ -46,6 +48,8 @@ public interface TelemetryExporterBuilder<T> {
   TelemetryExporterBuilder<T> setTrustedCertificates(byte[] certificates);
 
   TelemetryExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] certificatePem);
+
+  TelemetryExporterBuilder<T> setSslContext(SSLContext sslContext, X509TrustManager trustManager);
 
   TelemetryExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy);
 

@@ -54,7 +54,7 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
     return new SimpleLogRecordProcessor(exporter);
   }
 
-  SimpleLogRecordProcessor(LogRecordExporter logRecordExporter) {
+  private SimpleLogRecordProcessor(LogRecordExporter logRecordExporter) {
     this.logRecordExporter = requireNonNull(logRecordExporter, "logRecordExporter");
   }
 

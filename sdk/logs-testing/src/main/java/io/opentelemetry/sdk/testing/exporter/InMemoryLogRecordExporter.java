@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.logs.export;
+package io.opentelemetry.sdk.testing.exporter;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,7 +38,7 @@ public final class InMemoryLogRecordExporter implements LogRecordExporter {
    *
    * @return a {@code List} of the finished {@code Log}s.
    */
-  public List<LogRecordData> getFinishedLogItems() {
+  public List<LogRecordData> getFinishedLogRecordItems() {
     return Collections.unmodifiableList(new ArrayList<>(finishedLogItems));
   }
 

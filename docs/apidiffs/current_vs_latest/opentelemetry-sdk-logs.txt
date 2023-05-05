@@ -52,18 +52,6 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder setMeterProvider(io.opentelemetry.api.metrics.MeterProvider)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder setScheduleDelay(long, java.util.concurrent.TimeUnit)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder setScheduleDelay(java.time.Duration)
-+++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.logs.export.InMemoryLogRecordExporter  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW INTERFACE: io.opentelemetry.sdk.logs.export.LogRecordExporter
-	+++  NEW INTERFACE: java.io.Closeable
-	+++  NEW INTERFACE: java.lang.AutoCloseable
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.logs.export.InMemoryLogRecordExporter create()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode export(java.util.Collection)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode flush()
-	+++  NEW METHOD: PUBLIC(+) java.util.List getFinishedLogItems()
-	+++  NEW METHOD: PUBLIC(+) void reset()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode shutdown()
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.logs.export.LogRecordExporter  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW INTERFACE: java.io.Closeable

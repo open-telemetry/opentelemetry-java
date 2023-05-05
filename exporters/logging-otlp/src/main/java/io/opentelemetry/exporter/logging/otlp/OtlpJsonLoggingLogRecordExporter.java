@@ -54,7 +54,11 @@ public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter
         // Shouldn't happen in practice, just skip it.
         continue;
       }
-      logger.log(Level.INFO, sw.getAndClear());
+      try {
+        logger.log(Level.INFO, sw.getAndClear());
+      } catch (IOException e) {
+        logger.log(Level.WARNING, "Unable to read OTLP JSON log records", e);
+      }
     }
     return CompletableResultCode.ofSuccess();
   }

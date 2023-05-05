@@ -59,7 +59,11 @@ public class InMemoryMetricReader implements MetricReader {
         AggregationTemporalitySelector.alwaysCumulative(), DefaultAggregationSelector.getDefault());
   }
 
-  /** Returns a new {@link InMemoryMetricReader}. */
+  /**
+   * Returns a new {@link InMemoryMetricReader}.
+   *
+   * @since 1.26.0
+   */
   public static InMemoryMetricReader create(
       AggregationTemporalitySelector aggregationTemporalitySelector,
       DefaultAggregationSelector defaultAggregationSelector) {

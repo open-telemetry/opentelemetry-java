@@ -84,7 +84,11 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
         // Shouldn't happen in practice, just skip it.
         continue;
       }
-      logger.log(Level.INFO, sw.getAndClear());
+      try {
+        logger.log(Level.INFO, sw.getAndClear());
+      } catch (IOException e) {
+        logger.log(Level.WARNING, "Unable to read OTLP JSON metrics", e);
+      }
     }
     return CompletableResultCode.ofSuccess();
   }
