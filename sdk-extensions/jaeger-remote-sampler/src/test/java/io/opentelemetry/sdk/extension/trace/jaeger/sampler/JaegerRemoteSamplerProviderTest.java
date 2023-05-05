@@ -66,7 +66,8 @@ public class JaegerRemoteSamplerProviderTest {
   void serviceNameInAttributeProperties() {
     ConfigProperties mockConfig = mock(ConfigProperties.class);
     HashMap<String, String> attributeProperties = new HashMap<>();
-    attributeProperties.put(JaegerRemoteSamplerProvider.SERVICE_NAME_PROPERTY, "test_service2");
+    attributeProperties.put(
+        JaegerRemoteSamplerProvider.RESOURCE_ATTRIBUTE_SERVICE_NAME_PROPERTY, "test_service2");
     when(mockConfig.getMap(JaegerRemoteSamplerProvider.ATTRIBUTE_PROPERTY))
         .thenReturn(attributeProperties);
     ServiceLoader<ConfigurableSamplerProvider> samplerProviders =
