@@ -20,6 +20,7 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.netty.handler.ssl.ClientAuth;
+import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.RateLimitingSamplingStrategy;
@@ -34,6 +35,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509KeyManager;
+import javax.net.ssl.X509TrustManager;
 import org.awaitility.core.ThrowingRunnable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
@@ -189,6 +195,34 @@ class JaegerRemoteSamplerTest {
       return Stream.of(
           arguments(named("PEM", Files.readAllBytes(clientCertificate.privateKeyFile().toPath()))),
           arguments(named("DER", clientCertificate.privateKey().getEncoded())));
+    }
+  }
+
+  @Test
+  void tlsViaSslContext() throws Exception {
+    X509TrustManager trustManager = TlsUtil.trustManager(certificate.certificate().getEncoded());
+
+    X509KeyManager keyManager =
+        TlsUtil.keyManager(
+            clientCertificate.privateKey().getEncoded(),
+            clientCertificate.certificate().getEncoded());
+
+    SSLContext sslContext = SSLContext.getInstance("TLS");
+    sslContext.init(new KeyManager[] {keyManager}, new TrustManager[] {trustManager}, null);
+
+    try (JaegerRemoteSampler sampler =
+        JaegerRemoteSampler.builder()
+            .setEndpoint(server.httpsUri().toString())
+            .setPollingInterval(1, TimeUnit.SECONDS)
+            .setSslContext(sslContext, trustManager)
+            .setServiceName(SERVICE_NAME)
+            .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
+
+      await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
+
+      // verify
+      assertThat(sampler.getDescription()).contains("RateLimitingSampler{999.00}");
     }
   }
 
