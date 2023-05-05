@@ -3,11 +3,11 @@
 ## Unreleased
 
 This release represents the release candidate ("RC") release for the Logs Bridge API / SDK. In the
-following release, `opentelemetry-api-logs` will be merged into `opentelemetry-api`,
+next release (1.27.0), `opentelemetry-api-logs` will be merged into `opentelemetry-api`,
 `opentelemetry-sdk-logs` will be marked as stable, `opentelemetry-exporter-otlp-logs` will be
 merged into `opentelemetry-exporter-otlp`, `opentelemetry-sdk-logs-testing` will be merged
 into `opentelemetry-sdk-testing`, `opentelemetry-sdk-extension-autoconfigure` will enable `otlp`
-exporter by default (i.e. `otel.logs.exporter=otlp`). For more details, see tracking
+log exporter by default (i.e. `otel.logs.exporter=otlp`). For more details, see tracking
 issue [#5340](https://github.com/open-telemetry/opentelemetry-java/issues/5340). NOTE: reminder that
 the [Logs Bridge API](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/bridge-api.md)
 is _not_ meant for end users. Log appenders use the API to bridge logs from existing log
@@ -18,7 +18,7 @@ dictate how logs are processed and exported.
 
 ### SDK
 
-* Create OtelVersion class at build time. Use to resolve artifact version in `Resrouce`.
+* Create OtelVersion class at build time which is used to resolve artifact version in `Resource`.
   ([#5365](https://github.com/open-telemetry/opentelemetry-java/pull/5365))
 
 #### Metrics
@@ -39,7 +39,7 @@ dictate how logs are processed and exported.
 
 ### Exporters
 
-* Add skaffolding for low level exporter TLS API.
+* Add scaffolding for low level exporter TLS API.
   ([#5362](https://github.com/open-telemetry/opentelemetry-java/pull/5362))
 * Add new low level TLS APIs on OTLP exporter builders.
   ([#5280](https://github.com/open-telemetry/opentelemetry-java/pull/5280))
