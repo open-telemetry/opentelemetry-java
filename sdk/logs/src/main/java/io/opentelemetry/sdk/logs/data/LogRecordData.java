@@ -18,6 +18,8 @@ import javax.annotation.concurrent.Immutable;
  * Log definition as described in <a
  * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/data-model.md">OpenTelemetry
  * Log Data Model</a>.
+ *
+ * @since 1.27.0
  */
 @Immutable
 public interface LogRecordData {

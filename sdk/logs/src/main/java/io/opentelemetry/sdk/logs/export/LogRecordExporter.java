@@ -19,6 +19,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * An exporter is responsible for taking a collection of {@link LogRecordData}s and transmitting
  * them to their ultimate destination.
+ *
+ * @since 1.27.0
  */
 public interface LogRecordExporter extends Closeable {
 

@@ -16,6 +16,8 @@ import javax.annotation.concurrent.Immutable;
  * <p>Note: To allow dynamic updates of {@link LogLimits} you should register a {@link
  * java.util.function.Supplier} with {@link SdkLoggerProviderBuilder#setLogLimits(Supplier)} which
  * supplies dynamic configs when queried.
+ *
+ * @since 1.27.0
  */
 @AutoValue
 @Immutable

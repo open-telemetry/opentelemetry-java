@@ -36,6 +36,8 @@ import java.util.logging.Logger;
  * {@code maxQueueSize} maximum size, if queue is full logs are dropped). Logs are exported either
  * when there are {@code maxExportBatchSize} pending logs or {@code scheduleDelayNanos} has passed
  * since the last export finished.
+ *
+ * @since 1.27.0
  */
 public final class BatchLogRecordProcessor implements LogRecordProcessor {
 

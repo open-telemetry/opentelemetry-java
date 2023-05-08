@@ -17,7 +17,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-/** Builder class for {@link SdkLoggerProvider} instances. */
+/**
+ * Builder class for {@link SdkLoggerProvider} instances.
+ *
+ * @since 1.27.0
+ */
 public final class SdkLoggerProviderBuilder {
 
   private final List<LogRecordProcessor> logRecordProcessors = new ArrayList<>();

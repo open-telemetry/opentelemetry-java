@@ -16,6 +16,8 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>The OpenTelemetry logs bridge API exists to enable bridging logs from other log frameworks
  * (e.g. SLF4J, Log4j, JUL, Logback, etc) into OpenTelemetry and is <b>NOT</b> a replacement log
  * API.
+ *
+ * @since 1.27.0
  */
 @ThreadSafe
 public interface Logger {

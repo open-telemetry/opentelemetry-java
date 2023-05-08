@@ -16,6 +16,8 @@ import java.util.concurrent.TimeUnit;
  *
  * <p>Obtain a {@link Logger#logRecordBuilder()}, add properties using the setters, and emit the log
  * record by calling {@link #emit()}.
+ *
+ * @since 1.27.0
  */
 public interface LogRecordBuilder {
 

@@ -15,6 +15,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * (e.g. SLF4J, Log4j, JUL, Logback, etc) into OpenTelemetry and is <b>NOT</b> a replacement log
  * API.
  *
+ * @since 1.27.0
  * @see Logger
  */
 @ThreadSafe

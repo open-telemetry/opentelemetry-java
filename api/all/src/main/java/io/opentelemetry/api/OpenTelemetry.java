@@ -121,7 +121,7 @@ public interface OpenTelemetry {
    * (e.g. SLF4J, Log4j, JUL, Logback, etc) into OpenTelemetry and is <b>NOT</b> a replacement log
    * API.
    *
-   * @since 1.26.0
+   * @since 1.27.0
    */
   default LoggerProvider getLogsBridge() {
     return LoggerProvider.noop();
