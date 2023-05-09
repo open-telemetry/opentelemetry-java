@@ -14,11 +14,11 @@ rootProject.extra["versions"] = dependencyVersions
 val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.15.0",
   "com.google.guava:guava-bom:31.1-jre",
-  "com.google.protobuf:protobuf-bom:3.22.4",
+  "com.google.protobuf:protobuf-bom:3.23.0",
   "com.linecorp.armeria:armeria-bom:1.23.1",
   "com.squareup.okhttp3:okhttp-bom:4.11.0",
   "com.squareup.okio:okio-bom:3.3.0", // applies to transitive dependencies of okhttp
-  "io.grpc:grpc-bom:1.54.1",
+  "io.grpc:grpc-bom:1.55.1",
   "io.netty:netty-bom:4.1.92.Final",
   "io.zipkin.brave:brave-bom:5.15.1",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.4",
