@@ -5,6 +5,11 @@
 
 package io.opentelemetry.api.logs;
 
+/**
+ * Log record severity options.
+ *
+ * @since 1.27.0
+ */
 public enum Severity {
   UNDEFINED_SEVERITY_NUMBER(0),
   TRACE(1),

@@ -20,7 +20,6 @@ import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.events.EventEmitter;
 import io.opentelemetry.api.events.GlobalEventEmitterProvider;
-import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.Meter;
@@ -162,7 +161,6 @@ class FullConfigTest {
 
     // Initialize here so we can shutdown when done
     GlobalOpenTelemetry.resetForTest();
-    GlobalLoggerProvider.resetForTest();
     GlobalEventEmitterProvider.resetForTest();
     openTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
   }
@@ -171,7 +169,6 @@ class FullConfigTest {
   void afterEach() {
     openTelemetrySdk.close();
     GlobalOpenTelemetry.resetForTest();
-    GlobalLoggerProvider.resetForTest();
     GlobalEventEmitterProvider.resetForTest();
   }
 
@@ -207,7 +204,7 @@ class FullConfigTest {
         .add(1, Attributes.builder().put("allowed", "bear").put("not allowed", "dog").build());
     meter.counterBuilder("my-other-metric").build().add(1);
 
-    Logger logger = GlobalLoggerProvider.get().get("test");
+    Logger logger = GlobalOpenTelemetry.get().getLogsBridge().get("test");
     logger.logRecordBuilder().setBody("debug log message").setSeverity(Severity.DEBUG).emit();
     logger.logRecordBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
 

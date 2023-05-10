@@ -10,6 +10,7 @@ dependencies {
 
   implementation(project(":exporters:otlp:all"))
   implementation(project(":exporters:otlp:logs"))
+  implementation(project(":api:events"))
   implementation(project(":semconv"))
 
   compileOnly("com.google.errorprone:error_prone_annotations")

@@ -8,10 +8,9 @@ otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure")
 
 dependencies {
   api(project(":sdk:all"))
-  api(project(":sdk:metrics"))
-  api(project(":sdk:logs"))
   api(project(":sdk-extensions:autoconfigure-spi"))
 
+  implementation(project(":api:events"))
   implementation(project(":semconv"))
 
   annotationProcessor("com.google.auto.value:auto-value")
@@ -53,6 +52,7 @@ testing {
     }
     val testFullConfig by registering(JvmTestSuite::class) {
       dependencies {
+        implementation(project(":api:events"))
         implementation(project(":extensions:trace-propagators"))
         implementation(project(":exporters:jaeger"))
         implementation(project(":exporters:logging"))

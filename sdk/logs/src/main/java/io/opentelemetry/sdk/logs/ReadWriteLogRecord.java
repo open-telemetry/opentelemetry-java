@@ -8,7 +8,11 @@ package io.opentelemetry.sdk.logs;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 
-/** A log record that can be read from and written to. */
+/**
+ * A log record that can be read from and written to.
+ *
+ * @since 1.27.0
+ */
 public interface ReadWriteLogRecord {
 
   /**

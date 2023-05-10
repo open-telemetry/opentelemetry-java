@@ -11,7 +11,6 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.events.GlobalEventEmitterProvider;
-import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.lang.reflect.Field;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +28,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @BeforeEach
   void setUp() {
     GlobalOpenTelemetry.resetForTest();
-    GlobalLoggerProvider.resetForTest();
     GlobalEventEmitterProvider.resetForTest();
   }
 

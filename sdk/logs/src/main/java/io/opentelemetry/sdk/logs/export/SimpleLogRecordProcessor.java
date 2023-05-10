@@ -29,6 +29,8 @@ import java.util.logging.Logger;
  * so unless you know what you're doing, strongly consider using {@link BatchLogRecordProcessor}
  * instead, including in special environments such as serverless runtimes. {@link
  * SimpleLogRecordProcessor} is generally meant to for testing only.
+ *
+ * @since 1.27.0
  */
 public final class SimpleLogRecordProcessor implements LogRecordProcessor {
 

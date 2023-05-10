@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api;
 
+import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -111,6 +112,19 @@ public interface OpenTelemetry {
    */
   default MeterBuilder meterBuilder(String instrumentationScopeName) {
     return getMeterProvider().meterBuilder(instrumentationScopeName);
+  }
+
+  /**
+   * Returns the {@link LoggerProvider} for bridging logs into OpenTelemetry.
+   *
+   * <p>The OpenTelemetry logs bridge API exists to enable bridging logs from other log frameworks
+   * (e.g. SLF4J, Log4j, JUL, Logback, etc) into OpenTelemetry and is <b>NOT</b> a replacement log
+   * API.
+   *
+   * @since 1.27.0
+   */
+  default LoggerProvider getLogsBridge() {
+    return LoggerProvider.noop();
   }
 
   /** Returns the {@link ContextPropagators} for this {@link OpenTelemetry}. */

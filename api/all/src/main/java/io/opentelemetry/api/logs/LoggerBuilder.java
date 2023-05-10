@@ -11,6 +11,8 @@ package io.opentelemetry.api.logs;
  * <p>{@link Logger}s are identified by their scope name, version, and schema URL. These identifying
  * fields, along with attributes, combine to form the instrumentation scope, which is attached to
  * all log records produced by the {@link Logger}.
+ *
+ * @since 1.27.0
  */
 public interface LoggerBuilder {
 

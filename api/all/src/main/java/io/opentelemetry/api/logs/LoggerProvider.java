@@ -11,10 +11,11 @@ import javax.annotation.concurrent.ThreadSafe;
  * A registry for creating scoped {@link Logger}s. The name <i>Provider</i> is for consistency with
  * other languages and it is <b>NOT</b> loaded using reflection.
  *
- * <p>The OpenTelemetry logging API exists to enable the creation of log appenders, which bridge
- * logs from other log frameworks (e.g. SLF4J, Log4j, JUL, Logback, etc) into OpenTelemetry via
- * {@link Logger#logRecordBuilder()}. It is <b>NOT</b> a replacement log framework.
+ * <p>The OpenTelemetry logs bridge API exists to enable bridging logs from other log frameworks
+ * (e.g. SLF4J, Log4j, JUL, Logback, etc) into OpenTelemetry and is <b>NOT</b> a replacement log
+ * API.
  *
+ * @since 1.27.0
  * @see Logger
  */
 @ThreadSafe
