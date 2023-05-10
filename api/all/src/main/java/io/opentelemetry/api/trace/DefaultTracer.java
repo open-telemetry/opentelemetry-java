@@ -48,6 +48,11 @@ final class DefaultTracer implements Tracer {
     }
 
     @Override
+    public CloseableSpan startSpanImmediately() {
+      return CloseableSpan.noop(startSpan());
+    }
+
+    @Override
     public NoopSpanBuilder setParent(Context context) {
       if (context == null) {
         ApiUsageLogger.log("context is null");

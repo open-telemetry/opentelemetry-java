@@ -17,9 +17,11 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.CloseableSpan;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
@@ -40,6 +42,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
@@ -1049,5 +1052,22 @@ class SdkSpanBuilderTest {
               assertThat(spanBuilder.startSpan().getSpanContext().isValid()).isTrue();
             })
         .doesNotThrowAnyException();
+  }
+
+  @Test
+  void startImmediately() {
+    SpanBuilder spanBuilder = sdkTracer.spanBuilder("a-test");
+    AtomicReference<Span> seenSpan = new AtomicReference<>();
+    AtomicReference<Scope> seenScope = new AtomicReference<>();
+    try(CloseableSpan closeableSpan = spanBuilder.startSpanImmediately()){
+      Span delegate = closeableSpan.getSpan();
+      seenSpan.set(delegate);
+      seenScope.set(closeableSpan.getScope());
+      assertThat(delegate.getSpanContext().isValid()).isTrue();
+      closeableSpan.setAttribute("test", "foo");
+    }
+    Span actual = seenSpan.get();
+    assertThat(((SdkSpan)actual).toSpanData().getAttributes().get(AttributeKey.stringKey("test"))).isEqualTo("foo");
+    assertThat(seenScope.get()).isNotNull();
   }
 }

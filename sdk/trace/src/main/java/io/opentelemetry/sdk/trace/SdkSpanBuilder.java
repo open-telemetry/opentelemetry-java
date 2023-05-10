@@ -13,6 +13,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.ImmutableSpanContext;
+import io.opentelemetry.api.trace.CloseableSpan;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
@@ -20,6 +21,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributeUtil;
 import io.opentelemetry.sdk.internal.AttributesMap;
@@ -161,6 +163,12 @@ final class SdkSpanBuilder implements SpanBuilder {
     }
     startEpochNanos = unit.toNanos(startTimestamp);
     return this;
+  }
+
+  @Override
+  public CloseableSpan startSpanImmediately() {
+    Span span = startSpan();
+    return SdkCloseableSpan.create(span);
   }
 
   @Override

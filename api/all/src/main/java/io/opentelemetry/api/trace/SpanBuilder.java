@@ -339,4 +339,6 @@ public interface SpanBuilder {
    * @return the newly created {@code Span}.
    */
   Span startSpan();
+
+  CloseableSpan startSpanImmediately();
 }
