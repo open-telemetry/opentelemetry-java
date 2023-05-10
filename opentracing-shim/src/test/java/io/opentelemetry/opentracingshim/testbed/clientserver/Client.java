@@ -39,7 +39,7 @@ final class Client {
       if (convertKeysToUpperCase) {
         Message newMessage = new Message();
         for (Map.Entry<String, String> entry : message.entrySet()) {
-          newMessage.put(entry.getKey().toLowerCase(Locale.getDefault()), entry.getValue());
+          newMessage.put(entry.getKey().toUpperCase(Locale.getDefault()), entry.getValue());
         }
         message = newMessage;
       }

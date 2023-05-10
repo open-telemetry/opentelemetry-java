@@ -176,7 +176,7 @@ class SdkMeterTest {
             .setUnit("metric tonnes")
             .build();
     assertThat(longCounter).isNotNull();
-    sdkMeter.counterBuilder("testLongCounter".toLowerCase(Locale.getDefault())).build();
+    sdkMeter.counterBuilder("testLongCounter".toUpperCase(Locale.getDefault())).build();
     metricStorageLogs.assertContains("Found duplicate metric definition");
   }
 
