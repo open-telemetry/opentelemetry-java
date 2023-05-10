@@ -155,7 +155,7 @@ public final class OtlpConfigUtil {
     }
     AggregationTemporality temporality;
     try {
-      temporality = AggregationTemporality.valueOf(temporalityStr.toUpperCase(Locale.ENGLISH));
+      temporality = AggregationTemporality.valueOf(temporalityStr.toUpperCase(Locale.ROOT));
     } catch (IllegalArgumentException e) {
       throw new ConfigurationException(
           "Unrecognized aggregation temporality: " + temporalityStr, e);

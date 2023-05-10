@@ -60,7 +60,7 @@ public class AggregationUtil {
    * @throws IllegalArgumentException if the name is not recognized
    */
   public static Aggregation forName(String name) {
-    Aggregation aggregation = aggregationByName.get(name.toLowerCase(Locale.ENGLISH));
+    Aggregation aggregation = aggregationByName.get(name.toLowerCase(Locale.ROOT));
     if (aggregation == null) {
       throw new IllegalArgumentException("Unrecognized aggregation name " + name);
     }
