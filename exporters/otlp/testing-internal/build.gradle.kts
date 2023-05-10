@@ -14,7 +14,6 @@ dependencies {
   api(project(":sdk:logs-testing"))
 
   api(project(":exporters:otlp:all"))
-  api(project(":exporters:otlp:logs"))
 
   // Must be compileOnly so gRPC isn't on the classpath for non-gRPC tests.
   compileOnly("io.grpc:grpc-stub")
