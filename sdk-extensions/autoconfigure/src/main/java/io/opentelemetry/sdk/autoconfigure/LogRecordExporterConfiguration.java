@@ -38,36 +38,39 @@ class LogRecordExporterConfiguration {
           logRecordExporterCustomizer,
       List<Closeable> closeables) {
     Set<String> exporterNames = DefaultConfigProperties.getSet(config, "otel.logs.exporter");
-
-    // Default to no exporter
-    if (exporterNames.isEmpty()) {
-      exporterNames = Collections.singleton(EXPORTER_NONE);
-    }
-
     if (exporterNames.contains(EXPORTER_NONE)) {
       if (exporterNames.size() > 1) {
         throw new ConfigurationException(
             "otel.logs.exporter contains " + EXPORTER_NONE + " along with other exporters");
       }
-      return Collections.emptyMap();
+      LogRecordExporter noop = LogRecordExporter.composite();
+      LogRecordExporter customized = logRecordExporterCustomizer.apply(noop, config);
+      if (customized == noop) {
+        return Collections.emptyMap();
+      }
+      closeables.add(customized);
+      return Collections.singletonMap(EXPORTER_NONE, customized);
+    }
+
+    if (exporterNames.isEmpty()) {
+      exporterNames = Collections.singleton("otlp");
     }
 
     NamedSpiManager<LogRecordExporter> spiExportersManager =
         logRecordExporterSpiManager(config, serviceClassLoader);
 
-    Map<String, LogRecordExporter> exportersByName = new HashMap<>();
-    for (String name : exporterNames) {
-      LogRecordExporter logRecordExporter = configureExporter(name, spiExportersManager);
+    Map<String, LogRecordExporter> map = new HashMap<>();
+    for (String exporterName : exporterNames) {
+      LogRecordExporter logRecordExporter = configureExporter(exporterName, spiExportersManager);
       closeables.add(logRecordExporter);
       LogRecordExporter customizedLogRecordExporter =
           logRecordExporterCustomizer.apply(logRecordExporter, config);
       if (customizedLogRecordExporter != logRecordExporter) {
         closeables.add(customizedLogRecordExporter);
       }
-      exportersByName.put(name, customizedLogRecordExporter);
+      map.put(exporterName, customizedLogRecordExporter);
     }
-
-    return Collections.unmodifiableMap(exportersByName);
+    return Collections.unmodifiableMap(map);
   }
 
   // Visible for testing

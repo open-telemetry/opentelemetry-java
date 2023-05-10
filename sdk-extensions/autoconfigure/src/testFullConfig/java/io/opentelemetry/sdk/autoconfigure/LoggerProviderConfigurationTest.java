@@ -37,13 +37,12 @@ class LoggerProviderConfigurationTest {
 
   @Test
   void configureLoggerProvider() {
-    Map<String, String> properties = Collections.singletonMap("otel.logs.exporter", "otlp");
     List<Closeable> closeables = new ArrayList<>();
 
     SdkLoggerProviderBuilder builder = SdkLoggerProvider.builder();
     LoggerProviderConfiguration.configureLoggerProvider(
         builder,
-        DefaultConfigProperties.createForTest(properties),
+        DefaultConfigProperties.createForTest(Collections.emptyMap()),
         LoggerProviderConfiguration.class.getClassLoader(),
         MeterProvider.noop(),
         (a, unused) -> a,

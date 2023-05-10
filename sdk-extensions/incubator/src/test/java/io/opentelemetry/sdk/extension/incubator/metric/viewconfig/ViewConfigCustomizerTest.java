@@ -36,6 +36,8 @@ class ViewConfigCustomizerTest {
                     "none",
                     "otel.metrics.exporter",
                     "none",
+                    "otel.logs.exporter",
+                    "none",
                     "otel.experimental.metrics.view.config",
                     "classpath:/view-config-customizer-test.yaml"))
         .addMeterProviderCustomizer(
