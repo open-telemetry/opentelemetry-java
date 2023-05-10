@@ -18,11 +18,13 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 
 /** Test assertions for {@link LogRecordData}. */
-public class LogRecordDataAssert extends AbstractAssert<LogRecordDataAssert, LogRecordData> {
-  protected LogRecordDataAssert(LogRecordData actual) {
+public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAssert, LogRecordData> {
+
+  LogRecordDataAssert(@Nullable LogRecordData actual) {
     super(actual, LogRecordDataAssert.class);
   }
 

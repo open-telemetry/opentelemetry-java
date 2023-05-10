@@ -19,7 +19,6 @@ dependencies {
   implementation("com.fasterxml.jackson.core:jackson-core")
 
   testImplementation(project(":sdk:testing"))
-  testImplementation(project(":sdk:logs-testing"))
 
   testImplementation("org.skyscreamer:jsonassert")
 }
