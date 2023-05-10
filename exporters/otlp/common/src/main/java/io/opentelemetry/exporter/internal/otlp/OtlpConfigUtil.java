@@ -22,6 +22,7 @@ import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -154,7 +155,7 @@ public final class OtlpConfigUtil {
     }
     AggregationTemporality temporality;
     try {
-      temporality = AggregationTemporality.valueOf(temporalityStr.toUpperCase());
+      temporality = AggregationTemporality.valueOf(temporalityStr.toUpperCase(Locale.ENGLISH));
     } catch (IllegalArgumentException e) {
       throw new ConfigurationException(
           "Unrecognized aggregation temporality: " + temporalityStr, e);

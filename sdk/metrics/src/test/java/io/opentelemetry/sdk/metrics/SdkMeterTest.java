@@ -20,6 +20,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
+import java.util.Locale;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -175,7 +176,7 @@ class SdkMeterTest {
             .setUnit("metric tonnes")
             .build();
     assertThat(longCounter).isNotNull();
-    sdkMeter.counterBuilder("testLongCounter".toUpperCase()).build();
+    sdkMeter.counterBuilder("testLongCounter".toLowerCase(Locale.getDefault())).build();
     metricStorageLogs.assertContains("Found duplicate metric definition");
   }
 
@@ -213,7 +214,7 @@ class SdkMeterTest {
             .build();
     assertThat(longUpDownCounter).isNotNull();
     assertThat(metricStorageLogs.getEvents()).isEmpty();
-    sdkMeter.upDownCounterBuilder("testLongUpDownCounter".toUpperCase()).build();
+    sdkMeter.upDownCounterBuilder("testLongUpDownCounter".toUpperCase(Locale.getDefault())).build();
     metricStorageLogs.assertContains("Found duplicate metric definition");
   }
 
@@ -255,7 +256,10 @@ class SdkMeterTest {
     assertThat(longHistogram).isNotNull();
     assertThat(metricStorageLogs.getEvents()).isEmpty();
 
-    sdkMeter.histogramBuilder("testLongValueRecorder".toUpperCase()).ofLongs().build();
+    sdkMeter
+        .histogramBuilder("testLongValueRecorder".toUpperCase(Locale.getDefault()))
+        .ofLongs()
+        .build();
     metricStorageLogs.assertContains("Found duplicate metric definition");
   }
 
@@ -283,7 +287,10 @@ class SdkMeterTest {
         .buildWithCallback(obs -> {});
     assertThat(metricStorageLogs.getEvents()).isEmpty();
 
-    sdkMeter.gaugeBuilder("longValueObserver".toUpperCase()).ofLongs().buildWithCallback(x -> {});
+    sdkMeter
+        .gaugeBuilder("longValueObserver".toUpperCase(Locale.getDefault()))
+        .ofLongs()
+        .buildWithCallback(x -> {});
     metricStorageLogs.assertContains("Found duplicate metric definition");
   }
 
@@ -309,7 +316,9 @@ class SdkMeterTest {
         .buildWithCallback(x -> {});
     assertThat(metricStorageLogs.getEvents()).isEmpty();
 
-    sdkMeter.counterBuilder("testLongSumObserver".toUpperCase()).buildWithCallback(x -> {});
+    sdkMeter
+        .counterBuilder("testLongSumObserver".toUpperCase(Locale.getDefault()))
+        .buildWithCallback(x -> {});
     metricStorageLogs.assertContains("Found duplicate metric definition");
   }
 
@@ -336,7 +345,7 @@ class SdkMeterTest {
     assertThat(metricStorageLogs.getEvents()).isEmpty();
 
     sdkMeter
-        .upDownCounterBuilder("testLongUpDownSumObserver".toUpperCase())
+        .upDownCounterBuilder("testLongUpDownSumObserver".toUpperCase(Locale.getDefault()))
         .buildWithCallback(x -> {});
     metricStorageLogs.assertContains("Found duplicate metric definition");
   }

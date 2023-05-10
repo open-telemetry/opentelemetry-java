@@ -11,6 +11,7 @@ import io.opentracing.Tracer;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.propagation.TextMapInjectAdapter;
 import io.opentracing.tag.Tags;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -38,7 +39,7 @@ final class Client {
       if (convertKeysToUpperCase) {
         Message newMessage = new Message();
         for (Map.Entry<String, String> entry : message.entrySet()) {
-          newMessage.put(entry.getKey().toUpperCase(), entry.getValue());
+          newMessage.put(entry.getKey().toLowerCase(Locale.getDefault()), entry.getValue());
         }
         message = newMessage;
       }
