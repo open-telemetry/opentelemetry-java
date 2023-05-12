@@ -13,7 +13,11 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.Collection;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** Exports logs using OTLP via HTTP, using OpenTelemetry's protobuf model. */
+/**
+ * Exports logs using OTLP via HTTP, using OpenTelemetry's protobuf model.
+ *
+ * @since 1.27.0
+ */
 @ThreadSafe
 public final class OtlpHttpLogRecordExporter implements LogRecordExporter {
 

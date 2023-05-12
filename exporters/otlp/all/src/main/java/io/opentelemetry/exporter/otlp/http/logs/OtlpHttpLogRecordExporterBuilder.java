@@ -18,7 +18,11 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
-/** Builder utility for {@link OtlpHttpLogRecordExporter}. */
+/**
+ * Builder utility for {@link OtlpHttpLogRecordExporter}.
+ *
+ * @since 1.27.0
+ */
 public final class OtlpHttpLogRecordExporterBuilder {
 
   private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/logs";
