@@ -16,5 +16,4 @@ dependencies {
   implementation(project(":sdk-extensions:autoconfigure-spi"))
 
   testImplementation(project(":sdk:testing"))
-  testImplementation(project(":sdk:logs-testing"))
 }

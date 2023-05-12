@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.sdk.metrics.Aggregation;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -59,7 +60,7 @@ public class AggregationUtil {
    * @throws IllegalArgumentException if the name is not recognized
    */
   public static Aggregation forName(String name) {
-    Aggregation aggregation = aggregationByName.get(name.toLowerCase());
+    Aggregation aggregation = aggregationByName.get(name.toLowerCase(Locale.ROOT));
     if (aggregation == null) {
       throw new IllegalArgumentException("Unrecognized aggregation name " + name);
     }

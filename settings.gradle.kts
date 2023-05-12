@@ -4,7 +4,7 @@ pluginManagement {
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("com.gradle.enterprise") version "3.13.2"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
-    id("org.graalvm.buildtools.native") version "0.9.21"
+    id("org.graalvm.buildtools.native") version "0.9.22"
   }
 }
 
@@ -52,7 +52,6 @@ include(":perf-harness")
 include(":sdk:all")
 include(":sdk:common")
 include(":sdk:logs")
-include(":sdk:logs-testing")
 include(":sdk:metrics")
 include(":sdk:testing")
 include(":sdk:trace")
