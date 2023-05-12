@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.logs;
 
-import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.AttributeKey;

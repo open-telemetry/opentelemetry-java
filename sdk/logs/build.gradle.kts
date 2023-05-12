@@ -15,7 +15,7 @@ dependencies {
 
   implementation(project(":api:events"))
 
-  testImplementation(project(":sdk:logs-testing"))
+  testImplementation(project(":sdk:testing"))
 
   testImplementation("org.awaitility:awaitility")
 

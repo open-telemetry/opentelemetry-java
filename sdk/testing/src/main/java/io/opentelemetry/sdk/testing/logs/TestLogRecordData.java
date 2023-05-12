@@ -17,7 +17,11 @@ import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.Immutable;
 
-/** Immutable representation of {@link LogRecordData}. */
+/**
+ * Immutable representation of {@link LogRecordData}.
+ *
+ * @since 1.27.0
+ */
 @Immutable
 @AutoValue
 public abstract class TestLogRecordData implements LogRecordData {

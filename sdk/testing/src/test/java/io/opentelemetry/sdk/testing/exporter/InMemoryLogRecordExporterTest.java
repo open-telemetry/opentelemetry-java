@@ -6,13 +6,12 @@
 package io.opentelemetry.sdk.testing.exporter;
 
 import static io.opentelemetry.api.logs.Severity.DEBUG;
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
-import io.opentelemetry.sdk.testing.assertj.LogAssertions;
 import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
 import java.util.Collections;
 import java.util.List;
@@ -50,9 +49,9 @@ class InMemoryLogRecordExporterTest {
     List<LogRecordData> logItems = exporter.getFinishedLogRecordItems();
     assertThat(logItems).isNotNull();
     assertThat(logItems.size()).isEqualTo(3);
-    LogAssertions.assertThat(logItems.get(0)).hasBody("message 1");
-    LogAssertions.assertThat(logItems.get(1)).hasBody("message 2");
-    LogAssertions.assertThat(logItems.get(2)).hasBody("message 3");
+    assertThat(logItems.get(0)).hasBody("message 1");
+    assertThat(logItems.get(1)).hasBody("message 2");
+    assertThat(logItems.get(2)).hasBody("message 3");
   }
 
   @Test

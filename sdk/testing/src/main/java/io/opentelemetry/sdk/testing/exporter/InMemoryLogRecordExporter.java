@@ -17,6 +17,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * A {@link LogRecordExporter} implementation that can be used to test OpenTelemetry integration.
+ *
+ * @since 1.27.0
  */
 public final class InMemoryLogRecordExporter implements LogRecordExporter {
   private final Queue<LogRecordData> finishedLogItems = new ConcurrentLinkedQueue<>();

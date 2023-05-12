@@ -11,7 +11,6 @@ dependencies {
   api(project(":sdk:metrics"))
   api(project(":sdk:trace"))
   api(project(":sdk:testing"))
-  api(project(":sdk:logs-testing"))
 
   api(project(":exporters:otlp:all"))
   api(project(":exporters:otlp:logs"))

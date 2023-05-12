@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.testing.assertj;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -53,6 +54,15 @@ public final class OpenTelemetryAssertions extends Assertions {
   /** Returns an assertion for {@link EventDataAssert}. */
   public static EventDataAssert assertThat(@Nullable EventData eventData) {
     return new EventDataAssert(eventData);
+  }
+
+  /**
+   * Returns an assertion for {@link LogRecordData}.
+   *
+   * @since 1.27.0
+   */
+  public static LogRecordDataAssert assertThat(@Nullable LogRecordData log) {
+    return new LogRecordDataAssert(log);
   }
 
   /**

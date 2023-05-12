@@ -19,7 +19,6 @@ dependencies {
   testImplementation("io.grpc:grpc-stub")
 
   testImplementation(project(":exporters:otlp:testing-internal"))
-  testImplementation(project(":sdk:logs-testing"))
 
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("com.google.api.grpc:proto-google-common-protos")
@@ -31,7 +30,6 @@ testing {
     val testGrpcNetty by registering(JvmTestSuite::class) {
       dependencies {
         implementation(project(":exporters:otlp:testing-internal"))
-        implementation(project(":sdk:logs-testing"))
 
         implementation("io.grpc:grpc-netty")
         implementation("io.grpc:grpc-stub")
@@ -40,7 +38,6 @@ testing {
     val testGrpcNettyShaded by registering(JvmTestSuite::class) {
       dependencies {
         implementation(project(":exporters:otlp:testing-internal"))
-        implementation(project(":sdk:logs-testing"))
 
         implementation("io.grpc:grpc-netty-shaded")
         implementation("io.grpc:grpc-stub")
@@ -49,7 +46,6 @@ testing {
     val testGrpcOkhttp by registering(JvmTestSuite::class) {
       dependencies {
         implementation(project(":exporters:otlp:testing-internal"))
-        implementation(project(":sdk:logs-testing"))
 
         implementation("io.grpc:grpc-okhttp")
         implementation("io.grpc:grpc-stub")
