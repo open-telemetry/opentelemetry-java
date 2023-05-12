@@ -18,7 +18,8 @@ import java.util.List;
 @SuppressWarnings("unused")
 public final class ResourceAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.19.0";
+  public static final String SCHEMA_URL =
+      "https://opentelemetry.io/schemas/c5f7a17b341a92055e7518067f6ed97426f5d0fe";
 
   /**
    * Array of brand name and version separated by a space
@@ -244,6 +245,24 @@ public final class ResourceAttributes {
   public static final AttributeKey<List<String>> AWS_LOG_STREAM_ARNS =
       stringArrayKey("aws.log.stream.arns");
 
+  /**
+   * The name of the Cloud Run <a
+   * href="https://cloud.google.com/run/docs/managing/job-executions">execution</a> being run for
+   * the Job, as set by the <a
+   * href="https://cloud.google.com/run/docs/container-contract#jobs-env-vars">{@code
+   * CLOUD_RUN_EXECUTION}</a> environment variable.
+   */
+  public static final AttributeKey<String> GCP_CLOUD_RUN_JOB_EXECUTION =
+      stringKey("gcp.cloud_run.job.execution");
+
+  /**
+   * The index for a task within an execution as provided by the <a
+   * href="https://cloud.google.com/run/docs/container-contract#jobs-env-vars">{@code
+   * CLOUD_RUN_TASK_INDEX}</a> environment variable.
+   */
+  public static final AttributeKey<Long> GCP_CLOUD_RUN_JOB_TASK_INDEX =
+      longKey("gcp.cloud_run.job.task_index");
+
   /** Time and date the release was created */
   public static final AttributeKey<String> HEROKU_RELEASE_CREATION_TIMESTAMP =
       stringKey("heroku.release.creation_timestamp");
@@ -372,7 +391,7 @@ public final class ResourceAttributes {
    *   <li><strong>AWS Lambda:</strong> The <a
    *       href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-versions.html">function
    *       version</a> (an integer represented as a decimal string).
-   *   <li><strong>Google Cloud Run:</strong> The <a
+   *   <li><strong>Google Cloud Run (Services):</strong> The <a
    *       href="https://cloud.google.com/run/docs/managing/revisions">revision</a> (i.e., the
    *       function name plus the revision suffix).
    *   <li><strong>Google Cloud Functions:</strong> The value of the <a
@@ -431,17 +450,45 @@ public final class ResourceAttributes {
   /** Name of the VM image or OS install the host was instantiated from. */
   public static final AttributeKey<String> HOST_IMAGE_NAME = stringKey("host.image.name");
 
-  /** VM image ID. For Cloud, this value is from the provider. */
+  /** VM image ID or host OS image ID. For Cloud, this value is from the provider. */
   public static final AttributeKey<String> HOST_IMAGE_ID = stringKey("host.image.id");
 
   /**
-   * The version string of the VM image as defined in <a href="README.md#version-attributes">Version
-   * Attributes</a>.
+   * The version string of the VM image or host OS as defined in <a
+   * href="README.md#version-attributes">Version Attributes</a>.
    */
   public static final AttributeKey<String> HOST_IMAGE_VERSION = stringKey("host.image.version");
 
   /** The name of the cluster. */
   public static final AttributeKey<String> K8S_CLUSTER_NAME = stringKey("k8s.cluster.name");
+
+  /**
+   * A pseudo-ID for the cluster, set to the UID of the {@code kube-system} namespace.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>K8s does not have support for obtaining a cluster ID. If this is ever added, we will
+   *       recommend collecting the {@code k8s.cluster.uid} through the official APIs. In the
+   *       meantime, we are able to use the {@code uid} of the {@code kube-system} namespace as a
+   *       proxy for cluster ID. Read on for the rationale.
+   *   <li>Every object created in a K8s cluster is assigned a distinct UID. The {@code kube-system}
+   *       namespace is used by Kubernetes itself and will exist for the lifetime of the cluster.
+   *       Using the {@code uid} of the {@code kube-system} namespace is a reasonable proxy for the
+   *       K8s ClusterID as it will only change if the cluster is rebuilt. Furthermore, Kubernetes
+   *       UIDs are UUIDs as standardized by <a
+   *       href="https://www.itu.int/ITU-T/studygroups/com17/oid.html">ISO/IEC 9834-8 and ITU-T
+   *       X.667</a>. Which states:
+   *       <blockquote>
+   *   <li>If generated according to one of the mechanisms defined in Rec.
+   *       </blockquote>
+   *   <li>ITU-T X.667 | ISO/IEC 9834-8, a UUID is either guaranteed to be different from all other
+   *       UUIDs generated before 3603 A.D., or is extremely likely to be different (depending on
+   *       the mechanism chosen).
+   *   <li>Therefore, UIDs between clusters should be extremely unlikely to conflict.
+   * </ul>
+   */
+  public static final AttributeKey<String> K8S_CLUSTER_UID = stringKey("k8s.cluster.uid");
 
   /** The name of the Node. */
   public static final AttributeKey<String> K8S_NODE_NAME = stringKey("k8s.node.name");
@@ -646,7 +693,21 @@ public final class ResourceAttributes {
   /** The version string of the service API or implementation. */
   public static final AttributeKey<String> SERVICE_VERSION = stringKey("service.version");
 
-  /** The name of the telemetry SDK as defined above. */
+  /**
+   * The name of the telemetry SDK as defined above.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>The OpenTelemetry SDK MUST set the {@code telemetry.sdk.name} attribute to {@code
+   *       opentelemetry}. If another SDK, like a fork or a vendor-provided implementation, is used,
+   *       this SDK MUST set the {@code telemetry.sdk.name} attribute to the fully-qualified class
+   *       or module name of this SDK's main entry point or another suitable identifier depending on
+   *       the language. The identifier {@code opentelemetry} is reserved and MUST NOT be used in
+   *       this case. All custom identifiers SHOULD be stable across different versions of an
+   *       implementation.
+   * </ul>
+   */
   public static final AttributeKey<String> TELEMETRY_SDK_NAME = stringKey("telemetry.sdk.name");
 
   /** The language of the telemetry SDK. */
@@ -846,10 +907,12 @@ public final class ResourceAttributes {
     public static final String PYTHON = "python";
     /** ruby. */
     public static final String RUBY = "ruby";
-    /** webjs. */
-    public static final String WEBJS = "webjs";
+    /** rust. */
+    public static final String RUST = "rust";
     /** swift. */
     public static final String SWIFT = "swift";
+    /** webjs. */
+    public static final String WEBJS = "webjs";
 
     private TelemetrySdkLanguageValues() {}
   }
