@@ -56,7 +56,11 @@ public final class OpenTelemetryAssertions extends Assertions {
     return new EventDataAssert(eventData);
   }
 
-  /** Returns an assertion for {@link LogRecordData}. */
+  /**
+   * Returns an assertion for {@link LogRecordData}.
+   *
+   * @since 1.27.0
+   */
   public static LogRecordDataAssert assertThat(@Nullable LogRecordData log) {
     return new LogRecordDataAssert(log);
   }

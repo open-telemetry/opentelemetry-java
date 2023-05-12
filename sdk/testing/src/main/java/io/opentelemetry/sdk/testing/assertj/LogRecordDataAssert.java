@@ -21,7 +21,11 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 
-/** Test assertions for {@link LogRecordData}. */
+/**
+ * Test assertions for {@link LogRecordData}.
+ *
+ * @since 1.27.0
+ */
 public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAssert, LogRecordData> {
 
   LogRecordDataAssert(@Nullable LogRecordData actual) {
