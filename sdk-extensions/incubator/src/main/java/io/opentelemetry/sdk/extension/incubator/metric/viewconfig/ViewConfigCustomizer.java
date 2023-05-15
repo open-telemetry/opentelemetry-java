@@ -29,6 +29,7 @@ public final class ViewConfigCustomizer implements AutoConfigurationCustomizerPr
       SdkMeterProviderBuilder meterProviderBuilder, ConfigProperties configProperties) {
     List<String> configFileLocations =
         configProperties.getList("otel.experimental.metrics.view.config");
+    boolean additionAttrsEnable = configProperties.getBoolean("otel.experimental.metrics.view.additional.enable",true);
     for (String configFileLocation : configFileLocations) {
       if (configFileLocation.startsWith("classpath:")) {
         String classpathLocation = configFileLocation.substring("classpath:".length());
@@ -41,7 +42,12 @@ public final class ViewConfigCustomizer implements AutoConfigurationCustomizerPr
                     + " not found on classpath of classloader "
                     + ViewConfigCustomizer.class.getClassLoader().getClass().getName());
           }
-          ViewConfig.registerViews(meterProviderBuilder, inputStream);
+          if (additionAttrsEnable) {
+            ViewConfig.registerViews(meterProviderBuilder,inputStream,configProperties);
+          } else {
+            ViewConfig.registerViews(meterProviderBuilder, inputStream);
+          }
+
         } catch (IOException e) {
           throw new ConfigurationException(
               "An error occurred reading view config resource on classpath: " + classpathLocation,
@@ -49,7 +55,11 @@ public final class ViewConfigCustomizer implements AutoConfigurationCustomizerPr
         }
       } else {
         try (FileInputStream fileInputStream = new FileInputStream(configFileLocation)) {
-          ViewConfig.registerViews(meterProviderBuilder, fileInputStream);
+          if (additionAttrsEnable) {
+            ViewConfig.registerViews(meterProviderBuilder,fileInputStream,configProperties);
+          } else {
+            ViewConfig.registerViews(meterProviderBuilder, fileInputStream);
+          }
         } catch (FileNotFoundException e) {
           throw new ConfigurationException("View config file not found: " + configFileLocation, e);
         } catch (IOException e) {

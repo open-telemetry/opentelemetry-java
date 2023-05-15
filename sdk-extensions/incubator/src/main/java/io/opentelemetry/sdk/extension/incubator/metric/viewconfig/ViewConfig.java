@@ -8,7 +8,11 @@ package io.opentelemetry.sdk.extension.incubator.metric.viewconfig;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricAttributesProvider;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder;
@@ -16,7 +20,9 @@ import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.ViewBuilder;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
+import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.snakeyaml.engine.v2.api.Load;
@@ -89,9 +96,23 @@ public final class ViewConfig {
     for (ViewConfigSpecification viewConfigSpec : viewConfigSpecs) {
       meterProviderBuilder.registerView(
           toInstrumentSelector(viewConfigSpec.getSelectorSpecification()),
-          toView(viewConfigSpec.getViewSpecification()));
+          toView(viewConfigSpec.getViewSpecification(),null));
     }
   }
+
+  public static void registerViews(
+      SdkMeterProviderBuilder meterProviderBuilder, InputStream inputStream,
+      ConfigProperties configProperties) {
+    List<ViewConfigSpecification> viewConfigSpecs = loadViewConfig(inputStream);
+
+    for (ViewConfigSpecification viewConfigSpec : viewConfigSpecs) {
+      meterProviderBuilder.registerView(
+          toInstrumentSelector(viewConfigSpec.getSelectorSpecification()),
+          toView(viewConfigSpec.getViewSpecification(),configProperties));
+    }
+  }
+
+
 
   // Visible for testing
   @SuppressWarnings("unchecked")
@@ -168,6 +189,41 @@ public final class ViewConfig {
   // Visible for testing
   static View toView(ViewSpecification viewSpec) {
     ViewBuilder builder = View.builder();
+    String name = viewSpec.getName();
+    if (name != null) {
+      builder.setName(name);
+    }
+    String description = viewSpec.getDescription();
+    if (description != null) {
+      builder.setDescription(description);
+    }
+    String aggregation = viewSpec.getAggregation();
+    if (aggregation != null) {
+      Map<String, Object> aggregationArgs =
+          viewSpec.getAggregationArgs() == null
+              ? Collections.emptyMap()
+              : viewSpec.getAggregationArgs();
+      builder.setAggregation(toAggregation(aggregation, aggregationArgs));
+    }
+    List<String> attributeKeys = viewSpec.getAttributeKeys();
+    if (attributeKeys != null) {
+      Set<String> keySet = new HashSet<>(attributeKeys);
+      builder.setAttributeFilter(keySet::contains);
+    }
+    return builder.build();
+  }
+
+  static View toView(ViewSpecification viewSpec,@Nullable ConfigProperties configProperties) {
+    ViewBuilder builder = View.builder();
+    // add additional attributes
+    if (configProperties != null) {
+      AttributesBuilder attributesBuilder = Attributes.builder();
+      for (ConfigurableMetricAttributesProvider provider :  ServiceLoader.load(
+          ConfigurableMetricAttributesProvider.class)){
+        attributesBuilder.putAll(provider.addCustomAttributes(configProperties));
+      }
+      SdkMeterProviderUtil.appendAdditionalAttributes(builder, AttributesProcessor.append(attributesBuilder.build()));
+    }
     String name = viewSpec.getName();
     if (name != null) {
       builder.setName(name);
