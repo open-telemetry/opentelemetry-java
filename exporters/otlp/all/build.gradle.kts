@@ -13,6 +13,7 @@ base.archivesName.set("opentelemetry-exporter-otlp")
 dependencies {
   api(project(":sdk:trace"))
   api(project(":sdk:metrics"))
+  api(project(":sdk:logs"))
 
   implementation(project(":exporters:otlp:common"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))

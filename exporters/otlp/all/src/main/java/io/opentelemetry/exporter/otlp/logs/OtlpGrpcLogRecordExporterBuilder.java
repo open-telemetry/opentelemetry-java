@@ -21,7 +21,11 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
-/** Builder for {@link OtlpGrpcLogRecordExporter}. */
+/**
+ * Builder for {@link OtlpGrpcLogRecordExporter}.
+ *
+ * @since 1.27.0
+ */
 public final class OtlpGrpcLogRecordExporterBuilder {
 
   private static final String GRPC_SERVICE_NAME =

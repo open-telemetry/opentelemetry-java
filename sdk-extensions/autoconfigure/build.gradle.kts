@@ -58,7 +58,6 @@ testing {
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:logging-otlp"))
         implementation(project(":exporters:otlp:all"))
-        implementation(project(":exporters:otlp:logs"))
         implementation(project(":exporters:otlp:common"))
         implementation(project(":exporters:prometheus"))
         implementation(project(":exporters:zipkin"))

@@ -9,7 +9,6 @@ dependencies {
   api("org.testcontainers:junit-jupiter")
 
   implementation(project(":exporters:otlp:all"))
-  implementation(project(":exporters:otlp:logs"))
   implementation(project(":api:events"))
   implementation(project(":semconv"))
 

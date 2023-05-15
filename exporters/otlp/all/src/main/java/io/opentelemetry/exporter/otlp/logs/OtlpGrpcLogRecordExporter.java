@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.http.logs;
+package io.opentelemetry.exporter.otlp.logs;
 
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -13,25 +13,25 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.Collection;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** Exports logs using OTLP via HTTP, using OpenTelemetry's protobuf model. */
+/**
+ * Exports logs using OTLP via gRPC, using OpenTelemetry's protobuf model.
+ *
+ * @since 1.27.0
+ */
 @ThreadSafe
-public final class OtlpHttpLogRecordExporter implements LogRecordExporter {
+public final class OtlpGrpcLogRecordExporter implements LogRecordExporter {
 
-  private final OkHttpExporter<LogsRequestMarshaler> delegate;
-
-  OtlpHttpLogRecordExporter(OkHttpExporter<LogsRequestMarshaler> delegate) {
-    this.delegate = delegate;
-  }
+  private final GrpcExporter<LogsRequestMarshaler> delegate;
 
   /**
-   * Returns a new {@link OtlpHttpLogRecordExporter} using the default values.
+   * Returns a new {@link OtlpGrpcLogRecordExporter} using the default values.
    *
    * <p>To load configuration values from environment variables and system properties, use <a
    * href="https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure">opentelemetry-sdk-extension-autoconfigure</a>.
    *
-   * @return a new {@link OtlpHttpLogRecordExporter} instance.
+   * @return a new {@link OtlpGrpcLogRecordExporter} instance.
    */
-  public static OtlpHttpLogRecordExporter getDefault() {
+  public static OtlpGrpcLogRecordExporter getDefault() {
     return builder().build();
   }
 
@@ -40,20 +40,24 @@ public final class OtlpHttpLogRecordExporter implements LogRecordExporter {
    *
    * @return a new builder instance for this exporter.
    */
-  public static OtlpHttpLogRecordExporterBuilder builder() {
-    return new OtlpHttpLogRecordExporterBuilder();
+  public static OtlpGrpcLogRecordExporterBuilder builder() {
+    return new OtlpGrpcLogRecordExporterBuilder();
+  }
+
+  OtlpGrpcLogRecordExporter(GrpcExporter<LogsRequestMarshaler> delegate) {
+    this.delegate = delegate;
   }
 
   /**
    * Submits all the given logs in a single batch to the OpenTelemetry collector.
    *
-   * @param logs the list of sampled Logs to be exported.
+   * @param logs the list of sampled logs to be exported.
    * @return the result of the operation
    */
   @Override
   public CompletableResultCode export(Collection<LogRecordData> logs) {
-    LogsRequestMarshaler exportRequest = LogsRequestMarshaler.create(logs);
-    return delegate.export(exportRequest, logs.size());
+    LogsRequestMarshaler request = LogsRequestMarshaler.create(logs);
+    return delegate.export(request, logs.size());
   }
 
   @Override
@@ -61,7 +65,10 @@ public final class OtlpHttpLogRecordExporter implements LogRecordExporter {
     return CompletableResultCode.ofSuccess();
   }
 
-  /** Shutdown the exporter. */
+  /**
+   * Initiates an orderly shutdown in which preexisting calls continue but new calls are immediately
+   * cancelled.
+   */
   @Override
   public CompletableResultCode shutdown() {
     return delegate.shutdown();
