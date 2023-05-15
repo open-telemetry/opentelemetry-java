@@ -69,8 +69,9 @@ public final class SdkMeterProviderUtil {
     appendFilteredBaggageAttributes(viewBuilder, StringPredicates.ALL);
   }
 
-  public static void appendAdditionalAttributes(ViewBuilder viewBuilder,AttributesProcessor attributesProcessor) {
-    addAttributesProcessor(viewBuilder,attributesProcessor);
+  public static void appendAdditionalAttributes(
+      ViewBuilder viewBuilder, AttributesProcessor attributesProcessor) {
+    addAttributesProcessor(viewBuilder, attributesProcessor);
   }
 
   private static void addAttributesProcessor(

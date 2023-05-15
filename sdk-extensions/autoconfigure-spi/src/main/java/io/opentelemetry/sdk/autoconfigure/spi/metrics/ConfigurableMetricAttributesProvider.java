@@ -9,14 +9,11 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 
 /**
- * A service provider interface (SPI) for providing additional attributes that can be used with the View AttributeProcessor.
- *
+ * A service provider interface (SPI) for providing additional attributes that can be used with the
+ * View AttributeProcessor.
  */
 public interface ConfigurableMetricAttributesProvider {
 
-  /**
-   * Returns a {@link Attributes} that can be added to OpenTelemetry view AttributeProcessor
-   */
+  /** Returns a {@link Attributes} that can be added to OpenTelemetry view AttributeProcessor */
   Attributes addCustomAttributes(ConfigProperties config);
-
 }
