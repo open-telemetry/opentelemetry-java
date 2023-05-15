@@ -103,7 +103,7 @@ public interface OpenTelemetry {
   }
 
   /**
-   * Creates a {@link MeterBuilder} for a named {@link Tracer} instance.
+   * Creates a {@link MeterBuilder} for a named {@link Meter} instance.
    *
    * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
    *     the instrumentation library, package, or fully qualified class name. Must not be null.
