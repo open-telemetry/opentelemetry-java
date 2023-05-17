@@ -442,7 +442,7 @@ abstract class OtlpExporterIntegrationTest {
                     .setKey("key")
                     .setValue(AnyValue.newBuilder().setStringValue("value").build())
                     .build()));
-    assertThat(dataPoint.getExemplarsCount()).isGreaterThanOrEqualTo(0);
+    assertThat(dataPoint.getExemplarsCount()).isEqualTo(1);
   }
 
   @ParameterizedTest
