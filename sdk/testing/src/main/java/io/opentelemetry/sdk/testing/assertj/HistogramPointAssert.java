@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.testing.assertj;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
@@ -69,10 +70,7 @@ public final class HistogramPointAssert
    * @param boundaries The set of bucket boundaries in the same order as the expected collection.
    */
   public HistogramPointAssert hasBucketBoundaries(double... boundaries) {
-    isNotNull();
-    Double[] bigBoundaries = Arrays.stream(boundaries).boxed().toArray(Double[]::new);
-    Assertions.assertThat(actual.getBoundaries()).as("boundaries").containsExactly(bigBoundaries);
-    return this;
+    return hasBucketBoundaries(boundaries, within(0.000_001));
   }
 
   /**
