@@ -51,10 +51,10 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
   public abstract OpenTelemetrySdk getOpenTelemetrySdk();
 
   /** Returns the {@link Resource} that was auto-configured. */
-  public abstract Resource getResource();
+  abstract Resource getResource();
 
   /** Returns the {@link ConfigProperties} used for auto-configuration. */
-  public abstract ConfigProperties getConfig();
+  abstract ConfigProperties getConfig();
 
   AutoConfiguredOpenTelemetrySdk() {}
 }
