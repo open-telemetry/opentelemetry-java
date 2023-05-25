@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.common;
 import io.opentelemetry.sdk.internal.JavaVersionSpecific;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** A {@link Clock} that uses {@link System#currentTimeMillis()} and {@link System#nanoTime()}. */
+/** A {@link Clock} that uses {@link JavaVersionSpecific#currentTimeNanos()} and {@link System#nanoTime()}. */
 @ThreadSafe
 final class SystemClock implements Clock {
 
@@ -17,9 +17,9 @@ final class SystemClock implements Clock {
   private SystemClock() {}
 
   /**
-   * Returns a {@code MillisClock}.
+   * Returns a {@code SystemClock}.
    *
-   * @return a {@code MillisClock}.
+   * @return a {@code SystemClock}.
    */
   static Clock getInstance() {
     return INSTANCE;
