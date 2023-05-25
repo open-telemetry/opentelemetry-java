@@ -45,6 +45,7 @@ final class AdaptingIntegerArray {
     INT,
     LONG
   }
+
   /** The current byte size of integer cells in this array. */
   private ArrayCellSize cellSize;
 
@@ -160,6 +161,7 @@ final class AdaptingIntegerArray {
     }
     return length;
   }
+
   /** Zeroes out all counts in this array. */
   @SuppressWarnings("NullAway")
   void clear() {
@@ -202,6 +204,7 @@ final class AdaptingIntegerArray {
     this.intBacking = intBacking;
     this.shortBacking = null;
   }
+
   /** convert from int => long backing array. */
   @SuppressWarnings("NullAway")
   private void resizeToLong() {
