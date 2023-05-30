@@ -38,7 +38,7 @@ dependencies {
   implementation("com.google.guava:guava:32.0.0-jre")
   implementation("com.squareup:javapoet:1.13.0")
   implementation("com.squareup.wire:wire-compiler:4.6.2")
-  implementation("com.squareup.wire:wire-gradle-plugin:4.6.2")
+  implementation("com.squareup.wire:wire-gradle-plugin:4.7.0")
   implementation("gradle.plugin.com.google.protobuf:protobuf-gradle-plugin:0.8.18")
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.0")
   implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.1")
