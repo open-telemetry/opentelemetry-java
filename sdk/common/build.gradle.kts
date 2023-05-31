@@ -1,5 +1,4 @@
 import io.opentelemetry.gradle.OtelVersionClassPlugin
-import kotlin.script.experimental.jvm.JvmScriptEvaluationConfigurationBuilder.Companion.invoke
 
 plugins {
   id("otel.java-conventions")
