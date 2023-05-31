@@ -12,7 +12,7 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.15.1",
+  "com.fasterxml.jackson:jackson-bom:2.15.2",
   "com.google.guava:guava-bom:32.0.0-jre",
   "com.google.protobuf:protobuf-bom:3.23.1",
   "com.linecorp.armeria:armeria-bom:1.23.1",
