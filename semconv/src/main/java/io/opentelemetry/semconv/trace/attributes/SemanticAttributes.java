@@ -1134,14 +1134,19 @@ public final class SemanticAttributes {
   public static final class HttpFlavorValues {
     /** HTTP/1.0. */
     public static final String HTTP_1_0 = "1.0";
+
     /** HTTP/1.1. */
     public static final String HTTP_1_1 = "1.1";
+
     /** HTTP/2. */
     public static final String HTTP_2_0 = "2.0";
+
     /** HTTP/3. */
     public static final String HTTP_3_0 = "3.0";
+
     /** SPDY protocol. */
     public static final String SPDY = "SPDY";
+
     /** QUIC protocol. */
     public static final String QUIC = "QUIC";
 
@@ -1151,8 +1156,10 @@ public final class SemanticAttributes {
   public static final class EventDomainValues {
     /** Events from browser apps. */
     public static final String BROWSER = "browser";
+
     /** Events from mobile apps. */
     public static final String DEVICE = "device";
+
     /** Events from Kubernetes. */
     public static final String K8S = "k8s";
 
@@ -1162,6 +1169,7 @@ public final class SemanticAttributes {
   public static final class OpentracingRefTypeValues {
     /** The parent Span depends on the child Span in some capacity. */
     public static final String CHILD_OF = "child_of";
+
     /** The parent Span does not depend in any way on the result of the child Span. */
     public static final String FOLLOWS_FROM = "follows_from";
 
@@ -1171,104 +1179,154 @@ public final class SemanticAttributes {
   public static final class DbSystemValues {
     /** Some other SQL database. Fallback only. See notes. */
     public static final String OTHER_SQL = "other_sql";
+
     /** Microsoft SQL Server. */
     public static final String MSSQL = "mssql";
+
     /** Microsoft SQL Server Compact. */
     public static final String MSSQLCOMPACT = "mssqlcompact";
+
     /** MySQL. */
     public static final String MYSQL = "mysql";
+
     /** Oracle Database. */
     public static final String ORACLE = "oracle";
+
     /** IBM Db2. */
     public static final String DB2 = "db2";
+
     /** PostgreSQL. */
     public static final String POSTGRESQL = "postgresql";
+
     /** Amazon Redshift. */
     public static final String REDSHIFT = "redshift";
+
     /** Apache Hive. */
     public static final String HIVE = "hive";
+
     /** Cloudscape. */
     public static final String CLOUDSCAPE = "cloudscape";
+
     /** HyperSQL DataBase. */
     public static final String HSQLDB = "hsqldb";
+
     /** Progress Database. */
     public static final String PROGRESS = "progress";
+
     /** SAP MaxDB. */
     public static final String MAXDB = "maxdb";
+
     /** SAP HANA. */
     public static final String HANADB = "hanadb";
+
     /** Ingres. */
     public static final String INGRES = "ingres";
+
     /** FirstSQL. */
     public static final String FIRSTSQL = "firstsql";
+
     /** EnterpriseDB. */
     public static final String EDB = "edb";
+
     /** InterSystems Caché. */
     public static final String CACHE = "cache";
+
     /** Adabas (Adaptable Database System). */
     public static final String ADABAS = "adabas";
+
     /** Firebird. */
     public static final String FIREBIRD = "firebird";
+
     /** Apache Derby. */
     public static final String DERBY = "derby";
+
     /** FileMaker. */
     public static final String FILEMAKER = "filemaker";
+
     /** Informix. */
     public static final String INFORMIX = "informix";
+
     /** InstantDB. */
     public static final String INSTANTDB = "instantdb";
+
     /** InterBase. */
     public static final String INTERBASE = "interbase";
+
     /** MariaDB. */
     public static final String MARIADB = "mariadb";
+
     /** Netezza. */
     public static final String NETEZZA = "netezza";
+
     /** Pervasive PSQL. */
     public static final String PERVASIVE = "pervasive";
+
     /** PointBase. */
     public static final String POINTBASE = "pointbase";
+
     /** SQLite. */
     public static final String SQLITE = "sqlite";
+
     /** Sybase. */
     public static final String SYBASE = "sybase";
+
     /** Teradata. */
     public static final String TERADATA = "teradata";
+
     /** Vertica. */
     public static final String VERTICA = "vertica";
+
     /** H2. */
     public static final String H2 = "h2";
+
     /** ColdFusion IMQ. */
     public static final String COLDFUSION = "coldfusion";
+
     /** Apache Cassandra. */
     public static final String CASSANDRA = "cassandra";
+
     /** Apache HBase. */
     public static final String HBASE = "hbase";
+
     /** MongoDB. */
     public static final String MONGODB = "mongodb";
+
     /** Redis. */
     public static final String REDIS = "redis";
+
     /** Couchbase. */
     public static final String COUCHBASE = "couchbase";
+
     /** CouchDB. */
     public static final String COUCHDB = "couchdb";
+
     /** Microsoft Azure Cosmos DB. */
     public static final String COSMOSDB = "cosmosdb";
+
     /** Amazon DynamoDB. */
     public static final String DYNAMODB = "dynamodb";
+
     /** Neo4j. */
     public static final String NEO4J = "neo4j";
+
     /** Apache Geode. */
     public static final String GEODE = "geode";
+
     /** Elasticsearch. */
     public static final String ELASTICSEARCH = "elasticsearch";
+
     /** Memcached. */
     public static final String MEMCACHED = "memcached";
+
     /** CockroachDB. */
     public static final String COCKROACHDB = "cockroachdb";
+
     /** OpenSearch. */
     public static final String OPENSEARCH = "opensearch";
+
     /** ClickHouse. */
     public static final String CLICKHOUSE = "clickhouse";
+
     /** Cloud Spanner. */
     public static final String SPANNER = "spanner";
 
@@ -1278,24 +1336,34 @@ public final class SemanticAttributes {
   public static final class DbCassandraConsistencyLevelValues {
     /** all. */
     public static final String ALL = "all";
+
     /** each_quorum. */
     public static final String EACH_QUORUM = "each_quorum";
+
     /** quorum. */
     public static final String QUORUM = "quorum";
+
     /** local_quorum. */
     public static final String LOCAL_QUORUM = "local_quorum";
+
     /** one. */
     public static final String ONE = "one";
+
     /** two. */
     public static final String TWO = "two";
+
     /** three. */
     public static final String THREE = "three";
+
     /** local_one. */
     public static final String LOCAL_ONE = "local_one";
+
     /** any. */
     public static final String ANY = "any";
+
     /** serial. */
     public static final String SERIAL = "serial";
+
     /** local_serial. */
     public static final String LOCAL_SERIAL = "local_serial";
 
@@ -1308,6 +1376,7 @@ public final class SemanticAttributes {
      * successfully.
      */
     public static final String OK = "OK";
+
     /** The operation contains an error. */
     public static final String ERROR = "ERROR";
 
@@ -1317,12 +1386,16 @@ public final class SemanticAttributes {
   public static final class FaasTriggerValues {
     /** A response to some data source operation such as a database or filesystem read/write. */
     public static final String DATASOURCE = "datasource";
+
     /** To provide an answer to an inbound HTTP request. */
     public static final String HTTP = "http";
+
     /** A function is set to be executed when messages are sent to a messaging system. */
     public static final String PUBSUB = "pubsub";
+
     /** A function is scheduled to be executed regularly. */
     public static final String TIMER = "timer";
+
     /** If none of the others apply. */
     public static final String OTHER = "other";
 
@@ -1332,8 +1405,10 @@ public final class SemanticAttributes {
   public static final class FaasDocumentOperationValues {
     /** When a new object is created. */
     public static final String INSERT = "insert";
+
     /** When an object is modified. */
     public static final String EDIT = "edit";
+
     /** When an object is deleted. */
     public static final String DELETE = "delete";
 
@@ -1343,12 +1418,16 @@ public final class SemanticAttributes {
   public static final class FaasInvokedProviderValues {
     /** Alibaba Cloud. */
     public static final String ALIBABA_CLOUD = "alibaba_cloud";
+
     /** Amazon Web Services. */
     public static final String AWS = "aws";
+
     /** Microsoft Azure. */
     public static final String AZURE = "azure";
+
     /** Google Cloud Platform. */
     public static final String GCP = "gcp";
+
     /** Tencent Cloud. */
     public static final String TENCENT_CLOUD = "tencent_cloud";
 
@@ -1358,18 +1437,24 @@ public final class SemanticAttributes {
   public static final class NetTransportValues {
     /** ip_tcp. */
     public static final String IP_TCP = "ip_tcp";
+
     /** ip_udp. */
     public static final String IP_UDP = "ip_udp";
+
     /** Named or anonymous pipe. See note below. */
     public static final String PIPE = "pipe";
+
     /** In-process communication. */
     public static final String INPROC = "inproc";
+
     /** Something else (non IP-based). */
     public static final String OTHER = "other";
+
     /**
      * @deprecated This item has been removed as of 1.13.0 of the semantic conventions.
      */
     @Deprecated public static final String IP = "ip";
+
     /**
      * @deprecated This item has been removed as of 1.13.0 of the semantic conventions.
      */
@@ -1381,8 +1466,10 @@ public final class SemanticAttributes {
   public static final class NetSockFamilyValues {
     /** IPv4 address. */
     public static final String INET = "inet";
+
     /** IPv6 address. */
     public static final String INET6 = "inet6";
+
     /** Unix domain socket path. */
     public static final String UNIX = "unix";
 
@@ -1392,12 +1479,16 @@ public final class SemanticAttributes {
   public static final class NetHostConnectionTypeValues {
     /** wifi. */
     public static final String WIFI = "wifi";
+
     /** wired. */
     public static final String WIRED = "wired";
+
     /** cell. */
     public static final String CELL = "cell";
+
     /** unavailable. */
     public static final String UNAVAILABLE = "unavailable";
+
     /** unknown. */
     public static final String UNKNOWN = "unknown";
 
@@ -1407,44 +1498,64 @@ public final class SemanticAttributes {
   public static final class NetHostConnectionSubtypeValues {
     /** GPRS. */
     public static final String GPRS = "gprs";
+
     /** EDGE. */
     public static final String EDGE = "edge";
+
     /** UMTS. */
     public static final String UMTS = "umts";
+
     /** CDMA. */
     public static final String CDMA = "cdma";
+
     /** EVDO Rel. 0. */
     public static final String EVDO_0 = "evdo_0";
+
     /** EVDO Rev. A. */
     public static final String EVDO_A = "evdo_a";
+
     /** CDMA2000 1XRTT. */
     public static final String CDMA2000_1XRTT = "cdma2000_1xrtt";
+
     /** HSDPA. */
     public static final String HSDPA = "hsdpa";
+
     /** HSUPA. */
     public static final String HSUPA = "hsupa";
+
     /** HSPA. */
     public static final String HSPA = "hspa";
+
     /** IDEN. */
     public static final String IDEN = "iden";
+
     /** EVDO Rev. B. */
     public static final String EVDO_B = "evdo_b";
+
     /** LTE. */
     public static final String LTE = "lte";
+
     /** EHRPD. */
     public static final String EHRPD = "ehrpd";
+
     /** HSPAP. */
     public static final String HSPAP = "hspap";
+
     /** GSM. */
     public static final String GSM = "gsm";
+
     /** TD-SCDMA. */
     public static final String TD_SCDMA = "td_scdma";
+
     /** IWLAN. */
     public static final String IWLAN = "iwlan";
+
     /** 5G NR (New Radio). */
     public static final String NR = "nr";
+
     /** 5G NRNSA (New Radio Non-Standalone). */
     public static final String NRNSA = "nrnsa";
+
     /** LTE CA. */
     public static final String LTE_CA = "lte_ca";
 
@@ -1454,8 +1565,10 @@ public final class SemanticAttributes {
   public static final class GraphqlOperationTypeValues {
     /** GraphQL query. */
     public static final String QUERY = "query";
+
     /** GraphQL mutation. */
     public static final String MUTATION = "mutation";
+
     /** GraphQL subscription. */
     public static final String SUBSCRIPTION = "subscription";
 
@@ -1465,6 +1578,7 @@ public final class SemanticAttributes {
   public static final class MessagingDestinationKindValues {
     /** A message sent to a queue. */
     public static final String QUEUE = "queue";
+
     /** A message sent to a topic. */
     public static final String TOPIC = "topic";
 
@@ -1474,6 +1588,7 @@ public final class SemanticAttributes {
   public static final class MessagingSourceKindValues {
     /** A message received from a queue. */
     public static final String QUEUE = "queue";
+
     /** A message received from a topic. */
     public static final String TOPIC = "topic";
 
@@ -1483,8 +1598,10 @@ public final class SemanticAttributes {
   public static final class MessagingOperationValues {
     /** publish. */
     public static final String PUBLISH = "publish";
+
     /** receive. */
     public static final String RECEIVE = "receive";
+
     /** process. */
     public static final String PROCESS = "process";
 
@@ -1494,10 +1611,13 @@ public final class SemanticAttributes {
   public static final class MessagingRocketmqMessageTypeValues {
     /** Normal message. */
     public static final String NORMAL = "normal";
+
     /** FIFO message. */
     public static final String FIFO = "fifo";
+
     /** Delay message. */
     public static final String DELAY = "delay";
+
     /** Transaction message. */
     public static final String TRANSACTION = "transaction";
 
@@ -1507,6 +1627,7 @@ public final class SemanticAttributes {
   public static final class MessagingRocketmqConsumptionModelValues {
     /** Clustering consumption model. */
     public static final String CLUSTERING = "clustering";
+
     /** Broadcasting consumption model. */
     public static final String BROADCASTING = "broadcasting";
 
@@ -1516,12 +1637,16 @@ public final class SemanticAttributes {
   public static final class RpcSystemValues {
     /** gRPC. */
     public static final String GRPC = "grpc";
+
     /** Java RMI. */
     public static final String JAVA_RMI = "java_rmi";
+
     /** .NET WCF. */
     public static final String DOTNET_WCF = "dotnet_wcf";
+
     /** Apache Dubbo. */
     public static final String APACHE_DUBBO = "apache_dubbo";
+
     /** Connect RPC. */
     public static final String CONNECT_RPC = "connect_rpc";
 
@@ -1531,36 +1656,52 @@ public final class SemanticAttributes {
   public static final class RpcGrpcStatusCodeValues {
     /** OK. */
     public static final long OK = 0;
+
     /** CANCELLED. */
     public static final long CANCELLED = 1;
+
     /** UNKNOWN. */
     public static final long UNKNOWN = 2;
+
     /** INVALID_ARGUMENT. */
     public static final long INVALID_ARGUMENT = 3;
+
     /** DEADLINE_EXCEEDED. */
     public static final long DEADLINE_EXCEEDED = 4;
+
     /** NOT_FOUND. */
     public static final long NOT_FOUND = 5;
+
     /** ALREADY_EXISTS. */
     public static final long ALREADY_EXISTS = 6;
+
     /** PERMISSION_DENIED. */
     public static final long PERMISSION_DENIED = 7;
+
     /** RESOURCE_EXHAUSTED. */
     public static final long RESOURCE_EXHAUSTED = 8;
+
     /** FAILED_PRECONDITION. */
     public static final long FAILED_PRECONDITION = 9;
+
     /** ABORTED. */
     public static final long ABORTED = 10;
+
     /** OUT_OF_RANGE. */
     public static final long OUT_OF_RANGE = 11;
+
     /** UNIMPLEMENTED. */
     public static final long UNIMPLEMENTED = 12;
+
     /** INTERNAL. */
     public static final long INTERNAL = 13;
+
     /** UNAVAILABLE. */
     public static final long UNAVAILABLE = 14;
+
     /** DATA_LOSS. */
     public static final long DATA_LOSS = 15;
+
     /** UNAUTHENTICATED. */
     public static final long UNAUTHENTICATED = 16;
 
@@ -1570,6 +1711,7 @@ public final class SemanticAttributes {
   public static final class MessageTypeValues {
     /** sent. */
     public static final String SENT = "SENT";
+
     /** received. */
     public static final String RECEIVED = "RECEIVED";
 
@@ -1579,34 +1721,49 @@ public final class SemanticAttributes {
   public static final class RpcConnectRpcErrorCodeValues {
     /** cancelled. */
     public static final String CANCELLED = "cancelled";
+
     /** unknown. */
     public static final String UNKNOWN = "unknown";
+
     /** invalid_argument. */
     public static final String INVALID_ARGUMENT = "invalid_argument";
+
     /** deadline_exceeded. */
     public static final String DEADLINE_EXCEEDED = "deadline_exceeded";
+
     /** not_found. */
     public static final String NOT_FOUND = "not_found";
+
     /** already_exists. */
     public static final String ALREADY_EXISTS = "already_exists";
+
     /** permission_denied. */
     public static final String PERMISSION_DENIED = "permission_denied";
+
     /** resource_exhausted. */
     public static final String RESOURCE_EXHAUSTED = "resource_exhausted";
+
     /** failed_precondition. */
     public static final String FAILED_PRECONDITION = "failed_precondition";
+
     /** aborted. */
     public static final String ABORTED = "aborted";
+
     /** out_of_range. */
     public static final String OUT_OF_RANGE = "out_of_range";
+
     /** unimplemented. */
     public static final String UNIMPLEMENTED = "unimplemented";
+
     /** internal. */
     public static final String INTERNAL = "internal";
+
     /** unavailable. */
     public static final String UNAVAILABLE = "unavailable";
+
     /** data_loss. */
     public static final String DATA_LOSS = "data_loss";
+
     /** unauthenticated. */
     public static final String UNAUTHENTICATED = "unauthenticated";
 

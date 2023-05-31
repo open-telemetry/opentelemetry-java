@@ -697,16 +697,22 @@ public final class ResourceAttributes {
   public static final class CloudProviderValues {
     /** Alibaba Cloud. */
     public static final String ALIBABA_CLOUD = "alibaba_cloud";
+
     /** Amazon Web Services. */
     public static final String AWS = "aws";
+
     /** Microsoft Azure. */
     public static final String AZURE = "azure";
+
     /** Google Cloud Platform. */
     public static final String GCP = "gcp";
+
     /** Heroku Platform as a Service. */
     public static final String HEROKU = "heroku";
+
     /** IBM Cloud. */
     public static final String IBM_CLOUD = "ibm_cloud";
+
     /** Tencent Cloud. */
     public static final String TENCENT_CLOUD = "tencent_cloud";
 
@@ -716,54 +722,79 @@ public final class ResourceAttributes {
   public static final class CloudPlatformValues {
     /** Alibaba Cloud Elastic Compute Service. */
     public static final String ALIBABA_CLOUD_ECS = "alibaba_cloud_ecs";
+
     /** Alibaba Cloud Function Compute. */
     public static final String ALIBABA_CLOUD_FC = "alibaba_cloud_fc";
+
     /** Red Hat OpenShift on Alibaba Cloud. */
     public static final String ALIBABA_CLOUD_OPENSHIFT = "alibaba_cloud_openshift";
+
     /** AWS Elastic Compute Cloud. */
     public static final String AWS_EC2 = "aws_ec2";
+
     /** AWS Elastic Container Service. */
     public static final String AWS_ECS = "aws_ecs";
+
     /** AWS Elastic Kubernetes Service. */
     public static final String AWS_EKS = "aws_eks";
+
     /** AWS Lambda. */
     public static final String AWS_LAMBDA = "aws_lambda";
+
     /** AWS Elastic Beanstalk. */
     public static final String AWS_ELASTIC_BEANSTALK = "aws_elastic_beanstalk";
+
     /** AWS App Runner. */
     public static final String AWS_APP_RUNNER = "aws_app_runner";
+
     /** Red Hat OpenShift on AWS (ROSA). */
     public static final String AWS_OPENSHIFT = "aws_openshift";
+
     /** Azure Virtual Machines. */
     public static final String AZURE_VM = "azure_vm";
+
     /** Azure Container Instances. */
     public static final String AZURE_CONTAINER_INSTANCES = "azure_container_instances";
+
     /** Azure Kubernetes Service. */
     public static final String AZURE_AKS = "azure_aks";
+
     /** Azure Functions. */
     public static final String AZURE_FUNCTIONS = "azure_functions";
+
     /** Azure App Service. */
     public static final String AZURE_APP_SERVICE = "azure_app_service";
+
     /** Azure Red Hat OpenShift. */
     public static final String AZURE_OPENSHIFT = "azure_openshift";
+
     /** Google Cloud Compute Engine (GCE). */
     public static final String GCP_COMPUTE_ENGINE = "gcp_compute_engine";
+
     /** Google Cloud Run. */
     public static final String GCP_CLOUD_RUN = "gcp_cloud_run";
+
     /** Google Cloud Kubernetes Engine (GKE). */
     public static final String GCP_KUBERNETES_ENGINE = "gcp_kubernetes_engine";
+
     /** Google Cloud Functions (GCF). */
     public static final String GCP_CLOUD_FUNCTIONS = "gcp_cloud_functions";
+
     /** Google Cloud App Engine (GAE). */
     public static final String GCP_APP_ENGINE = "gcp_app_engine";
+
     /** Red Hat OpenShift on Google Cloud. */
     public static final String GCP_OPENSHIFT = "gcp_openshift";
+
     /** Red Hat OpenShift on IBM Cloud. */
     public static final String IBM_CLOUD_OPENSHIFT = "ibm_cloud_openshift";
+
     /** Tencent Cloud Cloud Virtual Machine (CVM). */
     public static final String TENCENT_CLOUD_CVM = "tencent_cloud_cvm";
+
     /** Tencent Cloud Elastic Kubernetes Service (EKS). */
     public static final String TENCENT_CLOUD_EKS = "tencent_cloud_eks";
+
     /** Tencent Cloud Serverless Cloud Function (SCF). */
     public static final String TENCENT_CLOUD_SCF = "tencent_cloud_scf";
 
@@ -773,6 +804,7 @@ public final class ResourceAttributes {
   public static final class AwsEcsLaunchtypeValues {
     /** ec2. */
     public static final String EC2 = "ec2";
+
     /** fargate. */
     public static final String FARGATE = "fargate";
 
@@ -782,18 +814,25 @@ public final class ResourceAttributes {
   public static final class HostArchValues {
     /** AMD64. */
     public static final String AMD64 = "amd64";
+
     /** ARM32. */
     public static final String ARM32 = "arm32";
+
     /** ARM64. */
     public static final String ARM64 = "arm64";
+
     /** Itanium. */
     public static final String IA64 = "ia64";
+
     /** 32-bit PowerPC. */
     public static final String PPC32 = "ppc32";
+
     /** 64-bit PowerPC. */
     public static final String PPC64 = "ppc64";
+
     /** IBM z/Architecture. */
     public static final String S390X = "s390x";
+
     /** 32-bit x86. */
     public static final String X86 = "x86";
 
@@ -803,24 +842,34 @@ public final class ResourceAttributes {
   public static final class OsTypeValues {
     /** Microsoft Windows. */
     public static final String WINDOWS = "windows";
+
     /** Linux. */
     public static final String LINUX = "linux";
+
     /** Apple Darwin. */
     public static final String DARWIN = "darwin";
+
     /** FreeBSD. */
     public static final String FREEBSD = "freebsd";
+
     /** NetBSD. */
     public static final String NETBSD = "netbsd";
+
     /** OpenBSD. */
     public static final String OPENBSD = "openbsd";
+
     /** DragonFly BSD. */
     public static final String DRAGONFLYBSD = "dragonflybsd";
+
     /** HP-UX (Hewlett Packard Unix). */
     public static final String HPUX = "hpux";
+
     /** AIX (Advanced Interactive eXecutive). */
     public static final String AIX = "aix";
+
     /** SunOS, Oracle Solaris. */
     public static final String SOLARIS = "solaris";
+
     /** IBM z/OS. */
     public static final String Z_OS = "z_os";
 
@@ -830,24 +879,34 @@ public final class ResourceAttributes {
   public static final class TelemetrySdkLanguageValues {
     /** cpp. */
     public static final String CPP = "cpp";
+
     /** dotnet. */
     public static final String DOTNET = "dotnet";
+
     /** erlang. */
     public static final String ERLANG = "erlang";
+
     /** go. */
     public static final String GO = "go";
+
     /** java. */
     public static final String JAVA = "java";
+
     /** nodejs. */
     public static final String NODEJS = "nodejs";
+
     /** php. */
     public static final String PHP = "php";
+
     /** python. */
     public static final String PYTHON = "python";
+
     /** ruby. */
     public static final String RUBY = "ruby";
+
     /** webjs. */
     public static final String WEBJS = "webjs";
+
     /** swift. */
     public static final String SWIFT = "swift";
 

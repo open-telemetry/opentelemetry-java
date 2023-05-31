@@ -17,6 +17,8 @@ spotless {
       "ktlint_standard_max-line-length" to "disabled",
       // ktlint makes it *very* hard to locate where this actually happened
       "ktlint_standard_trailing-comma-on-call-site" to "disabled",
+      // depends on ktlint_standard_wrapping
+      "ktlint_standard_trailing-comma-on-declaration-site" to "disabled",
       // also very hard to find out where this happens
       "ktlint_standard_wrapping" to "disabled"
     ))
@@ -33,7 +35,7 @@ repositories {
 dependencies {
   implementation("com.google.auto.value:auto-value-annotations:1.10.1")
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.18.0")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.19.0")
   // Needed for japicmp but not automatically brought in for some reason.
   implementation("com.google.guava:guava:32.0.0-jre")
   implementation("com.squareup:javapoet:1.13.0")
