@@ -19,7 +19,7 @@ import java.util.List;
 @SuppressWarnings("unused")
 public final class SemanticAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.19.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.20.0";
 
   /**
    * The type of the exception (its fully-qualified class name, if applicable). The dynamic type of
@@ -41,9 +41,6 @@ public final class SemanticAttributes {
 
   /** <a href="https://tools.ietf.org/html/rfc7231#section-6">HTTP response status code</a>. */
   public static final AttributeKey<Long> HTTP_STATUS_CODE = longKey("http.status_code");
-
-  /** Kind of HTTP protocol used. */
-  public static final AttributeKey<String> HTTP_FLAVOR = stringKey("http.flavor");
 
   /** The URI scheme identifying the used protocol. */
   public static final AttributeKey<String> HTTP_SCHEME = stringKey("http.scheme");
@@ -78,6 +75,21 @@ public final class SemanticAttributes {
    * </ul>
    */
   public static final AttributeKey<String> EVENT_DOMAIN = stringKey("event.domain");
+
+  /**
+   * A unique identifier for the Log Record.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>If an id is provided, other log records with the same id will be considered duplicates
+   *       and can be removed safely. This means, that two distinguishable log records MUST have
+   *       different values. The id MAY be an <a href="https://github.com/ulid/spec">Universally
+   *       Unique Lexicographically Sortable Identifier (ULID)</a>, but other identifiers (e.g.
+   *       UUID) may be used as needed.
+   * </ul>
+   */
+  public static final AttributeKey<String> LOG_RECORD_UID = stringKey("log.record.uid");
 
   /**
    * The full invoked ARN as provided on the {@code Context} passed to the function ({@code
@@ -181,15 +193,7 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> DB_NAME = stringKey("db.name");
 
-  /**
-   * The database statement being executed.
-   *
-   * <p>Notes:
-   *
-   * <ul>
-   *   <li>The value may be sanitized to exclude sensitive information.
-   * </ul>
-   */
+  /** The database statement being executed. */
   public static final AttributeKey<String> DB_STATEMENT = stringKey("db.statement");
 
   /**
@@ -294,6 +298,38 @@ public final class SemanticAttributes {
    * </ul>
    */
   public static final AttributeKey<String> DB_SQL_TABLE = stringKey("db.sql.table");
+
+  /** Unique Cosmos client instance id. */
+  public static final AttributeKey<String> DB_COSMOSDB_CLIENT_ID =
+      stringKey("db.cosmosdb.client_id");
+
+  /** CosmosDB Operation Type. */
+  public static final AttributeKey<String> DB_COSMOSDB_OPERATION_TYPE =
+      stringKey("db.cosmosdb.operation_type");
+
+  /** Cosmos client connection mode. */
+  public static final AttributeKey<String> DB_COSMOSDB_CONNECTION_MODE =
+      stringKey("db.cosmosdb.connection_mode");
+
+  /** Cosmos DB container name. */
+  public static final AttributeKey<String> DB_COSMOSDB_CONTAINER =
+      stringKey("db.cosmosdb.container");
+
+  /** Request payload size in bytes */
+  public static final AttributeKey<Long> DB_COSMOSDB_REQUEST_CONTENT_LENGTH =
+      longKey("db.cosmosdb.request_content_length");
+
+  /** Cosmos DB status code. */
+  public static final AttributeKey<Long> DB_COSMOSDB_STATUS_CODE =
+      longKey("db.cosmosdb.status_code");
+
+  /** Cosmos DB sub status code. */
+  public static final AttributeKey<Long> DB_COSMOSDB_SUB_STATUS_CODE =
+      longKey("db.cosmosdb.sub_status_code");
+
+  /** RU consumed for that operation */
+  public static final AttributeKey<Double> DB_COSMOSDB_REQUEST_CHARGE =
+      doubleKey("db.cosmosdb.request_charge");
 
   /**
    * Name of the code, either &quot;OK&quot; or &quot;ERROR&quot;. MUST NOT be set if the status
@@ -431,8 +467,7 @@ public final class SemanticAttributes {
   public static final AttributeKey<String> NET_TRANSPORT = stringKey("net.transport");
 
   /** Application layer protocol used. The value SHOULD be normalized to lowercase. */
-  public static final AttributeKey<String> NET_APP_PROTOCOL_NAME =
-      stringKey("net.app.protocol.name");
+  public static final AttributeKey<String> NET_PROTOCOL_NAME = stringKey("net.protocol.name");
 
   /**
    * Version of the application layer protocol used. See note below.
@@ -440,14 +475,13 @@ public final class SemanticAttributes {
    * <p>Notes:
    *
    * <ul>
-   *   <li>{@code net.app.protocol.version} refers to the version of the protocol used and might be
+   *   <li>{@code net.protocol.version} refers to the version of the protocol used and might be
    *       different from the protocol client's version. If the HTTP client used has a version of
    *       {@code 0.27.2}, but sends HTTP version {@code 1.1}, this attribute should be set to
    *       {@code 1.1}.
    * </ul>
    */
-  public static final AttributeKey<String> NET_APP_PROTOCOL_VERSION =
-      stringKey("net.app.protocol.version");
+  public static final AttributeKey<String> NET_PROTOCOL_VERSION = stringKey("net.protocol.version");
 
   /** Remote socket peer name. */
   public static final AttributeKey<String> NET_SOCK_PEER_NAME = stringKey("net.sock.peer.name");
@@ -653,6 +687,12 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> HTTP_CLIENT_IP = stringKey("http.client_ip");
 
+  /**
+   * The AWS request ID as returned in the response headers {@code x-amz-request-id} or {@code
+   * x-amz-requestid}.
+   */
+  public static final AttributeKey<String> AWS_REQUEST_ID = stringKey("aws.request_id");
+
   /** The keys in the {@code RequestItems} object field. */
   public static final AttributeKey<List<String>> AWS_DYNAMODB_TABLE_NAMES =
       stringArrayKey("aws.dynamodb.table_names");
@@ -740,6 +780,138 @@ public final class SemanticAttributes {
   public static final AttributeKey<List<String>> AWS_DYNAMODB_GLOBAL_SECONDARY_INDEX_UPDATES =
       stringArrayKey("aws.dynamodb.global_secondary_index_updates");
 
+  /**
+   * The S3 bucket name the request refers to. Corresponds to the {@code --bucket} parameter of the
+   * <a href="https://docs.aws.amazon.com/cli/latest/reference/s3api/index.html">S3 API</a>
+   * operations.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>The {@code bucket} attribute is applicable to all S3 operations that reference a bucket,
+   *       i.e. that require the bucket name as a mandatory parameter. This applies to almost all S3
+   *       operations except {@code list-buckets}.
+   * </ul>
+   */
+  public static final AttributeKey<String> AWS_S3_BUCKET = stringKey("aws.s3.bucket");
+
+  /**
+   * The S3 object key the request refers to. Corresponds to the {@code --key} parameter of the <a
+   * href="https://docs.aws.amazon.com/cli/latest/reference/s3api/index.html">S3 API</a> operations.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>The {@code key} attribute is applicable to all object-related S3 operations, i.e. that
+   *       require the object key as a mandatory parameter. This applies in particular to the
+   *       following operations:
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/copy-object.html">copy-object</a>
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/delete-object.html">delete-object</a>
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/get-object.html">get-object</a>
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/head-object.html">head-object</a>
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/put-object.html">put-object</a>
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/restore-object.html">restore-object</a>
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/select-object-content.html">select-object-content</a>
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/abort-multipart-upload.html">abort-multipart-upload</a>
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/complete-multipart-upload.html">complete-multipart-upload</a>
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/create-multipart-upload.html">create-multipart-upload</a>
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/list-parts.html">list-parts</a>
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part.html">upload-part</a>
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part-copy.html">upload-part-copy</a>
+   * </ul>
+   */
+  public static final AttributeKey<String> AWS_S3_KEY = stringKey("aws.s3.key");
+
+  /**
+   * The source object (in the form {@code bucket}/{@code key}) for the copy operation.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>The {@code copy_source} attribute applies to S3 copy operations and corresponds to the
+   *       {@code --copy-source} parameter of the <a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/copy-object.html">copy-object
+   *       operation within the S3 API</a>. This applies in particular to the following operations:
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/copy-object.html">copy-object</a>
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part-copy.html">upload-part-copy</a>
+   * </ul>
+   */
+  public static final AttributeKey<String> AWS_S3_COPY_SOURCE = stringKey("aws.s3.copy_source");
+
+  /**
+   * Upload ID that identifies the multipart upload.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>The {@code upload_id} attribute applies to S3 multipart-upload operations and corresponds
+   *       to the {@code --upload-id} parameter of the <a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/index.html">S3 API</a>
+   *       multipart operations. This applies in particular to the following operations:
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/abort-multipart-upload.html">abort-multipart-upload</a>
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/complete-multipart-upload.html">complete-multipart-upload</a>
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/list-parts.html">list-parts</a>
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part.html">upload-part</a>
+   *   <li><a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part-copy.html">upload-part-copy</a>
+   * </ul>
+   */
+  public static final AttributeKey<String> AWS_S3_UPLOAD_ID = stringKey("aws.s3.upload_id");
+
+  /**
+   * The delete request container that specifies the objects to be deleted.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>The {@code delete} attribute is only applicable to the <a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/delete-object.html">delete-object</a>
+   *       operation. The {@code delete} attribute corresponds to the {@code --delete} parameter of
+   *       the <a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/delete-objects.html">delete-objects
+   *       operation within the S3 API</a>.
+   * </ul>
+   */
+  public static final AttributeKey<String> AWS_S3_DELETE = stringKey("aws.s3.delete");
+
+  /**
+   * The part number of the part being uploaded in a multipart-upload operation. This is a positive
+   * integer between 1 and 10,000.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>The {@code part_number} attribute is only applicable to the <a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part.html">upload-part</a>
+   *       and <a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part-copy.html">upload-part-copy</a>
+   *       operations. The {@code part_number} attribute corresponds to the {@code --part-number}
+   *       parameter of the <a
+   *       href="https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part.html">upload-part
+   *       operation within the S3 API</a>.
+   * </ul>
+   */
+  public static final AttributeKey<Long> AWS_S3_PART_NUMBER = longKey("aws.s3.part_number");
+
   /** The name of the operation being executed. */
   public static final AttributeKey<String> GRAPHQL_OPERATION_NAME =
       stringKey("graphql.operation.name");
@@ -796,10 +968,6 @@ public final class SemanticAttributes {
   public static final AttributeKey<String> MESSAGING_DESTINATION_NAME =
       stringKey("messaging.destination.name");
 
-  /** The kind of message destination */
-  public static final AttributeKey<String> MESSAGING_DESTINATION_KIND =
-      stringKey("messaging.destination.kind");
-
   /**
    * Low cardinality representation of the messaging destination name
    *
@@ -842,10 +1010,6 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> MESSAGING_SOURCE_NAME =
       stringKey("messaging.source.name");
-
-  /** The kind of message source */
-  public static final AttributeKey<String> MESSAGING_SOURCE_KIND =
-      stringKey("messaging.source.kind");
 
   /**
    * Low cardinality representation of the messaging source name
@@ -1131,28 +1295,6 @@ public final class SemanticAttributes {
   public static final AttributeKey<String> USER_AGENT_ORIGINAL = stringKey("user_agent.original");
 
   // Enum definitions
-  public static final class HttpFlavorValues {
-    /** HTTP/1.0. */
-    public static final String HTTP_1_0 = "1.0";
-
-    /** HTTP/1.1. */
-    public static final String HTTP_1_1 = "1.1";
-
-    /** HTTP/2. */
-    public static final String HTTP_2_0 = "2.0";
-
-    /** HTTP/3. */
-    public static final String HTTP_3_0 = "3.0";
-
-    /** SPDY protocol. */
-    public static final String SPDY = "SPDY";
-
-    /** QUIC protocol. */
-    public static final String QUIC = "QUIC";
-
-    private HttpFlavorValues() {}
-  }
-
   public static final class EventDomainValues {
     /** Events from browser apps. */
     public static final String BROWSER = "browser";
@@ -1330,6 +1472,9 @@ public final class SemanticAttributes {
     /** Cloud Spanner. */
     public static final String SPANNER = "spanner";
 
+    /** Trino. */
+    public static final String TRINO = "trino";
+
     private DbSystemValues() {}
   }
 
@@ -1368,6 +1513,65 @@ public final class SemanticAttributes {
     public static final String LOCAL_SERIAL = "local_serial";
 
     private DbCassandraConsistencyLevelValues() {}
+  }
+
+  public static final class DbCosmosdbOperationTypeValues {
+    /** invalid. */
+    public static final String INVALID = "Invalid";
+
+    /** create. */
+    public static final String CREATE = "Create";
+
+    /** patch. */
+    public static final String PATCH = "Patch";
+
+    /** read. */
+    public static final String READ = "Read";
+
+    /** read_feed. */
+    public static final String READ_FEED = "ReadFeed";
+
+    /** delete. */
+    public static final String DELETE = "Delete";
+
+    /** replace. */
+    public static final String REPLACE = "Replace";
+
+    /** execute. */
+    public static final String EXECUTE = "Execute";
+
+    /** query. */
+    public static final String QUERY = "Query";
+
+    /** head. */
+    public static final String HEAD = "Head";
+
+    /** head_feed. */
+    public static final String HEAD_FEED = "HeadFeed";
+
+    /** upsert. */
+    public static final String UPSERT = "Upsert";
+
+    /** batch. */
+    public static final String BATCH = "Batch";
+
+    /** query_plan. */
+    public static final String QUERY_PLAN = "QueryPlan";
+
+    /** execute_javascript. */
+    public static final String EXECUTE_JAVASCRIPT = "ExecuteJavaScript";
+
+    private DbCosmosdbOperationTypeValues() {}
+  }
+
+  public static final class DbCosmosdbConnectionModeValues {
+    /** Gateway (HTTP) connections mode. */
+    public static final String GATEWAY = "gateway";
+
+    /** Direct connection. */
+    public static final String DIRECT = "direct";
+
+    private DbCosmosdbConnectionModeValues() {}
   }
 
   public static final class OtelStatusCodeValues {
@@ -1573,26 +1777,6 @@ public final class SemanticAttributes {
     public static final String SUBSCRIPTION = "subscription";
 
     private GraphqlOperationTypeValues() {}
-  }
-
-  public static final class MessagingDestinationKindValues {
-    /** A message sent to a queue. */
-    public static final String QUEUE = "queue";
-
-    /** A message sent to a topic. */
-    public static final String TOPIC = "topic";
-
-    private MessagingDestinationKindValues() {}
-  }
-
-  public static final class MessagingSourceKindValues {
-    /** A message received from a queue. */
-    public static final String QUEUE = "queue";
-
-    /** A message received from a topic. */
-    public static final String TOPIC = "topic";
-
-    private MessagingSourceKindValues() {}
   }
 
   public static final class MessagingOperationValues {
@@ -1874,7 +2058,7 @@ public final class SemanticAttributes {
    * The name of the transport protocol.
    *
    * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link
-   *     SemanticAttributes#NET_APP_PROTOCOL_NAME} instead.
+   *     SemanticAttributes#NET_PROTOCOL_NAME} instead.
    */
   @Deprecated
   public static final AttributeKey<String> MESSAGING_PROTOCOL = stringKey("messaging.protocol");
@@ -1883,7 +2067,7 @@ public final class SemanticAttributes {
    * The version of the transport protocol.
    *
    * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link
-   *     SemanticAttributes#NET_APP_PROTOCOL_VERSION} instead.
+   *     SemanticAttributes#NET_PROTOCOL_VERSION} instead.
    */
   @Deprecated
   public static final AttributeKey<String> MESSAGING_PROTOCOL_VERSION =
@@ -1977,8 +2161,6 @@ public final class SemanticAttributes {
   @Deprecated
   public static final AttributeKey<String> OTEL_SCOPE_VERSION = stringKey("otel.scope.version");
 
-  ;
-
   /**
    * The execution ID of the current function execution.
    *
@@ -2015,6 +2197,120 @@ public final class SemanticAttributes {
    */
   @Deprecated
   public static final AttributeKey<String> OTEL_LIBRARY_VERSION = stringKey("otel.library.version");
+
+  /**
+   * Kind of HTTP protocol used.
+   *
+   * @deprecated This item has been removed as of 1.20.0 of the semantic conventions.
+   */
+  @Deprecated public static final AttributeKey<String> HTTP_FLAVOR = stringKey("http.flavor");
+
+  /**
+   * Enum definitions for {@link #HTTP_FLAVOR}.
+   *
+   * @deprecated This item has been removed as of 1.20.0 of the semantic conventions.
+   */
+  @Deprecated
+  public static final class HttpFlavorValues {
+    /** HTTP/1.0. */
+    public static final String HTTP_1_0 = "1.0";
+
+    /** HTTP/1.1. */
+    public static final String HTTP_1_1 = "1.1";
+
+    /** HTTP/2. */
+    public static final String HTTP_2_0 = "2.0";
+
+    /** HTTP/3. */
+    public static final String HTTP_3_0 = "3.0";
+
+    /** SPDY protocol. */
+    public static final String SPDY = "SPDY";
+
+    /** QUIC protocol. */
+    public static final String QUIC = "QUIC";
+
+    private HttpFlavorValues() {}
+  }
+
+  /**
+   * Application layer protocol used. The value SHOULD be normalized to lowercase.
+   *
+   * @deprecated This item has been removed as of 1.20.0 of the semantic conventions. Use {@link
+   *     SemanticAttributes#NET_PROTOCOL_NAME} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> NET_APP_PROTOCOL_NAME =
+      stringKey("net.app.protocol.name");
+
+  /**
+   * Version of the application layer protocol used. See note below.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>{@code net.app.protocol.version} refers to the version of the protocol used and might be
+   *       different from the protocol client's version. If the HTTP client used has a version of
+   *       {@code 0.27.2}, but sends HTTP version {@code 1.1}, this attribute should be set to
+   *       {@code 1.1}.
+   * </ul>
+   *
+   * @deprecated This item has been removed as of 1.20.0 of the semantic conventions. Use {@link
+   *     SemanticAttributes#NET_PROTOCOL_VERSION} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> NET_APP_PROTOCOL_VERSION =
+      stringKey("net.app.protocol.version");
+
+  /**
+   * The kind of message destination.
+   *
+   * @deprecated This item has been removed as of 1.20.0 of the semantic conventions.
+   */
+  @Deprecated
+  public static final AttributeKey<String> MESSAGING_DESTINATION_KIND =
+      stringKey("messaging.destination.kind");
+
+  /**
+   * Enum values for {@link #MESSAGING_DESTINATION_KIND}.
+   *
+   * @deprecated This item has been removed as of 1.20.0 of the semantic conventions.
+   */
+  @Deprecated
+  public static final class MessagingDestinationKindValues {
+    /** A message sent to a queue. */
+    public static final String QUEUE = "queue";
+
+    /** A message sent to a topic. */
+    public static final String TOPIC = "topic";
+
+    private MessagingDestinationKindValues() {}
+  }
+
+  /**
+   * The kind of message source.
+   *
+   * @deprecated This item has been removed as of 1.20.0 of the semantic conventions.
+   */
+  @Deprecated
+  public static final AttributeKey<String> MESSAGING_SOURCE_KIND =
+      stringKey("messaging.source.kind");
+
+  /**
+   * Enum values for {@link #MESSAGING_SOURCE_KIND}.
+   *
+   * @deprecated This item has been removed as of 1.20.0 of the semantic conventions.
+   */
+  @Deprecated
+  public static final class MessagingSourceKindValues {
+    /** A message received from a queue. */
+    public static final String QUEUE = "queue";
+
+    /** A message received from a topic. */
+    public static final String TOPIC = "topic";
+
+    private MessagingSourceKindValues() {}
+  }
 
   private SemanticAttributes() {}
 }
