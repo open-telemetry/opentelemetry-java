@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
+import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 import org.junit.jupiter.api.Test;
 
 class RegisteredViewTest {
@@ -33,12 +34,13 @@ class RegisteredViewTest {
                         .setAggregation(Aggregation.sum())
                         .build(),
                     AttributesProcessor.noop(),
+                    MetricStorage.DEFAULT_MAX_CARDINALITY,
                     SourceInfo.fromCurrentStack())
                 .toString())
         .isEqualTo(
             "RegisteredView{"
                 + "instrumentSelector=InstrumentSelector{instrumentType=COUNTER, instrumentName=name, meterName=meter-name, meterVersion=meter-version, meterSchemaUrl=meter-schema-url}, "
-                + "view=View{name=name, description=description, aggregation=SumAggregation, attributesProcessor=NoopAttributesProcessor{}}"
+                + "view=View{name=name, description=description, aggregation=SumAggregation, attributesProcessor=NoopAttributesProcessor{}, cardinalityLimit=2000}"
                 + "}");
   }
 }

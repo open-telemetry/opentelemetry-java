@@ -21,6 +21,8 @@ import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.export.CardinalityLimitSelector;
+import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -38,7 +40,11 @@ class ViewRegistryTest {
 
   private static RegisteredView registeredView(InstrumentSelector instrumentSelector, View view) {
     return RegisteredView.create(
-        instrumentSelector, view, AttributesProcessor.noop(), SourceInfo.fromCurrentStack());
+        instrumentSelector,
+        view,
+        AttributesProcessor.noop(),
+        MetricStorage.DEFAULT_MAX_CARDINALITY,
+        SourceInfo.fromCurrentStack());
   }
 
   @Test
@@ -49,7 +55,9 @@ class ViewRegistryTest {
             View.builder().setDescription("description").build());
     ViewRegistry viewRegistry =
         ViewRegistry.create(
-            DefaultAggregationSelector.getDefault(), Collections.singletonList(registeredView));
+            DefaultAggregationSelector.getDefault(),
+            CardinalityLimitSelector.defaultCardinalityLimitSelector(),
+            Collections.singletonList(registeredView));
 
     assertThat(
             viewRegistry.findViews(
@@ -81,7 +89,9 @@ class ViewRegistryTest {
             View.builder().setDescription("description").build());
     ViewRegistry viewRegistry =
         ViewRegistry.create(
-            DefaultAggregationSelector.getDefault(), Collections.singletonList(registeredView));
+            DefaultAggregationSelector.getDefault(),
+            CardinalityLimitSelector.defaultCardinalityLimitSelector(),
+            Collections.singletonList(registeredView));
 
     assertThat(
             viewRegistry.findViews(
@@ -113,7 +123,9 @@ class ViewRegistryTest {
             View.builder().setDescription("description").build());
     ViewRegistry viewRegistry =
         ViewRegistry.create(
-            DefaultAggregationSelector.getDefault(), Collections.singletonList(registeredView));
+            DefaultAggregationSelector.getDefault(),
+            CardinalityLimitSelector.defaultCardinalityLimitSelector(),
+            Collections.singletonList(registeredView));
 
     assertThat(
             viewRegistry.findViews(
@@ -156,6 +168,7 @@ class ViewRegistryTest {
     ViewRegistry viewRegistry =
         ViewRegistry.create(
             DefaultAggregationSelector.getDefault(),
+            CardinalityLimitSelector.defaultCardinalityLimitSelector(),
             Arrays.asList(registeredView1, registeredView2));
 
     assertThat(
@@ -195,7 +208,9 @@ class ViewRegistryTest {
             View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build());
     ViewRegistry viewRegistry =
         ViewRegistry.create(
-            DefaultAggregationSelector.getDefault(), Collections.singletonList(registeredView));
+            DefaultAggregationSelector.getDefault(),
+            CardinalityLimitSelector.defaultCardinalityLimitSelector(),
+            Collections.singletonList(registeredView));
 
     assertThat(
             viewRegistry.findViews(
@@ -254,7 +269,10 @@ class ViewRegistryTest {
                 : Aggregation.defaultAggregation();
 
     ViewRegistry viewRegistry =
-        ViewRegistry.create(defaultAggregationSelector, Collections.singletonList(registeredView));
+        ViewRegistry.create(
+            defaultAggregationSelector,
+            CardinalityLimitSelector.defaultCardinalityLimitSelector(),
+            Collections.singletonList(registeredView));
 
     // Counter instrument should result in default view
     assertThat(
@@ -330,7 +348,9 @@ class ViewRegistryTest {
             View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build());
     ViewRegistry viewRegistry =
         ViewRegistry.create(
-            DefaultAggregationSelector.getDefault(), Collections.singletonList(registeredView));
+            DefaultAggregationSelector.getDefault(),
+            CardinalityLimitSelector.defaultCardinalityLimitSelector(),
+            Collections.singletonList(registeredView));
 
     assertThat(
             viewRegistry.findViews(
