@@ -25,7 +25,7 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
-  testImplementation("com.google.guava:guava:32.0.0-jre")
+  testImplementation("com.google.guava:guava")
   testImplementation("com.google.protobuf:protobuf-java")
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("com.linecorp.armeria:armeria-grpc-protocol")
