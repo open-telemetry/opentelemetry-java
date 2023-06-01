@@ -46,4 +46,9 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
   public ContextPropagators getPropagators() {
     return propagators;
   }
+
+  @Override
+  public String toString() {
+    return "DefaultOpenTelemetry{" + "propagators=" + propagators + "}";
+  }
 }
