@@ -58,6 +58,7 @@ public enum HistogramValueGenerator {
       return pool[idx.incrementAndGet() % pool.length];
     }
   }
+
   /** Constructs a pool using explicit bucket histogram boundaries. */
   private static double[] explicitDefaultBucketPool() {
     // Add the bucket LE bucket boundaries.

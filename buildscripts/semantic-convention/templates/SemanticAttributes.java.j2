@@ -91,12 +91,14 @@ public final class {{class}} {
     {%- for member in attribute.attr_type.members %}
       /** {% filter escape %}{{member.brief | to_doc_brief}}.{% endfilter %} */
       public static final {{ type }} {{ member.member_id | to_const_name }} = {{ print_value(type, member.value) }};
+
     {%- endfor %}
 
     {%- if class_name == "NetTransportValues" %}
     /** @deprecated This item has been removed as of 1.13.0 of the semantic conventions. */
     @Deprecated
     public static final String IP = "ip";
+
     /** @deprecated This item has been removed as of 1.13.0 of the semantic conventions. */
     @Deprecated
     public static final String UNIX = "unix";

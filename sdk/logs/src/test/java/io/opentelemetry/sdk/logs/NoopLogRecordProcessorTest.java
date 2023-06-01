@@ -25,4 +25,9 @@ class NoopLogRecordProcessorTest {
     assertThat(logRecordProcessor.forceFlush().isSuccess()).isEqualTo(true);
     assertThat(logRecordProcessor.shutdown().isSuccess()).isEqualTo(true);
   }
+
+  @Test
+  void toString_Valid() {
+    assertThat(NoopLogRecordProcessor.getInstance().toString()).isEqualTo("NoopLogRecordProcessor");
+  }
 }
