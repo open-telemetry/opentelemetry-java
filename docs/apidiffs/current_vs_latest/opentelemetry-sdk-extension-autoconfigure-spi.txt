@@ -1,2 +1,4 @@
 Comparing source compatibility of  against 
-No changes.
+===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException  (compatible)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated

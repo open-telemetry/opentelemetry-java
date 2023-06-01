@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.extension.incubator.metric.viewconfig;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.common.config.ConfigurationException;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.extension.incubator.metric.viewconfig;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.common.config.ConfigurationException;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder;

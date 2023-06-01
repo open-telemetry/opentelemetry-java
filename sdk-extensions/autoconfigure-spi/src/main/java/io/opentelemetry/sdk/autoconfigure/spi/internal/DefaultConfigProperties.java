@@ -10,7 +10,7 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.common.config.ConfigurationException;
 import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.Arrays;
@@ -262,7 +262,8 @@ public final class DefaultConfigProperties implements ConfigProperties {
       case "d":
         return TimeUnit.DAYS;
       default:
-        throw new ConfigurationException("Invalid duration string, found: " + unitString);
+        throw new io.opentelemetry.sdk.common.config.ConfigurationException(
+            "Invalid duration string, found: " + unitString);
     }
   }
 

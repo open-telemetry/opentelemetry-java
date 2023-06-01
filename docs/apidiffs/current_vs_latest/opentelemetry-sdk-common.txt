@@ -1,2 +1,32 @@
 Comparing source compatibility of  against 
-No changes.
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.config.ConfigProperties  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Boolean getBoolean(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) boolean getBoolean(java.lang.String, boolean)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Double getDouble(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) double getDouble(java.lang.String, double)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.time.Duration getDuration(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) java.time.Duration getDuration(java.lang.String, java.time.Duration)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Integer getInt(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) int getInt(java.lang.String, int)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List getList(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) java.util.List getList(java.lang.String, java.util.List)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Long getLong(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) long getLong(java.lang.String, long)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.Map getMap(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) java.util.Map getMap(java.lang.String, java.util.Map)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getString(java.lang.String)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) java.lang.String getString(java.lang.String, java.lang.String)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.common.config.ConfigurationException  (compatible)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.io.Serializable
+	+++  NEW SUPERCLASS: java.lang.RuntimeException
+	+++  NEW CONSTRUCTOR: PUBLIC(+) ConfigurationException(java.lang.String)
+	+++  NEW CONSTRUCTOR: PUBLIC(+) ConfigurationException(java.lang.String, java.lang.Throwable)
