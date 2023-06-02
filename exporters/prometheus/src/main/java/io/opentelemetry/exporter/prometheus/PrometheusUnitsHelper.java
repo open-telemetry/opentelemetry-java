@@ -38,7 +38,7 @@ final class PrometheusUnitsHelper {
    *     computed.
    * @return the computed Prometheus metric unit equivalent of the OTLP metric un
    */
-  public static String getEquivalentPrometheusUnit(String rawMetricUnitName) {
+  static String getEquivalentPrometheusUnit(String rawMetricUnitName) {
     if (StringUtils.isNullOrEmpty(rawMetricUnitName)) {
       return rawMetricUnitName;
     }
