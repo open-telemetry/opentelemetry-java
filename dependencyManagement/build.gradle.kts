@@ -67,7 +67,7 @@ val DEPENDENCIES = listOf(
   // TODO(anuraaga): Skip 1.8 because of https://github.com/rohanpadhye/JQF/issues/172
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7",
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
-  "io.github.netmikey.logunit:logunit-jul:1.1.3",
+  "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
   "io.opentelemetry.proto:opentelemetry-proto:0.19.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
