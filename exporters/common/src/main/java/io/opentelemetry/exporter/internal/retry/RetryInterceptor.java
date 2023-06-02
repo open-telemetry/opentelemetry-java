@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.internal.retry;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -104,7 +105,7 @@ public final class RetryInterceptor implements Interceptor {
     String message = e.getMessage();
     // Connect timeouts can produce SocketTimeoutExceptions with no message, or with "connect timed
     // out"
-    return message == null || message.toLowerCase().contains("connect timed out");
+    return message == null || message.toLowerCase(Locale.ROOT).contains("connect timed out");
   }
 
   // Visible for testing

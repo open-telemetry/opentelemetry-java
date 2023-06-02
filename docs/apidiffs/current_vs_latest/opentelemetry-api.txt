@@ -1,2 +1,68 @@
 Comparing source compatibility of  against 
-No changes.
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.Logger  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder logRecordBuilder()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LoggerBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.Logger build()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LoggerBuilder setInstrumentationVersion(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LoggerBuilder setSchemaUrl(java.lang.String)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LoggerProvider  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.Logger get(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LoggerBuilder loggerBuilder(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.logs.LoggerProvider noop()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void emit()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.LogRecordBuilder setAllAttributes(io.opentelemetry.api.common.Attributes)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setAttribute(io.opentelemetry.api.common.AttributeKey, java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setBody(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setContext(io.opentelemetry.context.Context)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setObservedTimestamp(long, java.util.concurrent.TimeUnit)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setObservedTimestamp(java.time.Instant)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setSeverity(io.opentelemetry.api.logs.Severity)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setSeverityText(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setTimestamp(long, java.util.concurrent.TimeUnit)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.LogRecordBuilder setTimestamp(java.time.Instant)
++++  NEW ENUM: PUBLIC(+) FINAL(+) io.opentelemetry.api.logs.Severity  (compatible)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.lang.constant.Constable
+	+++  NEW INTERFACE: java.lang.Comparable
+	+++  NEW INTERFACE: java.io.Serializable
+	+++  NEW SUPERCLASS: java.lang.Enum
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity WARN2
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity WARN3
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity WARN4
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity INFO
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity TRACE2
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity DEBUG4
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity DEBUG3
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity TRACE4
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity TRACE3
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity ERROR
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity FATAL
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity TRACE
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity FATAL2
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity FATAL3
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity ERROR2
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity ERROR3
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity ERROR4
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity DEBUG2
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity INFO3
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity DEBUG
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity INFO2
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity WARN
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity INFO4
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity UNDEFINED_SEVERITY_NUMBER
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.logs.Severity FATAL4
+	+++  NEW METHOD: PUBLIC(+) int getSeverityNumber()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.logs.Severity valueOf(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.logs.Severity[] values()
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.OpenTelemetry  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.LoggerProvider getLogsBridge()

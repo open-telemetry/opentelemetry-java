@@ -144,6 +144,7 @@ public abstract class Serializer implements AutoCloseable {
     }
     writeDouble(field, value);
   }
+
   /** Serializes a proto buf {@code double} field. */
   public void serializeDoubleOptional(ProtoFieldInfo field, double value) throws IOException {
     writeDouble(field, value);

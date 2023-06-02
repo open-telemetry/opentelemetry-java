@@ -12,7 +12,11 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-/** Builder class for {@link BatchLogRecordProcessor}. */
+/**
+ * Builder class for {@link BatchLogRecordProcessor}.
+ *
+ * @since 1.27.0
+ */
 public final class BatchLogRecordProcessorBuilder {
 
   // Visible for testing

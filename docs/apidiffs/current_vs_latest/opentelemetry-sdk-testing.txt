@@ -1,5 +1,56 @@
 Comparing source compatibility of  against 
-***  MODIFIED CLASS: PUBLIC io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader  (not serializable)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.HistogramPointAssert  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader create(io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector, io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.Aggregation getDefaultAggregation(io.opentelemetry.sdk.metrics.InstrumentType)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.HistogramPointAssert hasBucketBoundaries(double[], org.assertj.core.data.Offset)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasAttributes(io.opentelemetry.api.common.Attributes)
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasAttributes(java.util.Map$Entry[])
+		+++  NEW ANNOTATION: java.lang.SafeVarargs
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasAttributesSatisfying(java.util.function.Consumer)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasAttributesSatisfying(io.opentelemetry.sdk.testing.assertj.AttributeAssertion[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasAttributesSatisfying(java.lang.Iterable)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasAttributesSatisfyingExactly(io.opentelemetry.sdk.testing.assertj.AttributeAssertion[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasAttributesSatisfyingExactly(java.lang.Iterable)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasBody(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasInstrumentationScope(io.opentelemetry.sdk.common.InstrumentationScopeInfo)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasObservedTimestamp(long)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasResource(io.opentelemetry.sdk.resources.Resource)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasSeverity(io.opentelemetry.api.logs.Severity)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasSeverityText(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasSpanContext(io.opentelemetry.api.trace.SpanContext)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasTimestamp(long)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasTotalAttributeCount(int)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert assertThat(io.opentelemetry.sdk.logs.data.LogRecordData)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter create()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode export(java.util.Collection)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode flush()
+	+++  NEW METHOD: PUBLIC(+) java.util.List getFinishedLogRecordItems()
+	+++  NEW METHOD: PUBLIC(+) void reset()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode shutdown()
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder builder()
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) STATIC(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW CONSTRUCTOR: PUBLIC(+) TestLogRecordData$Builder()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData build()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder setAttributes(io.opentelemetry.api.common.Attributes)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder setBody(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder setInstrumentationScopeInfo(io.opentelemetry.sdk.common.InstrumentationScopeInfo)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder setObservedTimestamp(java.time.Instant)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder setObservedTimestamp(long, java.util.concurrent.TimeUnit)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder setResource(io.opentelemetry.sdk.resources.Resource)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder setSeverity(io.opentelemetry.api.logs.Severity)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder setSeverityText(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder setSpanContext(io.opentelemetry.api.trace.SpanContext)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder setTimestamp(java.time.Instant)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder setTimestamp(long, java.util.concurrent.TimeUnit)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder setTotalAttributeCount(int)

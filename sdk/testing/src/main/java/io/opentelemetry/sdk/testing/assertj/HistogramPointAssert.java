@@ -6,12 +6,14 @@
 package io.opentelemetry.sdk.testing.assertj;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import java.util.Arrays;
 import java.util.function.Consumer;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.data.Offset;
 
 /**
  * Test assertions for {@link HistogramPointData}.
@@ -68,9 +70,20 @@ public final class HistogramPointAssert
    * @param boundaries The set of bucket boundaries in the same order as the expected collection.
    */
   public HistogramPointAssert hasBucketBoundaries(double... boundaries) {
+    return hasBucketBoundaries(boundaries, within(0.000_001));
+  }
+
+  /**
+   * Asserts the {@code boundaries} field matches the expected value. The boundaries are may vary
+   * with a specified precision.
+   *
+   * @param boundaries The set of bucket boundaries in the same order as the expected collection.
+   * @param precision The precision under which boundaries may vary.
+   */
+  public HistogramPointAssert hasBucketBoundaries(double[] boundaries, Offset<Double> precision) {
     isNotNull();
-    Double[] bigBoundaries = Arrays.stream(boundaries).boxed().toArray(Double[]::new);
-    Assertions.assertThat(actual.getBoundaries()).as("boundaries").containsExactly(bigBoundaries);
+    double[] actualBoundaries = actual.getBoundaries().stream().mapToDouble(d -> d).toArray();
+    Assertions.assertThat(actualBoundaries).as("boundaries").containsExactly(boundaries, precision);
     return this;
   }
 

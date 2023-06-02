@@ -2,9 +2,9 @@ pluginManagement {
   plugins {
     id("com.github.ben-manes.versions") version "0.46.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("com.gradle.enterprise") version "3.13.1"
+    id("com.gradle.enterprise") version "3.13.3"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
-    id("org.graalvm.buildtools.native") version "0.9.21"
+    id("org.graalvm.buildtools.native") version "0.9.22"
   }
 }
 
@@ -23,7 +23,6 @@ rootProject.name = "opentelemetry-java"
 include(":all")
 include(":api:all")
 include(":api:events")
-include(":api:logs")
 include(":semconv")
 include(":bom")
 include(":bom-alpha")
@@ -40,7 +39,6 @@ include(":exporters:logging")
 include(":exporters:logging-otlp")
 include(":exporters:otlp:all")
 include(":exporters:otlp:common")
-include(":exporters:otlp:logs")
 include(":exporters:otlp:testing-internal")
 include(":exporters:prometheus")
 include(":exporters:zipkin")
@@ -54,7 +52,6 @@ include(":perf-harness")
 include(":sdk:all")
 include(":sdk:common")
 include(":sdk:logs")
-include(":sdk:logs-testing")
 include(":sdk:metrics")
 include(":sdk:testing")
 include(":sdk:trace")

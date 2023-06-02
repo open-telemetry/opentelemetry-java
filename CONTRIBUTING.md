@@ -16,7 +16,7 @@ automatic check once you submit a PR, but you can also sign it after opening you
 
 ## Requirements
 
-Java 11 or higher is required to build the projects in this repository. The built artifacts can be
+Java 17 or higher is required to build the projects in this repository. The built artifacts can be
 used on Java 8 or higher.
 
 ## Building opentelemetry-java
@@ -77,7 +77,7 @@ with a few exceptions / comments:
   the API / SDK to function in key areas of the Java ecosystem. Inclusion is subject to maintainers'
   discretion.
 * The [semconv](./semconv) module contains generated classes representing
-  the [semantic conventions](https://github.com/open-telemetry/opentelemetry-specification/tree/main/semantic_conventions).
+  the [semantic conventions](https://github.com/open-telemetry/semantic-conventions).
 * As a general rule, components which implement semantic conventions belong elsewhere.
 
 Other repositories in the OpenTelemetry Java ecosystem include:
