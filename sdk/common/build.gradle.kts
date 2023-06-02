@@ -63,9 +63,17 @@ for (version in mrJarVersions) {
 
 tasks {
   withType(Jar::class) {
+    val sourcePathProvider = if (name.equals("jar")) {
+      { ss: SourceSet? -> ss?.output }
+    } else if (name.equals("sourcesJar")) {
+      { ss: SourceSet? -> ss?.java }
+    } else {
+      { _: SourceSet -> project.objects.fileCollection() }
+    }
+
     for (version in mrJarVersions) {
       into("META-INF/versions/$version") {
-        from(sourceSets["java$version"].output)
+        from(sourcePathProvider(sourceSets["java$version"]))
       }
     }
     manifest.attributes(
