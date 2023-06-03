@@ -89,7 +89,7 @@ class TestConstants {
               .build(),
           "non.monotonic.cumulative.double.sum",
           "description",
-          "1",
+          "s",
           ImmutableSumData.create(
               /* isMonotonic= */ false,
               AggregationTemporality.CUMULATIVE,
@@ -149,7 +149,7 @@ class TestConstants {
               .build(),
           "non.monotonic.cumulative.long_sum",
           "unused",
-          "1",
+          "s",
           ImmutableSumData.create(
               /* isMonotonic= */ false,
               AggregationTemporality.CUMULATIVE,
