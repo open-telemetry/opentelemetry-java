@@ -6,7 +6,7 @@
 package io.opentelemetry.exporter.internal.auth;
 
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
+import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import java.lang.reflect.Field;
 import java.util.Map;
 
@@ -27,7 +27,7 @@ public interface Authenticator {
   Map<String, String> getHeaders();
 
   /**
-   * Reflectively access a {@link GrpcExporterBuilder}, or {@link OkHttpExporterBuilder} instance in
+   * Reflectively access a {@link GrpcExporterBuilder}, or {@link HttpExporterBuilder} instance in
    * field called "delegate" of the instance, and set the {@link Authenticator}.
    *
    * @param builder export builder to modify
@@ -42,8 +42,8 @@ public interface Authenticator {
       Object value = field.get(builder);
       if (value instanceof GrpcExporterBuilder) {
         throw new IllegalArgumentException("GrpcExporterBuilder not supported yet.");
-      } else if (value instanceof OkHttpExporterBuilder) {
-        ((OkHttpExporterBuilder<?>) value).setAuthenticator(authenticator);
+      } else if (value instanceof HttpExporterBuilder) {
+        ((HttpExporterBuilder<?>) value).setAuthenticator(authenticator);
       } else {
         throw new IllegalArgumentException(
             "Delegate field is not type DefaultGrpcExporterBuilder or OkHttpGrpcExporterBuilder.");
