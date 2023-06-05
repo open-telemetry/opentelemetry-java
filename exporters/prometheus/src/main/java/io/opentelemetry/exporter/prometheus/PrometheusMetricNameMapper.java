@@ -5,18 +5,20 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
+import javax.annotation.concurrent.Immutable;
 
 /** A class that maps a raw metric name to Prometheus equivalent name. */
 class PrometheusMetricNameMapper implements BiFunction<MetricData, PrometheusType, String> {
 
   static final PrometheusMetricNameMapper INSTANCE = new PrometheusMetricNameMapper();
 
-  private final Map<String, String> cache = new ConcurrentHashMap<>();
+  private final Map<ImmutableMappingKey, String> cache = new ConcurrentHashMap<>();
   private final BiFunction<MetricData, PrometheusType, String> delegate;
 
   // private constructor - prevent external object initialization
@@ -60,16 +62,37 @@ class PrometheusMetricNameMapper implements BiFunction<MetricData, PrometheusTyp
   }
 
   /**
-   * Create key from a combination of raw metric name, raw metric unit and the prometheus type since
-   * all of them are used to compute the prometheus equivalent name.
+   * Creates a suitable mapping key to be used for maintaining mapping between raw metric and its
+   * equivalent Prometheus name.
    *
    * @param metricData the metric data for which the mapping is to be created.
    * @param prometheusType the prometheus type to which the metric is to be mapped.
-   * @return a String that acts as the key for mapping between metric data and its prometheus
-   *     equivalent name.
+   * @return an {@link ImmutableMappingKey} that can be used as a key for mapping between metric
+   *     data and its prometheus equivalent name.
    */
-  private static String createKeyForCacheMapping(
+  private static ImmutableMappingKey createKeyForCacheMapping(
       MetricData metricData, PrometheusType prometheusType) {
-    return metricData.getName() + metricData.getUnit() + prometheusType.name();
+    return ImmutableMappingKey.create(
+        metricData.getName(), metricData.getUnit(), prometheusType.name());
+  }
+
+  /**
+   * Objects of this class acts as mapping keys for Prometheus metric mapping cache used in {@link
+   * PrometheusMetricNameMapper}.
+   */
+  @Immutable
+  @AutoValue
+  abstract static class ImmutableMappingKey {
+    static ImmutableMappingKey create(
+        String rawMetricName, String rawMetricUnit, String prometheusType) {
+      return new AutoValue_PrometheusMetricNameMapper_ImmutableMappingKey(
+          rawMetricName, rawMetricUnit, prometheusType);
+    }
+
+    abstract String rawMetricName();
+
+    abstract String rawMetricUnit();
+
+    abstract String prometheusType();
   }
 }
