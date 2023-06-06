@@ -48,7 +48,9 @@ public final class HttpExporter<T extends Marshaler> {
     this.type = type;
     this.httpSender = httpSender;
     this.exporterMetrics =
-        ExporterMetrics.createHttpProtobuf(exporterName, type, meterProviderSupplier);
+        exportAsJson
+            ? ExporterMetrics.createHttpJson(exporterName, type, meterProviderSupplier)
+            : ExporterMetrics.createHttpProtobuf(exporterName, type, meterProviderSupplier);
     this.exportAsJson = exportAsJson;
   }
 
