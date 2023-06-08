@@ -14,6 +14,9 @@ dependencies {
   implementation(project(":sdk-extensions:autoconfigure-spi"))
 
   compileOnly("com.sun.net.httpserver:http")
+  compileOnly("com.google.auto.value:auto-value-annotations")
+
+  annotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":semconv"))
 
