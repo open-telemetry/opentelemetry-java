@@ -32,18 +32,6 @@ documentation on usage.
 * Ensure correct compiled output and sources are included in multi version jar
   ([#5487](https://github.com/open-telemetry/opentelemetry-java/pull/5487))
 
-#### Exporter
-
-* Merge otlp logs
-  ([#5432](https://github.com/open-telemetry/opentelemetry-java/pull/5432))
-
-#### Testing
-
-* Merge sdk logs testing
-  ([#5431](https://github.com/open-telemetry/opentelemetry-java/pull/5431))
-* Add a `hasBucketBoundaries()` variant that allows specifying precision
-  ([#5457](https://github.com/open-telemetry/opentelemetry-java/pull/5457))
-
 #### Logs
 
 * Fix broken link
@@ -52,6 +40,27 @@ documentation on usage.
   ([#5493](https://github.com/open-telemetry/opentelemetry-java/pull/5493))
 * Promote log SDK to stable
   ([#5341](https://github.com/open-telemetry/opentelemetry-java/pull/5341))
+
+#### Metrics
+
+* Reset exponential aggregator scale after collection
+  ([#5496](https://github.com/open-telemetry/opentelemetry-java/pull/5496))
+* Experimental metric reader and view cardinality limits
+  ([#5494](https://github.com/open-telemetry/opentelemetry-java/pull/5494))
+
+#### Exporter
+
+* Merge otlp logs
+  ([#5432](https://github.com/open-telemetry/opentelemetry-java/pull/5432))
+* Append unit to prometheus metric names
+  ([#5400](https://github.com/open-telemetry/opentelemetry-java/pull/5400))
+
+#### Testing
+
+* Merge sdk logs testing
+  ([#5431](https://github.com/open-telemetry/opentelemetry-java/pull/5431))
+* Add a `hasBucketBoundaries()` variant that allows specifying precision
+  ([#5457](https://github.com/open-telemetry/opentelemetry-java/pull/5457))
 
 ### SDK Extensions
 
