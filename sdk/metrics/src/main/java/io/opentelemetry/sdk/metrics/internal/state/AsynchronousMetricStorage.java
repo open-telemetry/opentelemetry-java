@@ -46,6 +46,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
   private final AggregationTemporality aggregationTemporality;
   private final Aggregator<T, U> aggregator;
   private final AttributesProcessor attributesProcessor;
+  private final int maxCardinality;
   private Map<Attributes, T> points = new HashMap<>();
   private Map<Attributes, T> lastPoints =
       new HashMap<>(); // Only populated if aggregationTemporality == DELTA
@@ -54,7 +55,8 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
       RegisteredReader registeredReader,
       MetricDescriptor metricDescriptor,
       Aggregator<T, U> aggregator,
-      AttributesProcessor attributesProcessor) {
+      AttributesProcessor attributesProcessor,
+      int maxCardinality) {
     this.registeredReader = registeredReader;
     this.metricDescriptor = metricDescriptor;
     this.aggregationTemporality =
@@ -63,6 +65,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
             .getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
+    this.maxCardinality = maxCardinality;
   }
 
   /**
@@ -83,7 +86,8 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
         registeredReader,
         metricDescriptor,
         aggregator,
-        registeredView.getViewAttributesProcessor());
+        registeredView.getViewAttributesProcessor(),
+        registeredView.getCardinalityLimit());
   }
 
   /**
@@ -109,13 +113,13 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
   private void recordPoint(T point) {
     Attributes attributes = point.getAttributes();
 
-    if (points.size() >= MetricStorage.MAX_CARDINALITY) {
+    if (points.size() >= maxCardinality) {
       throttlingLogger.log(
           Level.WARNING,
           "Instrument "
               + metricDescriptor.getSourceInstrument().getName()
               + " has exceeded the maximum allowed cardinality ("
-              + MetricStorage.MAX_CARDINALITY
+              + maxCardinality
               + ").");
       return;
     }

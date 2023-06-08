@@ -19,8 +19,8 @@ import io.opentelemetry.sdk.resources.Resource;
  */
 public interface MetricStorage {
 
-  /** The max number of distinct metric points for a particular {@link MetricStorage}. */
-  int MAX_CARDINALITY = 2000;
+  /** The default max number of distinct metric points for a particular {@link MetricStorage}. */
+  int DEFAULT_MAX_CARDINALITY = 2000;
 
   /** Returns a description of the metric produced in this storage. */
   MetricDescriptor getMetricDescriptor();
