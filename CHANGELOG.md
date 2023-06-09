@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 1.27.0 (2023-06-09)
 
 The log bridge API / SDK are now stable! Some important notes:
 
