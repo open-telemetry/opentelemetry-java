@@ -6,13 +6,10 @@
 package io.opentelemetry.exporter.otlp.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.traces.ResourceSpansMarshaler;
-import io.opentelemetry.exporter.internal.retry.RetryPolicy;
-import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
 import io.opentelemetry.exporter.otlp.testing.internal.FakeTelemetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
@@ -26,15 +23,6 @@ class OtlpGrpcSpanExporterTest extends AbstractGrpcTelemetryExporterTest<SpanDat
 
   OtlpGrpcSpanExporterTest() {
     super("span", ResourceSpans.getDefaultInstance());
-  }
-
-  @Test
-  void testSetRetryPolicyOnDelegate() {
-    assertThatCode(
-            () ->
-                RetryUtil.setRetryPolicyOnDelegate(
-                    OtlpGrpcSpanExporter.builder(), RetryPolicy.getDefault()))
-        .doesNotThrowAnyException();
   }
 
   @Test

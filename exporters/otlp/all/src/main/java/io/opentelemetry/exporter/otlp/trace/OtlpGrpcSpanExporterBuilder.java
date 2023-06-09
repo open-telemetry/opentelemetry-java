@@ -15,6 +15,7 @@ import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -152,6 +153,17 @@ public final class OtlpGrpcSpanExporterBuilder {
    */
   public OtlpGrpcSpanExporterBuilder addHeader(String key, String value) {
     delegate.addHeader(key, value);
+    return this;
+  }
+
+  /**
+   * Ses the retry policy. Retry is disabled by default.
+   *
+   * @since 1.28.0
+   */
+  public OtlpGrpcSpanExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
+    requireNonNull(retryPolicy, "retryPolicy");
+    delegate.setRetryPolicy(retryPolicy);
     return this;
   }
 

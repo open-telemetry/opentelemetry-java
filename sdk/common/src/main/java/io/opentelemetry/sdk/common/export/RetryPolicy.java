@@ -3,15 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal.retry;
+package io.opentelemetry.sdk.common.export;
 
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
 
-/**
- * This class is internal and is hence not for public use. Its APIs are unstable and can change at
- * any time.
- */
+/** Configuration for exporter exponential retry policy. */
 @AutoValue
 public abstract class RetryPolicy {
 

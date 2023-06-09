@@ -12,8 +12,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.ResourceMetricsMarshaler;
-import io.opentelemetry.exporter.internal.retry.RetryPolicy;
-import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
 import io.opentelemetry.exporter.otlp.testing.internal.FakeTelemetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
@@ -33,15 +31,6 @@ class OtlpGrpcMetricExporterTest
 
   OtlpGrpcMetricExporterTest() {
     super("metric", ResourceMetrics.getDefaultInstance());
-  }
-
-  @Test
-  void testSetRetryPolicyOnDelegate() {
-    assertThatCode(
-            () ->
-                RetryUtil.setRetryPolicyOnDelegate(
-                    OtlpGrpcMetricExporter.builder(), RetryPolicy.getDefault()))
-        .doesNotThrowAnyException();
   }
 
   /** Test configuration specific to metric exporter. */

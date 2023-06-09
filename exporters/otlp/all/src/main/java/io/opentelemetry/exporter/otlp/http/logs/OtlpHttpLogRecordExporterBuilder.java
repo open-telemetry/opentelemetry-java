@@ -13,6 +13,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
@@ -110,6 +111,17 @@ public final class OtlpHttpLogRecordExporterBuilder {
   public OtlpHttpLogRecordExporterBuilder setSslContext(
       SSLContext sslContext, X509TrustManager trustManager) {
     delegate.setSslContext(sslContext, trustManager);
+    return this;
+  }
+
+  /**
+   * Ses the retry policy. Retry is disabled by default.
+   *
+   * @since 1.28.0
+   */
+  public OtlpHttpLogRecordExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
+    requireNonNull(retryPolicy, "retryPolicy");
+    delegate.setRetryPolicy(retryPolicy);
     return this;
   }
 

@@ -8,13 +8,12 @@ package io.opentelemetry.exporter.otlp.http.trace;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.traces.ResourceSpansMarshaler;
-import io.opentelemetry.exporter.internal.retry.RetryPolicy;
-import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractHttpTelemetryExporterTest;
 import io.opentelemetry.exporter.otlp.testing.internal.FakeTelemetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
 import java.util.List;
@@ -90,7 +89,7 @@ class OtlpHttpSpanExporterTest extends AbstractHttpTelemetryExporterTest<SpanDat
 
       @Override
       public TelemetryExporterBuilder<SpanData> setRetryPolicy(RetryPolicy retryPolicy) {
-        RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy);
+        builder.setRetryPolicy(retryPolicy);
         return this;
       }
 
