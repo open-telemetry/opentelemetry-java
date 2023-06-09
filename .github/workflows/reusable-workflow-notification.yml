@@ -21,9 +21,6 @@ jobs:
         run: |
           number=$(gh issue list --search "Workflow failed: $GITHUB_WORKFLOW" --limit 1 --json number -q .[].number)
 
-          echo $number
-          echo ${{ inputs.success }}
-
           if [[ $number ]]; then
             if [[ "${{ inputs.success }}" == "true" ]]; then
               gh issue close $number
