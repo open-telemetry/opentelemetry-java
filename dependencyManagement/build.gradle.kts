@@ -13,7 +13,7 @@ rootProject.extra["versions"] = dependencyVersions
 
 val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.15.2",
-  "com.google.guava:guava-bom:32.0.0-jre",
+  "com.google.guava:guava-bom:32.0.1-jre",
   "com.google.protobuf:protobuf-bom:3.23.2",
   "com.linecorp.armeria:armeria-bom:1.23.1",
   "com.squareup.okhttp3:okhttp-bom:4.11.0",
@@ -69,7 +69,7 @@ val DEPENDENCIES = listOf(
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
-  "io.opentelemetry.proto:opentelemetry-proto:0.19.0-alpha",
+  "io.opentelemetry.proto:opentelemetry-proto:0.20.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
   "junit:junit:4.13.2",
