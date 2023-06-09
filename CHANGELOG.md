@@ -2,6 +2,76 @@
 
 ## Unreleased
 
+The log bridge API / SDK are now stable! Some important notes:
+
+* The contents of `opentelemetry-api-logs` have been merged into `opentelemetry-api`.
+* The contents of `opentelemetry-exporter-otlp-logs` have been merged
+  into `opentelemetry-exporter-otlp`.
+* The contents of `opentelemetry-sdk-logs-testing` have been merged into `opentelemetry-sdk-testing`.
+* The `opentelemetry-sdk-logs` artifact has been marked stable.
+* `opentelemetry-sdk-extension-autoconfigure` has changed the default value
+  of `otel.logs.exporter` from `none` to `otlp`.
+
+NOTE: reminder that
+the [Logs Bridge API](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/bridge-api.md)
+is _not_ meant for end users. Log appenders use the API to bridge logs from existing log
+frameworks (e.g. JUL, Log4j, SLf4J, Logback) into OpenTelemetry. Users configure the Log SDK to
+dictate how logs are processed and exported.
+See [opentelemetry.io](https://opentelemetry.io/docs/instrumentation/java/manual/#logs) for
+documentation on usage.
+
+### API
+
+* Promote log API to stable
+  ([#5341](https://github.com/open-telemetry/opentelemetry-java/pull/5341))
+* fix doc for OpenTelemetry class
+  ([#5454](https://github.com/open-telemetry/opentelemetry-java/pull/5454))
+
+### SDK
+
+* Ensure correct compiled output and sources are included in multi version jar
+  ([#5487](https://github.com/open-telemetry/opentelemetry-java/pull/5487))
+
+#### Logs
+
+* Fix broken link
+  ([#5451](https://github.com/open-telemetry/opentelemetry-java/pull/5451))
+* Add meaningful `.toString` to `NoopLogRecordProcessor` and `DefaultOpenTelemetry`
+  ([#5493](https://github.com/open-telemetry/opentelemetry-java/pull/5493))
+* Promote log SDK to stable
+  ([#5341](https://github.com/open-telemetry/opentelemetry-java/pull/5341))
+
+#### Metrics
+
+* Reset exponential aggregator scale after collection
+  ([#5496](https://github.com/open-telemetry/opentelemetry-java/pull/5496))
+* Experimental metric reader and view cardinality limits
+  ([#5494](https://github.com/open-telemetry/opentelemetry-java/pull/5494))
+
+#### Exporter
+
+* Merge otlp logs
+  ([#5432](https://github.com/open-telemetry/opentelemetry-java/pull/5432))
+* Append unit to prometheus metric names
+  ([#5400](https://github.com/open-telemetry/opentelemetry-java/pull/5400))
+
+#### Testing
+
+* Merge sdk logs testing
+  ([#5431](https://github.com/open-telemetry/opentelemetry-java/pull/5431))
+* Add a `hasBucketBoundaries()` variant that allows specifying precision
+  ([#5457](https://github.com/open-telemetry/opentelemetry-java/pull/5457))
+
+### SDK Extensions
+
+* Enable otlp logs by default in autoconfigure
+  ([#5433](https://github.com/open-telemetry/opentelemetry-java/pull/5433))
+
+### Semantic Conventions
+
+* Update to semconv 1.20.0
+  ([#5497](https://github.com/open-telemetry/opentelemetry-java/pull/5497))
+
 ## Version 1.26.0 (2023-05-05)
 
 This release represents the release candidate ("RC") release for the Logs Bridge API / SDK. In the
