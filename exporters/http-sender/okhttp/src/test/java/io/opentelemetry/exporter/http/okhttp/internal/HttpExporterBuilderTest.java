@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal.okhttp;
+package io.opentelemetry.exporter.http.okhttp.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,7 +25,11 @@ class HttpExporterBuilderTest {
           .isInstanceOfSatisfying(
               HttpExporter.class,
               otlp ->
-                  assertThat(otlp).extracting("httpSender.compressionEnabled").isEqualTo(false));
+                  assertThat(otlp)
+                      .extracting("httpSender")
+                      .isInstanceOf(OkHttpHttpSender.class)
+                      .extracting("compressionEnabled")
+                      .isEqualTo(false));
     } finally {
       exporter.shutdown();
     }
@@ -39,7 +43,11 @@ class HttpExporterBuilderTest {
           .isInstanceOfSatisfying(
               HttpExporter.class,
               otlp ->
-                  assertThat(otlp).extracting("httpSender.compressionEnabled").isEqualTo(false));
+                  assertThat(otlp)
+                      .extracting("httpSender")
+                      .isInstanceOf(OkHttpHttpSender.class)
+                      .extracting("compressionEnabled")
+                      .isEqualTo(false));
     } finally {
       exporter.shutdown();
     }
@@ -52,7 +60,12 @@ class HttpExporterBuilderTest {
       assertThat(exporter)
           .isInstanceOfSatisfying(
               HttpExporter.class,
-              otlp -> assertThat(otlp).extracting("httpSender.compressionEnabled").isEqualTo(true));
+              otlp ->
+                  assertThat(otlp)
+                      .extracting("httpSender")
+                      .isInstanceOf(OkHttpHttpSender.class)
+                      .extracting("compressionEnabled")
+                      .isEqualTo(true));
     } finally {
       exporter.shutdown();
     }
@@ -67,7 +80,11 @@ class HttpExporterBuilderTest {
           .isInstanceOfSatisfying(
               HttpExporter.class,
               otlp ->
-                  assertThat(otlp).extracting("httpSender.compressionEnabled").isEqualTo(false));
+                  assertThat(otlp)
+                      .extracting("httpSender")
+                      .isInstanceOf(OkHttpHttpSender.class)
+                      .extracting("compressionEnabled")
+                      .isEqualTo(false));
     } finally {
       exporter.shutdown();
     }
