@@ -9,7 +9,7 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
+import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -33,7 +33,7 @@ public final class OtlpHttpMetricExporterBuilder {
   private static final AggregationTemporalitySelector DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR =
       AggregationTemporalitySelector.alwaysCumulative();
 
-  private final OkHttpExporterBuilder<MetricsRequestMarshaler> delegate;
+  private final HttpExporterBuilder<MetricsRequestMarshaler> delegate;
   private AggregationTemporalitySelector aggregationTemporalitySelector =
       DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR;
 
@@ -41,14 +41,14 @@ public final class OtlpHttpMetricExporterBuilder {
       DefaultAggregationSelector.getDefault();
 
   OtlpHttpMetricExporterBuilder() {
-    delegate = new OkHttpExporterBuilder<>("otlp", "metric", DEFAULT_ENDPOINT);
+    delegate = new HttpExporterBuilder<>("otlp", "metric", DEFAULT_ENDPOINT);
     delegate.setMeterProvider(MeterProvider.noop());
     OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
   }
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of metrics. If
-   * unset, defaults to {@value OkHttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
+   * unset, defaults to {@value HttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
    */
   public OtlpHttpMetricExporterBuilder setTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
@@ -59,7 +59,7 @@ public final class OtlpHttpMetricExporterBuilder {
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of metrics. If
-   * unset, defaults to {@value OkHttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
+   * unset, defaults to {@value HttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
    */
   public OtlpHttpMetricExporterBuilder setTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");

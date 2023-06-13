@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.http.logs;
 
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
+import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -21,9 +21,9 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpHttpLogRecordExporter implements LogRecordExporter {
 
-  private final OkHttpExporter<LogsRequestMarshaler> delegate;
+  private final HttpExporter<LogsRequestMarshaler> delegate;
 
-  OtlpHttpLogRecordExporter(OkHttpExporter<LogsRequestMarshaler> delegate) {
+  OtlpHttpLogRecordExporter(HttpExporter<LogsRequestMarshaler> delegate) {
     this.delegate = delegate;
   }
 
