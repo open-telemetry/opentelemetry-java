@@ -36,7 +36,7 @@ Same settings as above for `main`, except:
 
   (So that opentelemetrybot can create release branches)
 
-### `dependabot/**/**` and `opentelemetrybot/*`
+### `dependabot/**/**` and `opentelemetrybot/*` and `gradlew-update-*`
 
 * Require status checks to pass before merging: UNCHECKED
 
