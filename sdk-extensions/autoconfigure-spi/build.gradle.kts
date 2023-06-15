@@ -7,12 +7,8 @@ description = "OpenTelemetry SDK Auto-configuration SPI"
 otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure.spi")
 
 dependencies {
-  api(project(":sdk:all"))
-
-  // implementation dependency to require users to add the artifact directly to their build to use
-  // SdkMeterProviderBuilder.
-  implementation(project(":sdk:metrics"))
-  // implementation dependency to require users to add the artifact directly to their build to use
-  // SdkLoggerProviderBuilder.
-  implementation(project(":sdk:logs"))
+  api(project(":sdk:common"))
+  api(project(":sdk:trace"))
+  api(project(":sdk:metrics"))
+  api(project(":sdk:logs"))
 }

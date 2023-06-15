@@ -16,10 +16,16 @@ dependencies {
   api(project(":sdk:trace"))
   api(project(":sdk:metrics"))
   api(project(":sdk:logs"))
+  api(project(":sdk-extensions:autoconfigure-spi"))
+
+  implementation(project(":semconv"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 
   testAnnotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":sdk:testing"))
+
+  testImplementation("com.google.guava:guava")
+  testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
 }
