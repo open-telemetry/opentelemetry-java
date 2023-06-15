@@ -80,7 +80,7 @@ public abstract class RetryPolicy {
 
     /**
      * Set the backoff multiplier. Must be greater than 0.0. Defaults to {@value
-     * DEFAULT_BACKOFF_MULTIPLIER} seconds.
+     * DEFAULT_BACKOFF_MULTIPLIER}.
      */
     public abstract RetryPolicyBuilder setBackoffMultiplier(double backoffMultiplier);
 
