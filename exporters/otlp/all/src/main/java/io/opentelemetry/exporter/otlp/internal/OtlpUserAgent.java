@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal.otlp;
+package io.opentelemetry.exporter.otlp.internal;
 
-import java.util.Properties;
+import io.opentelemetry.sdk.common.internal.OtelVersion;
 import java.util.function.BiConsumer;
 
 /**
@@ -14,18 +14,7 @@ import java.util.function.BiConsumer;
  */
 public final class OtlpUserAgent {
 
-  private static final String userAgent = "OTel-OTLP-Exporter-Java/" + readVersion();
-
-  private static String readVersion() {
-    Properties properties = new Properties();
-    try {
-      properties.load(OtlpUserAgent.class.getResourceAsStream("version.properties"));
-    } catch (Exception e) {
-      // we left the attribute empty
-      return "unknown";
-    }
-    return properties.getProperty("sdk.version", "unknown");
-  }
+  private static final String userAgent = "OTel-OTLP-Exporter-Java/" + OtelVersion.VERSION;
 
   /**
    * Return an OTLP {@code User-Agent} header value of the form {@code "OTel OTLP Exporter

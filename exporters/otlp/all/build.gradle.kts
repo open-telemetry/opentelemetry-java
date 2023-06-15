@@ -5,6 +5,7 @@ plugins {
   id("otel.jmh-conventions")
   id("otel.animalsniffer-conventions")
 }
+apply<io.opentelemetry.gradle.OtelVersionClassPlugin>()
 
 description = "OpenTelemetry Protocol (OTLP) Exporters"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp")
@@ -17,6 +18,8 @@ dependencies {
 
   implementation(project(":exporters:otlp:common"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
+
+  implementation("com.squareup.okhttp3:okhttp")
 
   compileOnly("io.grpc:grpc-stub")
 

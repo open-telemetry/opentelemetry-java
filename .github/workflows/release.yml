@@ -158,7 +158,7 @@ jobs:
         env:
           VERSION: ${{ needs.release.outputs.version }}
           # not using secrets.GITHUB_TOKEN since pull requests from that token do not run workflows
-          GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.OPENTELEMETRYBOT_GITHUB_TOKEN }}
         run: |
           if git diff --quiet; then
             if [[ $VERSION =~ ^[0-9]+\.[0-9]+\.0 ]]; then
