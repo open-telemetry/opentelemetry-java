@@ -2,17 +2,17 @@ Comparing source compatibility of  against
 +++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.export.RetryPolicy  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.export.RetryPolicyBuilder builder()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.export.RetryPolicy$RetryPolicyBuilder builder()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) double getBackoffMultiplier()
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.export.RetryPolicy getDefault()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.time.Duration getInitialBackoff()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int getMaxAttempts()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.time.Duration getMaxBackoff()
-+++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.common.export.RetryPolicyBuilder  (not serializable)
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) STATIC(+) io.opentelemetry.sdk.common.export.RetryPolicy$RetryPolicyBuilder  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.export.RetryPolicy build()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.export.RetryPolicyBuilder setBackoffMultiplier(double)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.export.RetryPolicyBuilder setInitialBackoff(java.time.Duration)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.export.RetryPolicyBuilder setMaxAttempts(int)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.export.RetryPolicyBuilder setMaxBackoff(java.time.Duration)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.export.RetryPolicy$RetryPolicyBuilder setBackoffMultiplier(double)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.export.RetryPolicy$RetryPolicyBuilder setInitialBackoff(java.time.Duration)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.export.RetryPolicy$RetryPolicyBuilder setMaxAttempts(int)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.export.RetryPolicy$RetryPolicyBuilder setMaxBackoff(java.time.Duration)
