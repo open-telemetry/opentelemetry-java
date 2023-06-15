@@ -130,7 +130,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
           Level.WARNING,
           "Instrument "
               + metricDescriptor.getSourceInstrument().getName()
-              + " has recorded multiple values for the same attributes.");
+              + " has recorded multiple values for the same attributes: " + attributes);
       return;
     }
 
