@@ -8,7 +8,6 @@ plugins {
 description = "OpenTelemetry OkHttp HttpSender"
 otelJava.moduleName.set("io.opentelemetry.exporter.http.okhttp.internal")
 
-val versions: Map<String, String> by project
 dependencies {
   implementation(project(":exporters:common"))
   implementation(project(":sdk:common"))

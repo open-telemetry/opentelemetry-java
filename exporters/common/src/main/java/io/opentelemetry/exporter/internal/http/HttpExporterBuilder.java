@@ -130,6 +130,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     Supplier<Map<String, String>> headerSupplier = () -> headers;
 
     HttpSender httpSender = null;
+    // TODO: once we publish multiple HttpSenderProviders, log warning when multiple are found
     for (HttpSenderProvider httpSenderProvider :
         ServiceLoader.load(HttpSenderProvider.class, HttpExporterBuilder.class.getClassLoader())) {
       httpSender =
