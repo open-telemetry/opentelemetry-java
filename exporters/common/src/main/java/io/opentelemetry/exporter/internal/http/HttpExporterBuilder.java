@@ -11,15 +11,17 @@ import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpHttpSender;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
@@ -33,6 +35,8 @@ import javax.net.ssl.X509TrustManager;
 @SuppressWarnings("checkstyle:JavadocMethod")
 public final class HttpExporterBuilder<T extends Marshaler> {
   public static final long DEFAULT_TIMEOUT_SECS = 10;
+
+  private static final Logger LOGGER = Logger.getLogger(HttpExporterBuilder.class.getName());
 
   private final String exporterName;
   private final String type;
@@ -125,17 +129,28 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     Map<String, String> headers = this.headers == null ? Collections.emptyMap() : this.headers;
     Supplier<Map<String, String>> headerSupplier = () -> headers;
 
-    HttpSender httpSender =
-        new OkHttpHttpSender(
-            endpoint,
-            compressionEnabled,
-            exportAsJson ? "application/json" : "application/x-protobuf",
-            timeoutNanos,
-            headerSupplier,
-            authenticator,
-            retryPolicy,
-            tlsConfigHelper.getSslContext(),
-            tlsConfigHelper.getTrustManager());
+    HttpSender httpSender = null;
+    // TODO: once we publish multiple HttpSenderProviders, log warning when multiple are found
+    for (HttpSenderProvider httpSenderProvider :
+        ServiceLoader.load(HttpSenderProvider.class, HttpExporterBuilder.class.getClassLoader())) {
+      httpSender =
+          httpSenderProvider.createSender(
+              endpoint,
+              compressionEnabled,
+              exportAsJson ? "application/json" : "application/x-protobuf",
+              timeoutNanos,
+              headerSupplier,
+              authenticator,
+              retryPolicy,
+              tlsConfigHelper.getSslContext(),
+              tlsConfigHelper.getTrustManager());
+      LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
+      break;
+    }
+    if (httpSender == null) {
+      throw new IllegalStateException(
+          "No HttpSenderProvider found on classpath. Please add dependency on opentelemetry-exporter-http-sender-okhttp");
+    }
 
     return new HttpExporter<>(exporterName, type, httpSender, meterProviderSupplier, exportAsJson);
   }

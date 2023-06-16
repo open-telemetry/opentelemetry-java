@@ -18,7 +18,7 @@ dependencies {
 
   annotationProcessor("com.google.auto.value:auto-value")
 
-  // We include helpers shared by gRPC or okhttp exporters but do not want to impose these
+  // We include helpers shared by gRPC exporters but do not want to impose these
   // dependency on all of our consumers.
   compileOnly("com.fasterxml.jackson.core:jackson-core")
   compileOnly("com.squareup.okhttp3:okhttp")
