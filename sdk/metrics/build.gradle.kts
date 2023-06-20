@@ -32,7 +32,7 @@ dependencies {
 
 testing {
   suites {
-    val debugEnabledTest by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("debugEnabledTest") {
       targets {
         all {
           testTask.configure {

@@ -41,7 +41,7 @@ tasks {
 
 testing {
   suites {
-    val testJpms by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testJpms") {
       targets {
         all {
           testTask.configure {
@@ -81,7 +81,7 @@ tasks {
     exclude("module-info.java")
   }
 
-  val compileModuleJava by existing(JavaCompile::class) {
+  named<JavaCompile>("compileModuleJava") {
     with(options) {
       release.set(9)
     }
