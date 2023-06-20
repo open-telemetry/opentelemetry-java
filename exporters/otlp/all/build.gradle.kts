@@ -39,6 +39,8 @@ dependencies {
   jmhRuntimeOnly("io.grpc:grpc-netty")
 }
 
+val testJavaVersion: String? by project
+
 testing {
   suites {
     val testGrpcNetty by registering(JvmTestSuite::class) {
@@ -76,6 +78,7 @@ testing {
         all {
           testTask {
             systemProperty("io.opentelemetry.exporter.internal.http.HttpSenderProvider", "io.opentelemetry.exporter.http.jdk.internal.JdkHttpSenderProvider")
+            enabled = !testJavaVersion.equals("8")
           }
         }
       }

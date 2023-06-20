@@ -35,12 +35,21 @@ dependencies {
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
 }
 
+val testJavaVersion: String? by project
+
 testing {
   suites {
     register<JvmTestSuite>("testHttpSenderProvider") {
       dependencies {
         implementation(project(":exporters:http-sender:jdk"))
         implementation(project(":exporters:http-sender:okhttp"))
+      }
+      targets {
+        all {
+          testTask {
+            enabled = !testJavaVersion.equals("8")
+          }
+        }
       }
     }
   }
