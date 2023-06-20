@@ -65,6 +65,21 @@ testing {
         implementation("io.grpc:grpc-stub")
       }
     }
+    register<JvmTestSuite>("testJdkHttpSender") {
+      dependencies {
+        implementation(project(":exporters:http-sender:jdk"))
+        implementation(project(":exporters:otlp:testing-internal"))
+
+        implementation("io.grpc:grpc-stub")
+      }
+      targets {
+        all {
+          testTask {
+            systemProperty("io.opentelemetry.exporter.internal.http.HttpSenderProvider", "io.opentelemetry.exporter.http.jdk.internal.JdkHttpSenderProvider")
+          }
+        }
+      }
+    }
     val testSpanPipeline by registering(JvmTestSuite::class) {
       dependencies {
         implementation("io.opentelemetry.proto:opentelemetry-proto")
@@ -84,5 +99,11 @@ tasks {
         name != "testSpanPipeline"
       },
     )
+  }
+}
+
+afterEvaluate {
+  tasks.named<JavaCompile>("compileTestJdkHttpSenderJava") {
+    options.release.set(11)
   }
 }

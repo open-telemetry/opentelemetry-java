@@ -39,7 +39,7 @@ import okio.Okio;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class OkHttpHttpSender implements HttpSender {
+public final class OkHttpHttpSender implements HttpSender {
 
   private final OkHttpClient client;
   private final HttpUrl url;

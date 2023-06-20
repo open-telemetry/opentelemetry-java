@@ -22,9 +22,10 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
-class OtlpHttpSpanExporterTest extends AbstractHttpTelemetryExporterTest<SpanData, ResourceSpans> {
+class OtlpHttpSpanExporterOkHttpSenderTest
+    extends AbstractHttpTelemetryExporterTest<SpanData, ResourceSpans> {
 
-  protected OtlpHttpSpanExporterTest() {
+  protected OtlpHttpSpanExporterOkHttpSenderTest() {
     super("span", "/v1/traces", ResourceSpans.getDefaultInstance());
   }
 

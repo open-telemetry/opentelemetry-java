@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.internal.http;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
@@ -125,32 +126,75 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public HttpExporter<T> build() {
+  /**
+   * Load {@link HttpSender} via {@link HttpSenderProvider} SPI.
+   *
+   * <p>If no {@link HttpSenderProvider} is available, throw {@link IllegalStateException}.
+   *
+   * <p>If only one {@link HttpSenderProvider} is available, use it.
+   *
+   * <p>If multiple are available and..
+   *
+   * <ul>
+   *   <li>{@code io.opentelemetry.exporter.internal.http.HttpSenderProvider} is empty, use the
+   *       first found.
+   *   <li>{@code io.opentelemetry.exporter.internal.http.HttpSenderProvider} is set, use the
+   *       matching provider. If none match, throw {@link IllegalStateException}.
+   * </ul>
+   */
+  private HttpSender createHttpSender() {
     Map<String, String> headers = this.headers == null ? Collections.emptyMap() : this.headers;
     Supplier<Map<String, String>> headerSupplier = () -> headers;
 
-    HttpSender httpSender = null;
-    // TODO: once we publish multiple HttpSenderProviders, log warning when multiple are found
-    for (HttpSenderProvider httpSenderProvider :
+    HttpSenderProvider httpSenderProvider;
+    String configuredSender =
+        ConfigUtil.getString("io.opentelemetry.exporter.internal.http.HttpSenderProvider", "");
+    Map<String, HttpSenderProvider> httpSenderProviders = new HashMap<>();
+    for (HttpSenderProvider spi :
         ServiceLoader.load(HttpSenderProvider.class, HttpExporterBuilder.class.getClassLoader())) {
-      httpSender =
-          httpSenderProvider.createSender(
-              endpoint,
-              compressionEnabled,
-              exportAsJson ? "application/json" : "application/x-protobuf",
-              timeoutNanos,
-              headerSupplier,
-              authenticator,
-              retryPolicy,
-              tlsConfigHelper.getSslContext(),
-              tlsConfigHelper.getTrustManager());
-      LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
-      break;
+      httpSenderProviders.put(spi.getClass().getName(), spi);
     }
-    if (httpSender == null) {
+    if (httpSenderProviders.isEmpty()) {
       throw new IllegalStateException(
-          "No HttpSenderProvider found on classpath. Please add dependency on opentelemetry-exporter-http-sender-okhttp");
+          "No HttpSenderProvider found on classpath. Please add dependency on "
+              + "opentelemetry-exporter-http-sender-okhttp or opentelemetry-exporter-http-sender-jdk");
+    } else if (httpSenderProviders.size() == 1) {
+      httpSenderProvider = httpSenderProviders.values().stream().findFirst().get();
+    } else { // Multiple HttpSenderProviders
+      if (configuredSender.isEmpty()) { // Multiple providers but none configured
+        LOGGER.log(
+            Level.WARNING,
+            "Multiple HttpSenderProvider found. Please include only one, "
+                + "or specify preference setting io.opentelemetry.exporter.internal.http.HttpSenderProvider "
+                + "to the FQCN of the preferred provider.");
+        httpSenderProvider = httpSenderProviders.values().stream().findFirst().get();
+      } else if (httpSenderProviders.containsKey(
+          configuredSender)) { // Multiple providers, configured matches
+        httpSenderProvider = httpSenderProviders.get(configuredSender);
+      } else { // Multiple providers, configured does not match
+        throw new IllegalStateException(
+            "No HttpSenderProvider matched configured io.opentelemetry.exporter.internal.http.HttpSenderProvider: "
+                + configuredSender);
+      }
     }
+
+    HttpSender httpSender =
+        httpSenderProvider.createSender(
+            endpoint,
+            compressionEnabled,
+            exportAsJson ? "application/json" : "application/x-protobuf",
+            timeoutNanos,
+            headerSupplier,
+            authenticator,
+            retryPolicy,
+            tlsConfigHelper.getSslContext(),
+            tlsConfigHelper.getTrustManager());
+    LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
+    return httpSender;
+  }
+
+  public HttpExporter<T> build() {
+    HttpSender httpSender = createHttpSender();
 
     return new HttpExporter<>(exporterName, type, httpSender, meterProviderSupplier, exportAsJson);
   }

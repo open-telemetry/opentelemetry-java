@@ -22,10 +22,10 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
-class OtlpHttpLogRecordExporterTest
+class OtlpHttpLogRecordExporterOkHttpSenderTest
     extends AbstractHttpTelemetryExporterTest<LogRecordData, ResourceLogs> {
 
-  protected OtlpHttpLogRecordExporterTest() {
+  protected OtlpHttpLogRecordExporterOkHttpSenderTest() {
     super("log", "/v1/logs", ResourceLogs.getDefaultInstance());
   }
 
