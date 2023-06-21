@@ -99,7 +99,10 @@ class ProtoFieldsWireHandler : SchemaHandler() {
       fun get(schema: Schema): JavaGenerator {
         val nameToJavaName = linkedMapOf<ProtoType, TypeName>()
         for (protoFile in schema.protoFiles) {
-           val javaPackage = javaPackage(protoFile)
+          if (protoFile.location.path == "wire/extensions.proto") {
+            continue
+          }
+          val javaPackage = javaPackage(protoFile)
           putAll(nameToJavaName, javaPackage, null, protoFile.types)
         }
 
