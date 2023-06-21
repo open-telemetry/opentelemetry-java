@@ -160,7 +160,7 @@ class CollectorIntegrationTest {
 
     Optional<Metric> optRequestTotal =
         scopeMetrics.getMetricsList().stream()
-            .filter(metric -> metric.getName().equals("requests"))
+            .filter(metric -> metric.getName().equals("requests_total"))
             .findFirst();
     assertThat(optRequestTotal).isPresent();
     Metric requestTotal = optRequestTotal.get();
