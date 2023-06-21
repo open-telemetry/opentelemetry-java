@@ -27,8 +27,8 @@ dependencies {
 
 testing {
   suites {
-    val testResourceDisabledByProperty by registering(JvmTestSuite::class)
-    val testResourceDisabledByEnv by registering(JvmTestSuite::class)
+    register<JvmTestSuite>("testResourceDisabledByProperty") {}
+    register<JvmTestSuite>("testResourceDisabledByEnv") {}
   }
 }
 

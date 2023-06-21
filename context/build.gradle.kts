@@ -18,40 +18,40 @@ dependencies {
 
 testing {
   suites {
-    val grpcInOtelTest by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("grpcInOtelTest") {
       dependencies {
         implementation("io.grpc:grpc-context")
       }
     }
 
-    val otelInGrpcTest by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("otelInGrpcTest") {
       dependencies {
         implementation("io.grpc:grpc-context")
       }
     }
 
-    val braveInOtelTest by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("braveInOtelTest") {
       dependencies {
         implementation("io.zipkin.brave:brave")
       }
     }
 
-    val otelInBraveTest by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("otelInBraveTest") {
       dependencies {
         implementation("io.zipkin.brave:brave")
       }
     }
 
-    val otelAsBraveTest by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("otelAsBraveTest") {
       dependencies {
         implementation("io.zipkin.brave:brave")
       }
     }
 
-    val storageWrappersTest by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("storageWrappersTest") {
     }
 
-    val strictContextEnabledTest by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("strictContextEnabledTest") {
       dependencies {
         implementation(project(":api:all"))
       }
