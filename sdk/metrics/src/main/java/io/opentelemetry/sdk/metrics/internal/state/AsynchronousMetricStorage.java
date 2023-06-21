@@ -46,7 +46,13 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
   private final AggregationTemporality aggregationTemporality;
   private final Aggregator<T, U> aggregator;
   private final AttributesProcessor attributesProcessor;
+
+  /**
+   * This field is set to 1 less than the actual intended cardinality limit, allowing the last slot
+   * to be filled by the {@link MetricStorage#CARDINALITY_OVERFLOW} series.
+   */
   private final int maxCardinality;
+
   private Map<Attributes, T> points = new HashMap<>();
   private Map<Attributes, T> lastPoints =
       new HashMap<>(); // Only populated if aggregationTemporality == DELTA
@@ -65,7 +71,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
             .getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
-    this.maxCardinality = maxCardinality;
+    this.maxCardinality = maxCardinality - 1;
   }
 
   /**
@@ -107,12 +113,10 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
                 start, measurement.epochNanos(), measurement.doubleValue(), processedAttributes)
             : Measurement.longMeasurement(
                 start, measurement.epochNanos(), measurement.longValue(), processedAttributes);
-    recordPoint(aggregator.toPoint(measurement));
+    recordPoint(processedAttributes, measurement); // aggregator.toPoint(measurement));
   }
 
-  private void recordPoint(T point) {
-    Attributes attributes = point.getAttributes();
-
+  private void recordPoint(Attributes attributes, Measurement measurement) {
     if (points.size() >= maxCardinality) {
       throttlingLogger.log(
           Level.WARNING,
@@ -121,11 +125,21 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
               + " has exceeded the maximum allowed cardinality ("
               + maxCardinality
               + ").");
-      return;
-    }
-
-    // Check there is not already a recording for the attributes
-    if (points.containsKey(attributes)) {
+      attributes = MetricStorage.CARDINALITY_OVERFLOW;
+      measurement =
+          measurement.hasDoubleValue()
+              ? Measurement.doubleMeasurement(
+                  measurement.startEpochNanos(),
+                  measurement.epochNanos(),
+                  measurement.doubleValue(),
+                  attributes)
+              : Measurement.longMeasurement(
+                  measurement.startEpochNanos(),
+                  measurement.epochNanos(),
+                  measurement.longValue(),
+                  attributes);
+    } else if (points.containsKey(
+        attributes)) { // Check there is not already a recording for the attributes
       throttlingLogger.log(
           Level.WARNING,
           "Instrument "
@@ -135,7 +149,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
       return;
     }
 
-    points.put(attributes, point);
+    points.put(attributes, aggregator.toPoint(measurement));
   }
 
   @Override
