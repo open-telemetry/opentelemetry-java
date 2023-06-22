@@ -113,7 +113,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
                 start, measurement.epochNanos(), measurement.doubleValue(), processedAttributes)
             : Measurement.longMeasurement(
                 start, measurement.epochNanos(), measurement.longValue(), processedAttributes);
-    recordPoint(processedAttributes, measurement); // aggregator.toPoint(measurement));
+    recordPoint(processedAttributes, measurement);
   }
 
   private void recordPoint(Attributes attributes, Measurement measurement) {
