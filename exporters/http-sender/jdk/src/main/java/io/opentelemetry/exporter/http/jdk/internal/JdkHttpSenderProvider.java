@@ -21,7 +21,7 @@ import javax.net.ssl.X509TrustManager;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class JdkHttpSenderProvider implements HttpSenderProvider {
+public final class JdkHttpSenderProvider implements HttpSenderProvider {
 
   @Override
   public HttpSender createSender(

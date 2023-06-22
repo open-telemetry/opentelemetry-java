@@ -10,7 +10,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Flow;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 final class BodyPublisher implements HttpRequest.BodyPublisher {
@@ -57,9 +56,10 @@ final class BodyPublisher implements HttpRequest.BodyPublisher {
   private static class Subscription implements Flow.Subscription {
 
     private volatile boolean isCompleted;
-    private final AtomicInteger offset = new AtomicInteger();
     private final List<ByteBuffer> buffers;
     private final Flow.Subscriber<? super ByteBuffer> subscriber;
+
+    private int offset = 0;
 
     private Subscription(List<ByteBuffer> buffers, Flow.Subscriber<? super ByteBuffer> subscriber) {
       this.buffers = buffers;
@@ -92,7 +92,7 @@ final class BodyPublisher implements HttpRequest.BodyPublisher {
       long count = 0;
       ByteBuffer next;
       while (count < requestedItems) {
-        int nextIndex = offset.getAndIncrement();
+        int nextIndex = offset++;
         if (nextIndex >= buffers.size()) {
           break;
         }
@@ -100,7 +100,7 @@ final class BodyPublisher implements HttpRequest.BodyPublisher {
         subscriber.onNext(next);
         count++;
       }
-      if (offset.get() >= buffers.size()) {
+      if (offset >= buffers.size()) {
         isCompleted = true;
         subscriber.onComplete();
       }

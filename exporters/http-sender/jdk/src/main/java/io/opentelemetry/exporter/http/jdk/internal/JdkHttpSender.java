@@ -145,6 +145,7 @@ public final class JdkHttpSender implements HttpSender {
       try {
         TimeUnit.NANOSECONDS.sleep(backoffNanos);
       } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
         throw new IllegalStateException(e);
       }
       if ((System.nanoTime() - startTimeNanos) >= timeoutNanos) {
@@ -158,6 +159,9 @@ public final class JdkHttpSender implements HttpSender {
     try {
       return client.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray());
     } catch (IOException | InterruptedException e) {
+      if (e instanceof InterruptedException) {
+        Thread.currentThread().interrupt();
+      }
       // TODO: is throwable retryable?
       throw new IllegalStateException(e);
     } finally {
