@@ -12,8 +12,8 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
+import io.opentelemetry.exporter.internal.http.HttpExporter;
+import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
@@ -64,7 +64,7 @@ public class OltpExporterBenchmark {
 
   private static GrpcExporter<TraceRequestMarshaler> defaultGrpcExporter;
   private static GrpcExporter<TraceRequestMarshaler> okhttpGrpcExporter;
-  private static OkHttpExporter<TraceRequestMarshaler> httpExporter;
+  private static HttpExporter<TraceRequestMarshaler> httpExporter;
 
   @Setup(Level.Trial)
   public void setUp() {
@@ -96,7 +96,7 @@ public class OltpExporterBenchmark {
             .build();
 
     httpExporter =
-        new OkHttpExporterBuilder<TraceRequestMarshaler>(
+        new HttpExporterBuilder<TraceRequestMarshaler>(
                 "otlp", "span", "http://localhost:" + server.activeLocalPort() + "/v1/traces")
             .build();
   }

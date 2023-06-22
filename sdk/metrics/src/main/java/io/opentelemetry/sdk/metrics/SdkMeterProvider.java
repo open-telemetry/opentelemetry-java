@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
@@ -26,6 +27,7 @@ import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -54,17 +56,19 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
 
   SdkMeterProvider(
       List<RegisteredView> registeredViews,
-      List<MetricReader> metricReaders,
+      IdentityHashMap<MetricReader, CardinalityLimitSelector> metricReaders,
       Clock clock,
       Resource resource,
       ExemplarFilter exemplarFilter) {
     long startEpochNanos = clock.now();
     this.registeredViews = registeredViews;
     this.registeredReaders =
-        metricReaders.stream()
+        metricReaders.entrySet().stream()
             .map(
-                reader ->
-                    RegisteredReader.create(reader, ViewRegistry.create(reader, registeredViews)))
+                entry ->
+                    RegisteredReader.create(
+                        entry.getKey(),
+                        ViewRegistry.create(entry.getKey(), entry.getValue(), registeredViews)))
             .collect(toList());
     this.sharedState =
         MeterProviderSharedState.create(clock, resource, exemplarFilter, startEpochNanos);

@@ -32,8 +32,10 @@ public abstract class View {
       @Nullable String name,
       @Nullable String description,
       Aggregation aggregation,
-      AttributesProcessor attributesProcessor) {
-    return new AutoValue_View(name, description, aggregation, attributesProcessor);
+      AttributesProcessor attributesProcessor,
+      int cardinalityLimit) {
+    return new AutoValue_View(
+        name, description, aggregation, attributesProcessor, cardinalityLimit);
   }
 
   View() {}
@@ -58,6 +60,9 @@ public abstract class View {
   /** Returns the attribute processor used for this view. */
   abstract AttributesProcessor getAttributesProcessor();
 
+  /** Returns the cardinality limit for this view. */
+  abstract int getCardinalityLimit();
+
   @Override
   public final String toString() {
     StringJoiner joiner = new StringJoiner(", ", "View{", "}");
@@ -69,6 +74,7 @@ public abstract class View {
     }
     joiner.add("aggregation=" + getAggregation());
     joiner.add("attributesProcessor=" + getAttributesProcessor());
+    joiner.add("cardinalityLimit=" + getCardinalityLimit());
     return joiner.toString();
   }
 }

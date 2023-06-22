@@ -67,22 +67,28 @@ final class SdkSpan implements ReadWriteSpan {
 
   @GuardedBy("lock")
   private String name;
+
   // Set of recorded attributes. DO NOT CALL any other method that changes the ordering of events.
   @GuardedBy("lock")
   @Nullable
   private AttributesMap attributes;
+
   // List of recorded events.
   @GuardedBy("lock")
   private final List<EventData> events;
+
   // Number of events recorded.
   @GuardedBy("lock")
   private int totalRecordedEvents = 0;
+
   // The status of the span.
   @GuardedBy("lock")
   private StatusData status = StatusData.unset();
+
   // The end time of the span.
   @GuardedBy("lock")
   private long endEpochNanos;
+
   // True if the span is ended.
   @GuardedBy("lock")
   private boolean hasEnded;

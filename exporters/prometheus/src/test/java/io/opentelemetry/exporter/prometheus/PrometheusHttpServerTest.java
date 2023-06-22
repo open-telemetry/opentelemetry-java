@@ -236,7 +236,7 @@ class PrometheusHttpServerTest {
                 InstrumentationScopeInfo.create("scope1"),
                 "foo",
                 "description1",
-                "unit1",
+                "unit",
                 ImmutableSumData.create(
                     /* isMonotonic= */ true,
                     AggregationTemporality.CUMULATIVE,
@@ -248,7 +248,7 @@ class PrometheusHttpServerTest {
                 InstrumentationScopeInfo.create("scope2"),
                 "foo",
                 "description2",
-                "unit2",
+                "unit",
                 ImmutableSumData.create(
                     /* isMonotonic= */ true,
                     AggregationTemporality.CUMULATIVE,
@@ -259,9 +259,9 @@ class PrometheusHttpServerTest {
             ImmutableMetricData.createLongGauge(
                 resource,
                 InstrumentationScopeInfo.create("scope3"),
-                "foo_total",
+                "foo_unit_total",
                 "unused",
-                "unused",
+                "unit",
                 ImmutableGaugeData.create(
                     Collections.singletonList(
                         ImmutableLongPointData.create(123, 456, Attributes.empty(), 3))))));
@@ -283,13 +283,13 @@ class PrometheusHttpServerTest {
                 + "otel_scope_info{otel_scope_name=\"scope2\"} 1\n"
                 + "# TYPE foo_total counter\n"
                 + "# HELP foo_total description1\n"
-                + "foo_total{otel_scope_name=\"scope1\"} 1.0 0\n"
-                + "foo_total{otel_scope_name=\"scope2\"} 2.0 0\n");
+                + "foo_unit_total{otel_scope_name=\"scope1\"} 1.0 0\n"
+                + "foo_unit_total{otel_scope_name=\"scope2\"} 2.0 0\n");
 
     // Validate conflict warning message
     assertThat(logs.getEvents()).hasSize(1);
     logs.assertContains(
-        "Metric conflict(s) detected. Multiple metrics with same name but different type: [foo_total]");
+        "Metric conflict(s) detected. Multiple metrics with same name but different type: [foo_unit_total]");
 
     // Make another request and confirm warning is only logged once
     client.get("/").aggregate().join();

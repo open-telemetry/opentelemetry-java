@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
+import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,8 +31,8 @@ class AuthenticatorTest {
 
   @Test
   void setAuthenticatorOnDelegate_Success() {
-    OkHttpExporterBuilder<?> builder =
-        new OkHttpExporterBuilder<>("otlp", "test", "http://localhost:4318/test");
+    HttpExporterBuilder<?> builder =
+        new HttpExporterBuilder<>("otlp", "test", "http://localhost:4318/test");
 
     assertThat(builder).extracting("authenticator").isNull();
 

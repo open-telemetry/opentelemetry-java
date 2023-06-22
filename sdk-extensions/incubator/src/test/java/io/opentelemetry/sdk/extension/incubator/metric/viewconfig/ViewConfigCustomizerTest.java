@@ -28,7 +28,6 @@ class ViewConfigCustomizerTest {
   void customizeMeterProvider_Spi() {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     AutoConfiguredOpenTelemetrySdk.builder()
-        .setResultAsGlobal(false)
         .addPropertiesSupplier(
             () ->
                 ImmutableMap.of(

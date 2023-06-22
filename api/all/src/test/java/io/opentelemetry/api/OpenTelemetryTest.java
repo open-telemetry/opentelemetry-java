@@ -85,6 +85,15 @@ class OpenTelemetryTest {
         .hasStackTraceContaining("getOpenTelemetry");
   }
 
+  @Test
+  void toString_noop_Valid() {
+    assertThat(OpenTelemetry.noop().toString())
+        .isEqualTo(
+            "DefaultOpenTelemetry{"
+                + "propagators=DefaultContextPropagators{textMapPropagator=NoopTextMapPropagator}"
+                + "}");
+  }
+
   private static void setOpenTelemetry() {
     GlobalOpenTelemetry.set(OpenTelemetry.noop());
   }

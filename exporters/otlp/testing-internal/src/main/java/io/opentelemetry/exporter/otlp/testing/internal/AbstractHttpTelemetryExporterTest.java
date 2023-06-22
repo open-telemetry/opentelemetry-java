@@ -28,8 +28,8 @@ import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.grpc.UpstreamGrpcExporter;
+import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
@@ -192,7 +192,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     }
   }
 
-  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(OkHttpExporter.class);
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(HttpExporter.class);
 
   private final String type;
   private final String path;
@@ -274,7 +274,9 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   void compressionWithNone() {
     TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("none").build();
-    assertThat(exporter.unwrap()).extracting("delegate.compressionEnabled").isEqualTo(false);
+    assertThat(exporter.unwrap())
+        .extracting("delegate.httpSender.compressionEnabled")
+        .isEqualTo(false);
     try {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
@@ -295,7 +297,9 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assumeThat(exporter.unwrap())
         .extracting("delegate")
         .isNotInstanceOf(UpstreamGrpcExporter.class);
-    assertThat(exporter.unwrap()).extracting("delegate.compressionEnabled").isEqualTo(true);
+    assertThat(exporter.unwrap())
+        .extracting("delegate.httpSender.compressionEnabled")
+        .isEqualTo(true);
     try {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
@@ -409,7 +413,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
-  @SuppressLogger(OkHttpExporter.class)
+  @SuppressLogger(HttpExporter.class)
   void tls_untrusted() {
     TelemetryExporter<T> exporter = exporterBuilder().setEndpoint(server.httpsUri() + path).build();
     try {
@@ -479,7 +483,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
-  @SuppressLogger(OkHttpExporter.class)
+  @SuppressLogger(HttpExporter.class)
   void exportAfterShutdown() {
     TelemetryExporter<T> exporter = exporterBuilder().setEndpoint(server.httpUri() + path).build();
     exporter.shutdown();
@@ -493,7 +497,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
-  @SuppressLogger(OkHttpExporter.class)
+  @SuppressLogger(HttpExporter.class)
   void doubleShutdown() {
     int logsSizeBefore = logs.getEvents().size();
     TelemetryExporter<T> exporter = exporterBuilder().setEndpoint(server.httpUri() + path).build();
@@ -505,7 +509,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
-  @SuppressLogger(OkHttpExporter.class)
+  @SuppressLogger(HttpExporter.class)
   void error() {
     addHttpError(500);
     assertThat(
@@ -544,7 +548,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
-  @SuppressLogger(OkHttpExporter.class)
+  @SuppressLogger(HttpExporter.class)
   void retryableError_tooManyAttempts() {
     addHttpError(502);
     addHttpError(502);
@@ -566,7 +570,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @ParameterizedTest
-  @SuppressLogger(OkHttpExporter.class)
+  @SuppressLogger(HttpExporter.class)
   @ValueSource(ints = {400, 401, 403, 500, 501})
   void nonRetryableError(int code) {
     addHttpError(code);

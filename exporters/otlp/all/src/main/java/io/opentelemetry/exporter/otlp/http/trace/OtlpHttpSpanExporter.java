@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.http.trace;
 
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
+import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -21,9 +21,9 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpHttpSpanExporter implements SpanExporter {
 
-  private final OkHttpExporter<TraceRequestMarshaler> delegate;
+  private final HttpExporter<TraceRequestMarshaler> delegate;
 
-  OtlpHttpSpanExporter(OkHttpExporter<TraceRequestMarshaler> delegate) {
+  OtlpHttpSpanExporter(HttpExporter<TraceRequestMarshaler> delegate) {
     this.delegate = delegate;
   }
 
