@@ -20,17 +20,10 @@ class AutoConfigureUtilTest {
   void beforeEach() {
     autoConfiguredOpenTelemetrySdk =
         AutoConfiguredOpenTelemetrySdk.builder()
-            .setResultAsGlobal(false)
             .addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "none"))
             .addPropertiesSupplier(() -> singletonMap("otel.traces.exporter", "none"))
             .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"))
             .build();
-  }
-
-  @Test
-  void getResource() {
-    Assertions.assertThat(AutoConfigureUtil.getResource(autoConfiguredOpenTelemetrySdk))
-        .isSameAs(autoConfiguredOpenTelemetrySdk.getResource());
   }
 
   @Test
