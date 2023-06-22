@@ -18,7 +18,7 @@ class OrderedSpiTest {
     AutoConfiguredOpenTelemetrySdk sdk =
         AutoConfiguredOpenTelemetrySdk.builder()
             .setResultAsGlobal(false)
-            .registerShutdownHook(false)
+            .disableShutdownHook()
             .build();
 
     assertThat(sdk.getResource().getAttributes().asMap())

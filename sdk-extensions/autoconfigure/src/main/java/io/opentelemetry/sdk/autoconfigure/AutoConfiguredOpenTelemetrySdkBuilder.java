@@ -282,18 +282,15 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   /**
-   * Control the registration of a shutdown hook to shut down the SDK when appropriate. By default,
+   * Disable the registration of a shutdown hook to shut down the SDK when appropriate. By default,
    * the shutdown hook is registered.
    *
    * <p>Skipping the registration of the shutdown hook may cause unexpected behavior. This
    * configuration is for SDK consumers that require control over the SDK lifecycle. In this case,
    * alternatives must be provided by the SDK consumer to shut down the SDK.
-   *
-   * @param registerShutdownHook a boolean <code>true</code> will register the hook, otherwise
-   *     <code>false</code> will skip registration.
    */
-  public AutoConfiguredOpenTelemetrySdkBuilder registerShutdownHook(boolean registerShutdownHook) {
-    this.registerShutdownHook = registerShutdownHook;
+  public AutoConfiguredOpenTelemetrySdkBuilder disableShutdownHook() {
+    this.registerShutdownHook = false;
     return this;
   }
 
