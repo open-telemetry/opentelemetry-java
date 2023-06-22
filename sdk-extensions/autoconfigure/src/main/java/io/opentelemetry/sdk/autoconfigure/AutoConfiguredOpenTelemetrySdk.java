@@ -28,7 +28,7 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
    * <p>This will automatically set the resulting SDK as the {@link GlobalOpenTelemetry} instance.
    */
   public static AutoConfiguredOpenTelemetrySdk initialize() {
-    return builder().build();
+    return builder().setResultAsGlobal().build();
   }
 
   /**

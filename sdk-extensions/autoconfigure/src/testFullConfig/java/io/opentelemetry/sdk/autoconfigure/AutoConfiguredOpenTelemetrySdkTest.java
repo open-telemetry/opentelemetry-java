@@ -44,10 +44,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @Test
   void initializeAndGet_noGlobal() {
     try (OpenTelemetrySdk sdk =
-        AutoConfiguredOpenTelemetrySdk.builder()
-            .setResultAsGlobal(false)
-            .build()
-            .getOpenTelemetrySdk()) {
+        AutoConfiguredOpenTelemetrySdk.builder().build().getOpenTelemetrySdk()) {
       assertThat(GlobalOpenTelemetry.get()).isNotSameAs(sdk);
     }
   }

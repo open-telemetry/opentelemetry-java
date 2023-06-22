@@ -17,10 +17,7 @@ class ConditionalResourceProviderTest {
   @Test
   void shouldConditionallyProvideResourceAttributes_skipBasedOnPreviousResource() {
     AutoConfiguredOpenTelemetrySdk sdk =
-        AutoConfiguredOpenTelemetrySdk.builder()
-            .setResultAsGlobal(false)
-            .registerShutdownHook(false)
-            .build();
+        AutoConfiguredOpenTelemetrySdk.builder().registerShutdownHook(false).build();
 
     assertThat(sdk.getResource().getAttributes().asMap())
         .contains(entry(ResourceAttributes.SERVICE_NAME, "test-service"));
@@ -30,7 +27,6 @@ class ConditionalResourceProviderTest {
   void shouldConditionallyProvideResourceAttributes_skipBasedOnConfig() {
     AutoConfiguredOpenTelemetrySdk sdk =
         AutoConfiguredOpenTelemetrySdk.builder()
-            .setResultAsGlobal(false)
             .registerShutdownHook(false)
             .addPropertiesSupplier(() -> singletonMap("skip-first-resource-provider", "true"))
             .build();

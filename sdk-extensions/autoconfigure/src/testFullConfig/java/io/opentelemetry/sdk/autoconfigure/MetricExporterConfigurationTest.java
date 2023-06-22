@@ -72,7 +72,6 @@ class MetricExporterConfigurationTest {
 
     try (OpenTelemetrySdk sdk =
         AutoConfiguredOpenTelemetrySdk.builder()
-            .setResultAsGlobal(false)
             .setConfig(DefaultConfigProperties.createForTest(config))
             .build()
             .getOpenTelemetrySdk()) {

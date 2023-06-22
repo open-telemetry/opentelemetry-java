@@ -89,7 +89,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
   private boolean registerShutdownHook = true;
 
-  private boolean setResultAsGlobal = true;
+  private boolean setResultAsGlobal = false;
 
   private boolean customized;
 
@@ -300,9 +300,11 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   /**
    * Sets whether the configured {@link OpenTelemetrySdk} should be set as the application's
    * {@linkplain io.opentelemetry.api.GlobalOpenTelemetry global} instance.
+   *
+   * <p>By default, {@link GlobalOpenTelemetry} is not set.
    */
-  public AutoConfiguredOpenTelemetrySdkBuilder setResultAsGlobal(boolean setResultAsGlobal) {
-    this.setResultAsGlobal = setResultAsGlobal;
+  public AutoConfiguredOpenTelemetrySdkBuilder setResultAsGlobal() {
+    this.setResultAsGlobal = true;
     return this;
   }
 
