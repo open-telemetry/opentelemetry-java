@@ -15,11 +15,7 @@ class OrderedSpiTest {
 
   @Test
   void shouldLoadSpiImplementationsInOrder() {
-    AutoConfiguredOpenTelemetrySdk sdk =
-        AutoConfiguredOpenTelemetrySdk.builder()
-            .setResultAsGlobal(false)
-            .disableShutdownHook()
-            .build();
+    AutoConfiguredOpenTelemetrySdk sdk = AutoConfiguredOpenTelemetrySdk.builder().build();
 
     assertThat(sdk.getResource().getAttributes().asMap())
         .contains(
