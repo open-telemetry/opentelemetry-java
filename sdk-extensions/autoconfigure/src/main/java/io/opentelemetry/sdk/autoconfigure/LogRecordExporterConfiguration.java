@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 
-class LogRecordExporterConfiguration {
+final class LogRecordExporterConfiguration {
 
   private static final String EXPORTER_NONE = "none";
   private static final Map<String, String> EXPORTER_ARTIFACT_ID_BY_NAME;
