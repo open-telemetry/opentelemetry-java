@@ -1,0 +1,30 @@
+Comparing source compatibility of  against 
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder builder()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.OpenTelemetrySdk getOpenTelemetrySdk()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk initialize()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder addLoggerProviderCustomizer(java.util.function.BiFunction)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder addLogRecordExporterCustomizer(java.util.function.BiFunction)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder addMeterProviderCustomizer(java.util.function.BiFunction)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder addMetricExporterCustomizer(java.util.function.BiFunction)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder addPropagatorCustomizer(java.util.function.BiFunction)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder addPropertiesCustomizer(java.util.function.Function)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder addPropertiesSupplier(java.util.function.Supplier)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder addResourceCustomizer(java.util.function.BiFunction)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder addSamplerCustomizer(java.util.function.BiFunction)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder addSpanExporterCustomizer(java.util.function.BiFunction)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder addTracerProviderCustomizer(java.util.function.BiFunction)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk build()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder disableShutdownHook()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder setResultAsGlobal()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder setServiceClassLoader(java.lang.ClassLoader)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.autoconfigure.ResourceConfiguration  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.resources.Resource createEnvironmentResource()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.resources.Resource createEnvironmentResource(io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)
