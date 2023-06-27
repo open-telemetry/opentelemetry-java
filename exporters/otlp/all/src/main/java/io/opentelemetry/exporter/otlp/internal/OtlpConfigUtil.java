@@ -153,17 +153,20 @@ public final class OtlpConfigUtil {
     if (temporalityStr == null) {
       return;
     }
-    AggregationTemporality temporality;
-    try {
-      temporality = AggregationTemporality.valueOf(temporalityStr.toUpperCase(Locale.ROOT));
-    } catch (IllegalArgumentException e) {
-      throw new ConfigurationException(
-          "Unrecognized aggregation temporality: " + temporalityStr, e);
+    AggregationTemporalitySelector temporalitySelector;
+    switch (temporalityStr.toLowerCase(Locale.ROOT)) {
+      case "cumulative":
+        temporalitySelector = AggregationTemporalitySelector.alwaysCumulative();
+        break;
+      case "delta":
+        temporalitySelector = AggregationTemporalitySelector.deltaPreferred();
+        break;
+      case "lowmemory":
+        temporalitySelector = AggregationTemporalitySelector.lowMemory();
+        break;
+      default:
+        throw new ConfigurationException("Unrecognized aggregation temporality: " + temporalityStr);
     }
-    AggregationTemporalitySelector temporalitySelector =
-        temporality == AggregationTemporality.CUMULATIVE
-            ? AggregationTemporalitySelector.alwaysCumulative()
-            : AggregationTemporalitySelector.deltaPreferred();
     aggregationTemporalitySelectorConsumer.accept(temporalitySelector);
   }
 
