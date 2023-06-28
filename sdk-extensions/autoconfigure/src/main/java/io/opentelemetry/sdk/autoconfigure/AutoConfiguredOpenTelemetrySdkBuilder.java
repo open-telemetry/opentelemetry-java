@@ -49,6 +49,8 @@ import javax.annotation.Nullable;
  * A builder for configuring auto-configuration of the OpenTelemetry SDK. Notably, auto-configured
  * components can be customized, for example by delegating to them from a wrapper that tweaks
  * behavior such as filtering out telemetry attributes.
+ *
+ * @since 1.28.0
  */
 public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigurationCustomizer {
 

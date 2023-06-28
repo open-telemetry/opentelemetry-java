@@ -24,7 +24,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 
-/** Auto-configuration for the OpenTelemetry {@link Resource}. */
+/**
+ * Auto-configuration for the OpenTelemetry {@link Resource}.
+ *
+ * @since 1.28.0
+ */
 public final class ResourceConfiguration {
 
   // Visible for testing
