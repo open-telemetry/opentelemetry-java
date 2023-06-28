@@ -78,6 +78,7 @@ public final class DoubleBase2ExponentialHistogramAggregator
   static final class Handle
       extends AggregatorHandle<ExponentialHistogramPointData, DoubleExemplarData> {
     private final int maxBuckets;
+    private final int maxScale;
     @Nullable private DoubleBase2ExponentialHistogramBuckets positiveBuckets;
     @Nullable private DoubleBase2ExponentialHistogramBuckets negativeBuckets;
     private long zeroCount;
@@ -85,17 +86,18 @@ public final class DoubleBase2ExponentialHistogramAggregator
     private double min;
     private double max;
     private long count;
-    private int scale;
+    private int currentScale;
 
     Handle(ExemplarReservoir<DoubleExemplarData> reservoir, int maxBuckets, int maxScale) {
       super(reservoir);
       this.maxBuckets = maxBuckets;
+      this.maxScale = maxScale;
       this.sum = 0;
       this.zeroCount = 0;
       this.min = Double.MAX_VALUE;
       this.max = -1;
       this.count = 0;
-      this.scale = maxScale;
+      this.currentScale = maxScale;
     }
 
     @Override
@@ -107,13 +109,15 @@ public final class DoubleBase2ExponentialHistogramAggregator
         boolean reset) {
       ExponentialHistogramPointData point =
           ImmutableExponentialHistogramPointData.create(
-              scale,
+              currentScale,
               sum,
               zeroCount,
-              this.count > 0 ? this.min : null,
-              this.count > 0 ? this.max : null,
-              resolveBuckets(this.positiveBuckets, scale, reset),
-              resolveBuckets(this.negativeBuckets, scale, reset),
+              this.count > 0,
+              this.min,
+              this.count > 0,
+              this.max,
+              resolveBuckets(this.positiveBuckets, currentScale, reset),
+              resolveBuckets(this.negativeBuckets, currentScale, reset),
               startEpochNanos,
               epochNanos,
               attributes,
@@ -124,18 +128,19 @@ public final class DoubleBase2ExponentialHistogramAggregator
         this.min = Double.MAX_VALUE;
         this.max = -1;
         this.count = 0;
+        this.currentScale = maxScale;
       }
       return point;
     }
 
-    private static ExponentialHistogramBuckets resolveBuckets(
+    private ExponentialHistogramBuckets resolveBuckets(
         @Nullable DoubleBase2ExponentialHistogramBuckets buckets, int scale, boolean reset) {
       if (buckets == null) {
         return EmptyExponentialHistogramBuckets.get(scale);
       }
       ExponentialHistogramBuckets copy = buckets.copy();
       if (reset) {
-        buckets.clear();
+        buckets.clear(maxScale);
       }
       return copy;
     }
@@ -161,13 +166,13 @@ public final class DoubleBase2ExponentialHistogramAggregator
       } else if (c > 0) {
         // Initialize positive buckets at current scale, if needed
         if (positiveBuckets == null) {
-          positiveBuckets = new DoubleBase2ExponentialHistogramBuckets(scale, maxBuckets);
+          positiveBuckets = new DoubleBase2ExponentialHistogramBuckets(currentScale, maxBuckets);
         }
         buckets = positiveBuckets;
       } else {
         // Initialize negative buckets at current scale, if needed
         if (negativeBuckets == null) {
-          negativeBuckets = new DoubleBase2ExponentialHistogramBuckets(scale, maxBuckets);
+          negativeBuckets = new DoubleBase2ExponentialHistogramBuckets(currentScale, maxBuckets);
         }
         buckets = negativeBuckets;
       }
@@ -193,11 +198,11 @@ public final class DoubleBase2ExponentialHistogramAggregator
     void downScale(int by) {
       if (positiveBuckets != null) {
         positiveBuckets.downscale(by);
-        scale = positiveBuckets.getScale();
+        currentScale = positiveBuckets.getScale();
       }
       if (negativeBuckets != null) {
         negativeBuckets.downscale(by);
-        scale = negativeBuckets.getScale();
+        currentScale = negativeBuckets.getScale();
       }
     }
   }

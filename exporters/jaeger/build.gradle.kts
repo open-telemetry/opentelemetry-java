@@ -42,11 +42,8 @@ wire {
   }
 }
 
-// Declare sourcesJar dependency on proto generation so gradle doesn't complain about implicit dependency
-tasks.getByName("sourcesJar").dependsOn("generateMainProtos")
-
-sourceSets {
-  main {
-    java.srcDir("$buildDir/generated/source/wire")
+afterEvaluate {
+  tasks.getByName("generateMainProtos") {
+    setDependsOn(configurations.getByName("protoPath"))
   }
 }

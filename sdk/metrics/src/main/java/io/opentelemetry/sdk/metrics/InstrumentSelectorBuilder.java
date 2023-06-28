@@ -19,6 +19,7 @@ public final class InstrumentSelectorBuilder {
 
   @Nullable private InstrumentType instrumentType;
   @Nullable private String instrumentName;
+  @Nullable private String instrumentUnit;
   @Nullable private String meterName;
   @Nullable private String meterVersion;
   @Nullable private String meterSchemaUrl;
@@ -49,6 +50,17 @@ public final class InstrumentSelectorBuilder {
     return this;
   }
 
+  /**
+   * Select instruments with the given {@code unit}.
+   *
+   * @since 1.24.0
+   */
+  public InstrumentSelectorBuilder setUnit(String unit) {
+    requireNonNull(unit, "unit");
+    this.instrumentUnit = unit;
+    return this;
+  }
+
   /** Select instruments associated with the given {@code meterName}. */
   public InstrumentSelectorBuilder setMeterName(String meterName) {
     requireNonNull(meterName, "meterName");
@@ -75,11 +87,12 @@ public final class InstrumentSelectorBuilder {
     checkArgument(
         instrumentType != null
             || instrumentName != null
+            || instrumentUnit != null
             || meterName != null
             || meterVersion != null
             || meterSchemaUrl != null,
         "Instrument selector must contain selection criteria");
     return InstrumentSelector.create(
-        instrumentType, instrumentName, meterName, meterVersion, meterSchemaUrl);
+        instrumentType, instrumentName, instrumentUnit, meterName, meterVersion, meterSchemaUrl);
   }
 }

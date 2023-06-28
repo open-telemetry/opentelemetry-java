@@ -35,7 +35,7 @@ public final class DefaultAggregation implements Aggregation, AggregatorFactory 
 
   private DefaultAggregation() {}
 
-  private static Aggregation resolve(InstrumentDescriptor instrument) {
+  private static Aggregation resolve(InstrumentDescriptor instrument, boolean withAdvice) {
     switch (instrument.getType()) {
       case COUNTER:
       case UP_DOWN_COUNTER:
@@ -43,6 +43,10 @@ public final class DefaultAggregation implements Aggregation, AggregatorFactory 
       case OBSERVABLE_UP_DOWN_COUNTER:
         return SumAggregation.getInstance();
       case HISTOGRAM:
+        if (withAdvice && instrument.getAdvice().getExplicitBucketBoundaries() != null) {
+          return ExplicitBucketHistogramAggregation.create(
+              instrument.getAdvice().getExplicitBucketBoundaries());
+        }
         return ExplicitBucketHistogramAggregation.getDefault();
       case OBSERVABLE_GAUGE:
         return LastValueAggregation.getInstance();
@@ -54,14 +58,14 @@ public final class DefaultAggregation implements Aggregation, AggregatorFactory 
   @Override
   public <T extends PointData, U extends ExemplarData> Aggregator<T, U> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
-    return ((AggregatorFactory) resolve(instrumentDescriptor))
+    return ((AggregatorFactory) resolve(instrumentDescriptor, /* withAdvice= */ true))
         .createAggregator(instrumentDescriptor, exemplarFilter);
   }
 
   @Override
   public boolean isCompatibleWithInstrument(InstrumentDescriptor instrumentDescriptor) {
     // This should always return true
-    return ((AggregatorFactory) resolve(instrumentDescriptor))
+    return ((AggregatorFactory) resolve(instrumentDescriptor, /* withAdvice= */ false))
         .isCompatibleWithInstrument(instrumentDescriptor);
   }
 

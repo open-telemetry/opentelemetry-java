@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
@@ -50,14 +51,16 @@ class CallbackRegistrationTest {
           "description",
           "unit",
           InstrumentType.OBSERVABLE_COUNTER,
-          InstrumentValueType.LONG);
+          InstrumentValueType.LONG,
+          Advice.empty());
   private static final InstrumentDescriptor DOUBLE_INSTRUMENT =
       InstrumentDescriptor.create(
           "double-counter",
           "description",
           "unit",
           InstrumentType.OBSERVABLE_COUNTER,
-          InstrumentValueType.LONG);
+          InstrumentValueType.LONG,
+          Advice.empty());
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(CallbackRegistration.class);
@@ -102,7 +105,8 @@ class CallbackRegistrationTest {
                 + "description=description, "
                 + "unit=unit, "
                 + "type=OBSERVABLE_COUNTER, "
-                + "valueType=LONG"
+                + "valueType=LONG, "
+                + "advice=Advice{explicitBucketBoundaries=null}"
                 + "}]}");
     assertThat(
             CallbackRegistration.create(Arrays.asList(measurement1, measurement2), callback)
@@ -115,13 +119,15 @@ class CallbackRegistrationTest {
                 + "description=description, "
                 + "unit=unit, "
                 + "type=OBSERVABLE_COUNTER, "
-                + "valueType=LONG}, "
+                + "valueType=LONG, "
+                + "advice=Advice{explicitBucketBoundaries=null}}, "
                 + "InstrumentDescriptor{"
                 + "name=long-counter, "
                 + "description=description, "
                 + "unit=unit, "
                 + "type=OBSERVABLE_COUNTER, "
-                + "valueType=LONG"
+                + "valueType=LONG, "
+                + "advice=Advice{explicitBucketBoundaries=null}"
                 + "}]}");
   }
 

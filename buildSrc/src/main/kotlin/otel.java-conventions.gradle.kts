@@ -41,7 +41,16 @@ checkstyle {
 }
 
 dependencyCheck {
-  skipConfigurations = listOf("errorprone", "checkstyle", "annotationProcessor", "animalsniffer")
+  skipConfigurations = listOf(
+    "errorprone",
+    "checkstyle",
+    "annotationProcessor",
+    "animalsniffer",
+    "spotless-1972451482", // spotless-1972451482 is a weird configuration that's only added in jaeger-proto
+    "jmhAnnotationProcessor",
+    "jmhCompileClasspath",
+    "jmhRuntimeClasspath",
+    "jmhRuntimeOnly")
   failBuildOnCVSS = 7.0f // fail on high or critical CVE
   analyzers.assemblyEnabled = false // not sure why its trying to analyze .NET assemblies
 }
@@ -202,16 +211,6 @@ dependencies {
   // Workaround for @javax.annotation.Generated
   // see: https://github.com/grpc/grpc-java/issues/3633
   compileOnly("javax.annotation:javax.annotation-api")
-}
-
-class TestArgumentsProvider(
-  @InputFile
-  @PathSensitive(PathSensitivity.RELATIVE)
-  val loggingProperties: File,
-) : CommandLineArgumentProvider {
-  override fun asArguments() = listOf(
-    "-Djava.util.logging.config.file=${loggingProperties.absolutePath}",
-  )
 }
 
 testing {

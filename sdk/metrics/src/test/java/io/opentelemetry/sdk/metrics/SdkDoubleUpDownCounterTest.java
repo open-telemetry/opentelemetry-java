@@ -164,9 +164,7 @@ class SdkDoubleUpDownCounterTest {
         sdkMeter.upDownCounterBuilder("testUpDownCounter").ofDoubles().build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder()
-            .setInstrument((SdkDoubleUpDownCounter) doubleUpDownCounter)
-            .setCollectionIntervalMs(100);
+        StressTestRunner.builder().setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -205,9 +203,7 @@ class SdkDoubleUpDownCounterTest {
         sdkMeter.upDownCounterBuilder("testUpDownCounter").ofDoubles().build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder()
-            .setInstrument((SdkDoubleUpDownCounter) doubleUpDownCounter)
-            .setCollectionIntervalMs(100);
+        StressTestRunner.builder().setCollectionIntervalMs(100);
 
     IntStream.range(0, 4)
         .forEach(

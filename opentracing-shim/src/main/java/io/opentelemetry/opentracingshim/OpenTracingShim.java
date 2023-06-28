@@ -12,6 +12,8 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 /**
  * Factory for creating an OpenTracing {@link io.opentracing.Tracer} that is implemented using the
  * OpenTelemetry APIs.
+ *
+ * @since 1.26.0
  */
 public final class OpenTracingShim {
   private OpenTracingShim() {}
@@ -44,6 +46,6 @@ public final class OpenTracingShim {
       TracerProvider provider,
       TextMapPropagator textMapPropagator,
       TextMapPropagator httpPropagator) {
-    return new TracerShim(provider.get("opentracing-shim"), textMapPropagator, httpPropagator);
+    return new TracerShim(provider, textMapPropagator, httpPropagator);
   }
 }

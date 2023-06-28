@@ -56,13 +56,16 @@ import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span.Link;
-import io.opentelemetry.sdk.logs.SdkEventEmitterProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.logs.internal.SdkEventEmitterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -71,11 +74,11 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.UncheckedIOException;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -136,7 +139,7 @@ abstract class OtlpExporterIntegrationTest {
     collector =
         new GenericContainer<>(DockerImageName.parse(COLLECTOR_IMAGE))
             .withImagePullPolicy(PullPolicy.alwaysPull())
-            .withEnv("LOGGING_EXPORTER_LOG_LEVEL", "INFO")
+            .withEnv("LOGGING_EXPORTER_VERBOSITY_LEVEL", "normal")
             .withCopyFileToContainer(
                 MountableFile.forHostPath(serverTls.certificateFile().toPath(), 0555),
                 "/server.cert")
@@ -379,14 +382,18 @@ abstract class OtlpExporterIntegrationTest {
   }
 
   private static void testMetricExport(MetricExporter metricExporter) {
-    SdkMeterProvider meterProvider =
+    SdkMeterProviderBuilder meterProviderBuilder =
         SdkMeterProvider.builder()
             .setResource(RESOURCE)
             .registerMetricReader(
                 PeriodicMetricReader.builder(metricExporter)
                     .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
-                    .build())
-            .build();
+                    .build());
+
+    // Enable alwaysOn exemplar filter, instead of default traceBased filter
+    SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, ExemplarFilter.alwaysOn());
+
+    SdkMeterProvider meterProvider = meterProviderBuilder.build();
 
     Meter meter = meterProvider.meterBuilder(OtlpExporterIntegrationTest.class.getName()).build();
 
@@ -435,6 +442,7 @@ abstract class OtlpExporterIntegrationTest {
                     .setKey("key")
                     .setValue(AnyValue.newBuilder().setStringValue("value").build())
                     .build()));
+    assertThat(dataPoint.getExemplarsCount()).isEqualTo(1);
   }
 
   @ParameterizedTest
@@ -530,11 +538,11 @@ abstract class OtlpExporterIntegrationTest {
     try (Scope unused = Span.wrap(spanContext).makeCurrent()) {
       logger
           .logRecordBuilder()
+          .setTimestamp(100, TimeUnit.NANOSECONDS)
           .setBody("log body")
           .setAllAttributes(Attributes.builder().put("key", "value").build())
           .setSeverity(Severity.DEBUG)
           .setSeverityText("DEBUG")
-          .setEpoch(Instant.now())
           .setContext(Context.current())
           .emit();
       eventEmitter.emit("event-name", Attributes.builder().put("key", "value").build());
@@ -582,7 +590,7 @@ abstract class OtlpExporterIntegrationTest {
         .isEqualTo(spanContext.getSpanId());
     assertThat(TraceFlags.fromByte((byte) protoLog1.getFlags()))
         .isEqualTo(spanContext.getTraceFlags());
-    assertThat(protoLog1.getTimeUnixNano()).isGreaterThan(0);
+    assertThat(protoLog1.getTimeUnixNano()).isEqualTo(100);
 
     // LogRecord via EventEmitter.emit(String, Attributes)
     io.opentelemetry.proto.logs.v1.LogRecord protoLog2 = ilLogs.getLogRecords(1);

@@ -9,15 +9,17 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
-import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
+import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
+import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * Builder utility for {@link OtlpHttpMetricExporter}.
@@ -31,7 +33,7 @@ public final class OtlpHttpMetricExporterBuilder {
   private static final AggregationTemporalitySelector DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR =
       AggregationTemporalitySelector.alwaysCumulative();
 
-  private final OkHttpExporterBuilder<MetricsRequestMarshaler> delegate;
+  private final HttpExporterBuilder<MetricsRequestMarshaler> delegate;
   private AggregationTemporalitySelector aggregationTemporalitySelector =
       DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR;
 
@@ -39,14 +41,14 @@ public final class OtlpHttpMetricExporterBuilder {
       DefaultAggregationSelector.getDefault();
 
   OtlpHttpMetricExporterBuilder() {
-    delegate = new OkHttpExporterBuilder<>("otlp", "metric", DEFAULT_ENDPOINT);
+    delegate = new HttpExporterBuilder<>("otlp", "metric", DEFAULT_ENDPOINT);
     delegate.setMeterProvider(MeterProvider.noop());
     OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
   }
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of metrics. If
-   * unset, defaults to {@value OkHttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
+   * unset, defaults to {@value HttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
    */
   public OtlpHttpMetricExporterBuilder setTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
@@ -57,7 +59,7 @@ public final class OtlpHttpMetricExporterBuilder {
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of metrics. If
-   * unset, defaults to {@value OkHttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
+   * unset, defaults to {@value HttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
    */
   public OtlpHttpMetricExporterBuilder setTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
@@ -99,7 +101,7 @@ public final class OtlpHttpMetricExporterBuilder {
    * use the system default trusted certificates.
    */
   public OtlpHttpMetricExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
-    delegate.setTrustedCertificates(trustedCertificatesPem);
+    delegate.setTrustManagerFromCerts(trustedCertificatesPem);
     return this;
   }
 
@@ -108,7 +110,19 @@ public final class OtlpHttpMetricExporterBuilder {
    * The key must be PKCS8, and both must be in PEM format.
    */
   public OtlpHttpMetricExporterBuilder setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
-    delegate.setClientTls(privateKeyPem, certificatePem);
+    delegate.setKeyManagerFromCerts(privateKeyPem, certificatePem);
+    return this;
+  }
+
+  /**
+   * Sets the "bring-your-own" SSLContext for use with TLS. Users should call this _or_ set raw
+   * certificate bytes, but not both.
+   *
+   * @since 1.26.0
+   */
+  public OtlpHttpMetricExporterBuilder setSslContext(
+      SSLContext sslContext, X509TrustManager trustManager) {
+    delegate.setSslContext(sslContext, trustManager);
     return this;
   }
 

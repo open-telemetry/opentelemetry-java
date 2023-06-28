@@ -20,6 +20,7 @@ abstract class FixedSizeExemplarReservoir<T extends ExemplarData> implements Exe
   private final ReservoirCell[] storage;
   private final ReservoirCellSelector reservoirCellSelector;
   private final BiFunction<ReservoirCell, Attributes, T> mapAndResetCell;
+  private volatile boolean hasMeasurements = false;
 
   /** Instantiates an exemplar reservoir of fixed size. */
   FixedSizeExemplarReservoir(
@@ -40,6 +41,7 @@ abstract class FixedSizeExemplarReservoir<T extends ExemplarData> implements Exe
     int bucket = reservoirCellSelector.reservoirCellIndexFor(storage, value, attributes, context);
     if (bucket != -1) {
       this.storage[bucket].recordLongMeasurement(value, attributes, context);
+      this.hasMeasurements = true;
     }
   }
 
@@ -48,11 +50,15 @@ abstract class FixedSizeExemplarReservoir<T extends ExemplarData> implements Exe
     int bucket = reservoirCellSelector.reservoirCellIndexFor(storage, value, attributes, context);
     if (bucket != -1) {
       this.storage[bucket].recordDoubleMeasurement(value, attributes, context);
+      this.hasMeasurements = true;
     }
   }
 
   @Override
   public List<T> collectAndReset(Attributes pointAttributes) {
+    if (!hasMeasurements) {
+      return Collections.emptyList();
+    }
     // Note: we are collecting exemplars from buckets piecemeal, but we
     // could still be sampling exemplars during this process.
     List<T> results = new ArrayList<>();
@@ -63,6 +69,7 @@ abstract class FixedSizeExemplarReservoir<T extends ExemplarData> implements Exe
       }
     }
     reservoirCellSelector.reset();
+    this.hasMeasurements = false;
     return Collections.unmodifiableList(results);
   }
 }

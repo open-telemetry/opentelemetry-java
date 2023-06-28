@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
+import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
@@ -50,7 +51,8 @@ class LongSumAggregatorTest {
               "instrument_description",
               "instrument_unit",
               InstrumentType.COUNTER,
-              InstrumentValueType.LONG),
+              InstrumentValueType.LONG,
+              Advice.empty()),
           ExemplarReservoir::longNoSamples);
 
   @Test
@@ -132,7 +134,8 @@ class LongSumAggregatorTest {
                 "instrument_description",
                 "instrument_unit",
                 InstrumentType.COUNTER,
-                InstrumentValueType.LONG),
+                InstrumentValueType.LONG,
+                Advice.empty()),
             () -> reservoir);
     AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(0, attributes, Context.root());
@@ -159,7 +162,12 @@ class LongSumAggregatorTest {
         LongSumAggregator aggregator =
             new LongSumAggregator(
                 InstrumentDescriptor.create(
-                    "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
+                    "name",
+                    "description",
+                    "unit",
+                    instrumentType,
+                    InstrumentValueType.LONG,
+                    Advice.empty()),
                 ExemplarReservoir::longNoSamples);
 
         LongPointData diffed =

@@ -22,33 +22,63 @@ class InstrumentDescriptorTest {
   void equals() {
     InstrumentDescriptor descriptor =
         InstrumentDescriptor.create(
-            "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG);
+            "name",
+            "description",
+            "unit",
+            InstrumentType.COUNTER,
+            InstrumentValueType.LONG,
+            Advice.empty());
 
     assertThat(descriptor)
         .isEqualTo(
             InstrumentDescriptor.create(
-                "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
+                "name",
+                "description",
+                "unit",
+                InstrumentType.COUNTER,
+                InstrumentValueType.LONG,
+                Advice.empty()));
 
     // Validate getSourceInfo() is not equal for otherwise equal descriptors
     assertThat(descriptor.getSourceInfo())
         .isNotEqualTo(
             InstrumentDescriptor.create(
-                    "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG)
+                    "name",
+                    "description",
+                    "unit",
+                    InstrumentType.COUNTER,
+                    InstrumentValueType.LONG,
+                    Advice.empty())
                 .getSourceInfo());
 
     // Validate that name, description, unit, type, and value type are considered in equals
     assertThat(descriptor)
         .isNotEqualTo(
             InstrumentDescriptor.create(
-                "foo", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
+                "foo",
+                "description",
+                "unit",
+                InstrumentType.COUNTER,
+                InstrumentValueType.LONG,
+                Advice.empty()));
     assertThat(descriptor)
         .isNotEqualTo(
             InstrumentDescriptor.create(
-                "name", "foo", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
+                "name",
+                "foo",
+                "unit",
+                InstrumentType.COUNTER,
+                InstrumentValueType.LONG,
+                Advice.empty()));
     assertThat(descriptor)
         .isNotEqualTo(
             InstrumentDescriptor.create(
-                "name", "description", "foo", InstrumentType.COUNTER, InstrumentValueType.LONG));
+                "name",
+                "description",
+                "foo",
+                InstrumentType.COUNTER,
+                InstrumentValueType.LONG,
+                Advice.empty()));
     assertThat(descriptor)
         .isNotEqualTo(
             InstrumentDescriptor.create(
@@ -56,10 +86,16 @@ class InstrumentDescriptorTest {
                 "description",
                 "unit",
                 InstrumentType.UP_DOWN_COUNTER,
-                InstrumentValueType.LONG));
+                InstrumentValueType.LONG,
+                Advice.empty()));
     assertThat(descriptor)
         .isNotEqualTo(
             InstrumentDescriptor.create(
-                "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE));
+                "name",
+                "description",
+                "unit",
+                InstrumentType.COUNTER,
+                InstrumentValueType.DOUBLE,
+                Advice.empty()));
   }
 }

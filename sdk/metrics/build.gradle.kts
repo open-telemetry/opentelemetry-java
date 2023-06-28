@@ -15,6 +15,7 @@ otelJava.moduleName.set("io.opentelemetry.sdk.metrics")
 dependencies {
   api(project(":api:all"))
   api(project(":sdk:common"))
+  implementation(project(":extensions:incubator"))
 
   compileOnly("org.codehaus.mojo:animal-sniffer-annotations")
 
@@ -31,7 +32,7 @@ dependencies {
 
 testing {
   suites {
-    val debugEnabledTest by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("debugEnabledTest") {
       targets {
         all {
           testTask.configure {

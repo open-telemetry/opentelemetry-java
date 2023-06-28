@@ -12,6 +12,8 @@ import javax.annotation.concurrent.Immutable;
  * have 1 type of values: {@code String}, represented through {@code Body.Type}. This class will
  * likely be extended in the future to include additional body types supported by the OpenTelemetry
  * log data model.
+ *
+ * @since 1.27.0
  */
 @Immutable
 public interface Body {

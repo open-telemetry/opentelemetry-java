@@ -8,7 +8,11 @@ package io.opentelemetry.sdk.logs;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 
-/** A log record that can be read from and written to. */
+/**
+ * A log record that can be read from and written to.
+ *
+ * @since 1.27.0
+ */
 public interface ReadWriteLogRecord {
 
   /**
@@ -25,6 +29,6 @@ public interface ReadWriteLogRecord {
   LogRecordData toLogRecordData();
 
   // TODO: add additional log record accessors. Currently, all fields can be accessed indirectly via
-  // #toLogRecordData() with at the expense of additional allocations.
+  // #toLogRecordData() at the expense of additional allocations.
 
 }

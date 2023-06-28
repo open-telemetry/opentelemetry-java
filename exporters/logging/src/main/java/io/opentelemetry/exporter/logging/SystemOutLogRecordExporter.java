@@ -66,7 +66,7 @@ public class SystemOutLogRecordExporter implements LogRecordExporter {
     stringBuilder
         .append(
             ISO_FORMAT.format(
-                Instant.ofEpochMilli(NANOSECONDS.toMillis(log.getEpochNanos()))
+                Instant.ofEpochMilli(NANOSECONDS.toMillis(log.getTimestampEpochNanos()))
                     .atZone(ZoneOffset.UTC)))
         .append(" ")
         .append(log.getSeverity())

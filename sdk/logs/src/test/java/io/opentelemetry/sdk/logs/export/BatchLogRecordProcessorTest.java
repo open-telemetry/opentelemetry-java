@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.logs.export;
 
-import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.awaitility.Awaitility.await;
@@ -20,7 +20,6 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.testing.assertj.LogAssertions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -346,8 +345,7 @@ class BatchLogRecordProcessorTest {
     when(mockLogRecordExporter.export(
             argThat(
                 logs -> {
-                  assertThat(logs)
-                      .anySatisfy(log -> LogAssertions.assertThat(log).hasBody(LOG_MESSAGE_1));
+                  assertThat(logs).anySatisfy(log -> assertThat(log).hasBody(LOG_MESSAGE_1));
                   exported.countDown();
                   return true;
                 })))
@@ -364,8 +362,7 @@ class BatchLogRecordProcessorTest {
     when(mockLogRecordExporter.export(
             argThat(
                 logs -> {
-                  assertThat(logs)
-                      .anySatisfy(log -> LogAssertions.assertThat(log).hasBody(LOG_MESSAGE_2));
+                  assertThat(logs).anySatisfy(log -> assertThat(log).hasBody(LOG_MESSAGE_2));
                   exportedAgain.countDown();
                   return true;
                 })))
@@ -425,7 +422,12 @@ class BatchLogRecordProcessorTest {
     when(mockLogRecordExporter.toString()).thenReturn("MockLogRecordExporter");
     assertThat(BatchLogRecordProcessor.builder(mockLogRecordExporter).build().toString())
         .isEqualTo(
-            "BatchLogRecordProcessor{logRecordExporter=MockLogRecordExporter, scheduleDelayNanos=200000000, maxExportBatchSize=512, exporterTimeoutNanos=30000000000}");
+            "BatchLogRecordProcessor{"
+                + "logRecordExporter=MockLogRecordExporter"
+                + ", scheduleDelayNanos=1000000000"
+                + ", maxExportBatchSize=512"
+                + ", exporterTimeoutNanos=30000000000"
+                + "}");
   }
 
   private static final class BlockingLogRecordExporter implements LogRecordExporter {

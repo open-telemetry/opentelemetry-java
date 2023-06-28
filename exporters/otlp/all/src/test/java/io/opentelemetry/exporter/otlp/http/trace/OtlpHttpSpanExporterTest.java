@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.http.trace;
 
+import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.traces.ResourceSpansMarshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
@@ -18,6 +19,8 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 
 class OtlpHttpSpanExporterTest extends AbstractHttpTelemetryExporterTest<SpanData, ResourceSpans> {
 
@@ -60,8 +63,21 @@ class OtlpHttpSpanExporterTest extends AbstractHttpTelemetryExporterTest<SpanDat
       }
 
       @Override
+      public TelemetryExporterBuilder<SpanData> setAuthenticator(Authenticator authenticator) {
+        Authenticator.setAuthenticatorOnDelegate(builder, authenticator);
+        return this;
+      }
+
+      @Override
       public TelemetryExporterBuilder<SpanData> setTrustedCertificates(byte[] certificates) {
         builder.setTrustedCertificates(certificates);
+        return this;
+      }
+
+      @Override
+      public TelemetryExporterBuilder<SpanData> setSslContext(
+          SSLContext sslContext, X509TrustManager trustManager) {
+        builder.setSslContext(sslContext, trustManager);
         return this;
       }
 

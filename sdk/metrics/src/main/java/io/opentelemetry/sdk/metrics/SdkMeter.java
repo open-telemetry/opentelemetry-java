@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.internal.ValidationUtil;
 import io.opentelemetry.api.metrics.BatchCallback;
 import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
@@ -29,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /** {@link SdkMeter} is SDK implementation of {@link Meter}. */
 final class SdkMeter implements Meter {
@@ -36,10 +36,18 @@ final class SdkMeter implements Meter {
   private static final Logger logger = Logger.getLogger(SdkMeter.class.getName());
 
   /**
-   * Message appended to warnings when {@link ValidationUtil#checkValidInstrumentName(String,
-   * String)} is {@code false}.
+   * Instrument names MUST conform to the following syntax.
+   *
+   * <ul>
+   *   <li>They are not null or empty strings.
+   *   <li>They are case-insensitive, ASCII strings.
+   *   <li>The first character must be an alphabetic character.
+   *   <li>Subsequent characters must belong to the alphanumeric characters, '_', '.', and '-'.
+   *   <li>They can have a maximum length of 63 characters.
+   * </ul>
    */
-  private static final String NOOP_INSTRUMENT_WARNING = " Returning noop instrument.";
+  private static final Pattern VALID_INSTRUMENT_NAME_PATTERN =
+      Pattern.compile("([A-Za-z]){1}([A-Za-z0-9\\_\\-\\.]){0,62}");
 
   private static final Meter NOOP_METER = MeterProvider.noop().get("noop");
   private static final String NOOP_INSTRUMENT_NAME = "noop";
@@ -74,7 +82,7 @@ final class SdkMeter implements Meter {
 
   @Override
   public LongCounterBuilder counterBuilder(String name) {
-    return !ValidationUtil.checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
+    return !checkValidInstrumentName(name)
         ? NOOP_METER.counterBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkLongCounter.SdkLongCounterBuilder(
             meterProviderSharedState, meterSharedState, name);
@@ -82,7 +90,7 @@ final class SdkMeter implements Meter {
 
   @Override
   public LongUpDownCounterBuilder upDownCounterBuilder(String name) {
-    return !ValidationUtil.checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
+    return !checkValidInstrumentName(name)
         ? NOOP_METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkLongUpDownCounter.SdkLongUpDownCounterBuilder(
             meterProviderSharedState, meterSharedState, name);
@@ -90,7 +98,7 @@ final class SdkMeter implements Meter {
 
   @Override
   public DoubleHistogramBuilder histogramBuilder(String name) {
-    return !ValidationUtil.checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
+    return !checkValidInstrumentName(name)
         ? NOOP_METER.histogramBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkDoubleHistogram.SdkDoubleHistogramBuilder(
             meterProviderSharedState, meterSharedState, name);
@@ -98,7 +106,7 @@ final class SdkMeter implements Meter {
 
   @Override
   public DoubleGaugeBuilder gaugeBuilder(String name) {
-    return !ValidationUtil.checkValidInstrumentName(name, NOOP_INSTRUMENT_WARNING)
+    return !checkValidInstrumentName(name)
         ? NOOP_METER.gaugeBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkDoubleGaugeBuilder(meterProviderSharedState, meterSharedState, name);
   }
@@ -141,5 +149,23 @@ final class SdkMeter implements Meter {
   @Override
   public String toString() {
     return "SdkMeter{instrumentationScopeInfo=" + instrumentationScopeInfo + "}";
+  }
+
+  /** Check if the instrument name is valid. If invalid, log a warning. */
+  // Visible for testing
+  static boolean checkValidInstrumentName(String name) {
+    if (name != null && VALID_INSTRUMENT_NAME_PATTERN.matcher(name).matches()) {
+      return true;
+    }
+    if (logger.isLoggable(Level.WARNING)) {
+      logger.log(
+          Level.WARNING,
+          "Instrument name \""
+              + name
+              + "\" is invalid, returning noop instrument. Instrument names must consist of 63 or fewer characters including alphanumeric, _, ., -, and start with a letter.",
+          new AssertionError());
+    }
+
+    return false;
   }
 }

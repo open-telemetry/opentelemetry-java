@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.grpc.ManagedChannel;
+import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
@@ -15,6 +16,8 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 
 public interface TelemetryExporterBuilder<T> {
 
@@ -40,9 +43,13 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> addHeader(String key, String value);
 
+  TelemetryExporterBuilder<T> setAuthenticator(Authenticator authenticator);
+
   TelemetryExporterBuilder<T> setTrustedCertificates(byte[] certificates);
 
   TelemetryExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] certificatePem);
+
+  TelemetryExporterBuilder<T> setSslContext(SSLContext sslContext, X509TrustManager trustManager);
 
   TelemetryExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy);
 

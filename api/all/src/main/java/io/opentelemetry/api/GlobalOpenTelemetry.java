@@ -7,6 +7,7 @@ package io.opentelemetry.api;
 
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.internal.GuardedBy;
+import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -279,6 +280,11 @@ public final class GlobalOpenTelemetry {
     @Override
     public MeterProvider getMeterProvider() {
       return delegate.getMeterProvider();
+    }
+
+    @Override
+    public LoggerProvider getLogsBridge() {
+      return delegate.getLogsBridge();
     }
 
     @Override

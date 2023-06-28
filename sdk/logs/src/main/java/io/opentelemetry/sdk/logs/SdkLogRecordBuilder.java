@@ -24,7 +24,8 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
   private final LogLimits logLimits;
 
   private final InstrumentationScopeInfo instrumentationScopeInfo;
-  private long epochNanos;
+  private long timestampEpochNanos;
+  private long observedTimestampEpochNanos;
   @Nullable private Context context;
   private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
   @Nullable private String severityText;
@@ -39,14 +40,28 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
   }
 
   @Override
-  public SdkLogRecordBuilder setEpoch(long timestamp, TimeUnit unit) {
-    this.epochNanos = unit.toNanos(timestamp);
+  public SdkLogRecordBuilder setTimestamp(long timestamp, TimeUnit unit) {
+    this.timestampEpochNanos = unit.toNanos(timestamp);
     return this;
   }
 
   @Override
-  public SdkLogRecordBuilder setEpoch(Instant instant) {
-    this.epochNanos = TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano();
+  public SdkLogRecordBuilder setTimestamp(Instant instant) {
+    this.timestampEpochNanos =
+        TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano();
+    return this;
+  }
+
+  @Override
+  public LogRecordBuilder setObservedTimestamp(long timestamp, TimeUnit unit) {
+    this.observedTimestampEpochNanos = unit.toNanos(timestamp);
+    return this;
+  }
+
+  @Override
+  public LogRecordBuilder setObservedTimestamp(Instant instant) {
+    this.observedTimestampEpochNanos =
+        TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano();
     return this;
   }
 
@@ -94,6 +109,10 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
       return;
     }
     Context context = this.context == null ? Context.current() : this.context;
+    long observedTimestampEpochNanos =
+        this.observedTimestampEpochNanos == 0
+            ? this.loggerSharedState.getClock().now()
+            : this.observedTimestampEpochNanos;
     loggerSharedState
         .getLogRecordProcessor()
         .onEmit(
@@ -102,7 +121,8 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
                 loggerSharedState.getLogLimits(),
                 loggerSharedState.getResource(),
                 instrumentationScopeInfo,
-                this.epochNanos == 0 ? this.loggerSharedState.getClock().now() : this.epochNanos,
+                timestampEpochNanos,
+                observedTimestampEpochNanos,
                 Span.fromContext(context).getSpanContext(),
                 severity,
                 severityText,

@@ -15,10 +15,7 @@ dependencies {
   api(project(":sdk:common"))
   api(project(":sdk:trace"))
   api(project(":sdk:metrics"))
-
-  // implementation dependency to require users to add the artifact directly to their build to use
-  // SdkLoggerProvider.
-  implementation(project(":sdk:logs"))
+  api(project(":sdk:logs"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 

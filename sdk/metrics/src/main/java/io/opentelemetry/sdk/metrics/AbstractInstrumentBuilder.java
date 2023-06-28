@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.internal.ValidationUtil;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
+import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
@@ -28,6 +28,7 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
   private final InstrumentValueType valueType;
   private String description;
   private String unit;
+  private Advice advice;
 
   protected final MeterSharedState meterSharedState;
   protected final String instrumentName;
@@ -40,6 +41,26 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
       String name,
       String description,
       String unit) {
+    this(
+        meterProviderSharedState,
+        meterSharedState,
+        type,
+        valueType,
+        name,
+        description,
+        unit,
+        Advice.empty());
+  }
+
+  AbstractInstrumentBuilder(
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState,
+      InstrumentType type,
+      InstrumentValueType valueType,
+      String name,
+      String description,
+      String unit,
+      Advice advice) {
     this.type = type;
     this.valueType = valueType;
     this.instrumentName = name;
@@ -47,18 +68,13 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
     this.unit = unit;
     this.meterProviderSharedState = meterProviderSharedState;
     this.meterSharedState = meterSharedState;
+    this.advice = advice;
   }
 
   protected abstract BuilderT getThis();
 
   public BuilderT setUnit(String unit) {
-    if (!ValidationUtil.checkValidInstrumentUnit(
-        unit,
-        " Using \"" + DEFAULT_UNIT + "\" for instrument " + this.instrumentName + " instead.")) {
-      this.unit = DEFAULT_UNIT;
-    } else {
-      this.unit = unit;
-    }
+    this.unit = unit;
     return getThis();
   }
 
@@ -69,13 +85,17 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
 
   protected <T> T swapBuilder(SwapBuilder<T> swapper) {
     return swapper.newBuilder(
-        meterProviderSharedState, meterSharedState, instrumentName, description, unit);
+        meterProviderSharedState, meterSharedState, instrumentName, description, unit, advice);
+  }
+
+  protected void setAdvice(Advice advice) {
+    this.advice = advice;
   }
 
   final <I extends AbstractInstrument> I buildSynchronousInstrument(
       BiFunction<InstrumentDescriptor, WriteableMetricStorage, I> instrumentFactory) {
     InstrumentDescriptor descriptor =
-        InstrumentDescriptor.create(instrumentName, description, unit, type, valueType);
+        InstrumentDescriptor.create(instrumentName, description, unit, type, valueType, advice);
     WriteableMetricStorage storage =
         meterSharedState.registerSynchronousMetricStorage(descriptor, meterProviderSharedState);
     return instrumentFactory.apply(descriptor, storage);
@@ -103,7 +123,7 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
 
   final SdkObservableMeasurement buildObservableMeasurement(InstrumentType type) {
     InstrumentDescriptor descriptor =
-        InstrumentDescriptor.create(instrumentName, description, unit, type, valueType);
+        InstrumentDescriptor.create(instrumentName, description, unit, type, valueType, advice);
     return meterSharedState.registerObservableMeasurement(descriptor);
   }
 
@@ -111,7 +131,7 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
   public String toString() {
     return this.getClass().getSimpleName()
         + "{descriptor="
-        + InstrumentDescriptor.create(instrumentName, description, unit, type, valueType)
+        + InstrumentDescriptor.create(instrumentName, description, unit, type, valueType, advice)
         + "}";
   }
 
@@ -122,6 +142,7 @@ abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrumentBuil
         MeterSharedState meterSharedState,
         String name,
         String description,
-        String unit);
+        String unit,
+        Advice advice);
   }
 }

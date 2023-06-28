@@ -11,6 +11,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equal
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.satisfies;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.offset;
+import static org.assertj.core.api.Assertions.within;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -207,7 +208,9 @@ class MetricAssertionsTest {
           2,
           Attributes.empty(),
           15,
+          /* hasMin= */ true,
           4.0,
+          /* hasMax= */ true,
           7.0,
           Collections.singletonList(10.0),
           Arrays.asList(1L, 2L));
@@ -241,7 +244,9 @@ class MetricAssertionsTest {
           1,
           10.0,
           1,
+          /* hasMin= */ true,
           2.0,
+          /* hasMax= */ true,
           4.0,
           ImmutableExponentialHistogramBuckets.create(1, 10, Arrays.asList(1L, 2L)),
           ImmutableExponentialHistogramBuckets.create(1, 0, Collections.emptyList()),
@@ -977,7 +982,8 @@ class MetricAssertionsTest {
                                 .hasMax(7.0)
                                 .hasMin(4.0)
                                 .hasCount(3)
-                                .hasBucketBoundaries(10.0)));
+                                .hasBucketBoundaries(10.0)
+                                .hasBucketBoundaries(new double[] {10.1}, within(0.1))));
     assertThat(HISTOGRAM_METRIC_DELTA).hasHistogramSatisfying(histogram -> histogram.isDelta());
   }
 
@@ -1039,6 +1045,15 @@ class MetricAssertionsTest {
                         histogram ->
                             histogram.hasPointsSatisfying(
                                 point -> point.hasBucketBoundaries(11.0))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(HISTOGRAM_METRIC)
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point.hasBucketBoundaries(new double[] {11.0}, within(0.1)))))
         .isInstanceOf(AssertionError.class);
   }
 

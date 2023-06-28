@@ -11,6 +11,8 @@ dependencies {
   implementation(project(":sdk:all"))
   implementation(project(":extensions:trace-propagators"))
 
+  compileOnly("com.google.errorprone:error_prone_annotations")
+
   implementation("com.linecorp.armeria:armeria")
 
   testImplementation("org.testcontainers:junit-jupiter")
@@ -30,4 +32,9 @@ tasks {
 
     jvmArgs("-Dio.opentelemetry.testArchive=${shadowJar.get().archiveFile.get().asFile.absolutePath}")
   }
+}
+
+// Skip OWASP dependencyCheck task on test module
+dependencyCheck {
+  skip = true
 }

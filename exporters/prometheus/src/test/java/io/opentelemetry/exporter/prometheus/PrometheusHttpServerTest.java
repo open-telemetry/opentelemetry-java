@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.prometheus;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -32,11 +33,17 @@ import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.GZIPInputStream;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -229,7 +236,7 @@ class PrometheusHttpServerTest {
                 InstrumentationScopeInfo.create("scope1"),
                 "foo",
                 "description1",
-                "unit1",
+                "unit",
                 ImmutableSumData.create(
                     /* isMonotonic= */ true,
                     AggregationTemporality.CUMULATIVE,
@@ -241,7 +248,7 @@ class PrometheusHttpServerTest {
                 InstrumentationScopeInfo.create("scope2"),
                 "foo",
                 "description2",
-                "unit2",
+                "unit",
                 ImmutableSumData.create(
                     /* isMonotonic= */ true,
                     AggregationTemporality.CUMULATIVE,
@@ -252,9 +259,9 @@ class PrometheusHttpServerTest {
             ImmutableMetricData.createLongGauge(
                 resource,
                 InstrumentationScopeInfo.create("scope3"),
-                "foo_total",
+                "foo_unit_total",
                 "unused",
-                "unused",
+                "unit",
                 ImmutableGaugeData.create(
                     Collections.singletonList(
                         ImmutableLongPointData.create(123, 456, Attributes.empty(), 3))))));
@@ -276,13 +283,13 @@ class PrometheusHttpServerTest {
                 + "otel_scope_info{otel_scope_name=\"scope2\"} 1\n"
                 + "# TYPE foo_total counter\n"
                 + "# HELP foo_total description1\n"
-                + "foo_total{otel_scope_name=\"scope1\"} 1.0 0\n"
-                + "foo_total{otel_scope_name=\"scope2\"} 2.0 0\n");
+                + "foo_unit_total{otel_scope_name=\"scope1\"} 1.0 0\n"
+                + "foo_unit_total{otel_scope_name=\"scope2\"} 2.0 0\n");
 
     // Validate conflict warning message
     assertThat(logs.getEvents()).hasSize(1);
     logs.assertContains(
-        "Metric conflict(s) detected. Multiple metrics with same name but different type: [foo_total]");
+        "Metric conflict(s) detected. Multiple metrics with same name but different type: [foo_unit_total]");
 
     // Make another request and confirm warning is only logged once
     client.get("/").aggregate().join();
@@ -293,6 +300,33 @@ class PrometheusHttpServerTest {
   void stringRepresentation() {
     assertThat(prometheusServer.toString())
         .isEqualTo("PrometheusHttpServer{address=" + prometheusServer.getAddress() + "}");
+  }
+
+  @Test
+  void defaultExecutor() {
+    assertThat(prometheusServer)
+        .extracting("executor", as(InstanceOfAssertFactories.type(ThreadPoolExecutor.class)))
+        .satisfies(executor -> assertThat(executor.getCorePoolSize()).isEqualTo(5));
+  }
+
+  @Test
+  void customExecutor() throws IOException {
+    ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(10);
+    int port;
+    try (ServerSocket socket = new ServerSocket(0)) {
+      port = socket.getLocalPort();
+    }
+    try (PrometheusHttpServer server =
+        PrometheusHttpServer.builder()
+            .setHost("localhost")
+            .setPort(port)
+            .setExecutor(scheduledExecutor)
+            .build()) {
+      assertThat(server)
+          .extracting(
+              "executor", as(InstanceOfAssertFactories.type(ScheduledThreadPoolExecutor.class)))
+          .satisfies(executor -> assertThat(executor).isSameAs(scheduledExecutor));
+    }
   }
 
   private static List<MetricData> generateTestData() {

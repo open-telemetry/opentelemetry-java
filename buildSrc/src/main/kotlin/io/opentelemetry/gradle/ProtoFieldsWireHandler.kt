@@ -99,7 +99,10 @@ class ProtoFieldsWireHandler : SchemaHandler() {
       fun get(schema: Schema): JavaGenerator {
         val nameToJavaName = linkedMapOf<ProtoType, TypeName>()
         for (protoFile in schema.protoFiles) {
-           val javaPackage = javaPackage(protoFile)
+          if (protoFile.location.path == "wire/extensions.proto") {
+            continue
+          }
+          val javaPackage = javaPackage(protoFile)
           putAll(nameToJavaName, javaPackage, null, protoFile.types)
         }
 
@@ -155,7 +158,7 @@ class ProtoFieldsWireHandler : SchemaHandler() {
 
       for (field in type.fieldsAndOneOfFields) {
         builder.addField(
-          FieldSpec.builder(PROTO_FIELD_INFO, field.name.toUpperCase(), PUBLIC, STATIC, FINAL)
+          FieldSpec.builder(PROTO_FIELD_INFO, field.name.uppercase(), PUBLIC, STATIC, FINAL)
             .initializer("\$T.create(\$L, \$L, \"\$L\")",
               PROTO_FIELD_INFO,
               field.tag,

@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
+import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.DebugUtils;
@@ -23,10 +24,10 @@ class SourceInfoTest {
 
   @Test
   void sourceInfoFindsStackTrace() {
-    assertThat(info.shortDebugString()).isEqualTo("SourceInfoTest.java:22");
+    assertThat(info.shortDebugString()).isEqualTo("SourceInfoTest.java:23");
     assertThat(info.multiLineDebugString())
         .startsWith(
-            "\tat io.opentelemetry.testing.SourceInfoTest.<clinit>(SourceInfoTest.java:22)\n");
+            "\tat io.opentelemetry.testing.SourceInfoTest.<clinit>(SourceInfoTest.java:23)\n");
   }
 
   @Test
@@ -40,7 +41,8 @@ class SourceInfoTest {
                 "description",
                 "unit",
                 InstrumentType.OBSERVABLE_COUNTER,
-                InstrumentValueType.DOUBLE));
+                InstrumentValueType.DOUBLE,
+                Advice.empty()));
     MetricDescriptor simpleWithNewDescription =
         MetricDescriptor.create(
             View.builder().build(),
@@ -50,7 +52,8 @@ class SourceInfoTest {
                 "description2",
                 "unit2",
                 InstrumentType.COUNTER,
-                InstrumentValueType.LONG));
+                InstrumentValueType.LONG,
+                Advice.empty()));
     assertThat(DebugUtils.duplicateMetricErrorMessage(simple, simpleWithNewDescription))
         .contains("Found duplicate metric definition: name")
         .contains("- InstrumentDescription [description2] does not match [description]")
@@ -76,7 +79,8 @@ class SourceInfoTest {
                 "description",
                 "unit",
                 InstrumentType.HISTOGRAM,
-                InstrumentValueType.DOUBLE));
+                InstrumentValueType.DOUBLE,
+                Advice.empty()));
     MetricDescriptor simpleWithNewDescription =
         MetricDescriptor.create(
             View.builder().build(),
@@ -86,7 +90,8 @@ class SourceInfoTest {
                 "description2",
                 "unit",
                 InstrumentType.HISTOGRAM,
-                InstrumentValueType.DOUBLE));
+                InstrumentValueType.DOUBLE,
+                Advice.empty()));
     assertThat(DebugUtils.duplicateMetricErrorMessage(simple, simpleWithNewDescription))
         .contains("Found duplicate metric definition: name2")
         .contains(simple.getSourceInstrument().getSourceInfo().multiLineDebugString())
@@ -111,7 +116,8 @@ class SourceInfoTest {
                 "description",
                 "unit2",
                 InstrumentType.HISTOGRAM,
-                InstrumentValueType.DOUBLE));
+                InstrumentValueType.DOUBLE,
+                Advice.empty()));
     MetricDescriptor simpleWithNewDescription =
         MetricDescriptor.create(
             problemView,
@@ -121,7 +127,8 @@ class SourceInfoTest {
                 "description",
                 "unit",
                 InstrumentType.HISTOGRAM,
-                InstrumentValueType.DOUBLE));
+                InstrumentValueType.DOUBLE,
+                Advice.empty()));
     assertThat(DebugUtils.duplicateMetricErrorMessage(simple, simpleWithNewDescription))
         .contains("Found duplicate metric definition: name")
         .contains("VIEW defined")

@@ -1,7 +1,5 @@
 # OpenTelemetry Incubator
 
-[![Javadocs][javadoc-image]][javadoc-url]
-
 This artifact contains experimental code related to the trace and metric SDKs.
 
 ## View File Configuration
@@ -14,6 +12,7 @@ For example, suppose `/Users/user123/view.yaml` has the following content:
 - selector:
     instrument_name: my-instrument
     instrument_type: COUNTER
+    instrument_unit: ms
     meter_name: my-meter
     meter_version: 1.0.0
     meter_schema_url: http://example.com
@@ -36,6 +35,7 @@ SdkMeterProvider.builder()
        InstrumentSelector.builder()
            .setName("my-instrument")
            .setType(InstrumentType.COUNTER)
+           .setUnit("ms")
            .setMeterName("my-meter")
            .setMeterVersion("1.0.0")
            .setMeterSchemaUrl("http://example.com")
@@ -178,17 +178,3 @@ The /traceconfigz zPage displays information about the currently active tracing 
 provides an interface for users to modify relevant parameters. Here is what the web page looks like:
 
 ![traceconfigz](img/traceconfigz.png)
-
-### Benchmark Testing
-
-This module contains two sets of benchmark tests: one for adding spans to an instance of
-TracezSpanBuckets and another for retrieving counts and spans with TracezDataAggregator. You can run
-the tests yourself with the following commands:
-
-```
-./gradlew -PjmhIncludeSingleClass=TracezSpanBucketsBenchmark clean :opentelemetry-sdk-extension-zpages:jmh
-./gradlew -PjmhIncludeSingleClass=TracezDataAggregatorBenchmark clean :opentelemetry-sdk-extension-zpages:jmh
-```
-
-[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-tracing-incubator.svg
-[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-tracing-incubator

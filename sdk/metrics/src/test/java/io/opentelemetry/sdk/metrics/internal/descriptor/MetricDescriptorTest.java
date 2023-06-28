@@ -21,7 +21,12 @@ class MetricDescriptorTest {
     View view = View.builder().build();
     InstrumentDescriptor instrument =
         InstrumentDescriptor.create(
-            "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
+            "name",
+            "description",
+            "unit",
+            InstrumentType.COUNTER,
+            InstrumentValueType.DOUBLE,
+            Advice.empty());
     MetricDescriptor simple =
         MetricDescriptor.create(view, SourceInfo.fromCurrentStack(), instrument);
     assertThat(simple.getName()).isEqualTo("name");
@@ -36,7 +41,12 @@ class MetricDescriptorTest {
     View view = View.builder().setName("new_name").setDescription("new_description").build();
     InstrumentDescriptor instrument =
         InstrumentDescriptor.create(
-            "name", "description", "unit", InstrumentType.HISTOGRAM, InstrumentValueType.DOUBLE);
+            "name",
+            "description",
+            "unit",
+            InstrumentType.HISTOGRAM,
+            InstrumentValueType.DOUBLE,
+            Advice.empty());
     MetricDescriptor simple =
         MetricDescriptor.create(view, SourceInfo.fromCurrentStack(), instrument);
     assertThat(simple.getName()).isEqualTo("new_name");
@@ -51,7 +61,12 @@ class MetricDescriptorTest {
     View view = View.builder().build();
     InstrumentDescriptor instrument =
         InstrumentDescriptor.create(
-            "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
+            "name",
+            "description",
+            "unit",
+            InstrumentType.COUNTER,
+            InstrumentValueType.DOUBLE,
+            Advice.empty());
     MetricDescriptor descriptor =
         MetricDescriptor.create(view, SourceInfo.fromCurrentStack(), instrument);
     // Same name, description, source name, source description, source unit, source type, and source
@@ -66,7 +81,8 @@ class MetricDescriptorTest {
                         "description",
                         "unit",
                         InstrumentType.COUNTER,
-                        InstrumentValueType.DOUBLE))))
+                        InstrumentValueType.DOUBLE,
+                        Advice.empty()))))
         .isTrue();
     // Different name overridden by view is not compatible
     assertThat(
@@ -103,7 +119,8 @@ class MetricDescriptorTest {
                         "description",
                         "unit",
                         InstrumentType.COUNTER,
-                        InstrumentValueType.DOUBLE))))
+                        InstrumentValueType.DOUBLE,
+                        Advice.empty()))))
         .isFalse();
     // Different instrument source description is not compatible
     assertThat(
@@ -116,7 +133,8 @@ class MetricDescriptorTest {
                         "foo",
                         "unit",
                         InstrumentType.COUNTER,
-                        InstrumentValueType.DOUBLE))))
+                        InstrumentValueType.DOUBLE,
+                        Advice.empty()))))
         .isFalse();
     // Different instrument source unit is not compatible
     assertThat(
@@ -129,7 +147,8 @@ class MetricDescriptorTest {
                         "description",
                         "foo",
                         InstrumentType.COUNTER,
-                        InstrumentValueType.DOUBLE))))
+                        InstrumentValueType.DOUBLE,
+                        Advice.empty()))))
         .isFalse();
     // Different instrument source type is not compatible
     assertThat(
@@ -142,7 +161,8 @@ class MetricDescriptorTest {
                         "description",
                         "unit",
                         InstrumentType.HISTOGRAM,
-                        InstrumentValueType.DOUBLE))))
+                        InstrumentValueType.DOUBLE,
+                        Advice.empty()))))
         .isFalse();
     // Different instrument source value type is not compatible
     assertThat(
@@ -155,7 +175,8 @@ class MetricDescriptorTest {
                         "description",
                         "unit",
                         InstrumentType.COUNTER,
-                        InstrumentValueType.LONG))))
+                        InstrumentValueType.LONG,
+                        Advice.empty()))))
         .isFalse();
   }
 }

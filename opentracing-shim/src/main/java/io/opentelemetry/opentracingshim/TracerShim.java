@@ -5,6 +5,7 @@
 
 package io.opentelemetry.opentracingshim;
 
+import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
@@ -14,6 +15,11 @@ import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
+import java.io.Closeable;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -21,16 +27,20 @@ import javax.annotation.Nullable;
 final class TracerShim implements Tracer {
   private static final Logger logger = Logger.getLogger(TracerShim.class.getName());
 
+  static final String OPENTRACINGSHIM_VERSION = readVersion();
+
+  private final io.opentelemetry.api.trace.TracerProvider provider;
   private final io.opentelemetry.api.trace.Tracer tracer;
   private final ScopeManager scopeManagerShim;
   private final Propagation propagation;
-  private volatile boolean isClosed;
+  private final AtomicBoolean isShutdown = new AtomicBoolean();
 
   TracerShim(
-      io.opentelemetry.api.trace.Tracer tracer,
+      io.opentelemetry.api.trace.TracerProvider provider,
       TextMapPropagator textMapPropagator,
       TextMapPropagator httpPropagator) {
-    this.tracer = tracer;
+    this.provider = provider;
+    this.tracer = provider.get("opentracing-shim", OPENTRACINGSHIM_VERSION);
     this.propagation = new Propagation(textMapPropagator, httpPropagator);
     this.scopeManagerShim = new ScopeManagerShim();
   }
@@ -62,7 +72,7 @@ final class TracerShim implements Tracer {
 
   @Override
   public SpanBuilder buildSpan(String operationName) {
-    if (isClosed) {
+    if (isShutdown.get()) {
       return new NoopSpanBuilderShim(operationName);
     }
 
@@ -110,6 +120,48 @@ final class TracerShim implements Tracer {
 
   @Override
   public void close() {
-    isClosed = true;
+    if (!isShutdown.compareAndSet(false, true)) {
+      return;
+    }
+
+    TracerProvider provider = maybeUnobfuscate(this.provider);
+    if (provider instanceof Closeable) {
+      try {
+        ((Closeable) provider).close();
+      } catch (RuntimeException | IOException e) {
+        logger.log(Level.INFO, "Exception caught while closing TracerProvider.", e);
+      }
+    }
+  }
+
+  private static TracerProvider maybeUnobfuscate(TracerProvider tracerProvider) {
+    if (!tracerProvider.getClass().getSimpleName().equals("ObfuscatedTracerProvider")) {
+      return tracerProvider;
+    }
+    try {
+      Field delegateField = tracerProvider.getClass().getDeclaredField("delegate");
+      delegateField.setAccessible(true);
+      Object delegate = delegateField.get(tracerProvider);
+      if (delegate instanceof TracerProvider) {
+        return (TracerProvider) delegate;
+      }
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      logger.log(Level.INFO, "Error trying to unobfuscate SdkTracerProvider", e);
+    }
+    return tracerProvider;
+  }
+
+  private static String readVersion() {
+    Properties properties = new Properties();
+    String version;
+    try {
+      properties.load(
+          TracerShim.class.getResourceAsStream(
+              "/io/opentelemetry/opentracingshim/version.properties"));
+      version = properties.getProperty("sdk.version", "unknown");
+    } catch (Exception e) {
+      version = "unknown";
+    }
+    return version;
   }
 }

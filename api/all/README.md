@@ -1,22 +1,7 @@
 # OpenTelemetry API
 
-[![Javadocs][javadoc-image]][javadoc-url]
+#### API Misuse Logging
 
-* The code in this module is the implementation of stable OpenTelemetry signals.
-* Semantic Conventions for OpenTelemetry are in the `opentelemetry-semconv` module.
-* The default implementation of the interfaces in this module is in the OpenTelemetry SDK module.
-* The interfaces in this directory can be implemented to create alternative
-  implementations of the OpenTelemetry library.
+API misuse information is logged under logger named `io.opentelemetry.ApiUsageLogging`.
 
-[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-api.svg
-[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-api
-
----
-#### Running micro-benchmarks
-From the root of the repo run `./gradlew clean :api:jmh` to run all the benchmarks
-or run `./gradlew clean :api:jmh -PjmhIncludeSingleClass=<ClassNameHere>`
-to run a specific benchmark class.
-
----
-#### Logging API mis-use
-Define `logging.level.io.opentelemetry.ApiUsageLogging=TRACE` to enable TRACE logging for invalid API calls.
+To access, enable `FINEST` level logs.

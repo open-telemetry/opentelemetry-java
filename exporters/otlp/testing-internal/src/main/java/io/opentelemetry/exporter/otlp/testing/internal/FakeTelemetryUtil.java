@@ -90,7 +90,8 @@ public class FakeTelemetryUtil {
         .setAttributes(Attributes.builder().put("key", "value").build())
         .setSeverity(Severity.INFO)
         .setSeverityText(Severity.INFO.name())
-        .setEpoch(Instant.now())
+        .setTimestamp(Instant.now())
+        .setObservedTimestamp(Instant.now().plusNanos(100))
         .build();
   }
 

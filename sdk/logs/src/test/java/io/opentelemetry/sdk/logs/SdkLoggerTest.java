@@ -9,8 +9,6 @@ import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
-import static io.opentelemetry.api.internal.ValidationUtil.API_USAGE_LOGGER_NAME;
-import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -18,7 +16,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -32,12 +29,8 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
 class SdkLoggerTest {
-
-  @RegisterExtension
-  LogCapturer apiUsageLogs = LogCapturer.create().captureForLogger(API_USAGE_LOGGER_NAME);
 
   @Test
   void logRecordBuilder() {
@@ -46,7 +39,6 @@ class SdkLoggerTest {
     AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
     LogRecordProcessor logRecordProcessor = (context, logRecord) -> seenLog.set(logRecord);
     Clock clock = mock(Clock.class);
-    when(clock.now()).thenReturn(5L);
 
     when(state.getResource()).thenReturn(Resource.getDefault());
     when(state.getLogRecordProcessor()).thenReturn(logRecordProcessor);
@@ -58,7 +50,7 @@ class SdkLoggerTest {
 
     // Have to test through the builder
     logRecordBuilder.emit();
-    assertThat(seenLog.get().toLogRecordData()).hasBody("foo").hasEpochNanos(5);
+    assertThat(seenLog.get().toLogRecordData()).hasBody("foo").hasTimestamp(0);
   }
 
   @Test

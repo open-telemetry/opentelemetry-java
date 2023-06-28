@@ -17,7 +17,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-/** Builder class for {@link SdkLoggerProvider} instances. */
+/**
+ * Builder class for {@link SdkLoggerProvider} instances.
+ *
+ * @since 1.27.0
+ */
 public final class SdkLoggerProviderBuilder {
 
   private final List<LogRecordProcessor> logRecordProcessors = new ArrayList<>();
@@ -72,11 +76,7 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
-   * Assign a {@link Clock}. The {@link Clock} may be used to determine "now" in the event that the
-   * epoch millis are not set directly.
-   *
-   * <p>The {@code clock} must be thread-safe and return immediately (no remote calls, as contention
-   * free as possible).
+   * Assign a {@link Clock}.
    *
    * @param clock The clock to use for all temporal needs.
    * @return this

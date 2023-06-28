@@ -6,8 +6,11 @@
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Named.named;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.linecorp.armeria.common.grpc.protocol.ArmeriaStatusException;
 import com.linecorp.armeria.server.ServerBuilder;
@@ -16,25 +19,37 @@ import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.netty.handler.ssl.ClientAuth;
+import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.RateLimitingSamplingStrategy;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyType;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509KeyManager;
+import javax.net.ssl.X509TrustManager;
 import org.awaitility.core.ThrowingRunnable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
 
@@ -61,7 +76,12 @@ class JaegerRemoteSamplerTest {
   @RegisterExtension
   static final SelfSignedCertificateExtension certificate = new SelfSignedCertificateExtension();
 
+  @RegisterExtension
   @Order(2)
+  static final SelfSignedCertificateExtension clientCertificate =
+      new SelfSignedCertificateExtension();
+
+  @Order(3)
   @RegisterExtension
   static final ServerExtension server =
       new ServerExtension() {
@@ -98,6 +118,11 @@ class JaegerRemoteSamplerTest {
           sb.http(0);
           sb.https(0);
           sb.tls(certificate.certificateFile(), certificate.privateKeyFile());
+          sb.tlsCustomizer(
+              ssl -> {
+                ssl.clientAuth(ClientAuth.OPTIONAL);
+                ssl.trustManager(clientCertificate.certificate());
+              });
         }
       };
 
@@ -115,6 +140,7 @@ class JaegerRemoteSamplerTest {
             .setPollingInterval(1, TimeUnit.SECONDS)
             .setServiceName(SERVICE_NAME)
             .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
 
       await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
@@ -132,6 +158,66 @@ class JaegerRemoteSamplerTest {
             .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
             .setServiceName(SERVICE_NAME)
             .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
+
+      await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
+
+      // verify
+      assertThat(sampler.getDescription()).contains("RateLimitingSampler{999.00}");
+    }
+  }
+
+  @ParameterizedTest
+  @ArgumentsSource(ClientPrivateKeyProvider.class)
+  void clientTlsConnectionWorks(byte[] privateKey) throws IOException {
+    try (JaegerRemoteSampler sampler =
+        JaegerRemoteSampler.builder()
+            .setEndpoint(server.httpsUri().toString())
+            .setPollingInterval(1, TimeUnit.SECONDS)
+            .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+            .setClientTls(
+                privateKey, Files.readAllBytes(clientCertificate.certificateFile().toPath()))
+            .setServiceName(SERVICE_NAME)
+            .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
+
+      await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
+
+      // verify
+      assertThat(sampler.getDescription()).contains("RateLimitingSampler{999.00}");
+    }
+  }
+
+  private static class ClientPrivateKeyProvider implements ArgumentsProvider {
+    @Override
+    @SuppressWarnings("PrimitiveArrayPassedToVarargsMethod")
+    public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+      return Stream.of(
+          arguments(named("PEM", Files.readAllBytes(clientCertificate.privateKeyFile().toPath()))),
+          arguments(named("DER", clientCertificate.privateKey().getEncoded())));
+    }
+  }
+
+  @Test
+  void tlsViaSslContext() throws Exception {
+    X509TrustManager trustManager = TlsUtil.trustManager(certificate.certificate().getEncoded());
+
+    X509KeyManager keyManager =
+        TlsUtil.keyManager(
+            clientCertificate.privateKey().getEncoded(),
+            clientCertificate.certificate().getEncoded());
+
+    SSLContext sslContext = SSLContext.getInstance("TLS");
+    sslContext.init(new KeyManager[] {keyManager}, new TrustManager[] {trustManager}, null);
+
+    try (JaegerRemoteSampler sampler =
+        JaegerRemoteSampler.builder()
+            .setEndpoint(server.httpsUri().toString())
+            .setPollingInterval(1, TimeUnit.SECONDS)
+            .setSslContext(sslContext, trustManager)
+            .setServiceName(SERVICE_NAME)
+            .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
 
       await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
@@ -148,6 +234,8 @@ class JaegerRemoteSamplerTest {
             .setPollingInterval(1, TimeUnit.SECONDS)
             .setServiceName(SERVICE_NAME)
             .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
+
       assertThat(sampler.getDescription())
           .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
 
@@ -164,6 +252,8 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .setInitialSampler(Sampler.alwaysOn())
             .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
+
       assertThat(sampler.getDescription()).startsWith("JaegerRemoteSampler{AlwaysOnSampler}");
     }
   }
@@ -176,6 +266,7 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .setPollingInterval(1, TimeUnit.MILLISECONDS)
             .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
 
       // wait until the sampling strategy is retrieved before exiting test method
       await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
@@ -190,6 +281,7 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .setPollingInterval(Duration.ofMillis(1))
             .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
 
       // wait until the sampling strategy is retrieved before exiting test method
       await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
@@ -234,6 +326,7 @@ class JaegerRemoteSamplerTest {
             // Make sure only polls once.
             .setPollingInterval(500, TimeUnit.SECONDS)
             .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
 
       await()
           .untilAsserted(
@@ -257,6 +350,7 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .setPollingInterval(50, TimeUnit.MILLISECONDS)
             .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
 
       assertThat(sampler.getDescription())
           .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
@@ -282,6 +376,7 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .setPollingInterval(50, TimeUnit.MILLISECONDS)
             .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
 
       assertThat(sampler.getDescription())
           .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
@@ -306,6 +401,7 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .setPollingInterval(50, TimeUnit.MILLISECONDS)
             .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(OkHttpGrpcService.class);
 
       assertThat(sampler.getDescription())
           .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
@@ -320,13 +416,51 @@ class JaegerRemoteSamplerTest {
   }
 
   @Test
+  void builder_ValidConfig() {
+    assertThatCode(() -> JaegerRemoteSampler.builder().setEndpoint("http://localhost:4317"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> JaegerRemoteSampler.builder().setEndpoint("http://localhost"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> JaegerRemoteSampler.builder().setEndpoint("https://localhost"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> JaegerRemoteSampler.builder().setEndpoint("http://foo:bar@localhost"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(
+            () ->
+                JaegerRemoteSampler.builder()
+                    .setTrustedCertificates(
+                        Files.readAllBytes(certificate.certificateFile().toPath())))
+        .doesNotThrowAnyException();
+
+    assertThatCode(
+            () ->
+                JaegerRemoteSampler.builder()
+                    .setClientTls(
+                        Files.readAllBytes(clientCertificate.privateKeyFile().toPath()),
+                        Files.readAllBytes(clientCertificate.certificateFile().toPath())))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
   void invalidArguments() {
     assertThatThrownBy(() -> JaegerRemoteSampler.builder().setServiceName(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("serviceName");
+
     assertThatThrownBy(() -> JaegerRemoteSampler.builder().setEndpoint(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("endpoint");
+    assertThatThrownBy(() -> JaegerRemoteSampler.builder().setEndpoint("😺://localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid endpoint, must be a URL: 😺://localhost");
+    assertThatThrownBy(() -> JaegerRemoteSampler.builder().setEndpoint("localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid endpoint, must start with http:// or https://: localhost");
+    assertThatThrownBy(() -> JaegerRemoteSampler.builder().setEndpoint("gopher://localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid endpoint, must start with http:// or https://: gopher://localhost");
+
     assertThatThrownBy(
             () -> JaegerRemoteSampler.builder().setPollingInterval(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
@@ -341,12 +475,17 @@ class JaegerRemoteSamplerTest {
     assertThatThrownBy(() -> JaegerRemoteSampler.builder().setPollingInterval(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("interval");
-  }
 
-  @Test
-  void usingOkHttp() {
-    assertThat(JaegerRemoteSampler.builder().getDelegate())
-        .isInstanceOf(OkHttpGrpcServiceBuilder.class);
+    assertThatThrownBy(() -> JaegerRemoteSampler.builder().setTrustedCertificates(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("trustedCertificatesPem");
+
+    assertThatThrownBy(() -> JaegerRemoteSampler.builder().setClientTls(null, new byte[] {}))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("privateKeyPem");
+    assertThatThrownBy(() -> JaegerRemoteSampler.builder().setClientTls(new byte[] {}, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("certificatePem");
   }
 
   static ThrowingRunnable samplerIsType(
@@ -355,9 +494,7 @@ class JaegerRemoteSamplerTest {
       assertThat(sampler.getSampler().getClass().getName())
           .isEqualTo("io.opentelemetry.sdk.trace.samplers.ParentBasedSampler");
 
-      Field field = sampler.getSampler().getClass().getDeclaredField("root");
-      field.setAccessible(true);
-      assertThat(field.get(sampler.getSampler()).getClass()).isEqualTo(expected);
+      assertThat(sampler.getSampler()).extracting("root").isInstanceOf(expected);
     };
   }
 }

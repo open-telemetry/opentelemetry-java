@@ -63,6 +63,7 @@ import javax.annotation.Nullable;
  */
 public final class MetricAdapter {
   private MetricAdapter() {}
+
   // All OpenCensus metrics come from this shim.
   // VisibleForTesting.
   static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
@@ -73,6 +74,7 @@ public final class MetricAdapter {
   private static final Pattern OPENCENSUS_TRACE_ATTACHMENT_PATTERN =
       Pattern.compile(
           "SpanContext\\{traceId=TraceId\\{traceId=([0-9A-Ga-g]+)\\}, spanId=SpanId\\{spanId=([0-9A-Ga-g]+)\\},.*\\}");
+
   /**
    * Converts an open-census metric into the OTLP format.
    *
@@ -236,8 +238,10 @@ public final class MetricAdapter {
                             endTimestamp,
                             attributes,
                             distribution.getSum(),
-                            null,
-                            null,
+                            /* hasMin= */ false,
+                            0,
+                            /* hasMax= */ false,
+                            0,
                             mapBoundaries(distribution.getBucketOptions()),
                             mapCounts(distribution.getBuckets()),
                             mapExemplars(distribution.getBuckets())),

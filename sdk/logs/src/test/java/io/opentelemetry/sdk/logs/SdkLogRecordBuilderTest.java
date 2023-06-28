@@ -5,8 +5,7 @@
 
 package io.opentelemetry.sdk.logs;
 
-import static io.opentelemetry.sdk.testing.assertj.LogAssertions.assertThat;
-import static org.mockito.Mockito.mock;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -40,6 +39,7 @@ class SdkLogRecordBuilderTest {
   private static final InstrumentationScopeInfo SCOPE_INFO = InstrumentationScopeInfo.empty();
 
   @Mock LoggerSharedState loggerSharedState;
+  @Mock Clock clock;
 
   private final AtomicReference<ReadWriteLogRecord> emittedLog = new AtomicReference<>();
   private SdkLogRecordBuilder builder;
@@ -50,14 +50,16 @@ class SdkLogRecordBuilderTest {
     when(loggerSharedState.getLogRecordProcessor())
         .thenReturn((context, logRecord) -> emittedLog.set(logRecord));
     when(loggerSharedState.getResource()).thenReturn(RESOURCE);
-    when(loggerSharedState.getClock()).thenReturn(Clock.getDefault());
+    when(loggerSharedState.getClock()).thenReturn(clock);
 
     builder = new SdkLogRecordBuilder(loggerSharedState, SCOPE_INFO);
   }
 
   @Test
   void emit_AllFields() {
-    Instant now = Instant.now();
+    Instant timestamp = Instant.now();
+    Instant observedTimestamp = Instant.now().plusNanos(100);
+
     String bodyStr = "body";
     String sevText = "sevText";
     Severity severity = Severity.DEBUG3;
@@ -69,8 +71,10 @@ class SdkLogRecordBuilderTest {
             TraceState.getDefault());
 
     builder.setBody(bodyStr);
-    builder.setEpoch(123, TimeUnit.SECONDS);
-    builder.setEpoch(now);
+    builder.setTimestamp(123, TimeUnit.SECONDS);
+    builder.setTimestamp(timestamp);
+    builder.setObservedTimestamp(456, TimeUnit.SECONDS);
+    builder.setObservedTimestamp(observedTimestamp);
     builder.setAttribute(null, null);
     builder.setAttribute(AttributeKey.stringKey("k1"), "v1");
     builder.setAllAttributes(Attributes.builder().put("k2", "v2").put("k3", "v3").build());
@@ -82,7 +86,10 @@ class SdkLogRecordBuilderTest {
         .hasResource(RESOURCE)
         .hasInstrumentationScope(SCOPE_INFO)
         .hasBody(bodyStr)
-        .hasEpochNanos(TimeUnit.SECONDS.toNanos(now.getEpochSecond()) + now.getNano())
+        .hasTimestamp(TimeUnit.SECONDS.toNanos(timestamp.getEpochSecond()) + timestamp.getNano())
+        .hasObservedTimestamp(
+            TimeUnit.SECONDS.toNanos(observedTimestamp.getEpochSecond())
+                + observedTimestamp.getNano())
         .hasAttributes(Attributes.builder().put("k1", "v1").put("k2", "v2").put("k3", "v3").build())
         .hasSpanContext(spanContext)
         .hasSeverity(severity)
@@ -91,9 +98,7 @@ class SdkLogRecordBuilderTest {
 
   @Test
   void emit_NoFields() {
-    Clock clock = mock(Clock.class);
     when(clock.now()).thenReturn(10L);
-    when(loggerSharedState.getClock()).thenReturn(clock);
 
     builder.emit();
 
@@ -101,7 +106,8 @@ class SdkLogRecordBuilderTest {
         .hasResource(RESOURCE)
         .hasInstrumentationScope(SCOPE_INFO)
         .hasBody(Body.empty().asString())
-        .hasEpochNanos(10L)
+        .hasTimestamp(0L)
+        .hasObservedTimestamp(10L)
         .hasAttributes(Attributes.empty())
         .hasSpanContext(SpanContext.getInvalid())
         .hasSeverity(Severity.UNDEFINED_SEVERITY_NUMBER);

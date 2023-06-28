@@ -212,6 +212,7 @@ public final class MarshalerUtil {
     }
     return sizeDoubleOptional(field, value);
   }
+
   /** Returns the size of a double field. */
   public static int sizeDoubleOptional(ProtoFieldInfo field, double value) {
     return field.getTagSize() + CodedOutputStream.computeDoubleSizeNoTag(value);
@@ -224,6 +225,7 @@ public final class MarshalerUtil {
     }
     return sizeFixed64Optional(field, value);
   }
+
   /** Returns the size of a fixed64 field. */
   public static int sizeFixed64Optional(ProtoFieldInfo field, long value) {
     return field.getTagSize() + CodedOutputStream.computeFixed64SizeNoTag(value);

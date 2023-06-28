@@ -156,7 +156,7 @@ class CollectorIntegrationTest {
 
     assertThat(resourceMetrics.getScopeMetricsCount()).isEqualTo(1);
     ScopeMetrics scopeMetrics = resourceMetrics.getScopeMetrics(0);
-    assertThat(scopeMetrics.getScope().getName()).isEqualTo("");
+    assertThat(scopeMetrics.getScope().getName()).isEqualTo("otelcol/prometheusreceiver");
 
     Optional<Metric> optRequestTotal =
         scopeMetrics.getMetricsList().stream()

@@ -9,8 +9,10 @@ dependencies {
   api("org.testcontainers:junit-jupiter")
 
   implementation(project(":exporters:otlp:all"))
-  implementation(project(":exporters:otlp:logs"))
+  implementation(project(":api:events"))
   implementation(project(":semconv"))
+
+  compileOnly("com.google.errorprone:error_prone_annotations")
 
   implementation("com.linecorp.armeria:armeria-grpc-protocol")
   implementation("com.linecorp.armeria:armeria-junit5")
@@ -22,7 +24,7 @@ dependencies {
 
 testing {
   suites {
-    val testGrpcJava by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testGrpcJava") {
       dependencies {
         runtimeOnly("io.grpc:grpc-netty-shaded")
         runtimeOnly("io.grpc:grpc-stub")
@@ -40,4 +42,9 @@ tasks {
   check {
     dependsOn(testing.suites)
   }
+}
+
+// Skip OWASP dependencyCheck task on test module
+dependencyCheck {
+  skip = true
 }

@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
 import com.linecorp.armeria.common.grpc.protocol.ArmeriaStatusException;
@@ -16,14 +15,13 @@ import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.RateLimitingSamplingStrategy;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyType;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.nio.file.Files;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -38,7 +36,8 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
 
-@SuppressLogger(DefaultGrpcService.class)
+@SuppressLogger(UpstreamGrpcService.class)
+@SuppressWarnings("deprecation") // Testing deprecated code
 class JaegerRemoteSamplerGrpcNettyTest {
 
   private static final String SERVICE_NAME = "my-service";
@@ -55,7 +54,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
   }
 
   @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(DefaultGrpcService.class, Level.TRACE);
+  LogCapturer logs = LogCapturer.create().captureForType(UpstreamGrpcService.class, Level.TRACE);
 
   @Order(1)
   @RegisterExtension
@@ -96,8 +95,6 @@ class JaegerRemoteSamplerGrpcNettyTest {
                 }
               });
           sb.http(0);
-          sb.https(0);
-          sb.tls(certificate.certificateFile(), certificate.privateKeyFile());
         }
       };
 
@@ -107,31 +104,20 @@ class JaegerRemoteSamplerGrpcNettyTest {
     responses.clear();
   }
 
+  private static ManagedChannel managedChannel() {
+    return ManagedChannelBuilder.forTarget(server.httpUri().getAuthority()).usePlaintext().build();
+  }
+
   @Test
   void connectionWorks() {
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
+            .setChannel(managedChannel())
             .setEndpoint(server.httpUri().toString())
             .setPollingInterval(1, TimeUnit.SECONDS)
             .setServiceName(SERVICE_NAME)
             .build()) {
-
-      await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
-
-      // verify
-      assertThat(sampler.getDescription()).contains("RateLimitingSampler{999.00}");
-    }
-  }
-
-  @Test
-  void tlsConnectionWorks() throws IOException {
-    try (JaegerRemoteSampler sampler =
-        JaegerRemoteSampler.builder()
-            .setEndpoint(server.httpsUri().toString())
-            .setPollingInterval(1, TimeUnit.SECONDS)
-            .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
-            .setServiceName(SERVICE_NAME)
-            .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
 
       await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
@@ -144,10 +130,12 @@ class JaegerRemoteSamplerGrpcNettyTest {
   void description() {
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
-            .setEndpoint(server.httpUri().toString())
+            .setChannel(managedChannel())
             .setPollingInterval(1, TimeUnit.SECONDS)
             .setServiceName(SERVICE_NAME)
             .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
+
       assertThat(sampler.getDescription())
           .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
 
@@ -160,10 +148,12 @@ class JaegerRemoteSamplerGrpcNettyTest {
   void initialSampler() {
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
-            .setEndpoint("http://example.com")
+            .setChannel(managedChannel())
             .setServiceName(SERVICE_NAME)
             .setInitialSampler(Sampler.alwaysOn())
             .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
+
       assertThat(sampler.getDescription()).startsWith("JaegerRemoteSampler{AlwaysOnSampler}");
     }
   }
@@ -172,10 +162,11 @@ class JaegerRemoteSamplerGrpcNettyTest {
   void pollingInterval() {
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
-            .setEndpoint(server.httpUri().toString())
+            .setChannel(managedChannel())
             .setServiceName(SERVICE_NAME)
             .setPollingInterval(1, TimeUnit.MILLISECONDS)
             .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
 
       // wait until the sampling strategy is retrieved before exiting test method
       await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
@@ -186,10 +177,11 @@ class JaegerRemoteSamplerGrpcNettyTest {
   void pollingInterval_duration() {
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
-            .setEndpoint(server.httpUri().toString())
+            .setChannel(managedChannel())
             .setServiceName(SERVICE_NAME)
             .setPollingInterval(Duration.ofMillis(1))
             .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
 
       // wait until the sampling strategy is retrieved before exiting test method
       await().untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
@@ -229,11 +221,12 @@ class JaegerRemoteSamplerGrpcNettyTest {
 
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
-            .setEndpoint(server.httpUri().toString())
+            .setChannel(managedChannel())
             .setServiceName(SERVICE_NAME)
             // Make sure only polls once.
             .setPollingInterval(500, TimeUnit.SECONDS)
             .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
 
       await()
           .untilAsserted(
@@ -252,10 +245,12 @@ class JaegerRemoteSamplerGrpcNettyTest {
 
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
-            .setEndpoint(server.httpUri().toString())
+            .setChannel(managedChannel())
             .setServiceName(SERVICE_NAME)
-            .setPollingInterval(50, TimeUnit.MILLISECONDS)
+            // Make sure only polls once.
+            .setPollingInterval(500, TimeUnit.SECONDS)
             .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
 
       assertThat(sampler.getDescription())
           .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
@@ -276,10 +271,12 @@ class JaegerRemoteSamplerGrpcNettyTest {
 
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
-            .setEndpoint(server.httpUri().toString())
+            .setChannel(managedChannel())
             .setServiceName(SERVICE_NAME)
-            .setPollingInterval(50, TimeUnit.MILLISECONDS)
+            // Make sure only polls once.
+            .setPollingInterval(500, TimeUnit.SECONDS)
             .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
 
       assertThat(sampler.getDescription())
           .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
@@ -299,10 +296,12 @@ class JaegerRemoteSamplerGrpcNettyTest {
 
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
-            .setEndpoint(server.httpUri().toString())
+            .setChannel(managedChannel())
             .setServiceName(SERVICE_NAME)
-            .setPollingInterval(50, TimeUnit.MILLISECONDS)
+            // Make sure only polls once.
+            .setPollingInterval(500, TimeUnit.SECONDS)
             .build()) {
+      assertThat(sampler).extracting("delegate").isInstanceOf(UpstreamGrpcService.class);
 
       assertThat(sampler.getDescription())
           .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
@@ -316,45 +315,12 @@ class JaegerRemoteSamplerGrpcNettyTest {
     }
   }
 
-  @Test
-  void invalidArguments() {
-    assertThatThrownBy(() -> JaegerRemoteSampler.builder().setServiceName(null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("serviceName");
-    assertThatThrownBy(() -> JaegerRemoteSampler.builder().setEndpoint(null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("endpoint");
-    assertThatThrownBy(
-            () -> JaegerRemoteSampler.builder().setPollingInterval(-1, TimeUnit.MILLISECONDS))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("polling interval must be positive");
-    assertThatThrownBy(() -> JaegerRemoteSampler.builder().setPollingInterval(1, null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("unit");
-    assertThatThrownBy(
-            () -> JaegerRemoteSampler.builder().setPollingInterval(Duration.ofMillis(-1)))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("polling interval must be positive");
-    assertThatThrownBy(() -> JaegerRemoteSampler.builder().setPollingInterval(null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("interval");
-  }
-
-  @Test
-  void usingGrpc() {
-    assertThat(JaegerRemoteSampler.builder().getDelegate())
-        .isInstanceOf(DefaultGrpcServiceBuilder.class);
-  }
-
   static ThrowingRunnable samplerIsType(
       JaegerRemoteSampler sampler, Class<? extends Sampler> expected) {
     return () -> {
       assertThat(sampler.getSampler().getClass().getName())
           .isEqualTo("io.opentelemetry.sdk.trace.samplers.ParentBasedSampler");
-
-      Field field = sampler.getSampler().getClass().getDeclaredField("root");
-      field.setAccessible(true);
-      assertThat(field.get(sampler.getSampler()).getClass()).isEqualTo(expected);
+      assertThat(sampler.getSampler()).extracting("root").isInstanceOf(expected);
     };
   }
 }

@@ -14,6 +14,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
+import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.AttributeKey;
@@ -25,6 +26,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
@@ -39,7 +41,6 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,6 +51,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509KeyManager;
+import javax.net.ssl.X509TrustManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -88,6 +94,12 @@ class JaegerGrpcSpanExporterTest {
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(OkHttpGrpcExporter.class);
+
+  @RegisterExtension
+  static final SelfSignedCertificateExtension serverTls = new SelfSignedCertificateExtension();
+
+  @RegisterExtension
+  static final SelfSignedCertificateExtension clientTls = new SelfSignedCertificateExtension();
 
   private static JaegerGrpcSpanExporter exporter;
 
@@ -286,22 +298,36 @@ class JaegerGrpcSpanExporterTest {
   }
 
   @Test
-  void validTrustedConfig() {
+  void validTrustedConfig() throws Exception {
     assertThatCode(
             () ->
                 JaegerGrpcSpanExporter.builder()
-                    .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
+                    .setTrustedCertificates(serverTls.certificate().getEncoded()))
         .doesNotThrowAnyException();
   }
 
   @Test
-  void validClientKeyConfig() {
+  void validClientKeyConfig() throws Exception {
     assertThatCode(
             () ->
                 JaegerGrpcSpanExporter.builder()
                     .setClientTls(
-                        "foobar".getBytes(StandardCharsets.UTF_8),
-                        "foobar".getBytes(StandardCharsets.UTF_8)))
+                        clientTls.privateKey().getEncoded(), serverTls.certificate().getEncoded()))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void validSslContextConfig() throws Exception {
+    X509TrustManager trustManager = TlsUtil.trustManager(serverTls.certificate().getEncoded());
+
+    X509KeyManager keyManager =
+        TlsUtil.keyManager(
+            clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded());
+
+    SSLContext sslContext = SSLContext.getInstance("TLS");
+    sslContext.init(new KeyManager[] {keyManager}, new TrustManager[] {trustManager}, null);
+
+    assertThatCode(() -> JaegerGrpcSpanExporter.builder().setSslContext(sslContext, trustManager))
         .doesNotThrowAnyException();
   }
 

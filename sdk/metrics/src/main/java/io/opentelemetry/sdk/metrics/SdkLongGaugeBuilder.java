@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.metrics.LongGaugeBuilder;
 import io.opentelemetry.api.metrics.ObservableLongGauge;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
+import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import java.util.function.Consumer;
@@ -20,7 +21,8 @@ final class SdkLongGaugeBuilder extends AbstractInstrumentBuilder<SdkLongGaugeBu
       MeterSharedState sharedState,
       String name,
       String description,
-      String unit) {
+      String unit,
+      Advice advice) {
     super(
         meterProviderSharedState,
         sharedState,
@@ -28,7 +30,8 @@ final class SdkLongGaugeBuilder extends AbstractInstrumentBuilder<SdkLongGaugeBu
         InstrumentValueType.LONG,
         name,
         description,
-        unit);
+        unit,
+        advice);
   }
 
   @Override

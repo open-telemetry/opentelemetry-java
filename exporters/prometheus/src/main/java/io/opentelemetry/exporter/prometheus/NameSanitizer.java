@@ -15,6 +15,8 @@ class NameSanitizer implements Function<String, String> {
 
   static final NameSanitizer INSTANCE = new NameSanitizer();
 
+  static final Pattern SANITIZE_CONSECUTIVE_UNDERSCORES = Pattern.compile("[_]{2,}");
+
   private static final Pattern SANITIZE_PREFIX_PATTERN = Pattern.compile("^[^a-zA-Z_:]");
   private static final Pattern SANITIZE_BODY_PATTERN = Pattern.compile("[^a-zA-Z0-9_:]");
 
@@ -36,8 +38,11 @@ class NameSanitizer implements Function<String, String> {
   }
 
   private static String sanitizeMetricName(String metricName) {
-    return SANITIZE_BODY_PATTERN
-        .matcher(SANITIZE_PREFIX_PATTERN.matcher(metricName).replaceFirst("_"))
+    return SANITIZE_CONSECUTIVE_UNDERSCORES
+        .matcher(
+            SANITIZE_BODY_PATTERN
+                .matcher(SANITIZE_PREFIX_PATTERN.matcher(metricName).replaceFirst("_"))
+                .replaceAll("_"))
         .replaceAll("_");
   }
 }

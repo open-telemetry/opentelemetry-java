@@ -12,11 +12,15 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-/** Builder class for {@link BatchLogRecordProcessor}. */
+/**
+ * Builder class for {@link BatchLogRecordProcessor}.
+ *
+ * @since 1.27.0
+ */
 public final class BatchLogRecordProcessorBuilder {
 
   // Visible for testing
-  static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 200;
+  static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 1000;
   // Visible for testing
   static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
   // Visible for testing

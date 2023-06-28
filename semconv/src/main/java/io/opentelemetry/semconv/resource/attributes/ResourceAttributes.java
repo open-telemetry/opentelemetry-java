@@ -18,7 +18,7 @@ import java.util.List;
 @SuppressWarnings("unused")
 public final class ResourceAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.18.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.20.0";
 
   /**
    * Array of brand name and version separated by a space
@@ -67,19 +67,6 @@ public final class ResourceAttributes {
   public static final AttributeKey<Boolean> BROWSER_MOBILE = booleanKey("browser.mobile");
 
   /**
-   * Full user-agent string provided by the browser
-   *
-   * <p>Notes:
-   *
-   * <ul>
-   *   <li>The user-agent value SHOULD be provided only from browsers that do not have a mechanism
-   *       to retrieve brands and platform individually from the User-Agent Client Hints API. To
-   *       retrieve the value, the legacy {@code navigator.userAgent} API can be used.
-   * </ul>
-   */
-  public static final AttributeKey<String> BROWSER_USER_AGENT = stringKey("browser.user_agent");
-
-  /**
    * Preferred language of the user using the browser
    *
    * <p>Notes:
@@ -108,11 +95,45 @@ public final class ResourceAttributes {
    *       regions</a>, <a
    *       href="https://azure.microsoft.com/en-us/global-infrastructure/geographies/">Azure
    *       regions</a>, <a href="https://cloud.google.com/about/locations">Google Cloud regions</a>,
-   *       or <a href="https://intl.cloud.tencent.com/document/product/213/6091">Tencent Cloud
+   *       or <a href="https://www.tencentcloud.com/document/product/213/6091">Tencent Cloud
    *       regions</a>.
    * </ul>
    */
   public static final AttributeKey<String> CLOUD_REGION = stringKey("cloud.region");
+
+  /**
+   * Cloud provider-specific native identifier of the monitored cloud resource (e.g. an <a
+   * href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a> on
+   * AWS, a <a href="https://learn.microsoft.com/en-us/rest/api/resources/resources/get-by-id">fully
+   * qualified resource ID</a> on Azure, a <a
+   * href="https://cloud.google.com/apis/design/resource_names#full_resource_name">full resource
+   * name</a> on GCP)
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>On some cloud providers, it may not be possible to determine the full ID at startup, so
+   *       it may be necessary to set {@code cloud.resource_id} as a span attribute instead.
+   *   <li>The exact value to use for {@code cloud.resource_id} depends on the cloud provider. The
+   *       following well-known definitions MUST be used if you set this attribute and they apply:
+   *   <li><strong>AWS Lambda:</strong> The function <a
+   *       href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a>.
+   *       Take care not to use the &quot;invoked ARN&quot; directly but replace any <a
+   *       href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-aliases.html">alias
+   *       suffix</a> with the resolved function version, as the same runtime instance may be
+   *       invokable with multiple different aliases.
+   *   <li><strong>GCP:</strong> The <a
+   *       href="https://cloud.google.com/iam/docs/full-resource-names">URI of the resource</a>
+   *   <li><strong>Azure:</strong> The <a
+   *       href="https://docs.microsoft.com/en-us/rest/api/resources/resources/get-by-id">Fully
+   *       Qualified Resource ID</a> of the invoked function, <em>not</em> the function app, having
+   *       the form {@code
+   *       /subscriptions/<SUBSCIPTION_GUID>/resourceGroups/<RG>/providers/Microsoft.Web/sites/<FUNCAPP>/functions/<FUNC>}.
+   *       This means that a span attribute MUST be used, as an Azure function app can host multiple
+   *       functions that would usually share a TracerProvider.
+   * </ul>
+   */
+  public static final AttributeKey<String> CLOUD_RESOURCE_ID = stringKey("cloud.resource_id");
 
   /**
    * Cloud regions often have multiple, isolated locations known as zones to increase availability.
@@ -223,6 +244,17 @@ public final class ResourceAttributes {
   public static final AttributeKey<List<String>> AWS_LOG_STREAM_ARNS =
       stringArrayKey("aws.log.stream.arns");
 
+  /** Time and date the release was created */
+  public static final AttributeKey<String> HEROKU_RELEASE_CREATION_TIMESTAMP =
+      stringKey("heroku.release.creation_timestamp");
+
+  /** Commit hash for the current release */
+  public static final AttributeKey<String> HEROKU_RELEASE_COMMIT =
+      stringKey("heroku.release.commit");
+
+  /** Unique identifier for the application */
+  public static final AttributeKey<String> HEROKU_APP_ID = stringKey("heroku.app.id");
+
   /** Container name used by container runtime. */
   public static final AttributeKey<String> CONTAINER_NAME = stringKey("container.name");
 
@@ -325,38 +357,10 @@ public final class ResourceAttributes {
    *       followed by a forward slash followed by the function name (this form can also be seen in
    *       the resource JSON for the function). This means that a span attribute MUST be used, as an
    *       Azure function app can host multiple functions that would usually share a TracerProvider
-   *       (see also the {@code faas.id} attribute).
+   *       (see also the {@code cloud.resource_id} attribute).
    * </ul>
    */
   public static final AttributeKey<String> FAAS_NAME = stringKey("faas.name");
-
-  /**
-   * The unique ID of the single function that this runtime instance executes.
-   *
-   * <p>Notes:
-   *
-   * <ul>
-   *   <li>On some cloud providers, it may not be possible to determine the full ID at startup, so
-   *       consider setting {@code faas.id} as a span attribute instead.
-   *   <li>The exact value to use for {@code faas.id} depends on the cloud provider:
-   *   <li><strong>AWS Lambda:</strong> The function <a
-   *       href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a>.
-   *       Take care not to use the &quot;invoked ARN&quot; directly but replace any <a
-   *       href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-aliases.html">alias
-   *       suffix</a> with the resolved function version, as the same runtime instance may be
-   *       invokable with multiple different aliases.
-   *   <li><strong>GCP:</strong> The <a
-   *       href="https://cloud.google.com/iam/docs/full-resource-names">URI of the resource</a>
-   *   <li><strong>Azure:</strong> The <a
-   *       href="https://docs.microsoft.com/en-us/rest/api/resources/resources/get-by-id">Fully
-   *       Qualified Resource ID</a> of the invoked function, <em>not</em> the function app, having
-   *       the form {@code
-   *       /subscriptions/<SUBSCIPTION_GUID>/resourceGroups/<RG>/providers/Microsoft.Web/sites/<FUNCAPP>/functions/<FUNC>}.
-   *       This means that a span attribute MUST be used, as an Azure function app can host multiple
-   *       functions that would usually share a TracerProvider.
-   * </ul>
-   */
-  public static final AttributeKey<String> FAAS_ID = stringKey("faas.id");
 
   /**
    * The immutable version of the function being executed.
@@ -392,22 +396,23 @@ public final class ResourceAttributes {
   public static final AttributeKey<String> FAAS_INSTANCE = stringKey("faas.instance");
 
   /**
-   * The amount of memory available to the serverless function in MiB.
+   * The amount of memory available to the serverless function converted to Bytes.
    *
    * <p>Notes:
    *
    * <ul>
    *   <li>It's recommended to set this attribute since e.g. too little memory can easily stop a
    *       Java AWS Lambda function from working correctly. On AWS Lambda, the environment variable
-   *       {@code AWS_LAMBDA_FUNCTION_MEMORY_SIZE} provides this information.
+   *       {@code AWS_LAMBDA_FUNCTION_MEMORY_SIZE} provides this information (which must be
+   *       multiplied by 1,048,576).
    * </ul>
    */
   public static final AttributeKey<Long> FAAS_MAX_MEMORY = longKey("faas.max_memory");
 
   /**
    * Unique host ID. For Cloud, this must be the instance_id assigned by the cloud provider. For
-   * non-containerized Linux systems, the {@code machine-id} located in {@code /etc/machine-id} or
-   * {@code /var/lib/dbus/machine-id} may be used.
+   * non-containerized systems, this should be the {@code machine-id}. See the table below for the
+   * sources to use to determine the {@code machine-id} based on operating system.
    */
   public static final AttributeKey<String> HOST_ID = stringKey("host.id");
 
@@ -666,18 +671,48 @@ public final class ResourceAttributes {
   public static final AttributeKey<String> WEBENGINE_DESCRIPTION =
       stringKey("webengine.description");
 
+  /** The name of the instrumentation scope - ({@code InstrumentationScope.Name} in OTLP). */
+  public static final AttributeKey<String> OTEL_SCOPE_NAME = stringKey("otel.scope.name");
+
+  /** The version of the instrumentation scope - ({@code InstrumentationScope.Version} in OTLP). */
+  public static final AttributeKey<String> OTEL_SCOPE_VERSION = stringKey("otel.scope.version");
+
+  /**
+   * Deprecated, use the {@code otel.scope.name} attribute.
+   *
+   * @deprecated Deprecated, use the `otel.scope.name` attribute.
+   */
+  @Deprecated
+  public static final AttributeKey<String> OTEL_LIBRARY_NAME = stringKey("otel.library.name");
+
+  /**
+   * Deprecated, use the {@code otel.scope.version} attribute.
+   *
+   * @deprecated Deprecated, use the `otel.scope.version` attribute.
+   */
+  @Deprecated
+  public static final AttributeKey<String> OTEL_LIBRARY_VERSION = stringKey("otel.library.version");
+
   // Enum definitions
   public static final class CloudProviderValues {
     /** Alibaba Cloud. */
     public static final String ALIBABA_CLOUD = "alibaba_cloud";
+
     /** Amazon Web Services. */
     public static final String AWS = "aws";
+
     /** Microsoft Azure. */
     public static final String AZURE = "azure";
+
     /** Google Cloud Platform. */
     public static final String GCP = "gcp";
+
+    /** Heroku Platform as a Service. */
+    public static final String HEROKU = "heroku";
+
     /** IBM Cloud. */
     public static final String IBM_CLOUD = "ibm_cloud";
+
     /** Tencent Cloud. */
     public static final String TENCENT_CLOUD = "tencent_cloud";
 
@@ -687,54 +722,79 @@ public final class ResourceAttributes {
   public static final class CloudPlatformValues {
     /** Alibaba Cloud Elastic Compute Service. */
     public static final String ALIBABA_CLOUD_ECS = "alibaba_cloud_ecs";
+
     /** Alibaba Cloud Function Compute. */
     public static final String ALIBABA_CLOUD_FC = "alibaba_cloud_fc";
+
     /** Red Hat OpenShift on Alibaba Cloud. */
     public static final String ALIBABA_CLOUD_OPENSHIFT = "alibaba_cloud_openshift";
+
     /** AWS Elastic Compute Cloud. */
     public static final String AWS_EC2 = "aws_ec2";
+
     /** AWS Elastic Container Service. */
     public static final String AWS_ECS = "aws_ecs";
+
     /** AWS Elastic Kubernetes Service. */
     public static final String AWS_EKS = "aws_eks";
+
     /** AWS Lambda. */
     public static final String AWS_LAMBDA = "aws_lambda";
+
     /** AWS Elastic Beanstalk. */
     public static final String AWS_ELASTIC_BEANSTALK = "aws_elastic_beanstalk";
+
     /** AWS App Runner. */
     public static final String AWS_APP_RUNNER = "aws_app_runner";
+
     /** Red Hat OpenShift on AWS (ROSA). */
     public static final String AWS_OPENSHIFT = "aws_openshift";
+
     /** Azure Virtual Machines. */
     public static final String AZURE_VM = "azure_vm";
+
     /** Azure Container Instances. */
     public static final String AZURE_CONTAINER_INSTANCES = "azure_container_instances";
+
     /** Azure Kubernetes Service. */
     public static final String AZURE_AKS = "azure_aks";
+
     /** Azure Functions. */
     public static final String AZURE_FUNCTIONS = "azure_functions";
+
     /** Azure App Service. */
     public static final String AZURE_APP_SERVICE = "azure_app_service";
+
     /** Azure Red Hat OpenShift. */
     public static final String AZURE_OPENSHIFT = "azure_openshift";
+
     /** Google Cloud Compute Engine (GCE). */
     public static final String GCP_COMPUTE_ENGINE = "gcp_compute_engine";
+
     /** Google Cloud Run. */
     public static final String GCP_CLOUD_RUN = "gcp_cloud_run";
+
     /** Google Cloud Kubernetes Engine (GKE). */
     public static final String GCP_KUBERNETES_ENGINE = "gcp_kubernetes_engine";
+
     /** Google Cloud Functions (GCF). */
     public static final String GCP_CLOUD_FUNCTIONS = "gcp_cloud_functions";
+
     /** Google Cloud App Engine (GAE). */
     public static final String GCP_APP_ENGINE = "gcp_app_engine";
+
     /** Red Hat OpenShift on Google Cloud. */
     public static final String GCP_OPENSHIFT = "gcp_openshift";
+
     /** Red Hat OpenShift on IBM Cloud. */
     public static final String IBM_CLOUD_OPENSHIFT = "ibm_cloud_openshift";
+
     /** Tencent Cloud Cloud Virtual Machine (CVM). */
     public static final String TENCENT_CLOUD_CVM = "tencent_cloud_cvm";
+
     /** Tencent Cloud Elastic Kubernetes Service (EKS). */
     public static final String TENCENT_CLOUD_EKS = "tencent_cloud_eks";
+
     /** Tencent Cloud Serverless Cloud Function (SCF). */
     public static final String TENCENT_CLOUD_SCF = "tencent_cloud_scf";
 
@@ -744,6 +804,7 @@ public final class ResourceAttributes {
   public static final class AwsEcsLaunchtypeValues {
     /** ec2. */
     public static final String EC2 = "ec2";
+
     /** fargate. */
     public static final String FARGATE = "fargate";
 
@@ -753,18 +814,25 @@ public final class ResourceAttributes {
   public static final class HostArchValues {
     /** AMD64. */
     public static final String AMD64 = "amd64";
+
     /** ARM32. */
     public static final String ARM32 = "arm32";
+
     /** ARM64. */
     public static final String ARM64 = "arm64";
+
     /** Itanium. */
     public static final String IA64 = "ia64";
+
     /** 32-bit PowerPC. */
     public static final String PPC32 = "ppc32";
+
     /** 64-bit PowerPC. */
     public static final String PPC64 = "ppc64";
+
     /** IBM z/Architecture. */
     public static final String S390X = "s390x";
+
     /** 32-bit x86. */
     public static final String X86 = "x86";
 
@@ -774,24 +842,34 @@ public final class ResourceAttributes {
   public static final class OsTypeValues {
     /** Microsoft Windows. */
     public static final String WINDOWS = "windows";
+
     /** Linux. */
     public static final String LINUX = "linux";
+
     /** Apple Darwin. */
     public static final String DARWIN = "darwin";
+
     /** FreeBSD. */
     public static final String FREEBSD = "freebsd";
+
     /** NetBSD. */
     public static final String NETBSD = "netbsd";
+
     /** OpenBSD. */
     public static final String OPENBSD = "openbsd";
+
     /** DragonFly BSD. */
     public static final String DRAGONFLYBSD = "dragonflybsd";
+
     /** HP-UX (Hewlett Packard Unix). */
     public static final String HPUX = "hpux";
+
     /** AIX (Advanced Interactive eXecutive). */
     public static final String AIX = "aix";
+
     /** SunOS, Oracle Solaris. */
     public static final String SOLARIS = "solaris";
+
     /** IBM z/OS. */
     public static final String Z_OS = "z_os";
 
@@ -801,24 +879,34 @@ public final class ResourceAttributes {
   public static final class TelemetrySdkLanguageValues {
     /** cpp. */
     public static final String CPP = "cpp";
+
     /** dotnet. */
     public static final String DOTNET = "dotnet";
+
     /** erlang. */
     public static final String ERLANG = "erlang";
+
     /** go. */
     public static final String GO = "go";
+
     /** java. */
     public static final String JAVA = "java";
+
     /** nodejs. */
     public static final String NODEJS = "nodejs";
+
     /** php. */
     public static final String PHP = "php";
+
     /** python. */
     public static final String PYTHON = "python";
+
     /** ruby. */
     public static final String RUBY = "ruby";
+
     /** webjs. */
     public static final String WEBJS = "webjs";
+
     /** swift. */
     public static final String SWIFT = "swift";
 
@@ -832,6 +920,55 @@ public final class ResourceAttributes {
    *     ResourceAttributes#GCP_OPENSHIFT} instead.
    */
   @Deprecated public static final String GCP_OPENSHIFT = "gcp_openshift";
+
+  /**
+   * Full user-agent string provided by the browser
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>The user-agent value SHOULD be provided only from browsers that do not have a mechanism
+   *       to retrieve brands and platform individually from the User-Agent Client Hints API. To
+   *       retrieve the value, the legacy {@code navigator.userAgent} API can be used.
+   * </ul>
+   *
+   * @deprecated This item has been renamed in 1.19.0 version of the semantic conventions. Use
+   *     {@link io.opentelemetry.semconv.trace.attributes.SemanticAttributes#USER_AGENT_ORIGINAL}
+   *     instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> BROWSER_USER_AGENT = stringKey("browser.user_agent");
+
+  /**
+   * The unique ID of the single function that this runtime instance executes.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>On some cloud providers, it may not be possible to determine the full ID at startup, so
+   *       consider setting {@code faas.id} as a span attribute instead.
+   *   <li>The exact value to use for {@code faas.id} depends on the cloud provider:
+   *   <li><strong>AWS Lambda:</strong> The function <a
+   *       href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">ARN</a>.
+   *       Take care not to use the &quot;invoked ARN&quot; directly but replace any <a
+   *       href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-aliases.html">alias
+   *       suffix</a> with the resolved function version, as the same runtime instance may be
+   *       invokable with multiple different aliases.
+   *   <li><strong>GCP:</strong> The <a
+   *       href="https://cloud.google.com/iam/docs/full-resource-names">URI of the resource</a>
+   *   <li><strong>Azure:</strong> The <a
+   *       href="https://docs.microsoft.com/en-us/rest/api/resources/resources/get-by-id">Fully
+   *       Qualified Resource ID</a> of the invoked function, <em>not</em> the function app, having
+   *       the form {@code
+   *       /subscriptions/<SUBSCIPTION_GUID>/resourceGroups/<RG>/providers/Microsoft.Web/sites/<FUNCAPP>/functions/<FUNC>}.
+   *       This means that a span attribute MUST be used, as an Azure function app can host multiple
+   *       functions that would usually share a TracerProvider.
+   * </ul>
+   *
+   * @deprecated This item has been removed in 1.19.0 version of the semantic conventions. Use
+   *     {@link ResourceAttributes#CLOUD_RESOURCE_ID} instead.
+   */
+  @Deprecated public static final AttributeKey<String> FAAS_ID = stringKey("faas.id");
 
   private ResourceAttributes() {}
 }

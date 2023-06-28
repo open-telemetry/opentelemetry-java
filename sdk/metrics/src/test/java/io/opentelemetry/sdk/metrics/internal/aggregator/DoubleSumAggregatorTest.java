@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
@@ -51,7 +52,8 @@ class DoubleSumAggregatorTest {
               "instrument_description",
               "instrument_unit",
               InstrumentType.COUNTER,
-              InstrumentValueType.DOUBLE),
+              InstrumentValueType.DOUBLE,
+              Advice.empty()),
           ExemplarReservoir::doubleNoSamples);
 
   @Test
@@ -136,7 +138,8 @@ class DoubleSumAggregatorTest {
                 "instrument_description",
                 "instrument_unit",
                 InstrumentType.COUNTER,
-                InstrumentValueType.DOUBLE),
+                InstrumentValueType.DOUBLE,
+                Advice.empty()),
             () -> reservoir);
     AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
@@ -165,7 +168,12 @@ class DoubleSumAggregatorTest {
         DoubleSumAggregator aggregator =
             new DoubleSumAggregator(
                 InstrumentDescriptor.create(
-                    "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
+                    "name",
+                    "description",
+                    "unit",
+                    instrumentType,
+                    InstrumentValueType.LONG,
+                    Advice.empty()),
                 ExemplarReservoir::doubleNoSamples);
 
         DoublePointData diffed =

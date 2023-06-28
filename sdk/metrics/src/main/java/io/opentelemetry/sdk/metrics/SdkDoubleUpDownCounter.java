@@ -11,6 +11,7 @@ import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableDoubleUpDownCounter;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
@@ -50,7 +51,8 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
         MeterSharedState sharedState,
         String name,
         String description,
-        String unit) {
+        String unit,
+        Advice advice) {
       super(
           meterProviderSharedState,
           sharedState,
@@ -58,7 +60,8 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
           InstrumentValueType.DOUBLE,
           name,
           description,
-          unit);
+          unit,
+          advice);
     }
 
     @Override

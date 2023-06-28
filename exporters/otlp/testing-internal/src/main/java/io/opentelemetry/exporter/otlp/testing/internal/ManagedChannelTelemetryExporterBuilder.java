@@ -9,16 +9,23 @@ import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.NettyChannelBuilder;
+import io.netty.handler.ssl.SslContext;
+import io.opentelemetry.exporter.internal.TlsConfigHelper;
+import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
-import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * Wraps a {@link TelemetryExporterBuilder}, delegating methods to upstream gRPC's {@link
@@ -40,9 +47,7 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
 
   @Nullable private ManagedChannelBuilder<?> channelBuilder;
 
-  @Nullable private byte[] privateKeyPem;
-  @Nullable private byte[] certificatePem;
-  @Nullable private byte[] trustedCertificatesPem;
+  private final TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
 
   @Override
   public TelemetryExporterBuilder<T> setEndpoint(String endpoint) {
@@ -83,20 +88,24 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
     return this;
   }
 
+  @Override
+  public TelemetryExporterBuilder<T> setAuthenticator(Authenticator authenticator) {
+    return this;
+  }
+
   // When a user provides a Channel, we are not in control of TLS or retry config and reimplement it
   // here for use in tests. Technically we don't have to test them since they are out of the SDK's
   // control, but it's probably worth verifying the baseline functionality anyways.
 
   @Override
   public TelemetryExporterBuilder<T> setTrustedCertificates(byte[] certificates) {
-    this.trustedCertificatesPem = certificates;
+    tlsConfigHelper.setTrustManagerFromCerts(certificates);
     return this;
   }
 
   @Override
   public TelemetryExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
-    this.privateKeyPem = privateKeyPem;
-    this.certificatePem = certificatePem;
+    tlsConfigHelper.setKeyManagerFromCerts(privateKeyPem, certificatePem);
     return this;
   }
 
@@ -126,15 +135,13 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   @Override
   public TelemetryExporter<T> build() {
     requireNonNull(channelBuilder, "channel");
-    if (trustedCertificatesPem != null) {
-      try {
-        ManagedChannelUtil.setClientKeysAndTrustedCertificatesPem(
-            channelBuilder, privateKeyPem, certificatePem, trustedCertificatesPem);
-      } catch (SSLException e) {
-        throw new IllegalStateException(
-            "Could not set trusted certificates, are they valid X.509 in PEM format?", e);
-      }
+
+    try {
+      setSslContext(channelBuilder, tlsConfigHelper);
+    } catch (SSLException e) {
+      throw new IllegalStateException(e);
     }
+
     ManagedChannel channel = channelBuilder.build();
     delegate.setChannel(channel);
     TelemetryExporter<T> delegateExporter = delegate.build();
@@ -155,5 +162,69 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
         return delegateExporter.shutdown();
       }
     };
+  }
+
+  @Override
+  public TelemetryExporterBuilder<T> setSslContext(
+      SSLContext sslContext, X509TrustManager trustManager) {
+    tlsConfigHelper.setSslContext(sslContext, trustManager);
+    return this;
+  }
+
+  /**
+   * Configure the channel builder to trust the certificates. The {@code byte[]} should contain an
+   * X.509 certificate collection in PEM format.
+   *
+   * @throws SSLException if error occur processing the certificates
+   */
+  private static void setSslContext(
+      ManagedChannelBuilder<?> managedChannelBuilder, TlsConfigHelper tlsConfigHelper)
+      throws SSLException {
+    X509TrustManager trustManager = tlsConfigHelper.getTrustManager();
+    if (trustManager == null) {
+      return;
+    }
+
+    // gRPC does not abstract TLS configuration so we need to check the implementation and act
+    // accordingly.
+    String channelBuilderClassName = managedChannelBuilder.getClass().getName();
+    switch (channelBuilderClassName) {
+      case "io.grpc.netty.NettyChannelBuilder":
+        {
+          NettyChannelBuilder nettyBuilder = (NettyChannelBuilder) managedChannelBuilder;
+          SslContext sslContext =
+              GrpcSslContexts.forClient()
+                  .keyManager(tlsConfigHelper.getKeyManager())
+                  .trustManager(trustManager)
+                  .build();
+          nettyBuilder.sslContext(sslContext);
+          break;
+        }
+      case "io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder":
+        {
+          io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder nettyBuilder =
+              (io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder) managedChannelBuilder;
+          io.grpc.netty.shaded.io.netty.handler.ssl.SslContext sslContext =
+              io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts.forClient()
+                  .trustManager(trustManager)
+                  .keyManager(tlsConfigHelper.getKeyManager())
+                  .build();
+          nettyBuilder.sslContext(sslContext);
+          break;
+        }
+      case "io.grpc.okhttp.OkHttpChannelBuilder":
+        SSLContext sslContext = tlsConfigHelper.getSslContext();
+        if (sslContext == null) {
+          return;
+        }
+        io.grpc.okhttp.OkHttpChannelBuilder okHttpBuilder =
+            (io.grpc.okhttp.OkHttpChannelBuilder) managedChannelBuilder;
+        okHttpBuilder.sslSocketFactory(sslContext.getSocketFactory());
+        break;
+      default:
+        throw new SSLException(
+            "TLS certificate configuration not supported for unrecognized ManagedChannelBuilder "
+                + channelBuilderClassName);
+    }
   }
 }

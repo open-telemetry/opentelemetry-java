@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.ResourceMetricsMarshaler;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
@@ -27,6 +28,8 @@ import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 import org.junit.jupiter.api.Test;
 
 class OtlpHttpMetricExporterTest
@@ -115,8 +118,21 @@ class OtlpHttpMetricExporterTest
       }
 
       @Override
+      public TelemetryExporterBuilder<MetricData> setAuthenticator(Authenticator authenticator) {
+        Authenticator.setAuthenticatorOnDelegate(builder, authenticator);
+        return this;
+      }
+
+      @Override
       public TelemetryExporterBuilder<MetricData> setTrustedCertificates(byte[] certificates) {
         builder.setTrustedCertificates(certificates);
+        return this;
+      }
+
+      @Override
+      public TelemetryExporterBuilder<MetricData> setSslContext(
+          SSLContext sslContext, X509TrustManager trustManager) {
+        builder.setSslContext(sslContext, trustManager);
         return this;
       }
 

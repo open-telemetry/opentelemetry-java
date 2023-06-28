@@ -18,6 +18,8 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.export.CardinalityLimitSelector;
+import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,6 +47,7 @@ public final class ViewRegistry {
           InstrumentSelector.builder().setName("*").build(),
           DEFAULT_VIEW,
           NOOP,
+          MetricStorage.DEFAULT_MAX_CARDINALITY,
           SourceInfo.noSourceInfo());
   private static final Logger logger = Logger.getLogger(ViewRegistry.class.getName());
 
@@ -52,7 +55,9 @@ public final class ViewRegistry {
   private final List<RegisteredView> registeredViews;
 
   ViewRegistry(
-      DefaultAggregationSelector defaultAggregationSelector, List<RegisteredView> registeredViews) {
+      DefaultAggregationSelector defaultAggregationSelector,
+      CardinalityLimitSelector cardinalityLimitSelector,
+      List<RegisteredView> registeredViews) {
     instrumentDefaultRegisteredView = new HashMap<>();
     for (InstrumentType instrumentType : InstrumentType.values()) {
       instrumentDefaultRegisteredView.put(
@@ -63,6 +68,7 @@ public final class ViewRegistry {
                   .setAggregation(defaultAggregationSelector.getDefaultAggregation(instrumentType))
                   .build(),
               AttributesProcessor.noop(),
+              cardinalityLimitSelector.getCardinalityLimit(instrumentType),
               SourceInfo.noSourceInfo()));
     }
     this.registeredViews = registeredViews;
@@ -70,13 +76,19 @@ public final class ViewRegistry {
 
   /** Returns a {@link ViewRegistry}. */
   public static ViewRegistry create(
-      DefaultAggregationSelector defaultAggregationSelector, List<RegisteredView> registeredViews) {
-    return new ViewRegistry(defaultAggregationSelector, new ArrayList<>(registeredViews));
+      DefaultAggregationSelector defaultAggregationSelector,
+      CardinalityLimitSelector cardinalityLimitSelector,
+      List<RegisteredView> registeredViews) {
+    return new ViewRegistry(
+        defaultAggregationSelector, cardinalityLimitSelector, new ArrayList<>(registeredViews));
   }
 
   /** Return a {@link ViewRegistry} using the default aggregation and no views registered. */
   public static ViewRegistry create() {
-    return create(unused -> Aggregation.defaultAggregation(), Collections.emptyList());
+    return create(
+        unused -> Aggregation.defaultAggregation(),
+        CardinalityLimitSelector.defaultCardinalityLimitSelector(),
+        Collections.emptyList());
   }
 
   /**
@@ -113,7 +125,7 @@ public final class ViewRegistry {
       return Collections.unmodifiableList(result);
     }
 
-    // Not views matched, use default view
+    // No views matched, use default view
     RegisteredView instrumentDefaultView =
         Objects.requireNonNull(instrumentDefaultRegisteredView.get(descriptor.getType()));
     AggregatorFactory viewAggregatorFactory =
@@ -145,6 +157,10 @@ public final class ViewRegistry {
       InstrumentationScopeInfo meterScope) {
     if (selector.getInstrumentType() != null
         && selector.getInstrumentType() != descriptor.getType()) {
+      return false;
+    }
+    if (selector.getInstrumentUnit() != null
+        && !selector.getInstrumentUnit().equals(descriptor.getUnit())) {
       return false;
     }
     if (selector.getInstrumentName() != null

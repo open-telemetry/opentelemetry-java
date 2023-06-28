@@ -38,6 +38,7 @@ import org.snakeyaml.engine.v2.api.LoadSettings;
  *   - selector:
  *       instrument_name: my-instrument
  *       instrument_type: COUNTER
+ *       instrument_unit: ms
  *       meter_name: my-meter
  *       meter_version: 1.0.0
  *       meter_schema_url: http://example.com
@@ -58,6 +59,7 @@ import org.snakeyaml.engine.v2.api.LoadSettings;
  *         InstrumentSelector.builder()
  *             .setName("my-instrument")
  *             .setType(InstrumentType.COUNTER)
+ *             .setUnit("ms")
  *             .setMeterName("my-meter")
  *             .setMeterVersion("1.0.0")
  *             .setMeterSchemaUrl("http://example.com")
@@ -125,6 +127,7 @@ public final class ViewConfig {
                     SelectorSpecification.builder()
                         .instrumentName(getAsType(selectorSpecMap, "instrument_name", String.class))
                         .instrumentType(instrumentType)
+                        .instrumentUnit(getAsType(selectorSpecMap, "instrument_unit", String.class))
                         .meterName(getAsType(selectorSpecMap, "meter_name", String.class))
                         .meterVersion(getAsType(selectorSpecMap, "meter_version", String.class))
                         .meterSchemaUrl(
@@ -247,6 +250,10 @@ public final class ViewConfig {
     InstrumentType instrumentType = selectorSpec.getInstrumentType();
     if (instrumentType != null) {
       builder.setType(instrumentType);
+    }
+    String instrumentUnit = selectorSpec.getInstrumentUnit();
+    if (instrumentUnit != null) {
+      builder.setUnit(instrumentUnit);
     }
 
     String meterName = selectorSpec.getMeterName();
