@@ -263,8 +263,9 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 **[1]**: Jaeger now
 has [native support for OTLP](https://opentelemetry.io/blog/2022/jaeger-native-otlp/) and jaeger
 exporters are now deprecated. `opentelemetry-exporter-jaeger-thrift` will continue to be published
-until 1.27.0 (July 2023). After 1.27.0, it will continue to receive patches for security
-vulnerabilities, and `io.opentelemetry:opentelemetry-bom` will reference the last published version.
+until 1.34.0 (January 2024) but no new PRs will be accepted except security related bugfixes. After
+1.34.0, `io.opentelemetry:opentelemetry-bom` will reference the last published version, but no
+additional versions will be published.
 
 ### SDK Extensions
 
