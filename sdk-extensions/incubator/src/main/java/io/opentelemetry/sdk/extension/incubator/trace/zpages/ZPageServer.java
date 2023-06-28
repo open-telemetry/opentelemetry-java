@@ -68,8 +68,13 @@ import javax.annotation.concurrent.ThreadSafe;
  *   }
  * }
  * }</pre>
+ *
+ * @deprecated for removal without replacement. See <a
+ *     href="https://github.com/open-telemetry/opentelemetry-java/issues/5571">opentelemetry-java#5571</a>
+ *     for details.
  */
 @ThreadSafe
+@Deprecated
 public final class ZPageServer {
   // The maximum number of queued incoming connections allowed on the HttpServer listening socket.
   private static final int HTTPSERVER_BACKLOG = 5;
