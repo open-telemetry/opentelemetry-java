@@ -127,7 +127,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   }
 
   /**
-   * Load {@link HttpSender} via {@link HttpSenderProvider} SPI.
+   * Resolve the {@link HttpSenderProvider}.
    *
    * <p>If no {@link HttpSenderProvider} is available, throw {@link IllegalStateException}.
    *
@@ -142,42 +142,55 @@ public final class HttpExporterBuilder<T extends Marshaler> {
    *       matching provider. If none match, throw {@link IllegalStateException}.
    * </ul>
    */
-  private HttpSender createHttpSender() {
-    Map<String, String> headers = this.headers == null ? Collections.emptyMap() : this.headers;
-    Supplier<Map<String, String>> headerSupplier = () -> headers;
-
-    HttpSenderProvider httpSenderProvider;
-    String configuredSender =
-        ConfigUtil.getString("io.opentelemetry.exporter.internal.http.HttpSenderProvider", "");
+  private static HttpSenderProvider resolveHttpSenderProvider() {
     Map<String, HttpSenderProvider> httpSenderProviders = new HashMap<>();
     for (HttpSenderProvider spi :
         ServiceLoader.load(HttpSenderProvider.class, HttpExporterBuilder.class.getClassLoader())) {
       httpSenderProviders.put(spi.getClass().getName(), spi);
     }
+
+    // No provider on classpath, throw
     if (httpSenderProviders.isEmpty()) {
       throw new IllegalStateException(
           "No HttpSenderProvider found on classpath. Please add dependency on "
               + "opentelemetry-exporter-http-sender-okhttp or opentelemetry-exporter-http-sender-jdk");
-    } else if (httpSenderProviders.size() == 1) {
-      httpSenderProvider = httpSenderProviders.values().stream().findFirst().get();
-    } else { // Multiple HttpSenderProviders
-      if (configuredSender.isEmpty()) { // Multiple providers but none configured
-        LOGGER.log(
-            Level.WARNING,
-            "Multiple HttpSenderProvider found. Please include only one, "
-                + "or specify preference setting io.opentelemetry.exporter.internal.http.HttpSenderProvider "
-                + "to the FQCN of the preferred provider.");
-        httpSenderProvider = httpSenderProviders.values().stream().findFirst().get();
-      } else if (httpSenderProviders.containsKey(
-          configuredSender)) { // Multiple providers, configured matches
-        httpSenderProvider = httpSenderProviders.get(configuredSender);
-      } else { // Multiple providers, configured does not match
-        throw new IllegalStateException(
-            "No HttpSenderProvider matched configured io.opentelemetry.exporter.internal.http.HttpSenderProvider: "
-                + configuredSender);
-      }
     }
 
+    // Exactly one provider on classpath, use it
+    if (httpSenderProviders.size() == 1) {
+      return httpSenderProviders.values().stream().findFirst().get();
+    }
+
+    // If we've reached here, there are multiple HttpSenderProviders
+    String configuredSender =
+        ConfigUtil.getString("io.opentelemetry.exporter.internal.http.HttpSenderProvider", "");
+
+    // Multiple providers but none configured, use first we find and log a warning
+    if (configuredSender.isEmpty()) {
+      LOGGER.log(
+          Level.WARNING,
+          "Multiple HttpSenderProvider found. Please include only one, "
+              + "or specify preference setting io.opentelemetry.exporter.internal.http.HttpSenderProvider "
+              + "to the FQCN of the preferred provider.");
+      return httpSenderProviders.values().stream().findFirst().get();
+    }
+
+    // Multiple providers with configuration match, use configuration match
+    if (httpSenderProviders.containsKey(configuredSender)) {
+      return httpSenderProviders.get(configuredSender);
+    }
+
+    // Multiple providers, configured does not match, throw
+    throw new IllegalStateException(
+        "No HttpSenderProvider matched configured io.opentelemetry.exporter.internal.http.HttpSenderProvider: "
+            + configuredSender);
+  }
+
+  public HttpExporter<T> build() {
+    Map<String, String> headers = this.headers == null ? Collections.emptyMap() : this.headers;
+    Supplier<Map<String, String>> headerSupplier = () -> headers;
+
+    HttpSenderProvider httpSenderProvider = resolveHttpSenderProvider();
     HttpSender httpSender =
         httpSenderProvider.createSender(
             endpoint,
@@ -190,11 +203,6 @@ public final class HttpExporterBuilder<T extends Marshaler> {
             tlsConfigHelper.getSslContext(),
             tlsConfigHelper.getTrustManager());
     LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
-    return httpSender;
-  }
-
-  public HttpExporter<T> build() {
-    HttpSender httpSender = createHttpSender();
 
     return new HttpExporter<>(exporterName, type, httpSender, meterProviderSupplier, exportAsJson);
   }
