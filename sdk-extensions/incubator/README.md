@@ -97,6 +97,8 @@ Additional notes on usage:
 
 ## zPages
 
+> **Deprecation Notice**: zPages is scheduled for removal in a future version. See [Issue #5571](https://github.com/open-telemetry/opentelemetry-java/issues/5571) for details.
+
 OpenTelemetry Java zPages are a collection of dynamic HTML web pages embedded in your app that
 display stats and trace data. Learn more
 in [this blog post](https://medium.com/opentelemetry/zpages-in-opentelemetry-2b080a81eb47).
