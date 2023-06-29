@@ -4,7 +4,7 @@ subprojects {
   val proj = this
   plugins.withId("java") {
     configure<BasePluginExtension> {
-      archivesName.set("opentelemetry-exporter-http-sender-${proj.name}")
+      archivesName.set("opentelemetry-exporter-sender-${proj.name}")
     }
   }
 }

@@ -149,7 +149,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     }
     if (httpSender == null) {
       throw new IllegalStateException(
-          "No HttpSenderProvider found on classpath. Please add dependency on opentelemetry-exporter-http-sender-okhttp");
+          "No HttpSenderProvider found on classpath. Please add dependency on opentelemetry-exporter-sender-okhttp");
     }
 
     return new HttpExporter<>(exporterName, type, httpSender, meterProviderSupplier, exportAsJson);
