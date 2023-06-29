@@ -41,7 +41,7 @@ dependencies {
 
 testing {
   suites {
-    val testGrpcNetty by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testGrpcNetty") {
       dependencies {
         implementation(project(":exporters:otlp:testing-internal"))
 
@@ -49,7 +49,7 @@ testing {
         implementation("io.grpc:grpc-stub")
       }
     }
-    val testGrpcNettyShaded by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testGrpcNettyShaded") {
       dependencies {
         implementation(project(":exporters:otlp:testing-internal"))
 
@@ -57,7 +57,7 @@ testing {
         implementation("io.grpc:grpc-stub")
       }
     }
-    val testGrpcOkhttp by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testGrpcOkhttp") {
       dependencies {
         implementation(project(":exporters:otlp:testing-internal"))
 
@@ -65,7 +65,7 @@ testing {
         implementation("io.grpc:grpc-stub")
       }
     }
-    val testSpanPipeline by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testSpanPipeline") {
       dependencies {
         implementation("io.opentelemetry.proto:opentelemetry-proto")
         implementation("com.linecorp.armeria:armeria-grpc-protocol")
