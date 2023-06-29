@@ -33,7 +33,7 @@ repositories {
 }
 
 dependencies {
-  implementation("com.google.auto.value:auto-value-annotations:1.10.1")
+  implementation("com.google.auto.value:auto-value-annotations:1.10.2")
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:6.19.0")
   // Needed for japicmp but not automatically brought in for some reason.

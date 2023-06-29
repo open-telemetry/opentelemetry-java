@@ -28,7 +28,7 @@ val DEPENDENCY_BOMS = listOf(
   "org.snakeyaml:snakeyaml-engine:2.6"
 )
 
-val autoValueVersion = "1.10.1"
+val autoValueVersion = "1.10.2"
 val errorProneVersion = "2.19.1"
 val jmhVersion = "1.36"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
