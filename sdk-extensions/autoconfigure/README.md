@@ -302,7 +302,7 @@ These properties can be used to control the maximum size of spans by placing lim
 
 | System property                 | Environment variable            | Description                                                                        |
 |---------------------------------|---------------------------------|------------------------------------------------------------------------------------|
-| otel.blrp.schedule.delay        | OTEL_BLRP_SCHEDULE_DELAY        | The interval, in milliseconds, between two consecutive exports. Default is `5000`. |
+| otel.blrp.schedule.delay        | OTEL_BLRP_SCHEDULE_DELAY        | The interval, in milliseconds, between two consecutive exports. Default is `1000`. |
 | otel.blrp.max.queue.size        | OTEL_BLRP_MAX_QUEUE_SIZE        | The maximum queue size. Default is `2048`.                                         |
 | otel.blrp.max.export.batch.size | OTEL_BLRP_MAX_EXPORT_BATCH_SIZE | The maximum batch size. Default is `512`.                                          |
 | otel.blrp.export.timeout        | OTEL_BLRP_EXPORT_TIMEOUT        | The maximum allowed time, in milliseconds, to export data. Default is `30000`.     |
