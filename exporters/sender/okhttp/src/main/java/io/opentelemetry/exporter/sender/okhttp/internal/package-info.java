@@ -5,6 +5,6 @@
 
 /** Utilities for HTTP exporters. */
 @ParametersAreNonnullByDefault
-package io.opentelemetry.exporter.http.okhttp.internal;
+package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import javax.annotation.ParametersAreNonnullByDefault;

@@ -5,8 +5,8 @@ plugins {
   id("otel.animalsniffer-conventions")
 }
 
-description = "OpenTelemetry OkHttp HttpSender"
-otelJava.moduleName.set("io.opentelemetry.exporter.http.okhttp.internal")
+description = "OpenTelemetry OkHttp Senders"
+otelJava.moduleName.set("io.opentelemetry.exporter.sender.okhttp.internal")
 
 dependencies {
   implementation(project(":exporters:common"))

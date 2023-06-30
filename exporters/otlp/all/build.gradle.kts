@@ -17,7 +17,7 @@ dependencies {
   api(project(":sdk:logs"))
 
   implementation(project(":exporters:otlp:common"))
-  implementation(project(":exporters:http-sender:okhttp"))
+  implementation(project(":exporters:sender:okhttp"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
 
   implementation("com.squareup.okhttp3:okhttp")
