@@ -85,7 +85,7 @@ public final class SdkMeterProviderBuilder {
    *
    * // register the view with the SdkMeterProviderBuilder
    * meterProviderBuilder.registerView(
-   *   InstrumentSelector instrumentSelector = InstrumentSelector.builder()
+   *   InstrumentSelector.builder()
    *       .setType(InstrumentType.HISTOGRAM)
    *       .build(),
    *   View.builder()
