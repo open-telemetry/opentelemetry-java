@@ -34,7 +34,7 @@ dependencies {
 
 testing {
   suites {
-    val testGrpcNetty by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testGrpcNetty") {
       dependencies {
         implementation(project(":sdk:testing"))
         implementation(project(":exporters:common"))

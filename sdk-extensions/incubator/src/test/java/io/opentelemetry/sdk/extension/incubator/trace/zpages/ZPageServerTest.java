@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // Testing deprecated code
 class ZPageServerTest {
 
   @Test

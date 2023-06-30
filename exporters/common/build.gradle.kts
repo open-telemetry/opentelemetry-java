@@ -41,8 +41,8 @@ testing {
   suites {
     register<JvmTestSuite>("testHttpSenderProvider") {
       dependencies {
-        implementation(project(":exporters:http-sender:jdk"))
-        implementation(project(":exporters:http-sender:okhttp"))
+        implementation(project(":exporters:sender:jdk"))
+        implementation(project(":exporters:sender:okhttp"))
       }
       targets {
         all {

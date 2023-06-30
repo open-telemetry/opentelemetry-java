@@ -20,7 +20,7 @@ tasks {
     relocate("org.jctools", "io.opentelemetry.internal.shaded.jctools")
   }
 
-  val extractShadowJar by registering(Copy::class) {
+  register<Copy>("extractShadowJar") {
     dependsOn(shadowJar)
     from(zipTree(shadowJar.get().archiveFile))
     into("build/extracted/shadow")

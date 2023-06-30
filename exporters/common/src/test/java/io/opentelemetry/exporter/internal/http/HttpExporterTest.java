@@ -17,6 +17,6 @@ class HttpExporterTest {
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(
             "No HttpSenderProvider found on classpath. Please add dependency on "
-                + "opentelemetry-exporter-http-sender-okhttp or opentelemetry-exporter-http-sender-jdk");
+                + "opentelemetry-exporter-sender-okhttp or opentelemetry-exporter-sender-jdk");
   }
 }

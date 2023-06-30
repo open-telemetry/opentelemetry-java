@@ -153,7 +153,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     if (httpSenderProviders.isEmpty()) {
       throw new IllegalStateException(
           "No HttpSenderProvider found on classpath. Please add dependency on "
-              + "opentelemetry-exporter-http-sender-okhttp or opentelemetry-exporter-http-sender-jdk");
+              + "opentelemetry-exporter-sender-okhttp or opentelemetry-exporter-sender-jdk");
     }
 
     // Exactly one provider on classpath, use it

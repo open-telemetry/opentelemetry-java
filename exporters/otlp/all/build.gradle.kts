@@ -17,7 +17,7 @@ dependencies {
   api(project(":sdk:logs"))
 
   implementation(project(":exporters:otlp:common"))
-  implementation(project(":exporters:http-sender:okhttp"))
+  implementation(project(":exporters:sender:okhttp"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
 
   implementation("com.squareup.okhttp3:okhttp")
@@ -43,7 +43,7 @@ val testJavaVersion: String? by project
 
 testing {
   suites {
-    val testGrpcNetty by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testGrpcNetty") {
       dependencies {
         implementation(project(":exporters:otlp:testing-internal"))
 
@@ -51,7 +51,7 @@ testing {
         implementation("io.grpc:grpc-stub")
       }
     }
-    val testGrpcNettyShaded by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testGrpcNettyShaded") {
       dependencies {
         implementation(project(":exporters:otlp:testing-internal"))
 
@@ -59,7 +59,7 @@ testing {
         implementation("io.grpc:grpc-stub")
       }
     }
-    val testGrpcOkhttp by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testGrpcOkhttp") {
       dependencies {
         implementation(project(":exporters:otlp:testing-internal"))
 
@@ -69,7 +69,7 @@ testing {
     }
     register<JvmTestSuite>("testJdkHttpSender") {
       dependencies {
-        implementation(project(":exporters:http-sender:jdk"))
+        implementation(project(":exporters:sender:jdk"))
         implementation(project(":exporters:otlp:testing-internal"))
 
         implementation("io.grpc:grpc-stub")
@@ -83,7 +83,7 @@ testing {
         }
       }
     }
-    val testSpanPipeline by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testSpanPipeline") {
       dependencies {
         implementation("io.opentelemetry.proto:opentelemetry-proto")
         implementation("com.linecorp.armeria:armeria-grpc-protocol")
