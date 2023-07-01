@@ -62,6 +62,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+@SuppressWarnings("deprecation") // Testing deprecated code
 class JaegerGrpcSpanExporterTest {
   private static final BlockingQueue<Collector.PostSpansRequest> postedRequests =
       new LinkedBlockingDeque<>();

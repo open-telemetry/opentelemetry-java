@@ -19,7 +19,14 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
-/** Builder utility for this exporter. */
+/**
+ * Builder utility for this exporter.
+ *
+ * @deprecated Use {@code OtlpGrpcSpanExporter} or {@code OtlpHttpSpanExporter} from <a
+ *     href="https://github.com/open-telemetry/opentelemetry-java/tree/main/exporters/otlp/all">opentelemetry-exporter-otlp</a>
+ *     instead.
+ */
+@Deprecated
 public final class JaegerGrpcSpanExporterBuilder {
 
   private static final String GRPC_SERVICE_NAME = "jaeger.api_v2.CollectorService";
