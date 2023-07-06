@@ -126,6 +126,27 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  public HttpExporter<T> build() {
+    Map<String, String> headers = this.headers == null ? Collections.emptyMap() : this.headers;
+    Supplier<Map<String, String>> headerSupplier = () -> headers;
+
+    HttpSenderProvider httpSenderProvider = resolveHttpSenderProvider();
+    HttpSender httpSender =
+        httpSenderProvider.createSender(
+            endpoint,
+            compressionEnabled,
+            exportAsJson ? "application/json" : "application/x-protobuf",
+            timeoutNanos,
+            headerSupplier,
+            authenticator,
+            retryPolicy,
+            tlsConfigHelper.getSslContext(),
+            tlsConfigHelper.getTrustManager());
+    LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
+
+    return new HttpExporter<>(exporterName, type, httpSender, meterProviderSupplier, exportAsJson);
+  }
+
   /**
    * Resolve the {@link HttpSenderProvider}.
    *
@@ -184,26 +205,5 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     throw new IllegalStateException(
         "No HttpSenderProvider matched configured io.opentelemetry.exporter.internal.http.HttpSenderProvider: "
             + configuredSender);
-  }
-
-  public HttpExporter<T> build() {
-    Map<String, String> headers = this.headers == null ? Collections.emptyMap() : this.headers;
-    Supplier<Map<String, String>> headerSupplier = () -> headers;
-
-    HttpSenderProvider httpSenderProvider = resolveHttpSenderProvider();
-    HttpSender httpSender =
-        httpSenderProvider.createSender(
-            endpoint,
-            compressionEnabled,
-            exportAsJson ? "application/json" : "application/x-protobuf",
-            timeoutNanos,
-            headerSupplier,
-            authenticator,
-            retryPolicy,
-            tlsConfigHelper.getSslContext(),
-            tlsConfigHelper.getTrustManager());
-    LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
-
-    return new HttpExporter<>(exporterName, type, httpSender, meterProviderSupplier, exportAsJson);
   }
 }

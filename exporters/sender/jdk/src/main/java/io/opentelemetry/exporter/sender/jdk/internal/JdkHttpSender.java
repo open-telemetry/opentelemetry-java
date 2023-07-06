@@ -6,8 +6,8 @@
 package io.opentelemetry.exporter.sender.jdk.internal;
 
 import io.opentelemetry.exporter.internal.http.HttpSender;
-import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
