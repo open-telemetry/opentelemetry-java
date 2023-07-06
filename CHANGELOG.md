@@ -45,7 +45,7 @@ Extension" notes below for changes made prior to stabilization.
   ([#5467](https://github.com/open-telemetry/opentelemetry-java/pull/5467))
 * Add autoconfigure support for low memory metric temporality setting
   ([#5558](https://github.com/open-telemetry/opentelemetry-java/pull/5558))
-* DEPRECATION: zpages extension from opentelemetry-sdk-extension-incubator 
+* DEPRECATION: zpages extension from opentelemetry-sdk-extension-incubator
   is now deprecated
   ([#5578](https://github.com/open-telemetry/opentelemetry-java/pull/5578))
 
