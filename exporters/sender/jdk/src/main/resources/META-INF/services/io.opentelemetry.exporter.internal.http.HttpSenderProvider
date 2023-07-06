@@ -1,1 +1,1 @@
-io.opentelemetry.exporter.http.jdk.internal.JdkHttpSenderProvider
+io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSenderProvider

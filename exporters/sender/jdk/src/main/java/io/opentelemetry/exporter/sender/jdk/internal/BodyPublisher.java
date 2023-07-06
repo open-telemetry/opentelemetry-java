@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.http.jdk.internal;
+package io.opentelemetry.exporter.sender.jdk.internal;
 
 import java.net.http.HttpRequest;
 import java.nio.ByteBuffer;

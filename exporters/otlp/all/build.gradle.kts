@@ -77,7 +77,7 @@ testing {
       targets {
         all {
           testTask {
-            systemProperty("io.opentelemetry.exporter.internal.http.HttpSenderProvider", "io.opentelemetry.exporter.http.jdk.internal.JdkHttpSenderProvider")
+            systemProperty("io.opentelemetry.exporter.internal.http.HttpSenderProvider", "io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSenderProvider")
             enabled = !testJavaVersion.equals("8")
           }
         }

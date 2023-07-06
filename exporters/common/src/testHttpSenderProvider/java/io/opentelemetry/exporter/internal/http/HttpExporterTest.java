@@ -9,8 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.netmikey.logunit.api.LogCapturer;
-import io.opentelemetry.exporter.http.jdk.internal.JdkHttpSender;
-import io.opentelemetry.exporter.http.okhttp.internal.OkHttpHttpSender;
+import io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSender;
+import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpHttpSender;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -37,7 +37,7 @@ class HttpExporterTest {
   @Test
   @SetSystemProperty(
       key = "io.opentelemetry.exporter.internal.http.HttpSenderProvider",
-      value = "io.opentelemetry.exporter.http.jdk.internal.JdkHttpSenderProvider")
+      value = "io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSenderProvider")
   void build_multipleSendersWithJdk() {
     assertThat(new HttpExporterBuilder<>("exporter", "type", "http://localhost").build())
         .extracting("httpSender")
@@ -49,7 +49,7 @@ class HttpExporterTest {
   @Test
   @SetSystemProperty(
       key = "io.opentelemetry.exporter.internal.http.HttpSenderProvider",
-      value = "io.opentelemetry.exporter.http.okhttp.internal.OkHttpHttpSenderProvider")
+      value = "io.opentelemetry.exporter.sender.okhttp.internal.OkHttpHttpSenderProvider")
   void build_multipleSendersWithOkHttp() {
     assertThat(new HttpExporterBuilder<>("exporter", "type", "http://localhost").build())
         .extracting("httpSender")
