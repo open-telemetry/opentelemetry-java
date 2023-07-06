@@ -16,7 +16,9 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.metrics.data.Data;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SumData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
@@ -26,6 +28,7 @@ import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -167,7 +170,7 @@ class CardinalityTest {
    * MetricStorageUtils#MAX_CARDINALITY} is enforced for each instrument.
    */
   @Test
-  void cardinalityLimits_synchronousInstrument() {
+  void defaultCardinalityLimits_synchronousInstrument() {
     LongCounter syncCounter1 = meter.counterBuilder("sync-counter1").build();
     LongCounter syncCounter2 = meter.counterBuilder("sync-counter2").build();
     for (int i = 0; i < DEFAULT_MAX_CARDINALITY + 1; i++) {
@@ -233,7 +236,7 @@ class CardinalityTest {
    * MetricStorageUtils#MAX_CARDINALITY} is enforced for each instrument.
    */
   @Test
-  void cardinalityLimits_asynchronousInstrument() {
+  void defaultCardinalityLimits_asynchronousInstrument() {
     Consumer<ObservableLongMeasurement> callback =
         measurement -> {
           for (int i = 0; i < DEFAULT_MAX_CARDINALITY + 1; i++) {
@@ -306,6 +309,7 @@ class CardinalityTest {
     int counterLimit = 10;
     int generalLimit = 20;
     int counter2Limit = 30;
+    int asyncCounterLimit = 40;
 
     // Define a cardinality selector which has one limit for counters, and another general limit for
     // other instrument kinds
@@ -320,10 +324,17 @@ class CardinalityTest {
         builder, cumulativeReader, cardinalityLimitSelector);
 
     // Register a view which defines a custom cardinality limit for instrumented named "counter2"
-    ViewBuilder viewBuilder = View.builder();
-    SdkMeterProviderUtil.setCardinalityLimit(viewBuilder, counter2Limit);
+    ViewBuilder viewBuilder1 = View.builder();
+    SdkMeterProviderUtil.setCardinalityLimit(viewBuilder1, counter2Limit);
     builder.registerView(
-        InstrumentSelector.builder().setName("counter2").build(), viewBuilder.build());
+        InstrumentSelector.builder().setName("counter2").build(), viewBuilder1.build());
+
+    // Register a view which defines a custom cardinality limit for instrumented named
+    // "asyncCounter"
+    ViewBuilder viewBuilder2 = View.builder();
+    SdkMeterProviderUtil.setCardinalityLimit(viewBuilder2, asyncCounterLimit);
+    builder.registerView(
+        InstrumentSelector.builder().setName("asyncCounter").build(), viewBuilder2.build());
 
     SdkMeterProvider sdkMeterProvider = builder.build();
     meter = sdkMeterProvider.get(CardinalityTest.class.getName());
@@ -331,6 +342,15 @@ class CardinalityTest {
     LongCounter counter1 = meter.counterBuilder("counter1").build();
     LongCounter counter2 = meter.counterBuilder("counter2").build();
     LongHistogram histogram = meter.histogramBuilder("histogram").ofLongs().build();
+    meter
+        .counterBuilder("asyncCounter")
+        .buildWithCallback(
+            observableMeasurement -> {
+              // Record enough measurements to exceed cardinality threshold
+              for (int i = 0; i < DEFAULT_MAX_CARDINALITY; i++) {
+                observableMeasurement.record(1, Attributes.builder().put("key", i).build());
+              }
+            });
 
     // Record enough measurements to exceed cardinality threshold
     for (int i = 0; i < DEFAULT_MAX_CARDINALITY; i++) {
@@ -353,7 +373,14 @@ class CardinalityTest {
                         sum ->
                             sum.isDelta()
                                 .satisfies(
-                                    data -> pointsAssert(data, counterLimit, 0, counterLimit))),
+                                    data ->
+                                        pointsAssert(
+                                            data,
+                                            counterLimit,
+                                            0,
+                                            counterLimit,
+                                            LongPointData::getValue,
+                                            DEFAULT_MAX_CARDINALITY - (counterLimit - 1)))),
             metricData ->
                 assertThat(metricData)
                     .hasName("counter2")
@@ -361,7 +388,14 @@ class CardinalityTest {
                         sum ->
                             sum.isDelta()
                                 .satisfies(
-                                    data -> pointsAssert(data, counter2Limit, 0, counter2Limit))),
+                                    data ->
+                                        pointsAssert(
+                                            data,
+                                            counter2Limit,
+                                            0,
+                                            counter2Limit,
+                                            LongPointData::getValue,
+                                            DEFAULT_MAX_CARDINALITY - (counter2Limit - 1)))),
             metricData ->
                 assertThat(metricData)
                     .hasName("histogram")
@@ -370,7 +404,29 @@ class CardinalityTest {
                             histogramMetric
                                 .isDelta()
                                 .satisfies(
-                                    data -> pointsAssert(data, generalLimit, 0, generalLimit))));
+                                    data ->
+                                        pointsAssert(
+                                            data,
+                                            generalLimit,
+                                            0,
+                                            generalLimit,
+                                            HistogramPointData::getCount,
+                                            DEFAULT_MAX_CARDINALITY - (generalLimit - 1)))),
+            metricData ->
+                assertThat(metricData)
+                    .hasName("asyncCounter")
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isDelta()
+                                .satisfies(
+                                    data ->
+                                        pointsAssert(
+                                            data,
+                                            asyncCounterLimit,
+                                            0,
+                                            asyncCounterLimit,
+                                            LongPointData::getValue,
+                                            1))));
     assertThat(cumulativeReader.collectAllMetrics())
         .as("cumulative collection")
         .satisfiesExactlyInAnyOrder(
@@ -381,7 +437,14 @@ class CardinalityTest {
                         sum ->
                             sum.isCumulative()
                                 .satisfies(
-                                    data -> pointsAssert(data, counterLimit, 0, counterLimit))),
+                                    data ->
+                                        pointsAssert(
+                                            data,
+                                            counterLimit,
+                                            0,
+                                            counterLimit,
+                                            LongPointData::getValue,
+                                            DEFAULT_MAX_CARDINALITY - (counterLimit - 1)))),
             metricData ->
                 assertThat(metricData)
                     .hasName("counter2")
@@ -389,7 +452,14 @@ class CardinalityTest {
                         sum ->
                             sum.isCumulative()
                                 .satisfies(
-                                    data -> pointsAssert(data, counter2Limit, 0, counter2Limit))),
+                                    data ->
+                                        pointsAssert(
+                                            data,
+                                            counter2Limit,
+                                            0,
+                                            counter2Limit,
+                                            LongPointData::getValue,
+                                            DEFAULT_MAX_CARDINALITY - (counter2Limit - 1)))),
             metricData ->
                 assertThat(metricData)
                     .hasName("histogram")
@@ -398,7 +468,29 @@ class CardinalityTest {
                             histogramMetric
                                 .isCumulative()
                                 .satisfies(
-                                    data -> pointsAssert(data, generalLimit, 0, generalLimit))));
+                                    data ->
+                                        pointsAssert(
+                                            data,
+                                            generalLimit,
+                                            0,
+                                            generalLimit,
+                                            HistogramPointData::getCount,
+                                            DEFAULT_MAX_CARDINALITY - (generalLimit - 1)))),
+            metricData ->
+                assertThat(metricData)
+                    .hasName("asyncCounter")
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isCumulative()
+                                .satisfies(
+                                    data ->
+                                        pointsAssert(
+                                            data,
+                                            asyncCounterLimit,
+                                            0,
+                                            asyncCounterLimit,
+                                            LongPointData::getValue,
+                                            1))));
 
     // Record another round of measurements, again exceeding cardinality limits
     for (int i = DEFAULT_MAX_CARDINALITY; i < DEFAULT_MAX_CARDINALITY * 2; i++) {
@@ -424,7 +516,9 @@ class CardinalityTest {
                                             data,
                                             counterLimit,
                                             DEFAULT_MAX_CARDINALITY,
-                                            DEFAULT_MAX_CARDINALITY + counterLimit))),
+                                            DEFAULT_MAX_CARDINALITY + counterLimit,
+                                            LongPointData::getValue,
+                                            DEFAULT_MAX_CARDINALITY - (counterLimit - 1)))),
             metricData ->
                 assertThat(metricData)
                     .hasName("counter2")
@@ -437,7 +531,9 @@ class CardinalityTest {
                                             data,
                                             counter2Limit,
                                             DEFAULT_MAX_CARDINALITY,
-                                            DEFAULT_MAX_CARDINALITY + counter2Limit))),
+                                            DEFAULT_MAX_CARDINALITY + counter2Limit,
+                                            LongPointData::getValue,
+                                            DEFAULT_MAX_CARDINALITY - (counter2Limit - 1)))),
             metricData ->
                 assertThat(metricData)
                     .hasName("histogram")
@@ -451,7 +547,24 @@ class CardinalityTest {
                                             data,
                                             generalLimit,
                                             DEFAULT_MAX_CARDINALITY,
-                                            DEFAULT_MAX_CARDINALITY + generalLimit))));
+                                            DEFAULT_MAX_CARDINALITY + generalLimit,
+                                            HistogramPointData::getCount,
+                                            DEFAULT_MAX_CARDINALITY - (generalLimit - 1)))),
+            metricData ->
+                assertThat(metricData)
+                    .hasName("asyncCounter")
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isDelta()
+                                .satisfies(
+                                    data ->
+                                        pointsAssert(
+                                            data,
+                                            asyncCounterLimit,
+                                            0,
+                                            asyncCounterLimit,
+                                            LongPointData::getValue,
+                                            0))));
 
     // Cumulative reader should retain old points, dropping the new measurements
     assertThat(cumulativeReader.collectAllMetrics())
@@ -464,7 +577,14 @@ class CardinalityTest {
                         sum ->
                             sum.isCumulative()
                                 .satisfies(
-                                    data -> pointsAssert(data, counterLimit, 0, counterLimit))),
+                                    data ->
+                                        pointsAssert(
+                                            data,
+                                            counterLimit,
+                                            0,
+                                            counterLimit,
+                                            LongPointData::getValue,
+                                            DEFAULT_MAX_CARDINALITY * 2 - (counterLimit - 1)))),
             metricData ->
                 assertThat(metricData)
                     .hasName("counter2")
@@ -472,7 +592,14 @@ class CardinalityTest {
                         sum ->
                             sum.isCumulative()
                                 .satisfies(
-                                    data -> pointsAssert(data, counter2Limit, 0, counter2Limit))),
+                                    data ->
+                                        pointsAssert(
+                                            data,
+                                            counter2Limit,
+                                            0,
+                                            counter2Limit,
+                                            LongPointData::getValue,
+                                            DEFAULT_MAX_CARDINALITY * 2 - (counter2Limit - 1)))),
             metricData ->
                 assertThat(metricData)
                     .hasName("histogram")
@@ -481,25 +608,62 @@ class CardinalityTest {
                             histogramMetric
                                 .isCumulative()
                                 .satisfies(
-                                    data -> pointsAssert(data, generalLimit, 0, generalLimit))));
+                                    data ->
+                                        pointsAssert(
+                                            data,
+                                            generalLimit,
+                                            0,
+                                            generalLimit,
+                                            HistogramPointData::getCount,
+                                            DEFAULT_MAX_CARDINALITY * 2 - (generalLimit - 1)))),
+            metricData ->
+                assertThat(metricData)
+                    .hasName("asyncCounter")
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isCumulative()
+                                .satisfies(
+                                    data ->
+                                        pointsAssert(
+                                            data,
+                                            asyncCounterLimit,
+                                            0,
+                                            asyncCounterLimit,
+                                            LongPointData::getValue,
+                                            1))));
   }
 
   /**
    * Helper function for {@link #readerAndViewCardinalityConfiguration()}. Asserts that the {@code
    * data} contains the {@code expectedNumPoints}, and has the attribute "key" values in the range
-   * [{@code minAttributeValueInclusive}, {@code maxAttributeValueExclusive}).
+   * [{@code minAttributeValueInclusive}, {@code maxAttributeValueExclusive}). Additionally, asserts
+   * that the {@link MetricStorage#CARDINALITY_OVERFLOW} series has a value equal of {@code
+   * expectedOverflowValue}.
    */
-  private static void pointsAssert(
-      Data<?> data,
+  private static <T extends PointData> void pointsAssert(
+      Data<T> data,
       int expectedNumPoints,
       int minAttributeValueInclusive,
-      int maxAttributeValueExclusive) {
+      int maxAttributeValueExclusive,
+      Function<T, Long> overflowValueProvider,
+      long expectedOverflowValue) {
     assertThat(data.getPoints())
         .hasSize(expectedNumPoints)
         .allSatisfy(
-            point ->
-                assertThat(point.getAttributes().get(AttributeKey.longKey("key")))
+            point -> {
+              boolean isOverflowSeries =
+                  point.getAttributes().equals(MetricStorage.CARDINALITY_OVERFLOW);
+              Long keyValue = point.getAttributes().get(AttributeKey.longKey("key"));
+              boolean isKeySeries = keyValue != null;
+              assertThat(isOverflowSeries || isKeySeries).isTrue();
+              if (isOverflowSeries) {
+                assertThat(overflowValueProvider.apply(point)).isEqualTo(expectedOverflowValue);
+              }
+              if (isKeySeries) {
+                assertThat(keyValue)
                     .isGreaterThanOrEqualTo(minAttributeValueInclusive)
-                    .isLessThan(maxAttributeValueExclusive));
+                    .isLessThan(maxAttributeValueExclusive);
+              }
+            });
   }
 }
