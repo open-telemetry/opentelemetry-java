@@ -46,6 +46,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("deprecation") // Testing deprecated code
 class JaegerThriftSpanExporterTest {
 
   private static final String TRACE_ID = "a0000000000000000000000000abc123";

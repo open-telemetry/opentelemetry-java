@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
-class NamedSpiManager<T> {
+final class NamedSpiManager<T> {
 
   private final Map<String, Supplier<T>> nameToProvider;
   private final ConcurrentMap<String, Optional<T>> nameToImplementation = new ConcurrentHashMap<>();

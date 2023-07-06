@@ -49,6 +49,29 @@ public interface AggregationTemporalitySelector {
     };
   }
 
+  /**
+   * A common implementation of {@link AggregationTemporalitySelector} which reduces memory.
+   *
+   * <p>{@link AggregationTemporality#DELTA} is returned for {@link InstrumentType#COUNTER} and
+   * {@link InstrumentType#HISTOGRAM}. {@link AggregationTemporality#CUMULATIVE} is returned for
+   * {@link InstrumentType#UP_DOWN_COUNTER}, {@link InstrumentType#OBSERVABLE_UP_DOWN_COUNTER}, and
+   * {@link InstrumentType#OBSERVABLE_COUNTER}.
+   */
+  static AggregationTemporalitySelector lowMemory() {
+    return instrumentType -> {
+      switch (instrumentType) {
+        case UP_DOWN_COUNTER:
+        case OBSERVABLE_UP_DOWN_COUNTER:
+        case OBSERVABLE_COUNTER:
+          return AggregationTemporality.CUMULATIVE;
+        case COUNTER:
+        case HISTOGRAM:
+        default:
+          return AggregationTemporality.DELTA;
+      }
+    };
+  }
+
   /** Return the aggregation temporality for the {@link InstrumentType}. */
   AggregationTemporality getAggregationTemporality(InstrumentType instrumentType);
 }

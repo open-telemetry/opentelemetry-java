@@ -33,6 +33,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers(disabledWithoutDocker = true)
+@SuppressWarnings("deprecation") // Testing deprecated code
 class JaegerThriftIntegrationTest {
   private static final OkHttpClient client = new OkHttpClient();
 

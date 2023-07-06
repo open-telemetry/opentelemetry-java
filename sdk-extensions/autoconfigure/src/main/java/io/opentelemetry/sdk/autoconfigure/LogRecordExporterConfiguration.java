@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 
-class LogRecordExporterConfiguration {
+final class LogRecordExporterConfiguration {
 
   private static final String EXPORTER_NONE = "none";
   private static final Map<String, String> EXPORTER_ARTIFACT_ID_BY_NAME;
@@ -27,7 +27,7 @@ class LogRecordExporterConfiguration {
     EXPORTER_ARTIFACT_ID_BY_NAME = new HashMap<>();
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging", "opentelemetry-exporter-logging");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging-otlp", "opentelemetry-exporter-logging-otlp");
-    EXPORTER_ARTIFACT_ID_BY_NAME.put("otlp", "opentelemetry-exporter-otlp-logs");
+    EXPORTER_ARTIFACT_ID_BY_NAME.put("otlp", "opentelemetry-exporter-otlp");
   }
 
   // Visible for test

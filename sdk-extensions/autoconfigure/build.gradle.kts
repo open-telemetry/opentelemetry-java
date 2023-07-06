@@ -24,7 +24,7 @@ dependencies {
 
 testing {
   suites {
-    val testAutoConfigureOrder by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testAutoConfigureOrder") {
       targets {
         all {
           testTask {
@@ -35,7 +35,7 @@ testing {
         }
       }
     }
-    val testConditionalResourceProvider by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testConditionalResourceProvider") {
       dependencies {
         implementation(project(":semconv"))
       }
@@ -50,7 +50,7 @@ testing {
         }
       }
     }
-    val testFullConfig by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testFullConfig") {
       dependencies {
         implementation(project(":api:events"))
         implementation(project(":extensions:trace-propagators"))

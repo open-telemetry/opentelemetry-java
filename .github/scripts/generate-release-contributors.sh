@@ -87,5 +87,4 @@ echo $contributors1 $contributors2 \
   | grep -v dependabot \
   | grep -v codecov \
   | grep -v opentelemetrybot \
-  | grep -v opentelemetry-java-bot \
   | sed 's/^/@/'

@@ -24,7 +24,7 @@ dependencies {
 
 testing {
   suites {
-    val testGrpcJava by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testGrpcJava") {
       dependencies {
         runtimeOnly("io.grpc:grpc-netty-shaded")
         runtimeOnly("io.grpc:grpc-stub")
