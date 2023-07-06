@@ -49,7 +49,7 @@ dependencies {
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.6.0")
   implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.22")
   implementation("org.owasp:dependency-check-gradle:8.3.1")
-  implementation("ru.vyarus:gradle-animalsniffer-plugin:1.7.0")
+  implementation("ru.vyarus:gradle-animalsniffer-plugin:1.7.1")
 }
 
 // We can't apply conventions to this build so include important ones such as the Java compilation
