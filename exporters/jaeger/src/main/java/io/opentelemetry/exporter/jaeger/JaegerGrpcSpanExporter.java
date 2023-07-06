@@ -19,8 +19,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** Exports spans to Jaeger via gRPC, using Jaeger's protobuf model. */
+/**
+ * Exports spans to Jaeger via gRPC, using Jaeger's protobuf model.
+ *
+ * @deprecated Use {@code OtlpGrpcSpanExporter} or {@code OtlpHttpSpanExporter} from <a
+ *     href="https://github.com/open-telemetry/opentelemetry-java/tree/main/exporters/otlp/all">opentelemetry-exporter-otlp</a>
+ *     instead.
+ */
 @ThreadSafe
+@Deprecated
 public final class JaegerGrpcSpanExporter implements SpanExporter {
 
   private static final String DEFAULT_HOST_NAME = "unknown";
