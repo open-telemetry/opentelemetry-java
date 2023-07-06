@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.sender.okhttp.internal;
+package io.opentelemetry.exporter.sender.jdk.internal;
 
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.http.HttpSender;
@@ -11,17 +11,17 @@ import io.opentelemetry.exporter.internal.http.HttpSenderProvider;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.util.Map;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
-import org.jetbrains.annotations.Nullable;
 
 /**
- * {@link HttpSender} SPI implementation for {@link OkHttpHttpSender}.
+ * {@link HttpSender} SPI implementation for {@link JdkHttpSender}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class OkHttpHttpSenderProvider implements HttpSenderProvider {
+public final class JdkHttpSenderProvider implements HttpSenderProvider {
 
   @Override
   public HttpSender createSender(
@@ -34,15 +34,13 @@ public final class OkHttpHttpSenderProvider implements HttpSenderProvider {
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager) {
-    return new OkHttpHttpSender(
+    return new JdkHttpSender(
         endpoint,
         compressionEnabled,
         contentType,
         timeoutNanos,
         headerSupplier,
-        authenticator,
         retryPolicy,
-        sslContext,
-        trustManager);
+        sslContext);
   }
 }

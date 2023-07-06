@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.otlp.http.trace;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.traces.ResourceSpansMarshaler;
@@ -12,6 +14,7 @@ import io.opentelemetry.exporter.otlp.testing.internal.AbstractHttpTelemetryExpo
 import io.opentelemetry.exporter.otlp.testing.internal.FakeTelemetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
+import io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSender;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -21,16 +24,22 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
-class OtlpHttpSpanExporterTest extends AbstractHttpTelemetryExporterTest<SpanData, ResourceSpans> {
+class OtlpHttpSpanExporterJdkSenderTest
+    extends AbstractHttpTelemetryExporterTest<SpanData, ResourceSpans> {
 
-  protected OtlpHttpSpanExporterTest() {
+  protected OtlpHttpSpanExporterJdkSenderTest() {
     super("span", "/v1/traces", ResourceSpans.getDefaultInstance());
+  }
+
+  @Override
+  protected boolean hasAuthenticatorSupport() {
+    return false;
   }
 
   @Override
   protected TelemetryExporterBuilder<SpanData> exporterBuilder() {
     OtlpHttpSpanExporterBuilder builder = OtlpHttpSpanExporter.builder();
-    return new TelemetryExporterBuilder<SpanData>() {
+    return new TelemetryExporterBuilder<>() {
       @Override
       public TelemetryExporterBuilder<SpanData> setEndpoint(String endpoint) {
         builder.setEndpoint(endpoint);
@@ -100,7 +109,12 @@ class OtlpHttpSpanExporterTest extends AbstractHttpTelemetryExporterTest<SpanDat
 
       @Override
       public TelemetryExporter<SpanData> build() {
-        return TelemetryExporter.wrap(builder.build());
+        OtlpHttpSpanExporter exporter = builder.build();
+        assertThat(exporter)
+            .extracting("delegate")
+            .extracting("httpSender")
+            .isInstanceOf(JdkHttpSender.class);
+        return TelemetryExporter.wrap(exporter);
       }
     };
   }

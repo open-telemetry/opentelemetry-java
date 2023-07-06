@@ -27,7 +27,6 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.exporter.internal.TlsUtil;
-import io.opentelemetry.exporter.internal.grpc.UpstreamGrpcExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
@@ -293,10 +292,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   void compressionWithGzip() {
     TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("gzip").build();
-    // UpstreamGrpcExporter doesn't support compression, so we skip the assertion
-    assumeThat(exporter.unwrap())
-        .extracting("delegate")
-        .isNotInstanceOf(UpstreamGrpcExporter.class);
     assertThat(exporter.unwrap())
         .extracting("delegate.httpSender.compressionEnabled")
         .isEqualTo(true);
@@ -345,6 +340,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
   @Test
   void withAuthenticator() {
+    assumeThat(hasAuthenticatorSupport()).isTrue();
+
     TelemetryExporter<T> exporter =
         exporterBuilder()
             .setEndpoint(server.httpUri() + path)
@@ -663,6 +660,11 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   protected abstract T generateFakeTelemetry();
 
   protected abstract Marshaler[] toMarshalers(List<T> telemetry);
+
+  // TODO: remove once JdkHttpSender supports authenticator
+  protected boolean hasAuthenticatorSupport() {
+    return true;
+  }
 
   private List<U> toProto(List<T> telemetry) {
     return Arrays.stream(toMarshalers(telemetry))

@@ -31,10 +31,10 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import org.junit.jupiter.api.Test;
 
-class OtlpHttpMetricExporterTest
+class OtlpHttpMetricExporterJdkSenderTest
     extends AbstractHttpTelemetryExporterTest<MetricData, ResourceMetrics> {
 
-  protected OtlpHttpMetricExporterTest() {
+  protected OtlpHttpMetricExporterJdkSenderTest() {
     super("metric", "/v1/metrics", ResourceMetrics.getDefaultInstance());
   }
 
@@ -83,9 +83,14 @@ class OtlpHttpMetricExporterTest
   }
 
   @Override
+  protected boolean hasAuthenticatorSupport() {
+    return false;
+  }
+
+  @Override
   protected TelemetryExporterBuilder<MetricData> exporterBuilder() {
     OtlpHttpMetricExporterBuilder builder = OtlpHttpMetricExporter.builder();
-    return new TelemetryExporterBuilder<MetricData>() {
+    return new TelemetryExporterBuilder<>() {
       @Override
       public TelemetryExporterBuilder<MetricData> setEndpoint(String endpoint) {
         builder.setEndpoint(endpoint);
