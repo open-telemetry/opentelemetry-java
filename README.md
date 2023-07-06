@@ -287,6 +287,12 @@ additional versions will be published.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md)
 
+Triagers:
+
+- [Gregor Zeitlinger](https://github.com/zeitlinger), Grafana Labs
+
+*Find more about the triager role in [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md#triager).*
+
 Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemetry/teams/java-approvers)):
 
 - [Josh Suereth](https://github.com/jsuereth), Google
