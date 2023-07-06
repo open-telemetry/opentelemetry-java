@@ -18,7 +18,7 @@ import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpUtil;
 import io.opentelemetry.exporter.internal.retry.RetryInterceptor;
-import io.opentelemetry.exporter.internal.retry.RetryPolicy;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Arrays;

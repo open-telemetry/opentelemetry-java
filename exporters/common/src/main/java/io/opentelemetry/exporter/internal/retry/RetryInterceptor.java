@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.retry;
 
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.Locale;

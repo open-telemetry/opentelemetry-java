@@ -21,6 +21,7 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.time.Duration;

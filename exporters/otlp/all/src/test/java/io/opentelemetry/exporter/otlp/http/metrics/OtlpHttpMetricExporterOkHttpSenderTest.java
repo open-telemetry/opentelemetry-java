@@ -12,13 +12,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.ResourceMetricsMarshaler;
-import io.opentelemetry.exporter.internal.retry.RetryPolicy;
-import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractHttpTelemetryExporterTest;
 import io.opentelemetry.exporter.otlp.testing.internal.FakeTelemetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -145,7 +144,7 @@ class OtlpHttpMetricExporterOkHttpSenderTest
 
       @Override
       public TelemetryExporterBuilder<MetricData> setRetryPolicy(RetryPolicy retryPolicy) {
-        RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy);
+        builder.setRetryPolicy(retryPolicy);
         return this;
       }
 
