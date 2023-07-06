@@ -6,7 +6,7 @@
 package io.opentelemetry.exporter.internal.http;
 
 import io.opentelemetry.exporter.internal.auth.Authenticator;
-import io.opentelemetry.exporter.internal.retry.RetryPolicy;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.util.Map;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;

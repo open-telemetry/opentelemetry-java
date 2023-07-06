@@ -3,22 +3,27 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal.retry;
+package io.opentelemetry.sdk.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
-class RetryPolicyTest {
+public class RetryPolicyTest {
 
   @Test
   void defaultRetryPolicy() {
-    assertThat(RetryPolicy.getDefault().getMaxAttempts()).isEqualTo(5);
-    assertThat(RetryPolicy.getDefault().getInitialBackoff()).isEqualTo(Duration.ofSeconds(1));
-    assertThat(RetryPolicy.getDefault().getMaxBackoff()).isEqualTo(Duration.ofSeconds(5));
-    assertThat(RetryPolicy.getDefault().getBackoffMultiplier()).isEqualTo(1.5);
+    RetryPolicy retryPolicy = RetryPolicy.builder().build();
+
+    assertThat(retryPolicy.getMaxAttempts()).isEqualTo(5);
+    assertThat(retryPolicy.getInitialBackoff()).isEqualTo(Duration.ofSeconds(1));
+    assertThat(retryPolicy.getMaxBackoff()).isEqualTo(Duration.ofSeconds(5));
+    assertThat(retryPolicy.getBackoffMultiplier()).isEqualTo(1.5);
+
+    assertThat(RetryPolicy.getDefault()).isEqualTo(retryPolicy);
   }
 
   @Test
@@ -30,6 +35,7 @@ class RetryPolicyTest {
             .setMaxBackoff(Duration.ofSeconds(1))
             .setBackoffMultiplier(1.1)
             .build();
+
     assertThat(retryPolicy.getMaxAttempts()).isEqualTo(2);
     assertThat(retryPolicy.getInitialBackoff()).isEqualTo(Duration.ofMillis(2));
     assertThat(retryPolicy.getMaxBackoff()).isEqualTo(Duration.ofSeconds(1));
@@ -38,19 +44,19 @@ class RetryPolicyTest {
 
   @Test
   void invalidRetryPolicy() {
-    assertThatThrownBy(() -> RetryPolicy.builder().setMaxAttempts(1))
+    assertThatThrownBy(() -> RetryPolicy.builder().setMaxAttempts(1).build())
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> RetryPolicy.builder().setMaxAttempts(6))
+    assertThatThrownBy(() -> RetryPolicy.builder().setMaxAttempts(6).build())
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> RetryPolicy.builder().setInitialBackoff(null))
+    assertThatThrownBy(() -> RetryPolicy.builder().setInitialBackoff(null).build())
         .isInstanceOf(NullPointerException.class);
-    assertThatThrownBy(() -> RetryPolicy.builder().setInitialBackoff(Duration.ofMillis(0)))
+    assertThatThrownBy(() -> RetryPolicy.builder().setInitialBackoff(Duration.ofMillis(0)).build())
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> RetryPolicy.builder().setMaxBackoff(null))
+    assertThatThrownBy(() -> RetryPolicy.builder().setMaxBackoff(null).build())
         .isInstanceOf(NullPointerException.class);
-    assertThatThrownBy(() -> RetryPolicy.builder().setMaxBackoff(Duration.ofMillis(0)))
+    assertThatThrownBy(() -> RetryPolicy.builder().setMaxBackoff(Duration.ofMillis(0)).build())
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> RetryPolicy.builder().setBackoffMultiplier(0))
+    assertThatThrownBy(() -> RetryPolicy.builder().setBackoffMultiplier(0).build())
         .isInstanceOf(IllegalArgumentException.class);
   }
 }

@@ -8,7 +8,7 @@ package io.opentelemetry.exporter.sender.okhttp.internal;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.http.HttpSender;
 import io.opentelemetry.exporter.internal.http.HttpSenderProvider;
-import io.opentelemetry.exporter.internal.retry.RetryPolicy;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.util.Map;
 import java.util.function.Supplier;
 import javax.net.ssl.SSLContext;

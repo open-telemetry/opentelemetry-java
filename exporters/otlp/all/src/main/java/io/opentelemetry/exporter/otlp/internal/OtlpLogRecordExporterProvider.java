@@ -9,7 +9,6 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_L
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
-import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
@@ -43,7 +42,7 @@ public class OtlpLogRecordExporterProvider implements ConfigurableLogRecordExpor
           builder::setTimeout,
           builder::setTrustedCertificates,
           builder::setClientTls,
-          retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
+          builder::setRetryPolicy);
 
       return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
@@ -58,7 +57,7 @@ public class OtlpLogRecordExporterProvider implements ConfigurableLogRecordExpor
           builder::setTimeout,
           builder::setTrustedCertificates,
           builder::setClientTls,
-          retryPolicy -> RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy));
+          builder::setRetryPolicy);
 
       return builder.build();
     }

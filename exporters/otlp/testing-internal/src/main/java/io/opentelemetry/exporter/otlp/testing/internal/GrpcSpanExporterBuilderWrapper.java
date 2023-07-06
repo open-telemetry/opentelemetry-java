@@ -7,9 +7,8 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
-import io.opentelemetry.exporter.internal.retry.RetryPolicy;
-import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -81,7 +80,7 @@ final class GrpcSpanExporterBuilderWrapper implements TelemetryExporterBuilder<S
 
   @Override
   public TelemetryExporterBuilder<SpanData> setRetryPolicy(RetryPolicy retryPolicy) {
-    RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy);
+    builder.setRetryPolicy(retryPolicy);
     return this;
   }
 
