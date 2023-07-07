@@ -10,7 +10,11 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import com.google.auto.value.AutoValue;
 import java.time.Duration;
 
-/** Configuration for exporter exponential retry policy. */
+/**
+ * Configuration for exporter exponential retry policy.
+ *
+ * @since 1.28.0
+ */
 @AutoValue
 public abstract class RetryPolicy {
 

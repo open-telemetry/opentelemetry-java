@@ -56,6 +56,8 @@ public interface AggregationTemporalitySelector {
    * {@link InstrumentType#HISTOGRAM}. {@link AggregationTemporality#CUMULATIVE} is returned for
    * {@link InstrumentType#UP_DOWN_COUNTER}, {@link InstrumentType#OBSERVABLE_UP_DOWN_COUNTER}, and
    * {@link InstrumentType#OBSERVABLE_COUNTER}.
+   *
+   * @since 1.28.0
    */
   static AggregationTemporalitySelector lowMemory() {
     return instrumentType -> {
