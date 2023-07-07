@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 1.28.0 (2023-07-07)
 
 [opentelemetry-sdk-extension-autoconfigure](./sdk-extensions/autoconfigure) is now stable! See "SDK
 Extension" notes below for changes made prior to stabilization.
