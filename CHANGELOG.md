@@ -32,6 +32,9 @@ Extension" notes below for changes made prior to stabilization.
   ([#5541](https://github.com/open-telemetry/opentelemetry-java/pull/5541))
 * Stabilize RetryPolicy API for OTLP exporters
   ([#5524](https://github.com/open-telemetry/opentelemetry-java/pull/5524))
+* DEPRECATION: `opentelemetry-exporter-jaeger` and `opentelemetry-exporter-jaeger-thrift` are now
+  deprecated with the last release planned for 1.34.0 (January 2024)
+  ([#5190](https://github.com/open-telemetry/opentelemetry-java/pull/5190))
 
 #### SDK Extensions
 
