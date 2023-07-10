@@ -578,4 +578,11 @@ class AttributesTest {
     assertThatCode(() -> myAttributesBuilder.remove(stringKey("foo"))).doesNotThrowAnyException();
     assertThatCode(() -> myAttributesBuilder.removeIf(unused -> false)).doesNotThrowAnyException();
   }
+
+  @Test
+  void emptyValueIsValid() {
+    AttributeKey<String> key = stringKey("anything");
+    Attributes attributes = Attributes.of(key, "");
+    assertThat(attributes.get(key)).isEqualTo("");
+  }
 }
