@@ -72,7 +72,9 @@ class SpanExporterConfigurationTest {
           .isInstanceOfSatisfying(
               OtlpGrpcSpanExporter.class,
               otlp ->
-                  assertThat(otlp).extracting("delegate.client.callTimeoutMillis").isEqualTo(10));
+                  assertThat(otlp)
+                      .extracting("delegate.grpcSender.client.callTimeoutMillis")
+                      .isEqualTo(10));
     }
   }
 }

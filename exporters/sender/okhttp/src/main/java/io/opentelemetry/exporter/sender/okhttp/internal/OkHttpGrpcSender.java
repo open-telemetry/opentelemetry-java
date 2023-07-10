@@ -21,89 +21,96 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.exporter.internal.grpc;
+package io.opentelemetry.exporter.sender.okhttp.internal;
 
-import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.ExporterMetrics;
+import io.opentelemetry.exporter.internal.RetryUtil;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
+import io.opentelemetry.exporter.internal.grpc.GrpcResponse;
+import io.opentelemetry.exporter.internal.grpc.GrpcSender;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
- * A {@link GrpcExporter} which uses OkHttp instead of grpc-java.
+ * A {@link GrpcSender} which uses OkHttp instead of grpc-java.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExporter<T> {
+public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T> {
 
   private static final String GRPC_STATUS = "grpc-status";
   private static final String GRPC_MESSAGE = "grpc-message";
 
-  private static final Logger internalLogger = Logger.getLogger(OkHttpGrpcExporter.class.getName());
-
-  private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
-
-  // We only log unimplemented once since it's a configuration issue that won't be recovered.
-  private final AtomicBoolean loggedUnimplemented = new AtomicBoolean();
-  private final AtomicBoolean isShutdown = new AtomicBoolean();
-
-  private final String type;
-  private final ExporterMetrics exporterMetrics;
   private final OkHttpClient client;
   private final HttpUrl url;
   private final Headers headers;
   private final boolean compressionEnabled;
 
-  /** Creates a new {@link OkHttpGrpcExporter}. */
-  OkHttpGrpcExporter(
-      String exporterName,
-      String type,
-      OkHttpClient client,
-      Supplier<MeterProvider> meterProviderSupplier,
+  /** Creates a new {@link OkHttpGrpcSender}. */
+  public OkHttpGrpcSender(
       String endpoint,
-      Headers headers,
-      boolean compressionEnabled) {
-    this.type = type;
-    this.exporterMetrics =
-        ExporterMetrics.createGrpcOkHttp(exporterName, type, meterProviderSupplier);
-    this.client = client;
+      boolean compressionEnabled,
+      long timeoutNanos,
+      Map<String, String> headers,
+      @Nullable RetryPolicy retryPolicy,
+      @Nullable SSLContext sslContext,
+      @Nullable X509TrustManager trustManager) {
+    OkHttpClient.Builder clientBuilder =
+        new OkHttpClient.Builder()
+            .dispatcher(OkHttpUtil.newDispatcher())
+            .callTimeout(Duration.ofNanos(timeoutNanos));
+    if (retryPolicy != null) {
+      clientBuilder.addInterceptor(
+          new RetryInterceptor(retryPolicy, OkHttpGrpcSender::isRetryable));
+    }
+    if (sslContext != null && trustManager != null) {
+      clientBuilder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+    }
+    if (endpoint.startsWith("http://")) {
+      clientBuilder.protocols(Collections.singletonList(Protocol.H2_PRIOR_KNOWLEDGE));
+    } else {
+      clientBuilder.protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1));
+    }
+    this.client = clientBuilder.build();
+
+    Headers.Builder headersBuilder = new Headers.Builder();
+    headers.forEach(headersBuilder::add);
+    headersBuilder.add("te", "trailers");
+    if (compressionEnabled) {
+      headersBuilder.add("grpc-encoding", "gzip");
+    }
+    this.headers = headersBuilder.build();
     this.url = HttpUrl.get(endpoint);
-    this.headers = headers;
     this.compressionEnabled = compressionEnabled;
   }
 
   @Override
-  public CompletableResultCode export(T exportRequest, int numItems) {
-    if (isShutdown.get()) {
-      return CompletableResultCode.ofFailure();
-    }
-
-    exporterMetrics.addSeen(numItems);
-
+  public void send(T request, Runnable onSuccess, BiConsumer<GrpcResponse, Throwable> onError) {
     Request.Builder requestBuilder = new Request.Builder().url(url).headers(headers);
 
-    RequestBody requestBody = new GrpcRequestBody(exportRequest, compressionEnabled);
+    RequestBody requestBody = new GrpcRequestBody(request, compressionEnabled);
     requestBuilder.post(requestBody);
-
-    CompletableResultCode result = new CompletableResultCode();
 
     client
         .newCall(requestBuilder.build())
@@ -111,14 +118,11 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
             new Callback() {
               @Override
               public void onFailure(Call call, IOException e) {
-                exporterMetrics.addFailed(numItems);
-                logger.log(
-                    Level.SEVERE,
-                    "Failed to export "
-                        + type
-                        + "s. The request could not be executed. Full error message: "
-                        + e.getMessage());
-                result.fail();
+                String description = e.getMessage();
+                if (description == null) {
+                  description = "";
+                }
+                onError.accept(GrpcResponse.create(2 /* UNKNOWN */, description), e);
               }
 
               @Override
@@ -127,58 +131,32 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
                 try {
                   response.body().bytes();
                 } catch (IOException e) {
-                  logger.log(
-                      Level.WARNING,
-                      "Failed to export " + type + "s, could not consume server response.",
+                  onError.accept(
+                      GrpcResponse.create(
+                          GrpcExporterUtil.GRPC_STATUS_UNKNOWN,
+                          "Could not consume server response."),
                       e);
-                  exporterMetrics.addFailed(numItems);
-                  result.fail();
                   return;
                 }
 
                 String status = grpcStatus(response);
                 if ("0".equals(status)) {
-                  exporterMetrics.addSuccess(numItems);
-                  result.succeed();
+                  onSuccess.run();
                   return;
                 }
 
-                exporterMetrics.addFailed(numItems);
-
-                String codeMessage =
-                    status != null
-                        ? "gRPC status code " + status
-                        : "HTTP status code " + response.code();
                 String errorMessage = grpcMessage(response);
-
-                if (GrpcStatusUtil.GRPC_STATUS_UNIMPLEMENTED.equals(status)) {
-                  if (loggedUnimplemented.compareAndSet(false, true)) {
-                    GrpcExporterUtil.logUnimplemented(internalLogger, type, errorMessage);
-                  }
-                } else if (GrpcStatusUtil.GRPC_STATUS_UNAVAILABLE.equals(status)) {
-                  logger.log(
-                      Level.SEVERE,
-                      "Failed to export "
-                          + type
-                          + "s. Server is UNAVAILABLE. "
-                          + "Make sure your collector is running and reachable from this network. "
-                          + "Full error message:"
-                          + errorMessage);
-                } else {
-                  logger.log(
-                      Level.WARNING,
-                      "Failed to export "
-                          + type
-                          + "s. Server responded with "
-                          + codeMessage
-                          + ". Error message: "
-                          + errorMessage);
+                int statusCode;
+                try {
+                  statusCode = Integer.parseInt(status);
+                } catch (NumberFormatException ex) {
+                  statusCode = GrpcExporterUtil.GRPC_STATUS_UNKNOWN;
                 }
-                result.fail();
+                onError.accept(
+                    GrpcResponse.create(statusCode, errorMessage),
+                    new IllegalStateException(errorMessage));
               }
             });
-
-    return result;
   }
 
   @Nullable
@@ -214,10 +192,6 @@ public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExport
 
   @Override
   public CompletableResultCode shutdown() {
-    if (!isShutdown.compareAndSet(false, true)) {
-      logger.log(Level.INFO, "Calling shutdown() multiple times.");
-      return CompletableResultCode.ofSuccess();
-    }
     client.dispatcher().cancelAll();
     client.dispatcher().executorService().shutdownNow();
     client.connectionPool().evictAll();

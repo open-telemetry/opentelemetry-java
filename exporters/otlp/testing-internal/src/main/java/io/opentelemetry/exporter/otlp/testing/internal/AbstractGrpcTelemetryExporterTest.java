@@ -24,8 +24,7 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.exporter.internal.TlsUtil;
-import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
-import io.opentelemetry.exporter.internal.grpc.UpstreamGrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
@@ -166,10 +165,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     }
   }
 
-  @RegisterExtension
-  LogCapturer logs =
-      LogCapturer.create()
-          .captureForType(usingOkHttp() ? OkHttpGrpcExporter.class : UpstreamGrpcExporter.class);
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(GrpcExporter.class);
 
   private final String type;
   private final U resourceTelemetryInstance;
@@ -249,11 +245,13 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri().toString()).setCompression("none").build();
     try {
-      // UpstreamGrpcExporter doesn't support compression, so we skip the assertion
+      // UpstreamGrpcSender doesn't support compression, so we skip the assertion
       assumeThat(exporter.unwrap())
-          .extracting("delegate")
-          .isNotInstanceOf(UpstreamGrpcExporter.class);
-      assertThat(exporter.unwrap()).extracting("delegate.compressionEnabled").isEqualTo(false);
+          .extracting("delegate.grpcSender")
+          .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpGrpcSender"));
+      assertThat(exporter.unwrap())
+          .extracting("delegate.grpcSender.compressionEnabled")
+          .isEqualTo(false);
     } finally {
       exporter.shutdown();
     }
@@ -264,11 +262,13 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri().toString()).setCompression("gzip").build();
     try {
-      // UpstreamGrpcExporter doesn't support compression, so we skip the assertion
+      // UpstreamGrpcSender doesn't support compression, so we skip the assertion
       assumeThat(exporter.unwrap())
-          .extracting("delegate")
-          .isNotInstanceOf(UpstreamGrpcExporter.class);
-      assertThat(exporter.unwrap()).extracting("delegate.compressionEnabled").isEqualTo(true);
+          .extracting("delegate.grpcSender")
+          .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpGrpcSender"));
+      assertThat(exporter.unwrap())
+          .extracting("delegate.grpcSender.compressionEnabled")
+          .isEqualTo(true);
     } finally {
       exporter.shutdown();
     }
@@ -350,8 +350,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
-  @SuppressLogger(OkHttpGrpcExporter.class)
-  @SuppressLogger(UpstreamGrpcExporter.class)
+  @SuppressLogger(GrpcExporter.class)
   void tls_untrusted() {
     TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpsUri().toString()).build();
@@ -422,8 +421,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
-  @SuppressLogger(OkHttpGrpcExporter.class)
-  @SuppressLogger(UpstreamGrpcExporter.class)
+  @SuppressLogger(GrpcExporter.class)
   void exportAfterShutdown() {
     TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri().toString()).build();
@@ -438,8 +436,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
-  @SuppressLogger(OkHttpGrpcExporter.class)
-  @SuppressLogger(UpstreamGrpcExporter.class)
+  @SuppressLogger(GrpcExporter.class)
   void doubleShutdown() {
     TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri().toString()).build();
@@ -450,8 +447,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
-  @SuppressLogger(OkHttpGrpcExporter.class)
-  @SuppressLogger(UpstreamGrpcExporter.class)
+  @SuppressLogger(GrpcExporter.class)
   void error() {
     addGrpcError(13, null);
     assertThat(
@@ -469,8 +465,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
-  @SuppressLogger(OkHttpGrpcExporter.class)
-  @SuppressLogger(UpstreamGrpcExporter.class)
+  @SuppressLogger(GrpcExporter.class)
   void errorWithMessage() {
     addGrpcError(8, "out of quota");
     assertThat(
@@ -488,8 +483,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
-  @SuppressLogger(OkHttpGrpcExporter.class)
-  @SuppressLogger(UpstreamGrpcExporter.class)
+  @SuppressLogger(GrpcExporter.class)
   void errorWithEscapedMessage() {
     addGrpcError(5, "クマ🐻");
     assertThat(
@@ -507,8 +501,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
-  @SuppressLogger(OkHttpGrpcExporter.class)
-  @SuppressLogger(UpstreamGrpcExporter.class)
+  @SuppressLogger(GrpcExporter.class)
   void testExport_Unavailable() {
     addGrpcError(14, null);
     assertThat(
@@ -527,8 +520,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
-  @SuppressLogger(OkHttpGrpcExporter.class)
-  @SuppressLogger(UpstreamGrpcExporter.class)
+  @SuppressLogger(GrpcExporter.class)
   void testExport_Unimplemented() {
     addGrpcError(12, "UNIMPLEMENTED");
     assertThat(
@@ -568,8 +560,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   @ParameterizedTest
   @ValueSource(ints = {1, 4, 8, 10, 11, 14, 15})
-  @SuppressLogger(OkHttpGrpcExporter.class)
-  @SuppressLogger(UpstreamGrpcExporter.class)
+  @SuppressLogger(GrpcExporter.class)
   void retryableError(int code) {
     addGrpcError(code, null);
 
@@ -590,8 +581,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
-  @SuppressLogger(OkHttpGrpcExporter.class)
-  @SuppressLogger(UpstreamGrpcExporter.class)
+  @SuppressLogger(GrpcExporter.class)
   void retryableError_tooManyAttempts() {
     addGrpcError(1, null);
     addGrpcError(1, null);
@@ -614,8 +604,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   @ParameterizedTest
   @ValueSource(ints = {2, 3, 5, 6, 7, 9, 12, 13, 16})
-  @SuppressLogger(OkHttpGrpcExporter.class)
-  @SuppressLogger(UpstreamGrpcExporter.class)
+  @SuppressLogger(GrpcExporter.class)
   void nonRetryableError(int code) {
     addGrpcError(code, null);
 
@@ -768,14 +757,5 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   private static void addGrpcError(int code, @Nullable String message) {
     grpcErrors.add(new ArmeriaStatusException(code, message));
-  }
-
-  private static boolean usingOkHttp() {
-    try {
-      Class.forName("io.grpc.internal.AbstractManagedChannelImplBuilder");
-      return false;
-    } catch (ClassNotFoundException e) {
-      return true;
-    }
   }
 }

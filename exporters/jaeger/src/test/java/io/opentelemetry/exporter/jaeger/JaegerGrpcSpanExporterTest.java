@@ -27,7 +27,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.internal.TlsUtil;
-import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
@@ -92,8 +92,7 @@ class JaegerGrpcSpanExporterTest {
         }
       };
 
-  @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(OkHttpGrpcExporter.class);
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(GrpcExporter.class);
 
   @RegisterExtension
   static final SelfSignedCertificateExtension serverTls = new SelfSignedCertificateExtension();
@@ -371,7 +370,7 @@ class JaegerGrpcSpanExporterTest {
   void compressionDefault() {
     JaegerGrpcSpanExporter exporter = JaegerGrpcSpanExporter.builder().build();
     try {
-      assertThat(exporter).extracting("delegate.compressionEnabled").isEqualTo(false);
+      assertThat(exporter).extracting("delegate.grpcSender.compressionEnabled").isEqualTo(false);
     } finally {
       exporter.shutdown();
     }
@@ -382,7 +381,7 @@ class JaegerGrpcSpanExporterTest {
     JaegerGrpcSpanExporter exporter =
         JaegerGrpcSpanExporter.builder().setCompression("none").build();
     try {
-      assertThat(exporter).extracting("delegate.compressionEnabled").isEqualTo(false);
+      assertThat(exporter).extracting("delegate.grpcSender.compressionEnabled").isEqualTo(false);
     } finally {
       exporter.shutdown();
     }
@@ -393,7 +392,7 @@ class JaegerGrpcSpanExporterTest {
     JaegerGrpcSpanExporter exporter =
         JaegerGrpcSpanExporter.builder().setCompression("gzip").build();
     try {
-      assertThat(exporter).extracting("delegate.compressionEnabled").isEqualTo(true);
+      assertThat(exporter).extracting("delegate.grpcSender.compressionEnabled").isEqualTo(true);
     } finally {
       exporter.shutdown();
     }
@@ -404,14 +403,14 @@ class JaegerGrpcSpanExporterTest {
     JaegerGrpcSpanExporter exporter =
         JaegerGrpcSpanExporter.builder().setCompression("gzip").setCompression("none").build();
     try {
-      assertThat(exporter).extracting("delegate.compressionEnabled").isEqualTo(false);
+      assertThat(exporter).extracting("delegate.grpcSender.compressionEnabled").isEqualTo(false);
     } finally {
       exporter.shutdown();
     }
   }
 
   @Test
-  @SuppressLogger(OkHttpGrpcExporter.class)
+  @SuppressLogger(GrpcExporter.class)
   void shutdown() {
     JaegerGrpcSpanExporter exporter =
         JaegerGrpcSpanExporter.builder().setEndpoint(server.httpUri().toString()).build();

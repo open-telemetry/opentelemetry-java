@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.internal.http;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterMetrics;
-import io.opentelemetry.exporter.internal.grpc.GrpcStatusUtil;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
@@ -137,7 +137,7 @@ public final class HttpExporter<T extends Marshaler> {
       return "Response body missing, HTTP status message: " + statusMessage;
     }
     try {
-      return GrpcStatusUtil.getStatusMessage(responseBody);
+      return GrpcExporterUtil.getStatusMessage(responseBody);
     } catch (IOException e) {
       return "Unable to parse response body, HTTP status message: " + statusMessage;
     }

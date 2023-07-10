@@ -20,18 +20,16 @@ dependencies {
   implementation(project(":exporters:sender:okhttp"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
 
-  implementation("com.squareup.okhttp3:okhttp")
-
   compileOnly("io.grpc:grpc-stub")
-
-  testImplementation("io.grpc:grpc-stub")
 
   testImplementation(project(":exporters:otlp:testing-internal"))
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("com.squareup.okhttp3:okhttp-tls")
+  testImplementation("io.grpc:grpc-stub")
 
   jmhImplementation(project(":sdk:testing"))
+  jmhImplementation(project(":exporters:sender:grpc-upstream"))
   jmhImplementation("com.linecorp.armeria:armeria")
   jmhImplementation("com.linecorp.armeria:armeria-grpc")
   jmhImplementation("io.opentelemetry.proto:opentelemetry-proto")
@@ -45,26 +43,59 @@ testing {
   suites {
     register<JvmTestSuite>("testGrpcNetty") {
       dependencies {
+        implementation(project(":exporters:sender:grpc-upstream"))
         implementation(project(":exporters:otlp:testing-internal"))
 
         implementation("io.grpc:grpc-netty")
         implementation("io.grpc:grpc-stub")
       }
+      targets {
+        all {
+          testTask {
+            systemProperty(
+              "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider",
+              "io.opentelemetry.exporter.sender.grpc.upstream.internal.UpstreamGrpcSenderProvider"
+            )
+          }
+        }
+      }
     }
     register<JvmTestSuite>("testGrpcNettyShaded") {
       dependencies {
+        implementation(project(":exporters:sender:grpc-upstream"))
         implementation(project(":exporters:otlp:testing-internal"))
 
         implementation("io.grpc:grpc-netty-shaded")
         implementation("io.grpc:grpc-stub")
       }
+      targets {
+        all {
+          testTask {
+            systemProperty(
+              "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider",
+              "io.opentelemetry.exporter.sender.grpc.upstream.internal.UpstreamGrpcSenderProvider"
+            )
+          }
+        }
+      }
     }
     register<JvmTestSuite>("testGrpcOkhttp") {
       dependencies {
+        implementation(project(":exporters:sender:grpc-upstream"))
         implementation(project(":exporters:otlp:testing-internal"))
 
         implementation("io.grpc:grpc-okhttp")
         implementation("io.grpc:grpc-stub")
+      }
+      targets {
+        all {
+          testTask {
+            systemProperty(
+              "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider",
+              "io.opentelemetry.exporter.sender.grpc.upstream.internal.UpstreamGrpcSenderProvider"
+            )
+          }
+        }
       }
     }
     register<JvmTestSuite>("testJdkHttpSender") {
@@ -77,7 +108,10 @@ testing {
       targets {
         all {
           testTask {
-            systemProperty("io.opentelemetry.exporter.internal.http.HttpSenderProvider", "io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSenderProvider")
+            systemProperty(
+              "io.opentelemetry.exporter.internal.http.HttpSenderProvider",
+              "io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSenderProvider"
+            )
             enabled = !testJavaVersion.equals("8")
           }
         }

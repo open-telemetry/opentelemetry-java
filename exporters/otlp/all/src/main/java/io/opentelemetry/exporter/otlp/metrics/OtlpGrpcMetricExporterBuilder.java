@@ -10,7 +10,6 @@ import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
@@ -54,7 +53,7 @@ public final class OtlpGrpcMetricExporterBuilder {
 
   OtlpGrpcMetricExporterBuilder() {
     delegate =
-        GrpcExporter.builder(
+        new GrpcExporterBuilder<>(
             "otlp",
             "metric",
             DEFAULT_TIMEOUT_SECS,

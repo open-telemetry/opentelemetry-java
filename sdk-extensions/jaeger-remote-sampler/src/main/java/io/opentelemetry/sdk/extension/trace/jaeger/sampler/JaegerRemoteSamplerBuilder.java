@@ -11,7 +11,7 @@ import io.grpc.ManagedChannel;
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpUtil;
+import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpUtil;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.net.URI;
 import java.time.Duration;

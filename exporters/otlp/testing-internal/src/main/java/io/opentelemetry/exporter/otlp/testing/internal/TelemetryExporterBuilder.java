@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal;
 
-import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
@@ -53,7 +52,7 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy);
 
-  TelemetryExporterBuilder<T> setChannel(ManagedChannel channel);
+  TelemetryExporterBuilder<T> setChannel(Object channel);
 
   TelemetryExporter<T> build();
 }

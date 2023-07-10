@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSender;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpHttpSender;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -23,6 +24,7 @@ class HttpExporterTest {
       LogCapturer.create().captureForLogger(HttpExporterBuilder.class.getName());
 
   @Test
+  @SuppressLogger(HttpExporterBuilder.class)
   void build_multipleSendersNoConfiguration() {
     Assertions.assertThatCode(
             () -> new HttpExporterBuilder<>("exporter", "type", "http://localhost").build())
