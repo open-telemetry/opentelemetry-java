@@ -102,7 +102,7 @@ public final class SdkLoggerProviderBuilder {
    *
    * @param resource {@link Resource} object to merge with current.
    */
-  public SdkLoggerProviderBuilder mergeResource(Resource resource) {
+  public SdkLoggerProviderBuilder addResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
     this.resource.merge(resource);
     return this;

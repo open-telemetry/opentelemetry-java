@@ -140,7 +140,7 @@ public final class SdkMeterProviderBuilder {
    *
    * @param resource {@link Resource} object to merge with current.
    */
-  public SdkMeterProviderBuilder mergeResource(Resource resource) {
+  public SdkMeterProviderBuilder addResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
     this.resource.merge(resource);
     return this;

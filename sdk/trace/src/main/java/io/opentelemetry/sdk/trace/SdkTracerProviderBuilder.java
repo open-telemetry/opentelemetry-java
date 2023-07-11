@@ -152,7 +152,7 @@ public final class SdkTracerProviderBuilder {
    *
    * @param resource {@link Resource} object to merge with current.
    */
-  public SdkTracerProviderBuilder mergeResource(Resource resource) {
+  public SdkTracerProviderBuilder addResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
     this.resource.merge(resource);
     return this;
