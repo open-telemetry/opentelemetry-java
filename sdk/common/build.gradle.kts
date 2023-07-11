@@ -25,13 +25,6 @@ dependencies {
   testImplementation("com.google.guava:guava-testlib")
 }
 
-testing {
-  suites {
-    register<JvmTestSuite>("testResourceDisabledByProperty") {}
-    register<JvmTestSuite>("testResourceDisabledByEnv") {}
-  }
-}
-
 for (version in mrJarVersions) {
   sourceSets {
     create("java$version") {
