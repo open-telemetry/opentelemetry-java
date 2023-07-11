@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
@@ -94,5 +95,16 @@ public final class SdkLoggerProviderBuilder {
    */
   public SdkLoggerProvider build() {
     return new SdkLoggerProvider(resource, logLimitsSupplier, logRecordProcessors, clock);
+  }
+
+  /**
+   * Merge custom resource object with the current resource object.
+   *
+   * @param resource {@link Resource} object to merge with current.
+   */
+  public SdkLoggerProviderBuilder mergeResource(Resource resource) {
+    Objects.requireNonNull(resource, "resource");
+    this.resource.merge(resource);
+    return this;
   }
 }
