@@ -34,6 +34,7 @@ dependencies {
   // io.opentelemetry.sdk.extension.incubator.fileconfig
   implementation("com.fasterxml.jackson.core:jackson-databind")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
+  implementation("org.yaml:snakeyaml:1.31")
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
@@ -41,7 +42,7 @@ dependencies {
   testImplementation("com.google.guava:guava-testlib")
 }
 
-val configurationRef = "657d205466c36d5d0265c1469ca254540d6d4b3e"
+val configurationRef = "ed331cd958eb2f6ee16dba3a42e2548e7801ade5"
 val configurationRepoZip = "https://github.com/jack-berg/opentelemetry-configuration/archive/$configurationRef.zip"
 
 val downloadConfigurationSchema by tasks.registering(Download::class) {

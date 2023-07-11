@@ -6,23 +6,20 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpentelemetryConfiguration;
-import java.io.IOException;
 import java.io.InputStream;
+import org.yaml.snakeyaml.Yaml;
 
 class ConfigurationReader {
 
-  private static final ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory());
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+  private static final Yaml YAML = new Yaml();
 
   private ConfigurationReader() {}
 
-  /**
-   * Parse the {@code configuration} YAML and return the {@link OpentelemetryConfiguration}.
-   *
-   * @throws IOException if unable to parse
-   */
-  static OpentelemetryConfiguration parse(InputStream configuration) throws IOException {
-    return MAPPER.readValue(configuration, OpentelemetryConfiguration.class);
+  /** Parse the {@code configuration} YAML and return the {@link OpentelemetryConfiguration}. */
+  static OpentelemetryConfiguration parse(InputStream configuration) {
+    Object yamlObj = YAML.load(configuration);
+    return MAPPER.convertValue(yamlObj, OpentelemetryConfiguration.class);
   }
 }
