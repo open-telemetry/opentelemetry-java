@@ -35,6 +35,7 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -153,6 +154,7 @@ class InteroperabilityTest {
   }
 
   @Test
+  @SuppressLogger(OpenTelemetrySpanImpl.class)
   void testParentChildRelationshipsAreExportedCorrectlyForOpenCensusOnly() {
     io.opencensus.trace.Tracer tracer = Tracing.getTracer();
     io.opencensus.trace.Span parentLinkSpan = tracer.spanBuilder("parent link span").startSpan();

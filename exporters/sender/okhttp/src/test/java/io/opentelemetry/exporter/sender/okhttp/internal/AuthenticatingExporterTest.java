@@ -14,6 +14,7 @@ import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,6 +67,7 @@ class AuthenticatingExporterTest {
 
   /** Ensure that exporter gives up if a request is always considered UNAUTHORIZED. */
   @Test
+  @SuppressLogger(HttpExporter.class)
   void export_giveup() {
     HttpExporter<Marshaler> exporter =
         new HttpExporterBuilder<>("otlp", "test", server.httpUri().toASCIIString())
