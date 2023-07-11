@@ -104,7 +104,7 @@ public final class SdkLoggerProviderBuilder {
    */
   public SdkLoggerProviderBuilder addResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
-    this.resource.merge(resource);
+    this.resource = this.resource.merge(resource);
     return this;
   }
 }
