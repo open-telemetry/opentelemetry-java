@@ -7,15 +7,6 @@ plugins {
   id("otel.spotless-conventions")
 }
 
-if (!JavaVersion.current().isJava11Compatible()) {
-  throw GradleException(
-    "JDK 11 or higher is required to build. " +
-      "One option is to download it from https://adoptopenjdk.net/. If you believe you already " +
-      "have it, please check that the JAVA_HOME environment variable is pointing at the " +
-      "JDK 11 installation.",
-  )
-}
-
 apply(from = "version.gradle.kts")
 
 nexusPublishing {
