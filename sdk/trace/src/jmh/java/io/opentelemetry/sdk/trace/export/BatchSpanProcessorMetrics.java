@@ -6,6 +6,9 @@
 package io.opentelemetry.sdk.trace.export;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.internal.AttributeValueConstants.PROCESS_STATUS_DROPPED;
+import static io.opentelemetry.sdk.internal.AttributeValueConstants.PROCESS_STATUS_EXPORTED;
+import static io.opentelemetry.sdk.internal.AttributeValueConstants.PROCESS_STATUS_PROCESSED;
 
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -22,31 +25,30 @@ public class BatchSpanProcessorMetrics {
   }
 
   public double dropRatio() {
-    long exported = getMetric(false);
-    long dropped = getMetric(true);
-    long total = exported + dropped;
+    long dropped = getMetric(PROCESS_STATUS_DROPPED);
+    long total = getMetric(PROCESS_STATUS_PROCESSED);
     // Due to peculiarities of JMH reporting we have to divide this by the number of the
     // concurrent threads running the actual benchmark.
     return total == 0 ? 0 : (double) dropped / total / numThreads;
   }
 
   public long exportedSpans() {
-    return getMetric(false) / numThreads;
+    return getMetric(PROCESS_STATUS_EXPORTED) / numThreads;
   }
 
   public long droppedSpans() {
-    return getMetric(true) / numThreads;
+    return getMetric(PROCESS_STATUS_DROPPED) / numThreads;
   }
 
-  private long getMetric(boolean dropped) {
-    String labelValue = String.valueOf(dropped);
+  private long getMetric(String status) {
+    String labelValue = status;
     OptionalLong value =
         allMetrics.stream()
             .filter(metricData -> metricData.getName().equals("processedSpans"))
             .filter(metricData -> !metricData.isEmpty())
             .map(metricData -> metricData.getLongSumData().getPoints())
             .flatMap(Collection::stream)
-            .filter(point -> labelValue.equals(point.getAttributes().get(stringKey("dropped"))))
+            .filter(point -> labelValue.equals(point.getAttributes().get(stringKey("status"))))
             .mapToLong(LongPointData::getValue)
             .findFirst();
     return value.isPresent() ? value.getAsLong() : 0;

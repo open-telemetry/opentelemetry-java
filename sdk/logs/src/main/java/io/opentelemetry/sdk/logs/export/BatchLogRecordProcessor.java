@@ -28,6 +28,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static io.opentelemetry.sdk.internal.AttributeValueConstants.PROCESS_STATUS_DROPPED;
+import static io.opentelemetry.sdk.internal.AttributeValueConstants.PROCESS_STATUS_EXPORTED;
+import static io.opentelemetry.sdk.internal.AttributeValueConstants.PROCESS_STATUS_PROCESSED;
+
 /**
  * Implementation of the {@link LogRecordProcessor} that batches logs exported by the SDK then
  * pushes them to the exporter pipeline.
@@ -45,8 +49,9 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       BatchLogRecordProcessor.class.getSimpleName() + "_WorkerThread";
   private static final AttributeKey<String> LOG_RECORD_PROCESSOR_TYPE_LABEL =
       AttributeKey.stringKey("logRecordProcessorType");
-  private static final AttributeKey<Boolean> LOG_RECORD_PROCESSOR_DROPPED_LABEL =
-      AttributeKey.booleanKey("dropped");
+  private static final AttributeKey<String> LOG_RECORD_PROCESSOR_STATUS_LABEL =
+      AttributeKey.stringKey("status");
+
   private static final String LOG_RECORD_PROCESSOR_TYPE_VALUE =
       BatchLogRecordProcessor.class.getSimpleName();
 
@@ -133,6 +138,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     private final LongCounter processedLogsCounter;
     private final Attributes droppedAttrs;
     private final Attributes exportedAttrs;
+    private final Attributes processedAttrs;
 
     private final LogRecordExporter logRecordExporter;
     private final long scheduleDelayNanos;
@@ -191,19 +197,26 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
           Attributes.of(
               LOG_RECORD_PROCESSOR_TYPE_LABEL,
               LOG_RECORD_PROCESSOR_TYPE_VALUE,
-              LOG_RECORD_PROCESSOR_DROPPED_LABEL,
-              true);
+              LOG_RECORD_PROCESSOR_STATUS_LABEL,
+              PROCESS_STATUS_DROPPED);
       exportedAttrs =
           Attributes.of(
               LOG_RECORD_PROCESSOR_TYPE_LABEL,
               LOG_RECORD_PROCESSOR_TYPE_VALUE,
-              LOG_RECORD_PROCESSOR_DROPPED_LABEL,
-              false);
+              LOG_RECORD_PROCESSOR_STATUS_LABEL,
+              PROCESS_STATUS_EXPORTED);
+      processedAttrs =
+          Attributes.of(
+              LOG_RECORD_PROCESSOR_TYPE_LABEL,
+              LOG_RECORD_PROCESSOR_TYPE_VALUE,
+              LOG_RECORD_PROCESSOR_STATUS_LABEL,
+              PROCESS_STATUS_PROCESSED);
 
       this.batch = new ArrayList<>(this.maxExportBatchSize);
     }
 
     private void addLog(ReadWriteLogRecord logData) {
+      processedLogsCounter.add(1, processedAttrs);
       if (!queue.offer(logData)) {
         processedLogsCounter.add(1, droppedAttrs);
       } else {
