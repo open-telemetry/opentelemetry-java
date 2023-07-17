@@ -5,6 +5,10 @@
 
 package io.opentelemetry.sdk.trace.export;
 
+import static io.opentelemetry.sdk.internal.AttributeValueConstants.PROCESS_STATUS_DROPPED;
+import static io.opentelemetry.sdk.internal.AttributeValueConstants.PROCESS_STATUS_EXPORTED;
+import static io.opentelemetry.sdk.internal.AttributeValueConstants.PROCESS_STATUS_PROCESSED;
+
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -31,10 +35,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static io.opentelemetry.sdk.internal.AttributeValueConstants.PROCESS_STATUS_DROPPED;
-import static io.opentelemetry.sdk.internal.AttributeValueConstants.PROCESS_STATUS_EXPORTED;
-import static io.opentelemetry.sdk.internal.AttributeValueConstants.PROCESS_STATUS_PROCESSED;
-
 /**
  * Implementation of the {@link SpanProcessor} that batches spans exported by the SDK then pushes
  * them to the exporter pipeline.
@@ -52,10 +52,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
       BatchSpanProcessor.class.getSimpleName() + "_WorkerThread";
   private static final AttributeKey<String> SPAN_PROCESSOR_TYPE_LABEL =
       AttributeKey.stringKey("spanProcessorType");
-  private static final AttributeKey<String> SPAN_PROCESSOR_STATUS_LABEL =
+  private static final AttributeKey<String> SPAN_PROCESS_STATUS_LABEL =
       AttributeKey.stringKey("status");
-
-
   private static final String SPAN_PROCESSOR_TYPE_VALUE = BatchSpanProcessor.class.getSimpleName();
 
   private final Worker worker;
@@ -214,19 +212,19 @@ public final class BatchSpanProcessor implements SpanProcessor {
           Attributes.of(
               SPAN_PROCESSOR_TYPE_LABEL,
               SPAN_PROCESSOR_TYPE_VALUE,
-              SPAN_PROCESSOR_STATUS_LABEL,
+              SPAN_PROCESS_STATUS_LABEL,
               PROCESS_STATUS_DROPPED);
       exportedAttrs =
           Attributes.of(
               SPAN_PROCESSOR_TYPE_LABEL,
               SPAN_PROCESSOR_TYPE_VALUE,
-              SPAN_PROCESSOR_STATUS_LABEL,
+              SPAN_PROCESS_STATUS_LABEL,
               PROCESS_STATUS_EXPORTED);
       processedAttrs =
           Attributes.of(
               SPAN_PROCESSOR_TYPE_LABEL,
               SPAN_PROCESSOR_TYPE_VALUE,
-              SPAN_PROCESSOR_STATUS_LABEL,
+              SPAN_PROCESS_STATUS_LABEL,
               PROCESS_STATUS_PROCESSED);
 
       this.batch = new ArrayList<>(this.maxExportBatchSize);

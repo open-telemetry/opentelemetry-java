@@ -5,6 +5,10 @@
 
 package io.opentelemetry.sdk.logs.export;
 
+import static io.opentelemetry.sdk.internal.AttributeValueConstants.PROCESS_STATUS_DROPPED;
+import static io.opentelemetry.sdk.internal.AttributeValueConstants.PROCESS_STATUS_EXPORTED;
+import static io.opentelemetry.sdk.internal.AttributeValueConstants.PROCESS_STATUS_PROCESSED;
+
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -28,10 +32,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static io.opentelemetry.sdk.internal.AttributeValueConstants.PROCESS_STATUS_DROPPED;
-import static io.opentelemetry.sdk.internal.AttributeValueConstants.PROCESS_STATUS_EXPORTED;
-import static io.opentelemetry.sdk.internal.AttributeValueConstants.PROCESS_STATUS_PROCESSED;
-
 /**
  * Implementation of the {@link LogRecordProcessor} that batches logs exported by the SDK then
  * pushes them to the exporter pipeline.
@@ -49,9 +49,8 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       BatchLogRecordProcessor.class.getSimpleName() + "_WorkerThread";
   private static final AttributeKey<String> LOG_RECORD_PROCESSOR_TYPE_LABEL =
       AttributeKey.stringKey("logRecordProcessorType");
-  private static final AttributeKey<String> LOG_RECORD_PROCESSOR_STATUS_LABEL =
+  private static final AttributeKey<String> LOG_RECORD_PROCESS_STATUS_LABEL =
       AttributeKey.stringKey("status");
-
   private static final String LOG_RECORD_PROCESSOR_TYPE_VALUE =
       BatchLogRecordProcessor.class.getSimpleName();
 
@@ -197,19 +196,19 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
           Attributes.of(
               LOG_RECORD_PROCESSOR_TYPE_LABEL,
               LOG_RECORD_PROCESSOR_TYPE_VALUE,
-              LOG_RECORD_PROCESSOR_STATUS_LABEL,
+              LOG_RECORD_PROCESS_STATUS_LABEL,
               PROCESS_STATUS_DROPPED);
       exportedAttrs =
           Attributes.of(
               LOG_RECORD_PROCESSOR_TYPE_LABEL,
               LOG_RECORD_PROCESSOR_TYPE_VALUE,
-              LOG_RECORD_PROCESSOR_STATUS_LABEL,
+              LOG_RECORD_PROCESS_STATUS_LABEL,
               PROCESS_STATUS_EXPORTED);
       processedAttrs =
           Attributes.of(
               LOG_RECORD_PROCESSOR_TYPE_LABEL,
               LOG_RECORD_PROCESSOR_TYPE_VALUE,
-              LOG_RECORD_PROCESSOR_STATUS_LABEL,
+              LOG_RECORD_PROCESS_STATUS_LABEL,
               PROCESS_STATUS_PROCESSED);
 
       this.batch = new ArrayList<>(this.maxExportBatchSize);
