@@ -8,7 +8,7 @@ plugins {
 if (!JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
   throw GradleException(
     "JDK 17 or higher is required to build. " +
-      "One option is to download it from https://adoptopenjdk.net/. If you believe you already " +
+      "One option is to download it from https://adoptium.net/. If you believe you already " +
       "have it, please check that the JAVA_HOME environment variable is pointing at the " +
       "JDK 17 installation.",
   )
