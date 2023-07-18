@@ -13,7 +13,6 @@ dependencies {
   api(project(":api:all"))
   api(project(":extensions:trace-propagators"))
   api(project(":sdk:all"))
-  api(project(":sdk:metrics"))
 
   api("io.opencensus:opencensus-api")
   api("io.opencensus:opencensus-impl-core")
