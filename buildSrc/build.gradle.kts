@@ -5,6 +5,15 @@ plugins {
   id("com.diffplug.spotless") version "6.20.0"
 }
 
+if (!JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
+  throw GradleException(
+    "JDK 17 or higher is required to build. " +
+      "One option is to download it from https://adoptopenjdk.net/. If you believe you already " +
+      "have it, please check that the JAVA_HOME environment variable is pointing at the " +
+      "JDK 17 installation.",
+  )
+}
+
 spotless {
   kotlinGradle {
     ktlint().editorConfigOverride(mapOf(
