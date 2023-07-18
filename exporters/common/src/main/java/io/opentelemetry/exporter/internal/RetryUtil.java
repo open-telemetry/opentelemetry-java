@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
  * any time.
  */
-public class RetryUtil {
+public final class RetryUtil {
 
   private static final Set<String> RETRYABLE_GRPC_STATUS_CODES;
   private static final Set<Integer> RETRYABLE_HTTP_STATUS_CODES =
