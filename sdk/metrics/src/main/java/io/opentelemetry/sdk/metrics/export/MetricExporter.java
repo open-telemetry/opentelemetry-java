@@ -25,7 +25,8 @@ import java.util.concurrent.TimeUnit;
  * @since 1.14.0
  */
 public interface MetricExporter
-    extends AggregationTemporalitySelector, DefaultAggregationSelector, Closeable {
+    extends AggregationTemporalitySelector, DefaultAggregationSelector, Closeable,
+            MemoryModeSelector {
 
   /**
    * Return the default aggregation for the {@link InstrumentType}.

@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics.data;
 
 import io.opentelemetry.api.common.Attributes;
 import java.util.List;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * A point in the metric data model.
@@ -17,7 +16,7 @@ import javax.annotation.concurrent.Immutable;
  *
  * @since 1.14.0
  */
-@Immutable
+
 public interface PointData {
   /** Returns the start time of the aggregation in epoch nanos. */
   long getStartEpochNanos();

@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import static io.opentelemetry.sdk.metrics.internal.state.Measurement.doubleMeasurement;
-import static io.opentelemetry.sdk.metrics.internal.state.Measurement.longMeasurement;
+import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.doubleMeasurement;
+import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.longMeasurement;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.mockito.ArgumentMatchers.any;
@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.export.MemoryModeSelector;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
@@ -68,6 +69,7 @@ class AsynchronousMetricStorageTest {
   @BeforeEach
   void setup() {
     when(reader.getAggregationTemporality(any())).thenReturn(AggregationTemporality.CUMULATIVE);
+    when(reader.getMemoryMode()).thenReturn(MemoryModeSelector.MemoryMode.IMMUTABLE_DATA);
     registeredReader = RegisteredReader.create(reader, ViewRegistry.create());
 
     longCounterStorage =
@@ -352,4 +354,6 @@ class AsynchronousMetricStorageTest {
                                 .hasValue(5)
                                 .hasAttributes(Attributes.builder().put("key", "value2").build())));
   }
+
+
 }

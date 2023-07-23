@@ -22,7 +22,10 @@ import java.util.concurrent.TimeUnit;
  * @since 1.14.0
  */
 public interface MetricReader
-    extends AggregationTemporalitySelector, DefaultAggregationSelector, Closeable {
+    extends AggregationTemporalitySelector,
+            DefaultAggregationSelector,
+            Closeable,
+            MemoryModeSelector {
 
   /**
    * Called by {@link SdkMeterProvider} and supplies the {@link MetricReader} with a handle to

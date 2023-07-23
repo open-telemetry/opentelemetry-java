@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
+import io.opentelemetry.sdk.metrics.internal.data.MutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.state.Measurement;
@@ -54,12 +55,36 @@ public final class LongLastValueAggregator implements Aggregator<LongPointData, 
   }
 
   @Override
+  public void diffInPlace(LongPointData previousReusablePoint, LongPointData currentPoint) {
+    ((MutableLongPointData) previousReusablePoint).set(currentPoint);
+  }
+
+  @Override
   public LongPointData toPoint(Measurement measurement) {
     return ImmutableLongPointData.create(
         measurement.startEpochNanos(),
         measurement.epochNanos(),
         measurement.attributes(),
         measurement.longValue());
+  }
+
+  @Override
+  public void toPoint(Measurement measurement, LongPointData reusablePoint) {
+    ((MutableLongPointData) reusablePoint).set(
+        measurement.startEpochNanos(),
+        measurement.epochNanos(),
+        measurement.attributes(),
+        measurement.longValue());
+  }
+
+  @Override
+  public LongPointData createReusablePoint() {
+    return new MutableLongPointData();
+  }
+
+  @Override
+  public void copyPoint(LongPointData point, LongPointData toReusablePoint) {
+    ((MutableLongPointData) toReusablePoint).set(point);
   }
 
   @Override

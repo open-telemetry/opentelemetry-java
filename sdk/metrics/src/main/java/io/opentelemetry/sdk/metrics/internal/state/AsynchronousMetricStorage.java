@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.metrics.export.MemoryModeSelector.MemoryMode;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -25,10 +26,13 @@ import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.resources.Resource;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static io.opentelemetry.sdk.metrics.export.MemoryModeSelector.MemoryMode.REUSABLE_DATA;
 
 /**
  * Stores aggregated {@link MetricData} for asynchronous instruments.
@@ -48,6 +52,15 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
   private final AttributesProcessor attributesProcessor;
   private final int maxCardinality;
   private Map<Attributes, T> points = new HashMap<>();
+  private final MemoryMode memoryMode;
+
+  // Only populated if memoryMode == REUSABLE_DATA
+  private final ObjectPool<T> reusablePointsPool;
+
+  // Only populated if memoryMode == REUSABLE_DATA
+  @Nullable
+  private Map<Attributes, T> previousCollectResult = null;
+
   private Map<Attributes, T> lastPoints =
       new HashMap<>(); // Only populated if aggregationTemporality == DELTA
 
@@ -63,9 +76,14 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
         registeredReader
             .getReader()
             .getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
+    this.memoryMode =
+        registeredReader
+            .getReader()
+            .getMemoryMode();
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
     this.maxCardinality = maxCardinality;
+    this.reusablePointsPool = new ObjectPool<>(aggregator::createReusablePoint);
   }
 
   /**
@@ -101,13 +119,42 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
         aggregationTemporality == AggregationTemporality.DELTA
             ? registeredReader.getLastCollectEpochNanos()
             : measurement.startEpochNanos();
-    measurement =
-        measurement.hasDoubleValue()
-            ? Measurement.doubleMeasurement(
-                start, measurement.epochNanos(), measurement.doubleValue(), processedAttributes)
-            : Measurement.longMeasurement(
-                start, measurement.epochNanos(), measurement.longValue(), processedAttributes);
-    recordPoint(aggregator.toPoint(measurement));
+
+    if (measurement instanceof LeasedMeasurement) {
+      if (measurement.hasDoubleValue()) {
+        LeasedMeasurement.setDoubleMeasurement(
+            (LeasedMeasurement) measurement,
+            start,
+            measurement.epochNanos(),
+            measurement.doubleValue(),
+            processedAttributes);
+      } else {
+        LeasedMeasurement.setLongMeasurement(
+            (LeasedMeasurement) measurement,
+            start,
+            measurement.epochNanos(),
+            measurement.longValue(),
+            processedAttributes);
+      }
+    } else {
+      measurement =
+          measurement.hasDoubleValue()
+              ? ImmutableMeasurement.doubleMeasurement(
+              start, measurement.epochNanos(), measurement.doubleValue(), processedAttributes)
+              : ImmutableMeasurement.longMeasurement(
+                  start, measurement.epochNanos(), measurement.longValue(), processedAttributes);
+    }
+
+    switch (memoryMode) {
+      case REUSABLE_DATA:
+        T reusableDataPoint = reusablePointsPool.borrowObject();
+        aggregator.toPoint(measurement, reusableDataPoint);
+        recordPoint(reusableDataPoint);
+        break;
+      case IMMUTABLE_DATA:
+        recordPoint(aggregator.toPoint(measurement));
+        break;
+    }
   }
 
   private void recordPoint(T point) {
@@ -154,19 +201,56 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
       InstrumentationScopeInfo instrumentationScopeInfo,
       long startEpochNanos,
       long epochNanos) {
+    if (memoryMode == REUSABLE_DATA) {
+      // Collect can not run concurrently for same reader, hence we safely assume
+      // the previous collect result has been used and done with
+      if (previousCollectResult != null) {
+        previousCollectResult.values().forEach(reusablePointsPool::returnObject);
+      }
+    }
     Map<Attributes, T> result;
     if (aggregationTemporality == AggregationTemporality.DELTA) {
       Map<Attributes, T> points = this.points;
       Map<Attributes, T> lastPoints = this.lastPoints;
-      lastPoints.entrySet().removeIf(entry -> !points.containsKey(entry.getKey()));
-      points.forEach(
-          (k, v) -> lastPoints.compute(k, (k2, v2) -> v2 == null ? v : aggregator.diff(v2, v)));
+
+      lastPoints.entrySet().removeIf(entry -> {
+        boolean pointsContainsKey = points.containsKey(entry.getKey());
+        if (memoryMode == REUSABLE_DATA && !pointsContainsKey) {
+          reusablePointsPool.returnObject(entry.getValue());
+        }
+        return !pointsContainsKey;
+      });
+
+      points.forEach((k, v) ->
+          lastPoints.compute(k, (k2, v2) -> {
+            T newValue = null;
+            switch (memoryMode) {
+              case REUSABLE_DATA:
+                if (v2 == null) {
+                  T newResuablePoint = reusablePointsPool.borrowObject();
+                  aggregator.copyPoint(v, newResuablePoint);
+                  newValue = newResuablePoint;
+                } else {
+                  aggregator.diffInPlace(v2, v);
+                  newValue = v2;
+                }
+                break;
+              case IMMUTABLE_DATA:
+                newValue = (v2 == null) ? v : aggregator.diff(v2, v);
+                break;
+            }
+            return newValue;
+          }));
+
       result = lastPoints;
       this.lastPoints = points;
     } else {
       result = points;
     }
+
     this.points = new HashMap<>();
+    this.previousCollectResult = result;
+
     return aggregator.toMetricData(
         resource,
         instrumentationScopeInfo,

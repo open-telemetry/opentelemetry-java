@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import static io.opentelemetry.sdk.metrics.internal.state.Measurement.doubleMeasurement;
-import static io.opentelemetry.sdk.metrics.internal.state.Measurement.longMeasurement;
+import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.doubleMeasurement;
+import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.longMeasurement;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
@@ -35,6 +35,7 @@ public final class SdkObservableMeasurement
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final InstrumentDescriptor instrumentDescriptor;
   private final List<AsynchronousMetricStorage<?, ?>> storages;
+  private final LeasedMeasurement leasedMeasurement = new LeasedMeasurement();
 
   // These fields are set before invoking callbacks. They allow measurements to be recorded to the
   // storages for correct reader, and with the correct time.
@@ -104,7 +105,20 @@ public final class SdkObservableMeasurement
 
   @Override
   public void record(long value, Attributes attributes) {
-    doRecord(longMeasurement(startEpochNanos, epochNanos, value, attributes));
+    if (activeReader == null) {
+      logNoActiveReader();
+      return;
+    }
+    switch (activeReader.getReader().getMemoryMode()) {
+      case IMMUTABLE_DATA:
+        doRecord(longMeasurement(startEpochNanos, epochNanos, value, attributes));
+        break;
+      case REUSABLE_DATA:
+        LeasedMeasurement.setLongMeasurement(
+            leasedMeasurement, startEpochNanos, epochNanos, value, attributes);
+        doRecord(leasedMeasurement);
+        break;
+    }
   }
 
   @Override
@@ -114,23 +128,36 @@ public final class SdkObservableMeasurement
 
   @Override
   public void record(double value, Attributes attributes) {
-    doRecord(doubleMeasurement(startEpochNanos, epochNanos, value, attributes));
+    if (activeReader == null) {
+      logNoActiveReader();
+      return;
+    }
+    switch (activeReader.getReader().getMemoryMode()) {
+      case IMMUTABLE_DATA:
+        doRecord(doubleMeasurement(startEpochNanos, epochNanos, value, attributes));
+        break;
+      case REUSABLE_DATA:
+        LeasedMeasurement.setDoubleMeasurement(
+            leasedMeasurement, startEpochNanos, epochNanos, value, attributes);
+        doRecord(leasedMeasurement);
+        break;
+    }
   }
 
   private void doRecord(Measurement measurement) {
     RegisteredReader activeReader = this.activeReader;
-    if (activeReader == null) {
-      throttlingLogger.log(
-          Level.FINE,
-          "Measurement recorded for instrument "
-              + instrumentDescriptor.getName()
-              + " outside callback registered to instrument. Dropping measurement.");
-      return;
-    }
     for (AsynchronousMetricStorage<?, ?> storage : storages) {
       if (storage.getRegisteredReader().equals(activeReader)) {
         storage.record(measurement);
       }
     }
+  }
+
+  private void logNoActiveReader() {
+    throttlingLogger.log(
+        Level.FINE,
+        "Measurement recorded for instrument "
+            + instrumentDescriptor.getName()
+            + " outside callback registered to instrument. Dropping measurement.");
   }
 }

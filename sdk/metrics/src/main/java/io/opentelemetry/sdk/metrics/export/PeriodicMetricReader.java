@@ -75,6 +75,11 @@ public final class PeriodicMetricReader implements MetricReader {
   }
 
   @Override
+  public MemoryMode getMemoryMode() {
+    return exporter.getMemoryMode();
+  }
+
+  @Override
   public CompletableResultCode forceFlush() {
     return scheduled.doRun();
   }

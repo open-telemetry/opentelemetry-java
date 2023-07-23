@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.metrics.internal.concurrent.DoubleAdder;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.metrics.internal.data.MutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
@@ -65,12 +66,42 @@ public final class DoubleSumAggregator
   }
 
   @Override
+  public void diffInPlace(DoublePointData previousReusablePoint, DoublePointData currentPoint) {
+    ((MutableDoublePointData) previousReusablePoint).set(
+        currentPoint.getStartEpochNanos(),
+        currentPoint.getEpochNanos(),
+        currentPoint.getAttributes(),
+        currentPoint.getValue() - previousReusablePoint.getValue(),
+        currentPoint.getExemplars());
+
+  }
+
+  @Override
   public DoublePointData toPoint(Measurement measurement) {
     return ImmutableDoublePointData.create(
         measurement.startEpochNanos(),
         measurement.epochNanos(),
         measurement.attributes(),
         measurement.doubleValue());
+  }
+
+  @Override
+  public void toPoint(Measurement measurement, DoublePointData reusablePoint) {
+    ((MutableDoublePointData) reusablePoint).set(
+        measurement.startEpochNanos(),
+        measurement.epochNanos(),
+        measurement.attributes(),
+        measurement.doubleValue());
+  }
+
+  @Override
+  public DoublePointData createReusablePoint() {
+    return new MutableDoublePointData();
+  }
+
+  @Override
+  public void copyPoint(DoublePointData point, DoublePointData toReusablePoint) {
+    ((MutableDoublePointData) toReusablePoint).set(point);
   }
 
   @Override

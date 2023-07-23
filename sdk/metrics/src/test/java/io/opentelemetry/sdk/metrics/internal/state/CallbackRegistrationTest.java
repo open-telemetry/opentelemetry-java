@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import static io.opentelemetry.sdk.metrics.internal.state.Measurement.doubleMeasurement;
-import static io.opentelemetry.sdk.metrics.internal.state.Measurement.longMeasurement;
+import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.doubleMeasurement;
+import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.longMeasurement;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -21,6 +21,7 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.export.MemoryModeSelector;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -76,6 +77,7 @@ class CallbackRegistrationTest {
 
   @BeforeEach
   void setup() {
+    when(reader.getMemoryMode()).thenReturn(MemoryModeSelector.MemoryMode.IMMUTABLE_DATA);
     registeredReader = RegisteredReader.create(reader, ViewRegistry.create());
     when(storage1.getRegisteredReader()).thenReturn(registeredReader);
     when(storage2.getRegisteredReader()).thenReturn(registeredReader);
