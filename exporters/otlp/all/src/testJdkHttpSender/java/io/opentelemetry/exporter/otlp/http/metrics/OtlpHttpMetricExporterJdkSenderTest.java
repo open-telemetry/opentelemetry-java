@@ -9,26 +9,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.ResourceMetricsMarshaler;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractHttpTelemetryExporterTest;
 import io.opentelemetry.exporter.otlp.testing.internal.FakeTelemetryUtil;
+import io.opentelemetry.exporter.otlp.testing.internal.HttpMetricExporterBuilderWrapper;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
+import io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSender;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
-import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
-import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
 import org.junit.jupiter.api.Test;
 
 class OtlpHttpMetricExporterJdkSenderTest
@@ -89,80 +85,27 @@ class OtlpHttpMetricExporterJdkSenderTest
 
   @Override
   protected TelemetryExporterBuilder<MetricData> exporterBuilder() {
-    OtlpHttpMetricExporterBuilder builder = OtlpHttpMetricExporter.builder();
-    return new TelemetryExporterBuilder<>() {
-      @Override
-      public TelemetryExporterBuilder<MetricData> setEndpoint(String endpoint) {
-        builder.setEndpoint(endpoint);
-        return this;
-      }
+    return new HttpMetricExporterBuilderWrapper(OtlpHttpMetricExporter.builder());
+  }
 
-      @Override
-      public TelemetryExporterBuilder<MetricData> setTimeout(long timeout, TimeUnit unit) {
-        builder.setTimeout(timeout, unit);
-        return this;
-      }
+  @Override
+  protected TelemetryExporterBuilder<MetricData> toBuilder(TelemetryExporter<MetricData> exporter) {
+    return new HttpMetricExporterBuilderWrapper(
+        ((OtlpHttpMetricExporter) exporter.unwrap()).toBuilder());
+  }
 
-      @Override
-      public TelemetryExporterBuilder<MetricData> setTimeout(Duration timeout) {
-        builder.setTimeout(timeout);
-        return this;
-      }
+  @Test
+  void isJdkHttpSender() {
+    TelemetryExporter<MetricData> exporter = exporterBuilder().build();
 
-      @Override
-      public TelemetryExporterBuilder<MetricData> setCompression(String compression) {
-        builder.setCompression(compression);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> addHeader(String key, String value) {
-        builder.addHeader(key, value);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> setAuthenticator(Authenticator authenticator) {
-        Authenticator.setAuthenticatorOnDelegate(builder, authenticator);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> setTrustedCertificates(byte[] certificates) {
-        builder.setTrustedCertificates(certificates);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> setSslContext(
-          SSLContext sslContext, X509TrustManager trustManager) {
-        builder.setSslContext(sslContext, trustManager);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> setClientTls(
-          byte[] privateKeyPem, byte[] certificatePem) {
-        builder.setClientTls(privateKeyPem, certificatePem);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> setRetryPolicy(RetryPolicy retryPolicy) {
-        builder.setRetryPolicy(retryPolicy);
-        return this;
-      }
-
-      @Override
-      public TelemetryExporterBuilder<MetricData> setChannel(io.grpc.ManagedChannel channel) {
-        throw new UnsupportedOperationException("Not implemented");
-      }
-
-      @Override
-      public TelemetryExporter<MetricData> build() {
-        return TelemetryExporter.wrap(builder.build());
-      }
-    };
+    try {
+      assertThat(exporter.unwrap())
+          .extracting("delegate")
+          .extracting("httpSender")
+          .isInstanceOf(JdkHttpSender.class);
+    } finally {
+      exporter.shutdown();
+    }
   }
 
   @Override

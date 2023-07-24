@@ -41,10 +41,14 @@ public final class OtlpHttpMetricExporterBuilder {
   private DefaultAggregationSelector defaultAggregationSelector =
       DefaultAggregationSelector.getDefault();
 
-  OtlpHttpMetricExporterBuilder() {
-    delegate = new HttpExporterBuilder<>("otlp", "metric", DEFAULT_ENDPOINT);
+  OtlpHttpMetricExporterBuilder(HttpExporterBuilder<MetricsRequestMarshaler> delegate) {
+    this.delegate = delegate;
     delegate.setMeterProvider(MeterProvider.noop());
     OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+  }
+
+  OtlpHttpMetricExporterBuilder() {
+    this(new HttpExporterBuilder<>("otlp", "metric", DEFAULT_ENDPOINT));
   }
 
   /**
@@ -181,6 +185,6 @@ public final class OtlpHttpMetricExporterBuilder {
    */
   public OtlpHttpMetricExporter build() {
     return new OtlpHttpMetricExporter(
-        delegate.build(), aggregationTemporalitySelector, defaultAggregationSelector);
+        delegate, delegate.build(), aggregationTemporalitySelector, defaultAggregationSelector);
   }
 }

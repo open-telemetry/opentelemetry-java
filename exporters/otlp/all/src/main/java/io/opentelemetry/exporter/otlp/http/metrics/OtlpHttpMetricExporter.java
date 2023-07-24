@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.http.metrics;
 
 import io.opentelemetry.exporter.internal.http.HttpExporter;
+import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.Aggregation;
@@ -26,14 +27,17 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpHttpMetricExporter implements MetricExporter {
 
+  private final HttpExporterBuilder<MetricsRequestMarshaler> builder;
   private final HttpExporter<MetricsRequestMarshaler> delegate;
   private final AggregationTemporalitySelector aggregationTemporalitySelector;
   private final DefaultAggregationSelector defaultAggregationSelector;
 
   OtlpHttpMetricExporter(
+      HttpExporterBuilder<MetricsRequestMarshaler> builder,
       HttpExporter<MetricsRequestMarshaler> delegate,
       AggregationTemporalitySelector aggregationTemporalitySelector,
       DefaultAggregationSelector defaultAggregationSelector) {
+    this.builder = builder;
     this.delegate = delegate;
     this.aggregationTemporalitySelector = aggregationTemporalitySelector;
     this.defaultAggregationSelector = defaultAggregationSelector;
@@ -58,6 +62,15 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
    */
   public static OtlpHttpMetricExporterBuilder builder() {
     return new OtlpHttpMetricExporterBuilder();
+  }
+
+  /**
+   * Returns a builder with configuration values equal to those for this exporter.
+   *
+   * <p>IMPORTANT: Be sure to {@link #shutdown()} this instance if it will no longer be used.
+   */
+  public OtlpHttpMetricExporterBuilder toBuilder() {
+    return new OtlpHttpMetricExporterBuilder(builder.copy());
   }
 
   @Override
