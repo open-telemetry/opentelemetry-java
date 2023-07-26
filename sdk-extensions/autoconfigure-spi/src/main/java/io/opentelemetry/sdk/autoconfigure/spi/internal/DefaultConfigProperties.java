@@ -283,4 +283,9 @@ public final class DefaultConfigProperties implements ConfigProperties {
     // Pull everything after the last digit.
     return rawValue.substring(lastDigitIndex + 1);
   }
+
+  @Override
+  public Set<String> getNormalizedPropertyNames() {
+    return config.keySet();
+  }
 }

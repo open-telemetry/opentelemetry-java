@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### SDK
+
+#### SDK Extensions
+
+* Add method to get all property names from `ConfigProperties`
+  ([#5655](https://github.com/open-telemetry/opentelemetry-java/pull/5655))
+
 ## Version 1.28.0 (2023-07-07)
 
 [opentelemetry-sdk-extension-autoconfigure](./sdk-extensions/autoconfigure) is now stable! See "SDK

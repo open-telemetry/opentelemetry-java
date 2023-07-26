@@ -7,9 +7,11 @@ package io.opentelemetry.sdk.autoconfigure.spi;
 
 import static io.opentelemetry.api.internal.ConfigUtil.defaultIfNull;
 
+import io.opentelemetry.api.internal.ConfigUtil;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
 
 /** Properties used for auto-configuration of the OpenTelemetry SDK components. */
@@ -204,4 +206,13 @@ public interface ConfigProperties {
     Map<String, String> value = getMap(name);
     return value.isEmpty() ? defaultValue : value;
   }
+
+  /**
+   * Returns all property names in the normalized form. System properties are normalized using
+   * {@link ConfigUtil#normalizePropertyKey(String)}. Environment variables are normalized using
+   * {@link ConfigUtil#normalizeEnvironmentVariableKey(String)}.
+   *
+   * @return all property names in the normalized form.
+   */
+  Set<String> getNormalizedPropertyNames();
 }

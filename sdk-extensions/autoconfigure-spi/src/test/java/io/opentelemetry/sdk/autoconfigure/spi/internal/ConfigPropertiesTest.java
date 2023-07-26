@@ -23,6 +23,21 @@ import org.junit.jupiter.api.Test;
 class ConfigPropertiesTest {
 
   @Test
+  void getPropertyNames() {
+    ConfigProperties config = DefaultConfigProperties.createForTest(makeTestProps());
+    assertThat(config.getNormalizedPropertyNames())
+        .containsExactlyInAnyOrder(
+            "test.string",
+            "test.int",
+            "test.long",
+            "test.double",
+            "test.boolean",
+            "test.list",
+            "test.map",
+            "test.duration");
+  }
+
+  @Test
   void allValid() {
     Map<String, String> properties = makeTestProps();
 
