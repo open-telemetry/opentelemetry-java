@@ -69,7 +69,7 @@ val DEPENDENCIES = listOf(
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
-  "io.opentelemetry.proto:opentelemetry-proto:0.20.0-alpha",
+  "io.opentelemetry.proto:opentelemetry-proto:1.0.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
   "junit:junit:4.13.2",
