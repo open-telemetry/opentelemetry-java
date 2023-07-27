@@ -292,6 +292,12 @@ These properties can be used to control the maximum size of spans by placing lim
 |------------------------------|------------------------------|-----------------------------------------------------------------------------------------------------------------|
 | otel.metrics.exemplar.filter | OTEL_METRICS_EXEMPLAR_FILTER | The filter for exemplar sampling.  Can be `ALWAYS_OFF`, `ALWAYS_ON` or `TRACE_BASED`. Default is `TRACE_BASED`. |
 
+## Cardinality Limits
+
+| System property                             | Environment variable                        | Description                                                                                                                               |
+|---------------------------------------------|---------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| otel.experimental.metrics.cardinality.limit | OTEL_EXPERIMENTAL_METRICS_CARDINALITY_LIMIT | If set, configure experimental cardinality limit. The value dictates the maximum number of distinct points per metric. Default is `2000`. |
+
 ## Periodic Metric Reader
 
 | System property             | Environment variable        | Description                                                                                  |
