@@ -2,7 +2,16 @@ plugins {
   `kotlin-dsl`
 
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "6.19.0"
+  id("com.diffplug.spotless") version "6.20.0"
+}
+
+if (!JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
+  throw GradleException(
+    "JDK 17 or higher is required to build. " +
+      "One option is to download it from https://adoptium.net/. If you believe you already " +
+      "have it, please check that the JAVA_HOME environment variable is pointing at the " +
+      "JDK 17 installation.",
+  )
 }
 
 spotless {
@@ -35,12 +44,12 @@ repositories {
 dependencies {
   implementation("com.google.auto.value:auto-value-annotations:1.10.2")
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.19.0")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.20.0")
   // Needed for japicmp but not automatically brought in for some reason.
   implementation("com.google.guava:guava:32.1.1-jre")
   implementation("com.squareup:javapoet:1.13.0")
-  implementation("com.squareup.wire:wire-compiler:4.7.2")
-  implementation("com.squareup.wire:wire-gradle-plugin:4.7.2")
+  implementation("com.squareup.wire:wire-compiler:4.8.0")
+  implementation("com.squareup.wire:wire-gradle-plugin:4.8.0")
   implementation("gradle.plugin.com.google.protobuf:protobuf-gradle-plugin:0.8.18")
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.0")
   implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.1")

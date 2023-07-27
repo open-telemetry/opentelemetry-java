@@ -1,7 +1,10 @@
+import io.opentelemetry.gradle.OtelVersionClassPlugin
+
 plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
 }
+apply<OtelVersionClassPlugin>()
 
 description = "OpenTelemetry OpenTracing Bridge"
 otelJava.moduleName.set("io.opentelemetry.opentracingshim")
