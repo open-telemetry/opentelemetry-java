@@ -13,10 +13,12 @@ import static org.assertj.core.api.Assertions.entry;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.IterableConfigProperties;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
@@ -24,9 +26,9 @@ class ConfigPropertiesTest {
 
   @Test
   void getPropertyNames() {
-    ConfigProperties config = DefaultConfigProperties.createForTest(makeTestProps());
-    assertThat(config.getNormalizedPropertyNames())
-        .containsExactlyInAnyOrder(
+    IterableConfigProperties config = DefaultConfigProperties.createForTest(makeTestProps());
+    List<String> expected =
+        Arrays.asList(
             "test.string",
             "test.int",
             "test.long",
@@ -35,6 +37,8 @@ class ConfigPropertiesTest {
             "test.list",
             "test.map",
             "test.duration");
+    assertThat(config.getNormalizedPropertyNames()).containsExactlyInAnyOrderElementsOf(expected);
+    assertThat(config).containsExactlyInAnyOrderElementsOf(expected);
   }
 
   @Test

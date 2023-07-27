@@ -1,4 +1,8 @@
 Comparing source compatibility of  against 
-**** MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.Set getNormalizedPropertyNames()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.IterableConfigProperties  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties
+	+++  NEW INTERFACE: java.lang.Iterable
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.Set getNormalizedPropertyNames()
+	+++  NEW METHOD: PUBLIC(+) java.util.Iterator iterator()
