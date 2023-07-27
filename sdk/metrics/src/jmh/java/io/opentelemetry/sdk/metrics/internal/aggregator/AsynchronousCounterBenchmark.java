@@ -54,6 +54,8 @@ public class AsynchronousCounterBenchmark {
     private SdkMeterProvider sdkMeterProvider;
     private Random random;
     private List<Attributes> attributesList;
+//    private Map<String, String> pooledHashMap;
+//    private List<String> keys;
 
     public ThreadState() {}
 
@@ -83,7 +85,7 @@ public class AsynchronousCounterBenchmark {
         int attempts = 0;
         do {
           chars[random.nextInt(last.length())] = (char) (random.nextInt(26) + 'a');
-        }  while (attributeSet.contains(new String(chars)) && ++attempts < 10);
+        } while (attributeSet.contains(new String(chars)) && ++attempts < 10);
 
         last = new String(chars);
         attributesList.add(Attributes.builder().put("key", last).build());
@@ -121,26 +123,22 @@ public class AsynchronousCounterBenchmark {
 //    StringBuilder resultSummaryWithoutAttributes = new StringBuilder().append("\n");
 //    StringBuilder resultSummaryWithAttributes = new StringBuilder().append("\n");
 
-    AggregationTemporality[] aggregationTemporalities = new AggregationTemporality[]
-        {AggregationTemporality.CUMULATIVE}; //AggregationTemporality.values();
-    for (AggregationTemporality aggregationTemporality : aggregationTemporalities) {
-      //logger.log(Level.INFO, "Starting {0}...", new Object[]{aggregationTemporality});
-      ThreadState threadState = new ThreadState();
-      threadState.aggregationTemporality = aggregationTemporality;
-      threadState.memoryMode = MemoryMode.REUSABLE_DATA;
-      threadState.setup();
+    AggregationTemporality aggregationTemporality = AggregationTemporality.DELTA;
+    //logger.log(Level.INFO, "Starting {0}...", new Object[]{aggregationTemporality});
+    ThreadState threadState = new ThreadState();
+    threadState.aggregationTemporality = aggregationTemporality;
+    threadState.memoryMode = MemoryMode.REUSABLE_DATA;
+    threadState.setup();
 
+    warmup(threadState);
 //      resultSummaryWithoutAttributes.append(String.format("%10s: %,15.0f [bytes]",
 //              threadState.aggregationTemporality,
 //              (double) GraphLayout.parseInstance(threadState.sdkMeterProvider).totalSize()))
 //          .append("\n");
 
-      for (int i = 0; i < 1000; i++) {
-       //logger.log(Level.INFO, "Recording values...["+i+"]");
-        recordAndCollect(threadState);
-      }
+    measure(2000, threadState);
 
-      //logger.log(Level.INFO, "Done");
+    //logger.log(Level.INFO, "Done");
 //      GraphLayout graphLayout = GraphLayout.parseInstance(threadState.sdkMeterProvider);
 //      resultSummaryWithAttributes.append(String.format("%10s: %,15.0f [bytes]",
 //              threadState.aggregationTemporality,
@@ -149,12 +147,26 @@ public class AsynchronousCounterBenchmark {
 
 //      resultSummaryWithAttributes.append("\n").append(graphLayout.toFootprint());
 
-      threadState.tearDown();
-    }
+    threadState.tearDown();
 
 //    logger.info("\nWithout attributes:\n" + resultSummaryWithoutAttributes
 //        +"\nWithAttributes:\n"
 //        + resultSummaryWithAttributes);
+  }
+
+  private void measure(int x, ThreadState threadState) {
+    for (int i = 0; i < x; i++) {
+      //logger.log(Level.INFO, "Recording values...["+i+"]");
+      recordAndCollect(threadState);
+    }
+  }
+
+  private void warmup(ThreadState threadState) {
+    for (int i = 0; i < 100; i++) {
+      //logger.log(Level.INFO, "Recording values...["+i+"]");
+      recordAndCollect(threadState);
+    }
+
   }
 
 }

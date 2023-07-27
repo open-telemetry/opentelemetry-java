@@ -28,6 +28,7 @@ dependencies {
 
   jmh(project(":sdk:trace"))
   jmh(project(":sdk:testing"))
+  jmh("org.openjdk.jol:jol-core")
 }
 
 testing {
@@ -54,4 +55,8 @@ tasks {
   check {
     dependsOn(testing.suites)
   }
+}
+
+jmh {
+  jvmArgsAppend.addAll("-Djdk.attach.allowAttachSelf", "-Djol.magicFieldOffset=true")
 }

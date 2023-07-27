@@ -27,6 +27,8 @@ import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -51,7 +53,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
   private final Aggregator<T, U> aggregator;
   private final AttributesProcessor attributesProcessor;
   private final int maxCardinality;
-  private Map<Attributes, T> points = new HashMap<>();
+  private Map<Attributes, T> points;
   private final MemoryMode memoryMode;
 
   // Only populated if memoryMode == REUSABLE_DATA
@@ -59,10 +61,13 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
 
   // Only populated if memoryMode == REUSABLE_DATA
   @Nullable
-  private Map<Attributes, T> previousCollectResult = null;
+  private PooledHashMap<Attributes, T> previousCollectResult = null;
+  @Nullable
+  private ArrayList<T> previousReturnedValues = null;
 
-  private Map<Attributes, T> lastPoints =
-      new HashMap<>(); // Only populated if aggregationTemporality == DELTA
+  // Only populated if aggregationTemporality == DELTA
+  private Map<Attributes, T> lastPoints;
+
 
   private AsynchronousMetricStorage(
       RegisteredReader registeredReader,
@@ -84,6 +89,13 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
     this.attributesProcessor = attributesProcessor;
     this.maxCardinality = maxCardinality;
     this.reusablePointsPool = new ObjectPool<>(aggregator::createReusablePoint);
+    if (memoryMode == REUSABLE_DATA) {
+      lastPoints = new PooledHashMap<>();
+      points = new PooledHashMap<>();
+    } else {
+      lastPoints = new HashMap<>();
+      points = new HashMap<>();
+    }
   }
 
   /**
@@ -205,7 +217,8 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
       // Collect can not run concurrently for same reader, hence we safely assume
       // the previous collect result has been used and done with
       if (previousCollectResult != null) {
-        previousCollectResult.values().forEach(reusablePointsPool::returnObject);
+        previousCollectResult.forEach( (k, v) -> reusablePointsPool.returnObject(v));
+        previousCollectResult.clear();
       }
     }
     Map<Attributes, T> result;
@@ -248,14 +261,30 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
       result = points;
     }
 
-    this.points = new HashMap<>();
-    this.previousCollectResult = result;
+    Collection<T> resultCollection;
+    if (memoryMode == REUSABLE_DATA) {
+      if (previousCollectResult != null) {
+        previousCollectResult.clear();
+        this.points = previousCollectResult;
+      } else {
+        this.points = new PooledHashMap<>();
+      }
+      this.previousCollectResult = (PooledHashMap<Attributes, T>) result;
+      if (previousReturnedValues == null) {
+        previousReturnedValues = new ArrayList<>(previousCollectResult.size());
+      }
+      previousCollectResult.fillWithValues(previousReturnedValues);
+      resultCollection = previousReturnedValues;
+    } else {
+      this.points = new HashMap<>();
+      resultCollection = result.values();
+    }
 
     return aggregator.toMetricData(
         resource,
         instrumentationScopeInfo,
         metricDescriptor,
-        result.values(),
+        resultCollection,
         aggregationTemporality);
   }
 
