@@ -1,0 +1,1 @@
+io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider

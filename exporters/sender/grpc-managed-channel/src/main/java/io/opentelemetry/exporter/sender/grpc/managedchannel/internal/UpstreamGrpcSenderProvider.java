@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.sender.grpc.upstream.internal;
+package io.opentelemetry.exporter.sender.grpc.managedchannel.internal;
 
 import io.grpc.Channel;
 import io.grpc.ClientInterceptors;

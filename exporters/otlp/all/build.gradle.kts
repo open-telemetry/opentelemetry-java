@@ -29,7 +29,7 @@ dependencies {
   testImplementation("io.grpc:grpc-stub")
 
   jmhImplementation(project(":sdk:testing"))
-  jmhImplementation(project(":exporters:sender:grpc-upstream"))
+  jmhImplementation(project(":exporters:sender:grpc-managed-channel"))
   jmhImplementation("com.linecorp.armeria:armeria")
   jmhImplementation("com.linecorp.armeria:armeria-grpc")
   jmhImplementation("io.opentelemetry.proto:opentelemetry-proto")
@@ -43,7 +43,7 @@ testing {
   suites {
     register<JvmTestSuite>("testGrpcNetty") {
       dependencies {
-        implementation(project(":exporters:sender:grpc-upstream"))
+        implementation(project(":exporters:sender:grpc-managed-channel"))
         implementation(project(":exporters:otlp:testing-internal"))
 
         implementation("io.grpc:grpc-netty")
@@ -54,7 +54,7 @@ testing {
           testTask {
             systemProperty(
               "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider",
-              "io.opentelemetry.exporter.sender.grpc.upstream.internal.UpstreamGrpcSenderProvider"
+              "io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider"
             )
           }
         }
@@ -62,7 +62,7 @@ testing {
     }
     register<JvmTestSuite>("testGrpcNettyShaded") {
       dependencies {
-        implementation(project(":exporters:sender:grpc-upstream"))
+        implementation(project(":exporters:sender:grpc-managed-channel"))
         implementation(project(":exporters:otlp:testing-internal"))
 
         implementation("io.grpc:grpc-netty-shaded")
@@ -73,7 +73,7 @@ testing {
           testTask {
             systemProperty(
               "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider",
-              "io.opentelemetry.exporter.sender.grpc.upstream.internal.UpstreamGrpcSenderProvider"
+              "io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider"
             )
           }
         }
@@ -81,7 +81,7 @@ testing {
     }
     register<JvmTestSuite>("testGrpcOkhttp") {
       dependencies {
-        implementation(project(":exporters:sender:grpc-upstream"))
+        implementation(project(":exporters:sender:grpc-managed-channel"))
         implementation(project(":exporters:otlp:testing-internal"))
 
         implementation("io.grpc:grpc-okhttp")
@@ -92,7 +92,7 @@ testing {
           testTask {
             systemProperty(
               "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider",
-              "io.opentelemetry.exporter.sender.grpc.upstream.internal.UpstreamGrpcSenderProvider"
+              "io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider"
             )
           }
         }

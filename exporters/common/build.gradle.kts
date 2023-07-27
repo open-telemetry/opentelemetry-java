@@ -55,7 +55,7 @@ testing {
     register<JvmTestSuite>("testGrpcSenderProvider") {
       dependencies {
         implementation(project(":exporters:sender:okhttp"))
-        implementation(project(":exporters:sender:grpc-upstream"))
+        implementation(project(":exporters:sender:grpc-managed-channel"))
 
         implementation("io.grpc:grpc-stub")
         implementation("io.grpc:grpc-netty")

@@ -4,6 +4,6 @@
  */
 
 @ParametersAreNonnullByDefault
-package io.opentelemetry.exporter.sender.grpc.upstream.internal;
+package io.opentelemetry.exporter.sender.grpc.managedchannel.internal;
 
 import javax.annotation.ParametersAreNonnullByDefault;

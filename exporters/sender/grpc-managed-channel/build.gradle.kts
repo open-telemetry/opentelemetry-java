@@ -6,7 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry gRPC Upstream Sender"
-otelJava.moduleName.set("io.opentelemetry.exporter.sender.grpc.upstream.internal")
+otelJava.moduleName.set("io.opentelemetry.exporter.sender.grpc.managedchannel.internal")
 
 dependencies {
   implementation(project(":exporters:common"))

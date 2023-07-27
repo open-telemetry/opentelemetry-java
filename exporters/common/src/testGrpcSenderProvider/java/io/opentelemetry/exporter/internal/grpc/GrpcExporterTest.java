@@ -17,7 +17,7 @@ import io.grpc.Channel;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.exporter.sender.grpc.upstream.internal.UpstreamGrpcSender;
+import io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSender;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.net.URI;
@@ -58,7 +58,8 @@ class GrpcExporterTest {
   @Test
   @SetSystemProperty(
       key = "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider",
-      value = "io.opentelemetry.exporter.sender.grpc.upstream.internal.UpstreamGrpcSenderProvider")
+      value =
+          "io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider")
   void build_multipleSendersWithUpstream() throws URISyntaxException {
     assertThat(
             new GrpcExporterBuilder<>(

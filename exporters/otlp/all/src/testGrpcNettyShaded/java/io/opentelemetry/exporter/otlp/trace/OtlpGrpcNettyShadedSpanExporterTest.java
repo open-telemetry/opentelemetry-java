@@ -15,7 +15,7 @@ import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExpo
 import io.opentelemetry.exporter.otlp.testing.internal.FakeTelemetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.ManagedChannelTelemetryExporterBuilder;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
-import io.opentelemetry.exporter.sender.grpc.upstream.internal.UpstreamGrpcSender;
+import io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSender;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.Closeable;
