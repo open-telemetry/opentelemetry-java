@@ -63,7 +63,7 @@ class MeterProviderConfigurationTest {
   @Test
   void configureMeterProvider_ConfiguresCardinalityLimit() {
     assertCardinalityLimit(
-        Collections.singletonMap("otel.java.experimental.metrics.cardinality.limit", "5"))
+            Collections.singletonMap("otel.java.experimental.metrics.cardinality.limit", "5"))
         .allMatch(el -> el == 5);
     assertCardinalityLimit(Collections.emptyMap())
         .allMatch(el -> el == MetricStorage.DEFAULT_MAX_CARDINALITY);
@@ -133,4 +133,3 @@ class MeterProviderConfigurationTest {
     }
   }
 }
-
