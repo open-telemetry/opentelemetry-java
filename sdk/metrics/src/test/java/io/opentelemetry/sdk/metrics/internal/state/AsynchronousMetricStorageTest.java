@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.export.MemoryModeSelector;
+import io.opentelemetry.sdk.metrics.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
@@ -69,7 +69,7 @@ class AsynchronousMetricStorageTest {
   @BeforeEach
   void setup() {
     when(reader.getAggregationTemporality(any())).thenReturn(AggregationTemporality.CUMULATIVE);
-    when(reader.getMemoryMode()).thenReturn(MemoryModeSelector.MemoryMode.IMMUTABLE_DATA);
+    when(reader.getMemoryMode()).thenReturn(MemoryMode.IMMUTABLE_DATA);
     registeredReader = RegisteredReader.create(reader, ViewRegistry.create());
 
     longCounterStorage =

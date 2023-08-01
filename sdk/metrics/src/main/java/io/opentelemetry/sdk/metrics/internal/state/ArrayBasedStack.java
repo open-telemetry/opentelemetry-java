@@ -3,13 +3,17 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import javax.annotation.Nullable;
 
 /**
- * Array-based Stack of {@code T}
+ * Array-based Stack
  *
  * Not thread-safe
  */
 public class ArrayBasedStack<T> {
   private static final int DEFAULT_CAPACITY = 10;
+
+  // Using native array instead of ArrayList since I plan to add eviction
+  // if the initial portion of the stack is not used for several cycles of collection
   private T[] array;
+
   private int size;
 
   @SuppressWarnings("unchecked")
@@ -31,10 +35,10 @@ public class ArrayBasedStack<T> {
   @Nullable
   public T pop() {
     if (isEmpty()) {
-      return null; // Return null if the stack is empty
+      return null;
     }
     T element = array[size - 1];
-    array[size - 1] = null; // Allow garbage collection
+    array[size - 1] = null;
     size--;
     return element;
   }

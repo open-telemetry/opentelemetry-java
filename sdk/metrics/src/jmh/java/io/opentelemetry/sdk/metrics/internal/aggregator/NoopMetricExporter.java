@@ -5,11 +5,12 @@ import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 
 import java.util.Collection;
 
-import static io.opentelemetry.sdk.metrics.export.MemoryModeSelector.MemoryMode.IMMUTABLE_DATA;
+import static io.opentelemetry.sdk.metrics.export.MemoryMode.IMMUTABLE_DATA;
 
 class NoopMetricExporter implements MetricExporter {
   private final AggregationTemporality aggregationTemporality;

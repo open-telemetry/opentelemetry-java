@@ -13,6 +13,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import static io.opentelemetry.sdk.metrics.export.MemoryMode.IMMUTABLE_DATA;
+
 /**
  * A metric reader reads metrics from an {@link SdkMeterProvider}.
  *
@@ -22,10 +24,7 @@ import java.util.concurrent.TimeUnit;
  * @since 1.14.0
  */
 public interface MetricReader
-    extends AggregationTemporalitySelector,
-            DefaultAggregationSelector,
-            Closeable,
-            MemoryModeSelector {
+    extends AggregationTemporalitySelector, DefaultAggregationSelector, Closeable {
 
   /**
    * Called by {@link SdkMeterProvider} and supplies the {@link MetricReader} with a handle to
@@ -45,6 +44,17 @@ public interface MetricReader
   @Override
   default Aggregation getDefaultAggregation(InstrumentType instrumentType) {
     return Aggregation.defaultAggregation();
+  }
+
+  /**
+   * Returns the memory mode used by this reader
+   *
+   * @return The {@link MemoryMode} used by this instance
+   *
+   * @since 1.28.0
+   */
+  default MemoryMode getMemoryMode() {
+    return IMMUTABLE_DATA;
   }
 
   /**

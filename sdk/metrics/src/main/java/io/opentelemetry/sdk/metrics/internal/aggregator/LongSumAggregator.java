@@ -61,12 +61,9 @@ public final class LongSumAggregator
 
   @Override
   public void diffInPlace(LongPointData previousReusablePoint, LongPointData currentPoint) {
-    ((MutableLongPointData ) previousReusablePoint).set(
-        currentPoint.getStartEpochNanos(),
-        currentPoint.getEpochNanos(),
-        currentPoint.getAttributes(),
-        currentPoint.getValue() - previousReusablePoint.getValue(),
-        currentPoint.getExemplars());
+    ((MutableLongPointData ) previousReusablePoint).set(currentPoint);
+    ((MutableLongPointData ) previousReusablePoint).setValue(
+        currentPoint.getValue() - previousReusablePoint.getValue());
   }
 
   @Override

@@ -15,6 +15,8 @@ import java.io.Closeable;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
+import static io.opentelemetry.sdk.metrics.export.MemoryMode.IMMUTABLE_DATA;
+
 /**
  * A Metric Exporter is a push based interface for exporting {@link MetricData} out of {@link
  * SdkMeterProvider}.
@@ -25,8 +27,7 @@ import java.util.concurrent.TimeUnit;
  * @since 1.14.0
  */
 public interface MetricExporter
-    extends AggregationTemporalitySelector, DefaultAggregationSelector, Closeable,
-            MemoryModeSelector {
+    extends AggregationTemporalitySelector, DefaultAggregationSelector, Closeable {
 
   /**
    * Return the default aggregation for the {@link InstrumentType}.
@@ -37,6 +38,17 @@ public interface MetricExporter
   @Override
   default Aggregation getDefaultAggregation(InstrumentType instrumentType) {
     return Aggregation.defaultAggregation();
+  }
+
+  /**
+   * Returns the memory mode used by this exporter's associated reader
+   *
+   * @return The {@link MemoryMode} used by this exporter's associated reader
+   *
+   * @since 1.28.0
+   */
+  default MemoryMode getMemoryMode() {
+    return IMMUTABLE_DATA;
   }
 
   /**

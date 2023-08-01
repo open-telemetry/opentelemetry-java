@@ -80,6 +80,7 @@ val DEPENDENCIES = listOf(
   "org.jctools:jctools-core:4.0.1",
   "org.junit-pioneer:junit-pioneer:1.9.1",
   "org.skyscreamer:jsonassert:1.5.1",
+  "org.openjdk.jol:jol-core:0.17"
 )
 
 javaPlatform {

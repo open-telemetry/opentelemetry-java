@@ -54,8 +54,10 @@ public interface Aggregator<T extends PointData, U extends ExemplarData> {
   }
 
   /**
-   * Resets {@code previousCumulativeReusable} to a new DELTA point by computing the difference
+   * Resets one reusable point to be a DELTA point by computing the difference
    * between two cumulative points.
+   *
+   * The delta between the two points is set on {@code previousCumulativeReusable}
    *
    * <p>Aggregators MUST implement diff if it can be used with asynchronous instruments.
    *
@@ -76,7 +78,7 @@ public interface Aggregator<T extends PointData, U extends ExemplarData> {
   }
 
   /**
-   * Resets reusablePoint to represent the measurement.
+   * Resets {@code reusablePoint} to represent the {@code measurement}.
    *
    * <p>Aggregators MUST implement diff if it can be used with asynchronous instruments.
    */

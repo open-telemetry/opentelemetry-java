@@ -9,10 +9,9 @@ import io.opentelemetry.api.common.Attributes;
 import javax.annotation.Nullable;
 
 /**
- * A mutable {@link ImmutableMeasurement} implementation, that is leased to other objects
+ * A mutable {@link Measurement} implementation, that is leased to other objects
  * temporarily.
  */
-@SuppressWarnings("ExtendsAutoValue")
 public class LeasedMeasurement implements Measurement {
 
   static void setDoubleMeasurement(
@@ -53,6 +52,7 @@ public class LeasedMeasurement implements Measurement {
   private long longValue;
   private boolean hasDoubleValue;
   private double doubleValue;
+
   @Nullable
   private Attributes attributes;
 
@@ -74,6 +74,14 @@ public class LeasedMeasurement implements Measurement {
     this.hasDoubleValue = hasDoubleValue;
     this.doubleValue = doubleValue;
     this.attributes = attributes;
+  }
+
+  public void setAttributes(Attributes attributes) {
+    this.attributes = attributes;
+  }
+
+  public void setStartEpochNanos(long startEpochNanos) {
+    this.startEpochNanos = startEpochNanos;
   }
 
   @Override
@@ -107,7 +115,6 @@ public class LeasedMeasurement implements Measurement {
   }
 
   @SuppressWarnings("NullAway")
-  @Nullable
   @Override
   public Attributes attributes() {
     return attributes;

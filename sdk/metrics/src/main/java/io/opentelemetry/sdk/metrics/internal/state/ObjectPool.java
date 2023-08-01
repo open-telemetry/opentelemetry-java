@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import java.util.function.Supplier;
@@ -5,26 +10,26 @@ import java.util.function.Supplier;
 /**
  * A pool of objects of type {@code T}
  *
+ * When an object is borrowed from an empty pool, an object will be created by
+ * the supplied {@code objectCreator} and returned immediately. When the pool is not empty,
+ * an object is removed from the pool and returned.
+ * The user is expected to return the object to the pool when it is no longer used.
+ *
+ * <p>
  * Not thread safe
  */
 public class ObjectPool<T> {
   private final ArrayBasedStack<T> pool;
-  private final Supplier<T> creator;
+  private final Supplier<T> objectCreator;
 
-  private static final java.util.concurrent.atomic.LongAdder objectsCreated = new java.util.concurrent.atomic.LongAdder();
-  private static final java.util.concurrent.atomic.LongAdder objectsBorrowed = new java.util.concurrent.atomic.LongAdder();
-  private static final java.util.concurrent.atomic.LongAdder objectsReturned = new java.util.concurrent.atomic.LongAdder();
-
-  @SuppressWarnings("SystemOut")
-  public static void printReport() {
-    System.out.println("objectsCreated = " + objectsCreated.longValue());
-    System.out.println("objectsBorrowed = " + objectsBorrowed.longValue());
-    System.out.println("objectsReturned = " + objectsReturned.longValue());
-  }
-
-  public ObjectPool(Supplier<T> creator) {
+  /**
+   * Constructs an object pool.
+   *
+   * @param objectCreator Supplier used to create an object when the pool is empty
+   */
+  public ObjectPool(Supplier<T> objectCreator) {
     this.pool = new ArrayBasedStack<>();
-    this.creator = creator;
+    this.objectCreator = objectCreator;
   }
 
   /**
@@ -35,16 +40,12 @@ public class ObjectPool<T> {
   public T borrowObject() {
     T object = pool.pop();
     if (object == null) {
-      object = creator.get();
-      objectsCreated.increment();
-    } else {
-      objectsBorrowed.increment();
+      object = objectCreator.get();
     }
     return object;
   }
 
   public void returnObject(T object) {
     pool.push(object);
-    objectsReturned.increment();
   }
 }

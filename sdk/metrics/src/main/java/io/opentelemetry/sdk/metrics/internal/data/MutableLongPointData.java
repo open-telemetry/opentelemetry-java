@@ -17,8 +17,10 @@ public class MutableLongPointData implements LongPointData {
   private long value;
   private long startEpochNanos;
   private long epochNanos;
+
   @Nullable
   private Attributes attributes;
+
   private List<LongExemplarData> exemplars = Collections.emptyList();
 
   @Override
@@ -36,8 +38,8 @@ public class MutableLongPointData implements LongPointData {
     return epochNanos;
   }
 
+  // attributes is null only upon initial creation and never returned as such
   @SuppressWarnings("NullAway")
-  @Nullable
   @Override
   public Attributes getAttributes() {
     return attributes;
@@ -55,6 +57,7 @@ public class MutableLongPointData implements LongPointData {
         point.getValue(),
         point.getExemplars());
   }
+
   public void set(
       long startEpochNanos,
       long epochNanos,
@@ -74,5 +77,9 @@ public class MutableLongPointData implements LongPointData {
     this.attributes = attributes;
     this.value = value;
     this.exemplars = exemplars;
+  }
+
+  public void setValue(long value) {
+    this.value = value;
   }
 }

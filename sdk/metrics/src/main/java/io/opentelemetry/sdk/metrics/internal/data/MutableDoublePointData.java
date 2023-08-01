@@ -16,8 +16,10 @@ public class MutableDoublePointData implements DoublePointData {
 
   private long startEpochNanos;
   private long epochNanos;
+
   @Nullable
   private Attributes attributes;
+
   private double value;
   private List<DoubleExemplarData> exemplars = Collections.emptyList();
 
@@ -36,8 +38,9 @@ public class MutableDoublePointData implements DoublePointData {
     return epochNanos;
   }
 
+
+  // attributes is null only upon initial creation and never returned as such
   @SuppressWarnings("NullAway")
-  @Nullable
   @Override
   public Attributes getAttributes() {
     return attributes;
@@ -75,5 +78,9 @@ public class MutableDoublePointData implements DoublePointData {
     this.attributes = attributes;
     this.value = value;
     this.exemplars = exemplars;
+  }
+
+  public void setValue(double value) {
+    this.value = value;
   }
 }

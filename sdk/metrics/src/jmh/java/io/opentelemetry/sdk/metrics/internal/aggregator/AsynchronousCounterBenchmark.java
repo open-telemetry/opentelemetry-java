@@ -10,11 +10,10 @@ import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.export.MemoryModeSelector.MemoryMode;
+import io.opentelemetry.sdk.metrics.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.state.ObjectPool;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -107,7 +106,6 @@ public class AsynchronousCounterBenchmark {
 
     @TearDown
     public void tearDown() {
-      ObjectPool.printReport();
       sdkMeterProvider.shutdown().join(10, TimeUnit.SECONDS);
     }
   }

@@ -1,15 +1,32 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 
+/**
+ * A bucket-based hash map with an internal re-usable map entry objects pool
+ * <p>
+ * The goal of this map is to minimize memory allocation, leading to reduced time spent
+ * in garbage collection.
+ * <p>
+ * This map avoids allocating a new map entry on each put operation by maintaining a pool
+ * of reusable (mutable) map entries and borrowing a map entry object from the pool to hold
+ * the given key-value of the put operation. The borrowed object is returned to the pool
+ * when the map entry key is removed from the map.
+ *
+ * @param <K> The map key type
+ * @param <V> The map value type
+ */
 public class PooledHashMap<K, V> implements Map<K, V> {
   private static final int DEFAULT_CAPACITY = 16;
   private static final float LOAD_FACTOR = 0.75f;
@@ -17,14 +34,14 @@ public class PooledHashMap<K, V> implements Map<K, V> {
   private ArrayList<Entry<K, V>>[] table;
   private final ObjectPool<Entry<K, V>> entryPool;
   private int size;
-  private final EntrySetView entrySetView;
+//  private final EntrySetView entrySetView;
 
   @SuppressWarnings({"rawtypes", "unchecked"})
   public PooledHashMap(int capacity) {
     this.table = new ArrayList[capacity];
     this.entryPool = new ObjectPool<>(Entry::new);
     this.size = 0;
-    entrySetView = new EntrySetView();
+//    entrySetView = new EntrySetView();
   }
 
   public PooledHashMap() {
@@ -34,17 +51,12 @@ public class PooledHashMap<K, V> implements Map<K, V> {
   @Override
   @Nullable
   public V put(K key, V value) {
-    return putInternal(key, value);
-  }
-
-  @Nullable
-  private V putInternal(@Nullable K key, @Nullable V value) {
+    Objects.requireNonNull(key, "This map does not support null keys");
+    Objects.requireNonNull(key, "This map does not support null values");
     if (size > LOAD_FACTOR * table.length) {
       rehash();
     }
-    if (key == null) {
-      throw new NullPointerException();
-    }
+
     int bucket = getBucket(key);
     ArrayList<Entry<K, V>> entries = table[bucket];
     if (entries == null) {
@@ -68,22 +80,17 @@ public class PooledHashMap<K, V> implements Map<K, V> {
     return null;
   }
 
-
-  @SuppressWarnings({"rawtypes", "unchecked"})
+  @SuppressWarnings({"rawtypes", "unchecked", "NullAway"})
   private void rehash() {
     ArrayList<Entry<K, V>>[] oldTable = table;
     table = new ArrayList[2 * oldTable.length];
-    size = 0;
+    size = 0; // put() to new table below will reset size back to
+    // correct number
 
-    for (ArrayList<Entry<K, V>> bucket : oldTable) {
+    for (int i = 0; i < oldTable.length; i++) {
+      ArrayList<Entry<K, V>> bucket = oldTable[i];
       if (bucket != null) {
         bucket.forEach(entry -> {
-          if (entry.key == null) {
-            throw new NullPointerException();
-          }
-          if (entry.value == null) {
-            throw new NullPointerException();
-          }
           put(entry.key, entry.value);
           entryPool.returnObject(entry);
         });
@@ -94,12 +101,13 @@ public class PooledHashMap<K, V> implements Map<K, V> {
 
   @Override
   @Nullable
-  @SuppressWarnings({"unchecked"})
+  @SuppressWarnings("unchecked")
   public V get(Object key) {
     int bucket = getBucket((K) key);
     ArrayList<Entry<K, V>> entries = table[bucket];
     if (entries != null) {
-      for (Entry<K, V> entry : entries) {
+      for (int i = 0; i < entries.size(); i++) {
+        Entry<K, V> entry = entries.get(i);
         if (Objects.equals(entry.key, key)) {
           return entry.value;
         }
@@ -108,28 +116,18 @@ public class PooledHashMap<K, V> implements Map<K, V> {
     return null;
   }
 
-  public void fillWithValues(ArrayList<V> list) {
-    list.clear();
-    for (ArrayList<Entry<K, V>> bucket : table) {
-      if (bucket != null) {
-        bucket.forEach(entry -> list.add(entry.value));
-      }
-    }
-  }
-
   @Override
   @Nullable
-  @SuppressWarnings({"unchecked"})
+  @SuppressWarnings("unchecked")
   public V remove(Object key) {
     int bucket = getBucket((K) key);
     ArrayList<Entry<K, V>> entries = table[bucket];
     if (entries != null) {
-      Iterator<Entry<K, V>> iterator = entries.iterator();
-      while (iterator.hasNext()) {
-        Entry<K, V> entry = iterator.next();
+      for (int i = 0; i < entries.size(); i++) {
+        Entry<K, V> entry = entries.get(i);
         if (Objects.equals(entry.key, key)) {
           V oldValue = entry.value;
-          iterator.remove();
+          entries.remove(i);
           entryPool.returnObject(entry);
           size--;
           return oldValue;
@@ -156,23 +154,30 @@ public class PooledHashMap<K, V> implements Map<K, V> {
 
   @Override
   public boolean containsValue(Object value) {
-    for (ArrayList<Entry<K, V>> bucket : table) {
-      if (bucket != null) {
-        for (Entry<K, V> entry : bucket) {
-          if (Objects.equals(value, entry.value)) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
+    throw new UnsupportedOperationException();
+//      for (int j = 0; j < table.length; j++) {
+//          ArrayList<Entry<K, V>> bucket = table[j];
+//          if (bucket != null) {
+//              for (int i = 0; i < bucket.size(); i++) {
+//                  Entry<K, V> entry = bucket.get(i);
+//                  if (Objects.equals(value, entry.value)) {
+//                      return true;
+//                  }
+//              }
+//          }
+//      }
+//    return false;
   }
 
   @Override
   public void clear() {
-    for (ArrayList<Entry<K, V>> bucket : table) {
+    for (int i = 0; i < table.length; i++) {
+      ArrayList<Entry<K, V>> bucket = table[i];
       if (bucket != null) {
-        bucket.forEach(entryPool::returnObject);
+          for (int j = 0; j < bucket.size(); j++) {
+              Entry<K, V> entry = bucket.get(j);
+              entryPool.returnObject(entry);
+          }
         bucket.clear();
       }
     }
@@ -181,7 +186,8 @@ public class PooledHashMap<K, V> implements Map<K, V> {
 
   @Override
   public void forEach(BiConsumer<? super K, ? super V> action) {
-    for (ArrayList<Entry<K, V>> bucket : table) {
+    for (int j = 0; j < table.length; j++) {
+      ArrayList<Entry<K, V>> bucket = table[j];
       if (bucket != null) {
         for (int i = 0; i < bucket.size(); i++) {
           Entry<K, V> entry = bucket.get(i);
@@ -191,12 +197,10 @@ public class PooledHashMap<K, V> implements Map<K, V> {
     }
   }
 
-  // These methods are part of the Map interface but are not implemented.
-  // They will throw UnsupportedOperationException until implemented.
-
   @Override
-  public Set<K> keySet() {
+  public Set<Map.Entry<K, V>> entrySet() {
     throw new UnsupportedOperationException();
+//    return entrySetView;
   }
 
   @Override
@@ -205,57 +209,62 @@ public class PooledHashMap<K, V> implements Map<K, V> {
   }
 
   @Override
-  public Set<Map.Entry<K, V>> entrySet() {
-    return entrySetView;
+  public void putAll(Map<? extends K, ? extends V> m) {
+    throw new UnsupportedOperationException();
+//      m.entrySet().forEach(entry -> put(entry.getKey(), entry.getValue()));
   }
 
   @Override
-  public void putAll(Map<? extends K, ? extends V> m) {
-    for (Map.Entry<? extends K, ? extends V> entry : m.entrySet()) {
-      put(entry.getKey(), entry.getValue());
-    }
+  public Set<K> keySet() {
+    throw new UnsupportedOperationException();
   }
-
-  // The rest of the unimplemented methods from the Map interface
 
   private int getBucket(K key) {
     return Math.abs(key.hashCode() % table.length);
   }
 
-  private static class Entry<K, V> implements Map.Entry<K, V>{
+  private static class Entry<K, V> /*implements Map.Entry<K, V>*/ {
     @Nullable
     K key;
+
     @Nullable
     V value;
 
-    @Override
-    public K getKey() {
-      if (key == null) {
-        throw new NullPointerException();
-      }
-      return key;
-    }
-
-    @Override
-    public V getValue() {
-      if (value == null) {
-        throw new NullPointerException();
-      }
-      return value;
-    }
-
-    @Override
-    public V setValue(V value) {
-      if (this.value == null) {
-        throw new NullPointerException();
-      }
-      V oldValue = this.value;
-      this.value = value;
-      return oldValue;
-    }
+//    @Override
+//    public K getKey() {
+//      if (key == null) {
+//        throw new NullPointerException("Key should never be null");
+//      }
+//      return key;
+//    }
+//
+//    @Override
+//    public V getValue() {
+//      if (value == null) {
+//        throw new NullPointerException("Value should never be null");
+//      }
+//      return value;
+//    }
+//
+//    @Override
+//    public V setValue(V value) {
+//      V oldValue = this.value;
+//      if (oldValue == null) {
+//        throw new IllegalStateException("Old value for key can never be null");
+//      }
+//      this.value = value;
+//      return oldValue;
+//    }
   }
 
-  public class EntrySetView implements Set<Map.Entry<K, V>> {
+//  /**
+//   * Provides a set view on the map entries
+//   *
+//   * Has very limited internal use hence only required methods were implemented
+//   */
+
+  /*
+  private class EntrySetView implements Set<Map.Entry<K, V>> {
     @Override
     public boolean removeIf(Predicate<? super Map.Entry<K, V>> filter) {
       Objects.requireNonNull(filter);
@@ -343,5 +352,5 @@ public class PooledHashMap<K, V> implements Map<K, V> {
       throw new UnsupportedOperationException();
     }
   }
-
+  */
 }
