@@ -35,8 +35,8 @@ dependencies {
   testImplementation("com.google.guava:guava-testlib")
 }
 
-val configurationRef = "ed331cd958eb2f6ee16dba3a42e2548e7801ade5"
-val configurationRepoZip = "https://github.com/jack-berg/opentelemetry-configuration/archive/$configurationRef.zip"
+val configurationRef = "2107dbb6f2a6c99fe2f55d550796ee7e2286fd1d"
+val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 
 val downloadConfigurationSchema by tasks.registering(Download::class) {
   src(configurationRepoZip)
@@ -76,7 +76,7 @@ tasks {
     environment(
       mapOf(
         // Expose the kitchen sink example file to tests
-        "CONFIG_EXAMPLE_FILE" to "$buildDir/configuration/kitchen-sink-example.yaml"
+        "CONFIG_EXAMPLE_DIR" to "$buildDir/configuration/examples/"
       )
     )
   }

@@ -46,13 +46,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 
 class ConfigurationReaderTest {
 
   @Test
-  void read_ExampleFile() throws IOException {
+  void read_KitchenSinkExampleFile() throws IOException {
     OpentelemetryConfiguration expected = new OpentelemetryConfiguration();
 
     expected.setFileFormat("0.1");
@@ -68,6 +69,10 @@ class ConfigurationReaderTest {
     expected.setAttributeLimits(attributeLimits);
     attributeLimits.setAttributeValueLengthLimit(4096);
     attributeLimits.setAttributeCountLimit(128);
+
+    List<String> propagators =
+        Arrays.asList("tracecontext", "baggage", "b3", "b3multi", "jaeger", "xray", "ottrace");
+    expected.setPropagators(propagators);
 
     // TracerProvider config
     TracerProvider tracerProvider = new TracerProvider();
@@ -123,7 +128,7 @@ class ConfigurationReaderTest {
     otlpExporter.setClientCertificate("/app/cert.pem");
     Headers headers = new Headers();
     otlpExporter.setHeaders(headers);
-    headers.setAdditionalProperty("api-key", 1234);
+    headers.setAdditionalProperty("api-key", "1234");
     otlpExporter.setCompression("gzip");
     otlpExporter.setTimeout(10_000);
 
@@ -136,6 +141,7 @@ class ConfigurationReaderTest {
     simpleSpanProcessor.setExporter(spanExporter2);
 
     tracerProvider.setProcessors(Arrays.asList(spanProcessor1, spanProcessor2));
+    // end TracerProvider config
 
     // LoggerProvider config
     LoggerProvider loggerProvider = new LoggerProvider();
@@ -158,6 +164,7 @@ class ConfigurationReaderTest {
     logRecordExporter.setOtlp(otlpExporter);
 
     loggerProvider.setProcessors(Collections.singletonList(logRecordProcessor));
+    // end LoggerProvider config
 
     // MeterProvider config
     MeterProvider meterProvider = new MeterProvider();
@@ -189,7 +196,7 @@ class ConfigurationReaderTest {
     otlpMetricExporter.setClientCertificate("/app/cert.pem");
     Headers headers1 = new Headers();
     otlpMetricExporter.setHeaders(headers1);
-    headers1.setAdditionalProperty("api-key", 1234);
+    headers1.setAdditionalProperty("api-key", "1234");
     otlpMetricExporter.setCompression("gzip");
     otlpMetricExporter.setTimeout(10_000);
     otlpMetricExporter.setTemporalityPreference("delta");
@@ -229,28 +236,39 @@ class ConfigurationReaderTest {
     stream.setAttributeKeys(Arrays.asList("key1", "key2"));
 
     meterProvider.setViews(Collections.singletonList(view));
+    // end MeterProvider config
 
     try (FileInputStream configExampleFile =
-        new FileInputStream(System.getenv("CONFIG_EXAMPLE_FILE"))) {
+        new FileInputStream(System.getenv("CONFIG_EXAMPLE_DIR") + "/kitchen-sink.yaml")) {
       OpentelemetryConfiguration config = ConfigurationReader.parse(configExampleFile);
 
+      // General config
+      assertThat(config.getFileFormat()).isEqualTo("0.1");
+      assertThat(config.getResource()).isEqualTo(resource);
+      assertThat(config.getAttributeLimits()).isEqualTo(attributeLimits);
+      assertThat(config.getPropagators()).isEqualTo(propagators);
+
+      // TracerProvider config
       TracerProvider configTracerProvider = config.getTracerProvider();
       assertThat(configTracerProvider.getLimits()).isEqualTo(spanLimits);
       assertThat(configTracerProvider.getSampler()).isEqualTo(sampler);
       assertThat(configTracerProvider.getProcessors())
           .isEqualTo(Arrays.asList(spanProcessor1, spanProcessor2));
 
+      // LoggerProvider config
       LoggerProvider configLoggerProvider = config.getLoggerProvider();
       assertThat(configLoggerProvider.getLimits()).isEqualTo(logRecordLimits);
       assertThat(configLoggerProvider.getProcessors())
           .isEqualTo(Collections.singletonList(logRecordProcessor));
 
+      // MeterProvider config
       MeterProvider configMeterProvider = config.getMeterProvider();
       assertThat(configMeterProvider.getReaders())
           .isEqualTo(Arrays.asList(metricReader1, metricReader2, metricReader3));
       assertThat(configMeterProvider.getViews()).isEqualTo(Collections.singletonList(view));
 
-      // assertThat(configuration).isEqualTo(expected);
+      // All configuration
+      assertThat(config).isEqualTo(expected);
     }
   }
 
