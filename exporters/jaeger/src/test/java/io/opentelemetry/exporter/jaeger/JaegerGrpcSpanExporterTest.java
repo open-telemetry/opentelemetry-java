@@ -26,6 +26,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
@@ -50,12 +51,18 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509KeyManager;
+import javax.net.ssl.X509TrustManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+@SuppressWarnings("deprecation") // Testing deprecated code
 class JaegerGrpcSpanExporterTest {
   private static final BlockingQueue<Collector.PostSpansRequest> postedRequests =
       new LinkedBlockingDeque<>();
@@ -306,6 +313,21 @@ class JaegerGrpcSpanExporterTest {
                 JaegerGrpcSpanExporter.builder()
                     .setClientTls(
                         clientTls.privateKey().getEncoded(), serverTls.certificate().getEncoded()))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void validSslContextConfig() throws Exception {
+    X509TrustManager trustManager = TlsUtil.trustManager(serverTls.certificate().getEncoded());
+
+    X509KeyManager keyManager =
+        TlsUtil.keyManager(
+            clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded());
+
+    SSLContext sslContext = SSLContext.getInstance("TLS");
+    sslContext.init(new KeyManager[] {keyManager}, new TrustManager[] {trustManager}, null);
+
+    assertThatCode(() -> JaegerGrpcSpanExporter.builder().setSslContext(sslContext, trustManager))
         .doesNotThrowAnyException();
   }
 

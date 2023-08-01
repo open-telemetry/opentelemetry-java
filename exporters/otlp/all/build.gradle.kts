@@ -5,6 +5,7 @@ plugins {
   id("otel.jmh-conventions")
   id("otel.animalsniffer-conventions")
 }
+apply<io.opentelemetry.gradle.OtelVersionClassPlugin>()
 
 description = "OpenTelemetry Protocol (OTLP) Exporters"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp")
@@ -13,9 +14,13 @@ base.archivesName.set("opentelemetry-exporter-otlp")
 dependencies {
   api(project(":sdk:trace"))
   api(project(":sdk:metrics"))
+  api(project(":sdk:logs"))
 
   implementation(project(":exporters:otlp:common"))
+  implementation(project(":exporters:sender:okhttp"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
+
+  implementation("com.squareup.okhttp3:okhttp")
 
   compileOnly("io.grpc:grpc-stub")
 
@@ -34,9 +39,11 @@ dependencies {
   jmhRuntimeOnly("io.grpc:grpc-netty")
 }
 
+val testJavaVersion: String? by project
+
 testing {
   suites {
-    val testGrpcNetty by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testGrpcNetty") {
       dependencies {
         implementation(project(":exporters:otlp:testing-internal"))
 
@@ -44,7 +51,7 @@ testing {
         implementation("io.grpc:grpc-stub")
       }
     }
-    val testGrpcNettyShaded by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testGrpcNettyShaded") {
       dependencies {
         implementation(project(":exporters:otlp:testing-internal"))
 
@@ -52,7 +59,7 @@ testing {
         implementation("io.grpc:grpc-stub")
       }
     }
-    val testGrpcOkhttp by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testGrpcOkhttp") {
       dependencies {
         implementation(project(":exporters:otlp:testing-internal"))
 
@@ -60,7 +67,23 @@ testing {
         implementation("io.grpc:grpc-stub")
       }
     }
-    val testSpanPipeline by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testJdkHttpSender") {
+      dependencies {
+        implementation(project(":exporters:sender:jdk"))
+        implementation(project(":exporters:otlp:testing-internal"))
+
+        implementation("io.grpc:grpc-stub")
+      }
+      targets {
+        all {
+          testTask {
+            systemProperty("io.opentelemetry.exporter.internal.http.HttpSenderProvider", "io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSenderProvider")
+            enabled = !testJavaVersion.equals("8")
+          }
+        }
+      }
+    }
+    register<JvmTestSuite>("testSpanPipeline") {
       dependencies {
         implementation("io.opentelemetry.proto:opentelemetry-proto")
         implementation("com.linecorp.armeria:armeria-grpc-protocol")
@@ -79,5 +102,11 @@ tasks {
         name != "testSpanPipeline"
       },
     )
+  }
+}
+
+afterEvaluate {
+  tasks.named<JavaCompile>("compileTestJdkHttpSenderJava") {
+    options.release.set(11)
   }
 }

@@ -146,7 +146,7 @@ public interface AutoConfigurationCustomizer {
    */
   default AutoConfigurationCustomizer addLoggerProviderCustomizer(
       BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder>
-          meterProviderCustomizer) {
+          loggerProviderCustomizer) {
     return this;
   }
 

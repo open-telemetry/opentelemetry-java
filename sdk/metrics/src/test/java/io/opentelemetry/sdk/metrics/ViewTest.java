@@ -15,12 +15,17 @@ class ViewTest {
   void stringRepresentation() {
     assertThat(View.builder().build().toString())
         .isEqualTo(
-            "View{aggregation=DefaultAggregation, attributesProcessor=NoopAttributesProcessor{}}");
+            "View{"
+                + "aggregation=DefaultAggregation, "
+                + "attributesProcessor=NoopAttributesProcessor{}, "
+                + "cardinalityLimit=2000"
+                + "}");
     assertThat(
             View.builder()
                 .setName("name")
                 .setDescription("description")
                 .setAggregation(Aggregation.sum())
+                .setCardinalityLimit(10)
                 .build()
                 .toString())
         .isEqualTo(
@@ -28,7 +33,8 @@ class ViewTest {
                 + "name=name, "
                 + "description=description, "
                 + "aggregation=SumAggregation, "
-                + "attributesProcessor=NoopAttributesProcessor{}"
+                + "attributesProcessor=NoopAttributesProcessor{}, "
+                + "cardinalityLimit=10"
                 + "}");
   }
 }

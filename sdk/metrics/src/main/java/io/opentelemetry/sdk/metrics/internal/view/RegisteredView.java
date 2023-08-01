@@ -25,8 +25,10 @@ public abstract class RegisteredView {
       InstrumentSelector selector,
       View view,
       AttributesProcessor viewAttributesProcessor,
+      int cardinalityLimit,
       SourceInfo viewSourceInfo) {
-    return new AutoValue_RegisteredView(selector, view, viewAttributesProcessor, viewSourceInfo);
+    return new AutoValue_RegisteredView(
+        selector, view, viewAttributesProcessor, cardinalityLimit, viewSourceInfo);
   }
 
   RegisteredView() {}
@@ -39,6 +41,9 @@ public abstract class RegisteredView {
 
   /** The view's {@link AttributesProcessor}. */
   public abstract AttributesProcessor getViewAttributesProcessor();
+
+  /** The view's cardinality limit. */
+  public abstract int getCardinalityLimit();
 
   /** The {@link SourceInfo} from where the view was registered. */
   public abstract SourceInfo getViewSourceInfo();

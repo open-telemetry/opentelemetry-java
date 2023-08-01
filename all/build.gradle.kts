@@ -8,10 +8,11 @@ otelJava.moduleName.set("io.opentelemetry.all")
 tasks {
   // We don't compile much here, just some API boundary tests. This project is mostly for
   // aggregating jacoco reports and it doesn't work if this isn't at least as high as the
-  // highest supported Java version in any of our projects. All of our projects target
-  // Java 8.
+  // highest supported Java version in any of our projects. All of our
+  // projects target Java 8 except :exporters:http-sender:jdk, which targets
+  // Java 11
   withType(JavaCompile::class) {
-    options.release.set(8)
+    options.release.set(11)
   }
 
   val testJavaVersion: String? by project

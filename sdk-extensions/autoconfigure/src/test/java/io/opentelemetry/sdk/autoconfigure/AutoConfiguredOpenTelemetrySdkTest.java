@@ -23,7 +23,6 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.events.GlobalEventEmitterProvider;
-import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
@@ -38,9 +37,9 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
-import io.opentelemetry.sdk.logs.SdkEventEmitterProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
+import io.opentelemetry.sdk.logs.internal.SdkEventEmitterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
@@ -145,11 +144,9 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @BeforeEach
   void resetGlobal() {
     GlobalOpenTelemetry.resetForTest();
-    GlobalLoggerProvider.resetForTest();
     GlobalEventEmitterProvider.resetForTest();
     builder =
         AutoConfiguredOpenTelemetrySdk.builder()
-            .setResultAsGlobal(false)
             .addPropertiesSupplier(disableExportPropertySupplier());
   }
 
@@ -357,19 +354,17 @@ class AutoConfiguredOpenTelemetrySdkTest {
   void builder_setResultAsGlobalFalse() {
     GlobalOpenTelemetry.set(OpenTelemetry.noop());
 
-    OpenTelemetrySdk openTelemetry = builder.setResultAsGlobal(false).build().getOpenTelemetrySdk();
+    OpenTelemetrySdk openTelemetry = builder.build().getOpenTelemetrySdk();
 
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isNotSameAs(openTelemetry);
-    assertThat(GlobalLoggerProvider.get()).isNotSameAs(openTelemetry.getSdkLoggerProvider());
     assertThat(GlobalEventEmitterProvider.get()).isNotSameAs(openTelemetry.getSdkLoggerProvider());
   }
 
   @Test
   void builder_setResultAsGlobalTrue() {
-    OpenTelemetrySdk openTelemetry = builder.setResultAsGlobal(true).build().getOpenTelemetrySdk();
+    OpenTelemetrySdk openTelemetry = builder.setResultAsGlobal().build().getOpenTelemetrySdk();
 
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(openTelemetry);
-    assertThat(GlobalLoggerProvider.get()).isSameAs(openTelemetry.getSdkLoggerProvider());
     assertThat(GlobalEventEmitterProvider.get())
         .isInstanceOf(SdkEventEmitterProvider.class)
         .extracting("delegateLoggerProvider")
@@ -382,7 +377,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
     Thread thread = new Thread();
     doReturn(thread).when(builder).shutdownHook(any());
 
-    OpenTelemetrySdk sdk = builder.setResultAsGlobal(false).build().getOpenTelemetrySdk();
+    OpenTelemetrySdk sdk = builder.build().getOpenTelemetrySdk();
 
     verify(builder, times(1)).shutdownHook(sdk);
     assertThat(Runtime.getRuntime().removeShutdownHook(thread)).isTrue();
@@ -447,8 +442,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
                 (resource, config) -> resource.merge(Resource.builder().put("cow", "moo").build()))
             .addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "none"))
             .addPropertiesSupplier(() -> singletonMap("otel.traces.exporter", "none"))
-            .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"))
-            .setResultAsGlobal(false);
+            .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"));
 
     AutoConfiguredOpenTelemetrySdk autoConfigured = autoConfiguration.build();
     assertThat(autoConfigured.getResource().getAttribute(stringKey("cow"))).isEqualTo("moo");
@@ -519,7 +513,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
                     .addPropertiesSupplier(() -> singletonMap("otel.traces.exporter", "none"))
                     .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"))
                     .addPropertiesSupplier(() -> singletonMap("otel.propagators", "foo"))
-                    .setResultAsGlobal(false)
                     .build())
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized value for otel.propagators");

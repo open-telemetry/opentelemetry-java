@@ -8,10 +8,9 @@ otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure")
 
 dependencies {
   api(project(":sdk:all"))
-  api(project(":sdk:metrics"))
-  api(project(":sdk:logs"))
   api(project(":sdk-extensions:autoconfigure-spi"))
 
+  implementation(project(":api:events"))
   implementation(project(":semconv"))
 
   annotationProcessor("com.google.auto.value:auto-value")
@@ -25,7 +24,7 @@ dependencies {
 
 testing {
   suites {
-    val testAutoConfigureOrder by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testAutoConfigureOrder") {
       targets {
         all {
           testTask {
@@ -36,7 +35,7 @@ testing {
         }
       }
     }
-    val testConditionalResourceProvider by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testConditionalResourceProvider") {
       dependencies {
         implementation(project(":semconv"))
       }
@@ -51,15 +50,14 @@ testing {
         }
       }
     }
-    val testFullConfig by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testFullConfig") {
       dependencies {
+        implementation(project(":api:events"))
         implementation(project(":extensions:trace-propagators"))
         implementation(project(":exporters:jaeger"))
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:logging-otlp"))
         implementation(project(":exporters:otlp:all"))
-        implementation(project(":exporters:otlp:logs"))
-        implementation(project(":exporters:otlp:common"))
         implementation(project(":exporters:prometheus"))
         implementation(project(":exporters:zipkin"))
         implementation(project(":sdk:testing"))
@@ -71,13 +69,11 @@ testing {
         implementation("io.opentelemetry.proto:opentelemetry-proto")
         implementation("com.linecorp.armeria:armeria-junit5")
         implementation("com.linecorp.armeria:armeria-grpc")
-        runtimeOnly("io.grpc:grpc-netty-shaded")
       }
 
       targets {
         all {
           testTask {
-            environment("OTEL_LOGS_EXPORTER", "otlp")
             environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
             environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottrace,test")
             environment("OTEL_EXPORTER_OTLP_HEADERS", "cat=meow,dog=bark")

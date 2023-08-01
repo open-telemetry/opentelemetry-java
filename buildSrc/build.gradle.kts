@@ -2,7 +2,16 @@ plugins {
   `kotlin-dsl`
 
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "6.18.0"
+  id("com.diffplug.spotless") version "6.20.0"
+}
+
+if (!JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
+  throw GradleException(
+    "JDK 17 or higher is required to build. " +
+      "One option is to download it from https://adoptium.net/. If you believe you already " +
+      "have it, please check that the JAVA_HOME environment variable is pointing at the " +
+      "JDK 17 installation.",
+  )
 }
 
 spotless {
@@ -17,6 +26,8 @@ spotless {
       "ktlint_standard_max-line-length" to "disabled",
       // ktlint makes it *very* hard to locate where this actually happened
       "ktlint_standard_trailing-comma-on-call-site" to "disabled",
+      // depends on ktlint_standard_wrapping
+      "ktlint_standard_trailing-comma-on-declaration-site" to "disabled",
       // also very hard to find out where this happens
       "ktlint_standard_wrapping" to "disabled"
     ))
@@ -31,23 +42,23 @@ repositories {
 }
 
 dependencies {
-  implementation("com.google.auto.value:auto-value-annotations:1.10.1")
+  implementation("com.google.auto.value:auto-value-annotations:1.10.2")
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.18.0")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.20.0")
   // Needed for japicmp but not automatically brought in for some reason.
-  implementation("com.google.guava:guava:31.1-jre")
+  implementation("com.google.guava:guava:32.1.2-jre")
   implementation("com.squareup:javapoet:1.13.0")
-  implementation("com.squareup.wire:wire-compiler:4.5.5")
-  implementation("com.squareup.wire:wire-gradle-plugin:4.5.5")
+  implementation("com.squareup.wire:wire-compiler:4.8.0")
+  implementation("com.squareup.wire:wire-gradle-plugin:4.8.0")
   implementation("gradle.plugin.com.google.protobuf:protobuf-gradle-plugin:0.8.18")
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.0")
-  implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.1")
+  implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.2")
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.1")
-  implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.0.1")
-  implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.5.0")
-  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.20")
-  implementation("org.owasp:dependency-check-gradle:8.2.1")
-  implementation("ru.vyarus:gradle-animalsniffer-plugin:1.7.0")
+  implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.1.0")
+  implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.6.0")
+  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0")
+  implementation("org.owasp:dependency-check-gradle:8.3.1")
+  implementation("ru.vyarus:gradle-animalsniffer-plugin:1.7.1")
 }
 
 // We can't apply conventions to this build so include important ones such as the Java compilation

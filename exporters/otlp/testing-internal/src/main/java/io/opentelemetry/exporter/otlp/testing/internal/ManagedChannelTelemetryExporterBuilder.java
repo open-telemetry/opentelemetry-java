@@ -15,9 +15,9 @@ import io.netty.handler.ssl.SslContext;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
-import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
-import io.opentelemetry.exporter.internal.retry.RetryPolicy;
+import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
@@ -162,6 +162,13 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
         return delegateExporter.shutdown();
       }
     };
+  }
+
+  @Override
+  public TelemetryExporterBuilder<T> setSslContext(
+      SSLContext sslContext, X509TrustManager trustManager) {
+    tlsConfigHelper.setSslContext(sslContext, trustManager);
+    return this;
   }
 
   /**

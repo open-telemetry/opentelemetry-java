@@ -25,7 +25,7 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
-  testImplementation("com.google.guava:guava:31.1-jre")
+  testImplementation("com.google.guava:guava")
   testImplementation("com.google.protobuf:protobuf-java")
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("com.linecorp.armeria:armeria-grpc-protocol")
@@ -34,7 +34,7 @@ dependencies {
 
 testing {
   suites {
-    val testGrpcNetty by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testGrpcNetty") {
       dependencies {
         implementation(project(":sdk:testing"))
         implementation(project(":exporters:common"))

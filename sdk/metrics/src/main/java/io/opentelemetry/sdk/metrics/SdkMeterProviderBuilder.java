@@ -10,9 +10,11 @@ import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -32,7 +34,8 @@ public final class SdkMeterProviderBuilder {
 
   private Clock clock = Clock.getDefault();
   private Resource resource = Resource.getDefault();
-  private final List<MetricReader> metricReaders = new ArrayList<>();
+  private final IdentityHashMap<MetricReader, CardinalityLimitSelector> metricReaders =
+      new IdentityHashMap<>();
   private final List<RegisteredView> registeredViews = new ArrayList<>();
   private ExemplarFilter exemplarFilter = DEFAULT_EXEMPLAR_FILTER;
 
@@ -82,7 +85,7 @@ public final class SdkMeterProviderBuilder {
    *
    * // register the view with the SdkMeterProviderBuilder
    * meterProviderBuilder.registerView(
-   *   InstrumentSelector instrumentSelector = InstrumentSelector.builder()
+   *   InstrumentSelector.builder()
    *       .setType(InstrumentType.HISTOGRAM)
    *       .build(),
    *   View.builder()
@@ -96,7 +99,11 @@ public final class SdkMeterProviderBuilder {
     Objects.requireNonNull(view, "view");
     registeredViews.add(
         RegisteredView.create(
-            selector, view, view.getAttributesProcessor(), SourceInfo.fromCurrentStack()));
+            selector,
+            view,
+            view.getAttributesProcessor(),
+            view.getCardinalityLimit(),
+            SourceInfo.fromCurrentStack()));
     return this;
   }
 
@@ -106,7 +113,20 @@ public final class SdkMeterProviderBuilder {
    * <p>Note: custom implementations of {@link MetricReader} are not currently supported.
    */
   public SdkMeterProviderBuilder registerMetricReader(MetricReader reader) {
-    metricReaders.add(reader);
+    metricReaders.put(reader, CardinalityLimitSelector.defaultCardinalityLimitSelector());
+    return this;
+  }
+
+  /**
+   * Registers a {@link MetricReader} with a {@link CardinalityLimitSelector}.
+   *
+   * <p>Note: not currently stable but available for experimental use via {@link
+   * SdkMeterProviderUtil#registerMetricReaderWithCardinalitySelector(SdkMeterProviderBuilder,
+   * MetricReader, CardinalityLimitSelector)}.
+   */
+  SdkMeterProviderBuilder registerMetricReader(
+      MetricReader reader, CardinalityLimitSelector cardinalityLimitSelector) {
+    metricReaders.put(reader, cardinalityLimitSelector);
     return this;
   }
 

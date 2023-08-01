@@ -18,7 +18,7 @@ import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.okhttp.OkHttpUtil;
 import io.opentelemetry.exporter.internal.retry.RetryInterceptor;
-import io.opentelemetry.exporter.internal.retry.RetryPolicy;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Arrays;
@@ -108,6 +108,12 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   public GrpcExporterBuilder<T> setKeyManagerFromCerts(
       byte[] privateKeyPem, byte[] certificatePem) {
     tlsConfigHelper.setKeyManagerFromCerts(privateKeyPem, certificatePem);
+    return this;
+  }
+
+  public GrpcExporterBuilder<T> setSslContext(
+      SSLContext sslContext, X509TrustManager trustManager) {
+    tlsConfigHelper.setSslContext(sslContext, trustManager);
     return this;
   }
 

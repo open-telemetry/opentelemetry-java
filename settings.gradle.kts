@@ -1,12 +1,12 @@
 pluginManagement {
   plugins {
-    id("com.github.ben-manes.versions") version "0.46.0"
+    id("com.github.ben-manes.versions") version "0.47.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("com.gradle.enterprise") version "3.13"
+    id("com.gradle.enterprise") version "3.14.1"
     id("de.undercouch.download") version "5.4.0"
     id("org.jsonschema2pojo") version "1.2.1"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
-    id("org.graalvm.buildtools.native") version "0.9.21"
+    id("org.graalvm.buildtools.native") version "0.9.23"
   }
 }
 
@@ -25,7 +25,6 @@ rootProject.name = "opentelemetry-java"
 include(":all")
 include(":api:all")
 include(":api:events")
-include(":api:logs")
 include(":semconv")
 include(":bom")
 include(":bom-alpha")
@@ -35,6 +34,8 @@ include(":extensions:incubator")
 include(":extensions:kotlin")
 include(":extensions:trace-propagators")
 include(":exporters:common")
+include(":exporters:sender:jdk")
+include(":exporters:sender:okhttp")
 include(":exporters:jaeger")
 include(":exporters:jaeger-proto")
 include(":exporters:jaeger-thrift")
@@ -42,7 +43,6 @@ include(":exporters:logging")
 include(":exporters:logging-otlp")
 include(":exporters:otlp:all")
 include(":exporters:otlp:common")
-include(":exporters:otlp:logs")
 include(":exporters:otlp:testing-internal")
 include(":exporters:prometheus")
 include(":exporters:zipkin")
@@ -56,7 +56,6 @@ include(":perf-harness")
 include(":sdk:all")
 include(":sdk:common")
 include(":sdk:logs")
-include(":sdk:logs-testing")
 include(":sdk:metrics")
 include(":sdk:testing")
 include(":sdk:trace")
@@ -67,15 +66,42 @@ include(":sdk-extensions:incubator")
 include(":sdk-extensions:jaeger-remote-sampler")
 include(":testing-internal")
 
+val gradleEnterpriseServer = "https://ge.opentelemetry.io"
 val isCI = System.getenv("CI") != null
-gradleEnterprise {
-  buildScan {
-    termsOfServiceUrl = "https://gradle.com/terms-of-service"
-    termsOfServiceAgree = "yes"
+val geAccessKey = System.getenv("GRADLE_ENTERPRISE_ACCESS_KEY") ?: ""
 
-    if (isCI) {
+// if GE access key is not given and we are in CI, then we publish to scans.gradle.com
+val useScansGradleCom = isCI && geAccessKey.isEmpty()
+
+if (useScansGradleCom) {
+  gradleEnterprise {
+    buildScan {
+      termsOfServiceUrl = "https://gradle.com/terms-of-service"
+      termsOfServiceAgree = "yes"
+      isUploadInBackground = !isCI
       publishAlways()
-      tag("CI")
+
+      capture {
+        isTaskInputFiles = true
+      }
+    }
+  }
+} else {
+  gradleEnterprise {
+    server = gradleEnterpriseServer
+    buildScan {
+      isUploadInBackground = !isCI
+
+      this as com.gradle.enterprise.gradleplugin.internal.extension.BuildScanExtensionWithHiddenFeatures
+      publishIfAuthenticated()
+      publishAlways()
+
+      capture {
+        isTaskInputFiles = true
+      }
+
+      gradle.startParameter.projectProperties["testJavaVersion"]?.let { tag(it) }
+      gradle.startParameter.projectProperties["testJavaVM"]?.let { tag(it) }
     }
   }
 }

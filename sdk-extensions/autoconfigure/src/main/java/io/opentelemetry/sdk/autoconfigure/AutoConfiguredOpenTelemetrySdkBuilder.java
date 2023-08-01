@@ -9,7 +9,6 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.events.GlobalEventEmitterProvider;
-import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -19,10 +18,10 @@ import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvide
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.logs.SdkEventEmitterProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.logs.internal.SdkEventEmitterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -50,6 +49,8 @@ import javax.annotation.Nullable;
  * A builder for configuring auto-configuration of the OpenTelemetry SDK. Notably, auto-configured
  * components can be customized, for example by delegating to them from a wrapper that tweaks
  * behavior such as filtering out telemetry attributes.
+ *
+ * @since 1.28.0
  */
 public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigurationCustomizer {
 
@@ -90,7 +91,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
   private boolean registerShutdownHook = true;
 
-  private boolean setResultAsGlobal = true;
+  private boolean setResultAsGlobal = false;
 
   private boolean customized;
 
@@ -283,27 +284,26 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   /**
-   * Control the registration of a shutdown hook to shut down the SDK when appropriate. By default,
+   * Disable the registration of a shutdown hook to shut down the SDK when appropriate. By default,
    * the shutdown hook is registered.
    *
    * <p>Skipping the registration of the shutdown hook may cause unexpected behavior. This
    * configuration is for SDK consumers that require control over the SDK lifecycle. In this case,
    * alternatives must be provided by the SDK consumer to shut down the SDK.
-   *
-   * @param registerShutdownHook a boolean <code>true</code> will register the hook, otherwise
-   *     <code>false</code> will skip registration.
    */
-  public AutoConfiguredOpenTelemetrySdkBuilder registerShutdownHook(boolean registerShutdownHook) {
-    this.registerShutdownHook = registerShutdownHook;
+  public AutoConfiguredOpenTelemetrySdkBuilder disableShutdownHook() {
+    this.registerShutdownHook = false;
     return this;
   }
 
   /**
    * Sets whether the configured {@link OpenTelemetrySdk} should be set as the application's
    * {@linkplain io.opentelemetry.api.GlobalOpenTelemetry global} instance.
+   *
+   * <p>By default, {@link GlobalOpenTelemetry} is not set.
    */
-  public AutoConfiguredOpenTelemetrySdkBuilder setResultAsGlobal(boolean setResultAsGlobal) {
-    this.setResultAsGlobal = setResultAsGlobal;
+  public AutoConfiguredOpenTelemetrySdkBuilder setResultAsGlobal() {
+    this.setResultAsGlobal = true;
     return this;
   }
 
@@ -399,7 +399,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
       if (setResultAsGlobal) {
         GlobalOpenTelemetry.set(openTelemetrySdk);
-        GlobalLoggerProvider.set(openTelemetrySdk.getSdkLoggerProvider());
         GlobalEventEmitterProvider.set(
             SdkEventEmitterProvider.create(openTelemetrySdk.getSdkLoggerProvider()));
         logger.log(

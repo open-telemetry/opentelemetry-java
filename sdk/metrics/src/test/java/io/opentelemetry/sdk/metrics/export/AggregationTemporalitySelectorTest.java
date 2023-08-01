@@ -46,4 +46,21 @@ class AggregationTemporalitySelectorTest {
     assertThat(selector.getAggregationTemporality(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
   }
+
+  @Test
+  void lowMemory() {
+    AggregationTemporalitySelector selector = AggregationTemporalitySelector.lowMemory();
+    assertThat(selector.getAggregationTemporality(InstrumentType.COUNTER))
+        .isEqualTo(AggregationTemporality.DELTA);
+    assertThat(selector.getAggregationTemporality(InstrumentType.OBSERVABLE_COUNTER))
+        .isEqualTo(AggregationTemporality.CUMULATIVE);
+    assertThat(selector.getAggregationTemporality(InstrumentType.HISTOGRAM))
+        .isEqualTo(AggregationTemporality.DELTA);
+    assertThat(selector.getAggregationTemporality(InstrumentType.OBSERVABLE_GAUGE))
+        .isEqualTo(AggregationTemporality.DELTA);
+    assertThat(selector.getAggregationTemporality(InstrumentType.UP_DOWN_COUNTER))
+        .isEqualTo(AggregationTemporality.CUMULATIVE);
+    assertThat(selector.getAggregationTemporality(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER))
+        .isEqualTo(AggregationTemporality.CUMULATIVE);
+  }
 }

@@ -45,6 +45,7 @@ final class OtelToZipkinSpanTransformer {
   static final String OTEL_STATUS_CODE = "otel.status_code";
   static final AttributeKey<String> STATUS_ERROR = stringKey("error");
   private final Supplier<InetAddress> ipAddressSupplier;
+
   /**
    * Creates an instance of an OtelToZipkinSpanTransformer with the given Supplier that can produce
    * an InetAddress, which may be null. This value from this Supplier will be used when creating the

@@ -18,7 +18,7 @@ dependencies {
 
   annotationProcessor("com.google.auto.value:auto-value")
 
-  // We include helpers shared by gRPC or okhttp exporters but do not want to impose these
+  // We include helpers shared by gRPC exporters but do not want to impose these
   // dependency on all of our consumers.
   compileOnly("com.fasterxml.jackson.core:jackson-core")
   compileOnly("com.squareup.okhttp3:okhttp")
@@ -33,4 +33,36 @@ dependencies {
   testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("io.grpc:grpc-testing")
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
+}
+
+val testJavaVersion: String? by project
+
+testing {
+  suites {
+    register<JvmTestSuite>("testHttpSenderProvider") {
+      dependencies {
+        implementation(project(":exporters:sender:jdk"))
+        implementation(project(":exporters:sender:okhttp"))
+      }
+      targets {
+        all {
+          testTask {
+            enabled = !testJavaVersion.equals("8")
+          }
+        }
+      }
+    }
+  }
+}
+
+tasks {
+  check {
+    dependsOn(testing.suites)
+  }
+}
+
+afterEvaluate {
+  tasks.named<JavaCompile>("compileTestHttpSenderProviderJava") {
+    options.release.set(11)
+  }
 }

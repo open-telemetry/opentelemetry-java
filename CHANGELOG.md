@@ -2,6 +2,228 @@
 
 ## Unreleased
 
+## Version 1.28.0 (2023-07-07)
+
+[opentelemetry-sdk-extension-autoconfigure](./sdk-extensions/autoconfigure) is now stable! See "SDK
+Extension" notes below for changes made prior to stabilization.
+
+### SDK
+
+#### Metrics
+
+* Make Advice proper immutable class
+  ([#5532](https://github.com/open-telemetry/opentelemetry-java/pull/5532))
+* Show attributes when async instruments record duplicate measurements
+  ([#5542](https://github.com/open-telemetry/opentelemetry-java/pull/5542))
+* After cardinality limit exceeded record measurements to overflow series
+  ([#5560](https://github.com/open-telemetry/opentelemetry-java/pull/5560))
+
+#### Exporter
+
+* Add HttpSender abstraction with OkHttp implementation
+  ([#5505](https://github.com/open-telemetry/opentelemetry-java/pull/5505))
+* Add HttpSenderProvider SPI
+  ([#5533](https://github.com/open-telemetry/opentelemetry-java/pull/5533))
+* Add JDK 11+ HttpClient HttpSender implementation
+  ([#5557](https://github.com/open-telemetry/opentelemetry-java/pull/5557))
+* Remove unnecessary :exporter:otlp:common dependencies
+  ([#5535](https://github.com/open-telemetry/opentelemetry-java/pull/5535))
+* Fix OTLP exporter artifact name in an error message
+  ([#5541](https://github.com/open-telemetry/opentelemetry-java/pull/5541))
+* Stabilize RetryPolicy API for OTLP exporters
+  ([#5524](https://github.com/open-telemetry/opentelemetry-java/pull/5524))
+* DEPRECATION: `opentelemetry-exporter-jaeger` and `opentelemetry-exporter-jaeger-thrift` are now
+  deprecated with the last release planned for 1.34.0 (January 2024)
+  ([#5190](https://github.com/open-telemetry/opentelemetry-java/pull/5190))
+
+#### SDK Extensions
+
+* Mark opentelemetry-sdk-extension-autoconfigure as stable
+  ([#5577](https://github.com/open-telemetry/opentelemetry-java/pull/5577))
+* Refactor autoconfigure registerShutdownHook(boolean) to disableShutdownHook()
+  ([#5565](https://github.com/open-telemetry/opentelemetry-java/pull/5565))
+* AutoConfiguredOpenTelemetrySdkBuilder does not set GlobalOpenTelemetry by default
+  ([#5564](https://github.com/open-telemetry/opentelemetry-java/pull/5564))
+* Add public API to autoconfigure to access environment resource
+  ([#5554](https://github.com/open-telemetry/opentelemetry-java/pull/5554))
+* Move autoconfigure getConfig to internal, remove getResource
+  ([#5467](https://github.com/open-telemetry/opentelemetry-java/pull/5467))
+* Add autoconfigure support for low memory metric temporality setting
+  ([#5558](https://github.com/open-telemetry/opentelemetry-java/pull/5558))
+* DEPRECATION: zpages extension from opentelemetry-sdk-extension-incubator
+  is now deprecated
+  ([#5578](https://github.com/open-telemetry/opentelemetry-java/pull/5578))
+
+### Project tooling
+
+* Publish build scans to ge.opentelemetry.io
+  ([#5510](https://github.com/open-telemetry/opentelemetry-java/pull/5510))
+* Update Gradle Wrapper from 8.0.1 to 8.1.1
+  ([#5531](https://github.com/open-telemetry/opentelemetry-java/pull/5531))
+* Add action to auto update gradle wrapper
+  ([#5511](https://github.com/open-telemetry/opentelemetry-java/pull/5511))
+
+## Version 1.27.0 (2023-06-09)
+
+The log bridge API / SDK are now stable! Some important notes:
+
+* The contents of `opentelemetry-api-logs` have been merged into `opentelemetry-api`.
+* The contents of `opentelemetry-exporter-otlp-logs` have been merged
+  into `opentelemetry-exporter-otlp`.
+* The contents of `opentelemetry-sdk-logs-testing` have been merged into `opentelemetry-sdk-testing`.
+* The `opentelemetry-sdk-logs` artifact has been marked stable.
+* `opentelemetry-sdk-extension-autoconfigure` has changed the default value
+  of `otel.logs.exporter` from `none` to `otlp`.
+
+NOTE: reminder that
+the [Logs Bridge API](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/bridge-api.md)
+is _not_ meant for end users. Log appenders use the API to bridge logs from existing log
+frameworks (e.g. JUL, Log4j, SLf4J, Logback) into OpenTelemetry. Users configure the Log SDK to
+dictate how logs are processed and exported.
+See [opentelemetry.io](https://opentelemetry.io/docs/instrumentation/java/manual/#logs) for
+documentation on usage.
+
+### API
+
+* Promote log API to stable
+  ([#5341](https://github.com/open-telemetry/opentelemetry-java/pull/5341))
+* fix doc for OpenTelemetry class
+  ([#5454](https://github.com/open-telemetry/opentelemetry-java/pull/5454))
+
+### SDK
+
+* Ensure correct compiled output and sources are included in multi version jar
+  ([#5487](https://github.com/open-telemetry/opentelemetry-java/pull/5487))
+
+#### Logs
+
+* Fix broken link
+  ([#5451](https://github.com/open-telemetry/opentelemetry-java/pull/5451))
+* Add meaningful `.toString` to `NoopLogRecordProcessor` and `DefaultOpenTelemetry`
+  ([#5493](https://github.com/open-telemetry/opentelemetry-java/pull/5493))
+* Promote log SDK to stable
+  ([#5341](https://github.com/open-telemetry/opentelemetry-java/pull/5341))
+
+#### Metrics
+
+* Reset exponential aggregator scale after collection
+  ([#5496](https://github.com/open-telemetry/opentelemetry-java/pull/5496))
+* Experimental metric reader and view cardinality limits
+  ([#5494](https://github.com/open-telemetry/opentelemetry-java/pull/5494))
+
+#### Exporter
+
+* Merge otlp logs
+  ([#5432](https://github.com/open-telemetry/opentelemetry-java/pull/5432))
+* Append unit to prometheus metric names
+  ([#5400](https://github.com/open-telemetry/opentelemetry-java/pull/5400))
+
+#### Testing
+
+* Merge sdk logs testing
+  ([#5431](https://github.com/open-telemetry/opentelemetry-java/pull/5431))
+* Add a `hasBucketBoundaries()` variant that allows specifying precision
+  ([#5457](https://github.com/open-telemetry/opentelemetry-java/pull/5457))
+
+### SDK Extensions
+
+* Enable otlp logs by default in autoconfigure
+  ([#5433](https://github.com/open-telemetry/opentelemetry-java/pull/5433))
+
+### Semantic Conventions
+
+* Update to semconv 1.20.0
+  ([#5497](https://github.com/open-telemetry/opentelemetry-java/pull/5497))
+
+## Version 1.26.0 (2023-05-05)
+
+This release represents the release candidate ("RC") release for the Logs Bridge API / SDK. In the
+next release (1.27.0), `opentelemetry-api-logs` will be merged into `opentelemetry-api`,
+`opentelemetry-sdk-logs` will be marked as stable, `opentelemetry-exporter-otlp-logs` will be
+merged into `opentelemetry-exporter-otlp`, `opentelemetry-sdk-logs-testing` will be merged
+into `opentelemetry-sdk-testing`, `opentelemetry-sdk-extension-autoconfigure` will enable `otlp`
+log exporter by default (i.e. `otel.logs.exporter=otlp`). For more details, see tracking
+issue [#5340](https://github.com/open-telemetry/opentelemetry-java/issues/5340). NOTE: reminder that
+the [Logs Bridge API](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/bridge-api.md)
+is _not_ meant for end users. Log appenders use the API to bridge logs from existing log
+frameworks (e.g. JUL, Log4j, SLf4J, Logback) into OpenTelemetry. Users configure the Log SDK to
+dictate how logs are processed and exported.
+
+`opentelemetry-opentracing-shim` is now stable!
+
+### SDK
+
+* Create OtelVersion class at build time which is used to resolve artifact version in `Resource`.
+  ([#5365](https://github.com/open-telemetry/opentelemetry-java/pull/5365))
+
+#### Metrics
+
+* Add prototype histogram advice API (i.e. Hints).
+  ([#5217](https://github.com/open-telemetry/opentelemetry-java/pull/5217))
+
+#### Logs
+
+* Add LogRecord observed timestamp field.
+  ([#5370](https://github.com/open-telemetry/opentelemetry-java/pull/5370))
+* Remove log record timestamp default.
+  ([#5374](https://github.com/open-telemetry/opentelemetry-java/pull/5374))
+* Align BatchLogRecordProcessor defaults with specification.
+  ([#5364](https://github.com/open-telemetry/opentelemetry-java/pull/5364))
+* Rename setEpoch to setTimestamp.
+  ([#5368](https://github.com/open-telemetry/opentelemetry-java/pull/5368))
+* Log SDK cleanup. Move `InMemoryLogRecordExporter` to `opentelemetry-sdk-logs-testing`.
+  Rename `InMemoryLogRecordExporter#getFinishedLogItems` to `getFinishedLogRecordItems`.
+  Move `SdkEventEmitterProvder` to internal package.
+  ([#5368](https://github.com/open-telemetry/opentelemetry-java/pull/5368))
+
+### Exporters
+
+* Add scaffolding for low level exporter TLS API.
+  ([#5362](https://github.com/open-telemetry/opentelemetry-java/pull/5362))
+* Add new low level TLS APIs on OTLP and Jaeger gRPC exporter builders.
+  ([#5280](https://github.com/open-telemetry/opentelemetry-java/pull/5280),
+   [#5422](https://github.com/open-telemetry/opentelemetry-java/pull/5422))
+* OTLP LogRecord exporters serialize observed timestamp.
+  ([#5382](https://github.com/open-telemetry/opentelemetry-java/pull/5382))
+* Update prometheus test to reflect new collector behavior.
+  ([#5417](https://github.com/open-telemetry/opentelemetry-java/pull/5417))
+* Prometheus exporter checks metrics name to prevent add duplicated _total suffix.
+  ([#5308](https://github.com/open-telemetry/opentelemetry-java/pull/5308))
+* Add additional OTLP test for authenticator.
+  ([#5391](https://github.com/open-telemetry/opentelemetry-java/pull/5391))
+
+### OpenTracing Shim
+
+* Mark opentracing-shim as stable.
+  ([#5371](https://github.com/open-telemetry/opentelemetry-java/pull/5371))
+
+### SDK Extensions
+
+* Fixes jaeger remote sampler service strategies bug resolving service name.
+  ([#5418](https://github.com/open-telemetry/opentelemetry-java/pull/5418))
+* Fix flaky JaegerRemoteSamplerGrpcNettyTest.
+  ([#5385](https://github.com/open-telemetry/opentelemetry-java/pull/5385))
+* Add new log level TLS APIs on JaegerRemoteSamplerBuilder.
+  ([#5422](https://github.com/open-telemetry/opentelemetry-java/pull/5422))
+* Fix a parameter name typo in autoconfigure-spi module.
+  ([#5409](https://github.com/open-telemetry/opentelemetry-java/pull/5409))
+
+### Semantic Conventinos
+
+* Add missing links to deprecated constants in SemanticAttributes.
+  ([#5406](https://github.com/open-telemetry/opentelemetry-java/pull/5406))
+
+### Project Tooling
+
+* Update stale workflow.
+  ([#5381](https://github.com/open-telemetry/opentelemetry-java/pull/5381))
+* Skip OWASP dependencyCheck on test modules.
+  ([#5383](https://github.com/open-telemetry/opentelemetry-java/pull/5383))
+* Skip OWASP dependencyCheck on jmh tasks.
+  ([#5384](https://github.com/open-telemetry/opentelemetry-java/pull/5384))
+* Drop create website pull request release step
+  ([#5361](https://github.com/open-telemetry/opentelemetry-java/pull/5361))
+
 ## Version 1.25.0 (2023-04-07)
 
 ### API
@@ -49,7 +271,7 @@
 * Adds version to otel tracer instrumentation scope
   ([#5336](https://github.com/open-telemetry/opentelemetry-java/pull/5336))
 
-## OpenCensus Shim
+### OpenCensus Shim
 
 * Adds version to otel tracer instrumentation scope
   ([#5336](https://github.com/open-telemetry/opentelemetry-java/pull/5336))

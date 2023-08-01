@@ -91,12 +91,14 @@ public final class {{class}} {
     {%- for member in attribute.attr_type.members %}
       /** {% filter escape %}{{member.brief | to_doc_brief}}.{% endfilter %} */
       public static final {{ type }} {{ member.member_id | to_const_name }} = {{ print_value(type, member.value) }};
+
     {%- endfor %}
 
     {%- if class_name == "NetTransportValues" %}
     /** @deprecated This item has been removed as of 1.13.0 of the semantic conventions. */
     @Deprecated
     public static final String IP = "ip";
+
     /** @deprecated This item has been removed as of 1.13.0 of the semantic conventions. */
     @Deprecated
     public static final String UNIX = "unix";
@@ -204,14 +206,14 @@ public final class {{class}} {
 
  /**
   * The name of the transport protocol.
-  * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. There is no replacement.
+  * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#NET_PROTOCOL_NAME} instead.
   */
   @Deprecated
   public static final AttributeKey<String> MESSAGING_PROTOCOL = stringKey("messaging.protocol");
 
   /**
   * The version of the transport protocol.
-  * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. There is no replacement.
+  * @deprecated This item has been removed as of 1.17.0 of the semantic conventions. Use {@link SemanticAttributes#NET_PROTOCOL_VERSION} instead.
   */
   @Deprecated
   public static final AttributeKey<String> MESSAGING_PROTOCOL_VERSION =
@@ -286,7 +288,7 @@ public final class {{class}} {
    * @deprecated This item has been moved, use {@link io.opentelemetry.semconv.resource.attributes.ResourceAttributes#OTEL_SCOPE_VERSION} instead.
    */
   @Deprecated
-  public static final AttributeKey<String> OTEL_SCOPE_VERSION = stringKey("otel.scope.version");;
+  public static final AttributeKey<String> OTEL_SCOPE_VERSION = stringKey("otel.scope.version");
 
   /**
    * The execution ID of the current function execution.
@@ -319,7 +321,108 @@ public final class {{class}} {
    * @deprecated Deprecated, use the {@link io.opentelemetry.semconv.resource.attributes.ResourceAttributes#OTEL_SCOPE_VERSION} attribute.
    */
   @Deprecated
-  public static final AttributeKey<String> OTEL_LIBRARY_VERSION = stringKey("otel.library.version");  
+  public static final AttributeKey<String> OTEL_LIBRARY_VERSION = stringKey("otel.library.version");
+
+  /**
+   * Kind of HTTP protocol used.
+   * @deprecated This item has been removed as of 1.20.0 of the semantic conventions.
+   */
+  @Deprecated
+  public static final AttributeKey<String> HTTP_FLAVOR = stringKey("http.flavor");
+
+  /**
+   * Enum definitions for {@link #HTTP_FLAVOR}.
+   * @deprecated This item has been removed as of 1.20.0 of the semantic conventions.
+   */
+  @Deprecated
+  public static final class HttpFlavorValues {
+    /** HTTP/1.0. */
+    public static final String HTTP_1_0 = "1.0";
+
+    /** HTTP/1.1. */
+    public static final String HTTP_1_1 = "1.1";
+
+    /** HTTP/2. */
+    public static final String HTTP_2_0 = "2.0";
+
+    /** HTTP/3. */
+    public static final String HTTP_3_0 = "3.0";
+
+    /** SPDY protocol. */
+    public static final String SPDY = "SPDY";
+
+    /** QUIC protocol. */
+    public static final String QUIC = "QUIC";
+
+    private HttpFlavorValues() {}
+  }
+
+  /**
+   * Application layer protocol used. The value SHOULD be normalized to lowercase.
+   * @deprecated This item has been removed as of 1.20.0 of the semantic conventions. Use {@link SemanticAttributes#NET_PROTOCOL_NAME} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> NET_APP_PROTOCOL_NAME = stringKey("net.app.protocol.name");
+
+  /**
+   * Version of the application layer protocol used. See note below.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>{@code net.app.protocol.version} refers to the version of the protocol used and might be
+   *       different from the protocol client's version. If the HTTP client used has a version of
+   *       {@code 0.27.2}, but sends HTTP version {@code 1.1}, this attribute should be set to
+   *       {@code 1.1}.
+   * </ul>
+   * @deprecated This item has been removed as of 1.20.0 of the semantic conventions. Use {@link SemanticAttributes#NET_PROTOCOL_VERSION} instead.
+   */
+  @Deprecated
+  public static final AttributeKey<String> NET_APP_PROTOCOL_VERSION = stringKey("net.app.protocol.version");
+
+  /**
+   * The kind of message destination.
+   * @deprecated This item has been removed as of 1.20.0 of the semantic conventions.
+   */
+  @Deprecated
+  public static final AttributeKey<String> MESSAGING_DESTINATION_KIND = stringKey("messaging.destination.kind");
+
+  /**
+   * Enum values for {@link #MESSAGING_DESTINATION_KIND}.
+   * @deprecated This item has been removed as of 1.20.0 of the semantic conventions.
+   */
+  @Deprecated
+  public static final class MessagingDestinationKindValues {
+    /** A message sent to a queue. */
+    public static final String QUEUE = "queue";
+
+    /** A message sent to a topic. */
+    public static final String TOPIC = "topic";
+
+    private MessagingDestinationKindValues() {}
+  }
+
+  /**
+   * The kind of message source.
+   * @deprecated This item has been removed as of 1.20.0 of the semantic conventions.
+   */
+  @Deprecated
+  public static final AttributeKey<String> MESSAGING_SOURCE_KIND = stringKey("messaging.source.kind");
+
+  /**
+   * Enum values for {@link #MESSAGING_SOURCE_KIND}.
+   * @deprecated This item has been removed as of 1.20.0 of the semantic conventions.
+   */
+  @Deprecated
+  public static final class MessagingSourceKindValues {
+    /** A message received from a queue. */
+    public static final String QUEUE = "queue";
+
+    /** A message received from a topic. */
+    public static final String TOPIC = "topic";
+
+    private MessagingSourceKindValues() {}
+  }
 
   {% endif %}
 

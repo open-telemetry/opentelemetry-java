@@ -42,6 +42,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AsynchronousMetricStorageTest {
 
+  private static final int CARDINALITY_LIMIT = 25;
+
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(AsynchronousMetricStorage.class);
 
@@ -51,7 +53,11 @@ class AsynchronousMetricStorageTest {
   private final InstrumentSelector selector = InstrumentSelector.builder().setName("*").build();
   private final RegisteredView registeredView =
       RegisteredView.create(
-          selector, View.builder().build(), AttributesProcessor.noop(), SourceInfo.noSourceInfo());
+          selector,
+          View.builder().build(),
+          AttributesProcessor.noop(),
+          CARDINALITY_LIMIT,
+          SourceInfo.noSourceInfo());
 
   @Mock private MetricReader reader;
   private RegisteredReader registeredReader;
@@ -149,6 +155,7 @@ class AsynchronousMetricStorageTest {
                 selector,
                 View.builder().build(),
                 AttributesProcessor.filterByKeyName(key -> key.equals("key1")),
+                CARDINALITY_LIMIT,
                 SourceInfo.noSourceInfo()),
             InstrumentDescriptor.create(
                 "name",
@@ -175,7 +182,7 @@ class AsynchronousMetricStorageTest {
 
   @Test
   void record_MaxCardinality() {
-    for (int i = 0; i <= MetricStorage.MAX_CARDINALITY + 1; i++) {
+    for (int i = 0; i <= CARDINALITY_LIMIT + 1; i++) {
       longCounterStorage.record(
           longMeasurement(0, 1, 1, Attributes.builder().put("key" + i, "val").build()));
     }
@@ -183,8 +190,7 @@ class AsynchronousMetricStorageTest {
     assertThat(longCounterStorage.collect(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
             metricData ->
-                assertThat(metricData.getLongSumData().getPoints())
-                    .hasSize(MetricStorage.MAX_CARDINALITY));
+                assertThat(metricData.getLongSumData().getPoints()).hasSize(CARDINALITY_LIMIT));
     logs.assertContains("Instrument long-counter has exceeded the maximum allowed cardinality");
   }
 
@@ -205,7 +211,7 @@ class AsynchronousMetricStorageTest {
                                 point ->
                                     point.hasValue(1).hasAttributes(attributeEntry("key1", "a")))));
     logs.assertContains(
-        "Instrument long-counter has recorded multiple values for the same attributes");
+        "Instrument long-counter has recorded multiple values for the same attributes: {key1=\"a\"}");
   }
 
   @Test

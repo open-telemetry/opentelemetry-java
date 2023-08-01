@@ -4,7 +4,6 @@ plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
 
-  id("otel.jmh-conventions")
   id("otel.animalsniffer-conventions")
 
   id("de.undercouch.download")
@@ -19,17 +18,11 @@ otelJava.moduleName.set("io.opentelemetry.sdk.extension.incubator")
 dependencies {
   api(project(":sdk:all"))
 
-  compileOnly(project(":sdk:trace-shaded-deps"))
-
   annotationProcessor("com.google.auto.value:auto-value")
 
   // io.opentelemetry.sdk.extension.incubator.metric.viewconfig
   implementation(project(":sdk-extensions:autoconfigure-spi"))
   implementation("org.snakeyaml:snakeyaml-engine")
-
-  // io.opentelemetry.sdk.extension.incubator.trace.zpages
-  implementation(project(":semconv"))
-  compileOnly("com.sun.net.httpserver:http")
 
   // io.opentelemetry.sdk.extension.incubator.fileconfig
   implementation("com.fasterxml.jackson.core:jackson-databind")

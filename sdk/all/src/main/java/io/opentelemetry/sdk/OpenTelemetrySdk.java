@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.logs.LoggerBuilder;
+import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
@@ -33,7 +35,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
   private final ObfuscatedTracerProvider tracerProvider;
   private final ObfuscatedMeterProvider meterProvider;
-  private final SdkLoggerProvider loggerProvider;
+  private final ObfuscatedLoggerProvider loggerProvider;
   private final ContextPropagators propagators;
 
   OpenTelemetrySdk(
@@ -43,7 +45,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
       ContextPropagators propagators) {
     this.tracerProvider = new ObfuscatedTracerProvider(tracerProvider);
     this.meterProvider = new ObfuscatedMeterProvider(meterProvider);
-    this.loggerProvider = loggerProvider;
+    this.loggerProvider = new ObfuscatedLoggerProvider(loggerProvider);
     this.propagators = propagators;
   }
 
@@ -75,13 +77,18 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
     return meterProvider.unobfuscate();
   }
 
+  @Override
+  public LoggerProvider getLogsBridge() {
+    return loggerProvider;
+  }
+
   /**
    * Returns the {@link SdkLoggerProvider} for this {@link OpenTelemetrySdk}.
    *
    * @since 1.19.0
    */
   public SdkLoggerProvider getSdkLoggerProvider() {
-    return loggerProvider;
+    return loggerProvider.unobfuscate();
   }
 
   @Override
@@ -103,7 +110,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
     List<CompletableResultCode> results = new ArrayList<>();
     results.add(tracerProvider.unobfuscate().shutdown());
     results.add(meterProvider.unobfuscate().shutdown());
-    results.add(loggerProvider.shutdown());
+    results.add(loggerProvider.unobfuscate().shutdown());
     return CompletableResultCode.ofAll(results);
   }
 
@@ -120,7 +127,7 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
         + ", meterProvider="
         + meterProvider.unobfuscate()
         + ", loggerProvider="
-        + loggerProvider
+        + loggerProvider.unobfuscate()
         + ", propagators="
         + propagators
         + "}";
@@ -186,6 +193,33 @@ public final class OpenTelemetrySdk implements OpenTelemetry, Closeable {
     }
 
     public SdkMeterProvider unobfuscate() {
+      return delegate;
+    }
+  }
+
+  /**
+   * This class allows the SDK to unobfuscate an obfuscated static global provider.
+   *
+   * <p>Static global providers are obfuscated when they are returned from the API to prevent users
+   * from casting them to their SDK specific implementation. For example, we do not want users to
+   * use patterns like {@code (SdkMeterProvider) openTelemetry.getMeterProvider()}.
+   */
+  @ThreadSafe
+  // Visible for testing
+  static class ObfuscatedLoggerProvider implements LoggerProvider {
+
+    private final SdkLoggerProvider delegate;
+
+    ObfuscatedLoggerProvider(SdkLoggerProvider delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override
+    public LoggerBuilder loggerBuilder(String instrumentationScopeName) {
+      return delegate.loggerBuilder(instrumentationScopeName);
+    }
+
+    public SdkLoggerProvider unobfuscate() {
       return delegate;
     }
   }

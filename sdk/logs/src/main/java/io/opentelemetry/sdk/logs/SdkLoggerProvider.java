@@ -20,7 +20,11 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import javax.annotation.Nullable;
 
-/** SDK implementation for {@link LoggerProvider}. */
+/**
+ * SDK implementation for {@link LoggerProvider}.
+ *
+ * @since 1.27.0
+ */
 public final class SdkLoggerProvider implements LoggerProvider, Closeable {
 
   static final String DEFAULT_LOGGER_NAME = "unknown";
