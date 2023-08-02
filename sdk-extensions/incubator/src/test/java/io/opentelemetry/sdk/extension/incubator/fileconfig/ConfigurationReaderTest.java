@@ -24,7 +24,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Logger
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporter;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReader;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpentelemetryConfiguration;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBased;
@@ -49,259 +49,188 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("unchecked")
 class ConfigurationReaderTest {
 
   @Test
   void read_KitchenSinkExampleFile() throws IOException {
-    OpentelemetryConfiguration.OpentelemetryConfigurationBuilder expectedBuilder =
-        new OpentelemetryConfiguration.OpentelemetryConfigurationBuilder();
+    OpenTelemetryConfiguration expected = new OpenTelemetryConfiguration();
 
-    expectedBuilder.withFileFormat("0.1");
+    expected.withFileFormat("0.1");
 
     // General config
     Resource resource =
-        new Resource.ResourceBuilder()
-            .withAttributes(
-                new Attributes.AttributesBuilder().withServiceName("unknown_service").build())
-            .build();
-    expectedBuilder.withResource(resource);
+        new Resource().withAttributes(new Attributes().withServiceName("unknown_service"));
+    expected.withResource(resource);
 
     AttributeLimits attributeLimits =
-        new AttributeLimits.AttributeLimitsBuilder()
-            .withAttributeValueLengthLimit(4096)
-            .withAttributeCountLimit(128)
-            .build();
-    expectedBuilder.withAttributeLimits(attributeLimits);
+        new AttributeLimits().withAttributeValueLengthLimit(4096).withAttributeCountLimit(128);
+    expected.withAttributeLimits(attributeLimits);
 
     List<String> propagators =
         Arrays.asList("tracecontext", "baggage", "b3", "b3multi", "jaeger", "xray", "ottrace");
-    expectedBuilder.withPropagators(propagators);
+    expected.withPropagators(propagators);
 
     // TracerProvider config
-    TracerProvider.TracerProviderBuilder tracerProviderBuilder =
-        new TracerProvider.TracerProviderBuilder();
+    TracerProvider tracerProvider = new TracerProvider();
 
     SpanLimits spanLimits =
-        new SpanLimits.SpanLimitsBuilder()
+        new SpanLimits()
             .withAttributeValueLengthLimit(4096)
             .withAttributeCountLimit(128)
             .withEventCountLimit(128)
             .withLinkCountLimit(128)
             .withEventAttributeCountLimit(128)
-            .withLinkAttributeCountLimit(128)
-            .build();
-    tracerProviderBuilder.withLimits(spanLimits);
+            .withLinkAttributeCountLimit(128);
+    tracerProvider.withLimits(spanLimits);
 
     Sampler sampler =
-        new Sampler.SamplerBuilder()
+        new Sampler()
             .withParentBased(
-                new ParentBased.ParentBasedBuilder()
+                new ParentBased()
                     .withRoot(
-                        new Sampler.SamplerBuilder()
-                            .withTraceIdRatioBased(
-                                new TraceIdRatioBased.TraceIdRatioBasedBuilder()
-                                    .withRatio(0.0001)
-                                    .build())
-                            .build())
-                    .withRemoteParentSampled(
-                        new Sampler.SamplerBuilder()
-                            .withAlwaysOn(new AlwaysOn.AlwaysOnBuilder().build())
-                            .build())
-                    .withRemoteParentNotSampled(
-                        new Sampler.SamplerBuilder()
-                            .withAlwaysOff(new AlwaysOff.AlwaysOffBuilder().build())
-                            .build())
-                    .withLocalParentSampled(
-                        new Sampler.SamplerBuilder()
-                            .withAlwaysOn(new AlwaysOn.AlwaysOnBuilder().build())
-                            .build())
-                    .withLocalParentNotSampled(
-                        new Sampler.SamplerBuilder()
-                            .withAlwaysOff(new AlwaysOff.AlwaysOffBuilder().build())
-                            .build())
-                    .build())
-            .build();
-    tracerProviderBuilder.withSampler(sampler);
+                        new Sampler()
+                            .withTraceIdRatioBased(new TraceIdRatioBased().withRatio(0.0001)))
+                    .withRemoteParentSampled(new Sampler().withAlwaysOn(new AlwaysOn()))
+                    .withRemoteParentNotSampled(new Sampler().withAlwaysOff(new AlwaysOff()))
+                    .withLocalParentSampled(new Sampler().withAlwaysOn(new AlwaysOn()))
+                    .withLocalParentNotSampled(new Sampler().withAlwaysOff(new AlwaysOff())));
+    tracerProvider.withSampler(sampler);
 
     SpanProcessor spanProcessor1 =
-        new SpanProcessor.SpanProcessorBuilder()
+        new SpanProcessor()
             .withBatch(
-                new BatchSpanProcessor.BatchSpanProcessorBuilder()
+                new BatchSpanProcessor()
                     .withScheduleDelay(5_000)
                     .withExportTimeout(30_000)
                     .withMaxQueueSize(2048)
                     .withMaxExportBatchSize(512)
                     .withExporter(
-                        new SpanExporter.SpanExporterBuilder()
+                        new SpanExporter()
                             .withOtlp(
-                                new Otlp.OtlpBuilder()
+                                new Otlp()
                                     .withProtocol("http/protobuf")
                                     .withEndpoint("http://localhost:4318")
                                     .withCertificate("/app/cert.pem")
                                     .withClientKey("/app/cert.pem")
                                     .withClientCertificate("/app/cert.pem")
                                     .withHeaders(
-                                        new Headers.HeadersBuilder()
-                                            .withAdditionalProperty("api-key", "1234")
-                                            .build())
+                                        new Headers().withAdditionalProperty("api-key", "1234"))
                                     .withCompression("gzip")
-                                    .withTimeout(10_000)
-                                    .build())
-                            .build())
-                    .build())
-            .build();
+                                    .withTimeout(10_000))));
     SpanProcessor spanProcessor2 =
-        new SpanProcessor.SpanProcessorBuilder()
+        new SpanProcessor()
             .withSimple(
-                new SimpleSpanProcessor.SimpleSpanProcessorBuilder()
-                    .withExporter(
-                        new SpanExporter.SpanExporterBuilder()
-                            .withConsole(new Console.ConsoleBuilder().build())
-                            .build())
-                    .build())
-            .build();
-    tracerProviderBuilder.withProcessors(Arrays.asList(spanProcessor1, spanProcessor2));
+                new SimpleSpanProcessor()
+                    .withExporter(new SpanExporter().withConsole(new Console())));
+    tracerProvider.withProcessors(Arrays.asList(spanProcessor1, spanProcessor2));
 
-    expectedBuilder.withTracerProvider(tracerProviderBuilder.build());
+    expected.withTracerProvider(tracerProvider);
     // end TracerProvider config
 
     // LoggerProvider config
-    LoggerProvider.LoggerProviderBuilderBase<?> loggerProviderBuilder =
-        new LoggerProvider.LoggerProviderBuilder();
+    LoggerProvider loggerProvider = new LoggerProvider();
 
     LogRecordLimits logRecordLimits =
-        new LogRecordLimits.LogRecordLimitsBuilder()
-            .withAttributeValueLengthLimit(4096)
-            .withAttributeCountLimit(128)
-            .build();
-    loggerProviderBuilder.withLimits(logRecordLimits);
+        new LogRecordLimits().withAttributeValueLengthLimit(4096).withAttributeCountLimit(128);
+    loggerProvider.withLimits(logRecordLimits);
 
     LogRecordProcessor logRecordProcessor =
-        new LogRecordProcessor.LogRecordProcessorBuilder()
+        new LogRecordProcessor()
             .withBatch(
-                new BatchLogRecordProcessor.BatchLogRecordProcessorBuilder()
+                new BatchLogRecordProcessor()
                     .withScheduleDelay(5_000)
                     .withExportTimeout(30_000)
                     .withMaxQueueSize(2048)
                     .withMaxExportBatchSize(512)
                     .withExporter(
-                        new LogRecordExporter.LogRecordExporterBuilder()
+                        new LogRecordExporter()
                             .withOtlp(
-                                new Otlp.OtlpBuilder()
+                                new Otlp()
                                     .withProtocol("http/protobuf")
                                     .withEndpoint("http://localhost:4318")
                                     .withCertificate("/app/cert.pem")
                                     .withClientKey("/app/cert.pem")
                                     .withClientCertificate("/app/cert.pem")
                                     .withHeaders(
-                                        new Headers.HeadersBuilder()
-                                            .withAdditionalProperty("api-key", "1234")
-                                            .build())
+                                        new Headers().withAdditionalProperty("api-key", "1234"))
                                     .withCompression("gzip")
-                                    .withTimeout(10_000)
-                                    .build())
-                            .build())
-                    .build())
-            .build();
-    loggerProviderBuilder.withProcessors(Collections.singletonList(logRecordProcessor));
+                                    .withTimeout(10_000))));
+    loggerProvider.withProcessors(Collections.singletonList(logRecordProcessor));
 
-    expectedBuilder.withLoggerProvider(loggerProviderBuilder.build());
+    expected.withLoggerProvider(loggerProvider);
     // end LoggerProvider config
 
     // MeterProvider config
-    MeterProvider.MeterProviderBuilderBase<?> meterProviderBuilder =
-        new MeterProvider.MeterProviderBuilder();
+    MeterProvider meterProvider = new MeterProvider();
 
     MetricReader metricReader1 =
-        new MetricReader.MetricReaderBuilder()
+        new MetricReader()
             .withPull(
-                new PullMetricReader.PullMetricReaderBuilder()
+                new PullMetricReader()
                     .withExporter(
-                        new MetricExporter.MetricExporterBuilder()
+                        new MetricExporter()
                             .withPrometheus(
-                                new Prometheus.PrometheusBuilder()
-                                    .withHost("localhost")
-                                    .withPort(9464)
-                                    .build())
-                            .build())
-                    .build())
-            .build();
+                                new Prometheus().withHost("localhost").withPort(9464))));
     MetricReader metricReader2 =
-        new MetricReader.MetricReaderBuilder()
+        new MetricReader()
             .withPeriodic(
-                new PeriodicMetricReader.PeriodicMetricReaderBuilder()
+                new PeriodicMetricReader()
                     .withInterval(5_000)
                     .withTimeout(30_000)
                     .withExporter(
-                        new MetricExporter.MetricExporterBuilder()
+                        new MetricExporter()
                             .withOtlp(
-                                new OtlpMetric.OtlpMetricBuilder()
+                                new OtlpMetric()
                                     .withProtocol("http/protobuf")
                                     .withEndpoint("http://localhost:4318")
                                     .withCertificate("/app/cert.pem")
                                     .withClientKey("/app/cert.pem")
                                     .withClientCertificate("/app/cert.pem")
                                     .withHeaders(
-                                        new Headers.HeadersBuilder()
-                                            .withAdditionalProperty("api-key", "1234")
-                                            .build())
+                                        new Headers().withAdditionalProperty("api-key", "1234"))
                                     .withCompression("gzip")
                                     .withTimeout(10_000)
                                     .withTemporalityPreference("delta")
-                                    .withDefaultHistogramAggregation("exponential_bucket_histogram")
-                                    .build())
-                            .build())
-                    .build())
-            .build();
+                                    .withDefaultHistogramAggregation(
+                                        "exponential_bucket_histogram"))));
     MetricReader metricReader3 =
-        new MetricReader.MetricReaderBuilder()
+        new MetricReader()
             .withPeriodic(
-                new PeriodicMetricReader.PeriodicMetricReaderBuilder()
-                    .withExporter(
-                        new MetricExporter.MetricExporterBuilder()
-                            .withConsole(new Console.ConsoleBuilder().build())
-                            .build())
-                    .build())
-            .build();
-    meterProviderBuilder.withReaders(Arrays.asList(metricReader1, metricReader2, metricReader3));
+                new PeriodicMetricReader()
+                    .withExporter(new MetricExporter().withConsole(new Console())));
+    meterProvider.withReaders(Arrays.asList(metricReader1, metricReader2, metricReader3));
 
     View view =
-        new View.ViewBuilder()
+        new View()
             .withSelector(
-                new Selector.SelectorBuilder()
+                new Selector()
                     .withInstrumentName("my-instrument")
                     .withInstrumentType("histogram")
                     .withMeterName("my-meter")
                     .withMeterVersion("1.0.0")
-                    .withMeterSchemaUrl("https://opentelemetry.io/schemas/1.16.0")
-                    .build())
+                    .withMeterSchemaUrl("https://opentelemetry.io/schemas/1.16.0"))
             .withStream(
-                new Stream.StreamBuilder()
+                new Stream()
                     .withName("new_instrument_name")
                     .withDescription("new_description")
                     .withAggregation(
-                        new Aggregation.AggregationBuilder()
+                        new Aggregation()
                             .withExplicitBucketHistogram(
-                                new ExplicitBucketHistogram.ExplicitBucketHistogramBuilder()
+                                new ExplicitBucketHistogram()
                                     .withBoundaries(
                                         Arrays.asList(
                                             0.0, 5.0, 10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0,
                                             750.0, 1000.0, 2500.0, 5000.0, 7500.0, 10000.0))
-                                    .withRecordMinMax(true)
-                                    .build())
-                            .build())
-                    .withAttributeKeys(Arrays.asList("key1", "key2"))
-                    .build())
-            .build();
-    meterProviderBuilder.withViews(Collections.singletonList(view));
+                                    .withRecordMinMax(true)))
+                    .withAttributeKeys(Arrays.asList("key1", "key2")));
+    meterProvider.withViews(Collections.singletonList(view));
 
-    expectedBuilder.withMeterProvider(meterProviderBuilder.build());
+    expected.withMeterProvider(meterProvider);
     // end MeterProvider config
 
     try (FileInputStream configExampleFile =
         new FileInputStream(System.getenv("CONFIG_EXAMPLE_DIR") + "/kitchen-sink.yaml")) {
-      OpentelemetryConfiguration config = ConfigurationReader.parse(configExampleFile);
+      OpenTelemetryConfiguration config = ConfigurationReader.parse(configExampleFile);
 
       // General config
       assertThat(config.getFileFormat()).isEqualTo("0.1");
@@ -329,7 +258,7 @@ class ConfigurationReaderTest {
       assertThat(configMeterProvider.getViews()).isEqualTo(Collections.singletonList(view));
 
       // All configuration
-      assertThat(config).isEqualTo(expectedBuilder.build());
+      assertThat(config).isEqualTo(expected);
     }
   }
 }

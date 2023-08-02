@@ -78,7 +78,9 @@ jsonSchema2Pojo {
   // Prefer builders to setters
   includeSetters = false
   generateBuilders = true
-  useInnerClassBuilders = true
+
+  // Use title field to generate class name, instead of default which is based on filename / propertynames
+  useTitleAsClassname = true
 
   // Force java 9+ @Generated annotation, since java 8 @Generated annotation isn't detected by
   // jsonSchema2Pojo and annotation is skipped altogether
