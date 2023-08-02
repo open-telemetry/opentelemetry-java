@@ -35,6 +35,16 @@ dependencies {
   testImplementation("com.google.guava:guava-testlib")
 }
 
+// The following tasks download the JSON Schema files from open-telemetry/opentelemetry-configuration and generate classes from the type definitions which are used with jackson-databind to parse JSON / YAML to the configuration schema.
+// The sequence of tasks is:
+// 1. downloadConfigurationSchema - download configuration schema from open-telemetry/opentelemetry-configuration
+// 2. unzipConfigurationSchema - unzip the configuration schema archive contents to $buildDir/configuration/
+// 3. generateJsonSchema2Pojo - generate java POJOs from the configuration schema
+// 4. replaceGeneratedAnnotation - replace javax.annotation.processing.Generated with javax.annotation.Generated to address issue in org.jsonschema2pojo plugin preventing usage of java 8 @Generated annotation with our gradle build setup. Updated content are placed to tmp directory.
+// 5. overwriteJs2p - overwrite original generated classes with versions containing updated @Generated annotation
+// 6. deleteJs2pTmp - delete tmp directory
+// ... proceed with normal sourcesJar, compileJava, etc
+
 val configurationRef = "2107dbb6f2a6c99fe2f55d550796ee7e2286fd1d"
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 
@@ -44,7 +54,7 @@ val downloadConfigurationSchema by tasks.registering(Download::class) {
   overwrite(false)
 }
 
-val downloadAndUnzipConfigurationSchema by tasks.registering(Copy::class) {
+val unzipConfigurationSchema by tasks.registering(Copy::class) {
   dependsOn("downloadConfigurationSchema")
   from(zipTree(downloadConfigurationSchema.get().dest))
   eachFile(closureOf<FileCopyDetails> {
@@ -59,12 +69,47 @@ jsonSchema2Pojo {
   sourceFiles = setOf(file("$buildDir/configuration/schema"))
   targetDirectory = file("$buildDir/generated/sources/js2p/java/main")
   targetPackage = "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model"
-  includeSetters = true
+
+  // Clear old source files to avoid contaminated source dir when updating
   removeOldOutput = true
+
+  // Prefer builders to setters
+  includeSetters = false
+  generateBuilders = true
+  useInnerClassBuilders = true
+
+  // Force java 9+ @Generated annotation, since java 8 @Generated annotation isn't detected by
+  // jsonSchema2Pojo and annotation is skipped altogether
+  targetVersion = "1.9"
 }
 
-tasks.getByName("generateJsonSchema2Pojo").dependsOn(downloadAndUnzipConfigurationSchema)
-tasks.getByName("sourcesJar").dependsOn("generateJsonSchema2Pojo")
+val generateJsonSchema2Pojo = tasks.getByName("generateJsonSchema2Pojo")
+generateJsonSchema2Pojo.dependsOn(unzipConfigurationSchema)
+
+val replaceGeneratedAnnotation by tasks.registering(Copy::class) {
+  from("$buildDir/generated/sources/js2p")
+  into("$buildDir/generated/sources/js2p-tmp")
+  filter {
+    it
+      // Replace java 9+ @Generated annotation with java 8 version
+      .replace("import javax.annotation.processing.Generated", "import javax.annotation.Generated")
+      // Add @SuppressWarnings("rawtypes") annotation to address raw types used in jsonschema2pojo builders
+      .replace("@Generated(\"jsonschema2pojo\")", "@Generated(\"jsonschema2pojo\")\n@SuppressWarnings(\"rawtypes\")")
+  }
+  dependsOn(generateJsonSchema2Pojo)
+}
+val overwriteJs2p by tasks.registering(Copy::class) {
+  from("$buildDir/generated/sources/js2p-tmp")
+  into("$buildDir/generated/sources/js2p")
+  dependsOn(replaceGeneratedAnnotation)
+}
+val deleteJs2pTmp by tasks.registering(Delete::class) {
+  delete("$buildDir/generated/sources/js2p-tmp/")
+  dependsOn(overwriteJs2p)
+}
+
+tasks.getByName("compileJava").dependsOn(deleteJs2pTmp)
+tasks.getByName("sourcesJar").dependsOn(deleteJs2pTmp)
 
 // Exclude jsonschema2pojo generated sources from checkstyle
 tasks.named<Checkstyle>("checkstyleMain") {
