@@ -103,22 +103,29 @@ public final class SdkObservableMeasurement
     record(value, Attributes.empty());
   }
 
+  @SuppressWarnings("UnnecessaryDefaultInEnumSwitch")
   @Override
   public void record(long value, Attributes attributes) {
     if (activeReader == null) {
       logNoActiveReader();
       return;
     }
+
+    Measurement measurement = null;
     switch (activeReader.getReader().getMemoryMode()) {
       case IMMUTABLE_DATA:
-        doRecord(longMeasurement(startEpochNanos, epochNanos, value, attributes));
+        measurement = longMeasurement(startEpochNanos, epochNanos, value, attributes);
         break;
       case REUSABLE_DATA:
         LeasedMeasurement.setLongMeasurement(
             leasedMeasurement, startEpochNanos, epochNanos, value, attributes);
-        doRecord(leasedMeasurement);
+        measurement = leasedMeasurement;
         break;
+      default:
+        throw new IllegalStateException("Unsupported memory mode: " + activeReader.getReader().getMemoryMode());
+
     }
+    doRecord(measurement);
   }
 
   @Override

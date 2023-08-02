@@ -294,6 +294,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
           break;
         case IMMUTABLE_DATA:
           result = points.values();
+          points = new HashMap<>();
           break;
         default:
           throw new IllegalStateException("Unsupported memory mode: " + memoryMode);

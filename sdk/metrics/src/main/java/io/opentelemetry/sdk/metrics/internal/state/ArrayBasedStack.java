@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 /**
  * Array-based Stack
  *
- * Not thread-safe
+ * <p>Not thread-safe
  */
 public class ArrayBasedStack<T> {
   private static final int DEFAULT_CAPACITY = 10;

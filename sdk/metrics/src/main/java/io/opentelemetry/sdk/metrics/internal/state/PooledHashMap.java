@@ -34,14 +34,12 @@ public class PooledHashMap<K, V> implements Map<K, V> {
   private ArrayList<Entry<K, V>>[] table;
   private final ObjectPool<Entry<K, V>> entryPool;
   private int size;
-//  private final EntrySetView entrySetView;
 
   @SuppressWarnings({"rawtypes", "unchecked"})
   public PooledHashMap(int capacity) {
     this.table = new ArrayList[capacity];
     this.entryPool = new ObjectPool<>(Entry::new);
     this.size = 0;
-//    entrySetView = new EntrySetView();
   }
 
   public PooledHashMap() {
@@ -84,8 +82,9 @@ public class PooledHashMap<K, V> implements Map<K, V> {
   private void rehash() {
     ArrayList<Entry<K, V>>[] oldTable = table;
     table = new ArrayList[2 * oldTable.length];
-    size = 0; // put() to new table below will reset size back to
-    // correct number
+
+    // put() to new table below will reset size back to correct number
+    size = 0;
 
     for (int i = 0; i < oldTable.length; i++) {
       ArrayList<Entry<K, V>> bucket = oldTable[i];
@@ -155,18 +154,6 @@ public class PooledHashMap<K, V> implements Map<K, V> {
   @Override
   public boolean containsValue(Object value) {
     throw new UnsupportedOperationException();
-//      for (int j = 0; j < table.length; j++) {
-//          ArrayList<Entry<K, V>> bucket = table[j];
-//          if (bucket != null) {
-//              for (int i = 0; i < bucket.size(); i++) {
-//                  Entry<K, V> entry = bucket.get(i);
-//                  if (Objects.equals(value, entry.value)) {
-//                      return true;
-//                  }
-//              }
-//          }
-//      }
-//    return false;
   }
 
   @Override
@@ -197,10 +184,13 @@ public class PooledHashMap<K, V> implements Map<K, V> {
     }
   }
 
+  private int getBucket(K key) {
+    return Math.abs(key.hashCode() % table.length);
+  }
+
   @Override
   public Set<Map.Entry<K, V>> entrySet() {
     throw new UnsupportedOperationException();
-//    return entrySetView;
   }
 
   @Override
@@ -211,7 +201,6 @@ public class PooledHashMap<K, V> implements Map<K, V> {
   @Override
   public void putAll(Map<? extends K, ? extends V> m) {
     throw new UnsupportedOperationException();
-//      m.entrySet().forEach(entry -> put(entry.getKey(), entry.getValue()));
   }
 
   @Override
@@ -219,138 +208,11 @@ public class PooledHashMap<K, V> implements Map<K, V> {
     throw new UnsupportedOperationException();
   }
 
-  private int getBucket(K key) {
-    return Math.abs(key.hashCode() % table.length);
-  }
-
-  private static class Entry<K, V> /*implements Map.Entry<K, V>*/ {
+  private static class Entry<K, V> {
     @Nullable
     K key;
 
     @Nullable
     V value;
-
-//    @Override
-//    public K getKey() {
-//      if (key == null) {
-//        throw new NullPointerException("Key should never be null");
-//      }
-//      return key;
-//    }
-//
-//    @Override
-//    public V getValue() {
-//      if (value == null) {
-//        throw new NullPointerException("Value should never be null");
-//      }
-//      return value;
-//    }
-//
-//    @Override
-//    public V setValue(V value) {
-//      V oldValue = this.value;
-//      if (oldValue == null) {
-//        throw new IllegalStateException("Old value for key can never be null");
-//      }
-//      this.value = value;
-//      return oldValue;
-//    }
   }
-
-//  /**
-//   * Provides a set view on the map entries
-//   *
-//   * Has very limited internal use hence only required methods were implemented
-//   */
-
-  /*
-  private class EntrySetView implements Set<Map.Entry<K, V>> {
-    @Override
-    public boolean removeIf(Predicate<? super Map.Entry<K, V>> filter) {
-      Objects.requireNonNull(filter);
-      boolean removed = false;
-
-      for (ArrayList<Entry<K, V>> bucket : table) {
-        if (bucket != null) {
-          for (int i = 0; i < bucket.size(); i++) {
-            Map.Entry<K, V> entry = bucket.get(i);
-            if (filter.test(entry)) {
-              bucket.remove(i);
-              i--; // adjust index due to item removal
-              entryPool.returnObject((Entry<K, V>) entry);
-              size--;
-              removed = true;
-            }
-          }
-        }
-      }
-      return removed;
-    }
-
-    @Override
-    public int size() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean isEmpty() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean contains(Object o) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Iterator<Map.Entry<K, V>> iterator() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Object[] toArray() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public <T> T[] toArray(T[] a) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean add(Map.Entry<K, V> kvEntry) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean remove(Object o) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean containsAll(Collection<?> c) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean addAll(Collection<? extends Map.Entry<K, V>> c) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean retainAll(Collection<?> c) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean removeAll(Collection<?> c) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void clear() {
-      throw new UnsupportedOperationException();
-    }
-  }
-  */
 }

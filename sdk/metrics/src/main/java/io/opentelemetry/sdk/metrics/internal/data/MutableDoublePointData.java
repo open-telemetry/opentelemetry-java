@@ -40,7 +40,7 @@ public class MutableDoublePointData implements DoublePointData {
 
 
   // attributes is null only upon initial creation and never returned as such
-  @SuppressWarnings("NullAway")
+  @SuppressWarnings({"NullAway", "NullableProblems"})
   @Override
   public Attributes getAttributes() {
     return attributes;

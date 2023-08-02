@@ -39,7 +39,7 @@ public class MutableLongPointData implements LongPointData {
   }
 
   // attributes is null only upon initial creation and never returned as such
-  @SuppressWarnings("NullAway")
+  @SuppressWarnings({"NullAway", "NullableProblems"})
   @Override
   public Attributes getAttributes() {
     return attributes;
