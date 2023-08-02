@@ -45,6 +45,7 @@ dependencies {
 // 6. deleteJs2pTmp - delete tmp directory
 // ... proceed with normal sourcesJar, compileJava, etc
 
+// TODO(jack-berg): update ref to be released version when available
 val configurationRef = "2107dbb6f2a6c99fe2f55d550796ee7e2286fd1d"
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 
@@ -55,7 +56,8 @@ val downloadConfigurationSchema by tasks.registering(Download::class) {
 }
 
 val unzipConfigurationSchema by tasks.registering(Copy::class) {
-  dependsOn("downloadConfigurationSchema")
+  dependsOn(downloadConfigurationSchema)
+
   from(zipTree(downloadConfigurationSchema.get().dest))
   eachFile(closureOf<FileCopyDetails> {
     // Remove the top level folder "/opentelemetry-configuration-$configurationRef"
@@ -87,6 +89,8 @@ val generateJsonSchema2Pojo = tasks.getByName("generateJsonSchema2Pojo")
 generateJsonSchema2Pojo.dependsOn(unzipConfigurationSchema)
 
 val replaceGeneratedAnnotation by tasks.registering(Copy::class) {
+  dependsOn(generateJsonSchema2Pojo)
+
   from("$buildDir/generated/sources/js2p")
   into("$buildDir/generated/sources/js2p-tmp")
   filter {
@@ -96,16 +100,17 @@ val replaceGeneratedAnnotation by tasks.registering(Copy::class) {
       // Add @SuppressWarnings("rawtypes") annotation to address raw types used in jsonschema2pojo builders
       .replace("@Generated(\"jsonschema2pojo\")", "@Generated(\"jsonschema2pojo\")\n@SuppressWarnings(\"rawtypes\")")
   }
-  dependsOn(generateJsonSchema2Pojo)
 }
 val overwriteJs2p by tasks.registering(Copy::class) {
+  dependsOn(replaceGeneratedAnnotation)
+
   from("$buildDir/generated/sources/js2p-tmp")
   into("$buildDir/generated/sources/js2p")
-  dependsOn(replaceGeneratedAnnotation)
 }
 val deleteJs2pTmp by tasks.registering(Delete::class) {
-  delete("$buildDir/generated/sources/js2p-tmp/")
   dependsOn(overwriteJs2p)
+
+  delete("$buildDir/generated/sources/js2p-tmp/")
 }
 
 tasks.getByName("compileJava").dependsOn(deleteJs2pTmp)
