@@ -40,7 +40,7 @@ dependencies {
 // 1. downloadConfigurationSchema - download configuration schema from open-telemetry/opentelemetry-configuration
 // 2. unzipConfigurationSchema - unzip the configuration schema archive contents to $buildDir/configuration/
 // 3. generateJsonSchema2Pojo - generate java POJOs from the configuration schema
-// 4. replaceGeneratedAnnotation - replace javax.annotation.processing.Generated with javax.annotation.Generated to address issue in org.jsonschema2pojo plugin preventing usage of java 8 @Generated annotation with our gradle build setup. Updated content are placed to tmp directory.
+// 4. jsonSchema2PojoPostProcessing - perform various post processing on the generated POJOs, e.g. replace javax.annotation.processing.Generated with javax.annotation.Generated, add @SuppressWarning("rawtypes") annotation
 // 5. overwriteJs2p - overwrite original generated classes with versions containing updated @Generated annotation
 // 6. deleteJs2pTmp - delete tmp directory
 // ... proceed with normal sourcesJar, compileJava, etc
@@ -88,7 +88,7 @@ jsonSchema2Pojo {
 val generateJsonSchema2Pojo = tasks.getByName("generateJsonSchema2Pojo")
 generateJsonSchema2Pojo.dependsOn(unzipConfigurationSchema)
 
-val replaceGeneratedAnnotation by tasks.registering(Copy::class) {
+val jsonSchema2PojoPostProcessing by tasks.registering(Copy::class) {
   dependsOn(generateJsonSchema2Pojo)
 
   from("$buildDir/generated/sources/js2p")
@@ -102,7 +102,7 @@ val replaceGeneratedAnnotation by tasks.registering(Copy::class) {
   }
 }
 val overwriteJs2p by tasks.registering(Copy::class) {
-  dependsOn(replaceGeneratedAnnotation)
+  dependsOn(jsonSchema2PojoPostProcessing)
 
   from("$buildDir/generated/sources/js2p-tmp")
   into("$buildDir/generated/sources/js2p")
