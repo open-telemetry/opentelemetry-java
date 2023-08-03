@@ -13,13 +13,13 @@ rootProject.extra["versions"] = dependencyVersions
 
 val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.15.2",
-  "com.google.guava:guava-bom:32.1.1-jre",
+  "com.google.guava:guava-bom:32.1.2-jre",
   "com.google.protobuf:protobuf-bom:3.23.4",
-  "com.linecorp.armeria:armeria-bom:1.24.2",
+  "com.linecorp.armeria:armeria-bom:1.24.3",
   "com.squareup.okhttp3:okhttp-bom:4.11.0",
   "com.squareup.okio:okio-bom:3.4.0", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.56.1",
-  "io.netty:netty-bom:4.1.95.Final",
+  "io.netty:netty-bom:4.1.96.Final",
   "io.zipkin.brave:brave-bom:5.16.0",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.4",
   "org.assertj:assertj-bom:3.24.2",
@@ -69,7 +69,7 @@ val DEPENDENCIES = listOf(
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
-  "io.opentelemetry.proto:opentelemetry-proto:0.20.0-alpha",
+  "io.opentelemetry.proto:opentelemetry-proto:1.0.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
   "junit:junit:4.13.2",
