@@ -12,14 +12,19 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
+import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.internal.export.SdkMetricProducer;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /**
@@ -40,7 +45,8 @@ public final class PeriodicMetricReader implements MetricReader {
   private final Scheduled scheduled;
   private final Object lock = new Object();
 
-  private volatile SdkMetricProducer metricProducer = SdkMetricProducer.noop();
+  private volatile SdkMetricProducer sdkMetricProducer = SdkMetricProducer.noop();
+  private final List<MetricProducer> registeredProducers;
   @Nullable private volatile ScheduledFuture<?> scheduledFuture;
 
   /**
@@ -57,11 +63,15 @@ public final class PeriodicMetricReader implements MetricReader {
   }
 
   PeriodicMetricReader(
-      MetricExporter exporter, long intervalNanos, ScheduledExecutorService scheduler) {
+      MetricExporter exporter,
+      long intervalNanos,
+      ScheduledExecutorService scheduler,
+      List<MetricProducer> registeredProducers) {
     this.exporter = exporter;
     this.intervalNanos = intervalNanos;
     this.scheduler = scheduler;
     this.scheduled = new Scheduled();
+    this.registeredProducers = registeredProducers;
   }
 
   @Override
@@ -112,7 +122,7 @@ public final class PeriodicMetricReader implements MetricReader {
 
   @Override
   public void register(CollectionRegistration registration) {
-    this.metricProducer = SdkMetricProducer.asSdkMetricProducer(registration);
+    this.sdkMetricProducer = SdkMetricProducer.asSdkMetricProducer(registration);
     start();
   }
 
@@ -153,7 +163,18 @@ public final class PeriodicMetricReader implements MetricReader {
       CompletableResultCode flushResult = new CompletableResultCode();
       if (exportAvailable.compareAndSet(true, false)) {
         try {
-          Collection<MetricData> metricData = metricProducer.collectAllMetrics();
+          Collection<MetricData> metricData = sdkMetricProducer.collectAllMetrics();
+          Resource resource = sdkMetricProducer.getResource();
+          for (MetricProducer metricProducer : registeredProducers) {
+            metricData.addAll(
+                metricProducer.collectAllMetrics().stream()
+                    .map(
+                        scopeMetricData -> {
+                          return ImmutableMetricData.createFromScopeMetricData(
+                              resource, scopeMetricData);
+                        })
+                    .collect(Collectors.toList()));
+          }
           if (metricData.isEmpty()) {
             logger.log(Level.FINE, "No metric data to export - skipping export.");
             flushResult.succeed();

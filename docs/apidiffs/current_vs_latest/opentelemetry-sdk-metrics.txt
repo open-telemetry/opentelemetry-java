@@ -16,3 +16,6 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.MetricDataType getType()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getUnit()
 	+++  NEW METHOD: PUBLIC(+) boolean isEmpty()
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder addMetricProducer(io.opentelemetry.sdk.metrics.internal.export.MetricProducer)

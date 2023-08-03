@@ -9,7 +9,11 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -29,6 +33,8 @@ public final class PeriodicMetricReaderBuilder {
   private long intervalNanos = TimeUnit.MINUTES.toNanos(DEFAULT_SCHEDULE_DELAY_MINUTES);
 
   @Nullable private ScheduledExecutorService executor;
+
+  private final List<MetricProducer> registeredProducers = new ArrayList<>();
 
   PeriodicMetricReaderBuilder(MetricExporter metricExporter) {
     this.metricExporter = metricExporter;
@@ -59,6 +65,13 @@ public final class PeriodicMetricReaderBuilder {
     return this;
   }
 
+  /** Adds a {@link MetricProducer} to schedule reads on. */
+  public PeriodicMetricReaderBuilder addMetricProducer(MetricProducer producer) {
+    Objects.requireNonNull(producer, "producer");
+    this.registeredProducers.add(producer);
+    return this;
+  }
+
   /** Build a {@link PeriodicMetricReader} with the configuration of this builder. */
   public PeriodicMetricReader build() {
     ScheduledExecutorService executor = this.executor;
@@ -66,6 +79,8 @@ public final class PeriodicMetricReaderBuilder {
       executor =
           Executors.newScheduledThreadPool(1, new DaemonThreadFactory("PeriodicMetricReader"));
     }
-    return new PeriodicMetricReader(metricExporter, intervalNanos, executor);
+    PeriodicMetricReader reader =
+        new PeriodicMetricReader(metricExporter, intervalNanos, executor, registeredProducers);
+    return reader;
   }
 }
