@@ -18,9 +18,8 @@ import java.util.List;
 /**
  * A producer instance of OpenCensus metrics.
  *
- * <p>We can provide the OpenCensus {@link MetricProducer} when creating a
- * {@link MetricReader}, allowing the reader to combine
- * metrics from both OpenTelemetry and OpenCensus instrumentation.
+ * <p>We can provide the OpenCensus {@link MetricProducer} when creating a {@link MetricReader},
+ * allowing the reader to combine metrics from both OpenTelemetry and OpenCensus instrumentation.
  */
 final class OpenCensusMetricProducer implements MetricProducer {
   private final MetricProducerManager openCensusMetricStorage;
@@ -29,15 +28,13 @@ final class OpenCensusMetricProducer implements MetricProducer {
     this.openCensusMetricStorage = openCensusMetricStorage;
   }
 
-  /**
-   * Constructs a new {@link OpenCensusMetricProducer}.
-   */
+  /** Constructs a new {@link OpenCensusMetricProducer}. */
   static MetricProducer create() {
     return new OpenCensusMetricProducer(Metrics.getExportComponent().getMetricProducerManager());
   }
 
   @Override
-  public Collection<ScopeMetricData> collectAllMetrics() {
+  public Collection<ScopeMetricData> produce() {
     List<ScopeMetricData> result = new ArrayList<>();
     openCensusMetricStorage
         .getAllMetricProducer()

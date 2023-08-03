@@ -67,7 +67,7 @@ class OpenCensusMetricProducerTest {
         .atMost(Duration.ofSeconds(10))
         .untilAsserted(
             () ->
-                assertThat(openCensusMetrics.collectAllMetrics())
+                assertThat(openCensusMetrics.produce())
                     .satisfiesExactly(
                         metric ->
                             assertThat(metric)

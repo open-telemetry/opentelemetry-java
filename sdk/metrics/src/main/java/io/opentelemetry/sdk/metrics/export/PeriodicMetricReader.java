@@ -167,7 +167,7 @@ public final class PeriodicMetricReader implements MetricReader {
           Resource resource = sdkMetricProducer.getResource();
           for (MetricProducer metricProducer : registeredProducers) {
             metricData.addAll(
-                metricProducer.collectAllMetrics().stream()
+                metricProducer.produce().stream()
                     .map(
                         scopeMetricData -> {
                           return ImmutableMetricData.createFromScopeMetricData(
