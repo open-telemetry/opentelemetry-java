@@ -14,8 +14,8 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * {@code MetricProducer} is the interface that is used to make metric data available to the {@link
- * MetricReader}s. Implementations should be stateful, in that each call to {@link
- * #produce()} will return any metric generated since the last call was made.
+ * MetricReader}s. Implementations should be stateful, in that each call to {@link #produce()} will
+ * return any metric generated since the last call was made.
  *
  * <p>Implementations must be thread-safe.
  *
@@ -26,7 +26,7 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface MetricProducer extends CollectionRegistration {
 
   /** Cast the registration to a {@link MetricProducer}. */
-static MetricProducer asMetricProducer(CollectionRegistration registration) {
+  static MetricProducer asMetricProducer(CollectionRegistration registration) {
     if (!(registration instanceof MetricProducer)) {
       throw new IllegalArgumentException(
           "unrecognized CollectionRegistration, custom MetricReader implementations are not currently supported");

@@ -23,10 +23,7 @@ To allow the shim to work for metrics, add the shim as a dependency.
 Applications also need to attach OpenCensus metrics to their metric readers on registration.
 
 ```java
-PeriodicMetricReader reader = ...
-SdkMeterProvider.builder()
-    .registerMetricReader(OpenCensusMetrics.attachTo(reader))
-    .buildAndRegisterGlobal();
+SdkMeterProvider.builder().registerMetricReader(PeriodicMetricReader.builder(exporter).addMetricProducer(OpenCensusMetricProducer.create()).build())
 ```
 
 For example, if a logging exporter were configured, the following would be
