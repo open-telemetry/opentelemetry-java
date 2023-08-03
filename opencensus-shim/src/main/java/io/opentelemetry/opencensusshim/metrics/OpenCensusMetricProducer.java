@@ -8,11 +8,9 @@ package io.opentelemetry.opencensusshim.metrics;
 import io.opencensus.metrics.Metrics;
 import io.opencensus.metrics.export.MetricProducerManager;
 import io.opentelemetry.opencensusshim.internal.metrics.MetricAdapter;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.ScopeMetricData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
-import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -20,9 +18,9 @@ import java.util.List;
 /**
  * A producer instance of OpenCensus metrics.
  *
- * <p>The idea here is we can register a merged {@link MetricProducer} combining this with the
- * {@link SdkMeterProvider} producer with a {@link MetricReader}, allowing the reader to pull
- * metrics from both OpenTelemetry and OpenCensus backends.
+ * <p>We can provide the OpenCensus {@link MetricProducer} when creating a
+ * {@link MetricReader}, allowing the reader to combine
+ * metrics from both OpenTelemetry and OpenCensus instrumentation.
  */
 final class OpenCensusMetricProducer implements MetricProducer {
   private final MetricProducerManager openCensusMetricStorage;
@@ -32,8 +30,7 @@ final class OpenCensusMetricProducer implements MetricProducer {
   }
 
   /**
-   * Constructs a new {@link OpenCensusMetricProducer} that reports against the given {@link
-   * Resource}.
+   * Constructs a new {@link OpenCensusMetricProducer}.
    */
   static MetricProducer create() {
     return new OpenCensusMetricProducer(Metrics.getExportComponent().getMetricProducerManager());
