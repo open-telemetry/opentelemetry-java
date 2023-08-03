@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure;
+package io.opentelemetry.sdk.autoconfigure.internal;
 
 import java.util.Collections;
 import java.util.Map;
@@ -13,7 +13,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
-final class NamedSpiManager<T> {
+/**
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
+ */
+public final class NamedSpiManager<T> {
 
   private final Map<String, Supplier<T>> nameToProvider;
   private final ConcurrentMap<String, Optional<T>> nameToImplementation = new ConcurrentHashMap<>();
@@ -26,12 +30,13 @@ final class NamedSpiManager<T> {
     return new NamedSpiManager<>(nameToProvider);
   }
 
-  static <T> NamedSpiManager<T> createEmpty() {
+  public static <T> NamedSpiManager<T> createEmpty() {
     return create(Collections.emptyMap());
   }
 
+  /** Return an implementation by name, invoking the supplier if not previously invoked. */
   @Nullable
-  T getByName(String name) {
+  public T getByName(String name) {
     return nameToImplementation
         .computeIfAbsent(name, this::tryLoadImplementationForName)
         .orElse(null);

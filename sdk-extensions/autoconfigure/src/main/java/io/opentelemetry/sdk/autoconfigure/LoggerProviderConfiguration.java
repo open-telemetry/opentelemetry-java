@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.autoconfigure;
 import static io.opentelemetry.sdk.autoconfigure.LogRecordExporterConfiguration.configureLogRecordExporters;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.LogLimitsBuilder;
@@ -30,7 +31,7 @@ final class LoggerProviderConfiguration {
   static void configureLoggerProvider(
       SdkLoggerProviderBuilder loggerProviderBuilder,
       ConfigProperties config,
-      ClassLoader serviceClassLoader,
+      SpiHelper spiHelper,
       MeterProvider meterProvider,
       BiFunction<? super LogRecordExporter, ConfigProperties, ? extends LogRecordExporter>
           logRecordExporterCustomizer,
@@ -39,8 +40,7 @@ final class LoggerProviderConfiguration {
     loggerProviderBuilder.setLogLimits(() -> configureLogLimits(config));
 
     Map<String, LogRecordExporter> exportersByName =
-        configureLogRecordExporters(
-            config, serviceClassLoader, logRecordExporterCustomizer, closeables);
+        configureLogRecordExporters(config, spiHelper, logRecordExporterCustomizer, closeables);
 
     configureLogRecordProcessors(config, exportersByName, meterProvider, closeables)
         .forEach(loggerProviderBuilder::addLogRecordProcessor);

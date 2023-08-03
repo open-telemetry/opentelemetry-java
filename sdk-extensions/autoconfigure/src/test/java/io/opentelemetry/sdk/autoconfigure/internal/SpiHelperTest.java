@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure;
+package io.opentelemetry.sdk.autoconfigure.internal;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,25 +21,25 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public class SpiUtilTest {
+public class SpiHelperTest {
 
   private static final ConfigProperties EMPTY =
       DefaultConfigProperties.createForTest(Collections.emptyMap());
 
   @Test
   public void canRetrieveByName() {
-    SpiUtil.ServiceLoaderFinder mockFinder = mock(SpiUtil.ServiceLoaderFinder.class);
+    SpiHelper.SpiFinder mockFinder = mock(SpiHelper.SpiFinder.class);
     when(mockFinder.load(any(), any()))
         .thenReturn(Collections.singletonList(new SpiExampleProviderImplementation()));
 
+    SpiHelper spiHelper = new SpiHelper(SpiHelperTest.class.getClassLoader(), mockFinder);
+
     NamedSpiManager<SpiExample> spiProvider =
-        SpiUtil.loadConfigurable(
+        spiHelper.loadConfigurable(
             SpiExampleProvider.class,
             SpiExampleProvider::getName,
             SpiExampleProvider::createSpiExample,
-            EMPTY,
-            SpiUtilTest.class.getClassLoader(),
-            mockFinder);
+            EMPTY);
 
     assertThat(spiProvider.getByName(SpiExampleProviderImplementation.NAME)).isNotNull();
     assertThat(spiProvider.getByName("invalid-provider")).isNull();
@@ -49,18 +49,17 @@ public class SpiUtilTest {
   public void instantiatesImplementationsLazily() {
     SpiExampleProvider mockProvider = mock(SpiExampleProvider.class);
     when(mockProvider.getName()).thenReturn("lazy-init-example");
-
-    SpiUtil.ServiceLoaderFinder mockFinder = mock(SpiUtil.ServiceLoaderFinder.class);
+    SpiHelper.SpiFinder mockFinder = mock(SpiHelper.SpiFinder.class);
     when(mockFinder.load(any(), any())).thenReturn(Collections.singletonList(mockProvider));
 
+    SpiHelper spiHelper = new SpiHelper(SpiHelperTest.class.getClassLoader(), mockFinder);
+
     NamedSpiManager<SpiExample> spiProvider =
-        SpiUtil.loadConfigurable(
+        spiHelper.loadConfigurable(
             SpiExampleProvider.class,
             SpiExampleProvider::getName,
             SpiExampleProvider::createSpiExample,
-            EMPTY,
-            SpiUtilTest.class.getClassLoader(),
-            mockFinder);
+            EMPTY);
 
     verify(mockProvider, never()).createSpiExample(any()); // not requested yet
     spiProvider.getByName("lazy-init-example");
@@ -69,18 +68,18 @@ public class SpiUtilTest {
 
   @Test
   public void onlyInstantiatesOnce() {
-    SpiUtil.ServiceLoaderFinder mockFinder = mock(SpiUtil.ServiceLoaderFinder.class);
+    SpiHelper.SpiFinder mockFinder = mock(SpiHelper.SpiFinder.class);
     when(mockFinder.load(any(), any()))
         .thenReturn(Collections.singletonList(new SpiExampleProviderImplementation()));
 
+    SpiHelper spiHelper = new SpiHelper(SpiHelperTest.class.getClassLoader(), mockFinder);
+
     NamedSpiManager<SpiExample> spiProvider =
-        SpiUtil.loadConfigurable(
+        spiHelper.loadConfigurable(
             SpiExampleProvider.class,
             SpiExampleProvider::getName,
             SpiExampleProvider::createSpiExample,
-            EMPTY,
-            SpiUtilTest.class.getClassLoader(),
-            mockFinder);
+            EMPTY);
 
     SpiExample first = spiProvider.getByName(SpiExampleProviderImplementation.NAME);
     SpiExample second = spiProvider.getByName(SpiExampleProviderImplementation.NAME);
@@ -94,17 +93,17 @@ public class SpiUtilTest {
     when(mockProvider.getName()).thenReturn("init-failure-example");
     when(mockProvider.createSpiExample(any())).thenThrow(new RuntimeException());
 
-    SpiUtil.ServiceLoaderFinder mockFinder = mock(SpiUtil.ServiceLoaderFinder.class);
+    SpiHelper.SpiFinder mockFinder = mock(SpiHelper.SpiFinder.class);
     when(mockFinder.load(any(), any())).thenReturn(Collections.singletonList(mockProvider));
 
+    SpiHelper spiHelper = new SpiHelper(SpiHelperTest.class.getClassLoader(), mockFinder);
+
     NamedSpiManager<SpiExample> spiProvider =
-        SpiUtil.loadConfigurable(
+        spiHelper.loadConfigurable(
             SpiExampleProvider.class,
             SpiExampleProvider::getName,
             SpiExampleProvider::createSpiExample,
-            EMPTY,
-            SpiUtilTest.class.getClassLoader(),
-            mockFinder);
+            EMPTY);
 
     assertThatThrownBy(() -> spiProvider.getByName("init-failure-example"))
         .withFailMessage(exceptionMessage)
@@ -121,12 +120,13 @@ public class SpiUtilTest {
     when(spi2.order()).thenReturn(0);
     when(spi3.order()).thenReturn(1);
 
-    SpiUtil.ServiceLoaderFinder mockFinder = mock(SpiUtil.ServiceLoaderFinder.class);
-    when(mockFinder.load(ResourceProvider.class, SpiUtil.class.getClassLoader()))
+    SpiHelper.SpiFinder mockFinder = mock(SpiHelper.SpiFinder.class);
+    when(mockFinder.load(ResourceProvider.class, SpiHelper.class.getClassLoader()))
         .thenReturn(asList(spi1, spi2, spi3));
 
-    List<ResourceProvider> loadedSpi =
-        SpiUtil.loadOrdered(ResourceProvider.class, SpiUtil.class.getClassLoader(), mockFinder);
+    SpiHelper spiHelper = new SpiHelper(SpiHelperTest.class.getClassLoader(), mockFinder);
+
+    List<ResourceProvider> loadedSpi = spiHelper.loadOrdered(ResourceProvider.class);
 
     assertThat(loadedSpi).containsExactly(spi2, spi3, spi1);
   }
