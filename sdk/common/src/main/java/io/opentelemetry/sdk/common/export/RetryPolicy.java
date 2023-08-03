@@ -46,6 +46,12 @@ public abstract class RetryPolicy {
         .setBackoffMultiplier(DEFAULT_BACKOFF_MULTIPLIER);
   }
 
+  /**
+   * Returns a {@link RetryPolicyBuilder} reflecting configuration values for this {@link
+   * RetryPolicy}.
+   */
+  public abstract RetryPolicyBuilder toBuilder();
+
   /** Returns the max number of attempts, including the original request. */
   public abstract int getMaxAttempts();
 
