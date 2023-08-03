@@ -22,6 +22,7 @@ dependencies {
 graalvmNative {
   binaries {
     named("test") {
+      // Required as of junit 5.10.0: https://junit.org/junit5/docs/5.10.0/release-notes/#deprecations-and-breaking-changes
       buildArgs.add("--initialize-at-build-time=org.junit.platform.launcher.core.LauncherConfig")
       buildArgs.add("--initialize-at-build-time=org.junit.jupiter.engine.config.InstantiatingConfigurationParameterConverter")
     }
