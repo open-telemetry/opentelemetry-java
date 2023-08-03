@@ -21,8 +21,9 @@ dependencies {
 
 graalvmNative {
   binaries {
-    named("main") {
-      verbose.set(true)
+    named("test") {
+      buildArgs.add("--initialize-at-build-time=org.junit.platform.launcher.core.LauncherConfig")
+      buildArgs.add("--initialize-at-build-time=org.junit.jupiter.engine.config.InstantiatingConfigurationParameterConverter")
     }
   }
   toolchainDetection.set(false)
