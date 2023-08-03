@@ -8,37 +8,57 @@ environment variables, e.g., `OTEL_TRACES_EXPORTER=zipkin`.
 
 ## Contents
 
-* [General notes](#general-notes)
-* [Disabling OpenTelemetrySdk](#disabling-opentelemetrysdk)
-* [Exporters](#exporters)
-  + [OTLP exporter (span, metric, and log exporters)](#otlp-exporter-span-metric-and-log-exporters)
-    + [OTLP exporter retry](#otlp-exporter-retry)
-  + [Jaeger exporter](#jaeger-exporter)
-  + [Zipkin exporter](#zipkin-exporter)
-  + [Prometheus exporter](#prometheus-exporter)
-  + [Logging exporter](#logging-exporter)
-* [Trace context propagation](#propagator)
-* [OpenTelemetry Resource](#opentelemetry-resource)
-  + [Resource Provider SPI](#resource-provider-spi)
-  + [Disabling automatic ResourceProviders](#disabling-automatic-resourceproviders)
-* [Batch span processor](#batch-span-processor)
-* [Sampler](#sampler)
-* [Attribute limits](#attribute-limits)
-* [Span limits](#span-limits)
-* [Exemplars](#exemplars)
-* [Periodic Metric Reader](#periodic-metric-reader)
-* [Batch log record processor](#batch-log-record-processor)
-* [Customizing the OpenTelemetry SDK](#customizing-the-opentelemetry-sdk)
+<!--
+  generated using markdown-toc
+  To install, run: npm install -g markdown-toc
+  To generate, run: npx --no -- markdown-toc --no-first-h1 --no-stripHeadingTags -i README.md
+-->
 
-## General notes
+<!-- toc -->
 
-- The autoconfigure module registers Java shutdown hooks to shut down the SDK when appropriate. Please note that since this project uses
-java.util.logging for all of it's logging, some of that logging may be suppressed during shutdown hooks. This is a bug in the JDK itself,
-and not something we can control. If you require logging during shutdown hooks, please consider using `System.out` rather than a logging framework
-that might shut itself down in a shutdown hook, thus suppressing your log messages. See this [JDK bug](https://bugs.openjdk.java.net/browse/JDK-8161253)
-for more details.
+- [General Configuration](#general-configuration)
+  * [Disabling OpenTelemetrySdk](#disabling-opentelemetrysdk)
+  * [Exporters](#exporters)
+    + [OTLP exporter (span, metric, and log exporters)](#otlp-exporter-span-metric-and-log-exporters)
+      - [OTLP exporter retry](#otlp-exporter-retry)
+    + [Logging exporter](#logging-exporter)
+    + [Logging OTLP JSON exporter](#logging-otlp-json-exporter)
+  * [OpenTelemetry Resource](#opentelemetry-resource)
+    + [Resource Provider SPI](#resource-provider-spi)
+    + [Disabling Automatic ResourceProviders](#disabling-automatic-resourceproviders)
+  * [Attribute limits](#attribute-limits)
+  * [Propagator](#propagator)
+- [Tracer provider](#tracer-provider)
+  * [Span exporters](#span-exporters)
+    + [Jaeger exporter](#jaeger-exporter)
+    + [Zipkin exporter](#zipkin-exporter)
+  * [Batch span processor](#batch-span-processor)
+  * [Sampler](#sampler)
+  * [Span limits](#span-limits)
+- [Meter provider](#meter-provider)
+  * [Exemplars](#exemplars)
+  * [Periodic Metric Reader](#periodic-metric-reader)
+  * [Metric exporters](#metric-exporters)
+    + [Prometheus exporter](#prometheus-exporter)
+- [Logger provider](#logger-provider)
+- [Batch log record processor](#batch-log-record-processor)
+- [Customizing the OpenTelemetry SDK](#customizing-the-opentelemetry-sdk)
 
-## Disabling OpenTelemetrySdk
+<!-- tocstop -->
+
+## General Configuration
+
+See [Tracer provider](#tracer-provider), [Meter provider](#meter-provider),
+and [Logger provider](#logger-provider) for signal specific configuration options.
+
+The autoconfigure module registers Java shutdown hooks to shut down the SDK when appropriate. Please
+note that since this project uses java.util.logging for all of it's logging, some of that logging
+may be suppressed during shutdown hooks. This is a bug in the JDK itself, and not something we can
+control. If you require logging during shutdown hooks, please consider using `System.out` rather
+than a logging framework that might shut itself down in a shutdown hook, thus suppressing your log
+messages. See this [JDK bug](https://bugs.openjdk.java.net/browse/JDK-8161253) for more details.
+
+### Disabling OpenTelemetrySdk
 
 The OpenTelemetry SDK can be disabled entirely. If disabled, `AutoConfiguredOpenTelemetrySdk#getOpenTelemetrySdk()` will return a minimally configured instance (i.e. `OpenTelemetrySdk.builder().build()`).
 
@@ -46,7 +66,7 @@ The OpenTelemetry SDK can be disabled entirely. If disabled, `AutoConfiguredOpen
 |-------------------|----------------------|----------------------------------------------------------------|
 | otel.sdk.disabled | OTEL_SDK_DISABLED    | If `true`, disable the OpenTelemetry SDK. Defaults to `false`. |
 
-## Exporters
+### Exporters
 
 The following configuration properties are common to all exporters:
 
@@ -56,7 +76,7 @@ The following configuration properties are common to all exporters:
 | otel.metrics.exporter | OTEL_METRICS_EXPORTER | List of exporters to be used for metrics, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter. |
 | otel.logs.exporter    | OTEL_LOGS_EXPORTER    | List of exporters to be used for logging, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter. |
 
-### OTLP exporter (span, metric, and log exporters)
+#### OTLP exporter (span, metric, and log exporters)
 
 The [OpenTelemetry Protocol (OTLP)](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/otlp.md) span, metric, and log exporters
 
@@ -104,7 +124,7 @@ The [OpenTelemetry Protocol (OTLP)](https://github.com/open-telemetry/openteleme
 To configure the service name for the OTLP exporter, add the `service.name` key
 to the OpenTelemetry Resource ([see below](#opentelemetry-resource)), e.g. `OTEL_RESOURCE_ATTRIBUTES=service.name=myservice`.
 
-#### OTLP exporter retry
+##### OTLP exporter retry
 
 [OTLP](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/otlp.md#otlpgrpc-response) requires that [transient](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md#retry) errors be handled with a retry strategy. When retry is enabled, retryable gRPC status codes will be retried using an exponential backoff with jitter algorithm as described in the [gRPC Retry Design](https://github.com/grpc/proposal/blob/master/A6-client-retries.md#exponential-backoff).
 
@@ -115,39 +135,7 @@ The policy has the following configuration, which there is currently no way to c
 - `maxBackoff`: The maximum backoff duration. Defaults to `5s`.
 - `backoffMultiplier` THe backoff multiplier. Defaults to `1.5`.
 
-### Jaeger exporter
-
-The [Jaeger](https://www.jaegertracing.io/docs/1.21/apis/#protobuf-via-grpc-stable) exporter. This exporter uses gRPC for its communications protocol.
-
-| System property                   | Environment variable              | Description                                                                                        |
-|-----------------------------------|-----------------------------------|----------------------------------------------------------------------------------------------------|
-| otel.traces.exporter=jaeger       | OTEL_TRACES_EXPORTER=jaeger       | Select the Jaeger exporter                                                                         |
-| otel.exporter.jaeger.endpoint     | OTEL_EXPORTER_JAEGER_ENDPOINT     | The Jaeger gRPC endpoint to connect to. Default is `http://localhost:14250`.                       |
-| otel.exporter.jaeger.timeout      | OTEL_EXPORTER_JAEGER_TIMEOUT      | The maximum waiting time, in milliseconds, allowed to send each batch. Default is `10000`.         |
-
-### Zipkin exporter
-
-The [Zipkin](https://zipkin.io/zipkin-api/) exporter. It sends JSON in [Zipkin format](https://zipkin.io/zipkin-api/#/default/post_spans) to a specified HTTP URL.
-
-| System property               | Environment variable          | Description                                                                                                           |
-|-------------------------------|-------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| otel.traces.exporter=zipkin   | OTEL_TRACES_EXPORTER=zipkin   | Select the Zipkin exporter                                                                                            |
-| otel.exporter.zipkin.endpoint | OTEL_EXPORTER_ZIPKIN_ENDPOINT | The Zipkin endpoint to connect to. Default is `http://localhost:9411/api/v2/spans`. Currently only HTTP is supported. |
-
-### Prometheus exporter
-
-The [Prometheus](https://github.com/prometheus/docs/blob/master/content/docs/instrumenting/exposition_formats.md) exporter.
-
-| System property                  | Environment variable             | Description                                                                        |
-|----------------------------------|----------------------------------|------------------------------------------------------------------------------------|
-| otel.metrics.exporter=prometheus | OTEL_METRICS_EXPORTER=prometheus | Select the Prometheus exporter                                                     |
-| otel.exporter.prometheus.port    | OTEL_EXPORTER_PROMETHEUS_PORT    | The local port used to bind the prometheus metric server. Default is `9464`.       |
-| otel.exporter.prometheus.host    | OTEL_EXPORTER_PROMETHEUS_HOST    | The local address used to bind the prometheus metric server. Default is `0.0.0.0`. |
-
-Note that this is a pull exporter - it opens up a server on the local process listening on the specified host and port, which
-a Prometheus server scrapes from.
-
-### Logging exporter
+#### Logging exporter
 
 The logging exporter prints the name of the span along with its attributes to stdout. It's mainly used for testing and debugging.
 
@@ -157,7 +145,7 @@ The logging exporter prints the name of the span along with its attributes to st
 | otel.metrics.exporter=logging | OTEL_METRICS_EXPORTER=logging | Select the logging exporter for metrics                              |
 | otel.logs.exporter=logging    | OTEL_LOGS_EXPORTER=logging    | Select the logging exporter for logs                                 |
 
-### Logging OTLP JSON exporter
+#### Logging OTLP JSON exporter
 
 The logging-otlp exporter writes the telemetry data to the JUL logger in OLTP JSON form. It's a more verbose output mainly used for testing and debugging.
 
@@ -170,25 +158,7 @@ The logging-otlp exporter writes the telemetry data to the JUL logger in OLTP JS
 **NOTE:** While the `OtlpJsonLogging{Signal}Exporters` are stable, specifying their use
 via `otel.{signal}.exporter=logging-otlp` is experimental and subject to change or removal.
 
-## Propagator
-
-The propagators determine which distributed tracing header formats are used, and which baggage propagation header formats are used.
-
-| System property  | Environment variable | Description                                                                                                               |
-|------------------|----------------------|---------------------------------------------------------------------------------------------------------------------------|
-| otel.propagators | OTEL_PROPAGATORS     | The propagators to be used. Use a comma-separated list for multiple propagators. Default is `tracecontext,baggage` (W3C). |
-
-Supported values are
-
-- `"tracecontext"`: [W3C Trace Context](https://www.w3.org/TR/trace-context/) (add `baggage` as well to include W3C baggage)
-- `"baggage"`: [W3C Baggage](https://www.w3.org/TR/baggage/)
-- `"b3"`: [B3 Single](https://github.com/openzipkin/b3-propagation#single-header)
-- `"b3multi"`: [B3 Multi](https://github.com/openzipkin/b3-propagation#multiple-headers)
-- `"jaeger"`: [Jaeger](https://www.jaegertracing.io/docs/1.21/client-libraries/#propagation-format) (includes Jaeger baggage)
-- `"xray"`: [AWS X-Ray](https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader)
-- `"ottrace"`: [OT Trace](https://github.com/opentracing?q=basic&type=&language=)
-
-## OpenTelemetry Resource
+### OpenTelemetry Resource
 
 The [OpenTelemetry Resource](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/resource/sdk.md)
 is a representation of the entity producing telemetry.
@@ -207,7 +177,7 @@ You would specify that by setting service name property in one of the following 
 
 If not specified, SDK defaults the service name to `unknown_service:java`.
 
-### Resource Provider SPI
+#### Resource Provider SPI
 
 The [autoconfigure-spi](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure-spi)
 SDK extension provides a ResourceProvider SPI that allows libraries to automatically provide
@@ -221,7 +191,7 @@ your own ResourceProvider, or optionally use an artifact that includes built-in 
   includes providers
   for [common AWS resources](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-resources/src/main/java/io/opentelemetry/contrib/aws/resource)
 
-### Disabling Automatic ResourceProviders
+#### Disabling Automatic ResourceProviders
 
 If you are using the `ResourceProvider` SPI (many instrumentation agent distributions include this automatically),
 you can enable / disable one or more of them by using the following configuration items:
@@ -239,7 +209,61 @@ can pass the following JVM argument:
 -Dotel.java.disabled.resource.providers=io.opentelemetry.instrumentation.resources.OsResourceProvider
 ```
 
-## Batch span processor
+### Attribute limits
+
+These properties can be used to control the maximum number and length of attributes.
+
+| System property                   | Environment variable              | Description                                                                                              |
+|-----------------------------------|-----------------------------------|----------------------------------------------------------------------------------------------------------|
+| otel.attribute.value.length.limit | OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT | The maximum length of attribute values. Applies to spans and logs. By default there is no limit.         |
+| otel.attribute.count.limit        | OTEL_ATTRIBUTE_COUNT_LIMIT        | The maximum number of attributes. Applies to spans, span events, span links, and logs. Default is `128`. |
+
+### Propagator
+
+The propagators determine which distributed tracing header formats are used, and which baggage propagation header formats are used.
+
+| System property  | Environment variable | Description                                                                                                               |
+|------------------|----------------------|---------------------------------------------------------------------------------------------------------------------------|
+| otel.propagators | OTEL_PROPAGATORS     | The propagators to be used. Use a comma-separated list for multiple propagators. Default is `tracecontext,baggage` (W3C). |
+
+Supported values are
+
+- `"tracecontext"`: [W3C Trace Context](https://www.w3.org/TR/trace-context/) (add `baggage` as well to include W3C baggage)
+- `"baggage"`: [W3C Baggage](https://www.w3.org/TR/baggage/)
+- `"b3"`: [B3 Single](https://github.com/openzipkin/b3-propagation#single-header)
+- `"b3multi"`: [B3 Multi](https://github.com/openzipkin/b3-propagation#multiple-headers)
+- `"jaeger"`: [Jaeger](https://www.jaegertracing.io/docs/1.21/client-libraries/#propagation-format) (includes Jaeger baggage)
+- `"xray"`: [AWS X-Ray](https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader)
+- `"ottrace"`: [OT Trace](https://github.com/opentracing?q=basic&type=&language=)
+
+## Tracer provider
+
+The following configuration options are specific to `SdkTracerProvider`. See [general configuration](#general-configuration) for general configuration.
+
+### Span exporters
+
+The following exporters are only available for the trace signal. See [exporters](#exporters) for general exporter configuration.
+
+#### Jaeger exporter
+
+The [Jaeger](https://www.jaegertracing.io/docs/1.21/apis/#protobuf-via-grpc-stable) exporter. This exporter uses gRPC for its communications protocol.
+
+| System property                   | Environment variable              | Description                                                                                        |
+|-----------------------------------|-----------------------------------|----------------------------------------------------------------------------------------------------|
+| otel.traces.exporter=jaeger       | OTEL_TRACES_EXPORTER=jaeger       | Select the Jaeger exporter                                                                         |
+| otel.exporter.jaeger.endpoint     | OTEL_EXPORTER_JAEGER_ENDPOINT     | The Jaeger gRPC endpoint to connect to. Default is `http://localhost:14250`.                       |
+| otel.exporter.jaeger.timeout      | OTEL_EXPORTER_JAEGER_TIMEOUT      | The maximum waiting time, in milliseconds, allowed to send each batch. Default is `10000`.         |
+
+#### Zipkin exporter
+
+The [Zipkin](https://zipkin.io/zipkin-api/) exporter. It sends JSON in [Zipkin format](https://zipkin.io/zipkin-api/#/default/post_spans) to a specified HTTP URL.
+
+| System property               | Environment variable          | Description                                                                                                           |
+|-------------------------------|-------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| otel.traces.exporter=zipkin   | OTEL_TRACES_EXPORTER=zipkin   | Select the Zipkin exporter                                                                                            |
+| otel.exporter.zipkin.endpoint | OTEL_EXPORTER_ZIPKIN_ENDPOINT | The Zipkin endpoint to connect to. Default is `http://localhost:9411/api/v2/spans`. Currently only HTTP is supported. |
+
+### Batch span processor
 
 | System property                | Environment variable           | Description                                                                        |
 |--------------------------------|--------------------------------|------------------------------------------------------------------------------------|
@@ -248,7 +272,7 @@ can pass the following JVM argument:
 | otel.bsp.max.export.batch.size | OTEL_BSP_MAX_EXPORT_BATCH_SIZE | The maximum batch size. Default is `512`.                                          |
 | otel.bsp.export.timeout        | OTEL_BSP_EXPORT_TIMEOUT        | The maximum allowed time, in milliseconds, to export data. Default is `30000`.     |
 
-## Sampler
+### Sampler
 
 The sampler configures whether spans will be recorded for any call to `SpanBuilder.startSpan`.
 
@@ -266,16 +290,9 @@ Supported values for `otel.traces.sampler` are
 - "parentbased_always_off": ParentBased(root=AlwaysOffSampler)
 - "parentbased_traceidratio": ParentBased(root=TraceIdRatioBased). `otel.traces.sampler.arg` sets the ratio.
 
-## Attribute limits
+### Span limits
 
-These properties can be used to control the maximum number and length of attributes.
-
-| System property                   | Environment variable              | Description                                                                                              |
-|-----------------------------------|-----------------------------------|----------------------------------------------------------------------------------------------------------|
-| otel.attribute.value.length.limit | OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT | The maximum length of attribute values. Applies to spans and logs. By default there is no limit.         |
-| otel.attribute.count.limit        | OTEL_ATTRIBUTE_COUNT_LIMIT        | The maximum number of attributes. Applies to spans, span events, span links, and logs. Default is `128`. |
-
-## Span limits
+See [attribute limits](#attribute-limits) for general attribute limit configuration.
 
 These properties can be used to control the maximum size of spans by placing limits on attributes, events, and links.
 
@@ -286,17 +303,43 @@ These properties can be used to control the maximum size of spans by placing lim
 | otel.span.event.count.limit            | OTEL_SPAN_EVENT_COUNT_LIMIT            | The maximum number of events per span. Default is `128`.                                                                              |
 | otel.span.link.count.limit             | OTEL_SPAN_LINK_COUNT_LIMIT             | The maximum number of links per span. Default is `128`                                                                                |
 
-## Exemplars
+## Meter provider
+
+The following configuration options are specific to `SdkMeterProvider`. See [general configuration](#general-configuration) for general configuration.
+
+### Exemplars
 
 | System property              | Environment variable         | Description                                                                                                     |
 |------------------------------|------------------------------|-----------------------------------------------------------------------------------------------------------------|
 | otel.metrics.exemplar.filter | OTEL_METRICS_EXEMPLAR_FILTER | The filter for exemplar sampling.  Can be `ALWAYS_OFF`, `ALWAYS_ON` or `TRACE_BASED`. Default is `TRACE_BASED`. |
 
-## Periodic Metric Reader
+### Periodic Metric Reader
 
 | System property             | Environment variable        | Description                                                                                  |
 |-----------------------------|-----------------------------|----------------------------------------------------------------------------------------------|
 | otel.metric.export.interval | OTEL_METRIC_EXPORT_INTERVAL | The interval, in milliseconds, between the start of two export attempts. Default is `60000`. |
+
+
+### Metric exporters
+
+The following exporters are only available for the metric signal. See [exporters](#exporters) for general exporter configuration.
+
+#### Prometheus exporter
+
+The [Prometheus](https://github.com/prometheus/docs/blob/master/content/docs/instrumenting/exposition_formats.md) exporter.
+
+| System property                  | Environment variable             | Description                                                                        |
+|----------------------------------|----------------------------------|------------------------------------------------------------------------------------|
+| otel.metrics.exporter=prometheus | OTEL_METRICS_EXPORTER=prometheus | Select the Prometheus exporter                                                     |
+| otel.exporter.prometheus.port    | OTEL_EXPORTER_PROMETHEUS_PORT    | The local port used to bind the prometheus metric server. Default is `9464`.       |
+| otel.exporter.prometheus.host    | OTEL_EXPORTER_PROMETHEUS_HOST    | The local address used to bind the prometheus metric server. Default is `0.0.0.0`. |
+
+Note that this is a pull exporter - it opens up a server on the local process listening on the specified host and port, which
+a Prometheus server scrapes from.
+
+## Logger provider
+
+The following configuration options are specific to `SdkLoggerProvider`. See [general configuration](#general-configuration) for general configuration.
 
 ## Batch log record processor
 
