@@ -1,2 +1,17 @@
 Comparing source compatibility of  against 
-No changes.
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.assertj.ScopeMetricAssert assertThat(io.opentelemetry.sdk.metrics.data.ScopeMetricData)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.ScopeMetricAssert  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ScopeMetricAssert hasDescription(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ScopeMetricAssert hasDoubleGaugeSatisfying(java.util.function.Consumer<io.opentelemetry.sdk.testing.assertj.DoubleGaugeAssert>)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ScopeMetricAssert hasDoubleSumSatisfying(java.util.function.Consumer<io.opentelemetry.sdk.testing.assertj.DoubleSumAssert>)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ScopeMetricAssert hasExponentialHistogramSatisfying(java.util.function.Consumer<io.opentelemetry.sdk.testing.assertj.ExponentialHistogramAssert>)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ScopeMetricAssert hasHistogramSatisfying(java.util.function.Consumer<io.opentelemetry.sdk.testing.assertj.HistogramAssert>)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ScopeMetricAssert hasInstrumentationScope(io.opentelemetry.sdk.common.InstrumentationScopeInfo)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ScopeMetricAssert hasLongGaugeSatisfying(java.util.function.Consumer<io.opentelemetry.sdk.testing.assertj.LongGaugeAssert>)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ScopeMetricAssert hasLongSumSatisfying(java.util.function.Consumer<io.opentelemetry.sdk.testing.assertj.LongSumAssert>)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ScopeMetricAssert hasName(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ScopeMetricAssert hasSummarySatisfying(java.util.function.Consumer<io.opentelemetry.sdk.testing.assertj.SummaryAssert>)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.ScopeMetricAssert hasUnit(java.lang.String)

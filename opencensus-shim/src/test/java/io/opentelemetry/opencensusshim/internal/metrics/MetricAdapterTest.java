@@ -20,13 +20,11 @@ import io.opencensus.metrics.export.Point;
 import io.opencensus.metrics.export.Summary;
 import io.opencensus.metrics.export.TimeSeries;
 import io.opencensus.metrics.export.Value;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
-import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,9 +32,6 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class MetricAdapterTest {
-
-  private static final Resource RESOURCE =
-      Resource.create(Attributes.of(AttributeKey.stringKey("test"), "resource"));
 
   @Test
   void convertsTimeStamps() {
@@ -72,8 +67,7 @@ class MetricAdapterTest {
                     Point.create(Value.longValue(4), Timestamp.fromMillis(2000))),
                 Timestamp.fromMillis(1000)));
 
-    assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
-        .hasResource(RESOURCE)
+    assertThat(MetricAdapter.convert(censusMetric))
         .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
@@ -105,8 +99,7 @@ class MetricAdapterTest {
                     Point.create(Value.doubleValue(4), Timestamp.fromMillis(2000))),
                 Timestamp.fromMillis(1000)));
 
-    assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
-        .hasResource(RESOURCE)
+    assertThat(MetricAdapter.convert(censusMetric))
         .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
@@ -138,8 +131,7 @@ class MetricAdapterTest {
                     Point.create(Value.longValue(4), Timestamp.fromMillis(2000))),
                 Timestamp.fromMillis(1000)));
 
-    assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
-        .hasResource(RESOURCE)
+    assertThat(MetricAdapter.convert(censusMetric))
         .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
@@ -173,8 +165,7 @@ class MetricAdapterTest {
                     Point.create(Value.doubleValue(4), Timestamp.fromMillis(2000))),
                 Timestamp.fromMillis(1000)));
 
-    assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
-        .hasResource(RESOURCE)
+    assertThat(MetricAdapter.convert(censusMetric))
         .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
@@ -231,8 +222,7 @@ class MetricAdapterTest {
                         Timestamp.fromMillis(2000))),
                 Timestamp.fromMillis(1000)));
 
-    assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
-        .hasResource(RESOURCE)
+    assertThat(MetricAdapter.convert(censusMetric))
         .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
@@ -290,8 +280,7 @@ class MetricAdapterTest {
                         Timestamp.fromMillis(2000))),
                 Timestamp.fromMillis(1000)));
 
-    assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
-        .hasResource(RESOURCE)
+    assertThat(MetricAdapter.convert(censusMetric))
         .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")
@@ -347,8 +336,7 @@ class MetricAdapterTest {
                                     Distribution.Bucket.create(2)))),
                         Timestamp.fromMillis(2000))),
                 Timestamp.fromMillis(1000)));
-    assertThat(MetricAdapter.convert(RESOURCE, censusMetric))
-        .hasResource(RESOURCE)
+    assertThat(MetricAdapter.convert(censusMetric))
         .hasInstrumentationScope(MetricAdapter.INSTRUMENTATION_SCOPE_INFO)
         .hasName("name")
         .hasDescription("description")

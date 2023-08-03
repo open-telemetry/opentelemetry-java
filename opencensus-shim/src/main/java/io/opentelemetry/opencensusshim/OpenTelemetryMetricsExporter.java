@@ -14,7 +14,8 @@ import io.opencensus.metrics.Metrics;
 import io.opencensus.metrics.export.Metric;
 import io.opencensus.metrics.export.MetricDescriptor;
 import io.opentelemetry.opencensusshim.internal.metrics.MetricAdapter;
-import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.ScopeMetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Deprecated
 public final class OpenTelemetryMetricsExporter extends MetricExporter {
@@ -62,18 +64,24 @@ public final class OpenTelemetryMetricsExporter extends MetricExporter {
 
   @Override
   public void export(Collection<Metric> metrics) {
-    List<MetricData> metricData = new ArrayList<>();
+    List<ScopeMetricData> scopeMetricDatas = new ArrayList<>();
     Set<MetricDescriptor.Type> unsupportedTypes = new HashSet<>();
     for (Metric metric : metrics) {
-      metricData.add(MetricAdapter.convert(resource, metric));
+      scopeMetricDatas.add(MetricAdapter.convert(metric));
     }
     if (!unsupportedTypes.isEmpty()) {
       LOGGER.warning(
           Joiner.on(",").join(unsupportedTypes)
               + " not supported by OpenCensus to OpenTelemetry migrator.");
     }
-    if (!metricData.isEmpty()) {
-      otelExporter.export(metricData);
+    if (!scopeMetricDatas.isEmpty()) {
+      otelExporter.export(
+          scopeMetricDatas.stream()
+              .map(
+                  scopeMetricData -> {
+                    return ImmutableMetricData.createFromScopeMetricData(resource, scopeMetricData);
+                  })
+              .collect(Collectors.toList()));
     }
   }
 

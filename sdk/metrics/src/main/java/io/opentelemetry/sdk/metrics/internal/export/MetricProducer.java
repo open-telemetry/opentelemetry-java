@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.export;
 
-import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.ScopeMetricData;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.util.Collection;
@@ -45,5 +45,5 @@ public interface MetricProducer extends CollectionRegistration {
    *
    * @return a collection of produced {@link MetricData}s to be exported.
    */
-  Collection<MetricData> collectAllMetrics();
+  Collection<ScopeMetricData> collectAllMetrics();
 }

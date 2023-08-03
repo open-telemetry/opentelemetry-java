@@ -26,7 +26,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
-import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.internal.export.SdkMetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.time.Duration;
@@ -67,7 +67,7 @@ class PeriodicMetricReaderTest {
           ImmutableSumData.create(
               /* isMonotonic= */ true, AggregationTemporality.CUMULATIVE, LONG_POINT_LIST));
 
-  @Mock private MetricProducer metricProducer;
+  @Mock private SdkMetricProducer metricProducer;
   @Mock private MetricExporter metricExporter;
 
   @BeforeEach

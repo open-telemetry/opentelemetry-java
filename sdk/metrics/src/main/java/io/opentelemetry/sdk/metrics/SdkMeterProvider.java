@@ -17,8 +17,8 @@ import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.export.CardinalityLimitSelector;
-import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
+import io.opentelemetry.sdk.metrics.internal.export.SdkMetricProducer;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
@@ -77,7 +77,8 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
             instrumentationLibraryInfo ->
                 new SdkMeter(sharedState, instrumentationLibraryInfo, registeredReaders));
     for (RegisteredReader registeredReader : registeredReaders) {
-      MetricProducer producer = new LeasedMetricProducer(registry, sharedState, registeredReader);
+      SdkMetricProducer producer =
+          new LeasedMetricProducer(registry, sharedState, registeredReader);
       registeredReader.getReader().register(producer);
       registeredReader.setLastCollectEpochNanos(startEpochNanos);
     }
@@ -160,7 +161,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   }
 
   /** Helper class to expose registered metric exports. */
-  private static class LeasedMetricProducer implements MetricProducer {
+  private static class LeasedMetricProducer implements SdkMetricProducer {
 
     private final ComponentRegistry<SdkMeter> registry;
     private final MeterProviderSharedState sharedState;
@@ -185,6 +186,11 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       }
       registeredReader.setLastCollectEpochNanos(collectTime);
       return Collections.unmodifiableCollection(result);
+    }
+
+    @Override
+    public Resource getResource() {
+      return this.sharedState.getResource();
     }
   }
 }

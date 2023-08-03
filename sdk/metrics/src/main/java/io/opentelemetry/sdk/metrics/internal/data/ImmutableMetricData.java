@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.metrics.data.HistogramData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.data.ScopeMetricData;
 import io.opentelemetry.sdk.metrics.data.SumData;
 import io.opentelemetry.sdk.metrics.data.SummaryData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -170,6 +171,23 @@ public abstract class ImmutableMetricData implements MetricData {
         unit,
         MetricDataType.EXPONENTIAL_HISTOGRAM,
         data);
+  }
+
+  /**
+   * Returns a new MetricData from the ScopeMetricData.
+   *
+   * @return a new MetricData from the ScopeMetricData.
+   */
+  public static ImmutableMetricData createFromScopeMetricData(
+      Resource resource, ScopeMetricData scopeMetricData) {
+    return ImmutableMetricData.create(
+        resource,
+        scopeMetricData.getInstrumentationScopeInfo(),
+        scopeMetricData.getName(),
+        scopeMetricData.getDescription(),
+        scopeMetricData.getUnit(),
+        scopeMetricData.getType(),
+        scopeMetricData.getData());
   }
 
   // Visible for testing

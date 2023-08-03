@@ -9,7 +9,7 @@ import io.opencensus.metrics.Metrics;
 import io.opencensus.metrics.export.MetricProducerManager;
 import io.opentelemetry.opencensusshim.internal.metrics.MetricAdapter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.ScopeMetricData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
@@ -25,11 +25,9 @@ import java.util.List;
  * metrics from both OpenTelemetry and OpenCensus backends.
  */
 final class OpenCensusMetricProducer implements MetricProducer {
-  private final Resource resource;
   private final MetricProducerManager openCensusMetricStorage;
 
-  OpenCensusMetricProducer(Resource resource, MetricProducerManager openCensusMetricStorage) {
-    this.resource = resource;
+  OpenCensusMetricProducer(MetricProducerManager openCensusMetricStorage) {
     this.openCensusMetricStorage = openCensusMetricStorage;
   }
 
@@ -37,21 +35,18 @@ final class OpenCensusMetricProducer implements MetricProducer {
    * Constructs a new {@link OpenCensusMetricProducer} that reports against the given {@link
    * Resource}.
    */
-  static MetricProducer create(Resource resource) {
-    return new OpenCensusMetricProducer(
-        resource, Metrics.getExportComponent().getMetricProducerManager());
+  static MetricProducer create() {
+    return new OpenCensusMetricProducer(Metrics.getExportComponent().getMetricProducerManager());
   }
 
   @Override
-  public Collection<MetricData> collectAllMetrics() {
-    List<MetricData> result = new ArrayList<>();
+  public Collection<ScopeMetricData> collectAllMetrics() {
+    List<ScopeMetricData> result = new ArrayList<>();
     openCensusMetricStorage
         .getAllMetricProducer()
         .forEach(
             producer -> {
-              producer
-                  .getMetrics()
-                  .forEach(metric -> result.add(MetricAdapter.convert(resource, metric)));
+              producer.getMetrics().forEach(metric -> result.add(MetricAdapter.convert(metric)));
             });
     return result;
   }

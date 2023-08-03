@@ -28,7 +28,7 @@ import io.opentelemetry.sdk.metrics.data.GaugeData;
 import io.opentelemetry.sdk.metrics.data.HistogramData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.ScopeMetricData;
 import io.opentelemetry.sdk.metrics.data.SumData;
 import io.opentelemetry.sdk.metrics.data.SummaryData;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
@@ -39,12 +39,11 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableScopeMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
-import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -78,64 +77,56 @@ public final class MetricAdapter {
   /**
    * Converts an open-census metric into the OTLP format.
    *
-   * @param otelResource The resource associated with the opentelemetry SDK.
    * @param censusMetric The OpenCensus metric to convert.
    */
-  public static MetricData convert(Resource otelResource, Metric censusMetric) {
+  public static ScopeMetricData convert(Metric censusMetric) {
     // Note: we can't just adapt interfaces, we need to do full copy because OTel data API uses
     // auto-value vs. pure interfaces.
     switch (censusMetric.getMetricDescriptor().getType()) {
       case GAUGE_INT64:
-        return ImmutableMetricData.createLongGauge(
-            otelResource,
+        return ImmutableScopeMetricData.createLongGauge(
             INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
             convertLongGauge(censusMetric));
       case GAUGE_DOUBLE:
-        return ImmutableMetricData.createDoubleGauge(
-            otelResource,
+        return ImmutableScopeMetricData.createDoubleGauge(
             INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
             convertDoubleGauge(censusMetric));
       case CUMULATIVE_INT64:
-        return ImmutableMetricData.createLongSum(
-            otelResource,
+        return ImmutableScopeMetricData.createLongSum(
             INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
             convertLongSum(censusMetric));
       case CUMULATIVE_DOUBLE:
-        return ImmutableMetricData.createDoubleSum(
-            otelResource,
+        return ImmutableScopeMetricData.createDoubleSum(
             INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
             convertDoubleSum(censusMetric));
       case CUMULATIVE_DISTRIBUTION:
-        return ImmutableMetricData.createDoubleHistogram(
-            otelResource,
+        return ImmutableScopeMetricData.createDoubleHistogram(
             INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
             convertHistogram(censusMetric));
       case SUMMARY:
-        return ImmutableMetricData.createDoubleSummary(
-            otelResource,
+        return ImmutableScopeMetricData.createDoubleSummary(
             INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),
             censusMetric.getMetricDescriptor().getUnit(),
             convertSummary(censusMetric));
       case GAUGE_DISTRIBUTION:
-        return ImmutableMetricData.createDoubleHistogram(
-            otelResource,
+        return ImmutableScopeMetricData.createDoubleHistogram(
             INSTRUMENTATION_SCOPE_INFO,
             censusMetric.getMetricDescriptor().getName(),
             censusMetric.getMetricDescriptor().getDescription(),

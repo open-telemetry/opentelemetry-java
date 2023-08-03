@@ -1,2 +1,18 @@
 Comparing source compatibility of  against 
-No changes.
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.ScopeMetricData  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.Data<?> getData()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getDescription()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.GaugeData<io.opentelemetry.sdk.metrics.data.DoublePointData> getDoubleGaugeData()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.SumData<io.opentelemetry.sdk.metrics.data.DoublePointData> getDoubleSumData()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.ExponentialHistogramData getExponentialHistogramData()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.HistogramData getHistogramData()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.InstrumentationScopeInfo getInstrumentationScopeInfo()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.GaugeData<io.opentelemetry.sdk.metrics.data.LongPointData> getLongGaugeData()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.SumData<io.opentelemetry.sdk.metrics.data.LongPointData> getLongSumData()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getName()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.data.SummaryData getSummaryData()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.MetricDataType getType()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getUnit()
+	+++  NEW METHOD: PUBLIC(+) boolean isEmpty()

@@ -22,7 +22,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.internal.export.SdkMetricProducer;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
@@ -59,7 +59,7 @@ public final class PrometheusHttpServer implements MetricReader {
 
   private final HttpServer server;
   private final ExecutorService executor;
-  private volatile MetricProducer metricProducer = MetricProducer.noop();
+  private volatile SdkMetricProducer metricProducer = SdkMetricProducer.noop();
 
   /**
    * Returns a new {@link PrometheusHttpServer} which can be registered to an {@link
@@ -92,7 +92,7 @@ public final class PrometheusHttpServer implements MetricReader {
     start();
   }
 
-  private MetricProducer getMetricProducer() {
+  private SdkMetricProducer getMetricProducer() {
     return metricProducer;
   }
 
@@ -114,7 +114,7 @@ public final class PrometheusHttpServer implements MetricReader {
 
   @Override
   public void register(CollectionRegistration registration) {
-    this.metricProducer = MetricProducer.asMetricProducer(registration);
+    this.metricProducer = SdkMetricProducer.asSdkMetricProducer(registration);
   }
 
   @Override
