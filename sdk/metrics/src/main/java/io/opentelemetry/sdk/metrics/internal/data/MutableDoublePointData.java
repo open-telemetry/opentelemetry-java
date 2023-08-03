@@ -80,7 +80,14 @@ public class MutableDoublePointData implements DoublePointData {
     this.exemplars = exemplars;
   }
 
-  public void setValue(double value) {
-    this.value = value;
+  @Override
+  public String toString() {
+    return "MutableDoublePointData{" +
+        "startEpochNanos=" + startEpochNanos +
+        ", epochNanos=" + epochNanos +
+        ", attributes=" + attributes +
+        ", value=" + value +
+        ", exemplars=" + exemplars +
+        '}';
   }
 }

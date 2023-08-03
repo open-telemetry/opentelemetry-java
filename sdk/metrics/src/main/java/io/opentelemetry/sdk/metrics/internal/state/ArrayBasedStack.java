@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
  * <p>Not thread-safe
  */
 public class ArrayBasedStack<T> {
-  private static final int DEFAULT_CAPACITY = 10;
+  static final int DEFAULT_CAPACITY = 10;
 
   // Using native array instead of ArrayList since I plan to add eviction
   // if the initial portion of the stack is not used for several cycles of collection

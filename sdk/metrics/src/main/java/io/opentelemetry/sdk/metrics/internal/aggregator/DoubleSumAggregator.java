@@ -67,9 +67,12 @@ public final class DoubleSumAggregator
 
   @Override
   public void diffInPlace(DoublePointData previousReusablePoint, DoublePointData currentPoint) {
-    ((MutableDoublePointData) previousReusablePoint).set(currentPoint);
-    ((MutableDoublePointData) previousReusablePoint).setValue(
-        currentPoint.getValue() - previousReusablePoint.getValue());
+    ((MutableDoublePointData) previousReusablePoint).set(
+        currentPoint.getStartEpochNanos(),
+        currentPoint.getEpochNanos(),
+        currentPoint.getAttributes(),
+        currentPoint.getValue() - previousReusablePoint.getValue(),
+        currentPoint.getExemplars());
   }
 
   @Override

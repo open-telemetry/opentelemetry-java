@@ -79,7 +79,14 @@ public class MutableLongPointData implements LongPointData {
     this.exemplars = exemplars;
   }
 
-  public void setValue(long value) {
-    this.value = value;
+  @Override
+  public String toString() {
+    return "MutableLongPointData{" +
+        "value=" + value +
+        ", startEpochNanos=" + startEpochNanos +
+        ", epochNanos=" + epochNanos +
+        ", attributes=" + attributes +
+        ", exemplars=" + exemplars +
+        '}';
   }
 }
