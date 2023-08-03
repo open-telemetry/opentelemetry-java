@@ -5,7 +5,9 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.metrics.internal.view.ViewRegistry.DEFAULT_REGISTERED_VIEW;
+import static io.opentelemetry.sdk.metrics.internal.view.ViewRegistry.DEFAULT_VIEW;
 import static io.opentelemetry.sdk.metrics.internal.view.ViewRegistry.toGlobPatternPredicate;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -429,6 +431,70 @@ class ViewRegistryTest {
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
 
     assertThat(logs.getEvents()).hasSize(0);
+  }
+
+  @Test
+  void adviceAttributesProcessor() {
+    RegisteredView registeredView =
+        registeredView(
+            InstrumentSelector.builder().setName("test").build(),
+            View.builder().setDescription("view applied").build());
+    ViewRegistry viewRegistry =
+        ViewRegistry.create(
+            DefaultAggregationSelector.getDefault(),
+            CardinalityLimitSelector.defaultCardinalityLimitSelector(),
+            Collections.singletonList(registeredView));
+
+    // If a view matches the descriptor, use it and ignore the advice
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "test",
+                    "",
+                    "",
+                    InstrumentType.COUNTER,
+                    InstrumentValueType.DOUBLE,
+                    Advice.builder()
+                        .setAttributes(Arrays.asList(stringKey("key1"), stringKey("key2")))
+                        .build()),
+                INSTRUMENTATION_SCOPE_INFO))
+        .isEqualTo(Collections.singletonList(registeredView));
+
+    // If there is no matching view and attributes advice was defined, use it
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "advice",
+                    "",
+                    "",
+                    InstrumentType.COUNTER,
+                    InstrumentValueType.DOUBLE,
+                    Advice.builder()
+                        .setAttributes(Arrays.asList(stringKey("key1"), stringKey("key2")))
+                        .build()),
+                INSTRUMENTATION_SCOPE_INFO))
+        .isEqualTo(
+            Collections.singletonList(
+                RegisteredView.create(
+                    DEFAULT_REGISTERED_VIEW.getInstrumentSelector(),
+                    DEFAULT_VIEW,
+                    new AdviceAttributesProcessor(
+                        Arrays.asList(stringKey("key1"), stringKey("key2"))),
+                    MetricStorage.DEFAULT_MAX_CARDINALITY,
+                    SourceInfo.noSourceInfo())));
+
+    // if advice is not defined, use the default view
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "advice",
+                    "",
+                    "",
+                    InstrumentType.COUNTER,
+                    InstrumentValueType.DOUBLE,
+                    Advice.empty()),
+                INSTRUMENTATION_SCOPE_INFO))
+        .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
   }
 
   @Test

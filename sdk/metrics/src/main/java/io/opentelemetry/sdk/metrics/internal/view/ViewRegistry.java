@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.view;
 
 import static io.opentelemetry.sdk.metrics.internal.view.NoopAttributesProcessor.NOOP;
+import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.Aggregation;
@@ -17,6 +18,7 @@ import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
+import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
@@ -25,7 +27,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -127,7 +128,14 @@ public final class ViewRegistry {
 
     // No views matched, use default view
     RegisteredView instrumentDefaultView =
-        Objects.requireNonNull(instrumentDefaultRegisteredView.get(descriptor.getType()));
+        requireNonNull(instrumentDefaultRegisteredView.get(descriptor.getType()));
+
+    // if the user defined an advice, use it
+    if (shouldApplyAdvice(descriptor.getAdvice())) {
+      instrumentDefaultView =
+          applyAdviceToDefaultView(instrumentDefaultView, descriptor.getAdvice());
+    }
+
     AggregatorFactory viewAggregatorFactory =
         (AggregatorFactory) instrumentDefaultView.getView().getAggregation();
 
@@ -245,5 +253,19 @@ public final class ViewRegistry {
       patternBuilder.append(Pattern.quote(globPattern.substring(tokenStart)));
     }
     return Pattern.compile(patternBuilder.toString());
+  }
+
+  private static boolean shouldApplyAdvice(Advice descriptor) {
+    return descriptor.getAttributes() != null;
+  }
+
+  private static RegisteredView applyAdviceToDefaultView(
+      RegisteredView instrumentDefaultView, Advice advice) {
+    return RegisteredView.create(
+        instrumentDefaultView.getInstrumentSelector(),
+        instrumentDefaultView.getView(),
+        new AdviceAttributesProcessor(requireNonNull(advice.getAttributes())),
+        instrumentDefaultView.getCardinalityLimit(),
+        instrumentDefaultView.getViewSourceInfo());
   }
 }

@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.descriptor;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.api.common.AttributeKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,28 +17,60 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class Advice {
 
-  private static final Advice EMPTY_ADVICE = create(null);
+  private static final Advice EMPTY_ADVICE = builder().build();
 
   public static Advice empty() {
     return EMPTY_ADVICE;
   }
 
-  /**
-   * Creates a new {@link Advice} with the given explicit bucket histogram boundaries.
-   *
-   * @param explicitBucketBoundaries the explicit bucket histogram boundaries.
-   * @return a new {@link Advice} with the given bucket boundaries.
-   */
-  public static Advice create(@Nullable List<Double> explicitBucketBoundaries) {
-    if (explicitBucketBoundaries != null) {
-      explicitBucketBoundaries =
-          Collections.unmodifiableList(new ArrayList<>(explicitBucketBoundaries));
-    }
-    return new AutoValue_Advice(explicitBucketBoundaries);
+  public static AdviceBuilder builder() {
+    return new AutoValue_Advice.Builder();
   }
 
   Advice() {}
 
   @Nullable
   public abstract List<Double> getExplicitBucketBoundaries();
+
+  @Nullable
+  public abstract List<AttributeKey<?>> getAttributes();
+
+  @AutoValue.Builder
+  public abstract static class AdviceBuilder {
+
+    AdviceBuilder() {}
+
+    abstract AdviceBuilder explicitBucketBoundaries(
+        @Nullable List<Double> explicitBucketBoundaries);
+
+    /**
+     * Sets the explicit bucket histogram boundaries.
+     *
+     * @param explicitBucketBoundaries the explicit bucket histogram boundaries.
+     */
+    public AdviceBuilder setExplicitBucketBoundaries(
+        @Nullable List<Double> explicitBucketBoundaries) {
+      if (explicitBucketBoundaries != null) {
+        explicitBucketBoundaries =
+            Collections.unmodifiableList(new ArrayList<>(explicitBucketBoundaries));
+      }
+      return explicitBucketBoundaries(explicitBucketBoundaries);
+    }
+
+    abstract AdviceBuilder attributes(@Nullable List<AttributeKey<?>> attributes);
+
+    /**
+     * Sets the list of the attribute keys to be used for the resulting instrument.
+     *
+     * @param attributes the list of the attribute keys.
+     */
+    public AdviceBuilder setAttributes(@Nullable List<AttributeKey<?>> attributes) {
+      if (attributes != null) {
+        attributes = Collections.unmodifiableList(new ArrayList<>(attributes));
+      }
+      return attributes(attributes);
+    }
+
+    public abstract Advice build();
+  }
 }

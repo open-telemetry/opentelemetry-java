@@ -5,18 +5,22 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleCounter;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.extension.incubator.metrics.CounterAdviceConfigurer;
+import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleCounterBuilder;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,7 +60,8 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
   }
 
   static final class SdkDoubleCounterBuilder
-      extends AbstractInstrumentBuilder<SdkDoubleCounterBuilder> implements DoubleCounterBuilder {
+      extends AbstractInstrumentBuilder<SdkDoubleCounterBuilder>
+      implements ExtendedDoubleCounterBuilder, CounterAdviceConfigurer {
 
     SdkDoubleCounterBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -64,7 +69,7 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
         String name,
         String description,
         String unit,
-        Advice advice) {
+        Advice.AdviceBuilder adviceBuilder) {
       super(
           meterProviderSharedState,
           sharedState,
@@ -73,11 +78,17 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
           name,
           description,
           unit,
-          advice);
+          adviceBuilder);
     }
 
     @Override
     protected SdkDoubleCounterBuilder getThis() {
+      return this;
+    }
+
+    @Override
+    public DoubleCounterBuilder setAdvice(Consumer<CounterAdviceConfigurer> adviceConsumer) {
+      adviceConsumer.accept(this);
       return this;
     }
 
@@ -95,6 +106,12 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
     @Override
     public ObservableDoubleMeasurement buildObserver() {
       return buildObservableMeasurement(InstrumentType.OBSERVABLE_COUNTER);
+    }
+
+    @Override
+    public CounterAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
+      adviceBuilder.setAttributes(attributes);
+      return this;
     }
   }
 }
