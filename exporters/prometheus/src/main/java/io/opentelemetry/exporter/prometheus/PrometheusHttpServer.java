@@ -22,7 +22,10 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
+import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.internal.export.SdkMetricProducer;
+import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
@@ -42,6 +45,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
 
@@ -59,7 +63,8 @@ public final class PrometheusHttpServer implements MetricReader {
 
   private final HttpServer server;
   private final ExecutorService executor;
-  private volatile SdkMetricProducer metricProducer = SdkMetricProducer.noop();
+  private volatile SdkMetricProducer sdkMetricProducer = SdkMetricProducer.noop();
+  private final List<MetricProducer> registeredProducers;
 
   /**
    * Returns a new {@link PrometheusHttpServer} which can be registered to an {@link
@@ -75,25 +80,37 @@ public final class PrometheusHttpServer implements MetricReader {
     return new PrometheusHttpServerBuilder();
   }
 
-  PrometheusHttpServer(String host, int port, ExecutorService executor) {
+  PrometheusHttpServer(
+      String host, int port, ExecutorService executor, List<MetricProducer> registeredProducers) {
     try {
       server = HttpServer.create(new InetSocketAddress(host, port), 3);
     } catch (IOException e) {
       throw new UncheckedIOException("Could not create Prometheus HTTP server", e);
     }
-    MetricsHandler metricsHandler =
-        new MetricsHandler(() -> getMetricProducer().collectAllMetrics());
+    MetricsHandler metricsHandler = new MetricsHandler(() -> getMetricData());
     server.createContext("/", metricsHandler);
     server.createContext("/metrics", metricsHandler);
     server.createContext("/-/healthy", HealthHandler.INSTANCE);
     this.executor = executor;
     server.setExecutor(executor);
+    this.registeredProducers = registeredProducers;
 
     start();
   }
 
-  private SdkMetricProducer getMetricProducer() {
-    return metricProducer;
+  private Collection<MetricData> getMetricData() {
+    Collection<MetricData> metricData = sdkMetricProducer.collectAllMetrics();
+    Resource resource = sdkMetricProducer.getResource();
+    for (MetricProducer metricProducer : registeredProducers) {
+      metricData.addAll(
+          metricProducer.collectAllMetrics().stream()
+              .map(
+                  scopeMetricData -> {
+                    return ImmutableMetricData.createFromScopeMetricData(resource, scopeMetricData);
+                  })
+              .collect(Collectors.toList()));
+    }
+    return metricData;
   }
 
   private void start() {
@@ -114,7 +131,7 @@ public final class PrometheusHttpServer implements MetricReader {
 
   @Override
   public void register(CollectionRegistration registration) {
-    this.metricProducer = SdkMetricProducer.asSdkMetricProducer(registration);
+    this.sdkMetricProducer = SdkMetricProducer.asSdkMetricProducer(registration);
   }
 
   @Override

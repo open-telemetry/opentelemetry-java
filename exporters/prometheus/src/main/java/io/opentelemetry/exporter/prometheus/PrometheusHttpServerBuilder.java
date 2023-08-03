@@ -9,6 +9,10 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.annotation.Nullable;
@@ -23,6 +27,8 @@ public final class PrometheusHttpServerBuilder {
   private int port = DEFAULT_PORT;
 
   @Nullable private ExecutorService executor;
+
+  private final List<MetricProducer> registeredProducers = new ArrayList<>();
 
   /** Sets the host to bind to. If unset, defaults to {@value #DEFAULT_HOST}. */
   public PrometheusHttpServerBuilder setHost(String host) {
@@ -46,6 +52,13 @@ public final class PrometheusHttpServerBuilder {
     return this;
   }
 
+  /** Adds a {@link MetricProducer} to schedule reads on. */
+  public PrometheusHttpServerBuilder addMetricProducer(MetricProducer producer) {
+    Objects.requireNonNull(producer, "producer");
+    this.registeredProducers.add(producer);
+    return this;
+  }
+
   /**
    * Returns a new {@link PrometheusHttpServer} with the configuration of this builder which can be
    * registered with a {@link io.opentelemetry.sdk.metrics.SdkMeterProvider}.
@@ -55,7 +68,7 @@ public final class PrometheusHttpServerBuilder {
     if (executorService == null) {
       executorService = getDefaultExecutor();
     }
-    return new PrometheusHttpServer(host, port, executorService);
+    return new PrometheusHttpServer(host, port, executorService, registeredProducers);
   }
 
   PrometheusHttpServerBuilder() {}
