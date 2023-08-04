@@ -30,9 +30,13 @@ public final class OtlpHttpSpanExporterBuilder {
 
   private final HttpExporterBuilder<TraceRequestMarshaler> delegate;
 
-  OtlpHttpSpanExporterBuilder() {
-    delegate = new HttpExporterBuilder<>("otlp", "span", DEFAULT_ENDPOINT);
+  OtlpHttpSpanExporterBuilder(HttpExporterBuilder<TraceRequestMarshaler> delegate) {
+    this.delegate = delegate;
     OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+  }
+
+  OtlpHttpSpanExporterBuilder() {
+    this(new HttpExporterBuilder<>("otlp", "span", DEFAULT_ENDPOINT));
   }
 
   /**
@@ -142,6 +146,6 @@ public final class OtlpHttpSpanExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpHttpSpanExporter build() {
-    return new OtlpHttpSpanExporter(delegate.build());
+    return new OtlpHttpSpanExporter(delegate, delegate.build());
   }
 }

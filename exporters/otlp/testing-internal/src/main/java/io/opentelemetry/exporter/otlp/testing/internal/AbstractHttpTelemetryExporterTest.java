@@ -42,8 +42,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -655,7 +657,67 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
             "Unsupported compression method. Supported compression methods include: gzip, none.");
   }
 
+  @Test
+  void toBuilderEquality()
+      throws CertificateEncodingException,
+          IOException,
+          NoSuchFieldException,
+          IllegalAccessException {
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setTimeout(Duration.ofSeconds(5))
+            .setEndpoint("http://localhost:4318")
+            .setCompression("gzip")
+            .addHeader("foo", "bar")
+            .setTrustedCertificates(certificate.certificate().getEncoded())
+            .setClientTls(
+                Files.readAllBytes(clientCertificate.privateKeyFile().toPath()),
+                Files.readAllBytes(clientCertificate.certificateFile().toPath()))
+            .setRetryPolicy(
+                RetryPolicy.builder()
+                    .setMaxAttempts(2)
+                    .setMaxBackoff(Duration.ofSeconds(3))
+                    .setInitialBackoff(Duration.ofMillis(50))
+                    .setBackoffMultiplier(1.3)
+                    .build())
+            .build();
+
+    Object unwrapped = exporter.unwrap();
+    Field builderField = unwrapped.getClass().getDeclaredField("builder");
+    builderField.setAccessible(true);
+
+    try {
+      // Builder copy should be equal to original when unchanged
+      TelemetryExporter<T> copy = toBuilder(exporter).build();
+      try {
+        assertThat(copy.unwrap())
+            .extracting("builder")
+            .usingRecursiveComparison()
+            .ignoringFields("tlsConfigHelper")
+            .isEqualTo(builderField.get(unwrapped));
+      } finally {
+        copy.shutdown();
+      }
+
+      // Builder copy should NOT be equal when changed
+      copy = toBuilder(exporter).addHeader("baz", "qux").build();
+      try {
+        assertThat(copy.unwrap())
+            .extracting("builder")
+            .usingRecursiveComparison()
+            .ignoringFields("tlsConfigHelper")
+            .isNotEqualTo(builderField.get(unwrapped));
+      } finally {
+        copy.shutdown();
+      }
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
   protected abstract TelemetryExporterBuilder<T> exporterBuilder();
+
+  protected abstract TelemetryExporterBuilder<T> toBuilder(TelemetryExporter<T> exporter);
 
   protected abstract T generateFakeTelemetry();
 

@@ -49,7 +49,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private boolean exportAsJson = false;
   @Nullable private Map<String, String> headers;
 
-  private final TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
+  private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy;
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
   @Nullable private Authenticator authenticator;
@@ -124,6 +124,25 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   public HttpExporterBuilder<T> exportAsJson() {
     this.exportAsJson = true;
     return this;
+  }
+
+  @SuppressWarnings("BuilderReturnThis")
+  public HttpExporterBuilder<T> copy() {
+    HttpExporterBuilder<T> copy = new HttpExporterBuilder<>(exporterName, type, endpoint);
+    copy.endpoint = endpoint;
+    copy.timeoutNanos = timeoutNanos;
+    copy.exportAsJson = exportAsJson;
+    copy.compressionEnabled = compressionEnabled;
+    if (headers != null) {
+      copy.headers = new HashMap<>(headers);
+    }
+    copy.tlsConfigHelper = tlsConfigHelper.copy();
+    if (retryPolicy != null) {
+      copy.retryPolicy = retryPolicy.toBuilder().build();
+    }
+    copy.meterProviderSupplier = meterProviderSupplier;
+    copy.authenticator = authenticator;
+    return copy;
   }
 
   public HttpExporter<T> build() {
