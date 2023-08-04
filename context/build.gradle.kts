@@ -20,13 +20,13 @@ testing {
   suites {
     register<JvmTestSuite>("grpcInOtelTest") {
       dependencies {
-        implementation("io.grpc:grpc-context")
+        implementation("io.grpc:grpc-api")
       }
     }
 
     register<JvmTestSuite>("otelInGrpcTest") {
       dependencies {
-        implementation("io.grpc:grpc-context")
+        implementation("io.grpc:grpc-api")
       }
     }
 
