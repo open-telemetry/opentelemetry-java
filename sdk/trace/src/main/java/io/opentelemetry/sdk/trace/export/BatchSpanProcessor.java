@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.internal.JcTools;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -120,7 +121,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
   }
 
   // Visible for testing
-  ArrayList<SpanData> getBatch() {
+  List<SpanData> getBatch() {
     return worker.batch;
   }
 
