@@ -13,6 +13,7 @@ import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleHistogramBuilder;
 import io.opentelemetry.extension.incubator.metrics.ExtendedLongHistogramBuilder;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.util.Arrays;
 import java.util.Collections;
@@ -127,8 +128,11 @@ class AdviceTest {
       Function<SdkMeterProvider, Consumer<Long>> histogramBuilder) {
     InMemoryMetricReader reader =
         InMemoryMetricReader.create(
-            AggregationTemporalitySelector.alwaysCumulative()
-        );
+            AggregationTemporalitySelector.alwaysCumulative(),
+            DefaultAggregationSelector.getDefault()
+                .with(
+                    InstrumentType.HISTOGRAM,
+                    explicitBucketHistogram(Collections.singletonList(50.0))));
     meterProvider = SdkMeterProvider.builder().registerMetricReader(reader).build();
 
     Consumer<Long> histogramRecorder = histogramBuilder.apply(meterProvider);

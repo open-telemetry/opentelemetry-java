@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.internal.aggregator;
+package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.Aggregation;
@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
+import io.opentelemetry.sdk.metrics.internal.aggregator.NoopMetricExporter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -44,11 +45,12 @@ import org.openjdk.jol.info.GraphLayout;
 @Measurement(iterations = 20, batchSize = 100)
 @Warmup(iterations = 10, batchSize = 10)
 @Fork(1)
-public class AsynchronousCounterBenchmark {
-  private static final Logger logger = Logger.getLogger(AsynchronousCounterBenchmark.class.getName());
+public class AsynchronousMetricStorageMemoryProfilingBenchmark {
+  private static final Logger logger = Logger.getLogger(
+      AsynchronousMetricStorageMemoryProfilingBenchmark.class.getName());
 
-  private static final int cardinality = 100_000; // 1000
-  private static final int countersCount = 50; // 10
+  private static final int cardinality = 1000;
+  private static final int countersCount = 10; // 10
 
   @State(value = Scope.Benchmark)
   @SuppressWarnings("SystemOut")

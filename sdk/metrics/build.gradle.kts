@@ -28,6 +28,7 @@ dependencies {
 
   jmh(project(":sdk:trace"))
   jmh(project(":sdk:testing"))
+  jmh(project(":sdk:metrics:testing-internal"))
   jmh("org.openjdk.jol:jol-core")
 }
 
@@ -42,8 +43,19 @@ testing {
         }
       }
     }
+    register<JvmTestSuite>("jmhBasedTest") {
+      dependencies {
+        implementation("org.openjdk.jmh:jmh-core")
+        implementation("org.openjdk.jmh:jmh-generator-bytecode")
+        annotationProcessor("org.openjdk.jmh:jmh-generator-annprocess")
+        implementation(project(":sdk:metrics:testing-internal"))
+        implementation("org.openjdk.jol:jol-core")
+      }
+    }
   }
 }
+
+
 
 tasks {
   named<AnimalSniffer>("animalsnifferMain") {

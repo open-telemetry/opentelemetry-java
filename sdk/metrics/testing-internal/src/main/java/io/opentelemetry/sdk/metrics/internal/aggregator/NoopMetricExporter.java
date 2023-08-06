@@ -12,7 +12,7 @@ import java.util.Collection;
 
 import static io.opentelemetry.sdk.metrics.export.MemoryMode.IMMUTABLE_DATA;
 
-class NoopMetricExporter implements MetricExporter {
+public class NoopMetricExporter implements MetricExporter {
   private final AggregationTemporality aggregationTemporality;
   private final Aggregation aggregation;
   private final MemoryMode memoryMode;
@@ -22,7 +22,7 @@ class NoopMetricExporter implements MetricExporter {
     this(aggregationTemporality, aggregation, IMMUTABLE_DATA);
   }
 
-  NoopMetricExporter(
+  public NoopMetricExporter(
       AggregationTemporality aggregationTemporality, Aggregation aggregation, MemoryMode memoryMode) {
     this.aggregationTemporality = aggregationTemporality;
     this.aggregation = aggregation;
