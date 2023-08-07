@@ -117,6 +117,6 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
   @Override
   public String toString() {
-    return "OtlpGrpcMetricExporter{builder=" + builder + "}";
+    return "OtlpGrpcMetricExporter{" + builder.toString(false) + "}";
   }
 }

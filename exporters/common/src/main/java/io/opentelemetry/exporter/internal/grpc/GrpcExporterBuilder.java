@@ -203,9 +203,11 @@ public class GrpcExporterBuilder<T extends Marshaler> {
         compressionEnabled);
   }
 
-  @Override
-  public String toString() {
-    StringJoiner joiner = new StringJoiner(", ", "GrpcExporterBuilder{", "}");
+  public String toString(boolean includePrefixAndSuffix) {
+    StringJoiner joiner =
+        includePrefixAndSuffix
+            ? new StringJoiner(", ", "GrpcExporterBuilder{", "}")
+            : new StringJoiner(", ");
     joiner.add("exporterName=" + exporterName);
     joiner.add("type=" + type);
     joiner.add("endpoint=" + endpoint.toString());
@@ -224,6 +226,11 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     // Note: omit tlsConfigHelper because we can't log the configuration in any readable way
     // Note: omit meterProviderSupplier because we can't log the configuration in any readable way
     return joiner.toString();
+  }
+
+  @Override
+  public String toString() {
+    return toString(true);
   }
 
   // Use an inner class to ensure GrpcExporterBuilder does not have classloading dependencies on

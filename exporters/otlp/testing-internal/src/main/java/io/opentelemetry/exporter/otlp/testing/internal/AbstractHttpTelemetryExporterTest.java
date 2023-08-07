@@ -721,7 +721,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     try {
       assertThat(telemetryExporter.unwrap().toString())
           .matches(
-              "OtlpHttp[a-zA-Z]*Exporter\\{builder=HttpExporterBuilder\\{"
+              "OtlpHttp[a-zA-Z]*Exporter\\{"
                   + "exporterName=otlp, "
                   + "type=[a-zA_Z]*, "
                   + "endpoint=http://localhost:4318/v1/[a-zA-Z]*, "
@@ -731,7 +731,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + "compressionEnabled=false, "
                   + "exportAsJson=false, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
-                  + "\\}\\}");
+                  + "\\}");
     } finally {
       telemetryExporter.shutdown();
     }
@@ -757,7 +757,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     try {
       assertThat(telemetryExporter.unwrap().toString())
           .matches(
-              "OtlpHttp[a-zA-Z]*Exporter\\{builder=HttpExporterBuilder\\{"
+              "OtlpHttp[a-zA-Z]*Exporter\\{"
                   + "exporterName=otlp, "
                   + "type=[a-zA_Z]*, "
                   + "endpoint=http://example:4318/v1/[a-zA-Z]*, "
@@ -768,7 +768,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + "exportAsJson=false, "
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
                   + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3\\}"
-                  + "\\}\\}");
+                  + "\\}");
     } finally {
       telemetryExporter.shutdown();
     }

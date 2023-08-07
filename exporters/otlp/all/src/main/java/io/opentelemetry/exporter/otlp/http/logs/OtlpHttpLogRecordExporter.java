@@ -87,6 +87,6 @@ public final class OtlpHttpLogRecordExporter implements LogRecordExporter {
 
   @Override
   public String toString() {
-    return "OtlpHttpLogRecordExporter{builder=" + builder + "}";
+    return "OtlpHttpLogRecordExporter{" + builder.toString(false) + "}";
   }
 }

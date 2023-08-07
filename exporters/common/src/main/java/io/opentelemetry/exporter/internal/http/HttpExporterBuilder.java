@@ -167,9 +167,11 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return new HttpExporter<>(exporterName, type, httpSender, meterProviderSupplier, exportAsJson);
   }
 
-  @Override
-  public String toString() {
-    StringJoiner joiner = new StringJoiner(", ", "HttpExporterBuilder{", "}");
+  public String toString(boolean includePrefixAndSuffix) {
+    StringJoiner joiner =
+        includePrefixAndSuffix
+            ? new StringJoiner(", ", "GrpcExporterBuilder{", "}")
+            : new StringJoiner(", ");
     joiner.add("exporterName=" + exporterName);
     joiner.add("type=" + type);
     joiner.add("endpoint=" + endpoint);
@@ -188,6 +190,11 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     // Note: omit meterProviderSupplier because we can't log the configuration in any readable way
     // Note: omit authenticator because we can't log the configuration in any readable way
     return joiner.toString();
+  }
+
+  @Override
+  public String toString() {
+    return toString(true);
   }
 
   /**

@@ -92,6 +92,6 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
 
   @Override
   public String toString() {
-    return "OtlpHttpSpanExporter{builder=" + builder + "}";
+    return "OtlpHttpSpanExporter{" + builder.toString(false) + "}";
   }
 }

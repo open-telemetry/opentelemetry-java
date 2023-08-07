@@ -90,6 +90,6 @@ public final class OtlpGrpcLogRecordExporter implements LogRecordExporter {
 
   @Override
   public String toString() {
-    return "OtlpGrpcLogRecordExporter{builder=" + builder + "}";
+    return "OtlpGrpcLogRecordExporter{" + builder.toString(false) + "}";
   }
 }

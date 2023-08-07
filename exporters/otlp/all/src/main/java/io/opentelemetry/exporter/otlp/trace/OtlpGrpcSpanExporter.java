@@ -92,6 +92,6 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
 
   @Override
   public String toString() {
-    return "OtlpGrpcSpanExporter{builder=" + builder + "}";
+    return "OtlpGrpcSpanExporter{" + builder.toString(false) + "}";
   }
 }

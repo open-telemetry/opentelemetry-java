@@ -113,6 +113,6 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
 
   @Override
   public String toString() {
-    return "OtlpHttpMetricExporter{builder=" + builder + "}";
+    return "OtlpHttpMetricExporter{" + builder.toString(false) + "}";
   }
 }

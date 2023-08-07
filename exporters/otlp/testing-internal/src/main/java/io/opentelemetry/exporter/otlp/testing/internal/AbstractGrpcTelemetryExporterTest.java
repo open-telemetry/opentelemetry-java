@@ -790,7 +790,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     try {
       assertThat(telemetryExporter.unwrap().toString())
           .matches(
-              "OtlpGrpc[a-zA-Z]*Exporter\\{builder=GrpcExporterBuilder\\{"
+              "OtlpGrpc[a-zA-Z]*Exporter\\{"
                   + "exporterName=otlp, "
                   + "type=[a-zA_Z]*, "
                   + "endpoint=http://localhost:4317, "
@@ -801,7 +801,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + "compressionEnabled=false, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
                   + ".*" // Maybe additional grpcChannel field
-                  + "\\}\\}");
+                  + "\\}");
     } finally {
       telemetryExporter.shutdown();
     }
@@ -827,7 +827,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     try {
       assertThat(telemetryExporter.unwrap().toString())
           .matches(
-              "OtlpGrpc[a-zA-Z]*Exporter\\{builder=GrpcExporterBuilder\\{"
+              "OtlpGrpc[a-zA-Z]*Exporter\\{"
                   + "exporterName=otlp, "
                   + "type=[a-zA_Z]*, "
                   + "endpoint=http://example:4317, "
@@ -839,7 +839,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
                   + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3\\}"
                   + ".*" // Maybe additional grpcChannel field
-                  + "\\}\\}");
+                  + "\\}");
     } finally {
       telemetryExporter.shutdown();
     }
