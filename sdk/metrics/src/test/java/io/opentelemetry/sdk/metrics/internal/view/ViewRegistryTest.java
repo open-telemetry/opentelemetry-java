@@ -434,14 +434,21 @@ class ViewRegistryTest {
   }
 
   @Test
-  void adviceAttributesProcessor() {
+  void findViews_ApplyAdvice() {
+    // use incompatible aggregation for histogram
+    DefaultAggregationSelector aggregationSelector =
+        instrumentType ->
+            instrumentType == InstrumentType.HISTOGRAM
+                ? Aggregation.lastValue()
+                : Aggregation.defaultAggregation();
+
     RegisteredView registeredView =
         registeredView(
             InstrumentSelector.builder().setName("test").build(),
             View.builder().setDescription("view applied").build());
     ViewRegistry viewRegistry =
         ViewRegistry.create(
-            DefaultAggregationSelector.getDefault(),
+            aggregationSelector,
             CardinalityLimitSelector.defaultCardinalityLimitSelector(),
             Collections.singletonList(registeredView));
 
@@ -482,6 +489,30 @@ class ViewRegistryTest {
                         Arrays.asList(stringKey("key1"), stringKey("key2"))),
                     MetricStorage.DEFAULT_MAX_CARDINALITY,
                     SourceInfo.noSourceInfo())));
+
+    // If there is no matching view and attributes advice was defined, use it - incompatible
+    // aggregation case
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "histogram_advice",
+                    "",
+                    "",
+                    InstrumentType.HISTOGRAM,
+                    InstrumentValueType.DOUBLE,
+                    Advice.builder()
+                        .setAttributes(Arrays.asList(stringKey("key1"), stringKey("key2")))
+                        .build()),
+                INSTRUMENTATION_SCOPE_INFO))
+        .isEqualTo(
+            Collections.singletonList(
+                RegisteredView.create(
+                    DEFAULT_REGISTERED_VIEW.getInstrumentSelector(),
+                    DEFAULT_REGISTERED_VIEW.getView(),
+                    new AdviceAttributesProcessor(
+                        Arrays.asList(stringKey("key1"), stringKey("key2"))),
+                    DEFAULT_REGISTERED_VIEW.getCardinalityLimit(),
+                    DEFAULT_REGISTERED_VIEW.getViewSourceInfo())));
 
     // if advice is not defined, use the default view
     assertThat(

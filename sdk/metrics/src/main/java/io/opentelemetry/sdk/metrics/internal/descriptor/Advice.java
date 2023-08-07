@@ -35,6 +35,10 @@ public abstract class Advice {
   @Nullable
   public abstract List<AttributeKey<?>> getAttributes();
 
+  public boolean hasAttributes() {
+    return getAttributes() != null;
+  }
+
   @AutoValue.Builder
   public abstract static class AdviceBuilder {
 

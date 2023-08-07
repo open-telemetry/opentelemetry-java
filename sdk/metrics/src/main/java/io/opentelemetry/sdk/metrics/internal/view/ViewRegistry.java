@@ -130,32 +130,30 @@ public final class ViewRegistry {
     RegisteredView instrumentDefaultView =
         requireNonNull(instrumentDefaultRegisteredView.get(descriptor.getType()));
 
-    // if the user defined an advice, use it
-    if (shouldApplyAdvice(descriptor.getAdvice())) {
+    AggregatorFactory viewAggregatorFactory =
+        (AggregatorFactory) instrumentDefaultView.getView().getAggregation();
+
+    if (!viewAggregatorFactory.isCompatibleWithInstrument(descriptor)) {
+      // The aggregation from default aggregation selector was incompatible with instrument, use
+      // default aggregation instead
+      logger.log(
+          Level.WARNING,
+          "Instrument default aggregation "
+              + AggregationUtil.aggregationName(instrumentDefaultView.getView().getAggregation())
+              + " is incompatible with instrument "
+              + descriptor.getName()
+              + " of type "
+              + descriptor.getType());
+      instrumentDefaultView = DEFAULT_REGISTERED_VIEW;
+    }
+
+    // if the user defined an attributes advice, use it
+    if (descriptor.getAdvice().hasAttributes()) {
       instrumentDefaultView =
           applyAdviceToDefaultView(instrumentDefaultView, descriptor.getAdvice());
     }
 
-    AggregatorFactory viewAggregatorFactory =
-        (AggregatorFactory) instrumentDefaultView.getView().getAggregation();
-
-    // If the aggregation from default aggregation selector is compatible with the instrument, use
-    // it
-    if (viewAggregatorFactory.isCompatibleWithInstrument(descriptor)) {
-      return Collections.singletonList(instrumentDefaultView);
-    }
-
-    // The aggregation from default aggregation selector was incompatible with instrument, use
-    // default aggregation instead
-    logger.log(
-        Level.WARNING,
-        "Instrument default aggregation "
-            + AggregationUtil.aggregationName(instrumentDefaultView.getView().getAggregation())
-            + " is incompatible with instrument "
-            + descriptor.getName()
-            + " of type "
-            + descriptor.getType());
-    return Collections.singletonList(DEFAULT_REGISTERED_VIEW);
+    return Collections.singletonList(instrumentDefaultView);
   }
 
   // Matches an instrument selector against an instrument + meter.
@@ -253,10 +251,6 @@ public final class ViewRegistry {
       patternBuilder.append(Pattern.quote(globPattern.substring(tokenStart)));
     }
     return Pattern.compile(patternBuilder.toString());
-  }
-
-  private static boolean shouldApplyAdvice(Advice descriptor) {
-    return descriptor.getAttributes() != null;
   }
 
   private static RegisteredView applyAdviceToDefaultView(
