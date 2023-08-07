@@ -110,4 +110,9 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
   public CompletableResultCode shutdown() {
     return delegate.shutdown();
   }
+
+  @Override
+  public String toString() {
+    return "OtlpHttpMetricExporter{builder=" + builder + "}";
+  }
 }

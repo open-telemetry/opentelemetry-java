@@ -715,6 +715,65 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     }
   }
 
+  @Test
+  void stringRepresentation() throws IOException, CertificateEncodingException {
+    TelemetryExporter<T> telemetryExporter = exporterBuilder().build();
+    try {
+      assertThat(telemetryExporter.unwrap().toString())
+          .matches(
+              "OtlpHttp[a-zA-Z]*Exporter\\{builder=HttpExporterBuilder\\{"
+                  + "exporterName=otlp, "
+                  + "type=[a-zA_Z]*, "
+                  + "endpoint=http://localhost:4318/v1/[a-zA-Z]*, "
+                  + "timeoutNanos="
+                  + TimeUnit.SECONDS.toNanos(10)
+                  + ", "
+                  + "compressionEnabled=false, "
+                  + "exportAsJson=false, "
+                  + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
+                  + "\\}\\}");
+    } finally {
+      telemetryExporter.shutdown();
+    }
+
+    telemetryExporter =
+        exporterBuilder()
+            .setTimeout(Duration.ofSeconds(5))
+            .setEndpoint("http://example:4318/v1/logs")
+            .setCompression("gzip")
+            .addHeader("foo", "bar")
+            .setTrustedCertificates(certificate.certificate().getEncoded())
+            .setClientTls(
+                Files.readAllBytes(clientCertificate.privateKeyFile().toPath()),
+                Files.readAllBytes(clientCertificate.certificateFile().toPath()))
+            .setRetryPolicy(
+                RetryPolicy.builder()
+                    .setMaxAttempts(2)
+                    .setMaxBackoff(Duration.ofSeconds(3))
+                    .setInitialBackoff(Duration.ofMillis(50))
+                    .setBackoffMultiplier(1.3)
+                    .build())
+            .build();
+    try {
+      assertThat(telemetryExporter.unwrap().toString())
+          .matches(
+              "OtlpHttp[a-zA-Z]*Exporter\\{builder=HttpExporterBuilder\\{"
+                  + "exporterName=otlp, "
+                  + "type=[a-zA_Z]*, "
+                  + "endpoint=http://example:4318/v1/[a-zA-Z]*, "
+                  + "timeoutNanos="
+                  + TimeUnit.SECONDS.toNanos(5)
+                  + ", "
+                  + "compressionEnabled=true, "
+                  + "exportAsJson=false, "
+                  + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
+                  + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3\\}"
+                  + "\\}\\}");
+    } finally {
+      telemetryExporter.shutdown();
+    }
+  }
+
   protected abstract TelemetryExporterBuilder<T> exporterBuilder();
 
   protected abstract TelemetryExporterBuilder<T> toBuilder(TelemetryExporter<T> exporter);

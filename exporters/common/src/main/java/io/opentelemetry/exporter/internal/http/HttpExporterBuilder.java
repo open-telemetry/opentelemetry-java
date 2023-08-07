@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -164,6 +165,29 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
 
     return new HttpExporter<>(exporterName, type, httpSender, meterProviderSupplier, exportAsJson);
+  }
+
+  @Override
+  public String toString() {
+    StringJoiner joiner = new StringJoiner(", ", "HttpExporterBuilder{", "}");
+    joiner.add("exporterName=" + exporterName);
+    joiner.add("type=" + type);
+    joiner.add("endpoint=" + endpoint);
+    joiner.add("timeoutNanos=" + timeoutNanos);
+    joiner.add("compressionEnabled=" + compressionEnabled);
+    joiner.add("exportAsJson=" + exportAsJson);
+    if (headers != null) {
+      StringJoiner headersJoiner = new StringJoiner(", ", "Headers{", "}");
+      headers.forEach((key, value) -> headersJoiner.add(key + "=OBFUSCATED"));
+      joiner.add("headers=" + headersJoiner);
+    }
+    if (retryPolicy != null) {
+      joiner.add("retryPolicy=" + retryPolicy);
+    }
+    // Note: omit tlsConfigHelper because we can't log the configuration in any readable way
+    // Note: omit meterProviderSupplier because we can't log the configuration in any readable way
+    // Note: omit authenticator because we can't log the configuration in any readable way
+    return joiner.toString();
   }
 
   /**

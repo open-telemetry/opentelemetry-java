@@ -114,4 +114,9 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
   public CompletableResultCode shutdown() {
     return delegate.shutdown();
   }
+
+  @Override
+  public String toString() {
+    return "OtlpGrpcMetricExporter{builder=" + builder + "}";
+  }
 }

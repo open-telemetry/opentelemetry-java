@@ -84,4 +84,9 @@ public final class OtlpHttpLogRecordExporter implements LogRecordExporter {
   public CompletableResultCode shutdown() {
     return delegate.shutdown();
   }
+
+  @Override
+  public String toString() {
+    return "OtlpHttpLogRecordExporter{builder=" + builder + "}";
+  }
 }

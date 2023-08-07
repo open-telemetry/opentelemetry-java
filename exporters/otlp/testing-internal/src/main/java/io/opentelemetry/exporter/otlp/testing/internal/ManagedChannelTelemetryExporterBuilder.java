@@ -90,6 +90,7 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
 
   @Override
   public TelemetryExporterBuilder<T> setAuthenticator(Authenticator authenticator) {
+    delegate.setAuthenticator(authenticator);
     return this;
   }
 
@@ -99,18 +100,21 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
 
   @Override
   public TelemetryExporterBuilder<T> setTrustedCertificates(byte[] certificates) {
+    delegate.setTrustedCertificates(certificates);
     tlsConfigHelper.setTrustManagerFromCerts(certificates);
     return this;
   }
 
   @Override
   public TelemetryExporterBuilder<T> setClientTls(byte[] privateKeyPem, byte[] certificatePem) {
+    delegate.setClientTls(privateKeyPem, certificatePem);
     tlsConfigHelper.setKeyManagerFromCerts(privateKeyPem, certificatePem);
     return this;
   }
 
   @Override
   public TelemetryExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy) {
+    delegate.setRetryPolicy(retryPolicy);
     String grpcServiceName;
     if (delegate instanceof GrpcLogRecordExporterBuilderWrapper) {
       grpcServiceName = "opentelemetry.proto.collector.logs.v1.LogsService";
@@ -167,6 +171,7 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   @Override
   public TelemetryExporterBuilder<T> setSslContext(
       SSLContext sslContext, X509TrustManager trustManager) {
+    delegate.setSslContext(sslContext, trustManager);
     tlsConfigHelper.setSslContext(sslContext, trustManager);
     return this;
   }
