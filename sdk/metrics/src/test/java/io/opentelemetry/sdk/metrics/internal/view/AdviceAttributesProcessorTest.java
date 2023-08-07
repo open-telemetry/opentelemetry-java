@@ -10,6 +10,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.entry;
 
 import io.opentelemetry.api.common.Attributes;
@@ -44,7 +45,7 @@ class AdviceAttributesProcessorTest {
 
   @Test
   void stringRepresentation() {
-    assertThat(new AdviceAttributesProcessor(asList(stringKey("abc"), stringKey("def"))).toString())
-        .isEqualTo("AdviceAttributesProcessor{attributeKeys=[def, abc]}");
+    assertThat(new AdviceAttributesProcessor(singletonList(stringKey("abc"))).toString())
+        .isEqualTo("AdviceAttributesProcessor{attributeKeys=[abc]}");
   }
 }
