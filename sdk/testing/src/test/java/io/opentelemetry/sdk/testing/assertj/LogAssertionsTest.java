@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.satisfies;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -27,11 +27,13 @@ import org.junit.jupiter.api.Test;
 
 public class LogAssertionsTest {
   private static final Resource RESOURCE =
-      Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
+      Resource.create(Attributes.builder().put("dog", "bark").put("dog is cute", true).build());
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
       InstrumentationScopeInfo.create("instrumentation_library");
   private static final String TRACE_ID = "00000000000000010000000000000002";
   private static final String SPAN_ID = "0000000000000003";
+
+  private static final AttributeKey<String> DOG = AttributeKey.stringKey("dog");
   private static final Attributes ATTRIBUTES =
       Attributes.builder()
           .put("bear", "mya")
@@ -64,6 +66,36 @@ public class LogAssertionsTest {
   void passing() {
     assertThat(LOG_DATA)
         .hasResource(RESOURCE)
+        .hasResourceSatisfying(
+            resource ->
+                resource
+                    .hasSchemaUrl(null)
+                    .hasAttribute(DOG, "bark")
+                    .hasAttributes(
+                        Attributes.of(DOG, "bark", AttributeKey.booleanKey("dog is cute"), true))
+                    .hasAttributes(
+                        attributeEntry("dog", "bark"), attributeEntry("dog is cute", true))
+                    .hasAttributesSatisfying(
+                        attributes ->
+                            assertThat(attributes)
+                                .hasSize(2)
+                                .containsEntry(AttributeKey.stringKey("dog"), "bark")
+                                .hasEntrySatisfying(DOG, value -> assertThat(value).hasSize(4))
+                                .hasEntrySatisfying(
+                                    AttributeKey.booleanKey("dog is cute"),
+                                    value -> assertThat(value).isTrue())))
+        .hasResourceSatisfying(
+            resource ->
+                resource.hasAttributesSatisfying(satisfies(DOG, val -> val.isEqualTo("bark"))))
+        .hasResourceSatisfying(
+            resource ->
+                resource.hasAttributesSatisfyingExactly(
+                    equalTo(DOG, "bark"), equalTo(AttributeKey.booleanKey("dog is cute"), true)))
+        .hasResourceSatisfying(
+            resource ->
+                resource.hasAttributesSatisfyingExactly(
+                    satisfies(DOG, val -> val.startsWith("bar")),
+                    satisfies(AttributeKey.booleanKey("dog is cute"), val -> val.isTrue())))
         .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
         .hasTimestamp(100)
         .hasObservedTimestamp(200)
@@ -132,6 +164,36 @@ public class LogAssertionsTest {
   @Test
   void failure() {
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasResource(Resource.empty()));
+    assertThatThrownBy(
+            () ->
+                assertThat(LOG_DATA)
+                    .hasResourceSatisfying(resource -> resource.hasSchemaUrl("http://example.com")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(LOG_DATA)
+                    .hasResourceSatisfying(resource -> resource.hasAttribute(DOG, "meow")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(LOG_DATA)
+                    .hasResourceSatisfying(
+                        resource -> resource.hasAttributes(Attributes.of(DOG, "bark"))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(LOG_DATA)
+                    .hasResourceSatisfying(
+                        resource -> resource.hasAttributes(attributeEntry("dog is cute", true))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(LOG_DATA)
+                    .hasResourceSatisfying(
+                        resource ->
+                            resource.hasAttributesSatisfying(
+                                attributes -> assertThat(attributes).hasSize(1))))
+        .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
         () -> assertThat(LOG_DATA).hasInstrumentationScope(InstrumentationScopeInfo.empty()));
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasTimestamp(200));

@@ -47,6 +47,19 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
   }
 
   /**
+   * Asserts the log has a resource satisfying the given condition.
+   *
+   * @since 1.29.0
+   */
+  public LogRecordDataAssert hasResourceSatisfying(Consumer<ResourceAssert> resource) {
+    isNotNull();
+    resource.accept(
+        new ResourceAssert(
+            actual.getResource(), String.format("log [%s]", actual.getBody().asString())));
+    return this;
+  }
+
+  /**
    * Asserts the {@link InstrumentationScopeInfo} associated with a log matches the expected value.
    */
   public LogRecordDataAssert hasInstrumentationScope(
