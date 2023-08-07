@@ -56,6 +56,9 @@ public interface AutoConfigurationCustomizer {
    * allow customization. The return value of the {@link BiFunction} will replace the passed-in
    * argument.
    *
+   * <p>NOTE: If returning a different exporter instance, be sure to call {@link
+   * SpanExporter#shutdown()} on the instance passed as an argument to release resources.
+   *
    * <p>Multiple calls will execute the customizers in order.
    */
   AutoConfigurationCustomizer addSpanExporterCustomizer(
@@ -128,6 +131,9 @@ public interface AutoConfigurationCustomizer {
    * allow customization. The return value of the {@link BiFunction} will replace the passed-in
    * argument.
    *
+   * <p>NOTE: If returning a different exporter instance, be sure to call {@link
+   * SpanExporter#shutdown()} on the instance passed as an argument to release resources.
+   *
    * <p>Multiple calls will execute the customizers in order.
    */
   default AutoConfigurationCustomizer addMetricExporterCustomizer(
@@ -154,6 +160,9 @@ public interface AutoConfigurationCustomizer {
    * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link LogRecordExporter}
    * to allow customization. The return value of the {@link BiFunction} will replace the passed-in
    * argument.
+   *
+   * <p>NOTE: If returning a different exporter instance, be sure to call {@link
+   * SpanExporter#shutdown()} on the instance passed as an argument to release resources.
    *
    * <p>Multiple calls will execute the customizers in order.
    *
