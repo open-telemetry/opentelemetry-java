@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
@@ -44,7 +45,7 @@ class LoggerProviderConfigurationTest {
     LoggerProviderConfiguration.configureLoggerProvider(
         builder,
         DefaultConfigProperties.createForTest(properties),
-        LoggerProviderConfiguration.class.getClassLoader(),
+        SpiHelper.create(LoggerProviderConfiguration.class.getClassLoader()),
         MeterProvider.noop(),
         (a, unused) -> a,
         closeables);

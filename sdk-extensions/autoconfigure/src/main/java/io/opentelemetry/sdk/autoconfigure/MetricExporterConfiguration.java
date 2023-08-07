@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
@@ -35,7 +37,7 @@ final class MetricExporterConfiguration {
   static MetricReader configureReader(
       String name,
       ConfigProperties config,
-      ClassLoader serviceClassLoader,
+      SpiHelper spiHelper,
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
           metricExporterCustomizer,
       List<Closeable> closeables) {
@@ -53,7 +55,7 @@ final class MetricExporterConfiguration {
     }
 
     NamedSpiManager<MetricExporter> spiExportersManager =
-        metricExporterSpiManager(config, serviceClassLoader);
+        metricExporterSpiManager(config, spiHelper);
 
     MetricExporter metricExporter = configureExporter(name, spiExportersManager);
     closeables.add(metricExporter);
@@ -73,13 +75,12 @@ final class MetricExporterConfiguration {
 
   // Visible for testing
   static NamedSpiManager<MetricExporter> metricExporterSpiManager(
-      ConfigProperties config, ClassLoader serviceClassLoader) {
-    return SpiUtil.loadConfigurable(
+      ConfigProperties config, SpiHelper spiHelper) {
+    return spiHelper.loadConfigurable(
         ConfigurableMetricExporterProvider.class,
         ConfigurableMetricExporterProvider::getName,
         ConfigurableMetricExporterProvider::createExporter,
-        config,
-        serviceClassLoader);
+        config);
   }
 
   // Visible for testing.

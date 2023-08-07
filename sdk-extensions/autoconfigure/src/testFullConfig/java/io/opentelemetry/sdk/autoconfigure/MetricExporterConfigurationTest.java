@@ -16,6 +16,8 @@ import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -40,17 +42,16 @@ class MetricExporterConfigurationTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
+  private final SpiHelper spiHelper =
+      SpiHelper.create(MetricExporterConfigurationTest.class.getClassLoader());
+
   @Test
   void configureReader_PrometheusOnClasspath() {
     List<Closeable> closeables = new ArrayList<>();
 
     MetricReader reader =
         MetricExporterConfiguration.configureReader(
-            "prometheus",
-            EMPTY,
-            MetricExporterConfigurationTest.class.getClassLoader(),
-            (a, b) -> a,
-            closeables);
+            "prometheus", EMPTY, spiHelper, (a, b) -> a, closeables);
     cleanup.addCloseables(closeables);
 
     assertThat(reader).isNull();
@@ -88,8 +89,7 @@ class MetricExporterConfigurationTest {
   @Test
   void configureExporter_KnownSpiExportersOnClasspath() {
     NamedSpiManager<MetricExporter> spiExportersManager =
-        MetricExporterConfiguration.metricExporterSpiManager(
-            EMPTY, ConfigurableMetricExporterTest.class.getClassLoader());
+        MetricExporterConfiguration.metricExporterSpiManager(EMPTY, spiHelper);
 
     assertThat(MetricExporterConfiguration.configureExporter("logging", spiExportersManager))
         .isInstanceOf(LoggingMetricExporter.class);
@@ -108,7 +108,7 @@ class MetricExporterConfigurationTest {
                     MetricExporterConfiguration.metricExporterSpiManager(
                         DefaultConfigProperties.createForTest(
                             ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
-                        MetricExporterConfigurationTest.class.getClassLoader())))
+                        spiHelper)))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP metrics protocol: foo");
   }
