@@ -51,17 +51,21 @@ public final class OtlpGrpcMetricExporterBuilder {
   private DefaultAggregationSelector defaultAggregationSelector =
       DefaultAggregationSelector.getDefault();
 
+  OtlpGrpcMetricExporterBuilder(GrpcExporterBuilder<MetricsRequestMarshaler> delegate) {
+    this.delegate = delegate;
+    delegate.setMeterProvider(MeterProvider.noop());
+    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+  }
+
   OtlpGrpcMetricExporterBuilder() {
-    delegate =
+    this(
         new GrpcExporterBuilder<>(
             "otlp",
             "metric",
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerMetricsServiceGrpc::newFutureStub,
-            GRPC_ENDPOINT_PATH);
-    delegate.setMeterProvider(MeterProvider.noop());
-    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+            GRPC_ENDPOINT_PATH));
   }
 
   /**
@@ -220,6 +224,6 @@ public final class OtlpGrpcMetricExporterBuilder {
    */
   public OtlpGrpcMetricExporter build() {
     return new OtlpGrpcMetricExporter(
-        delegate.build(), aggregationTemporalitySelector, defaultAggregationSelector);
+        delegate, delegate.build(), aggregationTemporalitySelector, defaultAggregationSelector);
   }
 }

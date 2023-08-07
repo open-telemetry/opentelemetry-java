@@ -13,6 +13,7 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.ResourceMetricsMarshaler;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
 import io.opentelemetry.exporter.otlp.testing.internal.FakeTelemetryUtil;
+import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
@@ -87,6 +88,11 @@ class OtlpGrpcMetricExporterTest
   @Override
   protected TelemetryExporterBuilder<MetricData> exporterBuilder() {
     return TelemetryExporterBuilder.wrap(OtlpGrpcMetricExporter.builder());
+  }
+
+  @Override
+  protected TelemetryExporterBuilder<MetricData> toBuilder(TelemetryExporter<MetricData> exporter) {
+    return TelemetryExporterBuilder.wrap(((OtlpGrpcMetricExporter) exporter.unwrap()).toBuilder());
   }
 
   @Override

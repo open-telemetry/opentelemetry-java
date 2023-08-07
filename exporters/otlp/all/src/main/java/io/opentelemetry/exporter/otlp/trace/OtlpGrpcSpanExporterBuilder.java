@@ -36,16 +36,20 @@ public final class OtlpGrpcSpanExporterBuilder {
   // Visible for testing
   final GrpcExporterBuilder<TraceRequestMarshaler> delegate;
 
+  OtlpGrpcSpanExporterBuilder(GrpcExporterBuilder<TraceRequestMarshaler> delegate) {
+    this.delegate = delegate;
+    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+  }
+
   OtlpGrpcSpanExporterBuilder() {
-    delegate =
+    this(
         new GrpcExporterBuilder<>(
             "otlp",
             "span",
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerTraceServiceGrpc::newFutureStub,
-            GRPC_ENDPOINT_PATH);
-    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+            GRPC_ENDPOINT_PATH));
   }
 
   /**
@@ -182,6 +186,6 @@ public final class OtlpGrpcSpanExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpGrpcSpanExporter build() {
-    return new OtlpGrpcSpanExporter(delegate.build());
+    return new OtlpGrpcSpanExporter(delegate, delegate.build());
   }
 }

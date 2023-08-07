@@ -14,6 +14,7 @@ import io.opentelemetry.exporter.internal.otlp.traces.ResourceSpansMarshaler;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
 import io.opentelemetry.exporter.otlp.testing.internal.FakeTelemetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.ManagedChannelTelemetryExporterBuilder;
+import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
 import io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSender;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
@@ -44,6 +45,11 @@ class OtlpGrpcNettyShadedSpanExporterTest
   protected TelemetryExporterBuilder<SpanData> exporterBuilder() {
     return ManagedChannelTelemetryExporterBuilder.wrap(
         TelemetryExporterBuilder.wrap(OtlpGrpcSpanExporter.builder()));
+  }
+
+  @Override
+  protected TelemetryExporterBuilder<SpanData> toBuilder(TelemetryExporter<SpanData> exporter) {
+    return TelemetryExporterBuilder.wrap(((OtlpGrpcSpanExporter) exporter.unwrap()).toBuilder());
   }
 
   @Override

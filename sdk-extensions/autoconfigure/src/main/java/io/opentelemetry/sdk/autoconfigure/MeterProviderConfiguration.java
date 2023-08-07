@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -27,7 +28,7 @@ final class MeterProviderConfiguration {
   static void configureMeterProvider(
       SdkMeterProviderBuilder meterProviderBuilder,
       ConfigProperties config,
-      ClassLoader serviceClassLoader,
+      SpiHelper spiHelper,
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
           metricExporterCustomizer,
       List<Closeable> closeables) {
@@ -48,13 +49,13 @@ final class MeterProviderConfiguration {
         break;
     }
 
-    configureMetricReaders(config, serviceClassLoader, metricExporterCustomizer, closeables)
+    configureMetricReaders(config, spiHelper, metricExporterCustomizer, closeables)
         .forEach(meterProviderBuilder::registerMetricReader);
   }
 
   static List<MetricReader> configureMetricReaders(
       ConfigProperties config,
-      ClassLoader serviceClassLoader,
+      SpiHelper spiHelper,
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
           metricExporterCustomizer,
       List<Closeable> closeables) {
@@ -74,7 +75,7 @@ final class MeterProviderConfiguration {
         .map(
             exporterName ->
                 MetricExporterConfiguration.configureReader(
-                    exporterName, config, serviceClassLoader, metricExporterCustomizer, closeables))
+                    exporterName, config, spiHelper, metricExporterCustomizer, closeables))
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }

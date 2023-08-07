@@ -40,16 +40,20 @@ public final class OtlpGrpcLogRecordExporterBuilder {
   // Visible for testing
   final GrpcExporterBuilder<LogsRequestMarshaler> delegate;
 
+  OtlpGrpcLogRecordExporterBuilder(GrpcExporterBuilder<LogsRequestMarshaler> delegate) {
+    this.delegate = delegate;
+    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+  }
+
   OtlpGrpcLogRecordExporterBuilder() {
-    delegate =
+    this(
         new GrpcExporterBuilder<>(
             "otlp",
             "log",
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerLogsServiceGrpc::newFutureStub,
-            GRPC_ENDPOINT_PATH);
-    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+            GRPC_ENDPOINT_PATH));
   }
 
   /**
@@ -185,6 +189,6 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpGrpcLogRecordExporter build() {
-    return new OtlpGrpcLogRecordExporter(delegate.build());
+    return new OtlpGrpcLogRecordExporter(delegate, delegate.build());
   }
 }

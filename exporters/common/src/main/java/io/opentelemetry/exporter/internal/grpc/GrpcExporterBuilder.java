@@ -49,7 +49,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   private URI endpoint;
   private boolean compressionEnabled = false;
   private final Map<String, String> headers = new HashMap<>();
-  private final TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
+  private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy;
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
 
@@ -125,6 +125,30 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   public GrpcExporterBuilder<T> setMeterProvider(MeterProvider meterProvider) {
     this.meterProviderSupplier = () -> meterProvider;
     return this;
+  }
+
+  @SuppressWarnings("BuilderReturnThis")
+  public GrpcExporterBuilder<T> copy() {
+    GrpcExporterBuilder<T> copy =
+        new GrpcExporterBuilder<>(
+            exporterName,
+            type,
+            TimeUnit.NANOSECONDS.toSeconds(timeoutNanos),
+            endpoint,
+            grpcStubFactory,
+            grpcEndpointPath);
+
+    copy.timeoutNanos = timeoutNanos;
+    copy.endpoint = endpoint;
+    copy.compressionEnabled = compressionEnabled;
+    copy.headers.putAll(headers);
+    copy.tlsConfigHelper = tlsConfigHelper.copy();
+    if (retryPolicy != null) {
+      copy.retryPolicy = retryPolicy.toBuilder().build();
+    }
+    copy.meterProviderSupplier = meterProviderSupplier;
+    copy.grpcChannel = grpcChannel;
+    return copy;
   }
 
   public GrpcExporter<T> build() {

@@ -11,6 +11,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -29,18 +31,15 @@ class MetricExporterConfigurationTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
+  private final SpiHelper spiHelper =
+      SpiHelper.create(MetricExporterConfigurationTest.class.getClassLoader());
+
   @Test
   void configureReader_PrometheusNotOnClasspath() {
     List<Closeable> closeables = new ArrayList<>();
 
     assertThatThrownBy(
-            () ->
-                configureReader(
-                    "prometheus",
-                    EMPTY,
-                    MetricExporterConfiguration.class.getClassLoader(),
-                    (a, b) -> a,
-                    new ArrayList<>()))
+            () -> configureReader("prometheus", EMPTY, spiHelper, (a, b) -> a, new ArrayList<>()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage(
             "otel.metrics.exporter set to \"prometheus\" but opentelemetry-exporter-prometheus"
@@ -52,8 +51,7 @@ class MetricExporterConfigurationTest {
   @Test
   void configureExporter_KnownSpiExportersNotOnClasspath() {
     NamedSpiManager<MetricExporter> spiExportersManager =
-        MetricExporterConfiguration.metricExporterSpiManager(
-            EMPTY, MetricExporterConfigurationTest.class.getClassLoader());
+        MetricExporterConfiguration.metricExporterSpiManager(EMPTY, spiHelper);
 
     assertThatThrownBy(() -> configureExporter("logging", spiExportersManager))
         .isInstanceOf(ConfigurationException.class)
