@@ -6,7 +6,6 @@
 package io.opentelemetry.extension.incubator.metrics;
 
 import io.opentelemetry.api.metrics.DoubleHistogram;
-import io.opentelemetry.api.metrics.LongHistogram;
 import java.util.List;
 
 /** Configure advice for implementations of {@link DoubleHistogram}. */
