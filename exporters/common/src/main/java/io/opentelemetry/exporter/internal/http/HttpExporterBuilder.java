@@ -170,7 +170,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   public String toString(boolean includePrefixAndSuffix) {
     StringJoiner joiner =
         includePrefixAndSuffix
-            ? new StringJoiner(", ", "GrpcExporterBuilder{", "}")
+            ? new StringJoiner(", ", "HttpExporterBuilder{", "}")
             : new StringJoiner(", ");
     joiner.add("exporterName=" + exporterName);
     joiner.add("type=" + type);
