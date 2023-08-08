@@ -11,7 +11,6 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 final class AdviceAttributesProcessor extends AttributesProcessor {
@@ -35,24 +34,7 @@ final class AdviceAttributesProcessor extends AttributesProcessor {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    AdviceAttributesProcessor that = (AdviceAttributesProcessor) o;
-    return attributeKeys.equals(that.attributeKeys);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(attributeKeys);
-  }
-
-  @Override
   public String toString() {
-    return "AdviceAttributesProcessor{" + "attributeKeys=" + attributeKeys + '}';
+    return "AdviceAttributesProcessor{attributeKeys=" + attributeKeys + '}';
   }
 }
