@@ -40,6 +40,7 @@ environment variables, e.g., `OTEL_TRACES_EXPORTER=zipkin`.
   * [Periodic Metric Reader](#periodic-metric-reader)
   * [Metric exporters](#metric-exporters)
     + [Prometheus exporter](#prometheus-exporter)
+  * [Cardinality limits](#cardinality-limits)
 - [Logger provider](#logger-provider)
 - [Batch log record processor](#batch-log-record-processor)
 - [Customizing the OpenTelemetry SDK](#customizing-the-opentelemetry-sdk)
@@ -319,7 +320,6 @@ The following configuration options are specific to `SdkMeterProvider`. See [gen
 |-----------------------------|-----------------------------|----------------------------------------------------------------------------------------------|
 | otel.metric.export.interval | OTEL_METRIC_EXPORT_INTERVAL | The interval, in milliseconds, between the start of two export attempts. Default is `60000`. |
 
-
 ### Metric exporters
 
 The following exporters are only available for the metric signal. See [exporters](#exporters) for general exporter configuration.
@@ -336,6 +336,12 @@ The [Prometheus](https://github.com/prometheus/docs/blob/master/content/docs/ins
 
 Note that this is a pull exporter - it opens up a server on the local process listening on the specified host and port, which
 a Prometheus server scrapes from.
+
+### Cardinality Limits
+
+| System property                             | Environment variable                        | Description                                                                                                                               |
+|---------------------------------------------|---------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| otel.experimental.metrics.cardinality.limit | OTEL_EXPERIMENTAL_METRICS_CARDINALITY_LIMIT | If set, configure experimental cardinality limit. The value dictates the maximum number of distinct points per metric. Default is `2000`. |
 
 ## Logger provider
 
