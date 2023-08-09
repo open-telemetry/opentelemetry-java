@@ -46,6 +46,18 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
+   * Merge a {@link Resource} with the current.
+   *
+   * @param resource {@link Resource} to merge with current.
+   * @since 1.29.0
+   */
+  public SdkLoggerProviderBuilder addResource(Resource resource) {
+    Objects.requireNonNull(resource, "resource");
+    this.resource = this.resource.merge(resource);
+    return this;
+  }
+
+  /**
    * Assign a {@link Supplier} of {@link LogLimits}. {@link LogLimits} will be retrieved each time a
    * {@link Logger#logRecordBuilder()} is called.
    *
@@ -95,16 +107,5 @@ public final class SdkLoggerProviderBuilder {
    */
   public SdkLoggerProvider build() {
     return new SdkLoggerProvider(resource, logLimitsSupplier, logRecordProcessors, clock);
-  }
-
-  /**
-   * Merge custom resource object with the current resource object.
-   *
-   * @param resource {@link Resource} object to merge with current.
-   */
-  public SdkLoggerProviderBuilder addResource(Resource resource) {
-    Objects.requireNonNull(resource, "resource");
-    this.resource = this.resource.merge(resource);
-    return this;
   }
 }

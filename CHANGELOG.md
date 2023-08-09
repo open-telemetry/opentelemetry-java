@@ -2,6 +2,66 @@
 
 ## Unreleased
 
+### API
+
+* Update Span javadoc to allow null/empty attr values
+  ([#5616](https://github.com/open-telemetry/opentelemetry-java/pull/5616))
+
+### SDK
+
+* Add Sdk{Signal}ProviderBuilder#addResource(Resource) method to merge Resource
+  with current
+  ([#5619](https://github.com/open-telemetry/opentelemetry-java/pull/5619))
+
+#### Metrics
+
+* Add LongHistogramAdviceConfigurer to improve api surface types
+  ([#5689](https://github.com/open-telemetry/opentelemetry-java/pull/5689))
+
+#### Exporter
+
+* Add OtlpHttp{Signal}Exporter#toBuilder() methods
+  ([#5652](https://github.com/open-telemetry/opentelemetry-java/pull/5652))
+* Add OtlpGrpc{Signal}Exporter#toBuilder() methods
+  ([#5680](https://github.com/open-telemetry/opentelemetry-java/pull/5680))
+* Add #toString to OTLP exporters
+  ([#5686](https://github.com/open-telemetry/opentelemetry-java/pull/5686))
+* Break out GrpcSender, GrpcSenderProvider
+  ([#5617](https://github.com/open-telemetry/opentelemetry-java/pull/5617))
+
+#### SDK Extensions
+
+* BREAKING: Delete zpages
+  ([#5611](https://github.com/open-telemetry/opentelemetry-java/pull/5611))
+* Initialize file configuration with generated model classes and parse method
+  ([#5399](https://github.com/open-telemetry/opentelemetry-java/pull/5399))
+* Refactor SpiUtil to improve mocking
+  ([#5679](https://github.com/open-telemetry/opentelemetry-java/pull/5679))
+* Switch from snakeyaml to snakeyaml engine
+  ([#5691](https://github.com/open-telemetry/opentelemetry-java/pull/5691))
+* Add experimental autoconfigure support for customizing cardinality limit
+  ([#5659](https://github.com/open-telemetry/opentelemetry-java/pull/5659))
+* Reorganize autoconfigure docs by signal
+  ([#5665](https://github.com/open-telemetry/opentelemetry-java/pull/5665))
+
+### OpenCensus Shim
+
+* Change OpenCensus shim default sampling to defer to OpenTelemetry
+  ([#5604](https://github.com/open-telemetry/opentelemetry-java/pull/5604))
+
+### Project Tooling
+
+* Update Gradle Wrapper from 8.2 to 8.2.1
+  ([#5618](https://github.com/open-telemetry/opentelemetry-java/pull/5618))
+* Fix gradle java version requirement warning
+  ([#5624](https://github.com/open-telemetry/opentelemetry-java/pull/5624))
+* Refer to Adoptium/Temurin instead of AdoptOpenJDK
+  ([#5636](https://github.com/open-telemetry/opentelemetry-java/pull/5636))
+* Use OtelVersionClassPlugin instead of reading version from resource
+  ([#5622](https://github.com/open-telemetry/opentelemetry-java/pull/5622))
+* Enforce build-graal success in required status check
+  ([#5696](https://github.com/open-telemetry/opentelemetry-java/pull/5696))
+
 ## Version 1.28.0 (2023-07-07)
 
 [opentelemetry-sdk-extension-autoconfigure](./sdk-extensions/autoconfigure) is now stable! See "SDK
