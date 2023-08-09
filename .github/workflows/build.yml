@@ -159,5 +159,7 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - if: needs.build.result != 'success'
+      - if: |
+          needs.build.result != 'success' ||
+          needs.build-graal.result != 'success'
         run: exit 1
