@@ -87,4 +87,9 @@ public final class OtlpGrpcLogRecordExporter implements LogRecordExporter {
   public CompletableResultCode shutdown() {
     return delegate.shutdown();
   }
+
+  @Override
+  public String toString() {
+    return "OtlpGrpcLogRecordExporter{" + builder.toString(false) + "}";
+  }
 }
