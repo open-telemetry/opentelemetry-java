@@ -40,7 +40,7 @@ environment variables, e.g., `OTEL_TRACES_EXPORTER=zipkin`.
   * [Periodic Metric Reader](#periodic-metric-reader)
   * [Metric exporters](#metric-exporters)
     + [Prometheus exporter](#prometheus-exporter)
-  * [Cardinality Limits](#cardinality-limits)
+  * [Cardinality limits](#cardinality-limits)
 - [Logger provider](#logger-provider)
 - [Batch log record processor](#batch-log-record-processor)
 - [Customizing the OpenTelemetry SDK](#customizing-the-opentelemetry-sdk)
