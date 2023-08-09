@@ -94,7 +94,7 @@ class SdkMeterTest {
   void checkValidInstrumentName_InvalidNameLogs() {
     assertThat(checkValidInstrumentName("1")).isFalse();
     sdkMeterLogs.assertContains(
-        "Instrument name \"1\" is invalid, returning noop instrument. Instrument names must consist of 63 or fewer characters including alphanumeric, _, ., -, and start with a letter.");
+        "Instrument name \"1\" is invalid, returning noop instrument. Instrument names must consist of 255 or fewer characters including alphanumeric, _, ., -, and start with a letter.");
   }
 
   @Test
@@ -109,7 +109,7 @@ class SdkMeterTest {
     assertThat(checkValidInstrumentName("ABCDEFGHIJKLMNOPQRSTUVWXYZ")).isTrue();
     assertThat(checkValidInstrumentName("a1234567890")).isTrue();
     assertThat(checkValidInstrumentName("a_-.")).isTrue();
-    assertThat(checkValidInstrumentName(new String(new char[63]).replace('\0', 'a'))).isTrue();
+    assertThat(checkValidInstrumentName(new String(new char[255]).replace('\0', 'a'))).isTrue();
 
     // Empty and null not allowed
     assertThat(checkValidInstrumentName(null)).isFalse();
@@ -140,8 +140,8 @@ class SdkMeterTest {
     assertThat(checkValidInstrumentName("a<")).isFalse();
     assertThat(checkValidInstrumentName("a>")).isFalse();
     assertThat(checkValidInstrumentName("a?")).isFalse();
-    // Must be 63 characters or fewer
-    assertThat(checkValidInstrumentName(new String(new char[64]).replace('\0', 'a'))).isFalse();
+    // Must be 255 characters or fewer
+    assertThat(checkValidInstrumentName(new String(new char[256]).replace('\0', 'a'))).isFalse();
   }
 
   @Test
