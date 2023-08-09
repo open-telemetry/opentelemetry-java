@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -30,6 +31,9 @@ class MeterProviderConfigurationTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
+  private final SpiHelper spiHelper =
+      SpiHelper.create(MeterProviderConfigurationTest.class.getClassLoader());
+
   @Test
   void configureMeterProvider_InvalidCardinalityLimit() {
     List<Closeable> closeables = new ArrayList<>();
@@ -44,7 +48,7 @@ class MeterProviderConfigurationTest {
                           "logging",
                           "otel.experimental.metrics.cardinality.limit",
                           "0")),
-                  MeterProviderConfigurationTest.class.getClassLoader(),
+                  spiHelper,
                   (a, b) -> a,
                   closeables);
             })
@@ -63,7 +67,7 @@ class MeterProviderConfigurationTest {
         builder,
         DefaultConfigProperties.createForTest(
             Collections.singletonMap("otel.metrics.exporter", "logging")),
-        MeterProviderConfigurationTest.class.getClassLoader(),
+        spiHelper,
         (a, b) -> a,
         closeables);
     cleanup.addCloseables(closeables);
@@ -79,7 +83,7 @@ class MeterProviderConfigurationTest {
                 "logging",
                 "otel.experimental.metrics.cardinality.limit",
                 "100")),
-        MeterProviderConfigurationTest.class.getClassLoader(),
+        spiHelper,
         (a, b) -> a,
         closeables);
     cleanup.addCloseables(closeables);

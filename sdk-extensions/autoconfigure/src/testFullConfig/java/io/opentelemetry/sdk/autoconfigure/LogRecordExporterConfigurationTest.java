@@ -12,6 +12,8 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogRecordExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
+import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
@@ -20,12 +22,14 @@ import org.junit.jupiter.api.Test;
 
 class LogRecordExporterConfigurationTest {
 
+  private final SpiHelper spiHelper =
+      SpiHelper.create(LogRecordExporterConfigurationTest.class.getClassLoader());
+
   @Test
   void configureExporter_KnownSpiExportersOnClasspath() {
     NamedSpiManager<LogRecordExporter> spiExportersManager =
         LogRecordExporterConfiguration.logRecordExporterSpiManager(
-            DefaultConfigProperties.createForTest(Collections.emptyMap()),
-            LogRecordExporterConfigurationTest.class.getClassLoader());
+            DefaultConfigProperties.createForTest(Collections.emptyMap()), spiHelper);
 
     assertThat(LogRecordExporterConfiguration.configureExporter("logging", spiExportersManager))
         .isInstanceOf(SystemOutLogRecordExporter.class);
@@ -45,7 +49,7 @@ class LogRecordExporterConfigurationTest {
                     LogRecordExporterConfiguration.logRecordExporterSpiManager(
                         DefaultConfigProperties.createForTest(
                             ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
-                        LogRecordExporterConfiguration.class.getClassLoader())))
+                        spiHelper)))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP logs protocol: foo");
   }

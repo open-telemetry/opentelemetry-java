@@ -30,9 +30,13 @@ public final class OtlpHttpLogRecordExporterBuilder {
 
   private final HttpExporterBuilder<LogsRequestMarshaler> delegate;
 
-  OtlpHttpLogRecordExporterBuilder() {
-    delegate = new HttpExporterBuilder<>("otlp", "log", DEFAULT_ENDPOINT);
+  OtlpHttpLogRecordExporterBuilder(HttpExporterBuilder<LogsRequestMarshaler> delegate) {
+    this.delegate = delegate;
     OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+  }
+
+  OtlpHttpLogRecordExporterBuilder() {
+    this(new HttpExporterBuilder<>("otlp", "log", DEFAULT_ENDPOINT));
   }
 
   /**
@@ -141,6 +145,6 @@ public final class OtlpHttpLogRecordExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpHttpLogRecordExporter build() {
-    return new OtlpHttpLogRecordExporter(delegate.build());
+    return new OtlpHttpLogRecordExporter(delegate, delegate.build());
   }
 }

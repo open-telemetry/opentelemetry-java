@@ -324,7 +324,14 @@ class InteroperabilityTest {
   }
 
   @Test
-  public void testNoRecordDoesNotExport() {
+  public void testOpenCensusSamplerIsAlwaysOn() {
+    // OpenTelemetryTraceComponentImpl provides this behavior
+    assertThat(Tracing.getTraceConfig().getActiveTraceParams().getSampler())
+        .isEqualTo(Samplers.alwaysSample());
+  }
+
+  @Test
+  public void testByDefaultDoesExport() {
     io.opencensus.trace.Tracer tracer = Tracing.getTracer();
     try (io.opencensus.common.Scope scope =
         tracer.spanBuilder("OpenCensusSpan").setRecordEvents(false).startScopedSpan()) {
@@ -335,7 +342,7 @@ class InteroperabilityTest {
       span.putAttribute("testKey", AttributeValue.stringAttributeValue("testValue"));
     }
     Tracing.getExportComponent().shutdown();
-    verify(spanExporter, never()).export(anyCollection());
+    verify(spanExporter, times(1)).export(anyCollection());
   }
 
   private static void createOpenCensusScopedSpanWithChildSpan(

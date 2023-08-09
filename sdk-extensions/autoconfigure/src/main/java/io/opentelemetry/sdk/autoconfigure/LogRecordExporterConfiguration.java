@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -33,7 +35,7 @@ final class LogRecordExporterConfiguration {
   // Visible for test
   static Map<String, LogRecordExporter> configureLogRecordExporters(
       ConfigProperties config,
-      ClassLoader serviceClassLoader,
+      SpiHelper spiHelper,
       BiFunction<? super LogRecordExporter, ConfigProperties, ? extends LogRecordExporter>
           logRecordExporterCustomizer,
       List<Closeable> closeables) {
@@ -57,7 +59,7 @@ final class LogRecordExporterConfiguration {
     }
 
     NamedSpiManager<LogRecordExporter> spiExportersManager =
-        logRecordExporterSpiManager(config, serviceClassLoader);
+        logRecordExporterSpiManager(config, spiHelper);
 
     Map<String, LogRecordExporter> map = new HashMap<>();
     for (String exporterName : exporterNames) {
@@ -75,13 +77,12 @@ final class LogRecordExporterConfiguration {
 
   // Visible for testing
   static NamedSpiManager<LogRecordExporter> logRecordExporterSpiManager(
-      ConfigProperties config, ClassLoader serviceClassLoader) {
-    return SpiUtil.loadConfigurable(
+      ConfigProperties config, SpiHelper spiHelper) {
+    return spiHelper.loadConfigurable(
         ConfigurableLogRecordExporterProvider.class,
         ConfigurableLogRecordExporterProvider::getName,
         ConfigurableLogRecordExporterProvider::createExporter,
-        config,
-        serviceClassLoader);
+        config);
   }
 
   // Visible for testing

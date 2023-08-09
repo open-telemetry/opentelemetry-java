@@ -14,6 +14,8 @@ import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.provider.TestConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -37,6 +39,9 @@ class ConfigurableSpanExporterTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
+  private final SpiHelper spiHelper =
+      SpiHelper.create(ConfigurableSpanExporterTest.class.getClassLoader());
+
   @Test
   void configureSpanExporters_spiExporter() {
     ConfigProperties config =
@@ -46,7 +51,7 @@ class ConfigurableSpanExporterTest {
 
     Map<String, SpanExporter> exportersByName =
         SpanExporterConfiguration.configureSpanExporters(
-            config, SpanExporterConfiguration.class.getClassLoader(), (a, unused) -> a, closeables);
+            config, spiHelper, (a, unused) -> a, closeables);
     cleanup.addCloseables(closeables);
 
     assertThat(exportersByName)
@@ -71,7 +76,7 @@ class ConfigurableSpanExporterTest {
             () ->
                 SpanExporterConfiguration.configureSpanExporters(
                     config,
-                    new URLClassLoader(new URL[0], null),
+                    SpiHelper.create(new URLClassLoader(new URL[0], null)),
                     (a, unused) -> a,
                     new ArrayList<>()))
         .isInstanceOf(ConfigurationException.class)
@@ -90,10 +95,7 @@ class ConfigurableSpanExporterTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureSpanExporters(
-                    config,
-                    SpanExporterConfiguration.class.getClassLoader(),
-                    (a, unused) -> a,
-                    closeables))
+                    config, spiHelper, (a, unused) -> a, closeables))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.traces.exporter contains duplicates: [otlp]");
     cleanup.addCloseables(closeables);
@@ -109,10 +111,7 @@ class ConfigurableSpanExporterTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureSpanExporters(
-                    config,
-                    SpanExporterConfiguration.class.getClassLoader(),
-                    (a, unused) -> a,
-                    closeables))
+                    config, spiHelper, (a, unused) -> a, closeables))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.traces.exporter contains none along with other exporters");
     cleanup.addCloseables(closeables);

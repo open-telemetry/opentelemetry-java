@@ -15,6 +15,7 @@ import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
 import io.opentelemetry.exporter.otlp.testing.internal.FakeTelemetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.ManagedChannelTelemetryExporterBuilder;
+import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -44,6 +45,13 @@ class OtlpGrpcNettyLogRecordExporterTest
   protected TelemetryExporterBuilder<LogRecordData> exporterBuilder() {
     return ManagedChannelTelemetryExporterBuilder.wrap(
         TelemetryExporterBuilder.wrap(OtlpGrpcLogRecordExporter.builder()));
+  }
+
+  @Override
+  protected TelemetryExporterBuilder<LogRecordData> toBuilder(
+      TelemetryExporter<LogRecordData> exporter) {
+    return TelemetryExporterBuilder.wrap(
+        ((OtlpGrpcLogRecordExporter) exporter.unwrap()).toBuilder());
   }
 
   @Override

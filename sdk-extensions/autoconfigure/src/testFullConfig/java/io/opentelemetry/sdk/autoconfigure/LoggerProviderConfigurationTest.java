@@ -12,6 +12,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -43,7 +44,7 @@ class LoggerProviderConfigurationTest {
     LoggerProviderConfiguration.configureLoggerProvider(
         builder,
         DefaultConfigProperties.createForTest(Collections.emptyMap()),
-        LoggerProviderConfiguration.class.getClassLoader(),
+        SpiHelper.create(LoggerProviderConfiguration.class.getClassLoader()),
         MeterProvider.noop(),
         (a, unused) -> a,
         closeables);
