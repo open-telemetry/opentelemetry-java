@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 /** Builder of {@link SdkTracerProvider}. */
@@ -145,4 +146,15 @@ public final class SdkTracerProviderBuilder {
   }
 
   SdkTracerProviderBuilder() {}
+
+  /**
+   * Merge custom resource object with the current resource object.
+   *
+   * @param resource {@link Resource} object to merge with current.
+   */
+  public SdkTracerProviderBuilder addResource(Resource resource) {
+    Objects.requireNonNull(resource, "resource");
+    this.resource = this.resource.merge(resource);
+    return this;
+  }
 }
