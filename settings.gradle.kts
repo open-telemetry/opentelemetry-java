@@ -2,9 +2,11 @@ pluginManagement {
   plugins {
     id("com.github.ben-manes.versions") version "0.47.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("com.gradle.enterprise") version "3.13.4"
+    id("com.gradle.enterprise") version "3.14.1"
+    id("de.undercouch.download") version "5.4.0"
+    id("org.jsonschema2pojo") version "1.2.1"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
-    id("org.graalvm.buildtools.native") version "0.9.23"
+    id("org.graalvm.buildtools.native") version "0.9.24"
   }
 }
 
@@ -32,7 +34,9 @@ include(":extensions:incubator")
 include(":extensions:kotlin")
 include(":extensions:trace-propagators")
 include(":exporters:common")
-include(":exporters:http-sender:okhttp")
+include(":exporters:sender:grpc-managed-channel")
+include(":exporters:sender:jdk")
+include(":exporters:sender:okhttp")
 include(":exporters:jaeger")
 include(":exporters:jaeger-proto")
 include(":exporters:jaeger-thrift")

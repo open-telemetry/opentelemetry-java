@@ -12,6 +12,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
@@ -40,10 +41,14 @@ public final class OtlpHttpMetricExporterBuilder {
   private DefaultAggregationSelector defaultAggregationSelector =
       DefaultAggregationSelector.getDefault();
 
-  OtlpHttpMetricExporterBuilder() {
-    delegate = new HttpExporterBuilder<>("otlp", "metric", DEFAULT_ENDPOINT);
+  OtlpHttpMetricExporterBuilder(HttpExporterBuilder<MetricsRequestMarshaler> delegate) {
+    this.delegate = delegate;
     delegate.setMeterProvider(MeterProvider.noop());
     OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+  }
+
+  OtlpHttpMetricExporterBuilder() {
+    this(new HttpExporterBuilder<>("otlp", "metric", DEFAULT_ENDPOINT));
   }
 
   /**
@@ -157,6 +162,17 @@ public final class OtlpHttpMetricExporterBuilder {
     return this;
   }
 
+  /**
+   * Ses the retry policy. Retry is disabled by default.
+   *
+   * @since 1.28.0
+   */
+  public OtlpHttpMetricExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
+    requireNonNull(retryPolicy, "retryPolicy");
+    delegate.setRetryPolicy(retryPolicy);
+    return this;
+  }
+
   OtlpHttpMetricExporterBuilder exportAsJson() {
     delegate.exportAsJson();
     return this;
@@ -169,6 +185,6 @@ public final class OtlpHttpMetricExporterBuilder {
    */
   public OtlpHttpMetricExporter build() {
     return new OtlpHttpMetricExporter(
-        delegate.build(), aggregationTemporalitySelector, defaultAggregationSelector);
+        delegate, delegate.build(), aggregationTemporalitySelector, defaultAggregationSelector);
   }
 }

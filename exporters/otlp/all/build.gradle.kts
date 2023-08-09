@@ -17,21 +17,19 @@ dependencies {
   api(project(":sdk:logs"))
 
   implementation(project(":exporters:otlp:common"))
-  implementation(project(":exporters:http-sender:okhttp"))
+  implementation(project(":exporters:sender:okhttp"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
 
-  implementation("com.squareup.okhttp3:okhttp")
-
   compileOnly("io.grpc:grpc-stub")
-
-  testImplementation("io.grpc:grpc-stub")
 
   testImplementation(project(":exporters:otlp:testing-internal"))
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("com.squareup.okhttp3:okhttp-tls")
+  testImplementation("io.grpc:grpc-stub")
 
   jmhImplementation(project(":sdk:testing"))
+  jmhImplementation(project(":exporters:sender:grpc-managed-channel"))
   jmhImplementation("com.linecorp.armeria:armeria")
   jmhImplementation("com.linecorp.armeria:armeria-grpc")
   jmhImplementation("io.opentelemetry.proto:opentelemetry-proto")
@@ -39,33 +37,87 @@ dependencies {
   jmhRuntimeOnly("io.grpc:grpc-netty")
 }
 
+val testJavaVersion: String? by project
+
 testing {
   suites {
-    val testGrpcNetty by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testGrpcNetty") {
       dependencies {
+        implementation(project(":exporters:sender:grpc-managed-channel"))
         implementation(project(":exporters:otlp:testing-internal"))
 
         implementation("io.grpc:grpc-netty")
         implementation("io.grpc:grpc-stub")
       }
+      targets {
+        all {
+          testTask {
+            systemProperty(
+              "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider",
+              "io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider"
+            )
+          }
+        }
+      }
     }
-    val testGrpcNettyShaded by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testGrpcNettyShaded") {
       dependencies {
+        implementation(project(":exporters:sender:grpc-managed-channel"))
         implementation(project(":exporters:otlp:testing-internal"))
 
         implementation("io.grpc:grpc-netty-shaded")
         implementation("io.grpc:grpc-stub")
       }
+      targets {
+        all {
+          testTask {
+            systemProperty(
+              "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider",
+              "io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider"
+            )
+          }
+        }
+      }
     }
-    val testGrpcOkhttp by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testGrpcOkhttp") {
       dependencies {
+        implementation(project(":exporters:sender:grpc-managed-channel"))
         implementation(project(":exporters:otlp:testing-internal"))
 
         implementation("io.grpc:grpc-okhttp")
         implementation("io.grpc:grpc-stub")
       }
+      targets {
+        all {
+          testTask {
+            systemProperty(
+              "io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider",
+              "io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSenderProvider"
+            )
+          }
+        }
+      }
     }
-    val testSpanPipeline by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testJdkHttpSender") {
+      dependencies {
+        implementation(project(":exporters:sender:jdk"))
+        implementation(project(":exporters:otlp:testing-internal"))
+
+        implementation("io.grpc:grpc-stub")
+      }
+      targets {
+        all {
+          testTask {
+            systemProperty(
+              "io.opentelemetry.exporter.internal.http.HttpSenderProvider",
+              "io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSenderProvider"
+            )
+            enabled = !testJavaVersion.equals("8")
+          }
+        }
+      }
+    }
+    register<JvmTestSuite>("testSpanPipeline") {
       dependencies {
         implementation("io.opentelemetry.proto:opentelemetry-proto")
         implementation("com.linecorp.armeria:armeria-grpc-protocol")
@@ -84,5 +136,11 @@ tasks {
         name != "testSpanPipeline"
       },
     )
+  }
+}
+
+afterEvaluate {
+  tasks.named<JavaCompile>("compileTestJdkHttpSenderJava") {
+    options.release.set(11)
   }
 }

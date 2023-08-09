@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.jaeger.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collections;
@@ -16,6 +15,7 @@ import java.util.Map;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // Testing deprecated code
 class JaegerGrpcSpanExporterProviderTest {
 
   private static final JaegerGrpcSpanExporterProvider provider =
@@ -30,14 +30,15 @@ class JaegerGrpcSpanExporterProviderTest {
   void createExporter_Default() {
     try (SpanExporter spanExporter =
         provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap()))) {
-      assertThat(spanExporter).isInstanceOf(JaegerGrpcSpanExporter.class);
       assertThat(spanExporter)
-          .extracting("delegate")
+          .isInstanceOf(io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter.class);
+      assertThat(spanExporter)
+          .extracting("delegate.grpcSender")
           .extracting("client")
           .extracting("callTimeoutMillis")
           .isEqualTo(10000);
       assertThat(spanExporter)
-          .extracting("delegate")
+          .extracting("delegate.grpcSender")
           .extracting("url")
           .isEqualTo(
               HttpUrl.get("http://localhost:14250/jaeger.api_v2.CollectorService/PostSpans"));
@@ -52,14 +53,15 @@ class JaegerGrpcSpanExporterProviderTest {
 
     try (SpanExporter spanExporter =
         provider.createExporter(DefaultConfigProperties.createForTest(config))) {
-      assertThat(spanExporter).isInstanceOf(JaegerGrpcSpanExporter.class);
       assertThat(spanExporter)
-          .extracting("delegate")
+          .isInstanceOf(io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter.class);
+      assertThat(spanExporter)
+          .extracting("delegate.grpcSender")
           .extracting("client")
           .extracting("callTimeoutMillis")
           .isEqualTo(1000);
       assertThat(spanExporter)
-          .extracting("delegate")
+          .extracting("delegate.grpcSender")
           .extracting("url")
           .isEqualTo(HttpUrl.get("http://endpoint:8080/jaeger.api_v2.CollectorService/PostSpans"));
     }

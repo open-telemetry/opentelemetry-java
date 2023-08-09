@@ -10,7 +10,14 @@ import io.jaegertracing.thrift.internal.senders.ThriftSender;
 import javax.annotation.Nullable;
 import org.apache.thrift.transport.TTransportException;
 
-/** Builder utility for this exporter. */
+/**
+ * Builder utility for this exporter.
+ *
+ * @deprecated Use {@code OtlpGrpcSpanExporter} or {@code OtlpHttpSpanExporter} from <a
+ *     href="https://github.com/open-telemetry/opentelemetry-java/tree/main/exporters/otlp/all">opentelemetry-exporter-otlp</a>
+ *     instead.
+ */
+@Deprecated
 public final class JaegerThriftSpanExporterBuilder {
 
   private String endpoint = JaegerThriftSpanExporter.DEFAULT_ENDPOINT;

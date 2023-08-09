@@ -6,18 +6,20 @@
 package io.opentelemetry.exporter.internal.http;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.internal.retry.RetryPolicy;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -48,7 +50,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private boolean exportAsJson = false;
   @Nullable private Map<String, String> headers;
 
-  private final TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
+  private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy;
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
   @Nullable private Authenticator authenticator;
@@ -125,33 +127,133 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  @SuppressWarnings("BuilderReturnThis")
+  public HttpExporterBuilder<T> copy() {
+    HttpExporterBuilder<T> copy = new HttpExporterBuilder<>(exporterName, type, endpoint);
+    copy.endpoint = endpoint;
+    copy.timeoutNanos = timeoutNanos;
+    copy.exportAsJson = exportAsJson;
+    copy.compressionEnabled = compressionEnabled;
+    if (headers != null) {
+      copy.headers = new HashMap<>(headers);
+    }
+    copy.tlsConfigHelper = tlsConfigHelper.copy();
+    if (retryPolicy != null) {
+      copy.retryPolicy = retryPolicy.toBuilder().build();
+    }
+    copy.meterProviderSupplier = meterProviderSupplier;
+    copy.authenticator = authenticator;
+    return copy;
+  }
+
   public HttpExporter<T> build() {
     Map<String, String> headers = this.headers == null ? Collections.emptyMap() : this.headers;
     Supplier<Map<String, String>> headerSupplier = () -> headers;
 
-    HttpSender httpSender = null;
-    // TODO: once we publish multiple HttpSenderProviders, log warning when multiple are found
-    for (HttpSenderProvider httpSenderProvider :
-        ServiceLoader.load(HttpSenderProvider.class, HttpExporterBuilder.class.getClassLoader())) {
-      httpSender =
-          httpSenderProvider.createSender(
-              endpoint,
-              compressionEnabled,
-              exportAsJson ? "application/json" : "application/x-protobuf",
-              timeoutNanos,
-              headerSupplier,
-              authenticator,
-              retryPolicy,
-              tlsConfigHelper.getSslContext(),
-              tlsConfigHelper.getTrustManager());
-      LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
-      break;
-    }
-    if (httpSender == null) {
-      throw new IllegalStateException(
-          "No HttpSenderProvider found on classpath. Please add dependency on opentelemetry-exporter-http-sender-okhttp");
-    }
+    HttpSenderProvider httpSenderProvider = resolveHttpSenderProvider();
+    HttpSender httpSender =
+        httpSenderProvider.createSender(
+            endpoint,
+            compressionEnabled,
+            exportAsJson ? "application/json" : "application/x-protobuf",
+            timeoutNanos,
+            headerSupplier,
+            authenticator,
+            retryPolicy,
+            tlsConfigHelper.getSslContext(),
+            tlsConfigHelper.getTrustManager());
+    LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
 
     return new HttpExporter<>(exporterName, type, httpSender, meterProviderSupplier, exportAsJson);
+  }
+
+  public String toString(boolean includePrefixAndSuffix) {
+    StringJoiner joiner =
+        includePrefixAndSuffix
+            ? new StringJoiner(", ", "HttpExporterBuilder{", "}")
+            : new StringJoiner(", ");
+    joiner.add("exporterName=" + exporterName);
+    joiner.add("type=" + type);
+    joiner.add("endpoint=" + endpoint);
+    joiner.add("timeoutNanos=" + timeoutNanos);
+    joiner.add("compressionEnabled=" + compressionEnabled);
+    joiner.add("exportAsJson=" + exportAsJson);
+    if (headers != null) {
+      StringJoiner headersJoiner = new StringJoiner(", ", "Headers{", "}");
+      headers.forEach((key, value) -> headersJoiner.add(key + "=OBFUSCATED"));
+      joiner.add("headers=" + headersJoiner);
+    }
+    if (retryPolicy != null) {
+      joiner.add("retryPolicy=" + retryPolicy);
+    }
+    // Note: omit tlsConfigHelper because we can't log the configuration in any readable way
+    // Note: omit meterProviderSupplier because we can't log the configuration in any readable way
+    // Note: omit authenticator because we can't log the configuration in any readable way
+    return joiner.toString();
+  }
+
+  @Override
+  public String toString() {
+    return toString(true);
+  }
+
+  /**
+   * Resolve the {@link HttpSenderProvider}.
+   *
+   * <p>If no {@link HttpSenderProvider} is available, throw {@link IllegalStateException}.
+   *
+   * <p>If only one {@link HttpSenderProvider} is available, use it.
+   *
+   * <p>If multiple are available and..
+   *
+   * <ul>
+   *   <li>{@code io.opentelemetry.exporter.internal.http.HttpSenderProvider} is empty, use the
+   *       first found.
+   *   <li>{@code io.opentelemetry.exporter.internal.http.HttpSenderProvider} is set, use the
+   *       matching provider. If none match, throw {@link IllegalStateException}.
+   * </ul>
+   */
+  private static HttpSenderProvider resolveHttpSenderProvider() {
+    Map<String, HttpSenderProvider> httpSenderProviders = new HashMap<>();
+    for (HttpSenderProvider spi :
+        ServiceLoader.load(HttpSenderProvider.class, HttpExporterBuilder.class.getClassLoader())) {
+      httpSenderProviders.put(spi.getClass().getName(), spi);
+    }
+
+    // No provider on classpath, throw
+    if (httpSenderProviders.isEmpty()) {
+      throw new IllegalStateException(
+          "No HttpSenderProvider found on classpath. Please add dependency on "
+              + "opentelemetry-exporter-sender-okhttp or opentelemetry-exporter-sender-jdk");
+    }
+
+    // Exactly one provider on classpath, use it
+    if (httpSenderProviders.size() == 1) {
+      return httpSenderProviders.values().stream().findFirst().get();
+    }
+
+    // If we've reached here, there are multiple HttpSenderProviders
+    String configuredSender =
+        ConfigUtil.getString("io.opentelemetry.exporter.internal.http.HttpSenderProvider", "");
+
+    // Multiple providers but none configured, use first we find and log a warning
+    if (configuredSender.isEmpty()) {
+      LOGGER.log(
+          Level.WARNING,
+          "Multiple HttpSenderProvider found. Please include only one, "
+              + "or specify preference setting io.opentelemetry.exporter.internal.http.HttpSenderProvider "
+              + "to the FQCN of the preferred provider.");
+      return httpSenderProviders.values().stream().findFirst().get();
+    }
+
+    // Multiple providers with configuration match, use configuration match
+    if (httpSenderProviders.containsKey(configuredSender)) {
+      return httpSenderProviders.get(configuredSender);
+    }
+
+    // Multiple providers, configured does not match, throw
+    throw new IllegalStateException(
+        "No HttpSenderProvider matched configured io.opentelemetry.exporter.internal.http.HttpSenderProvider: "
+            + configuredSender);
   }
 }

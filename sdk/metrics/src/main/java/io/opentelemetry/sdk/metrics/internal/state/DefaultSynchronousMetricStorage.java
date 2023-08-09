@@ -28,7 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 
 /**
  * Stores aggregated {@link MetricData} for synchronous instruments.
@@ -50,7 +49,13 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   private final ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles =
       new ConcurrentHashMap<>();
   private final AttributesProcessor attributesProcessor;
+
+  /**
+   * This field is set to 1 less than the actual intended cardinality limit, allowing the last slot
+   * to be filled by the {@link MetricStorage#CARDINALITY_OVERFLOW} series.
+   */
   private final int maxCardinality;
+
   private final ConcurrentLinkedQueue<AggregatorHandle<T, U>> aggregatorHandlePool =
       new ConcurrentLinkedQueue<>();
 
@@ -68,7 +73,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
             .getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
-    this.maxCardinality = maxCardinality;
+    this.maxCardinality = maxCardinality - 1;
   }
 
   // Visible for testing
@@ -79,20 +84,15 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   @Override
   public void recordLong(long value, Attributes attributes, Context context) {
     AggregatorHandle<T, U> handle = getAggregatorHandle(attributes, context);
-    if (handle != null) {
-      handle.recordLong(value, attributes, context);
-    }
+    handle.recordLong(value, attributes, context);
   }
 
   @Override
   public void recordDouble(double value, Attributes attributes, Context context) {
     AggregatorHandle<T, U> handle = getAggregatorHandle(attributes, context);
-    if (handle != null) {
-      handle.recordDouble(value, attributes, context);
-    }
+    handle.recordDouble(value, attributes, context);
   }
 
-  @Nullable
   private AggregatorHandle<T, U> getAggregatorHandle(Attributes attributes, Context context) {
     Objects.requireNonNull(attributes, "attributes");
     attributes = attributesProcessor.process(attributes, context);
@@ -108,7 +108,12 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
               + " has exceeded the maximum allowed cardinality ("
               + maxCardinality
               + ").");
-      return null;
+      // Return handle for overflow series, first checking if a handle already exists for it
+      attributes = MetricStorage.CARDINALITY_OVERFLOW;
+      handle = aggregatorHandles.get(attributes);
+      if (handle != null) {
+        return handle;
+      }
     }
     // Get handle from pool if available, else create a new one.
     AggregatorHandle<T, U> newHandle = aggregatorHandlePool.poll();
@@ -148,7 +153,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
     // Trim pool down if needed. pool.size() will only exceed maxCardinality if new handles are
     // created during collection.
-    int toDelete = aggregatorHandlePool.size() - maxCardinality;
+    int toDelete = aggregatorHandlePool.size() - (maxCardinality + 1);
     for (int i = 0; i < toDelete; i++) {
       aggregatorHandlePool.poll();
     }

@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
@@ -24,7 +25,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 
-/** Auto-configuration for the OpenTelemetry {@link Resource}. */
+/**
+ * Auto-configuration for the OpenTelemetry {@link Resource}.
+ *
+ * @since 1.28.0
+ */
 public final class ResourceConfiguration {
 
   // Visible for testing
@@ -76,7 +81,7 @@ public final class ResourceConfiguration {
 
   static Resource configureResource(
       ConfigProperties config,
-      ClassLoader serviceClassLoader,
+      SpiHelper spiHelper,
       BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer) {
     Resource result = Resource.getDefault();
 
@@ -84,8 +89,7 @@ public final class ResourceConfiguration {
         new HashSet<>(config.getList("otel.java.enabled.resource.providers"));
     Set<String> disabledProviders =
         new HashSet<>(config.getList("otel.java.disabled.resource.providers"));
-    for (ResourceProvider resourceProvider :
-        SpiUtil.loadOrdered(ResourceProvider.class, serviceClassLoader)) {
+    for (ResourceProvider resourceProvider : spiHelper.loadOrdered(ResourceProvider.class)) {
       if (!enabledProviders.isEmpty()
           && !enabledProviders.contains(resourceProvider.getClass().getName())) {
         continue;

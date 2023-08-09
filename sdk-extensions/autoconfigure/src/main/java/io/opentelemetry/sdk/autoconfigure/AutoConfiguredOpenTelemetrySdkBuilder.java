@@ -13,6 +13,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -37,7 +38,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -49,6 +49,8 @@ import javax.annotation.Nullable;
  * A builder for configuring auto-configuration of the OpenTelemetry SDK. Notably, auto-configured
  * components can be customized, for example by delegating to them from a wrapper that tweaks
  * behavior such as filtering out telemetry attributes.
+ *
+ * @since 1.28.0
  */
 public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigurationCustomizer {
 
@@ -84,8 +86,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   private final List<Function<ConfigProperties, Map<String, String>>> propertiesCustomizers =
       new ArrayList<>();
 
-  private ClassLoader serviceClassLoader =
-      AutoConfiguredOpenTelemetrySdkBuilder.class.getClassLoader();
+  private SpiHelper spiHelper =
+      SpiHelper.create(AutoConfiguredOpenTelemetrySdk.class.getClassLoader());
 
   private boolean registerShutdownHook = true;
 
@@ -309,7 +311,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   public AutoConfiguredOpenTelemetrySdkBuilder setServiceClassLoader(
       ClassLoader serviceClassLoader) {
     requireNonNull(serviceClassLoader, "serviceClassLoader");
-    this.serviceClassLoader = serviceClassLoader;
+    this.spiHelper = SpiHelper.create(serviceClassLoader);
     return this;
   }
 
@@ -322,7 +324,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       customized = true;
       mergeSdkTracerProviderConfigurer();
       for (AutoConfigurationCustomizerProvider customizer :
-          SpiUtil.loadOrdered(AutoConfigurationCustomizerProvider.class, serviceClassLoader)) {
+          spiHelper.loadOrdered(AutoConfigurationCustomizerProvider.class)) {
         customizer.customize(this);
       }
     }
@@ -330,7 +332,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     ConfigProperties config = getConfig();
 
     Resource resource =
-        ResourceConfiguration.configureResource(config, serviceClassLoader, resourceCustomizer);
+        ResourceConfiguration.configureResource(config, spiHelper, resourceCustomizer);
 
     // Track any closeable resources created throughout configuration. If an exception short
     // circuits configuration, partially configured components will be closed.
@@ -344,7 +346,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
         meterProviderBuilder.setResource(resource);
         MeterProviderConfiguration.configureMeterProvider(
-            meterProviderBuilder, config, serviceClassLoader, metricExporterCustomizer, closeables);
+            meterProviderBuilder, config, spiHelper, metricExporterCustomizer, closeables);
         meterProviderBuilder = meterProviderCustomizer.apply(meterProviderBuilder, config);
         SdkMeterProvider meterProvider = meterProviderBuilder.build();
         closeables.add(meterProvider);
@@ -354,7 +356,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         TracerProviderConfiguration.configureTracerProvider(
             tracerProviderBuilder,
             config,
-            serviceClassLoader,
+            spiHelper,
             meterProvider,
             spanExporterCustomizer,
             samplerCustomizer,
@@ -368,7 +370,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         LoggerProviderConfiguration.configureLoggerProvider(
             loggerProviderBuilder,
             config,
-            serviceClassLoader,
+            spiHelper,
             meterProvider,
             logRecordExporterCustomizer,
             closeables);
@@ -377,8 +379,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         closeables.add(loggerProvider);
 
         ContextPropagators propagators =
-            PropagatorConfiguration.configurePropagators(
-                config, serviceClassLoader, propagatorCustomizer);
+            PropagatorConfiguration.configurePropagators(config, spiHelper, propagatorCustomizer);
 
         OpenTelemetrySdkBuilder sdkBuilder =
             OpenTelemetrySdk.builder()
@@ -426,9 +427,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   @SuppressWarnings("deprecation") // Support deprecated SdkTracerProviderConfigurer
   private void mergeSdkTracerProviderConfigurer() {
     for (io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer configurer :
-        ServiceLoader.load(
-            io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer.class,
-            serviceClassLoader)) {
+        spiHelper.load(
+            io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer.class)) {
       addTracerProviderCustomizer(
           (builder, config) -> {
             configurer.configure(builder, config);

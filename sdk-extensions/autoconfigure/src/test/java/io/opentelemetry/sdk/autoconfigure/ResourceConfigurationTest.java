@@ -12,6 +12,7 @@ import static java.util.Collections.singletonMap;
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
@@ -35,7 +36,7 @@ class ResourceConfigurationTest {
     assertThat(
             ResourceConfiguration.configureResource(
                 DefaultConfigProperties.create(props),
-                ResourceConfigurationTest.class.getClassLoader(),
+                SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
                 (r, c) -> r))
         .isEqualTo(
             Resource.getDefault().toBuilder()

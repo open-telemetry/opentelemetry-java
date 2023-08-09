@@ -15,13 +15,11 @@ coverage:
         paths:
           - "!opencensus-shim/"
           - "!opentracing-shim/"
-          - "!sdk-extensions/zpages/"
       unmaintained:
         target: 80%
         paths:
           - "opencensus-shim/"
           - "opentracing-shim/"
-          - "sdk-extensions/zpages/"
     patch:
       default:
         target: 80%

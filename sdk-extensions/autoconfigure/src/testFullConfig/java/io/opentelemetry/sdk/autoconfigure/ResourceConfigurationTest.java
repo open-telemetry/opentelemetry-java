@@ -9,6 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -19,13 +20,14 @@ import org.junit.jupiter.api.Test;
 
 class ResourceConfigurationTest {
 
+  private final SpiHelper spiHelper =
+      SpiHelper.create(ResourceConfigurationTest.class.getClassLoader());
+
   @Test
   void configureResource() {
     Attributes attributes =
         ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(Collections.emptyMap()),
-                ResourceConfigurationTest.class.getClassLoader(),
-                (r, c) -> r)
+                DefaultConfigProperties.create(Collections.emptyMap()), spiHelper, (r, c) -> r)
             .getAttributes();
 
     assertThat(attributes.get(AttributeKey.stringKey("animal"))).isNotNull();
@@ -37,7 +39,7 @@ class ResourceConfigurationTest {
     Attributes attributes =
         ResourceConfiguration.configureResource(
                 DefaultConfigProperties.create(Collections.emptyMap()),
-                new URLClassLoader(new URL[0], null),
+                SpiHelper.create(new URLClassLoader(new URL[0], null)),
                 (r, c) -> r)
             .getAttributes();
 
@@ -53,9 +55,7 @@ class ResourceConfigurationTest {
         "io.opentelemetry.sdk.autoconfigure.provider.TestAnimalResourceProvider");
     Attributes attributes =
         ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(customConfigs),
-                ResourceConfigurationTest.class.getClassLoader(),
-                (r, c) -> r)
+                DefaultConfigProperties.create(customConfigs), spiHelper, (r, c) -> r)
             .getAttributes();
 
     assertThat(attributes.get(AttributeKey.stringKey("animal"))).isEqualTo("cat");
@@ -73,9 +73,7 @@ class ResourceConfigurationTest {
         "io.opentelemetry.sdk.extension.resources.TestColorResourceProvider");
     Attributes attributes =
         ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(customConfigs),
-                ResourceConfigurationTest.class.getClassLoader(),
-                (r, c) -> r)
+                DefaultConfigProperties.create(customConfigs), spiHelper, (r, c) -> r)
             .getAttributes();
 
     assertThat(attributes.get(AttributeKey.stringKey("animal"))).isEqualTo("cat");
@@ -90,9 +88,7 @@ class ResourceConfigurationTest {
         "io.opentelemetry.sdk.autoconfigure.provider.TestColorResourceProvider");
     Attributes attributes =
         ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(customConfigs),
-                ResourceConfigurationTest.class.getClassLoader(),
-                (r, c) -> r)
+                DefaultConfigProperties.create(customConfigs), spiHelper, (r, c) -> r)
             .getAttributes();
 
     assertThat(attributes.get(AttributeKey.stringKey("animal"))).isEqualTo("cat");

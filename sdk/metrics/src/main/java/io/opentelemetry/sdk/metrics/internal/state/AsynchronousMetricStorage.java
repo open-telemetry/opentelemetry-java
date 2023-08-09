@@ -52,7 +52,13 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
   private final AggregationTemporality aggregationTemporality;
   private final Aggregator<T, U> aggregator;
   private final AttributesProcessor attributesProcessor;
+
+  /**
+   * This field is set to 1 less than the actual intended cardinality limit, allowing the last slot
+   * to be filled by the {@link MetricStorage#CARDINALITY_OVERFLOW} series.
+   */
   private final int maxCardinality;
+
   private Map<Attributes, T> points;
 
   // Only populated if aggregationTemporality == DELTA
@@ -84,7 +90,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
             .getMemoryMode();
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
-    this.maxCardinality = maxCardinality;
+    this.maxCardinality = maxCardinality - 1;
     this.reusablePointsPool = new ObjectPool<>(aggregator::createReusablePoint);
     if (memoryMode == REUSABLE_DATA) {
       lastPoints = new PooledHashMap<>();
@@ -143,6 +149,47 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
                   start, measurement.epochNanos(), measurement.longValue(), processedAttributes);
     }
 
+    recordPoint(processedAttributes, measurement);
+  }
+
+  private void recordPoint(Attributes attributes, Measurement measurement) {
+    if (points.size() >= maxCardinality) {
+      throttlingLogger.log(
+          Level.WARNING,
+          "Instrument "
+              + metricDescriptor.getSourceInstrument().getName()
+              + " has exceeded the maximum allowed cardinality ("
+              + maxCardinality
+              + ").");
+      attributes = MetricStorage.CARDINALITY_OVERFLOW;
+      if (measurement instanceof LeasedMeasurement) {
+        LeasedMeasurement leasedMeasurement = (LeasedMeasurement) measurement;
+        leasedMeasurement.setAttributes(attributes);
+      } else {
+        measurement =
+            measurement.hasDoubleValue()
+                ? ImmutableMeasurement.doubleMeasurement(
+                measurement.startEpochNanos(),
+                measurement.epochNanos(),
+                measurement.doubleValue(),
+                attributes)
+                : ImmutableMeasurement.longMeasurement(
+                    measurement.startEpochNanos(),
+                    measurement.epochNanos(),
+                    measurement.longValue(),
+                    attributes);
+      }
+    } else if (points.containsKey(
+        attributes)) { // Check there is not already a recording for the attributes
+      throttlingLogger.log(
+          Level.WARNING,
+          "Instrument "
+              + metricDescriptor.getSourceInstrument().getName()
+              + " has recorded multiple values for the same attributes: "
+              + attributes);
+      return;
+    }
+
     T dataPoint = null;
     switch (memoryMode) {
       case REUSABLE_DATA:
@@ -156,43 +203,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
         throw new IllegalStateException("Unsupported memory mode: " + memoryMode);
     }
 
-    recordPoint(dataPoint);
-  }
-
-  private void recordPoint(T point) {
-    Attributes attributes = point.getAttributes();
-
-    if (points.size() >= maxCardinality) {
-      throttlingLogger.log(
-          Level.WARNING,
-          "Instrument "
-              + metricDescriptor.getSourceInstrument().getName()
-              + " has exceeded the maximum allowed cardinality ("
-              + maxCardinality
-              + ").");
-      if (memoryMode == REUSABLE_DATA) {
-        reusablePointsPool.returnObject(point);
-      }
-      return;
-    }
-
-    // Check there is not already a recording for the attributes
-    if (points.containsKey(attributes)) {
-      throttlingLogger.log(
-          Level.WARNING,
-          "Instrument "
-              + metricDescriptor.getSourceInstrument().getName()
-              + " has recorded multiple values for the same attributes: "
-              + attributes);
-
-      if (memoryMode == REUSABLE_DATA) {
-        reusablePointsPool.returnObject(point);
-      }
-
-      return;
-    }
-
-    points.put(attributes, point);
+    points.put(attributes, dataPoint);
   }
 
   @Override

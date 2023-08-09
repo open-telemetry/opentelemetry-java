@@ -7,9 +7,8 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
-import io.opentelemetry.exporter.internal.retry.RetryPolicy;
-import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -80,14 +79,14 @@ final class GrpcMetricExporterBuilderWrapper implements TelemetryExporterBuilder
 
   @Override
   public TelemetryExporterBuilder<MetricData> setRetryPolicy(RetryPolicy retryPolicy) {
-    RetryUtil.setRetryPolicyOnDelegate(builder, retryPolicy);
+    builder.setRetryPolicy(retryPolicy);
     return this;
   }
 
   @Override
   @SuppressWarnings("deprecation") // testing deprecated functionality
-  public TelemetryExporterBuilder<MetricData> setChannel(ManagedChannel channel) {
-    builder.setChannel(channel);
+  public TelemetryExporterBuilder<MetricData> setChannel(Object channel) {
+    builder.setChannel((ManagedChannel) channel);
     return this;
   }
 

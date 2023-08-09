@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -35,7 +37,7 @@ final class SpanExporterConfiguration {
   // Visible for testing
   static Map<String, SpanExporter> configureSpanExporters(
       ConfigProperties config,
-      ClassLoader serviceClassLoader,
+      SpiHelper spiHelper,
       BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
           spanExporterCustomizer,
       List<Closeable> closeables) {
@@ -58,8 +60,7 @@ final class SpanExporterConfiguration {
       exporterNames = Collections.singleton("otlp");
     }
 
-    NamedSpiManager<SpanExporter> spiExportersManager =
-        spanExporterSpiManager(config, serviceClassLoader);
+    NamedSpiManager<SpanExporter> spiExportersManager = spanExporterSpiManager(config, spiHelper);
 
     Map<String, SpanExporter> map = new HashMap<>();
     for (String exporterName : exporterNames) {
@@ -76,13 +77,12 @@ final class SpanExporterConfiguration {
 
   // Visible for testing
   static NamedSpiManager<SpanExporter> spanExporterSpiManager(
-      ConfigProperties config, ClassLoader serviceClassLoader) {
-    return SpiUtil.loadConfigurable(
+      ConfigProperties config, SpiHelper spiHelper) {
+    return spiHelper.loadConfigurable(
         ConfigurableSpanExporterProvider.class,
         ConfigurableSpanExporterProvider::getName,
         ConfigurableSpanExporterProvider::createExporter,
-        config,
-        serviceClassLoader);
+        config);
   }
 
   // Visible for testing

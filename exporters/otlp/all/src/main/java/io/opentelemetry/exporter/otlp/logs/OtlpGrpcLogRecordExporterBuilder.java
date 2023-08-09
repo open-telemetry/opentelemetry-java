@@ -11,10 +11,10 @@ import static java.util.Objects.requireNonNull;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -40,16 +40,20 @@ public final class OtlpGrpcLogRecordExporterBuilder {
   // Visible for testing
   final GrpcExporterBuilder<LogsRequestMarshaler> delegate;
 
+  OtlpGrpcLogRecordExporterBuilder(GrpcExporterBuilder<LogsRequestMarshaler> delegate) {
+    this.delegate = delegate;
+    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+  }
+
   OtlpGrpcLogRecordExporterBuilder() {
-    delegate =
-        GrpcExporter.builder(
+    this(
+        new GrpcExporterBuilder<>(
             "otlp",
             "log",
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerLogsServiceGrpc::newFutureStub,
-            GRPC_ENDPOINT_PATH);
-    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+            GRPC_ENDPOINT_PATH));
   }
 
   /**
@@ -159,6 +163,17 @@ public final class OtlpGrpcLogRecordExporterBuilder {
   }
 
   /**
+   * Ses the retry policy. Retry is disabled by default.
+   *
+   * @since 1.28.0
+   */
+  public OtlpGrpcLogRecordExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
+    requireNonNull(retryPolicy, "retryPolicy");
+    delegate.setRetryPolicy(retryPolicy);
+    return this;
+  }
+
+  /**
    * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
    * {@link GlobalOpenTelemetry#getMeterProvider()}.
    */
@@ -174,6 +189,6 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpGrpcLogRecordExporter build() {
-    return new OtlpGrpcLogRecordExporter(delegate.build());
+    return new OtlpGrpcLogRecordExporter(delegate, delegate.build());
   }
 }

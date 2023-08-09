@@ -85,7 +85,7 @@ public final class SdkMeterProviderBuilder {
    *
    * // register the view with the SdkMeterProviderBuilder
    * meterProviderBuilder.registerView(
-   *   InstrumentSelector instrumentSelector = InstrumentSelector.builder()
+   *   InstrumentSelector.builder()
    *       .setType(InstrumentType.HISTOGRAM)
    *       .build(),
    *   View.builder()
@@ -133,5 +133,16 @@ public final class SdkMeterProviderBuilder {
   /** Returns an {@link SdkMeterProvider} built with the configuration of this builder. */
   public SdkMeterProvider build() {
     return new SdkMeterProvider(registeredViews, metricReaders, clock, resource, exemplarFilter);
+  }
+
+  /**
+   * Merge custom resource object with the current resource object.
+   *
+   * @param resource {@link Resource} object to merge with current.
+   */
+  public SdkMeterProviderBuilder addResource(Resource resource) {
+    Objects.requireNonNull(resource, "resource");
+    this.resource = this.resource.merge(resource);
+    return this;
   }
 }

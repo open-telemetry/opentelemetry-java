@@ -58,7 +58,6 @@ testing {
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:logging-otlp"))
         implementation(project(":exporters:otlp:all"))
-        implementation(project(":exporters:otlp:common"))
         implementation(project(":exporters:prometheus"))
         implementation(project(":exporters:zipkin"))
         implementation(project(":sdk:testing"))
@@ -70,7 +69,6 @@ testing {
         implementation("io.opentelemetry.proto:opentelemetry-proto")
         implementation("com.linecorp.armeria:armeria-junit5")
         implementation("com.linecorp.armeria:armeria-grpc")
-        runtimeOnly("io.grpc:grpc-netty-shaded")
       }
 
       targets {

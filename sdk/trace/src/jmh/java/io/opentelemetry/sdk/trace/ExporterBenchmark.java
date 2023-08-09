@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.exporter.jaeger.thrift.JaegerThriftSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -94,12 +93,14 @@ public class ExporterBenchmark {
     }
   }
 
+  @SuppressWarnings("deprecation") // Benchmarking deprecated code
   public static class JaegerBenchmark extends AbstractProcessorBenchmark {
     @Override
-    protected JaegerThriftSpanExporter createExporter(GenericContainer<?> collector) {
+    protected io.opentelemetry.exporter.jaeger.thrift.JaegerThriftSpanExporter createExporter(
+        GenericContainer<?> collector) {
       String host = collector.getHost();
       int port = collector.getMappedPort(JAEGER_PORT);
-      return JaegerThriftSpanExporter.builder()
+      return io.opentelemetry.exporter.jaeger.thrift.JaegerThriftSpanExporter.builder()
           .setEndpoint("http://" + host + ":" + port + "/api/traces")
           .build();
     }

@@ -14,6 +14,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.sdk.common.internal.OtelVersion;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentracing.propagation.Format;
 import org.junit.jupiter.api.AfterEach;
@@ -41,8 +42,7 @@ class OpenTracingShimTest {
         .isSameAs(textMapPropagator);
     assertThat(tracerShim.propagation().getPropagator(Format.Builtin.HTTP_HEADERS))
         .isSameAs(textMapPropagator);
-    assertThat(tracerShim.tracer())
-        .isEqualTo(sdk.get("opentracing-shim", TracerShim.OPENTRACINGSHIM_VERSION));
+    assertThat(tracerShim.tracer()).isEqualTo(sdk.get("opentracing-shim", OtelVersion.VERSION));
   }
 
   @Test
@@ -76,7 +76,6 @@ class OpenTracingShimTest {
         .isSameAs(textMapPropagator);
     assertThat(tracerShim.propagation().getPropagator(Format.Builtin.HTTP_HEADERS))
         .isSameAs(httpHeadersPropagator);
-    assertThat(tracerShim.tracer())
-        .isSameAs(sdk.get("opentracing-shim", TracerShim.OPENTRACINGSHIM_VERSION));
+    assertThat(tracerShim.tracer()).isSameAs(sdk.get("opentracing-shim", OtelVersion.VERSION));
   }
 }

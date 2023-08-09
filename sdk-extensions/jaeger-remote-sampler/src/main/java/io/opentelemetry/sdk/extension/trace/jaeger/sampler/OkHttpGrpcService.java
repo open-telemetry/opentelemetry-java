@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
-import io.opentelemetry.exporter.internal.grpc.GrpcRequestBody;
-import io.opentelemetry.exporter.internal.grpc.GrpcStatusUtil;
-import io.opentelemetry.exporter.internal.retry.RetryUtil;
+import io.opentelemetry.exporter.internal.RetryUtil;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
+import io.opentelemetry.exporter.sender.okhttp.internal.GrpcRequestBody;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -93,7 +93,7 @@ final class OkHttpGrpcService implements GrpcService {
           status != null ? "gRPC status code " + status : "HTTP status code " + response.code();
       String errorMessage = grpcMessage(response);
 
-      if (GrpcStatusUtil.GRPC_STATUS_UNIMPLEMENTED.equals(status)) {
+      if (String.valueOf(GrpcExporterUtil.GRPC_STATUS_UNIMPLEMENTED).equals(status)) {
         logger.log(
             Level.SEVERE,
             "Failed to execute "
@@ -101,7 +101,7 @@ final class OkHttpGrpcService implements GrpcService {
                 + "s. Server responded with UNIMPLEMENTED. "
                 + "Full error message: "
                 + errorMessage);
-      } else if (GrpcStatusUtil.GRPC_STATUS_UNAVAILABLE.equals(status)) {
+      } else if (String.valueOf(GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE).equals(status)) {
         logger.log(
             Level.SEVERE,
             "Failed to execute "

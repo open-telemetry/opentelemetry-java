@@ -16,6 +16,8 @@ import javax.annotation.concurrent.Immutable;
  * An auto-configured OpenTelemetry SDK. As an alternative to programmatically configuring the SDK
  * using {@link OpenTelemetrySdk#builder()}, this package can be used to automatically configure the
  * SDK using environment properties specified by OpenTelemetry.
+ *
+ * @since 1.28.0
  */
 @Immutable
 @AutoValue
@@ -51,10 +53,10 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
   public abstract OpenTelemetrySdk getOpenTelemetrySdk();
 
   /** Returns the {@link Resource} that was auto-configured. */
-  public abstract Resource getResource();
+  abstract Resource getResource();
 
   /** Returns the {@link ConfigProperties} used for auto-configuration. */
-  public abstract ConfigProperties getConfig();
+  abstract ConfigProperties getConfig();
 
   AutoConfiguredOpenTelemetrySdk() {}
 }

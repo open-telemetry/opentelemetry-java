@@ -9,14 +9,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.ResourceMetricsMarshaler;
-import io.opentelemetry.exporter.internal.retry.RetryPolicy;
-import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
 import io.opentelemetry.exporter.otlp.testing.internal.FakeTelemetryUtil;
+import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
+import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -33,15 +32,6 @@ class OtlpGrpcMetricExporterTest
 
   OtlpGrpcMetricExporterTest() {
     super("metric", ResourceMetrics.getDefaultInstance());
-  }
-
-  @Test
-  void testSetRetryPolicyOnDelegate() {
-    assertThatCode(
-            () ->
-                RetryUtil.setRetryPolicyOnDelegate(
-                    OtlpGrpcMetricExporter.builder(), RetryPolicy.getDefault()))
-        .doesNotThrowAnyException();
   }
 
   /** Test configuration specific to metric exporter. */
@@ -91,13 +81,18 @@ class OtlpGrpcMetricExporterTest
   @Test
   void usingOkHttp() throws Exception {
     try (Closeable exporter = OtlpGrpcMetricExporter.builder().build()) {
-      assertThat(exporter).extracting("delegate").isInstanceOf(OkHttpGrpcExporter.class);
+      assertThat(exporter).extracting("delegate.grpcSender").isInstanceOf(OkHttpGrpcSender.class);
     }
   }
 
   @Override
   protected TelemetryExporterBuilder<MetricData> exporterBuilder() {
     return TelemetryExporterBuilder.wrap(OtlpGrpcMetricExporter.builder());
+  }
+
+  @Override
+  protected TelemetryExporterBuilder<MetricData> toBuilder(TelemetryExporter<MetricData> exporter) {
+    return TelemetryExporterBuilder.wrap(((OtlpGrpcMetricExporter) exporter.unwrap()).toBuilder());
   }
 
   @Override

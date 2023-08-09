@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider;
@@ -34,7 +36,7 @@ final class TracerProviderConfiguration {
   static void configureTracerProvider(
       SdkTracerProviderBuilder tracerProviderBuilder,
       ConfigProperties config,
-      ClassLoader serviceClassLoader,
+      SpiHelper spiHelper,
       MeterProvider meterProvider,
       BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
           spanExporterCustomizer,
@@ -45,11 +47,11 @@ final class TracerProviderConfiguration {
 
     String sampler = config.getString("otel.traces.sampler", PARENTBASED_ALWAYS_ON);
     tracerProviderBuilder.setSampler(
-        samplerCustomizer.apply(configureSampler(sampler, config, serviceClassLoader), config));
+        samplerCustomizer.apply(configureSampler(sampler, config, spiHelper), config));
 
     Map<String, SpanExporter> exportersByName =
         SpanExporterConfiguration.configureSpanExporters(
-            config, serviceClassLoader, spanExporterCustomizer, closeables);
+            config, spiHelper, spanExporterCustomizer, closeables);
 
     configureSpanProcessors(config, exportersByName, meterProvider, closeables)
         .forEach(tracerProviderBuilder::addSpanProcessor);
@@ -148,15 +150,13 @@ final class TracerProviderConfiguration {
   }
 
   // Visible for testing
-  static Sampler configureSampler(
-      String sampler, ConfigProperties config, ClassLoader serviceClassLoader) {
+  static Sampler configureSampler(String sampler, ConfigProperties config, SpiHelper spiHelper) {
     NamedSpiManager<Sampler> spiSamplersManager =
-        SpiUtil.loadConfigurable(
+        spiHelper.loadConfigurable(
             ConfigurableSamplerProvider.class,
             ConfigurableSamplerProvider::getName,
             ConfigurableSamplerProvider::createSampler,
-            config,
-            serviceClassLoader);
+            config);
 
     switch (sampler) {
       case "always_on":

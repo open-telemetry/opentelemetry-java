@@ -13,6 +13,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
@@ -29,9 +30,13 @@ public final class OtlpHttpLogRecordExporterBuilder {
 
   private final HttpExporterBuilder<LogsRequestMarshaler> delegate;
 
-  OtlpHttpLogRecordExporterBuilder() {
-    delegate = new HttpExporterBuilder<>("otlp", "log", DEFAULT_ENDPOINT);
+  OtlpHttpLogRecordExporterBuilder(HttpExporterBuilder<LogsRequestMarshaler> delegate) {
+    this.delegate = delegate;
     OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+  }
+
+  OtlpHttpLogRecordExporterBuilder() {
+    this(new HttpExporterBuilder<>("otlp", "log", DEFAULT_ENDPOINT));
   }
 
   /**
@@ -114,6 +119,17 @@ public final class OtlpHttpLogRecordExporterBuilder {
   }
 
   /**
+   * Ses the retry policy. Retry is disabled by default.
+   *
+   * @since 1.28.0
+   */
+  public OtlpHttpLogRecordExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
+    requireNonNull(retryPolicy, "retryPolicy");
+    delegate.setRetryPolicy(retryPolicy);
+    return this;
+  }
+
+  /**
    * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
    * {@link GlobalOpenTelemetry#getMeterProvider()}.
    */
@@ -129,6 +145,6 @@ public final class OtlpHttpLogRecordExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpHttpLogRecordExporter build() {
-    return new OtlpHttpLogRecordExporter(delegate.build());
+    return new OtlpHttpLogRecordExporter(delegate, delegate.build());
   }
 }

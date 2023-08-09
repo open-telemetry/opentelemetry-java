@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.http.logs;
 
 import io.opentelemetry.exporter.internal.http.HttpExporter;
+import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -21,9 +22,13 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpHttpLogRecordExporter implements LogRecordExporter {
 
+  private final HttpExporterBuilder<LogsRequestMarshaler> builder;
   private final HttpExporter<LogsRequestMarshaler> delegate;
 
-  OtlpHttpLogRecordExporter(HttpExporter<LogsRequestMarshaler> delegate) {
+  OtlpHttpLogRecordExporter(
+      HttpExporterBuilder<LogsRequestMarshaler> builder,
+      HttpExporter<LogsRequestMarshaler> delegate) {
+    this.builder = builder;
     this.delegate = delegate;
   }
 
@@ -49,6 +54,15 @@ public final class OtlpHttpLogRecordExporter implements LogRecordExporter {
   }
 
   /**
+   * Returns a builder with configuration values equal to those for this exporter.
+   *
+   * <p>IMPORTANT: Be sure to {@link #shutdown()} this instance if it will no longer be used.
+   */
+  public OtlpHttpLogRecordExporterBuilder toBuilder() {
+    return new OtlpHttpLogRecordExporterBuilder(builder.copy());
+  }
+
+  /**
    * Submits all the given logs in a single batch to the OpenTelemetry collector.
    *
    * @param logs the list of sampled Logs to be exported.
@@ -69,5 +83,10 @@ public final class OtlpHttpLogRecordExporter implements LogRecordExporter {
   @Override
   public CompletableResultCode shutdown() {
     return delegate.shutdown();
+  }
+
+  @Override
+  public String toString() {
+    return "OtlpHttpLogRecordExporter{" + builder.toString(false) + "}";
   }
 }

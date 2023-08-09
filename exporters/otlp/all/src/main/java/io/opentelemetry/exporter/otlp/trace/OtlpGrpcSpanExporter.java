@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.trace;
 
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -17,6 +18,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpGrpcSpanExporter implements SpanExporter {
 
+  private final GrpcExporterBuilder<TraceRequestMarshaler> builder;
   private final GrpcExporter<TraceRequestMarshaler> delegate;
 
   /**
@@ -40,8 +42,20 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     return new OtlpGrpcSpanExporterBuilder();
   }
 
-  OtlpGrpcSpanExporter(GrpcExporter<TraceRequestMarshaler> delegate) {
+  OtlpGrpcSpanExporter(
+      GrpcExporterBuilder<TraceRequestMarshaler> builder,
+      GrpcExporter<TraceRequestMarshaler> delegate) {
+    this.builder = builder;
     this.delegate = delegate;
+  }
+
+  /**
+   * Returns a builder with configuration values equal to those for this exporter.
+   *
+   * <p>IMPORTANT: Be sure to {@link #shutdown()} this instance if it will no longer be used.
+   */
+  public OtlpGrpcSpanExporterBuilder toBuilder() {
+    return new OtlpGrpcSpanExporterBuilder(builder.copy());
   }
 
   /**
@@ -74,5 +88,10 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   @Override
   public CompletableResultCode shutdown() {
     return delegate.shutdown();
+  }
+
+  @Override
+  public String toString() {
+    return "OtlpGrpcSpanExporter{" + builder.toString(false) + "}";
   }
 }

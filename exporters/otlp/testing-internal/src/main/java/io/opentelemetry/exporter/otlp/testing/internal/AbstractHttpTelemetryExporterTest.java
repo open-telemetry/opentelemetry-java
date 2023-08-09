@@ -27,10 +27,8 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.exporter.internal.TlsUtil;
-import io.opentelemetry.exporter.internal.grpc.UpstreamGrpcExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
@@ -39,12 +37,15 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -293,10 +294,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   void compressionWithGzip() {
     TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("gzip").build();
-    // UpstreamGrpcExporter doesn't support compression, so we skip the assertion
-    assumeThat(exporter.unwrap())
-        .extracting("delegate")
-        .isNotInstanceOf(UpstreamGrpcExporter.class);
     assertThat(exporter.unwrap())
         .extracting("delegate.httpSender.compressionEnabled")
         .isEqualTo(true);
@@ -345,6 +342,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
   @Test
   void withAuthenticator() {
+    assumeThat(hasAuthenticatorSupport()).isTrue();
+
     TelemetryExporter<T> exporter =
         exporterBuilder()
             .setEndpoint(server.httpUri() + path)
@@ -658,11 +657,135 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
             "Unsupported compression method. Supported compression methods include: gzip, none.");
   }
 
+  @Test
+  void toBuilderEquality()
+      throws CertificateEncodingException,
+          IOException,
+          NoSuchFieldException,
+          IllegalAccessException {
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setTimeout(Duration.ofSeconds(5))
+            .setEndpoint("http://localhost:4318")
+            .setCompression("gzip")
+            .addHeader("foo", "bar")
+            .setTrustedCertificates(certificate.certificate().getEncoded())
+            .setClientTls(
+                Files.readAllBytes(clientCertificate.privateKeyFile().toPath()),
+                Files.readAllBytes(clientCertificate.certificateFile().toPath()))
+            .setRetryPolicy(
+                RetryPolicy.builder()
+                    .setMaxAttempts(2)
+                    .setMaxBackoff(Duration.ofSeconds(3))
+                    .setInitialBackoff(Duration.ofMillis(50))
+                    .setBackoffMultiplier(1.3)
+                    .build())
+            .build();
+
+    Object unwrapped = exporter.unwrap();
+    Field builderField = unwrapped.getClass().getDeclaredField("builder");
+    builderField.setAccessible(true);
+
+    try {
+      // Builder copy should be equal to original when unchanged
+      TelemetryExporter<T> copy = toBuilder(exporter).build();
+      try {
+        assertThat(copy.unwrap())
+            .extracting("builder")
+            .usingRecursiveComparison()
+            .ignoringFields("tlsConfigHelper")
+            .isEqualTo(builderField.get(unwrapped));
+      } finally {
+        copy.shutdown();
+      }
+
+      // Builder copy should NOT be equal when changed
+      copy = toBuilder(exporter).addHeader("baz", "qux").build();
+      try {
+        assertThat(copy.unwrap())
+            .extracting("builder")
+            .usingRecursiveComparison()
+            .ignoringFields("tlsConfigHelper")
+            .isNotEqualTo(builderField.get(unwrapped));
+      } finally {
+        copy.shutdown();
+      }
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void stringRepresentation() throws IOException, CertificateEncodingException {
+    TelemetryExporter<T> telemetryExporter = exporterBuilder().build();
+    try {
+      assertThat(telemetryExporter.unwrap().toString())
+          .matches(
+              "OtlpHttp[a-zA-Z]*Exporter\\{"
+                  + "exporterName=otlp, "
+                  + "type=[a-zA_Z]*, "
+                  + "endpoint=http://localhost:4318/v1/[a-zA-Z]*, "
+                  + "timeoutNanos="
+                  + TimeUnit.SECONDS.toNanos(10)
+                  + ", "
+                  + "compressionEnabled=false, "
+                  + "exportAsJson=false, "
+                  + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
+                  + "\\}");
+    } finally {
+      telemetryExporter.shutdown();
+    }
+
+    telemetryExporter =
+        exporterBuilder()
+            .setTimeout(Duration.ofSeconds(5))
+            .setEndpoint("http://example:4318/v1/logs")
+            .setCompression("gzip")
+            .addHeader("foo", "bar")
+            .setTrustedCertificates(certificate.certificate().getEncoded())
+            .setClientTls(
+                Files.readAllBytes(clientCertificate.privateKeyFile().toPath()),
+                Files.readAllBytes(clientCertificate.certificateFile().toPath()))
+            .setRetryPolicy(
+                RetryPolicy.builder()
+                    .setMaxAttempts(2)
+                    .setMaxBackoff(Duration.ofSeconds(3))
+                    .setInitialBackoff(Duration.ofMillis(50))
+                    .setBackoffMultiplier(1.3)
+                    .build())
+            .build();
+    try {
+      assertThat(telemetryExporter.unwrap().toString())
+          .matches(
+              "OtlpHttp[a-zA-Z]*Exporter\\{"
+                  + "exporterName=otlp, "
+                  + "type=[a-zA_Z]*, "
+                  + "endpoint=http://example:4318/v1/[a-zA-Z]*, "
+                  + "timeoutNanos="
+                  + TimeUnit.SECONDS.toNanos(5)
+                  + ", "
+                  + "compressionEnabled=true, "
+                  + "exportAsJson=false, "
+                  + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
+                  + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3\\}"
+                  + "\\}");
+    } finally {
+      telemetryExporter.shutdown();
+    }
+  }
+
   protected abstract TelemetryExporterBuilder<T> exporterBuilder();
+
+  protected abstract TelemetryExporterBuilder<T> toBuilder(TelemetryExporter<T> exporter);
 
   protected abstract T generateFakeTelemetry();
 
   protected abstract Marshaler[] toMarshalers(List<T> telemetry);
+
+  // TODO: remove once JdkHttpSender supports authenticator
+  protected boolean hasAuthenticatorSupport() {
+    return true;
+  }
 
   private List<U> toProto(List<T> telemetry) {
     return Arrays.stream(toMarshalers(telemetry))

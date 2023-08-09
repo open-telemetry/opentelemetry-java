@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 public interface ExtendedLongHistogramBuilder extends LongHistogramBuilder {
 
   /** Specify advice for histogram implementations. */
-  default LongHistogramBuilder setAdvice(Consumer<HistogramAdviceConfigurer> adviceConsumer) {
+  default LongHistogramBuilder setAdvice(Consumer<LongHistogramAdviceConfigurer> adviceConsumer) {
     return this;
   }
 }
