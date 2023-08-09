@@ -9,8 +9,8 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.extension.incubator.metrics.DoubleHistogramAdviceConfigurer;
 import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleHistogramBuilder;
-import io.opentelemetry.extension.incubator.metrics.HistogramAdviceConfigurer;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -58,7 +58,7 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
 
   static final class SdkDoubleHistogramBuilder
       extends AbstractInstrumentBuilder<SdkDoubleHistogramBuilder>
-      implements ExtendedDoubleHistogramBuilder, HistogramAdviceConfigurer {
+      implements ExtendedDoubleHistogramBuilder, DoubleHistogramAdviceConfigurer {
 
     SdkDoubleHistogramBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -80,7 +80,8 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
     }
 
     @Override
-    public SdkDoubleHistogramBuilder setAdvice(Consumer<HistogramAdviceConfigurer> adviceConsumer) {
+    public SdkDoubleHistogramBuilder setAdvice(
+        Consumer<DoubleHistogramAdviceConfigurer> adviceConsumer) {
       adviceConsumer.accept(this);
       return this;
     }
@@ -96,7 +97,8 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
     }
 
     @Override
-    public HistogramAdviceConfigurer setExplicitBucketBoundaries(List<Double> bucketBoundaries) {
+    public DoubleHistogramAdviceConfigurer setExplicitBucketBoundaries(
+        List<Double> bucketBoundaries) {
       setAdvice(Advice.create(bucketBoundaries));
       return this;
     }
