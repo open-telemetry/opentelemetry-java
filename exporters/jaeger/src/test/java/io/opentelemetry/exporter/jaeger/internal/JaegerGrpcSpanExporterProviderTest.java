@@ -33,12 +33,12 @@ class JaegerGrpcSpanExporterProviderTest {
       assertThat(spanExporter)
           .isInstanceOf(io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter.class);
       assertThat(spanExporter)
-          .extracting("delegate")
+          .extracting("delegate.grpcSender")
           .extracting("client")
           .extracting("callTimeoutMillis")
           .isEqualTo(10000);
       assertThat(spanExporter)
-          .extracting("delegate")
+          .extracting("delegate.grpcSender")
           .extracting("url")
           .isEqualTo(
               HttpUrl.get("http://localhost:14250/jaeger.api_v2.CollectorService/PostSpans"));
@@ -56,12 +56,12 @@ class JaegerGrpcSpanExporterProviderTest {
       assertThat(spanExporter)
           .isInstanceOf(io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter.class);
       assertThat(spanExporter)
-          .extracting("delegate")
+          .extracting("delegate.grpcSender")
           .extracting("client")
           .extracting("callTimeoutMillis")
           .isEqualTo(1000);
       assertThat(spanExporter)
-          .extracting("delegate")
+          .extracting("delegate.grpcSender")
           .extracting("url")
           .isEqualTo(HttpUrl.get("http://endpoint:8080/jaeger.api_v2.CollectorService/PostSpans"));
     }

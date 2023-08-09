@@ -16,6 +16,7 @@ dependencies {
 
   implementation(project(":sdk:all"))
   implementation(project(":exporters:common"))
+  implementation(project(":exporters:sender:okhttp"))
 
   implementation("com.squareup.okhttp3:okhttp")
 

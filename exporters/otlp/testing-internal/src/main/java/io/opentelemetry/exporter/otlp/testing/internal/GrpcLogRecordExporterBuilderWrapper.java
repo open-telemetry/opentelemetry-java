@@ -85,8 +85,8 @@ final class GrpcLogRecordExporterBuilderWrapper implements TelemetryExporterBuil
 
   @Override
   @SuppressWarnings("deprecation") // testing deprecated functionality
-  public TelemetryExporterBuilder<LogRecordData> setChannel(ManagedChannel channel) {
-    builder.setChannel(channel);
+  public TelemetryExporterBuilder<LogRecordData> setChannel(Object channel) {
+    builder.setChannel((ManagedChannel) channel);
     return this;
   }
 

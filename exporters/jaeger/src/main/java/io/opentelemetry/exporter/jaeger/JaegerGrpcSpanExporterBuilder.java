@@ -11,7 +11,6 @@ import static java.util.Objects.requireNonNull;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import java.net.URI;
 import java.time.Duration;
@@ -42,7 +41,7 @@ public final class JaegerGrpcSpanExporterBuilder {
 
   JaegerGrpcSpanExporterBuilder() {
     delegate =
-        GrpcExporter.builder(
+        new GrpcExporterBuilder<>(
             "jaeger",
             "span",
             DEFAULT_TIMEOUT_SECS,

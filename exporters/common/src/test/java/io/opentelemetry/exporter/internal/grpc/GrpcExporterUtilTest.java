@@ -14,20 +14,20 @@ import com.google.rpc.Status;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
-class GrpcStatusUtilTest {
+class GrpcExporterUtilTest {
 
   @Test
   void parseMessage() throws Exception {
     assertThat(
-            GrpcStatusUtil.getStatusMessage(
+            GrpcExporterUtil.getStatusMessage(
                 Status.newBuilder().setMessage("test").build().toByteArray()))
         .isEqualTo("test");
     assertThat(
-            GrpcStatusUtil.getStatusMessage(
+            GrpcExporterUtil.getStatusMessage(
                 Status.newBuilder().setCode(2).setMessage("test2").build().toByteArray()))
         .isEqualTo("test2");
     assertThat(
-            GrpcStatusUtil.getStatusMessage(
+            GrpcExporterUtil.getStatusMessage(
                 Status.newBuilder()
                     .setCode(2)
                     .setMessage("test3")
@@ -36,16 +36,16 @@ class GrpcStatusUtilTest {
                     .toByteArray()))
         .isEqualTo("test3");
     assertThat(
-            GrpcStatusUtil.getStatusMessage(
+            GrpcExporterUtil.getStatusMessage(
                 Status.newBuilder()
                     .setCode(2)
                     .addDetails(Any.newBuilder().setValue(ByteString.copyFromUtf8("any")).build())
                     .build()
                     .toByteArray()))
         .isEmpty();
-    assertThat(GrpcStatusUtil.getStatusMessage(Status.getDefaultInstance().toByteArray()))
+    assertThat(GrpcExporterUtil.getStatusMessage(Status.getDefaultInstance().toByteArray()))
         .isEmpty();
-    assertThatThrownBy(() -> GrpcStatusUtil.getStatusMessage(new byte[] {0, 1, 3, 0}))
+    assertThatThrownBy(() -> GrpcExporterUtil.getStatusMessage(new byte[] {0, 1, 3, 0}))
         .isInstanceOf(IOException.class);
   }
 }

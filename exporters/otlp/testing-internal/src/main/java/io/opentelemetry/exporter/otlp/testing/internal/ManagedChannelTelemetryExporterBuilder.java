@@ -132,7 +132,7 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   }
 
   @Override
-  public TelemetryExporterBuilder<T> setChannel(ManagedChannel channel) {
+  public TelemetryExporterBuilder<T> setChannel(Object channel) {
     throw new UnsupportedOperationException();
   }
 

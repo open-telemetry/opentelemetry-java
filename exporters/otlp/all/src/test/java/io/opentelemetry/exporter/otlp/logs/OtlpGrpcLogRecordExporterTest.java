@@ -7,13 +7,13 @@ package io.opentelemetry.exporter.otlp.logs;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.exporter.internal.grpc.OkHttpGrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractGrpcTelemetryExporterTest;
 import io.opentelemetry.exporter.otlp.testing.internal.FakeTelemetryUtil;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
+import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.io.Closeable;
@@ -30,7 +30,7 @@ class OtlpGrpcLogRecordExporterTest
   @Test
   void usingOkHttp() throws Exception {
     try (Closeable exporter = OtlpGrpcLogRecordExporter.builder().build()) {
-      assertThat(exporter).extracting("delegate").isInstanceOf(OkHttpGrpcExporter.class);
+      assertThat(exporter).extracting("delegate.grpcSender").isInstanceOf(OkHttpGrpcSender.class);
     }
   }
 
