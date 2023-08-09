@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -168,6 +169,36 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     LOGGER.log(Level.FINE, "Using GrpcSender: " + grpcSender.getClass().getName());
 
     return new GrpcExporter<>(exporterName, type, grpcSender, meterProviderSupplier);
+  }
+
+  public String toString(boolean includePrefixAndSuffix) {
+    StringJoiner joiner =
+        includePrefixAndSuffix
+            ? new StringJoiner(", ", "GrpcExporterBuilder{", "}")
+            : new StringJoiner(", ");
+    joiner.add("exporterName=" + exporterName);
+    joiner.add("type=" + type);
+    joiner.add("endpoint=" + endpoint.toString());
+    joiner.add("endpointPath=" + grpcEndpointPath);
+    joiner.add("timeoutNanos=" + timeoutNanos);
+    joiner.add("compressionEnabled=" + compressionEnabled);
+    StringJoiner headersJoiner = new StringJoiner(", ", "Headers{", "}");
+    headers.forEach((key, value) -> headersJoiner.add(key + "=OBFUSCATED"));
+    joiner.add("headers=" + headersJoiner);
+    if (retryPolicy != null) {
+      joiner.add("retryPolicy=" + retryPolicy);
+    }
+    if (grpcChannel != null) {
+      joiner.add("grpcChannel=" + grpcChannel);
+    }
+    // Note: omit tlsConfigHelper because we can't log the configuration in any readable way
+    // Note: omit meterProviderSupplier because we can't log the configuration in any readable way
+    return joiner.toString();
+  }
+
+  @Override
+  public String toString() {
+    return toString(true);
   }
 
   /**

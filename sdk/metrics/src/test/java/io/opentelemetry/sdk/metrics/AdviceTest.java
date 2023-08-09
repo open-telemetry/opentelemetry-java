@@ -194,8 +194,7 @@ class AdviceTest {
                               meterProvider.get("meter").histogramBuilder("histogram").ofLongs())
                           .setAdvice(
                               advice ->
-                                  advice.setExplicitBucketBoundaries(
-                                      Arrays.asList(10.0, 20.0, 30.0)))
+                                  advice.setExplicitBucketBoundaries(Arrays.asList(10L, 20L, 30L)))
                           .build();
                   return build::record;
                 }));

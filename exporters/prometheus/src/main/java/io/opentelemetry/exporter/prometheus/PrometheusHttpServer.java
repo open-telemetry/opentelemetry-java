@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -77,7 +78,7 @@ public final class PrometheusHttpServer implements MetricReader {
 
   PrometheusHttpServer(String host, int port, ExecutorService executor) {
     try {
-      server = HttpServer.create(new InetSocketAddress(host, port), 3);
+      server = createServer(host, port);
     } catch (IOException e) {
       throw new UncheckedIOException("Could not create Prometheus HTTP server", e);
     }
@@ -90,6 +91,23 @@ public final class PrometheusHttpServer implements MetricReader {
     server.setExecutor(executor);
 
     start();
+  }
+
+  private static HttpServer createServer(String host, int port) throws IOException {
+    IOException exception = null;
+    for (InetAddress address : InetAddress.getAllByName(host)) {
+      try {
+        return HttpServer.create(new InetSocketAddress(address, port), 3);
+      } catch (IOException e) {
+        if (exception == null) {
+          exception = e;
+        } else {
+          exception.addSuppressed(e);
+        }
+      }
+    }
+    assert exception != null;
+    throw exception;
   }
 
   private MetricProducer getMetricProducer() {

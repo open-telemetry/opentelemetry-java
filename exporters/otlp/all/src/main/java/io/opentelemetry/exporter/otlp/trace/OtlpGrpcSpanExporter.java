@@ -89,4 +89,9 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   public CompletableResultCode shutdown() {
     return delegate.shutdown();
   }
+
+  @Override
+  public String toString() {
+    return "OtlpGrpcSpanExporter{" + builder.toString(false) + "}";
+  }
 }

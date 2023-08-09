@@ -89,4 +89,9 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   public CompletableResultCode shutdown() {
     return delegate.shutdown();
   }
+
+  @Override
+  public String toString() {
+    return "OtlpHttpSpanExporter{" + builder.toString(false) + "}";
+  }
 }
