@@ -13,19 +13,13 @@ class ObjectPoolTest {
 
   @BeforeEach
   void setUp() {
-    // Define a simple supplier that creates a new StringBuilder
     Supplier<StringBuilder> supplier = StringBuilder::new;
-
-    // Create an instance of ObjectPool with the supplier
     objectPool = new ObjectPool<>(supplier);
   }
 
   @Test
   void testBorrowObjectWhenPoolIsEmpty() {
-    // Call the method under test
     StringBuilder result = objectPool.borrowObject();
-
-    // Verify the result using AssertJ assertions
     assertThat(result.toString()).isEmpty();
   }
 

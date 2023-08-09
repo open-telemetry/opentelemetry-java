@@ -79,8 +79,11 @@ public class SdkObservableMeasurementTest {
       sdkObservableMeasurement.record(5);
 
       verify(mockAsyncStorage1).record(measurementArgumentCaptor.capture());
-      assertThat(measurementArgumentCaptor.getValue()).isInstanceOf(ImmutableMeasurement.class);
-      assertThat(measurementArgumentCaptor.getValue().longValue()).isEqualTo(5);
+      Measurement passedMeasurement = measurementArgumentCaptor.getValue();
+      assertThat(passedMeasurement).isInstanceOf(ImmutableMeasurement.class);
+      assertThat(passedMeasurement.longValue()).isEqualTo(5);
+      assertThat(passedMeasurement.startEpochNanos()).isEqualTo(0);
+      assertThat(passedMeasurement.epochNanos()).isEqualTo(10);
     } finally {
       sdkObservableMeasurement.unsetActiveReader();
     }
@@ -96,8 +99,11 @@ public class SdkObservableMeasurementTest {
       sdkObservableMeasurement.record(4.3);
 
       verify(mockAsyncStorage1).record(measurementArgumentCaptor.capture());
-      assertThat(measurementArgumentCaptor.getValue()).isInstanceOf(ImmutableMeasurement.class);
-      assertThat(measurementArgumentCaptor.getValue().doubleValue()).isEqualTo(4.3);
+      Measurement passedMeasurement = measurementArgumentCaptor.getValue();
+      assertThat(passedMeasurement).isInstanceOf(ImmutableMeasurement.class);
+      assertThat(passedMeasurement.doubleValue()).isEqualTo(4.3);
+      assertThat(passedMeasurement.startEpochNanos()).isEqualTo(0);
+      assertThat(passedMeasurement.epochNanos()).isEqualTo(10);
     } finally {
       sdkObservableMeasurement.unsetActiveReader();
     }
@@ -115,16 +121,21 @@ public class SdkObservableMeasurementTest {
       verify(mockAsyncStorage1).record(measurementArgumentCaptor.capture());
       Measurement firstMeasurement = measurementArgumentCaptor.getValue();
       assertThat(firstMeasurement).isInstanceOf(LeasedMeasurement.class);
-      assertThat(measurementArgumentCaptor.getValue().doubleValue()).isEqualTo(4.3);
+      assertThat(firstMeasurement.doubleValue()).isEqualTo(4.3);
+      assertThat(firstMeasurement.startEpochNanos()).isEqualTo(0);
+      assertThat(firstMeasurement.epochNanos()).isEqualTo(10);
 
       sdkObservableMeasurement.record(5.3);
 
       verify(mockAsyncStorage1, times(2)).record(measurementArgumentCaptor.capture());
-      assertThat(measurementArgumentCaptor.getValue()).isInstanceOf(LeasedMeasurement.class);
-      assertThat(measurementArgumentCaptor.getValue().doubleValue()).isEqualTo(5.3);
+      Measurement secondMeasurement = measurementArgumentCaptor.getValue();
+      assertThat(secondMeasurement).isInstanceOf(LeasedMeasurement.class);
+      assertThat(secondMeasurement.doubleValue()).isEqualTo(5.3);
+      assertThat(secondMeasurement.startEpochNanos()).isEqualTo(0);
+      assertThat(secondMeasurement.epochNanos()).isEqualTo(10);
 
       // LeasedMeasurement should be re-used
-      assertThat(measurementArgumentCaptor.getValue()).isSameAs(firstMeasurement);
+      assertThat(secondMeasurement).isSameAs(firstMeasurement);
     } finally {
       sdkObservableMeasurement.unsetActiveReader();
     }
@@ -142,16 +153,21 @@ public class SdkObservableMeasurementTest {
       verify(mockAsyncStorage1).record(measurementArgumentCaptor.capture());
       Measurement firstMeasurement = measurementArgumentCaptor.getValue();
       assertThat(firstMeasurement).isInstanceOf(LeasedMeasurement.class);
-      assertThat(measurementArgumentCaptor.getValue().longValue()).isEqualTo(2);
+      assertThat(firstMeasurement.longValue()).isEqualTo(2);
+      assertThat(firstMeasurement.startEpochNanos()).isEqualTo(0);
+      assertThat(firstMeasurement.epochNanos()).isEqualTo(10);
 
       sdkObservableMeasurement.record(6);
 
       verify(mockAsyncStorage1, times(2)).record(measurementArgumentCaptor.capture());
-      assertThat(measurementArgumentCaptor.getValue()).isInstanceOf(LeasedMeasurement.class);
-      assertThat(measurementArgumentCaptor.getValue().longValue()).isEqualTo(6);
+      Measurement secondMeasurement = measurementArgumentCaptor.getValue();
+      assertThat(secondMeasurement).isInstanceOf(LeasedMeasurement.class);
+      assertThat(secondMeasurement.longValue()).isEqualTo(6);
+      assertThat(secondMeasurement.startEpochNanos()).isEqualTo(0);
+      assertThat(secondMeasurement.epochNanos()).isEqualTo(10);
 
       // LeasedMeasurement should be re-used
-      assertThat(measurementArgumentCaptor.getValue()).isSameAs(firstMeasurement);
+      assertThat(secondMeasurement).isSameAs(firstMeasurement);
     } finally {
       sdkObservableMeasurement.unsetActiveReader();
     }

@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -18,11 +19,14 @@ import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.internal.data.MutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
+
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link AggregatorHandle}. */
@@ -113,6 +117,88 @@ class DoubleLastValueAggregatorTest {
         .isEqualTo(ImmutableDoublePointData.create(0, 1, Attributes.empty(), 2, exemplars));
   }
 
+  @Test
+  void diffInPlace() {
+    Attributes attributes = Attributes.builder().put("test", "value").build();
+    DoubleExemplarData exemplar =
+            ImmutableDoubleExemplarData.create(
+                    attributes,
+                    2L,
+                    SpanContext.create(
+                            "00000000000000000000000000000001",
+                            "0000000000000002",
+                            TraceFlags.getDefault(),
+                            TraceState.getDefault()),
+                    1);
+    List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<DoubleExemplarData> previousExemplars =
+            Collections.singletonList(
+                    ImmutableDoubleExemplarData.create(
+                            attributes,
+                            1L,
+                            SpanContext.create(
+                                    "00000000000000000000000000000001",
+                                    "0000000000000002",
+                                    TraceFlags.getDefault(),
+                                    TraceState.getDefault()),
+                            2));
+
+    MutableDoublePointData previous = new MutableDoublePointData();
+    MutableDoublePointData current = new MutableDoublePointData();
+
+    previous.set(0, 1, Attributes.empty(), 1, previousExemplars);
+    current.set(0, 1, Attributes.empty(), 2, exemplars);
+
+    aggregator.diffInPlace(previous, current);
+
+    /* Assert that latest measurement is kept and set on {@code previous} */
+    assertThat(previous.getStartEpochNanos()).isEqualTo(0);
+    assertThat(previous.getEpochNanos()).isEqualTo(1);
+    assertThat(previous.getAttributes()).isEqualTo(Attributes.empty());
+    assertThat(previous.getValue()).isEqualTo(2);
+    assertThat(previous.getExemplars()).isEqualTo(exemplars);
+  }
+
+  @Test
+  void copyPoint() {
+    MutableDoublePointData pointData = (MutableDoublePointData) aggregator.createReusablePoint();
+
+    Attributes attributes = Attributes.of(AttributeKey.longKey("test"), 100L);
+    List<DoubleExemplarData> examplarsFrom = Collections.singletonList(
+            ImmutableDoubleExemplarData.create(
+                    attributes,
+                    2L,
+                    SpanContext.create(
+                            "00000000000000000000000000000001",
+                            "0000000000000002",
+                            TraceFlags.getDefault(),
+                            TraceState.getDefault()),
+                    1));
+    pointData.set(0, 1, attributes, 2000, examplarsFrom);
+
+    MutableDoublePointData toPointData = (MutableDoublePointData) aggregator.createReusablePoint();
+
+    Attributes toAttributes = Attributes.of(AttributeKey.longKey("test"), 100L);
+    List<DoubleExemplarData> examplarsTo = Collections.singletonList(
+            ImmutableDoubleExemplarData.create(
+                    attributes,
+                    4L,
+                    SpanContext.create(
+                            "00000000000000000000000000000001",
+                            "0000000000000002",
+                            TraceFlags.getDefault(),
+                            TraceState.getDefault()),
+                    2));
+    toPointData.set(0, 2, toAttributes, 4000, examplarsTo);
+
+    aggregator.copyPoint(pointData, toPointData);
+
+    Assertions.assertThat(toPointData.getStartEpochNanos()).isEqualTo(pointData.getStartEpochNanos());
+    Assertions.assertThat(toPointData.getEpochNanos()).isEqualTo(pointData.getEpochNanos());
+    assertThat(toPointData.getAttributes()).isEqualTo(pointData.getAttributes());
+    Assertions.assertThat(toPointData.getValue()).isEqualTo(pointData.getValue());
+    Assertions.assertThat(toPointData.getExemplars()).isEqualTo(pointData.getExemplars());
+  }
   @Test
   void toMetricData() {
     AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =

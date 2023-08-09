@@ -68,7 +68,3 @@ tasks {
     dependsOn(testing.suites)
   }
 }
-
-jmh {
-  jvmArgsAppend.addAll("-Djdk.attach.allowAttachSelf", "-Djol.magicFieldOffset=true")
-}

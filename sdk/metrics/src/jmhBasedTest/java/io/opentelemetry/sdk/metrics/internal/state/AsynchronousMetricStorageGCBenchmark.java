@@ -13,14 +13,11 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AttributesGenerator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.NoopMetricExporter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -45,25 +42,32 @@ import org.openjdk.jol.info.GraphLayout;
 @Measurement(iterations = 20, batchSize = 100)
 @Warmup(iterations = 10, batchSize = 10)
 @Fork(1)
-public class AsynchronousMetricStorageMemoryProfilingBenchmark {
+public class AsynchronousMetricStorageGCBenchmark {
   private static final Logger logger = Logger.getLogger(
-      AsynchronousMetricStorageMemoryProfilingBenchmark.class.getName());
+      AsynchronousMetricStorageGCBenchmark.class.getName());
 
-  private static final int cardinality = 1000;
-  private static final int countersCount = 10; // 10
 
   @State(value = Scope.Benchmark)
   @SuppressWarnings("SystemOut")
   public static class ThreadState {
-    @Param private AggregationTemporality aggregationTemporality;
-    @Param private MemoryMode memoryMode;
-    private SdkMeterProvider sdkMeterProvider;
-    private Random random;
-    private List<Attributes> attributesList;
-//    private Map<String, String> pooledHashMap;
-//    private List<String> keys;
+    private final int cardinality;
+    private final int countersCount;
+    @Param public AggregationTemporality aggregationTemporality;
+    @Param public MemoryMode memoryMode;
+    SdkMeterProvider sdkMeterProvider;
+    private final Random random = new Random();
+    List<Attributes> attributesList;
 
-    public ThreadState() {}
+    public ThreadState() {
+      cardinality = 1000;
+      countersCount = 10;
+
+    }
+
+    public ThreadState(int countersCount, int cardinality) {
+      this.cardinality = cardinality;
+      this.countersCount = countersCount;
+    }
 
     @SuppressWarnings("SpellCheckingInspection")
     @Setup
@@ -79,40 +83,14 @@ public class AsynchronousMetricStorageMemoryProfilingBenchmark {
       SdkMeterProviderUtil.registerMetricReaderWithCardinalitySelector(
           builder,
           metricReader,
-          unused -> cardinality+10
+          unused -> cardinality
       );
 
-      random = new Random();
-      HashSet<String> attributeSet = new HashSet<>();
-      attributesList = new ArrayList<>(cardinality);
-      String last = "aaaaaaaaaaaaaaaaaaaaaaaaaa";
-      for (int i = 0; i < cardinality; i++) {
-        char[] chars = last.toCharArray();
-        int attempts = 0;
-        do {
-          chars[random.nextInt(last.length())] = (char) (random.nextInt(26) + 'a');
-        } while (attributeSet.contains(new String(chars)) && ++attempts < 1000);
-        if (attributeSet.contains(new String(chars))) {
-            throw new IllegalStateException("bad attribute");
-        }
-        last = new String(chars);
-        attributesList.add(Attributes.builder().put("key", last).build());
-        boolean exists = !attributeSet.add(last);
-        if (exists) {
-            throw new IllegalStateException("exists");
-        }
-      }
-      if (attributeSet.size() != attributesList.size()) {
-        throw new IllegalStateException("Not same size "+attributeSet.size()+", "+attributesList.size());
-      }
-      logger.info("Size: "+attributesList.size());
-      Map<Attributes, Integer> map = new HashMap<>();
-      attributesList.forEach(v -> map.putIfAbsent(v, 1));
-      if (map.size() != attributesList.size()) {
-        throw new IllegalStateException("not same size as map");
-      }
+      attributesList = AttributesGenerator.generate(cardinality);
+
       // Disable examplars
       SdkMeterProviderUtil.setExemplarFilter(builder, ExemplarFilter.alwaysOff());
+
       sdkMeterProvider = builder.build();
       for (int i = 0; i < countersCount; i++) {
         sdkMeterProvider.get("meter").counterBuilder("counter" + i)
@@ -133,7 +111,6 @@ public class AsynchronousMetricStorageMemoryProfilingBenchmark {
 
   @Benchmark
   @Threads(value = 1)
-  @SuppressWarnings("SystemOut")
   public void recordAndCollect(ThreadState threadState) {
     threadState.sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
   }

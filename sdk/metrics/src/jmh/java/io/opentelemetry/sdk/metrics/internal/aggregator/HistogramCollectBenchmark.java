@@ -83,14 +83,7 @@ public class HistogramCollectBenchmark {
       histogram = sdkMeterProvider.get("meter").histogramBuilder("histogram").build();
 
       random = new Random();
-      attributesList = new ArrayList<>(cardinality);
-      String last = "aaaaaaaaaaaaaaaaaaaaaaaaaa";
-      for (int i = 0; i < cardinality; i++) {
-        char[] chars = last.toCharArray();
-        chars[random.nextInt(last.length())] = (char) (random.nextInt(26) + 'a');
-        last = new String(chars);
-        attributesList.add(Attributes.builder().put("key", last).build());
-      }
+      attributesList = AttributesGenerator.generate(cardinality);
     }
 
     @TearDown
