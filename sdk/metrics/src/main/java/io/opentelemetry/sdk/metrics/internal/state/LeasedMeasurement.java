@@ -8,10 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import io.opentelemetry.api.common.Attributes;
 import javax.annotation.Nullable;
 
-/**
- * A mutable {@link Measurement} implementation, that is leased to other objects
- * temporarily.
- */
+/** A mutable {@link Measurement} implementation, that is leased to other objects temporarily. */
 public class LeasedMeasurement implements Measurement {
 
   static void setDoubleMeasurement(
@@ -53,12 +50,9 @@ public class LeasedMeasurement implements Measurement {
   private boolean hasDoubleValue;
   private double doubleValue;
 
-  @Nullable
-  private Attributes attributes;
+  @Nullable private Attributes attributes;
 
-  /**
-   * Sets the values
-   */
+  /** Sets the values. */
   public void set(
       long startEpochNanos,
       long epochNanos,

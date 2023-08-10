@@ -1,12 +1,17 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import java.util.function.Supplier;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+
 import java.util.Arrays;
 import java.util.List;
-
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class ObjectPoolTest {
   private ObjectPool<StringBuilder> objectPool;

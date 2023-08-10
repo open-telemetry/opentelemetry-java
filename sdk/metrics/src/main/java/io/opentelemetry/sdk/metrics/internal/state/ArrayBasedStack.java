@@ -1,9 +1,14 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import javax.annotation.Nullable;
 
 /**
- * Array-based Stack
+ * Array-based Stack.
  *
  * <p>Not thread-safe
  */
@@ -22,6 +27,12 @@ public class ArrayBasedStack<T> {
     size = 0;
   }
 
+  /**
+   * Add {@code element} to the top of the stack (LIFO).
+   *
+   * @param element The element to add
+   * @throws NullPointerException if {@code element} is null
+   */
   public void push(T element) {
     if (element == null) {
       throw new NullPointerException("Null is not permitted as element in the stack");
@@ -32,6 +43,11 @@ public class ArrayBasedStack<T> {
     array[size++] = element;
   }
 
+  /**
+   * Removes and returns an element from the top of the stack (LIFO).
+   *
+   * @return the top most element in the stack (last one added)
+   */
   @Nullable
   public T pop() {
     if (isEmpty()) {

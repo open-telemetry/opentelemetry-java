@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static io.opentelemetry.sdk.metrics.export.MemoryMode.REUSABLE_DATA;
+
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
@@ -32,9 +34,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static io.opentelemetry.sdk.metrics.export.MemoryMode.REUSABLE_DATA;
-
 
 /**
  * Stores aggregated {@link MetricData} for asynchronous instruments.
@@ -84,10 +83,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
         registeredReader
             .getReader()
             .getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
-    this.memoryMode =
-        registeredReader
-            .getReader()
-            .getMemoryMode();
+    this.memoryMode = registeredReader.getReader().getMemoryMode();
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
     this.maxCardinality = maxCardinality - 1;
@@ -144,7 +140,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
       measurement =
           measurement.hasDoubleValue()
               ? ImmutableMeasurement.doubleMeasurement(
-              start, measurement.epochNanos(), measurement.doubleValue(), processedAttributes)
+                  start, measurement.epochNanos(), measurement.doubleValue(), processedAttributes)
               : ImmutableMeasurement.longMeasurement(
                   start, measurement.epochNanos(), measurement.longValue(), processedAttributes);
     }
@@ -152,6 +148,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
     recordPoint(processedAttributes, measurement);
   }
 
+  @SuppressWarnings("UnnecessaryDefaultInEnumSwitch")
   private void recordPoint(Attributes attributes, Measurement measurement) {
     if (points.size() >= maxCardinality) {
       throttlingLogger.log(
@@ -169,10 +166,10 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
         measurement =
             measurement.hasDoubleValue()
                 ? ImmutableMeasurement.doubleMeasurement(
-                measurement.startEpochNanos(),
-                measurement.epochNanos(),
-                measurement.doubleValue(),
-                attributes)
+                    measurement.startEpochNanos(),
+                    measurement.epochNanos(),
+                    measurement.doubleValue(),
+                    attributes)
                 : ImmutableMeasurement.longMeasurement(
                     measurement.startEpochNanos(),
                     measurement.epochNanos(),
@@ -243,49 +240,50 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
           deltaPoints = new ArrayList<>();
           break;
         default:
-          throw new IllegalStateException("Unsupported memory mode: "+memoryMode);
+          throw new IllegalStateException("Unsupported memory mode: " + memoryMode);
       }
 
-      points.forEach((k,v) ->  {
-        T lastPoint = lastPoints.get(k);
+      points.forEach(
+          (k, v) -> {
+            T lastPoint = lastPoints.get(k);
 
-        T deltaPoint;
-        if (lastPoint == null) {
-          switch (memoryMode) {
-            case REUSABLE_DATA:
-              deltaPoint = reusablePointsPool.borrowObject();
-              aggregator.copyPoint(v, deltaPoint);
-              break;
-            case IMMUTABLE_DATA:
-              deltaPoint = v;
-              break;
-            default:
-              throw new IllegalStateException("Unsupported memory mode: " + memoryMode);
-          }
-        } else {
-          switch (memoryMode) {
-            case REUSABLE_DATA:
-              aggregator.diffInPlace(lastPoint, v);
-              deltaPoint = lastPoint;
+            T deltaPoint;
+            if (lastPoint == null) {
+              switch (memoryMode) {
+                case REUSABLE_DATA:
+                  deltaPoint = reusablePointsPool.borrowObject();
+                  aggregator.copyPoint(v, deltaPoint);
+                  break;
+                case IMMUTABLE_DATA:
+                  deltaPoint = v;
+                  break;
+                default:
+                  throw new IllegalStateException("Unsupported memory mode: " + memoryMode);
+              }
+            } else {
+              switch (memoryMode) {
+                case REUSABLE_DATA:
+                  aggregator.diffInPlace(lastPoint, v);
+                  deltaPoint = lastPoint;
 
-              // Remaining last points are returned to reusablePointsPool, but
-              // this reusable point is still used, so don't return it to pool yet
-              lastPoints.remove(k);
-              break;
-            case IMMUTABLE_DATA:
-              deltaPoint = aggregator.diff(lastPoint, v);
-              break;
-            default:
-              throw new IllegalStateException("Unsupported memory mode");
-          }
-        }
+                  // Remaining last points are returned to reusablePointsPool, but
+                  // this reusable point is still used, so don't return it to pool yet
+                  lastPoints.remove(k);
+                  break;
+                case IMMUTABLE_DATA:
+                  deltaPoint = aggregator.diff(lastPoint, v);
+                  break;
+                default:
+                  throw new IllegalStateException("Unsupported memory mode");
+              }
+            }
 
-        deltaPoints.add(deltaPoint);
-      });
+            deltaPoints.add(deltaPoint);
+          });
 
       switch (memoryMode) {
         case REUSABLE_DATA:
-          lastPoints.forEach((k,v) -> reusablePointsPool.returnObject(v));
+          lastPoints.forEach((k, v) -> reusablePointsPool.returnObject(v));
           lastPoints.clear();
           this.points = lastPoints;
           break;
@@ -299,7 +297,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
     } else /* CUMULATIVE */ {
       switch (memoryMode) {
         case REUSABLE_DATA:
-          points.forEach((k,v) -> reusableResultList.add(v));
+          points.forEach((k, v) -> reusableResultList.add(v));
           points.clear();
           result = reusableResultList;
           break;
@@ -313,11 +311,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
     }
 
     return aggregator.toMetricData(
-        resource,
-        instrumentationScopeInfo,
-        metricDescriptor,
-        result,
-        aggregationTemporality);
+        resource, instrumentationScopeInfo, metricDescriptor, result, aggregationTemporality);
   }
 
   @Override

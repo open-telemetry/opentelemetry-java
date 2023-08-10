@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.testing.exporter;
 
+import static io.opentelemetry.sdk.metrics.export.MemoryMode.IMMUTABLE_DATA;
+
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -19,8 +21,6 @@ import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static io.opentelemetry.sdk.metrics.export.MemoryMode.IMMUTABLE_DATA;
 
 /**
  * A {@link MetricReader} implementation that can be used to test OpenTelemetry integration.
@@ -63,12 +63,18 @@ public class InMemoryMetricReader implements MetricReader {
         AggregationTemporalitySelector.alwaysCumulative(), DefaultAggregationSelector.getDefault());
   }
 
+  /**
+   * Create an {@link InMemoryMetricReader} with an {@link AggregationTemporalitySelector}.
+   *
+   * @param aggregationTemporalitySelector The {@link AggregationTemporalitySelector} to be used in
+   *     the reader
+   * @return a new {@link InMemoryMetricReader} which uses {@code aggregationTemporalitySelector}
+   */
   public static InMemoryMetricReader create(
       AggregationTemporalitySelector aggregationTemporalitySelector) {
 
     return new InMemoryMetricReader(
-        aggregationTemporalitySelector,
-        DefaultAggregationSelector.getDefault());
+        aggregationTemporalitySelector, DefaultAggregationSelector.getDefault());
   }
 
   /**
@@ -92,9 +98,7 @@ public class InMemoryMetricReader implements MetricReader {
       DefaultAggregationSelector defaultAggregationSelector,
       MemoryMode memoryMode) {
     return new InMemoryMetricReader(
-        aggregationTemporalitySelector,
-        defaultAggregationSelector,
-        memoryMode);
+        aggregationTemporalitySelector, defaultAggregationSelector, memoryMode);
   }
 
   /** Creates a new {@link InMemoryMetricReader} that prefers DELTA aggregation. */

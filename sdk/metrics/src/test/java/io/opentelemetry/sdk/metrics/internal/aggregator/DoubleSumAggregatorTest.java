@@ -30,7 +30,6 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
-
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -198,27 +197,27 @@ class DoubleSumAggregatorTest {
   void diffInPlace() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
-            ImmutableDoubleExemplarData.create(
-                    attributes,
-                    2L,
-                    SpanContext.create(
-                            "00000000000000000000000000000001",
-                            "0000000000000002",
-                            TraceFlags.getDefault(),
-                            TraceState.getDefault()),
-                    1);
+        ImmutableDoubleExemplarData.create(
+            attributes,
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
     List<DoubleExemplarData> exemplars = Collections.singletonList(exemplar);
     List<DoubleExemplarData> previousExemplars =
-            Collections.singletonList(
-                    ImmutableDoubleExemplarData.create(
-                            attributes,
-                            1L,
-                            SpanContext.create(
-                                    "00000000000000000000000000000001",
-                                    "0000000000000002",
-                                    TraceFlags.getDefault(),
-                                    TraceState.getDefault()),
-                            2));
+        Collections.singletonList(
+            ImmutableDoubleExemplarData.create(
+                attributes,
+                1L,
+                SpanContext.create(
+                    "00000000000000000000000000000001",
+                    "0000000000000002",
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault()),
+                2));
 
     MutableDoublePointData previous = new MutableDoublePointData();
     MutableDoublePointData current = new MutableDoublePointData();
@@ -241,36 +240,39 @@ class DoubleSumAggregatorTest {
     MutableDoublePointData pointData = (MutableDoublePointData) aggregator.createReusablePoint();
 
     Attributes attributes = Attributes.of(AttributeKey.longKey("test"), 100L);
-    List<DoubleExemplarData> examplarsFrom = Collections.singletonList(
+    List<DoubleExemplarData> examplarsFrom =
+        Collections.singletonList(
             ImmutableDoubleExemplarData.create(
-                    attributes,
-                    2L,
-                    SpanContext.create(
-                            "00000000000000000000000000000001",
-                            "0000000000000002",
-                            TraceFlags.getDefault(),
-                            TraceState.getDefault()),
-                    1));
+                attributes,
+                2L,
+                SpanContext.create(
+                    "00000000000000000000000000000001",
+                    "0000000000000002",
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault()),
+                1));
     pointData.set(0, 1, attributes, 2000, examplarsFrom);
 
     MutableDoublePointData toPointData = (MutableDoublePointData) aggregator.createReusablePoint();
 
     Attributes toAttributes = Attributes.of(AttributeKey.longKey("test"), 100L);
-    List<DoubleExemplarData> examplarsTo = Collections.singletonList(
+    List<DoubleExemplarData> examplarsTo =
+        Collections.singletonList(
             ImmutableDoubleExemplarData.create(
-                    attributes,
-                    4L,
-                    SpanContext.create(
-                            "00000000000000000000000000000001",
-                            "0000000000000002",
-                            TraceFlags.getDefault(),
-                            TraceState.getDefault()),
-                    2));
+                attributes,
+                4L,
+                SpanContext.create(
+                    "00000000000000000000000000000001",
+                    "0000000000000002",
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault()),
+                2));
     toPointData.set(0, 2, toAttributes, 4000, examplarsTo);
 
     aggregator.copyPoint(pointData, toPointData);
 
-    Assertions.assertThat(toPointData.getStartEpochNanos()).isEqualTo(pointData.getStartEpochNanos());
+    Assertions.assertThat(toPointData.getStartEpochNanos())
+        .isEqualTo(pointData.getStartEpochNanos());
     Assertions.assertThat(toPointData.getEpochNanos()).isEqualTo(pointData.getEpochNanos());
     assertThat(toPointData.getAttributes()).isEqualTo(pointData.getAttributes());
     Assertions.assertThat(toPointData.getValue()).isEqualTo(pointData.getValue());

@@ -16,7 +16,6 @@ import java.util.List;
  *
  * @since 1.14.0
  */
-
 public interface PointData {
   /** Returns the start time of the aggregation in epoch nanos. */
   long getStartEpochNanos();

@@ -8,9 +8,9 @@ package io.opentelemetry.sdk.metrics.internal.data;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 
 public class MutableLongPointData implements LongPointData {
 
@@ -18,8 +18,7 @@ public class MutableLongPointData implements LongPointData {
   private long startEpochNanos;
   private long epochNanos;
 
-  @Nullable
-  private Attributes attributes;
+  @Nullable private Attributes attributes;
 
   private List<LongExemplarData> exemplars = Collections.emptyList();
 
@@ -50,22 +49,26 @@ public class MutableLongPointData implements LongPointData {
     return exemplars;
   }
 
+  /**
+   * Sets all {@link MutableDoublePointData} based on {@code point}.
+   *
+   * @param point The point to set values upon
+   */
   public void set(LongPointData point) {
-    set(point.getStartEpochNanos(),
+    set(
+        point.getStartEpochNanos(),
         point.getEpochNanos(),
         point.getAttributes(),
         point.getValue(),
         point.getExemplars());
   }
 
-  public void set(
-      long startEpochNanos,
-      long epochNanos,
-      Attributes attributes,
-      long value) {
+  /** Sets all {@link MutableDoublePointData} values besides exemplars which are set to be empty. */
+  public void set(long startEpochNanos, long epochNanos, Attributes attributes, long value) {
     set(startEpochNanos, epochNanos, attributes, value, Collections.emptyList());
   }
 
+  /** Sets all {@link MutableDoublePointData} values. */
   public void set(
       long startEpochNanos,
       long epochNanos,
@@ -81,12 +84,17 @@ public class MutableLongPointData implements LongPointData {
 
   @Override
   public String toString() {
-    return "MutableLongPointData{" +
-        "value=" + value +
-        ", startEpochNanos=" + startEpochNanos +
-        ", epochNanos=" + epochNanos +
-        ", attributes=" + attributes +
-        ", exemplars=" + exemplars +
-        '}';
+    return "MutableLongPointData{"
+        + "value="
+        + value
+        + ", startEpochNanos="
+        + startEpochNanos
+        + ", epochNanos="
+        + epochNanos
+        + ", attributes="
+        + attributes
+        + ", exemplars="
+        + exemplars
+        + '}';
   }
 }

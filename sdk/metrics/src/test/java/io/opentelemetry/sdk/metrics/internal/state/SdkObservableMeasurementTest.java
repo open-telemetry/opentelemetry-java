@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.metrics.data.AggregationTemporality.CUMULATIVE;
@@ -32,29 +37,25 @@ public class SdkObservableMeasurementTest {
   private ArgumentCaptor<Measurement> measurementArgumentCaptor;
 
   private void setup(MemoryMode memoryMode) {
-    InstrumentationScopeInfo instrumentationScopeInfo = InstrumentationScopeInfo
-        .builder("test-scope")
-        .build();
-    InstrumentDescriptor instrumentDescriptor = InstrumentDescriptor.create(
-        "testCounter",
-        "an instrument for testing purposes",
-        "ms",
-        InstrumentType.COUNTER,
-        InstrumentValueType.LONG,
-        Advice.empty());
+    InstrumentationScopeInfo instrumentationScopeInfo =
+        InstrumentationScopeInfo.builder("test-scope").build();
+    InstrumentDescriptor instrumentDescriptor =
+        InstrumentDescriptor.create(
+            "testCounter",
+            "an instrument for testing purposes",
+            "ms",
+            InstrumentType.COUNTER,
+            InstrumentValueType.LONG,
+            Advice.empty());
 
-    InMemoryMetricReader reader1 = InMemoryMetricReader.create(
-        instrumentType -> CUMULATIVE,
-        DefaultAggregationSelector.getDefault(),
-        memoryMode
-    );
+    InMemoryMetricReader reader1 =
+        InMemoryMetricReader.create(
+            instrumentType -> CUMULATIVE, DefaultAggregationSelector.getDefault(), memoryMode);
     registeredReader1 = RegisteredReader.create(reader1, ViewRegistry.create());
 
-    InMemoryMetricReader reader2 = InMemoryMetricReader.create(
-        instrumentType -> CUMULATIVE,
-        DefaultAggregationSelector.getDefault(),
-        memoryMode
-    );
+    InMemoryMetricReader reader2 =
+        InMemoryMetricReader.create(
+            instrumentType -> CUMULATIVE, DefaultAggregationSelector.getDefault(), memoryMode);
     registeredReader2 = RegisteredReader.create(reader2, ViewRegistry.create());
 
     measurementArgumentCaptor = ArgumentCaptor.forClass(Measurement.class);
@@ -63,10 +64,11 @@ public class SdkObservableMeasurementTest {
     mockAsyncStorage2 = mock(AsynchronousMetricStorage.class);
     when(mockAsyncStorage2.getRegisteredReader()).thenReturn(registeredReader2);
 
-    sdkObservableMeasurement = SdkObservableMeasurement.create(
-        instrumentationScopeInfo,
-        instrumentDescriptor,
-        Lists.newArrayList(mockAsyncStorage1, mockAsyncStorage2));
+    sdkObservableMeasurement =
+        SdkObservableMeasurement.create(
+            instrumentationScopeInfo,
+            instrumentDescriptor,
+            Lists.newArrayList(mockAsyncStorage1, mockAsyncStorage2));
   }
 
   @Test

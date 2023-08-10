@@ -122,8 +122,8 @@ public final class SdkObservableMeasurement
         measurement = leasedMeasurement;
         break;
       default:
-        throw new IllegalStateException("Unsupported memory mode: " + activeReader.getReader().getMemoryMode());
-
+        throw new IllegalStateException(
+            "Unsupported memory mode: " + activeReader.getReader().getMemoryMode());
     }
     doRecord(measurement);
   }
@@ -152,7 +152,8 @@ public final class SdkObservableMeasurement
         measurement = leasedMeasurement;
         break;
       default:
-        throw new IllegalStateException("Unsupported memory mode: " + activeReader.getReader().getMemoryMode());
+        throw new IllegalStateException(
+            "Unsupported memory mode: " + activeReader.getReader().getMemoryMode());
     }
 
     doRecord(measurement);

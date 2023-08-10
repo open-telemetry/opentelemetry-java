@@ -67,12 +67,13 @@ public final class DoubleSumAggregator
 
   @Override
   public void diffInPlace(DoublePointData previousReusablePoint, DoublePointData currentPoint) {
-    ((MutableDoublePointData) previousReusablePoint).set(
-        currentPoint.getStartEpochNanos(),
-        currentPoint.getEpochNanos(),
-        currentPoint.getAttributes(),
-        currentPoint.getValue() - previousReusablePoint.getValue(),
-        currentPoint.getExemplars());
+    ((MutableDoublePointData) previousReusablePoint)
+        .set(
+            currentPoint.getStartEpochNanos(),
+            currentPoint.getEpochNanos(),
+            currentPoint.getAttributes(),
+            currentPoint.getValue() - previousReusablePoint.getValue(),
+            currentPoint.getExemplars());
   }
 
   @Override
@@ -86,11 +87,12 @@ public final class DoubleSumAggregator
 
   @Override
   public void toPoint(Measurement measurement, DoublePointData reusablePoint) {
-    ((MutableDoublePointData) reusablePoint).set(
-        measurement.startEpochNanos(),
-        measurement.epochNanos(),
-        measurement.attributes(),
-        measurement.doubleValue());
+    ((MutableDoublePointData) reusablePoint)
+        .set(
+            measurement.startEpochNanos(),
+            measurement.epochNanos(),
+            measurement.attributes(),
+            measurement.doubleValue());
   }
 
   @Override

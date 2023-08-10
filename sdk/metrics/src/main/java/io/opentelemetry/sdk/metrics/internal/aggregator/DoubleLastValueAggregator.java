@@ -74,11 +74,12 @@ public final class DoubleLastValueAggregator
 
   @Override
   public void toPoint(Measurement measurement, DoublePointData reusablePoint) {
-    ((MutableDoublePointData) reusablePoint).set(
-        measurement.startEpochNanos(),
-        measurement.epochNanos(),
-        measurement.attributes(),
-        measurement.doubleValue());
+    ((MutableDoublePointData) reusablePoint)
+        .set(
+            measurement.startEpochNanos(),
+            measurement.epochNanos(),
+            measurement.attributes(),
+            measurement.doubleValue());
   }
 
   @Override

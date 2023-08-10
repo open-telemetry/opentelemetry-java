@@ -44,9 +44,9 @@ public interface MetricProducer extends CollectionRegistration {
    * Returns a collection of produced {@link MetricData}s to be exported. This will only be those
    * metrics that have been produced since the last time this method was called.
    *
-   * If {@link MetricReader#getMemoryMode()} is configured to {@link MemoryMode#REUSABLE_DATA}
-   * do not keep the result or any of its contained objects as they are to be reused
-   * to return the result for the next call of {@code collectAllMetrics}
+   * <p>If {@link MetricReader#getMemoryMode()} is configured to {@link MemoryMode#REUSABLE_DATA} do
+   * not keep the result or any of its contained objects as they are to be reused to return the
+   * result for the next call of {@code collectAllMetrics}
    *
    * @return a collection of produced {@link MetricData}s to be exported.
    */

@@ -36,6 +36,7 @@ import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
+import java.util.Collection;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -43,7 +44,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import java.util.Collection;
 
 @SuppressLogger(AsynchronousMetricStorage.class)
 @ExtendWith(MockitoExtension.class)
@@ -393,7 +393,8 @@ class AsynchronousMetricStorageTest {
     longCounterStorage.record(
         longMeasurement(0, 1, 3, Attributes.builder().put("key", "c").build()));
 
-    MetricData firstCollectMetricData = longCounterStorage.collect(resource, scope, 0, testClock.nanoTime());
+    MetricData firstCollectMetricData =
+        longCounterStorage.collect(resource, scope, 0, testClock.nanoTime());
     assertThat(firstCollectMetricData)
         .satisfies(
             metricData ->
@@ -402,29 +403,35 @@ class AsynchronousMetricStorageTest {
                         sum ->
                             sum.hasPointsSatisfying(
                                 point ->
-                                    point.hasValue(1)
+                                    point
+                                        .hasValue(1)
                                         .hasAttributes(attributeEntry("key", "a"))
                                         .isInstanceOf(MutableLongPointData.class),
                                 point ->
-                                    point.hasValue(2)
+                                    point
+                                        .hasValue(2)
                                         .hasAttributes(attributeEntry("key", "b"))
                                         .isInstanceOf(MutableLongPointData.class),
                                 point ->
-                                    point.hasValue(3)
+                                    point
+                                        .hasValue(3)
                                         .hasAttributes(attributeEntry("key", "c"))
                                         .isInstanceOf(MutableLongPointData.class))));
 
-    MetricData secondCollectMetricData = longCounterStorage.collect(resource, scope, 0, testClock.nanoTime());
+    MetricData secondCollectMetricData =
+        longCounterStorage.collect(resource, scope, 0, testClock.nanoTime());
 
-    Collection<? extends PointData> secondCollectPoints = secondCollectMetricData.getData().getPoints();
-    Collection<? extends PointData> firstCollectionPoints = firstCollectMetricData.getData().getPoints();
+    Collection<? extends PointData> secondCollectPoints =
+        secondCollectMetricData.getData().getPoints();
+    Collection<? extends PointData> firstCollectionPoints =
+        firstCollectMetricData.getData().getPoints();
     assertThat(secondCollectPoints).hasSameSizeAs(firstCollectionPoints);
 
     // Show that second returned objects have been used in first collect response as well
     // which proves there is reuse.
     for (PointData firstCollectionPoint : firstCollectionPoints) {
-      assertThat(secondCollectPoints).anySatisfy(point ->
-              assertThat(point).isSameAs(firstCollectionPoint));
+      assertThat(secondCollectPoints)
+          .anySatisfy(point -> assertThat(point).isSameAs(firstCollectionPoint));
     }
   }
 }

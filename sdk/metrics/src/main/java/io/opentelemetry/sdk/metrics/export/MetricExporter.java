@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.export;
 
+import static io.opentelemetry.sdk.metrics.export.MemoryMode.IMMUTABLE_DATA;
+
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -14,8 +16,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.Closeable;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
-
-import static io.opentelemetry.sdk.metrics.export.MemoryMode.IMMUTABLE_DATA;
 
 /**
  * A Metric Exporter is a push based interface for exporting {@link MetricData} out of {@link
@@ -41,10 +41,9 @@ public interface MetricExporter
   }
 
   /**
-   * Returns the memory mode used by this exporter's associated reader
+   * Returns the memory mode used by this exporter's associated reader.
    *
    * @return The {@link MemoryMode} used by this exporter's associated reader
-   *
    * @since 1.28.0
    */
   default MemoryMode getMemoryMode() {

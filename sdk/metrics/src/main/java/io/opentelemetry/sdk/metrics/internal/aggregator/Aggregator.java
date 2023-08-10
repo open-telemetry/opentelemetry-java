@@ -54,10 +54,10 @@ public interface Aggregator<T extends PointData, U extends ExemplarData> {
   }
 
   /**
-   * Resets one reusable point to be a DELTA point by computing the difference
-   * between two cumulative points.
+   * Resets one reusable point to be a DELTA point by computing the difference between two
+   * cumulative points.
    *
-   * The delta between the two points is set on {@code previousCumulativeReusable}
+   * <p>The delta between the two points is set on {@code previousCumulativeReusable}
    *
    * <p>Aggregators MUST implement diff if it can be used with asynchronous instruments.
    *
@@ -86,16 +86,13 @@ public interface Aggregator<T extends PointData, U extends ExemplarData> {
     throw new UnsupportedOperationException("This aggregator does not support toPoint.");
   }
 
-  /**
-   * Creates a new reusable point
-   */
+  /** Creates a new reusable point. */
   default T createReusablePoint() {
-    throw new UnsupportedOperationException("This aggregator does not support createReusablePoint.");
+    throw new UnsupportedOperationException(
+        "This aggregator does not support createReusablePoint.");
   }
 
-  /**
-   * Copies {@code point} into {@code toReusablePoint}
-   */
+  /** Copies {@code point} into {@code toReusablePoint}. */
   default void copyPoint(T point, T toReusablePoint) {
     throw new UnsupportedOperationException("This aggregator does not support toPoint.");
   }

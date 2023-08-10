@@ -10,5 +10,4 @@ dependencies {
   implementation("org.slf4j:jul-to-slf4j")
   api(project(":sdk:common"))
   api(project(":sdk:metrics"))
-
 }

@@ -5,24 +5,24 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import javax.annotation.Nullable;
 
 /**
  * A bucket-based hash map with an internal re-usable map entry objects pool
- * <p>
- * The goal of this map is to minimize memory allocation, leading to reduced time spent
- * in garbage collection.
- * <p>
- * This map avoids allocating a new map entry on each put operation by maintaining a pool
- * of reusable (mutable) map entries and borrowing a map entry object from the pool to hold
- * the given key-value of the put operation. The borrowed object is returned to the pool
- * when the map entry key is removed from the map.
+ *
+ * <p>The goal of this map is to minimize memory allocation, leading to reduced time spent in
+ * garbage collection.
+ *
+ * <p>This map avoids allocating a new map entry on each put operation by maintaining a pool of
+ * reusable (mutable) map entries and borrowing a map entry object from the pool to hold the given
+ * key-value of the put operation. The borrowed object is returned to the pool when the map entry
+ * key is removed from the map.
  *
  * @param <K> The map key type
  * @param <V> The map value type
@@ -35,6 +35,15 @@ public class PooledHashMap<K, V> implements Map<K, V> {
   private final ObjectPool<Entry<K, V>> entryPool;
   private int size;
 
+  /**
+   * Creates a {@link PooledHashMap} with {@code capacity} buckets.
+   *
+   * <p>The hashmap contains an array of buckets, each is an array-list of items. The number of
+   * buckets expands over time to avoid having too many items in one bucket, otherwise accessing an
+   * item by key won't be a constant time complexity.
+   *
+   * @param capacity The initial number of buckets to start with
+   */
   @SuppressWarnings({"rawtypes", "unchecked"})
   public PooledHashMap(int capacity) {
     this.table = new ArrayList[capacity];
@@ -42,15 +51,30 @@ public class PooledHashMap<K, V> implements Map<K, V> {
     this.size = 0;
   }
 
+  /**
+   * Creates a new {@link PooledHashMap} with a default amount of buckets (capacity).
+   *
+   * @see PooledHashMap#PooledHashMap(int)
+   */
   public PooledHashMap() {
     this(DEFAULT_CAPACITY);
   }
 
+  /**
+   * Add a key, value pair to the map.
+   *
+   * <p>Internally it uses a MapEntry from a pool of entries, to store this mapping
+   *
+   * @param key key with which the specified value is to be associated
+   * @param value value to be associated with the specified key
+   * @return Null if the was no previous mapping for this key, or the value of the previous mapping
+   *     of this key
+   */
   @Override
   @Nullable
   public V put(K key, V value) {
     Objects.requireNonNull(key, "This map does not support null keys");
-    Objects.requireNonNull(key, "This map does not support null values");
+    Objects.requireNonNull(value, "This map does not support null values");
     if (size > LOAD_FACTOR * table.length) {
       rehash();
     }
@@ -89,15 +113,22 @@ public class PooledHashMap<K, V> implements Map<K, V> {
     for (int i = 0; i < oldTable.length; i++) {
       ArrayList<Entry<K, V>> bucket = oldTable[i];
       if (bucket != null) {
-        bucket.forEach(entry -> {
-          put(entry.key, entry.value);
-          entryPool.returnObject(entry);
-        });
+        bucket.forEach(
+            entry -> {
+              put(entry.key, entry.value);
+              entryPool.returnObject(entry);
+            });
         bucket.clear();
       }
     }
   }
 
+  /**
+   * Retrieves the mapped value for {@code key}.
+   *
+   * @param key the key whose associated value is to be returned
+   * @return The mapped value for {@code key} or null if there is no such mapping
+   */
   @Override
   @Nullable
   @SuppressWarnings("unchecked")
@@ -115,6 +146,12 @@ public class PooledHashMap<K, V> implements Map<K, V> {
     return null;
   }
 
+  /**
+   * Removes the mapping for the given {@code key}.
+   *
+   * @param key key whose mapping is to be removed from the map
+   * @return The value mapped to this key, if the mapping exists, or null otherwise
+   */
   @Override
   @Nullable
   @SuppressWarnings("unchecked")
@@ -161,10 +198,10 @@ public class PooledHashMap<K, V> implements Map<K, V> {
     for (int i = 0; i < table.length; i++) {
       ArrayList<Entry<K, V>> bucket = table[i];
       if (bucket != null) {
-          for (int j = 0; j < bucket.size(); j++) {
-              Entry<K, V> entry = bucket.get(j);
-              entryPool.returnObject(entry);
-          }
+        for (int j = 0; j < bucket.size(); j++) {
+          Entry<K, V> entry = bucket.get(j);
+          entryPool.returnObject(entry);
+        }
         bucket.clear();
       }
     }
@@ -209,10 +246,8 @@ public class PooledHashMap<K, V> implements Map<K, V> {
   }
 
   private static class Entry<K, V> {
-    @Nullable
-    K key;
+    @Nullable K key;
 
-    @Nullable
-    V value;
+    @Nullable V value;
   }
 }

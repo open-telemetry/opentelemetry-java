@@ -15,7 +15,6 @@ import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -63,20 +62,17 @@ public class HistogramCollectBenchmark {
 
     @Setup
     public void setup() {
-      PeriodicMetricReader metricReader = PeriodicMetricReader.builder(
-              // Configure an exporter that configures the temporality and aggregation
-              // for the test case, but otherwise drops the data on export
-              new NoopMetricExporter(
-                  aggregationTemporality, aggregationGenerator.aggregation))
-          // Effectively disable periodic reading so reading is only done on #flush()
-          .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
-          .build();
+      PeriodicMetricReader metricReader =
+          PeriodicMetricReader.builder(
+                  // Configure an exporter that configures the temporality and aggregation
+                  // for the test case, but otherwise drops the data on export
+                  new NoopMetricExporter(aggregationTemporality, aggregationGenerator.aggregation))
+              // Effectively disable periodic reading so reading is only done on #flush()
+              .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
+              .build();
       SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
       SdkMeterProviderUtil.registerMetricReaderWithCardinalitySelector(
-          builder,
-          metricReader,
-          unused -> cardinality
-          );
+          builder, metricReader, unused -> cardinality);
       // Disable examplars
       SdkMeterProviderUtil.setExemplarFilter(builder, ExemplarFilter.alwaysOff());
       sdkMeterProvider = builder.build();
@@ -96,39 +92,55 @@ public class HistogramCollectBenchmark {
     StringBuilder resultSummaryWithoutAttributes = new StringBuilder().append("\n");
     StringBuilder resultSummaryWithAttributes = new StringBuilder().append("\n");
 
-    AggregationGenerator[] aggregationGenerators = new AggregationGenerator[]{AggregationGenerator.EXPLICIT_BUCKET_HISTOGRAM}; //AggregationGenerator.values();
+    AggregationGenerator[] aggregationGenerators =
+        new AggregationGenerator[] {
+          AggregationGenerator.EXPLICIT_BUCKET_HISTOGRAM
+        }; // AggregationGenerator.values();
     for (AggregationGenerator aggregationGenerator : aggregationGenerators) {
-      AggregationTemporality[] aggregationTemporalities = new AggregationTemporality[]{AggregationTemporality.CUMULATIVE}; //AggregationTemporality.values();
+      AggregationTemporality[] aggregationTemporalities =
+          new AggregationTemporality[] {
+            AggregationTemporality.CUMULATIVE
+          }; // AggregationTemporality.values();
       for (AggregationTemporality aggregationTemporality : aggregationTemporalities) {
-        logger.log(Level.INFO, "Starting {0}, {1}...", new Object[]{aggregationGenerator, aggregationTemporality});
+        logger.log(
+            Level.INFO,
+            "Starting {0}, {1}...",
+            new Object[] {aggregationGenerator, aggregationTemporality});
         ThreadState threadState = new ThreadState();
         threadState.aggregationGenerator = aggregationGenerator;
         threadState.aggregationTemporality = aggregationTemporality;
         threadState.setup();
 
-        resultSummaryWithoutAttributes.append(String.format("%50s, %10s: %,15.0f [bytes]",
-                threadState.aggregationGenerator,
-                threadState.aggregationTemporality,
-                (double) GraphLayout.parseInstance(threadState.sdkMeterProvider).totalSize()))
+        resultSummaryWithoutAttributes
+            .append(
+                String.format(
+                    "%50s, %10s: %,15.0f [bytes]",
+                    threadState.aggregationGenerator,
+                    threadState.aggregationTemporality,
+                    (double) GraphLayout.parseInstance(threadState.sdkMeterProvider).totalSize()))
             .append("\n");
 
-        logger.log(Level.INFO, "Recording values...", new Object[]{aggregationGenerator, aggregationTemporality});
+        logger.log(
+            Level.INFO,
+            "Recording values...",
+            new Object[] {aggregationGenerator, aggregationTemporality});
         recordAndCollect(threadState);
 
-        logger.log(Level.INFO, "Done", new Object[]{aggregationGenerator, aggregationTemporality});
+        logger.log(Level.INFO, "Done", new Object[] {aggregationGenerator, aggregationTemporality});
         GraphLayout graphLayout = GraphLayout.parseInstance(threadState.sdkMeterProvider);
-        resultSummaryWithAttributes.append(String.format("%50s, %10s: %,15.0f [bytes]",
-                threadState.aggregationGenerator,
-                threadState.aggregationTemporality,
-                (double) graphLayout.totalSize()))
+        resultSummaryWithAttributes
+            .append(
+                String.format(
+                    "%50s, %10s: %,15.0f [bytes]",
+                    threadState.aggregationGenerator,
+                    threadState.aggregationTemporality,
+                    (double) graphLayout.totalSize()))
             .append("\n");
 
         resultSummaryWithAttributes.append("\n").append(graphLayout.toFootprint());
       }
     }
-    logger.info(resultSummaryWithoutAttributes
-        +"\n"
-        + resultSummaryWithAttributes);
+    logger.info(resultSummaryWithoutAttributes + "\n" + resultSummaryWithAttributes);
   }
 
   @Benchmark
@@ -156,5 +168,4 @@ public class HistogramCollectBenchmark {
       this.aggregation = aggregation;
     }
   }
-
 }

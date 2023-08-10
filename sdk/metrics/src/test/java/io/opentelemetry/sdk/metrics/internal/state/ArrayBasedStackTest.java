@@ -1,9 +1,14 @@
-package io.opentelemetry.sdk.metrics.internal.state;
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-import org.junit.jupiter.api.Test;
+package io.opentelemetry.sdk.metrics.internal.state;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+
+import org.junit.jupiter.api.Test;
 
 class ArrayBasedStackTest {
 
@@ -35,11 +40,11 @@ class ArrayBasedStackTest {
   @Test
   void testPushBeyondInitialCapacity() {
     ArrayBasedStack<Integer> stack = new ArrayBasedStack<>();
-    for(int i = 0; i < ArrayBasedStack.DEFAULT_CAPACITY + 5; i++) {
+    for (int i = 0; i < ArrayBasedStack.DEFAULT_CAPACITY + 5; i++) {
       stack.push(i);
     }
     assertThat(stack.size()).isEqualTo(ArrayBasedStack.DEFAULT_CAPACITY + 5);
-    for(int i = ArrayBasedStack.DEFAULT_CAPACITY + 4; i >= 0; i--) {
+    for (int i = ArrayBasedStack.DEFAULT_CAPACITY + 4; i >= 0; i--) {
       assertThat(stack.pop()).isEqualTo(i);
     }
   }

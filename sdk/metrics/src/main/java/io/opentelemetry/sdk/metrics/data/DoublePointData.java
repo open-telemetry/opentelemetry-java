@@ -12,7 +12,6 @@ import java.util.List;
  *
  * @since 1.14.0
  */
-
 public interface DoublePointData extends PointData {
   /** Returns the value of the data point. */
   double getValue();

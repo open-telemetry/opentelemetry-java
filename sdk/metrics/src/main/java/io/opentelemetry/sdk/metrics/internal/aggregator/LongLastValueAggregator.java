@@ -70,11 +70,12 @@ public final class LongLastValueAggregator implements Aggregator<LongPointData, 
 
   @Override
   public void toPoint(Measurement measurement, LongPointData reusablePoint) {
-    ((MutableLongPointData) reusablePoint).set(
-        measurement.startEpochNanos(),
-        measurement.epochNanos(),
-        measurement.attributes(),
-        measurement.longValue());
+    ((MutableLongPointData) reusablePoint)
+        .set(
+            measurement.startEpochNanos(),
+            measurement.epochNanos(),
+            measurement.attributes(),
+            measurement.longValue());
   }
 
   @Override

@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.export;
 
+import static io.opentelemetry.sdk.metrics.export.MemoryMode.IMMUTABLE_DATA;
+
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -12,8 +14,6 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-
-import static io.opentelemetry.sdk.metrics.export.MemoryMode.IMMUTABLE_DATA;
 
 /**
  * A metric reader reads metrics from an {@link SdkMeterProvider}.
@@ -47,10 +47,9 @@ public interface MetricReader
   }
 
   /**
-   * Returns the memory mode used by this reader
+   * Returns the memory mode used by this reader.
    *
    * @return The {@link MemoryMode} used by this instance
-   *
    * @since 1.28.0
    */
   default MemoryMode getMemoryMode() {

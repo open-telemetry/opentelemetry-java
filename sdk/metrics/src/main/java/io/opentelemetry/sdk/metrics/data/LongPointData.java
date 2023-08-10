@@ -12,7 +12,6 @@ import java.util.List;
  *
  * @since 1.14.0
  */
-
 public interface LongPointData extends PointData {
   /** Returns the value of the data point. */
   long getValue();

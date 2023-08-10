@@ -25,10 +25,9 @@ import io.opentelemetry.sdk.metrics.internal.data.MutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import java.util.Collections;
 import java.util.List;
-
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -88,27 +87,27 @@ class LongLastValueAggregatorTest {
   void diffInPlace() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     LongExemplarData exemplar =
-            ImmutableLongExemplarData.create(
-                    attributes,
-                    2L,
-                    SpanContext.create(
-                            "00000000000000000000000000000001",
-                            "0000000000000002",
-                            TraceFlags.getDefault(),
-                            TraceState.getDefault()),
-                    1);
+        ImmutableLongExemplarData.create(
+            attributes,
+            2L,
+            SpanContext.create(
+                "00000000000000000000000000000001",
+                "0000000000000002",
+                TraceFlags.getDefault(),
+                TraceState.getDefault()),
+            1);
     List<LongExemplarData> exemplars = Collections.singletonList(exemplar);
     List<LongExemplarData> previousExemplars =
-            Collections.singletonList(
-                    ImmutableLongExemplarData.create(
-                            attributes,
-                            1L,
-                            SpanContext.create(
-                                    "00000000000000000000000000000001",
-                                    "0000000000000002",
-                                    TraceFlags.getDefault(),
-                                    TraceState.getDefault()),
-                            2));
+        Collections.singletonList(
+            ImmutableLongExemplarData.create(
+                attributes,
+                1L,
+                SpanContext.create(
+                    "00000000000000000000000000000001",
+                    "0000000000000002",
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault()),
+                2));
 
     MutableLongPointData previous = new MutableLongPointData();
     MutableLongPointData current = new MutableLongPointData();
@@ -131,38 +130,42 @@ class LongLastValueAggregatorTest {
     MutableLongPointData pointData = (MutableLongPointData) aggregator.createReusablePoint();
 
     Attributes attributes = Attributes.of(AttributeKey.longKey("test"), 100L);
-    List<LongExemplarData> examplarsFrom = Collections.singletonList(
+    List<LongExemplarData> examplarsFrom =
+        Collections.singletonList(
             ImmutableLongExemplarData.create(
-                    attributes,
-                    2L,
-                    SpanContext.create(
-                            "00000000000000000000000000000001",
-                            "0000000000000002",
-                            TraceFlags.getDefault(),
-                            TraceState.getDefault()),
-                    1));
+                attributes,
+                2L,
+                SpanContext.create(
+                    "00000000000000000000000000000001",
+                    "0000000000000002",
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault()),
+                1));
     pointData.set(0, 1, attributes, 2000, examplarsFrom);
 
     MutableLongPointData toPointData = (MutableLongPointData) aggregator.createReusablePoint();
 
     Attributes toAttributes = Attributes.of(AttributeKey.longKey("test"), 100L);
-    List<LongExemplarData> examplarsTo = Collections.singletonList(
+    List<LongExemplarData> examplarsTo =
+        Collections.singletonList(
             ImmutableLongExemplarData.create(
-                    attributes,
-                    4L,
-                    SpanContext.create(
-                            "00000000000000000000000000000001",
-                            "0000000000000002",
-                            TraceFlags.getDefault(),
-                            TraceState.getDefault()),
-                    2));
+                attributes,
+                4L,
+                SpanContext.create(
+                    "00000000000000000000000000000001",
+                    "0000000000000002",
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault()),
+                2));
     toPointData.set(0, 2, toAttributes, 4000, examplarsTo);
 
     aggregator.copyPoint(pointData, toPointData);
 
-    Assertions.assertThat(toPointData.getStartEpochNanos()).isEqualTo(pointData.getStartEpochNanos());
+    Assertions.assertThat(toPointData.getStartEpochNanos())
+        .isEqualTo(pointData.getStartEpochNanos());
     Assertions.assertThat(toPointData.getEpochNanos()).isEqualTo(pointData.getEpochNanos());
-    OpenTelemetryAssertions.assertThat(toPointData.getAttributes()).isEqualTo(pointData.getAttributes());
+    OpenTelemetryAssertions.assertThat(toPointData.getAttributes())
+        .isEqualTo(pointData.getAttributes());
     Assertions.assertThat(toPointData.getValue()).isEqualTo(pointData.getValue());
     Assertions.assertThat(toPointData.getExemplars()).isEqualTo(pointData.getExemplars());
   }

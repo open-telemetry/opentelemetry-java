@@ -55,8 +55,6 @@ testing {
   }
 }
 
-
-
 tasks {
   named<AnimalSniffer>("animalsnifferMain") {
     // We cannot use IgnoreJreRequirement since it does not work correctly for fields.
