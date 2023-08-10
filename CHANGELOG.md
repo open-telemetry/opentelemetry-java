@@ -44,6 +44,11 @@
 * Reorganize autoconfigure docs by signal
   ([#5665](https://github.com/open-telemetry/opentelemetry-java/pull/5665))
 
+#### Testing
+
+* Add hasResourceSatisfying to LogRecordDataAssert
+  ([#5690](https://github.com/open-telemetry/opentelemetry-java/pull/5690))
+
 ### OpenCensus Shim
 
 * Change OpenCensus shim default sampling to defer to OpenTelemetry
