@@ -17,6 +17,9 @@
 
 * Add LongHistogramAdviceConfigurer to improve api surface types
   ([#5689](https://github.com/open-telemetry/opentelemetry-java/pull/5689))
+* Instruments with names which are case-insensitive equal contribute to same
+  metric, advice is not part of instrument identity.
+  ([#5701](https://github.com/open-telemetry/opentelemetry-java/pull/5701))
 
 #### Exporter
 
