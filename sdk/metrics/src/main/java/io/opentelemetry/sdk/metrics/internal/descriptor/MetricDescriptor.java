@@ -29,6 +29,7 @@ import javax.annotation.concurrent.Immutable;
 public abstract class MetricDescriptor {
 
   private final AtomicReference<SourceInfo> viewSourceInfo = new AtomicReference<>();
+  private int hashcode;
 
   /**
    * Constructs a metric descriptor with no instrument and default view.
@@ -97,17 +98,20 @@ public abstract class MetricDescriptor {
   /** Uses case-insensitive version of {@link #getName()}. */
   @Override
   public final int hashCode() {
-    // TODO: memoize
-    int h = 1;
-    h *= 1000003;
-    h ^= getName().toLowerCase(Locale.ROOT).hashCode();
-    h *= 1000003;
-    h ^= getDescription().hashCode();
-    h *= 1000003;
-    h ^= getView().hashCode();
-    h *= 1000003;
-    h ^= getSourceInstrument().hashCode();
-    return h;
+    int result = hashcode;
+    if (result == 0) {
+      result = 1;
+      result *= 1000003;
+      result ^= getName().toLowerCase(Locale.ROOT).hashCode();
+      result *= 1000003;
+      result ^= getDescription().hashCode();
+      result *= 1000003;
+      result ^= getView().hashCode();
+      result *= 1000003;
+      result ^= getSourceInstrument().hashCode();
+      hashcode = result;
+    }
+    return result;
   }
 
   /** Uses case-insensitive version of {@link #getName()}. */

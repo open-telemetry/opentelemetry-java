@@ -23,6 +23,7 @@ import javax.annotation.concurrent.Immutable;
 public abstract class InstrumentDescriptor {
 
   private final SourceInfo sourceInfo = SourceInfo.fromCurrentStack();
+  private int hashcode;
 
   public static InstrumentDescriptor create(
       String name,
@@ -65,19 +66,22 @@ public abstract class InstrumentDescriptor {
    */
   @Override
   public final int hashCode() {
-    // TODO: memoize
-    int h = 1;
-    h *= 1000003;
-    h ^= getName().toLowerCase(Locale.ROOT).hashCode();
-    h *= 1000003;
-    h ^= getDescription().hashCode();
-    h *= 1000003;
-    h ^= getUnit().hashCode();
-    h *= 1000003;
-    h ^= getType().hashCode();
-    h *= 1000003;
-    h ^= getValueType().hashCode();
-    return h;
+    int result = hashcode;
+    if (result == 0) {
+      result = 1;
+      result *= 1000003;
+      result ^= getName().toLowerCase(Locale.ROOT).hashCode();
+      result *= 1000003;
+      result ^= getDescription().hashCode();
+      result *= 1000003;
+      result ^= getUnit().hashCode();
+      result *= 1000003;
+      result ^= getType().hashCode();
+      result *= 1000003;
+      result ^= getValueType().hashCode();
+      hashcode = result;
+    }
+    return result;
   }
 
   /**
