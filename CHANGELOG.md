@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.29.0 (2023-08-11)
+
 ### API
 
 * Update Span javadoc to allow null/empty attr values
