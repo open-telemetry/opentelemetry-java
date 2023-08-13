@@ -47,7 +47,7 @@ import org.openjdk.jol.info.GraphLayout;
 public class HistogramCollectBenchmark {
   private static final Logger logger = Logger.getLogger(HistogramCollectBenchmark.class.getName());
 
-  private static final int cardinality = 100_000;
+  private static final int cardinality = 100;
   private static final int measurementsPerSeries = 10_000;
 
   @State(Scope.Benchmark)
@@ -86,61 +86,6 @@ public class HistogramCollectBenchmark {
     public void tearDown() {
       sdkMeterProvider.shutdown().join(10, TimeUnit.SECONDS);
     }
-  }
-
-  public void measureMemoryUsage() {
-    StringBuilder resultSummaryWithoutAttributes = new StringBuilder().append("\n");
-    StringBuilder resultSummaryWithAttributes = new StringBuilder().append("\n");
-
-    AggregationGenerator[] aggregationGenerators =
-        new AggregationGenerator[] {
-          AggregationGenerator.EXPLICIT_BUCKET_HISTOGRAM
-        }; // AggregationGenerator.values();
-    for (AggregationGenerator aggregationGenerator : aggregationGenerators) {
-      AggregationTemporality[] aggregationTemporalities =
-          new AggregationTemporality[] {
-            AggregationTemporality.CUMULATIVE
-          }; // AggregationTemporality.values();
-      for (AggregationTemporality aggregationTemporality : aggregationTemporalities) {
-        logger.log(
-            Level.INFO,
-            "Starting {0}, {1}...",
-            new Object[] {aggregationGenerator, aggregationTemporality});
-        ThreadState threadState = new ThreadState();
-        threadState.aggregationGenerator = aggregationGenerator;
-        threadState.aggregationTemporality = aggregationTemporality;
-        threadState.setup();
-
-        resultSummaryWithoutAttributes
-            .append(
-                String.format(
-                    "%50s, %10s: %,15.0f [bytes]",
-                    threadState.aggregationGenerator,
-                    threadState.aggregationTemporality,
-                    (double) GraphLayout.parseInstance(threadState.sdkMeterProvider).totalSize()))
-            .append("\n");
-
-        logger.log(
-            Level.INFO,
-            "Recording values...",
-            new Object[] {aggregationGenerator, aggregationTemporality});
-        recordAndCollect(threadState);
-
-        logger.log(Level.INFO, "Done", new Object[] {aggregationGenerator, aggregationTemporality});
-        GraphLayout graphLayout = GraphLayout.parseInstance(threadState.sdkMeterProvider);
-        resultSummaryWithAttributes
-            .append(
-                String.format(
-                    "%50s, %10s: %,15.0f [bytes]",
-                    threadState.aggregationGenerator,
-                    threadState.aggregationTemporality,
-                    (double) graphLayout.totalSize()))
-            .append("\n");
-
-        resultSummaryWithAttributes.append("\n").append(graphLayout.toFootprint());
-      }
-    }
-    logger.info(resultSummaryWithoutAttributes + "\n" + resultSummaryWithAttributes);
   }
 
   @Benchmark
