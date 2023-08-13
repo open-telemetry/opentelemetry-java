@@ -20,7 +20,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
-import org.openjdk.jol.info.GraphLayout;
 
 /**
  * Benchmarks the memory usage of different memory modes and aggregation temporalities
@@ -30,23 +29,22 @@ import org.openjdk.jol.info.GraphLayout;
  * You have to run it manually for each parameter, since it's not JMH-based, and we need a clean
  * heap before we start.
  *
- * <p>Since it uses JOL to run the measurement, it requires you to add the following to JVM
- * arguments of your Run configuration:
- *
- * <p>-Djdk.attach.allowAttachSelf -Djol.magicFieldOffset=true
- *
- * <p>This library has additional usage: You can use it to see memory allocation frame graphs for a
+ * <p>This benchmark class has additional usage: You can use it to see memory allocation frame graphs for a
  * single run.
  *
- * <p>Steps: 1. Follow download instructions for async-profiler, located at
- * https://github.com/async-profiler/async-profiler 2. Assuming you have extracted it at
+ * <p>Steps:
+ * <ol>
+ * <li> Follow download instructions for async-profiler, located at
+ * https://github.com/async-profiler/async-profiler
+ * <li>Assuming you have extracted it at
  * /tmp/async-profiler-2.9-macos, add the following to your JVM arguments of your run configuration:
  *
  * <p>-agentpath:/tmp/async-profiler-2.9-macos/build/libasyncProfiler.so=start,event=alloc,flamegraph,file=/tmp/profiled_data.html
  *
- * <p>3. Tune the parameters as you see fit 4. Be sure to set skipMemoryUsageMeasurementUsingJol to
- * true (don't want its JOL memory allocations counted) 5. Run the class 6. Open
- * /tmp/profiled_data.html with your browser
+ * <li>Tune the parameters as you see fit
+ * <li>Run the class
+ * <li>Open /tmp/profiled_data.html with your browser
+ * </ol>
  */
 @SuppressWarnings("SystemOut")
 public class AsynchronousCounterMemoryUsageBenchmark {
@@ -70,13 +68,14 @@ public class AsynchronousCounterMemoryUsageBenchmark {
     asynchronousCounterMemoryUsageBenchmark.measure();
   }
 
-  private void measure() throws ExecutionException, InterruptedException, TimeoutException {
+  @SuppressWarnings("DefaultCharset")
+  private void measure()
+      throws ExecutionException, InterruptedException, TimeoutException {
     // Parameters
-    AggregationTemporality aggregationTemporality = AggregationTemporality.DELTA;
+    AggregationTemporality aggregationTemporality = AggregationTemporality.CUMULATIVE;
     MemoryMode memoryMode = MemoryMode.IMMUTABLE_DATA;
-    int countersCount = 50;
+    int countersCount = 1;
     int cardinality = 100_000;
-    boolean skipMemoryUsageMeasurementUsingJol = false;
 
     AsynchronousMetricStorageGarbageCollectionBenchmark.ThreadState benchmarkSetup =
         new AsynchronousMetricStorageGarbageCollectionBenchmark.ThreadState(
@@ -110,24 +109,10 @@ public class AsynchronousCounterMemoryUsageBenchmark {
     long usedMemoryAfter = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
     long memoryUsedButFreed = maxUsedMemory.get() - usedMemoryAfter;
 
-    double sdkMeterProviderSizeOnHeap;
-    double attributesListSizeOnHeap;
-    if (skipMemoryUsageMeasurementUsingJol) {
-      sdkMeterProviderSizeOnHeap = -1;
-      attributesListSizeOnHeap = -1;
-    } else {
-      GraphLayout graphLayout = GraphLayout.parseInstance(benchmarkSetup.sdkMeterProvider);
-      GraphLayout graphLayoutAttributes = GraphLayout.parseInstance(benchmarkSetup.attributesList);
-      sdkMeterProviderSizeOnHeap = graphLayout.totalSize();
-      attributesListSizeOnHeap = graphLayoutAttributes.totalSize();
-    }
-
     System.out.printf(
         ""
             + "\nCounters = %d, Cardinality = %,d"
             + "\n%s, %s: "
-            + "\nAttributes memory usage            = %,15.0f [bytes]\n"
-            + "\nSDK memory usage after collection  = %,15.0f [bytes]"
             + "\nmemoryUsedButFreed                 = %,15d [bytes]"
             + "\nmaxMemoryUsedDuringCollection      = %,15d [bytes]"
             + "\nmemoryUsedBeforeCollectionStart    = %,15d [bytes]"
@@ -136,8 +121,6 @@ public class AsynchronousCounterMemoryUsageBenchmark {
         cardinality,
         benchmarkSetup.aggregationTemporality,
         benchmarkSetup.memoryMode,
-        sdkMeterProviderSizeOnHeap,
-        attributesListSizeOnHeap,
         memoryUsedButFreed,
         maxUsedMemory.get(),
         usedMemoryBefore,
