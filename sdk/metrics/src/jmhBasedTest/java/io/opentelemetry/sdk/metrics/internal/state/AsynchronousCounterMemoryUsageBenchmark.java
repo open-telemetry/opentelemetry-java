@@ -78,15 +78,15 @@ public class AsynchronousCounterMemoryUsageBenchmark {
     int cardinality = 100_000;
     boolean skipMemoryUsageMeasurementUsingJol = false;
 
-    AsynchronousMetricStorageGarbageCollectionCBenchmark.ThreadState benchmarkSetup =
-        new AsynchronousMetricStorageGarbageCollectionCBenchmark.ThreadState(
+    AsynchronousMetricStorageGarbageCollectionBenchmark.ThreadState benchmarkSetup =
+        new AsynchronousMetricStorageGarbageCollectionBenchmark.ThreadState(
             countersCount, cardinality);
 
     benchmarkSetup.aggregationTemporality = aggregationTemporality;
     benchmarkSetup.memoryMode = memoryMode;
 
-    AsynchronousMetricStorageGarbageCollectionCBenchmark benchmark =
-        new AsynchronousMetricStorageGarbageCollectionCBenchmark();
+    AsynchronousMetricStorageGarbageCollectionBenchmark benchmark =
+        new AsynchronousMetricStorageGarbageCollectionBenchmark();
 
     benchmarkSetup.setup();
 
@@ -196,8 +196,8 @@ public class AsynchronousCounterMemoryUsageBenchmark {
   }
 
   private static void runBenchmark(
-      AsynchronousMetricStorageGarbageCollectionCBenchmark benchmark,
-      AsynchronousMetricStorageGarbageCollectionCBenchmark.ThreadState threadState) {
+      AsynchronousMetricStorageGarbageCollectionBenchmark benchmark,
+      AsynchronousMetricStorageGarbageCollectionBenchmark.ThreadState threadState) {
     benchmark.recordAndCollect(threadState);
   }
 }

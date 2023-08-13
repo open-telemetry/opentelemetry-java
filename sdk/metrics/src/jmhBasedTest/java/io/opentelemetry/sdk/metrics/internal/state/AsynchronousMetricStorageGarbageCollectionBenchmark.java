@@ -39,7 +39,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @Measurement(iterations = 20, batchSize = 100)
 @Warmup(iterations = 10, batchSize = 10)
 @Fork(1)
-public class AsynchronousMetricStorageGarbageCollectionCBenchmark {
+public class AsynchronousMetricStorageGarbageCollectionBenchmark {
 
   @State(value = Scope.Benchmark)
   @SuppressWarnings("SystemOut")

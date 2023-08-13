@@ -23,7 +23,7 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-public class AsynchronousMetricStorageGarbageCollectionCBenchmarkTest {
+public class AsynchronousMetricStorageGarbageCollectionBenchmarkTest {
 
   /*
    * This test validates that in REUSABLE_DATA memory mode, collect()
@@ -43,7 +43,7 @@ public class AsynchronousMetricStorageGarbageCollectionCBenchmarkTest {
     // with garbage collection profiler
     Options opt =
         new OptionsBuilder()
-            .include(AsynchronousMetricStorageGarbageCollectionCBenchmark.class.getSimpleName())
+            .include(AsynchronousMetricStorageGarbageCollectionBenchmark.class.getSimpleName())
             .addProfiler("gc")
             .shouldFailOnError(true)
             .build();
