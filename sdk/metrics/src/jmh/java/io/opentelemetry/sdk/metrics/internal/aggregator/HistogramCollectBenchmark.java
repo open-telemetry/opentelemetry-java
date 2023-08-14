@@ -123,11 +123,11 @@ public class HistogramCollectBenchmark {
     }
   }
 
-  private static class NoopMetricExporter implements MetricExporter {
+  public static class NoopMetricExporter implements MetricExporter {
     private final AggregationTemporality aggregationTemporality;
     private final Aggregation aggregation;
 
-    private NoopMetricExporter(
+    public NoopMetricExporter(
         AggregationTemporality aggregationTemporality, Aggregation aggregation) {
       this.aggregationTemporality = aggregationTemporality;
       this.aggregation = aggregation;
