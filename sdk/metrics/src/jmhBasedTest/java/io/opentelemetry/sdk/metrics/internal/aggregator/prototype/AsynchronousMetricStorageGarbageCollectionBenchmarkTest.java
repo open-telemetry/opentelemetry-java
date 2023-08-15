@@ -2,13 +2,10 @@ package io.opentelemetry.sdk.metrics.internal.aggregator.prototype;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import io.opentelemetry.sdk.resources.Resource;
-import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
 import org.openjdk.jmh.infra.BenchmarkParams;
 import org.openjdk.jmh.results.BenchmarkResult;
