@@ -13,7 +13,9 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.internal.export.NoOpMetricFilter;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -41,6 +43,7 @@ public final class PeriodicMetricReader implements MetricReader {
   private final Object lock = new Object();
 
   private volatile MetricProducer metricProducer = MetricProducer.noop();
+  private volatile MetricFilter metricFilter = new NoOpMetricFilter();
   @Nullable private volatile ScheduledFuture<?> scheduledFuture;
 
   /**
@@ -114,6 +117,17 @@ public final class PeriodicMetricReader implements MetricReader {
   public void register(CollectionRegistration registration) {
     this.metricProducer = MetricProducer.asMetricProducer(registration);
     start();
+  }
+
+  @Override
+  public void setMetricFilter(MetricFilter metricFilter) {
+    Objects.requireNonNull(metricFilter);
+    this.metricFilter = metricFilter;
+  }
+
+  @Override
+  public MetricFilter getMetricFilter() {
+    return metricFilter;
   }
 
   @Override

@@ -94,7 +94,9 @@ public class MeterSharedState {
     synchronized (collectLock) {
       for (CallbackRegistration callbackRegistration : currentRegisteredCallbacks) {
         callbackRegistration.invokeCallback(
-            registeredReader, meterProviderSharedState.getStartEpochNanos(), epochNanos);
+            registeredReader,
+            meterProviderSharedState.getStartEpochNanos(),
+            epochNanos);
       }
 
       Collection<MetricStorage> storages =

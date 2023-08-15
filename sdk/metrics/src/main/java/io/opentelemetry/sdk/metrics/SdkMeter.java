@@ -71,7 +71,9 @@ final class SdkMeter implements Meter {
   }
 
   /** Collect all metrics for the meter. */
-  Collection<MetricData> collectAll(RegisteredReader registeredReader, long epochNanos) {
+  Collection<MetricData> collectAll(
+      RegisteredReader registeredReader,
+      long epochNanos) {
     return meterSharedState.collectAll(registeredReader, meterProviderSharedState, epochNanos);
   }
 

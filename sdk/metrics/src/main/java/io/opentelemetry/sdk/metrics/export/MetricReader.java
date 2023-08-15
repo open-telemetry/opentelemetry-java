@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.internal.export.NoOpMetricFilter;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +33,14 @@ public interface MetricReader
    * implementations of {@link MetricReader} are not currently supported.
    */
   void register(CollectionRegistration registration);
+
+  default void setMetricFilter(MetricFilter metricFilter) {
+    throw new UnsupportedOperationException();
+  }
+
+  default MetricFilter getMetricFilter() {
+    return new NoOpMetricFilter();
+  }
 
   /**
    * Return the default aggregation for the {@link InstrumentType}.

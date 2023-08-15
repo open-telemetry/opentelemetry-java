@@ -7,8 +7,6 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
-import io.opentelemetry.sdk.metrics.internal.aggregator.HistogramCollectBenchmark;
-import io.opentelemetry.sdk.metrics.internal.aggregator.HistogramCollectBenchmark.NoopMetricExporter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import java.time.Duration;
 import java.util.List;

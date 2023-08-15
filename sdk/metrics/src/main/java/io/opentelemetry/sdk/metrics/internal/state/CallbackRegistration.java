@@ -6,9 +6,11 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.internal.ThrowableUtil.propagateIfFatal;
+import static io.opentelemetry.sdk.metrics.export.MetricFilter.InstrumentFilterResult.REJECT_ALL_ATTRIBUTES;
 import static java.util.stream.Collectors.toList;
 
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.export.MetricFilter;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import java.util.List;
@@ -75,13 +77,30 @@ public final class CallbackRegistration {
     if (!hasStorages) {
       return;
     }
+
+    boolean isAllFilterInstrumentRejectAllAttributes = true;
+
     // Set the active reader on each observable measurement so that measurements are only recorded
     // to relevant storages
-    observableMeasurements.forEach(
-        observableMeasurement ->
-            observableMeasurement.setActiveReader(reader, startEpochNanos, epochNanos));
+    for (SdkObservableMeasurement observableMeasurement : observableMeasurements) {
+      observableMeasurement.setActiveReader(reader, startEpochNanos, epochNanos);
+      MetricFilter metricFilter = reader.getReader().getMetricFilter();
+      InstrumentDescriptor instrumentDescriptor = observableMeasurement.getInstrumentDescriptor();
+      MetricFilter.InstrumentFilterResult instrumentFilterResult = metricFilter.filterInstrument(
+          observableMeasurement.getInstrumentationScopeInfo(),
+          instrumentDescriptor.getName(),
+          instrumentDescriptor.getType(),
+          instrumentDescriptor.getUnit()
+      );
+
+      if (instrumentFilterResult != REJECT_ALL_ATTRIBUTES) {
+        isAllFilterInstrumentRejectAllAttributes = false;
+      }
+    }
     try {
-      callback.run();
+      if (!isAllFilterInstrumentRejectAllAttributes) {
+        callback.run();
+      }
     } catch (Throwable e) {
       propagateIfFatal(e);
       throttlingLogger.log(

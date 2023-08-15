@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static io.opentelemetry.sdk.metrics.export.MetricFilter.InstrumentFilterResult.ALLOW_ALL_ATTRIBUTES;
+import static io.opentelemetry.sdk.metrics.export.MetricFilter.InstrumentFilterResult.REJECT_ALL_ATTRIBUTES;
 import static io.opentelemetry.sdk.metrics.internal.state.Measurement.doubleMeasurement;
 import static io.opentelemetry.sdk.metrics.internal.state.Measurement.longMeasurement;
 
@@ -13,6 +15,7 @@ import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.export.MetricFilter;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import java.util.List;
@@ -41,6 +44,7 @@ public final class SdkObservableMeasurement
   @Nullable private volatile RegisteredReader activeReader;
   private volatile long startEpochNanos;
   private volatile long epochNanos;
+  private volatile MetricFilter.InstrumentFilterResult metricFilterInstrumentResult;
 
   private SdkObservableMeasurement(
       InstrumentationScopeInfo instrumentationScopeInfo,
@@ -49,6 +53,7 @@ public final class SdkObservableMeasurement
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.instrumentDescriptor = instrumentDescriptor;
     this.storages = storages;
+    this.metricFilterInstrumentResult = ALLOW_ALL_ATTRIBUTES;
   }
 
   /**
@@ -80,6 +85,13 @@ public final class SdkObservableMeasurement
     this.activeReader = registeredReader;
     this.startEpochNanos = startEpochNanos;
     this.epochNanos = epochNanos;
+    this.metricFilterInstrumentResult =
+        registeredReader.getReader().getMetricFilter()
+            .filterInstrument(
+                instrumentationScopeInfo,
+                instrumentDescriptor.getName(),
+                instrumentDescriptor.getType(),
+                instrumentDescriptor.getUnit());
   }
 
   /**
@@ -104,6 +116,9 @@ public final class SdkObservableMeasurement
 
   @Override
   public void record(long value, Attributes attributes) {
+    if (metricFilterInstrumentResult == REJECT_ALL_ATTRIBUTES) {
+      return;
+    }
     doRecord(longMeasurement(startEpochNanos, epochNanos, value, attributes));
   }
 
@@ -114,6 +129,9 @@ public final class SdkObservableMeasurement
 
   @Override
   public void record(double value, Attributes attributes) {
+    if (metricFilterInstrumentResult == REJECT_ALL_ATTRIBUTES) {
+      return;
+    }
     doRecord(doubleMeasurement(startEpochNanos, epochNanos, value, attributes));
   }
 
