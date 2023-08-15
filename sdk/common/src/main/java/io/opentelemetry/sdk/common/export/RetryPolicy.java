@@ -49,6 +49,8 @@ public abstract class RetryPolicy {
   /**
    * Returns a {@link RetryPolicyBuilder} reflecting configuration values for this {@link
    * RetryPolicy}.
+   *
+   * @since 1.29.0
    */
   public abstract RetryPolicyBuilder toBuilder();
 

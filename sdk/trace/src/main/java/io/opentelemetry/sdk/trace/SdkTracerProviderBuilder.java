@@ -72,6 +72,18 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
+   * Merge a {@link Resource} with the current.
+   *
+   * @param resource {@link Resource} to merge with current.
+   * @since 1.29.0
+   */
+  public SdkTracerProviderBuilder addResource(Resource resource) {
+    Objects.requireNonNull(resource, "resource");
+    this.resource = this.resource.merge(resource);
+    return this;
+  }
+
+  /**
    * Assign an initial {@link SpanLimits} that should be used with this SDK.
    *
    * <p>This method is equivalent to calling {@link #setSpanLimits(Supplier)} like this {@code
@@ -146,15 +158,4 @@ public final class SdkTracerProviderBuilder {
   }
 
   SdkTracerProviderBuilder() {}
-
-  /**
-   * Merge custom resource object with the current resource object.
-   *
-   * @param resource {@link Resource} object to merge with current.
-   */
-  public SdkTracerProviderBuilder addResource(Resource resource) {
-    Objects.requireNonNull(resource, "resource");
-    this.resource = this.resource.merge(resource);
-    return this;
-  }
 }

@@ -22,7 +22,7 @@ public final class DebugUtils {
    * Creates a detailed error message comparing two {@link MetricDescriptor}s.
    *
    * <p>Called when the metrics with the descriptors have the same name, but {@link
-   * MetricDescriptor#isCompatibleWith(MetricDescriptor)} is {@code false}.
+   * MetricDescriptor#equals(Object)} is {@code false}.
    *
    * <p>This should identify all issues between the descriptor and log information on where they are
    * defined. Users should be able to find/fix issues based on this error.

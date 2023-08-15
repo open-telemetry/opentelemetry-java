@@ -63,7 +63,7 @@ val DEPENDENCIES = listOf(
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
-  "com.tngtech.archunit:archunit-junit5:1.0.1",
+  "com.tngtech.archunit:archunit-junit5:1.1.0",
   "com.uber.nullaway:nullaway:0.10.12",
   // TODO(anuraaga): Skip 1.8 because of https://github.com/rohanpadhye/JQF/issues/172
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7",
