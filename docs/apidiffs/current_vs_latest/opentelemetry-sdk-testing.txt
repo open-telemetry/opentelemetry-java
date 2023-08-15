@@ -1,4 +1,2 @@
 Comparing source compatibility of  against 
-***! MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasResourceSatisfying(java.util.function.Consumer<io.opentelemetry.sdk.testing.assertj.ResourceAssert>)
+No changes.
