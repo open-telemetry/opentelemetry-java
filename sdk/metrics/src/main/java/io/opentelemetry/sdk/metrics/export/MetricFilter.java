@@ -6,6 +6,7 @@ import io.opentelemetry.sdk.metrics.InstrumentType;
 
 public interface MetricFilter {
 
+
   InstrumentFilterResult filterInstrument(
       InstrumentationScopeInfo instrumentationScopeInfo,
       String name,

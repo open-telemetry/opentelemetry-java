@@ -5,6 +5,8 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator.prototype;
 
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.internal.aggregator.prototype.AsynchronousMetricStorageGarbageCollectionBenchmark.Filter;
+
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,14 +46,18 @@ public class AsynchronousCounterMemoryUsageBenchmark {
       throws ExecutionException, InterruptedException, TimeoutException {
     // Parameters
     AggregationTemporality aggregationTemporality = AggregationTemporality.CUMULATIVE;
-    int countersCount = 1;
+    int countersCount = 50;
     int cardinality = 100_000;
+    int countersToAllows = 5;
+    int attributesToAllow = 1000;
+    Filter filter = Filter.WITH_FILTER;
 
     AsynchronousMetricStorageGarbageCollectionBenchmark.ThreadState benchmarkSetup =
         new AsynchronousMetricStorageGarbageCollectionBenchmark.ThreadState(
-            countersCount, cardinality);
+            countersCount, cardinality, attributesToAllow, countersToAllows);
 
     benchmarkSetup.aggregationTemporality = aggregationTemporality;
+    benchmarkSetup.filter = filter;
 
     AsynchronousMetricStorageGarbageCollectionBenchmark benchmark =
         new AsynchronousMetricStorageGarbageCollectionBenchmark();

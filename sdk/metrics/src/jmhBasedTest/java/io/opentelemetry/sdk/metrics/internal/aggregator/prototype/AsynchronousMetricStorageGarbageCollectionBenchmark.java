@@ -1,16 +1,23 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator.prototype;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.export.MetricFilter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import java.time.Duration;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -34,12 +41,19 @@ import org.openjdk.jmh.annotations.Warmup;
 @Fork(1)
 public class AsynchronousMetricStorageGarbageCollectionBenchmark {
 
+  public enum Filter {
+    NO_FILTER,
+    WITH_FILTER
+  }
   @State(value = Scope.Benchmark)
   @SuppressWarnings("SystemOut")
   public static class ThreadState {
     private final int cardinality;
     private final int countersCount;
+    private final int attributesToAllow;
+    private final int countersToAllow;
     @Param public AggregationTemporality aggregationTemporality;
+    @Param public Filter filter;
     SdkMeterProvider sdkMeterProvider;
     private final Random random = new Random();
     List<Attributes> attributesList;
@@ -48,11 +62,19 @@ public class AsynchronousMetricStorageGarbageCollectionBenchmark {
     public ThreadState() {
       cardinality = 1000;
       countersCount = 10;
+      attributesToAllow = 50;
+      countersToAllow = 1;
     }
 
-    public ThreadState(int countersCount, int cardinality) {
+    public ThreadState(
+        int countersCount,
+        int cardinality,
+        int attributesToAllow,
+        int countersToAllow) {
       this.cardinality = cardinality;
       this.countersCount = countersCount;
+      this.attributesToAllow = attributesToAllow;
+      this.countersToAllow = countersToAllow;
     }
 
     @SuppressWarnings("SpellCheckingInspection")
@@ -79,7 +101,7 @@ public class AsynchronousMetricStorageGarbageCollectionBenchmark {
       for (int i = 0; i < countersCount; i++) {
         sdkMeterProvider
             .get("meter")
-            .counterBuilder("counter" + i)
+            .counterBuilder(counterName(i))
             .buildWithCallback(
                 observableLongMeasurement -> {
                   for (int j = 0; j < attributesList.size(); j++) {
@@ -88,12 +110,20 @@ public class AsynchronousMetricStorageGarbageCollectionBenchmark {
                   }
                 });
       }
+      if (filter == Filter.WITH_FILTER) {
+        metricReader.setMetricFilter(
+            new TestMetricFilter(attributesList, attributesToAllow, countersToAllow));
+      }
     }
 
     @TearDown
     public void tearDown() {
       sdkMeterProvider.shutdown().join(10, TimeUnit.SECONDS);
     }
+  }
+
+  private static String counterName(int i) {
+    return "counter" + i;
   }
 
   /**
@@ -105,5 +135,47 @@ public class AsynchronousMetricStorageGarbageCollectionBenchmark {
   @Threads(value = 1)
   public void recordAndCollect(ThreadState threadState) {
     threadState.sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
+  }
+
+  static class TestMetricFilter implements MetricFilter {
+
+    public static final AttributeKey<String> KEY_ATTRIBUTE_NAME = AttributeKey.stringKey("key");
+    private final Set<String> allowsCounterNames = new HashSet<>();
+    private final Set<String> allowsKeyAttributeNames = new HashSet<>();
+
+    public TestMetricFilter(
+        List<Attributes> generatedAttributes,
+        int numOfAttributesToAllow,
+        int allowCounterUpTo) {
+      for (int i = 0; i < allowCounterUpTo; i++) {
+        allowsCounterNames.add(counterName(i));
+      }
+      Iterator<Attributes> iterator = generatedAttributes.iterator();
+      for (int i = 0; i < numOfAttributesToAllow; i++) {
+        allowsKeyAttributeNames.add(iterator.next().get(KEY_ATTRIBUTE_NAME));
+      }
+    }
+
+    @Override
+    public InstrumentFilterResult filterInstrument(
+        InstrumentationScopeInfo instrumentationScopeInfo,
+        String name,
+        InstrumentType metricDataType,
+        String unit) {
+
+      if (allowsCounterNames.contains(name)) {
+        return InstrumentFilterResult.ALLOW_SOME_ATTRIBUTES;
+      } else {
+        return InstrumentFilterResult.REJECT_ALL_ATTRIBUTES;
+      }
+    }
+
+    @Override
+    public boolean allowInstrumentAttributes(InstrumentationScopeInfo instrumentationScopeInfo,
+        String name, InstrumentType metricDataType, String unit, Attributes attributes) {
+
+      return (allowsCounterNames.contains(name)
+          && allowsKeyAttributeNames.contains(attributes.get(KEY_ATTRIBUTE_NAME)));
+    }
   }
 }

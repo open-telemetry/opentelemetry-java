@@ -11,6 +11,7 @@ import java.util.Collection;
 public class NoopMetricExporter implements MetricExporter {
   private final AggregationTemporality aggregationTemporality;
   private final Aggregation aggregation;
+  private int pointSoFar = 0;
 
   public NoopMetricExporter(
       AggregationTemporality aggregationTemporality, Aggregation aggregation) {
@@ -18,8 +19,12 @@ public class NoopMetricExporter implements MetricExporter {
     this.aggregation = aggregation;
   }
 
+  @SuppressWarnings("SystemOut")
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
+    // Printing to make sure JVM won't optimize this out
+    pointSoFar += metrics.size();
+
     return CompletableResultCode.ofSuccess();
   }
 
@@ -30,7 +35,11 @@ public class NoopMetricExporter implements MetricExporter {
 
   @Override
   public CompletableResultCode shutdown() {
-    return CompletableResultCode.ofSuccess();
+    if (pointSoFar >= 0) {
+      return CompletableResultCode.ofSuccess();
+    } else {
+      return CompletableResultCode.ofSuccess();
+    }
   }
 
   @Override

@@ -39,7 +39,7 @@ public interface MetricReader
   }
 
   default MetricFilter getMetricFilter() {
-    return new NoOpMetricFilter();
+    return NoOpMetricFilter.INSTANCE;
   }
 
   /**

@@ -43,7 +43,7 @@ public final class PeriodicMetricReader implements MetricReader {
   private final Object lock = new Object();
 
   private volatile MetricProducer metricProducer = MetricProducer.noop();
-  private volatile MetricFilter metricFilter = new NoOpMetricFilter();
+  private volatile MetricFilter metricFilter = NoOpMetricFilter.INSTANCE;
   @Nullable private volatile ScheduledFuture<?> scheduledFuture;
 
   /**

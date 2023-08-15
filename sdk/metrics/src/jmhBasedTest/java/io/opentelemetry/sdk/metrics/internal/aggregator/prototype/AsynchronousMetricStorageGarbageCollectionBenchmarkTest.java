@@ -1,5 +1,7 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator.prototype;
 
+import static io.opentelemetry.sdk.metrics.internal.aggregator.prototype.AsynchronousMetricStorageGarbageCollectionBenchmark.Filter.NO_FILTER;
+import static io.opentelemetry.sdk.metrics.internal.aggregator.prototype.AsynchronousMetricStorageGarbageCollectionBenchmark.Filter.WITH_FILTER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -18,7 +20,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 public class AsynchronousMetricStorageGarbageCollectionBenchmarkTest {
 
-  @SuppressWarnings("rawtypes")
+  @SuppressWarnings({"rawtypes", "SystemOut"})
   @Test
   public void normalizedAllocationRateTest() throws RunnerException {
     // Runs AsynchronousMetricStorageMemoryProfilingBenchmark
@@ -58,14 +60,24 @@ public class AsynchronousMetricStorageGarbageCollectionBenchmarkTest {
 
     resultMap.forEach(
         (aggregationTemporality, memoryModeToAllocRateMap) -> {
-          Double immutableDataAllocRate =
-              memoryModeToAllocRateMap.get("with");
-          Double reusableDataAllocRate =
-              memoryModeToAllocRateMap.get("without");
+          Double withoutFilterDataAllocRate =
+              memoryModeToAllocRateMap.get(NO_FILTER.toString());
+          Double withFilterDataAllocRate =
+              memoryModeToAllocRateMap.get(WITH_FILTER.toString());
 
-          assertThat(immutableDataAllocRate).isNotNull().isNotZero();
-          assertThat(reusableDataAllocRate).isNotNull().isNotZero();
-//          assertThat(100 - (reusableDataAllocRate / immutableDataAllocRate) * 100)
+          assertThat(withoutFilterDataAllocRate).isNotNull().isNotZero();
+          assertThat(withFilterDataAllocRate).isNotNull().isNotZero();
+          System.out.printf("\n%s: without filter = %,15.0f",
+              aggregationTemporality,
+              withoutFilterDataAllocRate);
+          System.out.printf("\n%s: with filter = %,15.2f\n",
+              aggregationTemporality,
+              withFilterDataAllocRate);
+          System.out.printf("\n%s: with filter saves %.2f%%\n",
+              aggregationTemporality,
+              100 - (withFilterDataAllocRate / withoutFilterDataAllocRate) * 100);
+
+//          assertThat(100 - (withFilterDataAllocRate / withoutFilterDataAllocRate) * 100)
 //              .isCloseTo(99.8, Offset.offset(2.0));
         });
   }
