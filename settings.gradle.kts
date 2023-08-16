@@ -1,6 +1,5 @@
 pluginManagement {
   plugins {
-    id("com.github.ben-manes.versions") version "0.47.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("com.gradle.enterprise") version "3.14.1"
     id("de.undercouch.download") version "5.4.0"
