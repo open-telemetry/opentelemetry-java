@@ -115,7 +115,7 @@ class PrometheusMetricNameMapperTest {
         // metric unit is not appended if the name already contains the unit - order matters
         Arguments.of(
             createSampleMetricData("metric_total_hertz", "hertz_total", PrometheusType.COUNTER),
-            "metric_total_hertz_hertz_total"),
+            "metric_total_hertz_hertz_total_total"),
         // metric name cannot start with a number
         Arguments.of(
             createSampleMetricData("2_metric_name", "By", PrometheusType.SUMMARY),

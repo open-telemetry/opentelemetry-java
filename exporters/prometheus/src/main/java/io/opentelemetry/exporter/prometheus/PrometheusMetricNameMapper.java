@@ -42,14 +42,20 @@ class PrometheusMetricNameMapper implements BiFunction<MetricData, PrometheusTyp
     String name = NameSanitizer.INSTANCE.apply(rawMetric.getName());
     String prometheusEquivalentUnit =
         PrometheusUnitsHelper.getEquivalentPrometheusUnit(rawMetric.getUnit());
+    boolean shouldAppendUnit =
+        !StringUtils.isNullOrEmpty(prometheusEquivalentUnit)
+            && !name.contains(prometheusEquivalentUnit);
+    // trim counter's _total suffix so the unit is placed before it.
+    if (prometheusType == PrometheusType.COUNTER && name.endsWith("_total")) {
+      name = name.substring(0, name.length() - 6);
+    }
     // append prometheus unit if not null or empty.
-    if (!StringUtils.isNullOrEmpty(prometheusEquivalentUnit)
-        && !name.contains(prometheusEquivalentUnit)) {
+    if (shouldAppendUnit) {
       name = name + "_" + prometheusEquivalentUnit;
     }
 
-    // special case - counter
-    if (prometheusType == PrometheusType.COUNTER && !name.contains("total")) {
+    // replace _total suffix, or add if it wasn't already present.
+    if (prometheusType == PrometheusType.COUNTER) {
       name = name + "_total";
     }
     // special case - gauge
