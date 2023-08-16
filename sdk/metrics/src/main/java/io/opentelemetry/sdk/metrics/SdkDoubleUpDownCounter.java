@@ -52,7 +52,7 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
         String name,
         String description,
         String unit,
-        Advice advice) {
+        Advice.AdviceBuilder adviceBuilder) {
       super(
           meterProviderSharedState,
           sharedState,
@@ -61,7 +61,7 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
           name,
           description,
           unit,
-          advice);
+          adviceBuilder);
     }
 
     @Override

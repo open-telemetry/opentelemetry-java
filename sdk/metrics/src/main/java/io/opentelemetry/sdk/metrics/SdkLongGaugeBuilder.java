@@ -22,7 +22,7 @@ final class SdkLongGaugeBuilder extends AbstractInstrumentBuilder<SdkLongGaugeBu
       String name,
       String description,
       String unit,
-      Advice advice) {
+      Advice.AdviceBuilder adviceBuilder) {
     super(
         meterProviderSharedState,
         sharedState,
@@ -31,7 +31,7 @@ final class SdkLongGaugeBuilder extends AbstractInstrumentBuilder<SdkLongGaugeBu
         name,
         description,
         unit,
-        advice);
+        adviceBuilder);
   }
 
   @Override
