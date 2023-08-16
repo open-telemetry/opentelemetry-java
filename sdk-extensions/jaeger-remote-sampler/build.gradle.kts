@@ -16,6 +16,7 @@ dependencies {
 
   implementation(project(":sdk:all"))
   implementation(project(":exporters:common"))
+  implementation(project(":exporters:sender:okhttp"))
 
   implementation("com.squareup.okhttp3:okhttp")
 
@@ -34,7 +35,7 @@ dependencies {
 
 testing {
   suites {
-    val testGrpcNetty by registering(JvmTestSuite::class) {
+    register<JvmTestSuite>("testGrpcNetty") {
       dependencies {
         implementation(project(":sdk:testing"))
         implementation(project(":exporters:common"))

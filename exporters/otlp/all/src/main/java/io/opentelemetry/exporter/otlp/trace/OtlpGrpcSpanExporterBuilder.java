@@ -11,10 +11,10 @@ import static java.util.Objects.requireNonNull;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
-import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
+import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -36,16 +36,20 @@ public final class OtlpGrpcSpanExporterBuilder {
   // Visible for testing
   final GrpcExporterBuilder<TraceRequestMarshaler> delegate;
 
+  OtlpGrpcSpanExporterBuilder(GrpcExporterBuilder<TraceRequestMarshaler> delegate) {
+    this.delegate = delegate;
+    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+  }
+
   OtlpGrpcSpanExporterBuilder() {
-    delegate =
-        GrpcExporter.builder(
+    this(
+        new GrpcExporterBuilder<>(
             "otlp",
             "span",
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerTraceServiceGrpc::newFutureStub,
-            GRPC_ENDPOINT_PATH);
-    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+            GRPC_ENDPOINT_PATH));
   }
 
   /**
@@ -156,6 +160,17 @@ public final class OtlpGrpcSpanExporterBuilder {
   }
 
   /**
+   * Ses the retry policy. Retry is disabled by default.
+   *
+   * @since 1.28.0
+   */
+  public OtlpGrpcSpanExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
+    requireNonNull(retryPolicy, "retryPolicy");
+    delegate.setRetryPolicy(retryPolicy);
+    return this;
+  }
+
+  /**
    * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
    * {@link GlobalOpenTelemetry#getMeterProvider()}.
    */
@@ -171,6 +186,6 @@ public final class OtlpGrpcSpanExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpGrpcSpanExporter build() {
-    return new OtlpGrpcSpanExporter(delegate.build());
+    return new OtlpGrpcSpanExporter(delegate, delegate.build());
   }
 }

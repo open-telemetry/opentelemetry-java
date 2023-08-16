@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.metrics;
 
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.Aggregation;
@@ -26,6 +27,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpGrpcMetricExporter implements MetricExporter {
 
+  private final GrpcExporterBuilder<MetricsRequestMarshaler> builder;
   private final GrpcExporter<MetricsRequestMarshaler> delegate;
   private final AggregationTemporalitySelector aggregationTemporalitySelector;
   private final DefaultAggregationSelector defaultAggregationSelector;
@@ -52,12 +54,25 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
   }
 
   OtlpGrpcMetricExporter(
+      GrpcExporterBuilder<MetricsRequestMarshaler> builder,
       GrpcExporter<MetricsRequestMarshaler> delegate,
       AggregationTemporalitySelector aggregationTemporalitySelector,
       DefaultAggregationSelector defaultAggregationSelector) {
+    this.builder = builder;
     this.delegate = delegate;
     this.aggregationTemporalitySelector = aggregationTemporalitySelector;
     this.defaultAggregationSelector = defaultAggregationSelector;
+  }
+
+  /**
+   * Returns a builder with configuration values equal to those for this exporter.
+   *
+   * <p>IMPORTANT: Be sure to {@link #shutdown()} this instance if it will no longer be used.
+   *
+   * @since 1.29.0
+   */
+  public OtlpGrpcMetricExporterBuilder toBuilder() {
+    return new OtlpGrpcMetricExporterBuilder(builder.copy());
   }
 
   @Override
@@ -100,5 +115,10 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
   @Override
   public CompletableResultCode shutdown() {
     return delegate.shutdown();
+  }
+
+  @Override
+  public String toString() {
+    return "OtlpGrpcMetricExporter{" + builder.toString(false) + "}";
   }
 }

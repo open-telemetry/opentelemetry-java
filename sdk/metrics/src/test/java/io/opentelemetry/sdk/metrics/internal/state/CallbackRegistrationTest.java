@@ -106,7 +106,7 @@ class CallbackRegistrationTest {
                 + "unit=unit, "
                 + "type=OBSERVABLE_COUNTER, "
                 + "valueType=LONG, "
-                + "advice=Advice{explicitBucketBoundaries=null}"
+                + "advice=Advice{explicitBucketBoundaries=null, attributes=null}"
                 + "}]}");
     assertThat(
             CallbackRegistration.create(Arrays.asList(measurement1, measurement2), callback)
@@ -120,14 +120,14 @@ class CallbackRegistrationTest {
                 + "unit=unit, "
                 + "type=OBSERVABLE_COUNTER, "
                 + "valueType=LONG, "
-                + "advice=Advice{explicitBucketBoundaries=null}}, "
+                + "advice=Advice{explicitBucketBoundaries=null, attributes=null}}, "
                 + "InstrumentDescriptor{"
                 + "name=long-counter, "
                 + "description=description, "
                 + "unit=unit, "
                 + "type=OBSERVABLE_COUNTER, "
                 + "valueType=LONG, "
-                + "advice=Advice{explicitBucketBoundaries=null}"
+                + "advice=Advice{explicitBucketBoundaries=null, attributes=null}"
                 + "}]}");
   }
 

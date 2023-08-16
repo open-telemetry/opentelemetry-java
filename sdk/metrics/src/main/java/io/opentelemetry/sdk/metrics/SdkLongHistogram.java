@@ -9,7 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.extension.incubator.metrics.ExtendedLongHistogramBuilder;
-import io.opentelemetry.extension.incubator.metrics.HistogramAdviceConfigurer;
+import io.opentelemetry.extension.incubator.metrics.LongHistogramAdviceConfigurer;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 final class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
   private static final Logger logger = Logger.getLogger(SdkLongHistogram.class.getName());
@@ -57,7 +58,7 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
 
   static final class SdkLongHistogramBuilder
       extends AbstractInstrumentBuilder<SdkLongHistogramBuilder>
-      implements ExtendedLongHistogramBuilder, HistogramAdviceConfigurer {
+      implements ExtendedLongHistogramBuilder, LongHistogramAdviceConfigurer {
 
     SdkLongHistogramBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -65,7 +66,7 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
         String name,
         String description,
         String unit,
-        Advice advice) {
+        Advice.AdviceBuilder adviceBuilder) {
       super(
           meterProviderSharedState,
           sharedState,
@@ -74,7 +75,7 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
           name,
           description,
           unit,
-          advice);
+          adviceBuilder);
     }
 
     @Override
@@ -83,7 +84,8 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     }
 
     @Override
-    public SdkLongHistogramBuilder setAdvice(Consumer<HistogramAdviceConfigurer> adviceConsumer) {
+    public SdkLongHistogramBuilder setAdvice(
+        Consumer<LongHistogramAdviceConfigurer> adviceConsumer) {
       adviceConsumer.accept(this);
       return this;
     }
@@ -94,8 +96,10 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     }
 
     @Override
-    public HistogramAdviceConfigurer setExplicitBucketBoundaries(List<Double> bucketBoundaries) {
-      setAdvice(Advice.create(bucketBoundaries));
+    public LongHistogramAdviceConfigurer setExplicitBucketBoundaries(List<Long> bucketBoundaries) {
+      List<Double> doubleBoundaries =
+          bucketBoundaries.stream().map(Long::doubleValue).collect(Collectors.toList());
+      adviceBuilder.setExplicitBucketBoundaries(doubleBoundaries);
       return this;
     }
   }

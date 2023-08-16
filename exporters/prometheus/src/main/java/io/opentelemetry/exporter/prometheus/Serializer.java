@@ -118,7 +118,7 @@ abstract class Serializer {
         continue;
       }
       PrometheusType prometheusType = PrometheusType.forMetric(metric);
-      String metricName = metricName(metric.getName(), prometheusType);
+      String metricName = PrometheusMetricNameMapper.INSTANCE.apply(metric, prometheusType);
       // Skip metrics which do not pass metricNameFilter
       if (!metricNameFilter.test(metricName)) {
         continue;
@@ -648,14 +648,6 @@ abstract class Serializer {
         return metricData.getExponentialHistogramData().getPoints();
     }
     return Collections.emptyList();
-  }
-
-  private static String metricName(String rawMetricName, PrometheusType type) {
-    String name = NameSanitizer.INSTANCE.apply(rawMetricName);
-    if (type == PrometheusType.COUNTER && !name.endsWith("_total")) {
-      name = name + "_total";
-    }
-    return name;
   }
 
   private static double getExemplarValue(ExemplarData exemplar) {

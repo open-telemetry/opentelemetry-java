@@ -9,6 +9,8 @@ import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -24,19 +26,18 @@ final class PropagatorConfiguration {
 
   static ContextPropagators configurePropagators(
       ConfigProperties config,
-      ClassLoader serviceClassLoader,
+      SpiHelper spiHelper,
       BiFunction<? super TextMapPropagator, ConfigProperties, ? extends TextMapPropagator>
           propagatorCustomizer) {
     Set<TextMapPropagator> propagators = new LinkedHashSet<>();
     List<String> requestedPropagators = config.getList("otel.propagators", DEFAULT_PROPAGATORS);
 
     NamedSpiManager<TextMapPropagator> spiPropagatorsManager =
-        SpiUtil.loadConfigurable(
+        spiHelper.loadConfigurable(
             ConfigurablePropagatorProvider.class,
             ConfigurablePropagatorProvider::getName,
             ConfigurablePropagatorProvider::getPropagator,
-            config,
-            serviceClassLoader);
+            config);
 
     if (requestedPropagators.contains("none")) {
       if (requestedPropagators.size() > 1) {

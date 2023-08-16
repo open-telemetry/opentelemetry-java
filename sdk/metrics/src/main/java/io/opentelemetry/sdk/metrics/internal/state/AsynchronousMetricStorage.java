@@ -46,6 +46,13 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
   private final AggregationTemporality aggregationTemporality;
   private final Aggregator<T, U> aggregator;
   private final AttributesProcessor attributesProcessor;
+
+  /**
+   * This field is set to 1 less than the actual intended cardinality limit, allowing the last slot
+   * to be filled by the {@link MetricStorage#CARDINALITY_OVERFLOW} series.
+   */
+  private final int maxCardinality;
+
   private Map<Attributes, T> points = new HashMap<>();
   private Map<Attributes, T> lastPoints =
       new HashMap<>(); // Only populated if aggregationTemporality == DELTA
@@ -54,7 +61,8 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
       RegisteredReader registeredReader,
       MetricDescriptor metricDescriptor,
       Aggregator<T, U> aggregator,
-      AttributesProcessor attributesProcessor) {
+      AttributesProcessor attributesProcessor,
+      int maxCardinality) {
     this.registeredReader = registeredReader;
     this.metricDescriptor = metricDescriptor;
     this.aggregationTemporality =
@@ -63,6 +71,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
             .getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
+    this.maxCardinality = maxCardinality - 1;
   }
 
   /**
@@ -83,7 +92,8 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
         registeredReader,
         metricDescriptor,
         aggregator,
-        registeredView.getViewAttributesProcessor());
+        registeredView.getViewAttributesProcessor(),
+        registeredView.getCardinalityLimit());
   }
 
   /**
@@ -103,34 +113,43 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
                 start, measurement.epochNanos(), measurement.doubleValue(), processedAttributes)
             : Measurement.longMeasurement(
                 start, measurement.epochNanos(), measurement.longValue(), processedAttributes);
-    recordPoint(aggregator.toPoint(measurement));
+    recordPoint(processedAttributes, measurement);
   }
 
-  private void recordPoint(T point) {
-    Attributes attributes = point.getAttributes();
-
-    if (points.size() >= MetricStorage.MAX_CARDINALITY) {
+  private void recordPoint(Attributes attributes, Measurement measurement) {
+    if (points.size() >= maxCardinality) {
       throttlingLogger.log(
           Level.WARNING,
           "Instrument "
               + metricDescriptor.getSourceInstrument().getName()
               + " has exceeded the maximum allowed cardinality ("
-              + MetricStorage.MAX_CARDINALITY
+              + maxCardinality
               + ").");
-      return;
-    }
-
-    // Check there is not already a recording for the attributes
-    if (points.containsKey(attributes)) {
+      attributes = MetricStorage.CARDINALITY_OVERFLOW;
+      measurement =
+          measurement.hasDoubleValue()
+              ? Measurement.doubleMeasurement(
+                  measurement.startEpochNanos(),
+                  measurement.epochNanos(),
+                  measurement.doubleValue(),
+                  attributes)
+              : Measurement.longMeasurement(
+                  measurement.startEpochNanos(),
+                  measurement.epochNanos(),
+                  measurement.longValue(),
+                  attributes);
+    } else if (points.containsKey(
+        attributes)) { // Check there is not already a recording for the attributes
       throttlingLogger.log(
           Level.WARNING,
           "Instrument "
               + metricDescriptor.getSourceInstrument().getName()
-              + " has recorded multiple values for the same attributes.");
+              + " has recorded multiple values for the same attributes: "
+              + attributes);
       return;
     }
 
-    points.put(attributes, point);
+    points.put(attributes, aggregator.toPoint(measurement));
   }
 
   @Override

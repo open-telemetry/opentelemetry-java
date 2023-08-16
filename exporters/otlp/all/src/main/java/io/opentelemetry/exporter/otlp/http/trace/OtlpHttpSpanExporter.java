@@ -5,7 +5,8 @@
 
 package io.opentelemetry.exporter.otlp.http.trace;
 
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
+import io.opentelemetry.exporter.internal.http.HttpExporter;
+import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -21,9 +22,13 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpHttpSpanExporter implements SpanExporter {
 
-  private final OkHttpExporter<TraceRequestMarshaler> delegate;
+  private final HttpExporterBuilder<TraceRequestMarshaler> builder;
+  private final HttpExporter<TraceRequestMarshaler> delegate;
 
-  OtlpHttpSpanExporter(OkHttpExporter<TraceRequestMarshaler> delegate) {
+  OtlpHttpSpanExporter(
+      HttpExporterBuilder<TraceRequestMarshaler> builder,
+      HttpExporter<TraceRequestMarshaler> delegate) {
+    this.builder = builder;
     this.delegate = delegate;
   }
 
@@ -49,6 +54,17 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   }
 
   /**
+   * Returns a builder with configuration values equal to those for this exporter.
+   *
+   * <p>IMPORTANT: Be sure to {@link #shutdown()} this instance if it will no longer be used.
+   *
+   * @since 1.29.0
+   */
+  public OtlpHttpSpanExporterBuilder toBuilder() {
+    return new OtlpHttpSpanExporterBuilder(builder.copy());
+  }
+
+  /**
    * Submits all the given spans in a single batch to the OpenTelemetry collector.
    *
    * @param spans the list of sampled Spans to be exported.
@@ -70,9 +86,14 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
     return CompletableResultCode.ofSuccess();
   }
 
-  /** Shutdown the exporter. */
+  /** Shutdown the exporter, releasing any resources and preventing subsequent exports. */
   @Override
   public CompletableResultCode shutdown() {
     return delegate.shutdown();
+  }
+
+  @Override
+  public String toString() {
+    return "OtlpHttpSpanExporter{" + builder.toString(false) + "}";
   }
 }

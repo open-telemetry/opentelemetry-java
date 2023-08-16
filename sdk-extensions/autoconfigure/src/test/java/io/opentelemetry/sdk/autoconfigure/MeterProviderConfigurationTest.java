@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.autoconfigure;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.BDDAssertions.as;
 
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
@@ -51,7 +52,7 @@ class MeterProviderConfigurationTest {
     MeterProviderConfiguration.configureMeterProvider(
         builder,
         DefaultConfigProperties.createForTest(configWithDefault),
-        MeterProviderConfigurationTest.class.getClassLoader(),
+        SpiHelper.create(MeterProviderConfigurationTest.class.getClassLoader()),
         (a, b) -> a,
         new ArrayList<>());
     return assertThat(builder)

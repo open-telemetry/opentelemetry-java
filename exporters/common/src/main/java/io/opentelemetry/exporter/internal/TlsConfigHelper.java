@@ -129,4 +129,13 @@ public class TlsConfigHelper {
       throw new IllegalArgumentException(e);
     }
   }
+
+  /** Return a shallow copy of this instance. */
+  public TlsConfigHelper copy() {
+    TlsConfigHelper copy = new TlsConfigHelper();
+    copy.keyManager = keyManager;
+    copy.trustManager = trustManager;
+    copy.sslContext = sslContext;
+    return copy;
+  }
 }

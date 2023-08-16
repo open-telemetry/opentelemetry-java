@@ -5,11 +5,13 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.metrics.internal.view.ViewRegistry.DEFAULT_REGISTERED_VIEW;
 import static io.opentelemetry.sdk.metrics.internal.view.ViewRegistry.toGlobPatternPredicate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.Aggregation;
@@ -21,8 +23,11 @@ import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.export.CardinalityLimitSelector;
+import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 import java.util.Arrays;
 import java.util.Collections;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -38,7 +43,11 @@ class ViewRegistryTest {
 
   private static RegisteredView registeredView(InstrumentSelector instrumentSelector, View view) {
     return RegisteredView.create(
-        instrumentSelector, view, AttributesProcessor.noop(), SourceInfo.fromCurrentStack());
+        instrumentSelector,
+        view,
+        AttributesProcessor.noop(),
+        MetricStorage.DEFAULT_MAX_CARDINALITY,
+        SourceInfo.fromCurrentStack());
   }
 
   @Test
@@ -49,7 +58,9 @@ class ViewRegistryTest {
             View.builder().setDescription("description").build());
     ViewRegistry viewRegistry =
         ViewRegistry.create(
-            DefaultAggregationSelector.getDefault(), Collections.singletonList(registeredView));
+            DefaultAggregationSelector.getDefault(),
+            CardinalityLimitSelector.defaultCardinalityLimitSelector(),
+            Collections.singletonList(registeredView));
 
     assertThat(
             viewRegistry.findViews(
@@ -81,7 +92,9 @@ class ViewRegistryTest {
             View.builder().setDescription("description").build());
     ViewRegistry viewRegistry =
         ViewRegistry.create(
-            DefaultAggregationSelector.getDefault(), Collections.singletonList(registeredView));
+            DefaultAggregationSelector.getDefault(),
+            CardinalityLimitSelector.defaultCardinalityLimitSelector(),
+            Collections.singletonList(registeredView));
 
     assertThat(
             viewRegistry.findViews(
@@ -113,7 +126,9 @@ class ViewRegistryTest {
             View.builder().setDescription("description").build());
     ViewRegistry viewRegistry =
         ViewRegistry.create(
-            DefaultAggregationSelector.getDefault(), Collections.singletonList(registeredView));
+            DefaultAggregationSelector.getDefault(),
+            CardinalityLimitSelector.defaultCardinalityLimitSelector(),
+            Collections.singletonList(registeredView));
 
     assertThat(
             viewRegistry.findViews(
@@ -156,6 +171,7 @@ class ViewRegistryTest {
     ViewRegistry viewRegistry =
         ViewRegistry.create(
             DefaultAggregationSelector.getDefault(),
+            CardinalityLimitSelector.defaultCardinalityLimitSelector(),
             Arrays.asList(registeredView1, registeredView2));
 
     assertThat(
@@ -195,7 +211,9 @@ class ViewRegistryTest {
             View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build());
     ViewRegistry viewRegistry =
         ViewRegistry.create(
-            DefaultAggregationSelector.getDefault(), Collections.singletonList(registeredView));
+            DefaultAggregationSelector.getDefault(),
+            CardinalityLimitSelector.defaultCardinalityLimitSelector(),
+            Collections.singletonList(registeredView));
 
     assertThat(
             viewRegistry.findViews(
@@ -254,7 +272,10 @@ class ViewRegistryTest {
                 : Aggregation.defaultAggregation();
 
     ViewRegistry viewRegistry =
-        ViewRegistry.create(defaultAggregationSelector, Collections.singletonList(registeredView));
+        ViewRegistry.create(
+            defaultAggregationSelector,
+            CardinalityLimitSelector.defaultCardinalityLimitSelector(),
+            Collections.singletonList(registeredView));
 
     // Counter instrument should result in default view
     assertThat(
@@ -330,7 +351,9 @@ class ViewRegistryTest {
             View.builder().setAggregation(Aggregation.explicitBucketHistogram()).build());
     ViewRegistry viewRegistry =
         ViewRegistry.create(
-            DefaultAggregationSelector.getDefault(), Collections.singletonList(registeredView));
+            DefaultAggregationSelector.getDefault(),
+            CardinalityLimitSelector.defaultCardinalityLimitSelector(),
+            Collections.singletonList(registeredView));
 
     assertThat(
             viewRegistry.findViews(
@@ -409,6 +432,117 @@ class ViewRegistryTest {
         .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
 
     assertThat(logs.getEvents()).hasSize(0);
+  }
+
+  @Test
+  void findViews_ApplyAdvice() {
+    // use incompatible aggregation for histogram
+    DefaultAggregationSelector aggregationSelector =
+        instrumentType ->
+            instrumentType == InstrumentType.HISTOGRAM
+                ? Aggregation.lastValue()
+                : Aggregation.defaultAggregation();
+
+    RegisteredView registeredView =
+        registeredView(
+            InstrumentSelector.builder().setName("test").build(),
+            View.builder().setDescription("view applied").build());
+    ViewRegistry viewRegistry =
+        ViewRegistry.create(
+            aggregationSelector,
+            CardinalityLimitSelector.defaultCardinalityLimitSelector(),
+            Collections.singletonList(registeredView));
+
+    // If a view matches the descriptor, use it and ignore the advice
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "test",
+                    "",
+                    "",
+                    InstrumentType.COUNTER,
+                    InstrumentValueType.DOUBLE,
+                    Advice.builder()
+                        .setAttributes(Arrays.asList(stringKey("key1"), stringKey("key2")))
+                        .build()),
+                INSTRUMENTATION_SCOPE_INFO))
+        .isEqualTo(Collections.singletonList(registeredView));
+
+    // If there is no matching view and attributes advice was defined, use it
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "advice",
+                    "",
+                    "",
+                    InstrumentType.COUNTER,
+                    InstrumentValueType.DOUBLE,
+                    Advice.builder()
+                        .setAttributes(Arrays.asList(stringKey("key1"), stringKey("key2")))
+                        .build()),
+                INSTRUMENTATION_SCOPE_INFO))
+        .hasSize(1)
+        .element(0)
+        .satisfies(
+            view -> {
+              assertThat(view)
+                  .as("is the same as the default view, except the attributes processor")
+                  .usingRecursiveComparison()
+                  .ignoringFields("viewAttributesProcessor")
+                  .isEqualTo(DEFAULT_REGISTERED_VIEW);
+              assertThat(view)
+                  .as("has the advice attributes processor")
+                  .extracting("viewAttributesProcessor")
+                  .isInstanceOf(AdviceAttributesProcessor.class)
+                  .extracting(
+                      "attributeKeys", InstanceOfAssertFactories.collection(AttributeKey.class))
+                  .containsExactlyInAnyOrder(stringKey("key1"), stringKey("key2"));
+            });
+
+    // If there is no matching view and attributes advice was defined, use it - incompatible
+    // aggregation case
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "histogram_advice",
+                    "",
+                    "",
+                    InstrumentType.HISTOGRAM,
+                    InstrumentValueType.DOUBLE,
+                    Advice.builder()
+                        .setAttributes(Arrays.asList(stringKey("key1"), stringKey("key2")))
+                        .build()),
+                INSTRUMENTATION_SCOPE_INFO))
+        .hasSize(1)
+        .element(0)
+        .satisfies(
+            view -> {
+              assertThat(view)
+                  .as("is the same as the default view, except the attributes processor")
+                  .usingRecursiveComparison()
+                  .ignoringFields("viewAttributesProcessor")
+                  .isEqualTo(DEFAULT_REGISTERED_VIEW);
+              assertThat(view)
+                  .as("has the advice attributes processor")
+                  .extracting("viewAttributesProcessor")
+                  .isInstanceOf(AdviceAttributesProcessor.class)
+                  .extracting(
+                      "attributeKeys", InstanceOfAssertFactories.collection(AttributeKey.class))
+                  .containsExactlyInAnyOrder(stringKey("key1"), stringKey("key2"));
+            });
+
+    // if advice is not defined, use the default view
+    assertThat(
+            viewRegistry.findViews(
+                InstrumentDescriptor.create(
+                    "advice",
+                    "",
+                    "",
+                    InstrumentType.COUNTER,
+                    InstrumentValueType.DOUBLE,
+                    Advice.empty()),
+                INSTRUMENTATION_SCOPE_INFO))
+        .isEqualTo(Collections.singletonList(DEFAULT_REGISTERED_VIEW));
   }
 
   @Test

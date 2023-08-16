@@ -45,9 +45,11 @@ final class DoubleBase2ExponentialHistogramBuckets implements ExponentialHistogr
     return new DoubleBase2ExponentialHistogramBuckets(this);
   }
 
-  /** Resets all counters in this bucket set to zero, but preserves scale. */
-  void clear() {
+  /** Resets all counters in this bucket set to zero and resets the scale to {@code scale}. */
+  void clear(int scale) {
     this.totalCount = 0;
+    this.scale = scale;
+    this.base2ExponentialHistogramIndexer = Base2ExponentialHistogramIndexer.get(this.scale);
     this.counts.clear();
   }
 

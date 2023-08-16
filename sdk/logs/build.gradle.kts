@@ -15,9 +15,9 @@ dependencies {
 
   implementation(project(":api:events"))
 
+  annotationProcessor("com.google.auto.value:auto-value")
+
   testImplementation(project(":sdk:testing"))
 
   testImplementation("org.awaitility:awaitility")
-
-  annotationProcessor("com.google.auto.value:auto-value")
 }

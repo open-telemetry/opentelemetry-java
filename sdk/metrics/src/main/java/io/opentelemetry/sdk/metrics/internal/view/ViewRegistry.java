@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.view;
 
 import static io.opentelemetry.sdk.metrics.internal.view.NoopAttributesProcessor.NOOP;
+import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.Aggregation;
@@ -17,13 +18,15 @@ import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
+import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.export.CardinalityLimitSelector;
+import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,6 +48,7 @@ public final class ViewRegistry {
           InstrumentSelector.builder().setName("*").build(),
           DEFAULT_VIEW,
           NOOP,
+          MetricStorage.DEFAULT_MAX_CARDINALITY,
           SourceInfo.noSourceInfo());
   private static final Logger logger = Logger.getLogger(ViewRegistry.class.getName());
 
@@ -52,7 +56,9 @@ public final class ViewRegistry {
   private final List<RegisteredView> registeredViews;
 
   ViewRegistry(
-      DefaultAggregationSelector defaultAggregationSelector, List<RegisteredView> registeredViews) {
+      DefaultAggregationSelector defaultAggregationSelector,
+      CardinalityLimitSelector cardinalityLimitSelector,
+      List<RegisteredView> registeredViews) {
     instrumentDefaultRegisteredView = new HashMap<>();
     for (InstrumentType instrumentType : InstrumentType.values()) {
       instrumentDefaultRegisteredView.put(
@@ -63,6 +69,7 @@ public final class ViewRegistry {
                   .setAggregation(defaultAggregationSelector.getDefaultAggregation(instrumentType))
                   .build(),
               AttributesProcessor.noop(),
+              cardinalityLimitSelector.getCardinalityLimit(instrumentType),
               SourceInfo.noSourceInfo()));
     }
     this.registeredViews = registeredViews;
@@ -70,13 +77,19 @@ public final class ViewRegistry {
 
   /** Returns a {@link ViewRegistry}. */
   public static ViewRegistry create(
-      DefaultAggregationSelector defaultAggregationSelector, List<RegisteredView> registeredViews) {
-    return new ViewRegistry(defaultAggregationSelector, new ArrayList<>(registeredViews));
+      DefaultAggregationSelector defaultAggregationSelector,
+      CardinalityLimitSelector cardinalityLimitSelector,
+      List<RegisteredView> registeredViews) {
+    return new ViewRegistry(
+        defaultAggregationSelector, cardinalityLimitSelector, new ArrayList<>(registeredViews));
   }
 
   /** Return a {@link ViewRegistry} using the default aggregation and no views registered. */
   public static ViewRegistry create() {
-    return create(unused -> Aggregation.defaultAggregation(), Collections.emptyList());
+    return create(
+        unused -> Aggregation.defaultAggregation(),
+        CardinalityLimitSelector.defaultCardinalityLimitSelector(),
+        Collections.emptyList());
   }
 
   /**
@@ -113,29 +126,34 @@ public final class ViewRegistry {
       return Collections.unmodifiableList(result);
     }
 
-    // Not views matched, use default view
+    // No views matched, use default view
     RegisteredView instrumentDefaultView =
-        Objects.requireNonNull(instrumentDefaultRegisteredView.get(descriptor.getType()));
+        requireNonNull(instrumentDefaultRegisteredView.get(descriptor.getType()));
+
     AggregatorFactory viewAggregatorFactory =
         (AggregatorFactory) instrumentDefaultView.getView().getAggregation();
 
-    // If the aggregation from default aggregation selector is compatible with the instrument, use
-    // it
-    if (viewAggregatorFactory.isCompatibleWithInstrument(descriptor)) {
-      return Collections.singletonList(instrumentDefaultView);
+    if (!viewAggregatorFactory.isCompatibleWithInstrument(descriptor)) {
+      // The aggregation from default aggregation selector was incompatible with instrument, use
+      // default aggregation instead
+      logger.log(
+          Level.WARNING,
+          "Instrument default aggregation "
+              + AggregationUtil.aggregationName(instrumentDefaultView.getView().getAggregation())
+              + " is incompatible with instrument "
+              + descriptor.getName()
+              + " of type "
+              + descriptor.getType());
+      instrumentDefaultView = DEFAULT_REGISTERED_VIEW;
     }
 
-    // The aggregation from default aggregation selector was incompatible with instrument, use
-    // default aggregation instead
-    logger.log(
-        Level.WARNING,
-        "Instrument default aggregation "
-            + AggregationUtil.aggregationName(instrumentDefaultView.getView().getAggregation())
-            + " is incompatible with instrument "
-            + descriptor.getName()
-            + " of type "
-            + descriptor.getType());
-    return Collections.singletonList(DEFAULT_REGISTERED_VIEW);
+    // if the user defined an attributes advice, use it
+    if (descriptor.getAdvice().hasAttributes()) {
+      instrumentDefaultView =
+          applyAdviceToDefaultView(instrumentDefaultView, descriptor.getAdvice());
+    }
+
+    return Collections.singletonList(instrumentDefaultView);
   }
 
   // Matches an instrument selector against an instrument + meter.
@@ -233,5 +251,15 @@ public final class ViewRegistry {
       patternBuilder.append(Pattern.quote(globPattern.substring(tokenStart)));
     }
     return Pattern.compile(patternBuilder.toString());
+  }
+
+  private static RegisteredView applyAdviceToDefaultView(
+      RegisteredView instrumentDefaultView, Advice advice) {
+    return RegisteredView.create(
+        instrumentDefaultView.getInstrumentSelector(),
+        instrumentDefaultView.getView(),
+        new AdviceAttributesProcessor(requireNonNull(advice.getAttributes())),
+        instrumentDefaultView.getCardinalityLimit(),
+        instrumentDefaultView.getViewSourceInfo());
   }
 }

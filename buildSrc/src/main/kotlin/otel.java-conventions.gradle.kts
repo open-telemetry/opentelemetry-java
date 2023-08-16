@@ -46,7 +46,8 @@ dependencyCheck {
     "checkstyle",
     "annotationProcessor",
     "animalsniffer",
-    "spotless-1972451482", // spotless-1972451482 is a weird configuration that's only added in jaeger-proto
+    "spotless865457264", // spotless865457264 is a weird configuration that's only added in jaeger-proto, jaeger-remote-sampler
+    "js2p",
     "jmhAnnotationProcessor",
     "jmhCompileClasspath",
     "jmhRuntimeClasspath",

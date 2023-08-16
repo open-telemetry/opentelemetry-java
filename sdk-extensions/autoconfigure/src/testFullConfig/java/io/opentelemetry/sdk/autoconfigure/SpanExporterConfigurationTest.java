@@ -9,11 +9,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
+import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -23,15 +24,18 @@ import org.junit.jupiter.api.Test;
 
 class SpanExporterConfigurationTest {
 
+  private final SpiHelper spiHelper =
+      SpiHelper.create(SpanExporterConfigurationTest.class.getClassLoader());
+
   @Test
+  @SuppressWarnings("deprecation") // Testing deprecated jaeger exporter
   void configureExporter_KnownSpiExportersOnClasspath() {
     NamedSpiManager<SpanExporter> spiExportersManager =
         SpanExporterConfiguration.spanExporterSpiManager(
-            DefaultConfigProperties.createForTest(Collections.emptyMap()),
-            SpanExporterConfigurationTest.class.getClassLoader());
+            DefaultConfigProperties.createForTest(Collections.emptyMap()), spiHelper);
 
     assertThat(SpanExporterConfiguration.configureExporter("jaeger", spiExportersManager))
-        .isInstanceOf(JaegerGrpcSpanExporter.class);
+        .isInstanceOf(io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter.class);
     assertThat(SpanExporterConfiguration.configureExporter("logging", spiExportersManager))
         .isInstanceOf(LoggingSpanExporter.class);
     assertThat(SpanExporterConfiguration.configureExporter("logging-otlp", spiExportersManager))
@@ -50,9 +54,7 @@ class SpanExporterConfigurationTest {
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter(
-                    "otlp",
-                    SpanExporterConfiguration.spanExporterSpiManager(
-                        config, SpanExporterConfigurationTest.class.getClassLoader())))
+                    "otlp", SpanExporterConfiguration.spanExporterSpiManager(config, spiHelper)))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP traces protocol: foo");
   }
@@ -65,14 +67,14 @@ class SpanExporterConfigurationTest {
             Collections.singletonMap("otel.exporter.otlp.timeout", "10"));
     try (SpanExporter exporter =
         SpanExporterConfiguration.configureExporter(
-            "otlp",
-            SpanExporterConfiguration.spanExporterSpiManager(
-                config, SpanExporterConfigurationTest.class.getClassLoader()))) {
+            "otlp", SpanExporterConfiguration.spanExporterSpiManager(config, spiHelper))) {
       assertThat(exporter)
           .isInstanceOfSatisfying(
               OtlpGrpcSpanExporter.class,
               otlp ->
-                  assertThat(otlp).extracting("delegate.client.callTimeoutMillis").isEqualTo(10));
+                  assertThat(otlp)
+                      .extracting("delegate.grpcSender.client.callTimeoutMillis")
+                      .isEqualTo(10));
     }
   }
 }

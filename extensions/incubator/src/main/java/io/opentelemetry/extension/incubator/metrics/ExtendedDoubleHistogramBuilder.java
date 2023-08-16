@@ -12,7 +12,8 @@ import java.util.function.Consumer;
 public interface ExtendedDoubleHistogramBuilder extends DoubleHistogramBuilder {
 
   /** Specify advice for histogram implementations. */
-  default DoubleHistogramBuilder setAdvice(Consumer<HistogramAdviceConfigurer> adviceConsumer) {
+  default DoubleHistogramBuilder setAdvice(
+      Consumer<DoubleHistogramAdviceConfigurer> adviceConsumer) {
     return this;
   }
 }

@@ -7,12 +7,12 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.sdk.autoconfigure.ResourceConfiguration.DISABLED_ATTRIBUTE_KEYS;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
@@ -36,7 +36,7 @@ class ResourceConfigurationTest {
     assertThat(
             ResourceConfiguration.configureResource(
                 DefaultConfigProperties.create(props),
-                ResourceConfigurationTest.class.getClassLoader(),
+                SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
                 (r, c) -> r))
         .isEqualTo(
             Resource.getDefault().toBuilder()
@@ -47,21 +47,21 @@ class ResourceConfigurationTest {
   }
 
   @Test
-  void resourceFromConfig_empty() {
-    Attributes attributes =
-        ResourceConfiguration.getAttributes(DefaultConfigProperties.createForTest(emptyMap()));
+  void createEnvironmentResource_Empty() {
+    Attributes attributes = ResourceConfiguration.createEnvironmentResource().getAttributes();
 
     assertThat(attributes).isEmpty();
   }
 
   @Test
-  void resourceFromConfig() {
+  void createEnvironmentResource_WithResourceAttributes() {
     Attributes attributes =
-        ResourceConfiguration.getAttributes(
-            DefaultConfigProperties.createForTest(
-                singletonMap(
-                    ResourceConfiguration.ATTRIBUTE_PROPERTY,
-                    "service.name=myService,appName=MyApp")));
+        ResourceConfiguration.createEnvironmentResource(
+                DefaultConfigProperties.createForTest(
+                    singletonMap(
+                        ResourceConfiguration.ATTRIBUTE_PROPERTY,
+                        "service.name=myService,appName=MyApp")))
+            .getAttributes();
 
     assertThat(attributes)
         .hasSize(2)
@@ -70,25 +70,27 @@ class ResourceConfigurationTest {
   }
 
   @Test
-  void serviceName() {
+  void createEnvironmentResource_WithServiceName() {
     Attributes attributes =
-        ResourceConfiguration.getAttributes(
-            DefaultConfigProperties.createForTest(
-                singletonMap(ResourceConfiguration.SERVICE_NAME_PROPERTY, "myService")));
+        ResourceConfiguration.createEnvironmentResource(
+                DefaultConfigProperties.createForTest(
+                    singletonMap(ResourceConfiguration.SERVICE_NAME_PROPERTY, "myService")))
+            .getAttributes();
 
     assertThat(attributes).hasSize(1).containsEntry(ResourceAttributes.SERVICE_NAME, "myService");
   }
 
   @Test
-  void resourceFromConfig_overrideServiceName() {
+  void createEnvironmentResource_ServiceNamePriority() {
     Attributes attributes =
-        ResourceConfiguration.getAttributes(
-            DefaultConfigProperties.createForTest(
-                ImmutableMap.of(
-                    ResourceConfiguration.ATTRIBUTE_PROPERTY,
-                    "service.name=myService,appName=MyApp",
-                    ResourceConfiguration.SERVICE_NAME_PROPERTY,
-                    "ReallyMyService")));
+        ResourceConfiguration.createEnvironmentResource(
+                DefaultConfigProperties.createForTest(
+                    ImmutableMap.of(
+                        ResourceConfiguration.ATTRIBUTE_PROPERTY,
+                        "service.name=myService,appName=MyApp",
+                        ResourceConfiguration.SERVICE_NAME_PROPERTY,
+                        "ReallyMyService")))
+            .getAttributes();
 
     assertThat(attributes)
         .hasSize(2)
@@ -97,11 +99,12 @@ class ResourceConfigurationTest {
   }
 
   @Test
-  void resourceFromConfig_emptyEnvVar() {
+  void createEnvironmentResource_EmptyResourceAttributes() {
     Attributes attributes =
-        ResourceConfiguration.getAttributes(
-            DefaultConfigProperties.createForTest(
-                singletonMap(ResourceConfiguration.ATTRIBUTE_PROPERTY, "")));
+        ResourceConfiguration.createEnvironmentResource(
+                DefaultConfigProperties.createForTest(
+                    singletonMap(ResourceConfiguration.ATTRIBUTE_PROPERTY, "")))
+            .getAttributes();
 
     assertThat(attributes).isEmpty();
   }

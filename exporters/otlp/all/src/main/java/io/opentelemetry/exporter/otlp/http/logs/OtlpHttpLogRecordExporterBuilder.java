@@ -10,9 +10,10 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
-import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
+import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
+import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
@@ -27,16 +28,20 @@ public final class OtlpHttpLogRecordExporterBuilder {
 
   private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/logs";
 
-  private final OkHttpExporterBuilder<LogsRequestMarshaler> delegate;
+  private final HttpExporterBuilder<LogsRequestMarshaler> delegate;
+
+  OtlpHttpLogRecordExporterBuilder(HttpExporterBuilder<LogsRequestMarshaler> delegate) {
+    this.delegate = delegate;
+    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+  }
 
   OtlpHttpLogRecordExporterBuilder() {
-    delegate = new OkHttpExporterBuilder<>("otlp", "log", DEFAULT_ENDPOINT);
-    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+    this(new HttpExporterBuilder<>("otlp", "log", DEFAULT_ENDPOINT));
   }
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of logs. If unset,
-   * defaults to {@value OkHttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
+   * defaults to {@value HttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
    */
   public OtlpHttpLogRecordExporterBuilder setTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
@@ -47,7 +52,7 @@ public final class OtlpHttpLogRecordExporterBuilder {
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of logs. If unset,
-   * defaults to {@value OkHttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
+   * defaults to {@value HttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
    */
   public OtlpHttpLogRecordExporterBuilder setTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
@@ -114,6 +119,17 @@ public final class OtlpHttpLogRecordExporterBuilder {
   }
 
   /**
+   * Ses the retry policy. Retry is disabled by default.
+   *
+   * @since 1.28.0
+   */
+  public OtlpHttpLogRecordExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
+    requireNonNull(retryPolicy, "retryPolicy");
+    delegate.setRetryPolicy(retryPolicy);
+    return this;
+  }
+
+  /**
    * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
    * {@link GlobalOpenTelemetry#getMeterProvider()}.
    */
@@ -129,6 +145,6 @@ public final class OtlpHttpLogRecordExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpHttpLogRecordExporter build() {
-    return new OtlpHttpLogRecordExporter(delegate.build());
+    return new OtlpHttpLogRecordExporter(delegate, delegate.build());
   }
 }

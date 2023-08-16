@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.logs;
 
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -21,6 +22,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpGrpcLogRecordExporter implements LogRecordExporter {
 
+  private final GrpcExporterBuilder<LogsRequestMarshaler> builder;
   private final GrpcExporter<LogsRequestMarshaler> delegate;
 
   /**
@@ -44,8 +46,22 @@ public final class OtlpGrpcLogRecordExporter implements LogRecordExporter {
     return new OtlpGrpcLogRecordExporterBuilder();
   }
 
-  OtlpGrpcLogRecordExporter(GrpcExporter<LogsRequestMarshaler> delegate) {
+  OtlpGrpcLogRecordExporter(
+      GrpcExporterBuilder<LogsRequestMarshaler> builder,
+      GrpcExporter<LogsRequestMarshaler> delegate) {
+    this.builder = builder;
     this.delegate = delegate;
+  }
+
+  /**
+   * Returns a builder with configuration values equal to those for this exporter.
+   *
+   * <p>IMPORTANT: Be sure to {@link #shutdown()} this instance if it will no longer be used.
+   *
+   * @since 1.29.0
+   */
+  public OtlpGrpcLogRecordExporterBuilder toBuilder() {
+    return new OtlpGrpcLogRecordExporterBuilder(builder.copy());
   }
 
   /**
@@ -72,5 +88,10 @@ public final class OtlpGrpcLogRecordExporter implements LogRecordExporter {
   @Override
   public CompletableResultCode shutdown() {
     return delegate.shutdown();
+  }
+
+  @Override
+  public String toString() {
+    return "OtlpGrpcLogRecordExporter{" + builder.toString(false) + "}";
   }
 }

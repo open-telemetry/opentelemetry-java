@@ -12,7 +12,7 @@ otelJava.moduleName.set("io.opentelemetry.extension.trace.propagation")
 dependencies {
   api(project(":api:all"))
 
-  compileOnly(project(":sdk-extensions:autoconfigure"))
+  compileOnly(project(":sdk-extensions:autoconfigure-spi"))
 
   testImplementation("io.jaegertracing:jaeger-client")
   testImplementation("com.google.guava:guava")

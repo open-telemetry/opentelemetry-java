@@ -11,15 +11,19 @@ import com.linecorp.armeria.server.grpc.GrpcService;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporter;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
+import io.opentelemetry.exporter.internal.http.HttpExporter;
+import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
+import io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSender;
+import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.net.URI;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -62,9 +66,9 @@ public class OltpExporterBenchmark {
 
   private static ManagedChannel defaultGrpcChannel;
 
-  private static GrpcExporter<TraceRequestMarshaler> defaultGrpcExporter;
-  private static GrpcExporter<TraceRequestMarshaler> okhttpGrpcExporter;
-  private static OkHttpExporter<TraceRequestMarshaler> httpExporter;
+  private static GrpcExporter<TraceRequestMarshaler> upstreamGrpcExporter;
+  private static GrpcExporter<TraceRequestMarshaler> okhttpGrpcSender;
+  private static HttpExporter<TraceRequestMarshaler> httpExporter;
 
   @Setup(Level.Trial)
   public void setUp() {
@@ -74,37 +78,40 @@ public class OltpExporterBenchmark {
         ManagedChannelBuilder.forAddress("localhost", server.activeLocalPort())
             .usePlaintext()
             .build();
-    defaultGrpcExporter =
-        GrpcExporter.builder(
-                "otlp",
-                "span",
-                10,
-                URI.create("http://localhost:" + server.activeLocalPort()),
-                () -> MarshalerTraceServiceGrpc::newFutureStub,
-                OtlpGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH)
-            .setChannel(defaultGrpcChannel)
-            .build();
+    upstreamGrpcExporter =
+        new GrpcExporter<>(
+            "otlp",
+            "span",
+            new UpstreamGrpcSender<>(
+                MarshalerTraceServiceGrpc.newFutureStub(defaultGrpcChannel, null), 10),
+            MeterProvider::noop);
 
-    okhttpGrpcExporter =
-        GrpcExporter.builder(
-                "otlp",
-                "span",
+    okhttpGrpcSender =
+        new GrpcExporter<>(
+            "otlp",
+            "span",
+            new OkHttpGrpcSender<>(
+                URI.create("http://localhost:" + server.activeLocalPort())
+                    .resolve(OtlpGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH)
+                    .toString(),
+                false,
                 10,
-                URI.create("http://localhost:" + server.activeLocalPort()),
-                () -> MarshalerTraceServiceGrpc::newFutureStub,
-                OtlpGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH)
-            .build();
+                Collections.emptyMap(),
+                null,
+                null,
+                null),
+            MeterProvider::noop);
 
     httpExporter =
-        new OkHttpExporterBuilder<TraceRequestMarshaler>(
+        new HttpExporterBuilder<TraceRequestMarshaler>(
                 "otlp", "span", "http://localhost:" + server.activeLocalPort() + "/v1/traces")
             .build();
   }
 
   @TearDown(Level.Trial)
   public void tearDown() {
-    defaultGrpcExporter.shutdown().join(10, TimeUnit.SECONDS);
-    okhttpGrpcExporter.shutdown().join(10, TimeUnit.SECONDS);
+    upstreamGrpcExporter.shutdown().join(10, TimeUnit.SECONDS);
+    okhttpGrpcSender.shutdown().join(10, TimeUnit.SECONDS);
     httpExporter.shutdown().join(10, TimeUnit.SECONDS);
     defaultGrpcChannel.shutdownNow();
     server.stop().join();
@@ -113,7 +120,7 @@ public class OltpExporterBenchmark {
   @Benchmark
   public CompletableResultCode defaultGrpcExporter(RequestMarshalState state) {
     CompletableResultCode result =
-        defaultGrpcExporter
+        upstreamGrpcExporter
             .export(state.traceRequestMarshaler, state.numSpans)
             .join(10, TimeUnit.SECONDS);
     if (!result.isSuccess()) {
@@ -125,7 +132,7 @@ public class OltpExporterBenchmark {
   @Benchmark
   public CompletableResultCode okhttpGrpcExporter(RequestMarshalState state) {
     CompletableResultCode result =
-        okhttpGrpcExporter
+        okhttpGrpcSender
             .export(state.traceRequestMarshaler, state.numSpans)
             .join(10, TimeUnit.SECONDS);
     if (!result.isSuccess()) {

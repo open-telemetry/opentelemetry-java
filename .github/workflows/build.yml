@@ -21,12 +21,12 @@ jobs:
       matrix:
         os:
           - macos-latest
-          - ubuntu-20.04
+          - ubuntu-latest
         test-java-version:
           - 8
           - 11
           - 17
-          - 19
+          - 20
         # Collect coverage on latest LTS
         include:
           - os: ubuntu-20.04
@@ -56,6 +56,8 @@ jobs:
             ${{ matrix.coverage && 'jacocoTestReport' || '' }}
             -PtestJavaVersion=${{ matrix.test-java-version }}
             -Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }},${{ steps.setup-java.outputs.path }}
+        env:
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
 
       - name: Check for diff
         # The jApiCmp diff compares current to latest, which isn't appropriate for release branches
@@ -157,5 +159,7 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - if: needs.build.result != 'success'
+      - if: |
+          needs.build.result != 'success' ||
+          needs.build-graal.result != 'success'
         run: exit 1

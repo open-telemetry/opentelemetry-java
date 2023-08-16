@@ -30,11 +30,12 @@ class ResourceConfigurationFuzzTest {
     @Fuzz
     public void getAttributesWithRandomValues(String value1, String value2) {
       Attributes attributes =
-          ResourceConfiguration.getAttributes(
-              DefaultConfigProperties.createForTest(
-                  singletonMap(
-                      ResourceConfiguration.ATTRIBUTE_PROPERTY,
-                      "key1=" + escaper.escape(value1) + ",key2=" + escaper.escape(value2))));
+          ResourceConfiguration.createEnvironmentResource(
+                  DefaultConfigProperties.createForTest(
+                      singletonMap(
+                          ResourceConfiguration.ATTRIBUTE_PROPERTY,
+                          "key1=" + escaper.escape(value1) + ",key2=" + escaper.escape(value2))))
+              .getAttributes();
 
       assertThat(attributes).hasSize(2).containsEntry("key1", value1).containsEntry("key2", value2);
     }

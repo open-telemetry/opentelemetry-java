@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -13,6 +14,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +29,7 @@ final class MeterProviderConfiguration {
   static void configureMeterProvider(
       SdkMeterProviderBuilder meterProviderBuilder,
       ConfigProperties config,
-      ClassLoader serviceClassLoader,
+      SpiHelper spiHelper,
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
           metricExporterCustomizer,
       List<Closeable> closeables) {
@@ -48,13 +50,23 @@ final class MeterProviderConfiguration {
         break;
     }
 
-    configureMetricReaders(config, serviceClassLoader, metricExporterCustomizer, closeables)
-        .forEach(meterProviderBuilder::registerMetricReader);
+    int cardinalityLimit =
+        config.getInt(
+            "otel.experimental.metrics.cardinality.limit", MetricStorage.DEFAULT_MAX_CARDINALITY);
+    if (cardinalityLimit < 1) {
+      throw new ConfigurationException("otel.experimental.metrics.cardinality.limit must be >= 1");
+    }
+
+    configureMetricReaders(config, spiHelper, metricExporterCustomizer, closeables)
+        .forEach(
+            reader ->
+                SdkMeterProviderUtil.registerMetricReaderWithCardinalitySelector(
+                    meterProviderBuilder, reader, instrumentType -> cardinalityLimit));
   }
 
   static List<MetricReader> configureMetricReaders(
       ConfigProperties config,
-      ClassLoader serviceClassLoader,
+      SpiHelper spiHelper,
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
           metricExporterCustomizer,
       List<Closeable> closeables) {
@@ -74,7 +86,7 @@ final class MeterProviderConfiguration {
         .map(
             exporterName ->
                 MetricExporterConfiguration.configureReader(
-                    exporterName, config, serviceClassLoader, metricExporterCustomizer, closeables))
+                    exporterName, config, spiHelper, metricExporterCustomizer, closeables))
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }

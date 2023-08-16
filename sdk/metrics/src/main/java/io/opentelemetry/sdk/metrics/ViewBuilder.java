@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -23,6 +24,7 @@ public final class ViewBuilder {
   @Nullable private String description;
   private Aggregation aggregation = Aggregation.defaultAggregation();
   private AttributesProcessor processor = AttributesProcessor.noop();
+  private int cardinalityLimit = MetricStorage.DEFAULT_MAX_CARDINALITY;
 
   ViewBuilder() {}
 
@@ -85,8 +87,24 @@ public final class ViewBuilder {
     return this;
   }
 
+  /**
+   * Set the cardinality limit.
+   *
+   * <p>Note: not currently stable but cardinality limit can be configured via
+   * SdkMeterProviderUtil#setCardinalityLimit(ViewBuilder, int)}.
+   *
+   * @param cardinalityLimit the maximum number of series for a metric
+   */
+  ViewBuilder setCardinalityLimit(int cardinalityLimit) {
+    if (cardinalityLimit <= 0) {
+      throw new IllegalArgumentException("cardinalityLimit must be > 0");
+    }
+    this.cardinalityLimit = cardinalityLimit;
+    return this;
+  }
+
   /** Returns a {@link View} with the configuration of this builder. */
   public View build() {
-    return View.create(name, description, aggregation, processor);
+    return View.create(name, description, aggregation, processor, cardinalityLimit);
   }
 }

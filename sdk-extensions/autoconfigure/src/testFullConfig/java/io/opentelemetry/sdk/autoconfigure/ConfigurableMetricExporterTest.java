@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.provider.TestConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -32,6 +33,9 @@ class ConfigurableMetricExporterTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
+  private final SpiHelper spiHelper =
+      SpiHelper.create(ConfigurableMetricExporterTest.class.getClassLoader());
+
   @Test
   void configureExporter_spiExporter() {
     ConfigProperties config =
@@ -40,8 +44,7 @@ class ConfigurableMetricExporterTest {
     try (MetricExporter metricExporter =
         MetricExporterConfiguration.configureExporter(
             "testExporter",
-            MetricExporterConfiguration.metricExporterSpiManager(
-                config, ConfigurableMetricExporterTest.class.getClassLoader()))) {
+            MetricExporterConfiguration.metricExporterSpiManager(config, spiHelper))) {
       assertThat(metricExporter)
           .isInstanceOf(TestConfigurableMetricExporterProvider.TestMetricExporter.class)
           .extracting("config")
@@ -57,7 +60,7 @@ class ConfigurableMetricExporterTest {
                     "testExporter",
                     MetricExporterConfiguration.metricExporterSpiManager(
                         DefaultConfigProperties.createForTest(Collections.emptyMap()),
-                        new URLClassLoader(new URL[] {}, null))))
+                        SpiHelper.create(new URLClassLoader(new URL[] {}, null)))))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("testExporter");
   }
@@ -69,8 +72,7 @@ class ConfigurableMetricExporterTest {
                 MetricExporterConfiguration.configureExporter(
                     "catExporter",
                     MetricExporterConfiguration.metricExporterSpiManager(
-                        DefaultConfigProperties.createForTest(Collections.emptyMap()),
-                        ConfigurableMetricExporterTest.class.getClassLoader())))
+                        DefaultConfigProperties.createForTest(Collections.emptyMap()), spiHelper)))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("catExporter");
   }
@@ -85,10 +87,7 @@ class ConfigurableMetricExporterTest {
     assertThatThrownBy(
             () ->
                 MeterProviderConfiguration.configureMetricReaders(
-                    config,
-                    ConfigurableMetricExporterTest.class.getClassLoader(),
-                    (a, unused) -> a,
-                    closeables))
+                    config, spiHelper, (a, unused) -> a, closeables))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.metrics.exporter contains none along with other exporters");
     cleanup.addCloseables(closeables);
@@ -102,10 +101,7 @@ class ConfigurableMetricExporterTest {
 
     List<MetricReader> metricReaders =
         MeterProviderConfiguration.configureMetricReaders(
-            config,
-            MeterProviderConfiguration.class.getClassLoader(),
-            (metricExporter, unused) -> metricExporter,
-            closeables);
+            config, spiHelper, (metricExporter, unused) -> metricExporter, closeables);
     cleanup.addCloseables(closeables);
 
     assertThat(metricReaders)
@@ -128,10 +124,7 @@ class ConfigurableMetricExporterTest {
 
     List<MetricReader> metricReaders =
         MeterProviderConfiguration.configureMetricReaders(
-            config,
-            MeterProviderConfiguration.class.getClassLoader(),
-            (metricExporter, unused) -> metricExporter,
-            closeables);
+            config, spiHelper, (metricExporter, unused) -> metricExporter, closeables);
     cleanup.addCloseables(closeables);
 
     assertThat(metricReaders).hasSize(2).hasOnlyElementsOfType(PeriodicMetricReader.class);

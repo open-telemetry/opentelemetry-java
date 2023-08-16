@@ -10,6 +10,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.provider.TestConfigurableLogRecordExporterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -38,7 +40,7 @@ class ConfigurableLogRecordExporterTest {
     Map<String, LogRecordExporter> exportersByName =
         LogRecordExporterConfiguration.configureLogRecordExporters(
             config,
-            LogRecordExporterConfiguration.class.getClassLoader(),
+            SpiHelper.create(LogRecordExporterConfiguration.class.getClassLoader()),
             (a, unused) -> a,
             closeables);
     cleanup.addCloseables(closeables);
@@ -65,7 +67,10 @@ class ConfigurableLogRecordExporterTest {
     assertThatThrownBy(
             () ->
                 LogRecordExporterConfiguration.configureLogRecordExporters(
-                    config, new URLClassLoader(new URL[0], null), (a, unused) -> a, closeables))
+                    config,
+                    SpiHelper.create(new URLClassLoader(new URL[0], null)),
+                    (a, unused) -> a,
+                    closeables))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("testExporter");
     cleanup.addCloseables(closeables);

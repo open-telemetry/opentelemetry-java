@@ -46,7 +46,7 @@ final class SdkLongGauge extends AbstractInstrument implements LongGauge {
         String name,
         String description,
         String unit,
-        Advice advice) {
+        Advice.AdviceBuilder adviceBuilder) {
       super(
           meterProviderSharedState,
           sharedState,
@@ -56,7 +56,7 @@ final class SdkLongGauge extends AbstractInstrument implements LongGauge {
           name,
           description,
           unit,
-          advice);
+          adviceBuilder);
     }
 
     @Override

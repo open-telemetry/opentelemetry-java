@@ -10,10 +10,10 @@ import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
-import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
+import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
@@ -51,17 +51,21 @@ public final class OtlpGrpcMetricExporterBuilder {
   private DefaultAggregationSelector defaultAggregationSelector =
       DefaultAggregationSelector.getDefault();
 
+  OtlpGrpcMetricExporterBuilder(GrpcExporterBuilder<MetricsRequestMarshaler> delegate) {
+    this.delegate = delegate;
+    delegate.setMeterProvider(MeterProvider.noop());
+    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+  }
+
   OtlpGrpcMetricExporterBuilder() {
-    delegate =
-        GrpcExporter.builder(
+    this(
+        new GrpcExporterBuilder<>(
             "otlp",
             "metric",
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerMetricsServiceGrpc::newFutureStub,
-            GRPC_ENDPOINT_PATH);
-    delegate.setMeterProvider(MeterProvider.noop());
-    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+            GRPC_ENDPOINT_PATH));
   }
 
   /**
@@ -203,12 +207,23 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
+   * Ses the retry policy. Retry is disabled by default.
+   *
+   * @since 1.28.0
+   */
+  public OtlpGrpcMetricExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
+    requireNonNull(retryPolicy, "retryPolicy");
+    delegate.setRetryPolicy(retryPolicy);
+    return this;
+  }
+
+  /**
    * Constructs a new instance of the exporter based on the builder's values.
    *
    * @return a new exporter's instance
    */
   public OtlpGrpcMetricExporter build() {
     return new OtlpGrpcMetricExporter(
-        delegate.build(), aggregationTemporalitySelector, defaultAggregationSelector);
+        delegate, delegate.build(), aggregationTemporalitySelector, defaultAggregationSelector);
   }
 }

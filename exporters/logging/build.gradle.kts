@@ -10,8 +10,6 @@ otelJava.moduleName.set("io.opentelemetry.exporter.logging")
 
 dependencies {
   api(project(":sdk:all"))
-  api(project(":sdk:metrics"))
-  api(project(":sdk:logs"))
 
   implementation(project(":sdk-extensions:autoconfigure-spi"))
 

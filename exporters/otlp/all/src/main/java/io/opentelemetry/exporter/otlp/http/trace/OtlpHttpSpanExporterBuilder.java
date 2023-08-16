@@ -10,9 +10,10 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpExporterBuilder;
-import io.opentelemetry.exporter.internal.otlp.OtlpUserAgent;
+import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
+import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
@@ -27,16 +28,20 @@ public final class OtlpHttpSpanExporterBuilder {
 
   private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/traces";
 
-  private final OkHttpExporterBuilder<TraceRequestMarshaler> delegate;
+  private final HttpExporterBuilder<TraceRequestMarshaler> delegate;
+
+  OtlpHttpSpanExporterBuilder(HttpExporterBuilder<TraceRequestMarshaler> delegate) {
+    this.delegate = delegate;
+    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+  }
 
   OtlpHttpSpanExporterBuilder() {
-    delegate = new OkHttpExporterBuilder<>("otlp", "span", DEFAULT_ENDPOINT);
-    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+    this(new HttpExporterBuilder<>("otlp", "span", DEFAULT_ENDPOINT));
   }
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of spans. If
-   * unset, defaults to {@value OkHttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
+   * unset, defaults to {@value HttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
    */
   public OtlpHttpSpanExporterBuilder setTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
@@ -47,7 +52,7 @@ public final class OtlpHttpSpanExporterBuilder {
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of spans. If
-   * unset, defaults to {@value OkHttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
+   * unset, defaults to {@value HttpExporterBuilder#DEFAULT_TIMEOUT_SECS}s.
    */
   public OtlpHttpSpanExporterBuilder setTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
@@ -115,6 +120,17 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /**
+   * Ses the retry policy. Retry is disabled by default.
+   *
+   * @since 1.28.0
+   */
+  public OtlpHttpSpanExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
+    requireNonNull(retryPolicy, "retryPolicy");
+    delegate.setRetryPolicy(retryPolicy);
+    return this;
+  }
+
+  /**
    * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
    * {@link GlobalOpenTelemetry#getMeterProvider()}.
    */
@@ -130,6 +146,6 @@ public final class OtlpHttpSpanExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpHttpSpanExporter build() {
-    return new OtlpHttpSpanExporter(delegate.build());
+    return new OtlpHttpSpanExporter(delegate, delegate.build());
   }
 }

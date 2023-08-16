@@ -53,6 +53,7 @@ public class SynchronousMetricStorageTest {
           Advice.empty());
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
+  private static final int CARDINALITY_LIMIT = 25;
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(DefaultSynchronousMetricStorage.class);
@@ -76,7 +77,11 @@ public class SynchronousMetricStorageTest {
     AttributesProcessor spyAttributesProcessor = spy(attributesProcessor);
     SynchronousMetricStorage storage =
         new DefaultSynchronousMetricStorage<>(
-            cumulativeReader, METRIC_DESCRIPTOR, aggregator, spyAttributesProcessor);
+            cumulativeReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            spyAttributesProcessor,
+            CARDINALITY_LIMIT);
     storage.recordDouble(1, attributes, Context.root());
     MetricData md = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, testClock.now());
     assertThat(md)
@@ -92,7 +97,11 @@ public class SynchronousMetricStorageTest {
   void recordAndCollect_CumulativeDoesNotReset() {
     DefaultSynchronousMetricStorage<?, ?> storage =
         new DefaultSynchronousMetricStorage<>(
-            cumulativeReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor);
+            cumulativeReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributesProcessor,
+            CARDINALITY_LIMIT);
 
     // Record measurement and collect at time 10
     storage.recordDouble(3, Attributes.empty(), Context.current());
@@ -134,7 +143,7 @@ public class SynchronousMetricStorageTest {
   void recordAndCollect_DeltaResets() {
     DefaultSynchronousMetricStorage<?, ?> storage =
         new DefaultSynchronousMetricStorage<>(
-            deltaReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor);
+            deltaReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor, CARDINALITY_LIMIT);
 
     // Record measurement and collect at time 10
     storage.recordDouble(3, Attributes.empty(), Context.current());
@@ -181,14 +190,19 @@ public class SynchronousMetricStorageTest {
   void recordAndCollect_CumulativeAtLimit() {
     DefaultSynchronousMetricStorage<?, ?> storage =
         new DefaultSynchronousMetricStorage<>(
-            cumulativeReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor);
+            cumulativeReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributesProcessor,
+            CARDINALITY_LIMIT);
 
-    // Record measurements for max number of attributes
-    for (int i = 0; i < MetricStorage.MAX_CARDINALITY; i++) {
+    // Record measurements for CARDINALITY_LIMIT - 1, since 1 slot is reserved for the overflow
+    // series
+    for (int i = 0; i < CARDINALITY_LIMIT - 1; i++) {
       storage.recordDouble(
           3, Attributes.builder().put("key", "value" + i).build(), Context.current());
     }
-    verify(aggregator, times(MetricStorage.MAX_CARDINALITY)).createHandle();
+    verify(aggregator, times(CARDINALITY_LIMIT - 1)).createHandle();
     assertThat(storage.getAggregatorHandlePool()).hasSize(0);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10))
         .hasDoubleSumSatisfying(
@@ -196,7 +210,7 @@ public class SynchronousMetricStorageTest {
                 sum.satisfies(
                     sumData ->
                         assertThat(sumData.getPoints())
-                            .hasSize(MetricStorage.MAX_CARDINALITY)
+                            .hasSize(CARDINALITY_LIMIT - 1)
                             .allSatisfy(
                                 point -> {
                                   assertThat(point.getStartEpochNanos()).isEqualTo(0);
@@ -209,11 +223,9 @@ public class SynchronousMetricStorageTest {
 
     // Record measurement for additional attribute, exceeding limit
     storage.recordDouble(
-        3,
-        Attributes.builder().put("key", "value" + MetricStorage.MAX_CARDINALITY + 1).build(),
-        Context.current());
-    // Should not create additional handles after MAX_CARDINALITY is reached
-    verify(aggregator, times(MetricStorage.MAX_CARDINALITY)).createHandle();
+        3, Attributes.builder().put("key", "value" + CARDINALITY_LIMIT).build(), Context.current());
+    // Should not create an additional handles for the overflow series
+    verify(aggregator, times(CARDINALITY_LIMIT)).createHandle();
     assertThat(storage.getAggregatorHandlePool()).hasSize(0);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 20))
         .hasDoubleSumSatisfying(
@@ -221,7 +233,7 @@ public class SynchronousMetricStorageTest {
                 sum.satisfies(
                     sumData ->
                         assertThat(sumData.getPoints())
-                            .hasSize(MetricStorage.MAX_CARDINALITY)
+                            .hasSize(CARDINALITY_LIMIT)
                             .allSatisfy(
                                 point -> {
                                   assertThat(point.getStartEpochNanos()).isEqualTo(0);
@@ -230,10 +242,15 @@ public class SynchronousMetricStorageTest {
                                 })
                             .noneMatch(
                                 point ->
-                                    point
-                                        .getAttributes()
-                                        .get(AttributeKey.stringKey("key"))
-                                        .equals("value" + MetricStorage.MAX_CARDINALITY + 1))));
+                                    ("value" + CARDINALITY_LIMIT + 1)
+                                        .equals(
+                                            point
+                                                .getAttributes()
+                                                .get(AttributeKey.stringKey("key"))))
+                            .satisfiesOnlyOnce(
+                                point ->
+                                    assertThat(point.getAttributes())
+                                        .isEqualTo(MetricStorage.CARDINALITY_OVERFLOW))));
     assertThat(storage.getAggregatorHandlePool()).hasSize(0);
     logs.assertContains("Instrument name has exceeded the maximum allowed cardinality");
   }
@@ -242,14 +259,15 @@ public class SynchronousMetricStorageTest {
   void recordAndCollect_DeltaAtLimit() {
     DefaultSynchronousMetricStorage<?, ?> storage =
         new DefaultSynchronousMetricStorage<>(
-            deltaReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor);
+            deltaReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor, CARDINALITY_LIMIT);
 
-    // Record measurements for max number of attributes
-    for (int i = 0; i < MetricStorage.MAX_CARDINALITY; i++) {
+    // Record measurements for CARDINALITY_LIMIT - 1, since 1 slot is reserved for the overflow
+    // series
+    for (int i = 0; i < CARDINALITY_LIMIT - 1; i++) {
       storage.recordDouble(
           3, Attributes.builder().put("key", "value" + i).build(), Context.current());
     }
-    verify(aggregator, times(MetricStorage.MAX_CARDINALITY)).createHandle();
+    verify(aggregator, times(CARDINALITY_LIMIT - 1)).createHandle();
     assertThat(storage.getAggregatorHandlePool()).hasSize(0);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10))
         .hasDoubleSumSatisfying(
@@ -257,25 +275,23 @@ public class SynchronousMetricStorageTest {
                 sum.satisfies(
                     sumData ->
                         assertThat(sumData.getPoints())
-                            .hasSize(MetricStorage.MAX_CARDINALITY)
+                            .hasSize(CARDINALITY_LIMIT - 1)
                             .allSatisfy(
                                 point -> {
                                   assertThat(point.getStartEpochNanos()).isEqualTo(0);
                                   assertThat(point.getEpochNanos()).isEqualTo(10);
                                   assertThat(point.getValue()).isEqualTo(3);
                                 })));
-    assertThat(storage.getAggregatorHandlePool()).hasSize(MetricStorage.MAX_CARDINALITY);
+    assertThat(storage.getAggregatorHandlePool()).hasSize(CARDINALITY_LIMIT - 1);
     assertThat(logs.getEvents()).isEmpty();
     deltaReader.setLastCollectEpochNanos(10);
 
     // Record measurement for additional attribute, should not exceed limit due to reset
     storage.recordDouble(
-        3,
-        Attributes.builder().put("key", "value" + MetricStorage.MAX_CARDINALITY + 1).build(),
-        Context.current());
+        3, Attributes.builder().put("key", "value" + CARDINALITY_LIMIT).build(), Context.current());
     // Should use handle returned to pool instead of creating new ones
-    verify(aggregator, times(MetricStorage.MAX_CARDINALITY)).createHandle();
-    assertThat(storage.getAggregatorHandlePool()).hasSize(MetricStorage.MAX_CARDINALITY - 1);
+    verify(aggregator, times(CARDINALITY_LIMIT - 1)).createHandle();
+    assertThat(storage.getAggregatorHandlePool()).hasSize(CARDINALITY_LIMIT - 2);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 20))
         .hasDoubleSumSatisfying(
             sum ->
@@ -288,19 +304,20 @@ public class SynchronousMetricStorageTest {
                                 .hasValue(3)
                                 .hasAttributes(
                                     Attributes.builder()
-                                        .put("key", "value" + MetricStorage.MAX_CARDINALITY + 1)
+                                        .put("key", "value" + CARDINALITY_LIMIT)
                                         .build())));
-    assertThat(storage.getAggregatorHandlePool()).hasSize(MetricStorage.MAX_CARDINALITY);
+    assertThat(storage.getAggregatorHandlePool()).hasSize(CARDINALITY_LIMIT - 1);
     assertThat(logs.getEvents()).isEmpty();
     deltaReader.setLastCollectEpochNanos(20);
 
-    // Record measurements exceeding max number of attributes. Last measurement should be dropped
-    for (int i = 0; i < MetricStorage.MAX_CARDINALITY + 1; i++) {
+    // Record CARDINALITY_LIMIT measurements, causing one measurement to exceed the cardinality
+    // limit and fall into the overflow series
+    for (int i = 0; i < CARDINALITY_LIMIT; i++) {
       storage.recordDouble(
           3, Attributes.builder().put("key", "value" + i).build(), Context.current());
     }
     // Should use handles returned to pool instead of creating new ones
-    verify(aggregator, times(MetricStorage.MAX_CARDINALITY)).createHandle();
+    verify(aggregator, times(CARDINALITY_LIMIT)).createHandle();
     assertThat(storage.getAggregatorHandlePool()).hasSize(0);
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 30))
         .hasDoubleSumSatisfying(
@@ -308,7 +325,7 @@ public class SynchronousMetricStorageTest {
                 sum.satisfies(
                     sumData ->
                         assertThat(sumData.getPoints())
-                            .hasSize(MetricStorage.MAX_CARDINALITY)
+                            .hasSize(CARDINALITY_LIMIT)
                             .allSatisfy(
                                 point -> {
                                   assertThat(point.getStartEpochNanos()).isEqualTo(20);
@@ -317,11 +334,17 @@ public class SynchronousMetricStorageTest {
                                 })
                             .noneMatch(
                                 point ->
-                                    point
-                                        .getAttributes()
-                                        .get(AttributeKey.stringKey("key"))
-                                        .equals("value" + MetricStorage.MAX_CARDINALITY + 1))));
-    assertThat(storage.getAggregatorHandlePool()).hasSize(MetricStorage.MAX_CARDINALITY);
+                                    ("value" + CARDINALITY_LIMIT + 1)
+                                        .equals(
+                                            point
+                                                .getAttributes()
+                                                .get(AttributeKey.stringKey("key"))))
+                            .satisfiesOnlyOnce(
+                                point ->
+                                    assertThat(point.getAttributes())
+                                        .isEqualTo(MetricStorage.CARDINALITY_OVERFLOW))));
+
+    assertThat(storage.getAggregatorHandlePool()).hasSize(CARDINALITY_LIMIT);
     logs.assertContains("Instrument name has exceeded the maximum allowed cardinality");
   }
 }
