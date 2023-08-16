@@ -18,7 +18,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.linecorp.armeria:armeria-bom:1.24.3",
   "com.squareup.okhttp3:okhttp-bom:4.11.0",
   "com.squareup.okio:okio-bom:3.5.0", // applies to transitive dependencies of okhttp
-  "io.grpc:grpc-bom:1.57.1",
+  "io.grpc:grpc-bom:1.57.2",
   "io.netty:netty-bom:4.1.96.Final",
   "io.zipkin.brave:brave-bom:5.16.0",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.4",
