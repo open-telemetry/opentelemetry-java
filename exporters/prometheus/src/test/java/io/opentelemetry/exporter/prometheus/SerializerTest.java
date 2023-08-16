@@ -11,6 +11,7 @@ import static io.opentelemetry.exporter.prometheus.TestConstants.DELTA_DOUBLE_SU
 import static io.opentelemetry.exporter.prometheus.TestConstants.DELTA_HISTOGRAM;
 import static io.opentelemetry.exporter.prometheus.TestConstants.DELTA_LONG_SUM;
 import static io.opentelemetry.exporter.prometheus.TestConstants.DOUBLE_GAUGE;
+import static io.opentelemetry.exporter.prometheus.TestConstants.DOUBLE_GAUGE_COLLIDING_ATTRIBUTES;
 import static io.opentelemetry.exporter.prometheus.TestConstants.DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES;
 import static io.opentelemetry.exporter.prometheus.TestConstants.DOUBLE_GAUGE_NO_ATTRIBUTES;
 import static io.opentelemetry.exporter.prometheus.TestConstants.LONG_GAUGE;
@@ -53,7 +54,8 @@ class SerializerTest {
                 CUMULATIVE_HISTOGRAM_NO_ATTRIBUTES,
                 CUMULATIVE_HISTOGRAM_SINGLE_ATTRIBUTE,
                 DOUBLE_GAUGE_NO_ATTRIBUTES,
-                DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES))
+                DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES,
+                DOUBLE_GAUGE_COLLIDING_ATTRIBUTES))
         .isEqualTo(
             "# TYPE target info\n"
                 + "# HELP target Target metadata\n"
@@ -101,6 +103,9 @@ class SerializerTest {
                 + "# TYPE double_gauge_no_attributes_seconds gauge\n"
                 + "# HELP double_gauge_no_attributes_seconds unused\n"
                 + "double_gauge_no_attributes_seconds{otel_scope_name=\"full\",otel_scope_version=\"version\"} 7.0 1633950672000\n"
+                + "# TYPE double_gauge_multiple_attributes gauge\n"
+                + "# HELP double_gauge_multiple_attributes unused\n"
+                + "double_gauge_multiple_attributes_ratio{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672000\n"
                 + "# TYPE double_gauge_multiple_attributes_seconds gauge\n"
                 + "# HELP double_gauge_multiple_attributes_seconds unused\n"
                 + "double_gauge_multiple_attributes_seconds{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672000\n");
@@ -124,7 +129,8 @@ class SerializerTest {
                 CUMULATIVE_HISTOGRAM_NO_ATTRIBUTES,
                 CUMULATIVE_HISTOGRAM_SINGLE_ATTRIBUTE,
                 DOUBLE_GAUGE_NO_ATTRIBUTES,
-                DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES))
+                DOUBLE_GAUGE_MULTIPLE_ATTRIBUTES,
+                DOUBLE_GAUGE_COLLIDING_ATTRIBUTES))
         .isEqualTo(
             "# TYPE target info\n"
                 + "# HELP target Target metadata\n"
@@ -172,6 +178,9 @@ class SerializerTest {
                 + "# TYPE double_gauge_no_attributes_seconds gauge\n"
                 + "# HELP double_gauge_no_attributes_seconds unused\n"
                 + "double_gauge_no_attributes_seconds{otel_scope_name=\"full\",otel_scope_version=\"version\"} 7.0 1633950672.000\n"
+                + "# TYPE double_gauge_multiple_attributes gauge\n"
+                + "# HELP double_gauge_multiple_attributes unused\n"
+                + "double_gauge_multiple_attributes_ratio{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672.000\n"
                 + "# TYPE double_gauge_multiple_attributes_seconds gauge\n"
                 + "# HELP double_gauge_multiple_attributes_seconds unused\n"
                 + "double_gauge_multiple_attributes_seconds{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672.000\n"

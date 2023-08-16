@@ -48,6 +48,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -445,30 +446,45 @@ abstract class Serializer {
   private static void writeAttributePairs(
       Writer writer, boolean initialComma, Attributes attributes) throws IOException {
     try {
-      attributes.forEach(
-          new BiConsumer<AttributeKey<?>, Object>() {
-            private boolean prefixWithComma = initialComma;
-
-            @Override
-            public void accept(AttributeKey<?> key, Object value) {
-              try {
-                if (prefixWithComma) {
-                  writer.write(',');
-                } else {
-                  prefixWithComma = true;
-                }
-                writer.write(NameSanitizer.INSTANCE.apply(key.getKey()));
-                writer.write("=\"");
-                writeEscapedLabelValue(writer, value.toString());
-                writer.write('"');
-              } catch (IOException e) {
-                throw new UncheckedIOException(e);
-              }
-            }
-          });
+      boolean prefixWithComma = initialComma;
+      for (Map.Entry<String, String> entry : sanitizeAttributePairs(attributes).entrySet()) {
+        try {
+          if (prefixWithComma) {
+            writer.write(',');
+          } else {
+            prefixWithComma = true;
+          }
+          writer.write(NameSanitizer.INSTANCE.apply(entry.getKey()));
+          writer.write("=\"");
+          writeEscapedLabelValue(writer, entry.getValue());
+          writer.write('"');
+        } catch (IOException e) {
+          throw new UncheckedIOException(e);
+        }
+      }
+      ;
     } catch (UncheckedIOException e) {
       throw e.getCause();
     }
+  }
+
+  private static Map<String, String> sanitizeAttributePairs(Attributes attributes) {
+    Map<String, String> sanitizedAttributes = new HashMap<String, String>();
+    attributes.forEach(
+        new BiConsumer<AttributeKey<?>, Object>() {
+          @Override
+          public void accept(AttributeKey<?> key, Object value) {
+            String sanitizedKey = NameSanitizer.INSTANCE.apply(key.getKey());
+            String val = "";
+            if (sanitizedAttributes.containsKey(sanitizedKey)) {
+              val = sanitizedAttributes.get(sanitizedKey) + ";" + value.toString();
+            } else {
+              val = value.toString();
+            }
+            sanitizedAttributes.put(sanitizedKey, val);
+          }
+        });
+    return sanitizedAttributes;
   }
 
   private static void writeDouble(Writer writer, double d) throws IOException {
