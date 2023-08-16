@@ -83,7 +83,7 @@ class MetricDescriptorTest {
                 "unit",
                 InstrumentType.COUNTER,
                 InstrumentValueType.DOUBLE,
-                Advice.create(Arrays.asList(1.0, 2.0))));
+                Advice.builder().explicitBucketBoundaries(Arrays.asList(1.0, 2.0)).build()));
     assertThat(descriptor1).isEqualTo(descriptor2).hasSameHashCodeAs(descriptor2);
     // Different name overridden by view is not equal
     descriptor2 =
