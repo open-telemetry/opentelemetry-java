@@ -66,7 +66,7 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
         String name,
         String description,
         String unit,
-        Advice advice) {
+        Advice.AdviceBuilder adviceBuilder) {
       super(
           meterProviderSharedState,
           sharedState,
@@ -75,7 +75,7 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
           name,
           description,
           unit,
-          advice);
+          adviceBuilder);
     }
 
     @Override
@@ -99,7 +99,7 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     public LongHistogramAdviceConfigurer setExplicitBucketBoundaries(List<Long> bucketBoundaries) {
       List<Double> doubleBoundaries =
           bucketBoundaries.stream().map(Long::doubleValue).collect(Collectors.toList());
-      setAdvice(Advice.create(doubleBoundaries));
+      adviceBuilder.setExplicitBucketBoundaries(doubleBoundaries);
       return this;
     }
   }
