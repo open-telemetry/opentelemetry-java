@@ -2,8 +2,6 @@ import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 plugins {
   `java-platform`
-
-  id("com.github.ben-manes.versions")
 }
 
 data class DependencySet(val group: String, val version: String, val modules: List<String>)
@@ -107,15 +105,4 @@ fun isNonStable(version: String): Boolean {
   val isGuava = version.endsWith("-jre")
   val isStable = stableKeyword || regex.matches(version) || isGuava
   return isStable.not()
-}
-
-tasks {
-  named<DependencyUpdatesTask>("dependencyUpdates") {
-    revision = "release"
-    checkConstraints = true
-
-    rejectVersionIf {
-      isNonStable(candidate.version)
-    }
-  }
 }
