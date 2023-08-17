@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -12,11 +13,14 @@ import io.opentelemetry.api.metrics.LongCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.extension.incubator.metrics.ExtendedLongCounterBuilder;
+import io.opentelemetry.extension.incubator.metrics.LongCounterAdviceConfigurer;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +61,7 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
   }
 
   static final class SdkLongCounterBuilder extends AbstractInstrumentBuilder<SdkLongCounterBuilder>
-      implements LongCounterBuilder {
+      implements ExtendedLongCounterBuilder, LongCounterAdviceConfigurer {
 
     SdkLongCounterBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -79,6 +83,12 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
     }
 
     @Override
+    public LongCounterBuilder setAdvice(Consumer<LongCounterAdviceConfigurer> adviceConsumer) {
+      adviceConsumer.accept(this);
+      return this;
+    }
+
+    @Override
     public SdkLongCounter build() {
       return buildSynchronousInstrument(SdkLongCounter::new);
     }
@@ -96,6 +106,12 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
     @Override
     public ObservableLongMeasurement buildObserver() {
       return buildObservableMeasurement(InstrumentType.OBSERVABLE_COUNTER);
+    }
+
+    @Override
+    public LongCounterAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
+      adviceBuilder.setAttributes(attributes);
+      return this;
     }
   }
 }

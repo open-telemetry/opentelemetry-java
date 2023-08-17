@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 public interface ExtendedDoubleCounterBuilder extends DoubleCounterBuilder {
 
   /** Specify advice for counter implementations. */
-  default DoubleCounterBuilder setAdvice(Consumer<CounterAdviceConfigurer> adviceConsumer) {
+  default DoubleCounterBuilder setAdvice(Consumer<DoubleCounterAdviceConfigurer> adviceConsumer) {
     return this;
   }
 }
