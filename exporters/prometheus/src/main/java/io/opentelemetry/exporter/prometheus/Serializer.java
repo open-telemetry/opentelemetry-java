@@ -57,7 +57,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
@@ -471,18 +470,15 @@ abstract class Serializer {
   private static Map<String, String> sanitizeAttributePairs(Attributes attributes) {
     Map<String, String> sanitizedAttributes = new HashMap<String, String>();
     attributes.forEach(
-        new BiConsumer<AttributeKey<?>, Object>() {
-          @Override
-          public void accept(AttributeKey<?> key, Object value) {
-            String sanitizedKey = NameSanitizer.INSTANCE.apply(key.getKey());
-            String val = "";
-            if (sanitizedAttributes.containsKey(sanitizedKey)) {
-              val = sanitizedAttributes.get(sanitizedKey) + ";" + value.toString();
-            } else {
-              val = value.toString();
-            }
-            sanitizedAttributes.put(sanitizedKey, val);
+        (AttributeKey<?> key, Object value) -> {
+          String sanitizedKey = NameSanitizer.INSTANCE.apply(key.getKey());
+          String val = "";
+          if (sanitizedAttributes.containsKey(sanitizedKey)) {
+            val = sanitizedAttributes.get(sanitizedKey) + ";" + value.toString();
+          } else {
+            val = value.toString();
           }
+          sanitizedAttributes.put(sanitizedKey, val);
         });
     return sanitizedAttributes;
   }
