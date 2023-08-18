@@ -570,7 +570,7 @@ abstract class Serializer {
       // header.
       String sanitizedOriginalName = NameSanitizer.INSTANCE.apply(rawMetric.getName());
       if (!sanitizedOriginalName.endsWith("_total") && (type == PrometheusType.COUNTER)) {
-        return name.substring(0, name.length() - 6);
+        return name.substring(0, name.length() - "_total".length());
       }
       return name;
     }

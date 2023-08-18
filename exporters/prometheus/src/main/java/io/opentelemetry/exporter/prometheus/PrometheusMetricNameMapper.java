@@ -47,7 +47,7 @@ class PrometheusMetricNameMapper implements BiFunction<MetricData, PrometheusTyp
             && !name.contains(prometheusEquivalentUnit);
     // trim counter's _total suffix so the unit is placed before it.
     if (prometheusType == PrometheusType.COUNTER && name.endsWith("_total")) {
-      name = name.substring(0, name.length() - 6);
+      name = name.substring(0, name.length() - "_total".length());
     }
     // append prometheus unit if not null or empty.
     if (shouldAppendUnit) {
