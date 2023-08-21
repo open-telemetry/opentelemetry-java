@@ -84,7 +84,7 @@ echo $contributors1 $contributors2 \
   | sort -uf \
   | grep -v linux-foundation-easycla \
   | grep -v github-actions \
-  | grep -v dependabot \
+  | grep -v renovate \
   | grep -v codecov \
   | grep -v opentelemetrybot \
   | sed 's/^/@/'
