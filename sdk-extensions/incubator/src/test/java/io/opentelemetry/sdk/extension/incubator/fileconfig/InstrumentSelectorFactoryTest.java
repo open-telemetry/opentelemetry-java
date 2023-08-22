@@ -1,0 +1,77 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.sdk.extension.incubator.fileconfig;
+
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Selector;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import java.util.Collections;
+import org.junit.jupiter.api.Test;
+
+class InstrumentSelectorFactoryTest {
+
+  @Test
+  void create_Null() {
+    assertThatThrownBy(
+            () ->
+                InstrumentSelectorFactory.getInstance()
+                    .create(null, mock(SpiHelper.class), Collections.emptyList()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("selector must not be null");
+  }
+
+  @Test
+  void create_Defaults() {
+    assertThatThrownBy(
+            () ->
+                InstrumentSelectorFactory.getInstance()
+                    .create(new Selector(), mock(SpiHelper.class), Collections.emptyList()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Invalid selector");
+  }
+
+  @Test
+  void create_InvalidInstrumentType() {
+    assertThatThrownBy(
+            () ->
+                InstrumentSelectorFactory.getInstance()
+                    .create(
+                        new Selector().withInstrumentType("foo"),
+                        mock(SpiHelper.class),
+                        Collections.emptyList()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Unrecognized instrument type: foo");
+  }
+
+  @Test
+  void create() {
+    assertThat(
+            InstrumentSelectorFactory.getInstance()
+                .create(
+                    new Selector()
+                        .withInstrumentName("instrument-name")
+                        .withInstrumentType("counter")
+                        .withMeterName("meter-name")
+                        .withMeterSchemaUrl("https://opentelemetry.io/schemas/1.16.0")
+                        .withMeterVersion("1.0.0"),
+                    mock(SpiHelper.class),
+                    Collections.emptyList()))
+        .isEqualTo(
+            InstrumentSelector.builder()
+                .setName("instrument-name")
+                .setType(InstrumentType.COUNTER)
+                .setMeterName("meter-name")
+                .setMeterSchemaUrl("https://opentelemetry.io/schemas/1.16.0")
+                .setMeterVersion("1.0.0")
+                .build());
+  }
+}

@@ -11,10 +11,7 @@ import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -187,6 +184,15 @@ public abstract class AttributesProcessor {
       newList.add(other);
       newList.addAll(processors);
       return new JoinedAttributesProcessor(newList);
+    }
+
+    @Override
+    public String toString() {
+      StringJoiner joiner = new StringJoiner(", ", "JoinedAttributesProcessor{[", "]}");
+      for (AttributesProcessor processor : processors) {
+        joiner.add(processor.toString());
+      }
+      return joiner.toString();
     }
   }
 }

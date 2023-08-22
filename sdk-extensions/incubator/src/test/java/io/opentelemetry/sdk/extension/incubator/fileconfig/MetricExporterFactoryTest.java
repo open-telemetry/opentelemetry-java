@@ -15,16 +15,17 @@ import static org.mockito.Mockito.verify;
 
 import com.google.common.collect.ImmutableMap;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
-import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
+import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Headers;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
-import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Prometheus;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -43,7 +44,7 @@ import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class LogRecordExporterFactoryTest {
+class MetricExporterFactoryTest {
 
   @RegisterExtension
   static final SelfSignedCertificateExtension serverTls = new SelfSignedCertificateExtension();
@@ -53,32 +54,28 @@ class LogRecordExporterFactoryTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
-  private SpiHelper spiHelper =
-      SpiHelper.create(LogRecordExporterFactoryTest.class.getClassLoader());
+  private SpiHelper spiHelper = SpiHelper.create(MetricExporterFactoryTest.class.getClassLoader());
 
   @Test
   void create_Null() {
-    LogRecordExporter expectedExporter = LogRecordExporter.composite();
-
-    LogRecordExporter exporter =
-        LogRecordExporterFactory.getInstance().create(null, spiHelper, new ArrayList<>());
-
-    assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
+    assertThat(MetricExporterFactory.getInstance().create(null, spiHelper, new ArrayList<>()))
+        .isNull();
+    ;
   }
 
   @Test
   void create_OtlpDefaults() {
     spiHelper = spy(spiHelper);
     List<Closeable> closeables = new ArrayList<>();
-    OtlpGrpcLogRecordExporter expectedExporter = OtlpGrpcLogRecordExporter.getDefault();
+    OtlpGrpcMetricExporter expectedExporter = OtlpGrpcMetricExporter.getDefault();
     cleanup.addCloseable(expectedExporter);
 
-    LogRecordExporter exporter =
-        LogRecordExporterFactory.getInstance()
+    MetricExporter exporter =
+        MetricExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .LogRecordExporter()
-                    .withOtlp(new Otlp()),
+                        .MetricExporter()
+                    .withOtlp(new OtlpMetric()),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(exporter);
@@ -89,16 +86,22 @@ class LogRecordExporterFactoryTest {
     ArgumentCaptor<ConfigProperties> configCaptor = ArgumentCaptor.forClass(ConfigProperties.class);
     verify(spiHelper)
         .loadConfigurable(
-            eq(ConfigurableLogRecordExporterProvider.class), any(), any(), configCaptor.capture());
+            eq(ConfigurableMetricExporterProvider.class), any(), any(), configCaptor.capture());
     ConfigProperties configProperties = configCaptor.getValue();
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.protocol")).isNull();
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.endpoint")).isNull();
-    assertThat(configProperties.getMap("otel.exporter.otlp.logs.headers")).isEmpty();
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.compression")).isNull();
-    assertThat(configProperties.getDuration("otel.exporter.otlp.logs.timeout")).isNull();
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.certificate")).isNull();
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.client.key")).isNull();
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.client.certificate")).isNull();
+    assertThat(configProperties.getString("otel.exporter.otlp.metrics.protocol")).isNull();
+    assertThat(configProperties.getString("otel.exporter.otlp.endpoint")).isNull();
+    assertThat(configProperties.getMap("otel.exporter.otlp.metrics.headers")).isEmpty();
+    assertThat(configProperties.getString("otel.exporter.otlp.metrics.compression")).isNull();
+    assertThat(configProperties.getDuration("otel.exporter.otlp.metrics.timeout")).isNull();
+    assertThat(configProperties.getString("otel.exporter.otlp.metrics.certificate")).isNull();
+    assertThat(configProperties.getString("otel.exporter.otlp.metrics.client.key")).isNull();
+    assertThat(configProperties.getString("otel.exporter.otlp.metrics.client.certificate"))
+        .isNull();
+    assertThat(
+            configProperties.getString("otel.exporter.otlp.metrics.default.histogram.aggregation"))
+        .isNull();
+    assertThat(configProperties.getString("otel.exporter.otlp.metrics.temporality.preference"))
+        .isNull();
   }
 
   @Test
@@ -106,9 +109,9 @@ class LogRecordExporterFactoryTest {
       throws CertificateEncodingException, IOException {
     spiHelper = spy(spiHelper);
     List<Closeable> closeables = new ArrayList<>();
-    OtlpHttpLogRecordExporter expectedExporter =
-        OtlpHttpLogRecordExporter.builder()
-            .setEndpoint("http://example:4318/v1/logs")
+    OtlpHttpMetricExporter expectedExporter =
+        OtlpHttpMetricExporter.builder()
+            .setEndpoint("http://example:4318/v1/metrics")
             .addHeader("key1", "value1")
             .addHeader("key2", "value2")
             .setTimeout(Duration.ofSeconds(15))
@@ -126,15 +129,15 @@ class LogRecordExporterFactoryTest {
         createTempFileWithContent(
             tempDir, "clientCertificate.cert", clientTls.certificate().getEncoded());
 
-    LogRecordExporter exporter =
-        LogRecordExporterFactory.getInstance()
+    MetricExporter exporter =
+        MetricExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .LogRecordExporter()
+                        .MetricExporter()
                     .withOtlp(
-                        new Otlp()
+                        new OtlpMetric()
                             .withProtocol("http/protobuf")
-                            .withEndpoint("http://example:4318/v1/logs")
+                            .withEndpoint("http://example:4318")
                             .withHeaders(
                                 new Headers()
                                     .withAdditionalProperty("key1", "value1")
@@ -143,7 +146,9 @@ class LogRecordExporterFactoryTest {
                             .withTimeout(15_000)
                             .withCertificate(certificatePath)
                             .withClientKey(clientKeyPath)
-                            .withClientCertificate(clientCertificatePath)),
+                            .withClientCertificate(clientCertificatePath)
+                            .withTemporalityPreference("delta")
+                            .withDefaultHistogramAggregation("base2_exponential_bucket_histogram")),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(exporter);
@@ -154,23 +159,47 @@ class LogRecordExporterFactoryTest {
     ArgumentCaptor<ConfigProperties> configCaptor = ArgumentCaptor.forClass(ConfigProperties.class);
     verify(spiHelper)
         .loadConfigurable(
-            eq(ConfigurableLogRecordExporterProvider.class), any(), any(), configCaptor.capture());
+            eq(ConfigurableMetricExporterProvider.class), any(), any(), configCaptor.capture());
     ConfigProperties configProperties = configCaptor.getValue();
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.protocol"))
+    assertThat(configProperties.getString("otel.exporter.otlp.metrics.protocol"))
         .isEqualTo("http/protobuf");
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.endpoint"))
-        .isEqualTo("http://example:4318/v1/logs");
-    assertThat(configProperties.getMap("otel.exporter.otlp.logs.headers"))
+    assertThat(configProperties.getString("otel.exporter.otlp.endpoint"))
+        .isEqualTo("http://example:4318");
+    assertThat(configProperties.getMap("otel.exporter.otlp.metrics.headers"))
         .isEqualTo(ImmutableMap.of("key1", "value1", "key2", "value2"));
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.compression")).isEqualTo("gzip");
-    assertThat(configProperties.getDuration("otel.exporter.otlp.logs.timeout"))
+    assertThat(configProperties.getString("otel.exporter.otlp.metrics.compression"))
+        .isEqualTo("gzip");
+    assertThat(configProperties.getDuration("otel.exporter.otlp.metrics.timeout"))
         .isEqualTo(Duration.ofSeconds(15));
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.certificate"))
+    assertThat(configProperties.getString("otel.exporter.otlp.metrics.certificate"))
         .isEqualTo(certificatePath);
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.client.key"))
+    assertThat(configProperties.getString("otel.exporter.otlp.metrics.client.key"))
         .isEqualTo(clientKeyPath);
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.client.certificate"))
+    assertThat(configProperties.getString("otel.exporter.otlp.metrics.client.certificate"))
         .isEqualTo(clientCertificatePath);
+    assertThat(configProperties.getString("otel.exporter.otlp.metrics.temporality.preference"))
+        .isEqualTo("delta");
+    assertThat(
+            configProperties.getString("otel.exporter.otlp.metrics.default.histogram.aggregation"))
+        .isEqualTo("base2_exponential_bucket_histogram");
+  }
+
+  @Test
+  void create_PrometheusExporter() {
+    List<Closeable> closeables = new ArrayList<>();
+
+    assertThatThrownBy(
+            () ->
+                MetricExporterFactory.getInstance()
+                    .create(
+                        new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
+                                .MetricExporter()
+                            .withPrometheus(new Prometheus()),
+                        spiHelper,
+                        new ArrayList<>()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("prometheus exporter not supported in this context");
+    cleanup.addCloseables(closeables);
   }
 
   @Test
@@ -179,15 +208,15 @@ class LogRecordExporterFactoryTest {
 
     assertThatThrownBy(
             () ->
-                LogRecordExporterFactory.getInstance()
+                MetricExporterFactory.getInstance()
                     .create(
                         new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                                .LogRecordExporter()
+                                .MetricExporter()
                             .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
                         spiHelper,
                         new ArrayList<>()))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unrecognized log record exporter(s): [test]");
+        .hasMessage("Unrecognized metric exporter(s): [test]");
     cleanup.addCloseables(closeables);
   }
 }
