@@ -178,7 +178,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                             MediaType.parse("application/x-protobuf"),
                             successResponse);
                   });
-      return HttpResponse.from(responseFuture);
+      return HttpResponse.of(responseFuture);
     }
 
     private static byte[] maybeGzipInflate(RequestHeaders requestHeaders, byte[] content)
