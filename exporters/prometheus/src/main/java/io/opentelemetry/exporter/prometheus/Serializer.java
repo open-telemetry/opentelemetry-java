@@ -48,7 +48,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -57,6 +56,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
@@ -445,42 +445,46 @@ abstract class Serializer {
   private static void writeAttributePairs(
       Writer writer, boolean initialComma, Attributes attributes) throws IOException {
     try {
-      boolean prefixWithComma = initialComma;
-      for (Map.Entry<String, String> entry : sanitizeAttributePairs(attributes).entrySet()) {
-        try {
-          if (prefixWithComma) {
-            writer.write(',');
-          } else {
-            prefixWithComma = true;
-          }
-          writer.write(NameSanitizer.INSTANCE.apply(entry.getKey()));
-          writer.write("=\"");
-          writeEscapedLabelValue(writer, entry.getValue());
-          writer.write('"');
-        } catch (IOException e) {
-          throw new UncheckedIOException(e);
-        }
+      attributes.forEach(
+          new BiConsumer<AttributeKey<?>, Object>() {
+            boolean initialAttribute = true;
+            String previousKey = "";
+            String previousValue = "";
+
+            @Override
+            public void accept(AttributeKey<?> key, Object value) {
+              try {
+                String sanitizedKey = NameSanitizer.INSTANCE.apply(key.getKey());
+                if (sanitizedKey.equals(previousKey)) {
+                  // This key collides with the previous one. Append the value
+                  // to the previous value instead of writing the key again.
+                  writer.write(';');
+                } else {
+                  if (!initialAttribute) {
+                    writer.write('"');
+                  }
+                  if (initialComma || !initialAttribute) {
+                    writer.write(',');
+                  }
+                  writer.write(sanitizedKey);
+                  writer.write("=\"");
+                }
+                String stringValue = value.toString();
+                writeEscapedLabelValue(writer, stringValue);
+                previousKey = sanitizedKey;
+                previousValue = stringValue;
+                initialAttribute = false;
+              } catch (IOException e) {
+                throw new UncheckedIOException(e);
+              }
+            }
+          });
+      if (!attributes.isEmpty()) {
+        writer.write('"');
       }
-      ;
     } catch (UncheckedIOException e) {
       throw e.getCause();
     }
-  }
-
-  private static Map<String, String> sanitizeAttributePairs(Attributes attributes) {
-    Map<String, String> sanitizedAttributes = new HashMap<String, String>();
-    attributes.forEach(
-        (AttributeKey<?> key, Object value) -> {
-          String sanitizedKey = NameSanitizer.INSTANCE.apply(key.getKey());
-          String val = "";
-          if (sanitizedAttributes.containsKey(sanitizedKey)) {
-            val = sanitizedAttributes.get(sanitizedKey) + ";" + value.toString();
-          } else {
-            val = value.toString();
-          }
-          sanitizedAttributes.put(sanitizedKey, val);
-        });
-    return sanitizedAttributes;
   }
 
   private static void writeDouble(Writer writer, double d) throws IOException {
