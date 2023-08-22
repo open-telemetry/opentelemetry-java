@@ -27,9 +27,12 @@ dependencies {
   // io.opentelemetry.sdk.extension.incubator.fileconfig
   implementation("com.fasterxml.jackson.core:jackson-databind")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
+  implementation(project(":sdk-extensions:autoconfigure"))
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
+  testImplementation(project(":exporters:otlp:all"))
+  testImplementation("com.linecorp.armeria:armeria-junit5")
 
   testImplementation("com.google.guava:guava-testlib")
 }
@@ -74,6 +77,10 @@ jsonSchema2Pojo {
   // Clear old source files to avoid contaminated source dir when updating
   removeOldOutput = true
 
+  // Include @Nullable annotation. Note: jsonSchmea2Pojo will not add @Nullable annotations on getters
+  // so we perform some steps in jsonSchema2PojoPostProcessing to add these.
+  includeJsr305Annotations = true
+
   // Prefer builders to setters
   includeSetters = false
   generateBuilders = true
@@ -96,10 +103,14 @@ val jsonSchema2PojoPostProcessing by tasks.registering(Copy::class) {
   into("$buildDir/generated/sources/js2p-tmp")
   filter {
     it
-      // Replace java 9+ @Generated annotation with java 8 version
-      .replace("import javax.annotation.processing.Generated", "import javax.annotation.Generated")
+      // Remove @Nullable annotation so it can be deterministically added later
+      .replace("import javax.annotation.Nullable;\n", "")
+      // Replace java 9+ @Generated annotation with java 8 version, add @Nullable annotation
+      .replace("import javax.annotation.processing.Generated;", "import javax.annotation.Nullable;\nimport javax.annotation.Generated;")
       // Add @SuppressWarnings("rawtypes") annotation to address raw types used in jsonschema2pojo builders
       .replace("@Generated(\"jsonschema2pojo\")", "@Generated(\"jsonschema2pojo\")\n@SuppressWarnings(\"rawtypes\")")
+      // Add @Nullable annotations to all getters
+      .replace("( *)public ([a-zA-Z]*) get([a-zA-Z]*)".toRegex(), "$1@Nullable\n$1public $2 get$3")
   }
 }
 val overwriteJs2p by tasks.registering(Copy::class) {
