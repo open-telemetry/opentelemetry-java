@@ -48,6 +48,9 @@ final class LogRecordExporterFactory
     if (model.getOtlp() != null) {
       Otlp otlp = model.getOtlp();
 
+      // Translate from file configuration scheme to environment variable scheme. This is ultimately
+      // interpreted by Otlp*ExporterProviders, but we want to avoid the dependency on
+      // opentelemetry-exporter-otlp
       Map<String, String> properties = new HashMap<>();
       if (otlp.getProtocol() != null) {
         properties.put("otel.exporter.otlp.logs.protocol", otlp.getProtocol());

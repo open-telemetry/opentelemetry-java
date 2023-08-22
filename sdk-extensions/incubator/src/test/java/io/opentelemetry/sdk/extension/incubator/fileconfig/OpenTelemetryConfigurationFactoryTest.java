@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -52,25 +53,20 @@ class OpenTelemetryConfigurationFactoryTest {
 
   @Test
   void create_InvalidFileFormat() {
-    List<Closeable> closeables = new ArrayList<>();
-    assertThatThrownBy(
-            () ->
-                OpenTelemetryConfigurationFactory.getInstance()
-                    .create(new OpenTelemetryConfiguration(), spiHelper, closeables))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unsupported file format. Supported formats include: 0.1");
-    cleanup.addCloseables(closeables);
+    List<OpenTelemetryConfiguration> testCases =
+        Arrays.asList(
+            new OpenTelemetryConfiguration(), new OpenTelemetryConfiguration().withFileFormat("1"));
 
-    assertThatThrownBy(
-            () ->
-                OpenTelemetryConfigurationFactory.getInstance()
-                    .create(
-                        new OpenTelemetryConfiguration().withFileFormat("1"),
-                        spiHelper,
-                        closeables))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unsupported file format. Supported formats include: 0.1");
-    cleanup.addCloseables(closeables);
+    List<Closeable> closeables = new ArrayList<>();
+    for (OpenTelemetryConfiguration testCase : testCases) {
+      assertThatThrownBy(
+              () ->
+                  OpenTelemetryConfigurationFactory.getInstance()
+                      .create(testCase, spiHelper, closeables))
+          .isInstanceOf(ConfigurationException.class)
+          .hasMessage("Unsupported file format. Supported formats include: 0.1");
+      cleanup.addCloseables(closeables);
+    }
   }
 
   @Test
