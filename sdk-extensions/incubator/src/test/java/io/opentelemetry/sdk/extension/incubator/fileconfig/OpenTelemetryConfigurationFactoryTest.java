@@ -9,19 +9,26 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessor;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessor;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporter;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimits;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessor;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LoggerProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporter;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessor;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProvider;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SpanLimits;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -102,6 +109,22 @@ class OpenTelemetryConfigurationFactoryTest {
                                 OtlpGrpcLogRecordExporter.getDefault())
                             .build())
                     .build())
+            .setTracerProvider(
+                SdkTracerProvider.builder()
+                    .setSpanLimits(
+                        SpanLimits.builder()
+                            .setMaxNumberOfAttributes(1)
+                            .setMaxAttributeValueLength(2)
+                            .setMaxNumberOfEvents(3)
+                            .setMaxNumberOfLinks(4)
+                            .setMaxNumberOfAttributesPerEvent(5)
+                            .setMaxNumberOfAttributesPerLink(6)
+                            .build())
+                    .addSpanProcessor(
+                        io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(
+                                OtlpGrpcSpanExporter.getDefault())
+                            .build())
+                    .build())
             .build();
     cleanup.addCloseable(expectedSdk);
 
@@ -123,7 +146,25 @@ class OpenTelemetryConfigurationFactoryTest {
                                             new BatchLogRecordProcessor()
                                                 .withExporter(
                                                     new LogRecordExporter()
-                                                        .withOtlp(new Otlp())))))),
+                                                        .withOtlp(new Otlp()))))))
+                    .withTracerProvider(
+                        new TracerProvider()
+                            .withLimits(
+                                new io.opentelemetry.sdk.extension.incubator.fileconfig.internal
+                                        .model.SpanLimits()
+                                    .withAttributeCountLimit(1)
+                                    .withAttributeValueLengthLimit(2)
+                                    .withEventCountLimit(3)
+                                    .withLinkCountLimit(4)
+                                    .withEventAttributeCountLimit(5)
+                                    .withLinkAttributeCountLimit(6))
+                            .withProcessors(
+                                Collections.singletonList(
+                                    new SpanProcessor()
+                                        .withBatch(
+                                            new BatchSpanProcessor()
+                                                .withExporter(
+                                                    new SpanExporter().withOtlp(new Otlp())))))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(sdk);

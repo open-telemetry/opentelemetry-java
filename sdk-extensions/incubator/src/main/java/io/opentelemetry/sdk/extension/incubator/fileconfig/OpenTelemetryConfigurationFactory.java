@@ -48,7 +48,15 @@ final class OpenTelemetryConfigurationFactory
                   .build()));
     }
 
-    // TODO(jack-berg): add support for tracer provider
+    if (model.getTracerProvider() != null) {
+      builder.setTracerProvider(
+          FileConfigUtil.addAndReturn(
+              closeables,
+              TracerProviderFactory.getInstance()
+                  .create(model.getTracerProvider(), spiHelper, closeables)
+                  .build()));
+    }
+
     // TODO(jack-berg): add support for meter provider
     // TODO(jack-berg): add support for propagators
     // TODO(jack-berg): add support for resource
