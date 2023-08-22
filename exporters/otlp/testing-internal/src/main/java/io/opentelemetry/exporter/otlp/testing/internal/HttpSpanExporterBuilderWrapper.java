@@ -85,7 +85,7 @@ public class HttpSpanExporterBuilderWrapper implements TelemetryExporterBuilder<
   }
 
   @Override
-  public TelemetryExporterBuilder<SpanData> setChannel(io.grpc.ManagedChannel channel) {
+  public TelemetryExporterBuilder<SpanData> setChannel(Object channel) {
     throw new UnsupportedOperationException("Not implemented");
   }
 

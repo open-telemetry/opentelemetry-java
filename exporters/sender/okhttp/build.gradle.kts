@@ -14,5 +14,7 @@ dependencies {
 
   implementation("com.squareup.okhttp3:okhttp")
 
+  compileOnly("io.grpc:grpc-stub")
+
   testImplementation("com.linecorp.armeria:armeria-junit5")
 }

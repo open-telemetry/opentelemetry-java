@@ -85,8 +85,8 @@ final class GrpcMetricExporterBuilderWrapper implements TelemetryExporterBuilder
 
   @Override
   @SuppressWarnings("deprecation") // testing deprecated functionality
-  public TelemetryExporterBuilder<MetricData> setChannel(ManagedChannel channel) {
-    builder.setChannel(channel);
+  public TelemetryExporterBuilder<MetricData> setChannel(Object channel) {
+    builder.setChannel((ManagedChannel) channel);
     return this;
   }
 

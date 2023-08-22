@@ -68,6 +68,8 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    * Returns a builder with configuration values equal to those for this exporter.
    *
    * <p>IMPORTANT: Be sure to {@link #shutdown()} this instance if it will no longer be used.
+   *
+   * @since 1.29.0
    */
   public OtlpGrpcMetricExporterBuilder toBuilder() {
     return new OtlpGrpcMetricExporterBuilder(builder.copy());

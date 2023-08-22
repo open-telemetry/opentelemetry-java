@@ -85,7 +85,7 @@ public class HttpMetricExporterBuilderWrapper implements TelemetryExporterBuilde
   }
 
   @Override
-  public TelemetryExporterBuilder<MetricData> setChannel(io.grpc.ManagedChannel channel) {
+  public TelemetryExporterBuilder<MetricData> setChannel(Object channel) {
     throw new UnsupportedOperationException("Not implemented");
   }
 

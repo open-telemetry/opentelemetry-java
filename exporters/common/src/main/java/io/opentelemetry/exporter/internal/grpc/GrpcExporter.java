@@ -5,39 +5,110 @@
 
 package io.opentelemetry.exporter.internal.grpc;
 
-import io.grpc.Channel;
+import static io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE;
+import static io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil.GRPC_STATUS_UNIMPLEMENTED;
+
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.internal.ExporterMetrics;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import java.net.URI;
-import java.util.function.BiFunction;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * An exporter of a {@link Marshaler} using the gRPC wire format.
+ * Generic gRPC exporter.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public interface GrpcExporter<T extends Marshaler> {
+@SuppressWarnings("checkstyle:JavadocMethod")
+public final class GrpcExporter<T extends Marshaler> {
 
-  /** Returns a new {@link GrpcExporterBuilder}. */
-  static <T extends Marshaler> GrpcExporterBuilder<T> builder(
+  private static final Logger internalLogger = Logger.getLogger(GrpcExporter.class.getName());
+
+  private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
+
+  // We only log unimplemented once since it's a configuration issue that won't be recovered.
+  private final AtomicBoolean loggedUnimplemented = new AtomicBoolean();
+  private final AtomicBoolean isShutdown = new AtomicBoolean();
+
+  private final String type;
+  private final GrpcSender<T> grpcSender;
+  private final ExporterMetrics exporterMetrics;
+
+  public GrpcExporter(
       String exporterName,
       String type,
-      long defaultTimeoutSecs,
-      URI defaultEndpoint,
-      Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
-      String grpcEndpointPath) {
-    return new GrpcExporterBuilder<>(
-        exporterName, type, defaultTimeoutSecs, defaultEndpoint, stubFactory, grpcEndpointPath);
+      GrpcSender<T> grpcSender,
+      Supplier<MeterProvider> meterProviderSupplier) {
+    this.type = type;
+    this.grpcSender = grpcSender;
+    this.exporterMetrics = ExporterMetrics.createGrpc(exporterName, type, meterProviderSupplier);
   }
 
-  /**
-   * Exports the {@code exportRequest} which is a request {@link Marshaler} for {@code numItems}
-   * items.
-   */
-  CompletableResultCode export(T exportRequest, int numItems);
+  public CompletableResultCode export(T exportRequest, int numItems) {
+    if (isShutdown.get()) {
+      return CompletableResultCode.ofFailure();
+    }
 
-  /** Shuts the exporter down. */
-  CompletableResultCode shutdown();
+    exporterMetrics.addSeen(numItems);
+
+    CompletableResultCode result = new CompletableResultCode();
+
+    grpcSender.send(
+        exportRequest,
+        () -> {
+          exporterMetrics.addSuccess(numItems);
+          result.succeed();
+        },
+        (response, throwable) -> {
+          exporterMetrics.addFailed(numItems);
+          switch (response.grpcStatusValue()) {
+            case GRPC_STATUS_UNIMPLEMENTED:
+              if (loggedUnimplemented.compareAndSet(false, true)) {
+                GrpcExporterUtil.logUnimplemented(
+                    internalLogger, type, response.grpcStatusDescription());
+              }
+              break;
+            case GRPC_STATUS_UNAVAILABLE:
+              logger.log(
+                  Level.SEVERE,
+                  "Failed to export "
+                      + type
+                      + "s. Server is UNAVAILABLE. "
+                      + "Make sure your collector is running and reachable from this network. "
+                      + "Full error message:"
+                      + response.grpcStatusDescription());
+              break;
+            default:
+              logger.log(
+                  Level.WARNING,
+                  "Failed to export "
+                      + type
+                      + "s. Server responded with gRPC status code "
+                      + response.grpcStatusValue()
+                      + ". Error message: "
+                      + response.grpcStatusDescription());
+              break;
+          }
+          if (logger.isLoggable(Level.FINEST)) {
+            logger.log(
+                Level.FINEST, "Failed to export " + type + "s. Details follow: " + throwable);
+          }
+          result.fail();
+        });
+
+    return result;
+  }
+
+  public CompletableResultCode shutdown() {
+    if (!isShutdown.compareAndSet(false, true)) {
+      logger.log(Level.INFO, "Calling shutdown() multiple times.");
+      return CompletableResultCode.ofSuccess();
+    }
+    return grpcSender.shutdown();
+  }
 }

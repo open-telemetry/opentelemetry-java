@@ -5,11 +5,9 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
+import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.http.HttpSender;
-import io.opentelemetry.exporter.internal.okhttp.OkHttpUtil;
-import io.opentelemetry.exporter.internal.retry.RetryInterceptor;
-import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;

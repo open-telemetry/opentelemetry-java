@@ -16,12 +16,12 @@ dependencies {
   protoSource(project(":exporters:jaeger-proto"))
 
   implementation(project(":exporters:common"))
+  implementation(project(":exporters:sender:okhttp"))
   implementation(project(":semconv"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
 
   compileOnly("io.grpc:grpc-stub")
 
-  implementation("com.squareup.okhttp3:okhttp")
   implementation("com.fasterxml.jackson.jr:jackson-jr-objects")
 
   testImplementation(project(":exporters:jaeger-proto"))

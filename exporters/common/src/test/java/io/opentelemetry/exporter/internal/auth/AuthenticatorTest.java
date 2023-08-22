@@ -59,8 +59,7 @@ class AuthenticatorTest {
     assertThatThrownBy(
             () ->
                 Authenticator.setAuthenticatorOnDelegate(
-                    new WithDelegate(GrpcExporter.builder(null, null, 0, null, null, null)),
-                    authenticator))
+                    new WithDelegate(new GrpcExporter<>(null, null, null, null)), authenticator))
         .isInstanceOf(IllegalArgumentException.class);
   }
 

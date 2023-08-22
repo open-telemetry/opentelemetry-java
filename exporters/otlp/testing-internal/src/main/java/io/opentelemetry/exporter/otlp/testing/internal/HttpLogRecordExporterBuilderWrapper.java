@@ -86,7 +86,7 @@ public class HttpLogRecordExporterBuilderWrapper
   }
 
   @Override
-  public TelemetryExporterBuilder<LogRecordData> setChannel(io.grpc.ManagedChannel channel) {
+  public TelemetryExporterBuilder<LogRecordData> setChannel(Object channel) {
     throw new UnsupportedOperationException("Not implemented");
   }
 

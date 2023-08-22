@@ -11,7 +11,6 @@ import static java.util.Objects.requireNonNull;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
@@ -48,7 +47,7 @@ public final class OtlpGrpcLogRecordExporterBuilder {
 
   OtlpGrpcLogRecordExporterBuilder() {
     this(
-        GrpcExporter.builder(
+        new GrpcExporterBuilder<>(
             "otlp",
             "log",
             DEFAULT_TIMEOUT_SECS,
