@@ -14,6 +14,7 @@ import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Attributes;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessor;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporter;
@@ -22,6 +23,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRec
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LoggerProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Resource;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporter;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessor;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProvider;
@@ -29,6 +31,7 @@ import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanLimits;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,10 +97,16 @@ class OpenTelemetryConfigurationFactoryTest {
   @Test
   void create_Configured() {
     List<Closeable> closeables = new ArrayList<>();
+    io.opentelemetry.sdk.resources.Resource expectedResource =
+        io.opentelemetry.sdk.resources.Resource.getDefault().toBuilder()
+            .put(ResourceAttributes.SERVICE_NAME, "my-service")
+            .put("key", "val")
+            .build();
     OpenTelemetrySdk expectedSdk =
         OpenTelemetrySdk.builder()
             .setLoggerProvider(
                 SdkLoggerProvider.builder()
+                    .setResource(expectedResource)
                     .setLogLimits(
                         () ->
                             LogLimits.builder()
@@ -111,6 +120,7 @@ class OpenTelemetryConfigurationFactoryTest {
                     .build())
             .setTracerProvider(
                 SdkTracerProvider.builder()
+                    .setResource(expectedResource)
                     .setSpanLimits(
                         SpanLimits.builder()
                             .setMaxNumberOfAttributes(1)
@@ -133,6 +143,12 @@ class OpenTelemetryConfigurationFactoryTest {
             .create(
                 new OpenTelemetryConfiguration()
                     .withFileFormat("0.1")
+                    .withResource(
+                        new Resource()
+                            .withAttributes(
+                                new Attributes()
+                                    .withServiceName("my-service")
+                                    .withAdditionalProperty("key", "val")))
                     .withLoggerProvider(
                         new LoggerProvider()
                             .withLimits(
