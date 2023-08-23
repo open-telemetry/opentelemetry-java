@@ -39,6 +39,9 @@ final class OpenTelemetryConfigurationFactory
 
     OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
 
+    builder.setPropagators(
+        PropagatorsFactory.getInstance().create(model.getPropagators(), spiHelper, closeables));
+
     if (model.getLoggerProvider() != null) {
       builder.setLoggerProvider(
           FileConfigUtil.addAndReturn(

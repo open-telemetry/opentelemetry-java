@@ -32,6 +32,8 @@ dependencies {
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
   testImplementation(project(":exporters:otlp:all"))
+  testImplementation(project(":extensions:trace-propagators"))
+  testImplementation("io.opentelemetry.contrib:opentelemetry-aws-xray-propagator")
   testImplementation("com.linecorp.armeria:armeria-junit5")
 
   testImplementation("com.google.guava:guava-testlib")
