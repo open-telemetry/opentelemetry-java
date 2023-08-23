@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
@@ -12,10 +13,13 @@ import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.extension.incubator.metrics.ExtendedLongUpDownCounterBuilder;
+import io.opentelemetry.extension.incubator.metrics.LongUpDownCounterAdviceConfigurer;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
+import java.util.List;
 import java.util.function.Consumer;
 
 final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDownCounter {
@@ -44,7 +48,7 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
 
   static final class SdkLongUpDownCounterBuilder
       extends AbstractInstrumentBuilder<SdkLongUpDownCounterBuilder>
-      implements LongUpDownCounterBuilder {
+      implements ExtendedLongUpDownCounterBuilder, LongUpDownCounterAdviceConfigurer {
 
     SdkLongUpDownCounterBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -62,6 +66,13 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
 
     @Override
     protected SdkLongUpDownCounterBuilder getThis() {
+      return this;
+    }
+
+    @Override
+    public LongUpDownCounterBuilder setAdvice(
+        Consumer<LongUpDownCounterAdviceConfigurer> adviceConsumer) {
+      adviceConsumer.accept(this);
       return this;
     }
 
@@ -85,6 +96,12 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
     @Override
     public ObservableLongMeasurement buildObserver() {
       return buildObservableMeasurement(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER);
+    }
+
+    @Override
+    public LongUpDownCounterAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
+      adviceBuilder.setAttributes(attributes);
+      return this;
     }
   }
 }

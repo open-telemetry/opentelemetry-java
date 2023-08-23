@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.context.Context;
@@ -100,6 +101,12 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
       List<Double> doubleBoundaries =
           bucketBoundaries.stream().map(Long::doubleValue).collect(Collectors.toList());
       adviceBuilder.setExplicitBucketBoundaries(doubleBoundaries);
+      return this;
+    }
+
+    @Override
+    public LongHistogramAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
+      adviceBuilder.setAttributes(attributes);
       return this;
     }
   }
