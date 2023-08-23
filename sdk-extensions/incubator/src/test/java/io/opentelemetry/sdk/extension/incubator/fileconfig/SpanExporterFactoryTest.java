@@ -15,16 +15,16 @@ import static org.mockito.Mockito.verify;
 
 import com.google.common.collect.ImmutableMap;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
-import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Headers;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
-import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -43,7 +43,7 @@ import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class LogRecordExporterFactoryTest {
+class SpanExporterFactoryTest {
 
   @RegisterExtension
   static final SelfSignedCertificateExtension serverTls = new SelfSignedCertificateExtension();
@@ -53,21 +53,20 @@ class LogRecordExporterFactoryTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
-  private SpiHelper spiHelper =
-      SpiHelper.create(LogRecordExporterFactoryTest.class.getClassLoader());
+  private SpiHelper spiHelper = SpiHelper.create(SpanExporterFactoryTest.class.getClassLoader());
 
   @Test
   void create_OtlpDefaults() {
     spiHelper = spy(spiHelper);
     List<Closeable> closeables = new ArrayList<>();
-    OtlpGrpcLogRecordExporter expectedExporter = OtlpGrpcLogRecordExporter.getDefault();
+    OtlpGrpcSpanExporter expectedExporter = OtlpGrpcSpanExporter.getDefault();
     cleanup.addCloseable(expectedExporter);
 
-    LogRecordExporter exporter =
-        LogRecordExporterFactory.getInstance()
+    SpanExporter exporter =
+        SpanExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .LogRecordExporter()
+                        .SpanExporter()
                     .withOtlp(new Otlp()),
                 spiHelper,
                 closeables);
@@ -79,16 +78,16 @@ class LogRecordExporterFactoryTest {
     ArgumentCaptor<ConfigProperties> configCaptor = ArgumentCaptor.forClass(ConfigProperties.class);
     verify(spiHelper)
         .loadConfigurable(
-            eq(ConfigurableLogRecordExporterProvider.class), any(), any(), configCaptor.capture());
+            eq(ConfigurableSpanExporterProvider.class), any(), any(), configCaptor.capture());
     ConfigProperties configProperties = configCaptor.getValue();
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.protocol")).isNull();
+    assertThat(configProperties.getString("otel.exporter.otlp.traces.protocol")).isNull();
     assertThat(configProperties.getString("otel.exporter.otlp.endpoint")).isNull();
-    assertThat(configProperties.getMap("otel.exporter.otlp.logs.headers")).isEmpty();
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.compression")).isNull();
-    assertThat(configProperties.getDuration("otel.exporter.otlp.logs.timeout")).isNull();
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.certificate")).isNull();
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.client.key")).isNull();
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.client.certificate")).isNull();
+    assertThat(configProperties.getMap("otel.exporter.otlp.traces.headers")).isEmpty();
+    assertThat(configProperties.getString("otel.exporter.otlp.traces.compression")).isNull();
+    assertThat(configProperties.getDuration("otel.exporter.otlp.traces.timeout")).isNull();
+    assertThat(configProperties.getString("otel.exporter.otlp.traces.certificate")).isNull();
+    assertThat(configProperties.getString("otel.exporter.otlp.traces.client.key")).isNull();
+    assertThat(configProperties.getString("otel.exporter.otlp.traces.client.certificate")).isNull();
   }
 
   @Test
@@ -96,9 +95,9 @@ class LogRecordExporterFactoryTest {
       throws CertificateEncodingException, IOException {
     spiHelper = spy(spiHelper);
     List<Closeable> closeables = new ArrayList<>();
-    OtlpHttpLogRecordExporter expectedExporter =
-        OtlpHttpLogRecordExporter.builder()
-            .setEndpoint("http://example:4318/v1/logs")
+    OtlpHttpSpanExporter expectedExporter =
+        OtlpHttpSpanExporter.builder()
+            .setEndpoint("http://example:4318/v1/traces")
             .addHeader("key1", "value1")
             .addHeader("key2", "value2")
             .setTimeout(Duration.ofSeconds(15))
@@ -116,11 +115,11 @@ class LogRecordExporterFactoryTest {
         createTempFileWithContent(
             tempDir, "clientCertificate.cert", clientTls.certificate().getEncoded());
 
-    LogRecordExporter exporter =
-        LogRecordExporterFactory.getInstance()
+    SpanExporter exporter =
+        SpanExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .LogRecordExporter()
+                        .SpanExporter()
                     .withOtlp(
                         new Otlp()
                             .withProtocol("http/protobuf")
@@ -144,22 +143,23 @@ class LogRecordExporterFactoryTest {
     ArgumentCaptor<ConfigProperties> configCaptor = ArgumentCaptor.forClass(ConfigProperties.class);
     verify(spiHelper)
         .loadConfigurable(
-            eq(ConfigurableLogRecordExporterProvider.class), any(), any(), configCaptor.capture());
+            eq(ConfigurableSpanExporterProvider.class), any(), any(), configCaptor.capture());
     ConfigProperties configProperties = configCaptor.getValue();
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.protocol"))
+    assertThat(configProperties.getString("otel.exporter.otlp.traces.protocol"))
         .isEqualTo("http/protobuf");
     assertThat(configProperties.getString("otel.exporter.otlp.endpoint"))
         .isEqualTo("http://example:4318");
-    assertThat(configProperties.getMap("otel.exporter.otlp.logs.headers"))
+    assertThat(configProperties.getMap("otel.exporter.otlp.traces.headers"))
         .isEqualTo(ImmutableMap.of("key1", "value1", "key2", "value2"));
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.compression")).isEqualTo("gzip");
-    assertThat(configProperties.getDuration("otel.exporter.otlp.logs.timeout"))
+    assertThat(configProperties.getString("otel.exporter.otlp.traces.compression"))
+        .isEqualTo("gzip");
+    assertThat(configProperties.getDuration("otel.exporter.otlp.traces.timeout"))
         .isEqualTo(Duration.ofSeconds(15));
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.certificate"))
+    assertThat(configProperties.getString("otel.exporter.otlp.traces.certificate"))
         .isEqualTo(certificatePath);
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.client.key"))
+    assertThat(configProperties.getString("otel.exporter.otlp.traces.client.key"))
         .isEqualTo(clientKeyPath);
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.client.certificate"))
+    assertThat(configProperties.getString("otel.exporter.otlp.traces.client.certificate"))
         .isEqualTo(clientCertificatePath);
   }
 
@@ -169,15 +169,15 @@ class LogRecordExporterFactoryTest {
 
     assertThatThrownBy(
             () ->
-                LogRecordExporterFactory.getInstance()
+                SpanExporterFactory.getInstance()
                     .create(
                         new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                                .LogRecordExporter()
+                                .SpanExporter()
                             .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
                         spiHelper,
                         new ArrayList<>()))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unrecognized log record exporter(s): [test]");
+        .hasMessage("Unrecognized span exporter(s): [test]");
     cleanup.addCloseables(closeables);
   }
 }

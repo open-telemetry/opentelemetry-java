@@ -12,37 +12,36 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
-import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-final class LogRecordExporterFactory
+final class SpanExporterFactory
     implements Factory<
-        io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporter,
-        LogRecordExporter> {
+        io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporter,
+        SpanExporter> {
 
-  private static final LogRecordExporterFactory INSTANCE = new LogRecordExporterFactory();
+  private static final SpanExporterFactory INSTANCE = new SpanExporterFactory();
 
-  private LogRecordExporterFactory() {}
+  private SpanExporterFactory() {}
 
-  static LogRecordExporterFactory getInstance() {
+  static SpanExporterFactory getInstance() {
     return INSTANCE;
   }
 
   @Override
-  public LogRecordExporter create(
+  public SpanExporter create(
       @Nullable
-          io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporter
-              model,
+          io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporter model,
       SpiHelper spiHelper,
       List<Closeable> closeables) {
     if (model == null) {
-      return LogRecordExporter.composite();
+      return SpanExporter.composite();
     }
 
     if (model.getOtlp() != null) {
@@ -53,35 +52,35 @@ final class LogRecordExporterFactory
       // opentelemetry-exporter-otlp
       Map<String, String> properties = new HashMap<>();
       if (otlp.getProtocol() != null) {
-        properties.put("otel.exporter.otlp.logs.protocol", otlp.getProtocol());
+        properties.put("otel.exporter.otlp.traces.protocol", otlp.getProtocol());
       }
       if (otlp.getEndpoint() != null) {
         // NOTE: Set general otel.exporter.otlp.endpoint instead of signal specific
-        // otel.exporter.otlp.logs.endpoint to allow signal path (i.e. /v1/logs) to be added if not
-        // present
+        // otel.exporter.otlp.traces.endpoint to allow signal path (i.e. /v1/traces) to be added if
+        // not present
         properties.put("otel.exporter.otlp.endpoint", otlp.getEndpoint());
       }
       if (otlp.getHeaders() != null) {
         properties.put(
-            "otel.exporter.otlp.logs.headers",
+            "otel.exporter.otlp.traces.headers",
             otlp.getHeaders().getAdditionalProperties().entrySet().stream()
                 .map(entry -> entry.getKey() + "=" + entry.getValue())
                 .collect(joining(",")));
       }
       if (otlp.getCompression() != null) {
-        properties.put("otel.exporter.otlp.logs.compression", otlp.getCompression());
+        properties.put("otel.exporter.otlp.traces.compression", otlp.getCompression());
       }
       if (otlp.getTimeout() != null) {
-        properties.put("otel.exporter.otlp.logs.timeout", Integer.toString(otlp.getTimeout()));
+        properties.put("otel.exporter.otlp.traces.timeout", Integer.toString(otlp.getTimeout()));
       }
       if (otlp.getCertificate() != null) {
-        properties.put("otel.exporter.otlp.logs.certificate", otlp.getCertificate());
+        properties.put("otel.exporter.otlp.traces.certificate", otlp.getCertificate());
       }
       if (otlp.getClientKey() != null) {
-        properties.put("otel.exporter.otlp.logs.client.key", otlp.getClientKey());
+        properties.put("otel.exporter.otlp.traces.client.key", otlp.getClientKey());
       }
       if (otlp.getClientCertificate() != null) {
-        properties.put("otel.exporter.otlp.logs.client.certificate", otlp.getClientCertificate());
+        properties.put("otel.exporter.otlp.traces.client.certificate", otlp.getClientCertificate());
       }
 
       // TODO(jack-berg): add method for creating from map
@@ -90,26 +89,26 @@ final class LogRecordExporterFactory
       return FileConfigUtil.addAndReturn(
           closeables,
           FileConfigUtil.assertNotNull(
-              logRecordExporterSpiManager(configProperties, spiHelper).getByName("otlp"),
+              spanExporterSpiManager(configProperties, spiHelper).getByName("otlp"),
               "otlp exporter"));
     }
 
     // TODO(jack-berg): add support for generic SPI exporters
     if (!model.getAdditionalProperties().isEmpty()) {
       throw new ConfigurationException(
-          "Unrecognized log record exporter(s): "
+          "Unrecognized span exporter(s): "
               + model.getAdditionalProperties().keySet().stream().collect(joining(",", "[", "]")));
     }
 
-    return LogRecordExporter.composite();
+    return SpanExporter.composite();
   }
 
-  private static NamedSpiManager<LogRecordExporter> logRecordExporterSpiManager(
+  private static NamedSpiManager<SpanExporter> spanExporterSpiManager(
       ConfigProperties config, SpiHelper spiHelper) {
     return spiHelper.loadConfigurable(
-        ConfigurableLogRecordExporterProvider.class,
-        ConfigurableLogRecordExporterProvider::getName,
-        ConfigurableLogRecordExporterProvider::createExporter,
+        ConfigurableSpanExporterProvider.class,
+        ConfigurableSpanExporterProvider::getName,
+        ConfigurableSpanExporterProvider::createExporter,
         config);
   }
 }
