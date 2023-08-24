@@ -39,7 +39,7 @@ afterEvaluate {
     .filter { it.plugins.hasPlugin("maven-publish") }
 
   generateBuildSubstitutions {
-    val outputFile = File(buildDir, "substitutions.gradle.kts")
+    val outputFile = File(layout.buildDirectory.asFile.get(), "substitutions.gradle.kts")
     outputs.file(outputFile)
     val substitutionSnippet = bomProjects.joinToString(
       separator = "\n",

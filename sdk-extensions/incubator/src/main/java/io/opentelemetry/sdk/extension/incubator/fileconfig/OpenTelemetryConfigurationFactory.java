@@ -40,10 +40,11 @@ final class OpenTelemetryConfigurationFactory
 
     OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
 
-    Resource resource = Resource.getDefault();
-    if (model.getResource() != null) {
-      resource = ResourceFactory.getInstance().create(model.getResource(), spiHelper, closeables);
-    }
+    builder.setPropagators(
+        PropagatorsFactory.getInstance().create(model.getPropagators(), spiHelper, closeables));
+
+    Resource resource =
+        ResourceFactory.getInstance().create(model.getResource(), spiHelper, closeables);
 
     if (model.getLoggerProvider() != null) {
       builder.setLoggerProvider(
