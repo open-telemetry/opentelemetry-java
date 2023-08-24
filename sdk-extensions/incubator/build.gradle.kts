@@ -32,6 +32,7 @@ dependencies {
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
   testImplementation(project(":exporters:otlp:all"))
+  testImplementation(project(":sdk-extensions:jaeger-remote-sampler"))
   testImplementation("com.linecorp.armeria:armeria-junit5")
 
   testImplementation("com.google.guava:guava-testlib")

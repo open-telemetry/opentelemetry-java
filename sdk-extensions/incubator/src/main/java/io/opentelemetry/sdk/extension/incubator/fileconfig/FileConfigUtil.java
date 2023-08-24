@@ -14,8 +14,10 @@ final class FileConfigUtil {
   private FileConfigUtil() {}
 
   /** Add the {@code closeable} to the {@code closeables} and return it. */
-  static <T extends Closeable> T addAndReturn(List<Closeable> closeables, T closeable) {
-    closeables.add(closeable);
+  static <T> T addAndReturn(List<Closeable> closeables, T closeable) {
+    if (closeable instanceof Closeable) {
+      closeables.add((Closeable) closeable);
+    }
     return closeable;
   }
 
