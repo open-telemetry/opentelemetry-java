@@ -76,7 +76,8 @@ class AttributesFactoryTest {
                         .withAdditionalProperty("intArrKey", Arrays.asList(1, 2))
                         .withAdditionalProperty("doubleArrKey", Arrays.asList(1.0d, 2.0d))
                         .withAdditionalProperty("floatArrKey", Arrays.asList(1.0f, 2.0f))
-                        .withAdditionalProperty("boolArrKey", Arrays.asList(true, false)),
+                        .withAdditionalProperty("boolArrKey", Arrays.asList(true, false))
+                        .withAdditionalProperty("emptyArrKey", Collections.emptyList()),
                     mock(SpiHelper.class),
                     Collections.emptyList()))
         .isEqualTo(

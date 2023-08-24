@@ -48,7 +48,6 @@ final class AttributesFactory
                 throw new ConfigurationException(
                     "Error processing attribute with key \"" + key + "\": unexpected null value");
               }
-              Class<?> valueClass = value.getClass();
               if (value instanceof String) {
                 builder.put(key, (String) value);
                 return;
@@ -73,7 +72,7 @@ final class AttributesFactory
                 builder.put(key, (boolean) value);
                 return;
               }
-              if (List.class.isAssignableFrom(valueClass)) {
+              if (value instanceof List) {
                 List<?> values = (List<?>) value;
                 if (values.isEmpty()) {
                   return;
