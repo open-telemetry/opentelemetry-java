@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -30,7 +29,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class PropagatorsFactoryTest {
 
   private final SpiHelper spiHelper =
-      SpiHelper.create(LogRecordExporterFactoryTest.class.getClassLoader());
+      SpiHelper.create(PropagatorsFactoryTest.class.getClassLoader());
 
   @ParameterizedTest
   @MethodSource("createArguments")
@@ -71,11 +70,18 @@ class PropagatorsFactoryTest {
     assertThatThrownBy(
             () ->
                 PropagatorsFactory.getInstance()
-                    .create(
-                        Arrays.asList("none", "foo"),
-                        mock(SpiHelper.class),
-                        Collections.emptyList()))
+                    .create(Arrays.asList("none", "foo"), spiHelper, Collections.emptyList()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("propagators contains \"none\" along with other propagators");
+  }
+
+  @Test
+  void create_UnknownSpiPropagator() {
+    assertThatThrownBy(
+            () ->
+                PropagatorsFactory.getInstance()
+                    .create(Collections.singletonList("foo"), spiHelper, Collections.emptyList()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Unrecognized value for otel.propagators: foo");
   }
 }

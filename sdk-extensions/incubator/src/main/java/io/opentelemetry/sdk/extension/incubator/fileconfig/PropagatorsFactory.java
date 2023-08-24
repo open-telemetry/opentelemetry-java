@@ -74,9 +74,6 @@ final class PropagatorsFactory implements Factory<List<String>, ContextPropagato
     if (spiPropagator != null) {
       return spiPropagator;
     }
-    throw new ConfigurationException(
-        "Unrecognized value for otel.propagators: "
-            + name
-            + ". Make sure the artifact including the propagator is on the classpath.");
+    throw new ConfigurationException("Unrecognized value for otel.propagators: " + name);
   }
 }
