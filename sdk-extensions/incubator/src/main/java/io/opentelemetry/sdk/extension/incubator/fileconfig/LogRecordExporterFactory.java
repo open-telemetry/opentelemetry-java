@@ -56,7 +56,10 @@ final class LogRecordExporterFactory
         properties.put("otel.exporter.otlp.logs.protocol", otlp.getProtocol());
       }
       if (otlp.getEndpoint() != null) {
-        properties.put("otel.exporter.otlp.logs.endpoint", otlp.getEndpoint());
+        // NOTE: Set general otel.exporter.otlp.endpoint instead of signal specific
+        // otel.exporter.otlp.logs.endpoint to allow signal path (i.e. /v1/logs) to be added if not
+        // present
+        properties.put("otel.exporter.otlp.endpoint", otlp.getEndpoint());
       }
       if (otlp.getHeaders() != null) {
         properties.put(

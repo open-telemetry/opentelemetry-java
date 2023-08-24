@@ -92,7 +92,7 @@ class LogRecordExporterFactoryTest {
             eq(ConfigurableLogRecordExporterProvider.class), any(), any(), configCaptor.capture());
     ConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("otel.exporter.otlp.logs.protocol")).isNull();
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.endpoint")).isNull();
+    assertThat(configProperties.getString("otel.exporter.otlp.endpoint")).isNull();
     assertThat(configProperties.getMap("otel.exporter.otlp.logs.headers")).isEmpty();
     assertThat(configProperties.getString("otel.exporter.otlp.logs.compression")).isNull();
     assertThat(configProperties.getDuration("otel.exporter.otlp.logs.timeout")).isNull();
@@ -134,7 +134,7 @@ class LogRecordExporterFactoryTest {
                     .withOtlp(
                         new Otlp()
                             .withProtocol("http/protobuf")
-                            .withEndpoint("http://example:4318/v1/logs")
+                            .withEndpoint("http://example:4318")
                             .withHeaders(
                                 new Headers()
                                     .withAdditionalProperty("key1", "value1")
@@ -158,8 +158,8 @@ class LogRecordExporterFactoryTest {
     ConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("otel.exporter.otlp.logs.protocol"))
         .isEqualTo("http/protobuf");
-    assertThat(configProperties.getString("otel.exporter.otlp.logs.endpoint"))
-        .isEqualTo("http://example:4318/v1/logs");
+    assertThat(configProperties.getString("otel.exporter.otlp.endpoint"))
+        .isEqualTo("http://example:4318");
     assertThat(configProperties.getMap("otel.exporter.otlp.logs.headers"))
         .isEqualTo(ImmutableMap.of("key1", "value1", "key2", "value2"));
     assertThat(configProperties.getString("otel.exporter.otlp.logs.compression")).isEqualTo("gzip");

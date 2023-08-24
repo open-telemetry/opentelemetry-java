@@ -96,7 +96,10 @@ class ConfigurationFactoryTest {
                   "client_key: .*\n", "client_key: " + clientKeyPath + System.lineSeparator())
               .replaceAll(
                   "client_certificate: .*\n",
-                  "client_certificate: " + clientCertificatePath + System.lineSeparator());
+                  "client_certificate: " + clientCertificatePath + System.lineSeparator())
+              .replace(
+                  "exponential_bucket_histogram",
+                  "base2_exponential_bucket_histogram"); // TODO: remove once we update to latest
       InputStream is =
           new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
 

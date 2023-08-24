@@ -106,6 +106,10 @@ final class MetricExporterFactory
               "otlp exporter"));
     }
 
+    if (model.getConsole() != null) {
+      throw new ConfigurationException("console exporter not currently supported");
+    }
+
     if (model.getPrometheus() != null) {
       throw new ConfigurationException("prometheus exporter not supported in this context");
     }
