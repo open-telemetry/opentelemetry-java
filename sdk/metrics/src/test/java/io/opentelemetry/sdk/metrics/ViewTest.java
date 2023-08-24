@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.metrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import org.junit.jupiter.api.Test;
 
 class ViewTest {
@@ -26,6 +28,7 @@ class ViewTest {
                 .setDescription("description")
                 .setAggregation(Aggregation.sum())
                 .setCardinalityLimit(10)
+                .setAttributeFilter(new HashSet<>(Arrays.asList("key1", "key2")))
                 .build()
                 .toString())
         .isEqualTo(
@@ -33,7 +36,7 @@ class ViewTest {
                 + "name=name, "
                 + "description=description, "
                 + "aggregation=SumAggregation, "
-                + "attributesProcessor=NoopAttributesProcessor{}, "
+                + "attributesProcessor=AttributeKeyFilteringProcessor{nameFilter=SetIncludesPredicate{set=[key1, key2]}}, "
                 + "cardinalityLimit=10"
                 + "}");
   }
