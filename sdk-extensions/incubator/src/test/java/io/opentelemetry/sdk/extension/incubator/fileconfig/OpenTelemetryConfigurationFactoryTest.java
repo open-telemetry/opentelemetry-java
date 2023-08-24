@@ -31,6 +31,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Logger
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Resource;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporter;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessor;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProvider;
@@ -102,6 +103,37 @@ class OpenTelemetryConfigurationFactoryTest {
     OpenTelemetrySdk sdk =
         OpenTelemetryConfigurationFactory.getInstance()
             .create(new OpenTelemetryConfiguration().withFileFormat("0.1"), spiHelper, closeables);
+    cleanup.addCloseable(sdk);
+    cleanup.addCloseables(closeables);
+
+    assertThat(sdk.toString()).isEqualTo(expectedSdk.toString());
+  }
+
+  @Test
+  void create_Disabled() {
+    List<Closeable> closeables = new ArrayList<>();
+    OpenTelemetrySdk expectedSdk = OpenTelemetrySdk.builder().build();
+    cleanup.addCloseable(expectedSdk);
+
+    OpenTelemetrySdk sdk =
+        OpenTelemetryConfigurationFactory.getInstance()
+            .create(
+                new OpenTelemetryConfiguration()
+                    .withFileFormat("0.1")
+                    .withDisabled(true)
+                    // Logger provider configuration should be ignored since SDK is disabled
+                    .withLoggerProvider(
+                        new LoggerProvider()
+                            .withProcessors(
+                                Collections.singletonList(
+                                    new LogRecordProcessor()
+                                        .withSimple(
+                                            new SimpleLogRecordProcessor()
+                                                .withExporter(
+                                                    new LogRecordExporter()
+                                                        .withOtlp(new Otlp())))))),
+                spiHelper,
+                closeables);
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 

@@ -52,7 +52,7 @@ dependencies {
 // ... proceed with normal sourcesJar, compileJava, etc
 
 // TODO(jack-berg): update ref to be released version when available
-val configurationRef = "2107dbb6f2a6c99fe2f55d550796ee7e2286fd1d"
+val configurationRef = "979a4817216eee572d8b2689130f4421887eb571"
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 

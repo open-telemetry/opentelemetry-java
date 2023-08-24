@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTe
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 final class OpenTelemetryConfigurationFactory
@@ -39,6 +40,10 @@ final class OpenTelemetryConfigurationFactory
     }
 
     OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
+
+    if (Objects.equals(Boolean.TRUE, model.getDisabled())) {
+      return builder.build();
+    }
 
     builder.setPropagators(
         PropagatorsFactory.getInstance().create(model.getPropagators(), spiHelper, closeables));
