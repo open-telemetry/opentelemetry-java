@@ -9,8 +9,15 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.extension.trace.propagation.B3Propagator;
+import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
+import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -82,7 +89,14 @@ class OpenTelemetryConfigurationFactoryTest {
   @Test
   void create_Defaults() {
     List<Closeable> closeables = new ArrayList<>();
-    OpenTelemetrySdk expectedSdk = OpenTelemetrySdk.builder().build();
+    OpenTelemetrySdk expectedSdk =
+        OpenTelemetrySdk.builder()
+            .setPropagators(
+                ContextPropagators.create(
+                    TextMapPropagator.composite(
+                        W3CTraceContextPropagator.getInstance(),
+                        W3CBaggagePropagator.getInstance())))
+            .build();
     cleanup.addCloseable(expectedSdk);
 
     OpenTelemetrySdk sdk =
@@ -99,6 +113,15 @@ class OpenTelemetryConfigurationFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     OpenTelemetrySdk expectedSdk =
         OpenTelemetrySdk.builder()
+            .setPropagators(
+                ContextPropagators.create(
+                    TextMapPropagator.composite(
+                        W3CTraceContextPropagator.getInstance(),
+                        W3CBaggagePropagator.getInstance(),
+                        OtTracePropagator.getInstance(),
+                        B3Propagator.injectingMultiHeaders(),
+                        B3Propagator.injectingSingleHeader(),
+                        JaegerPropagator.getInstance())))
             .setLoggerProvider(
                 SdkLoggerProvider.builder()
                     .setLogLimits(
@@ -137,6 +160,9 @@ class OpenTelemetryConfigurationFactoryTest {
             .create(
                 new OpenTelemetryConfiguration()
                     .withFileFormat("0.1")
+                    .withPropagators(
+                        Arrays.asList(
+                            "tracecontext", "baggage", "ottrace", "b3multi", "b3", "jaeger"))
                     .withLoggerProvider(
                         new LoggerProvider()
                             .withLimits(
