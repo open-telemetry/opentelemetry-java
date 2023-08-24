@@ -32,6 +32,9 @@ dependencies {
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
   testImplementation(project(":exporters:otlp:all"))
+  testImplementation(project(":extensions:trace-propagators"))
+  // As a part of the tests we check that we can parse examples without error. The https://github.com/open-telemetry/opentelemetry-configuration/blob/main/examples/kitchen-sink.yam contains a reference to the xray propagator
+  testImplementation("io.opentelemetry.contrib:opentelemetry-aws-xray-propagator")
   testImplementation("com.linecorp.armeria:armeria-junit5")
 
   testImplementation("com.google.guava:guava-testlib")
