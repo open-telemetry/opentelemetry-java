@@ -33,12 +33,12 @@ public interface ConfigurableMetricReaderProvider {
   MetricReader createMetricReader(ConfigProperties config);
 
   /**
-   * Returns the name of this exporter, which can be specified with the {@code
-   * otel.metrics.exporter} property to enable it. The name returned should NOT be the same as any
-   * other exporter name, either from other implementations of this SPI or {@link
-   * ConfigurableMetricExporterProvider}. If the name does conflict with another exporter name, the
-   * resulting behavior is undefined and it is explicitly unspecified which reader / exporter will
-   * actually be used.
+   * Returns the name of this reader, which can be specified with the {@code otel.metrics.exporter}
+   * property to enable it. The name returned should NOT be the same as any other reader / exporter
+   * name, either from other implementations of this SPI or {@link
+   * ConfigurableMetricExporterProvider}. If the name does conflict with another reader / exporter
+   * name, the resulting behavior is undefined and it is explicitly unspecified which reader /
+   * exporter will actually be used.
    */
   String getName();
 }
