@@ -95,6 +95,7 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
 
     @Override
     public LongCounterBuilder setUnit(String unit) {
+      builder.setUnit(unit);
       return this;
     }
 
