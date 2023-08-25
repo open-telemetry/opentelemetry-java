@@ -28,15 +28,16 @@ final class SdkLongGaugeBuilder implements ExtendedLongGaugeBuilder, LongGaugeAd
       String description,
       String unit,
       Advice.AdviceBuilder adviceBuilder) {
-    builder = new InstrumentBuilder(
-        meterProviderSharedState,
-        sharedState,
-        InstrumentType.OBSERVABLE_GAUGE,
-        InstrumentValueType.LONG,
-        name,
-        description,
-        unit,
-        adviceBuilder);
+    builder =
+        new InstrumentBuilder(
+            meterProviderSharedState,
+            sharedState,
+            InstrumentType.OBSERVABLE_GAUGE,
+            InstrumentValueType.LONG,
+            name,
+            description,
+            unit,
+            adviceBuilder);
   }
 
   @Override

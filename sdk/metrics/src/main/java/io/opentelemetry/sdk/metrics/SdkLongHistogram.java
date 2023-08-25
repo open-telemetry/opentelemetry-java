@@ -58,7 +58,8 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     record(value, Attributes.empty());
   }
 
-  static final class SdkLongHistogramBuilder implements ExtendedLongHistogramBuilder, LongHistogramAdviceConfigurer {
+  static final class SdkLongHistogramBuilder
+      implements ExtendedLongHistogramBuilder, LongHistogramAdviceConfigurer {
 
     private final InstrumentBuilder builder;
 
@@ -69,15 +70,16 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
         String description,
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
-      builder = new InstrumentBuilder(
-          meterProviderSharedState,
-          sharedState,
-          InstrumentType.HISTOGRAM,
-          InstrumentValueType.LONG,
-          name,
-          description,
-          unit,
-          adviceBuilder);
+      builder =
+          new InstrumentBuilder(
+              meterProviderSharedState,
+              sharedState,
+              InstrumentType.HISTOGRAM,
+              InstrumentValueType.LONG,
+              name,
+              description,
+              unit,
+              adviceBuilder);
     }
 
     @Override

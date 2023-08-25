@@ -17,7 +17,8 @@ import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import java.util.List;
 import java.util.function.Consumer;
 
-final class SdkDoubleGaugeBuilder implements ExtendedDoubleGaugeBuilder, DoubleGaugeAdviceConfigurer {
+final class SdkDoubleGaugeBuilder
+    implements ExtendedDoubleGaugeBuilder, DoubleGaugeAdviceConfigurer {
 
   private final InstrumentBuilder builder;
 
@@ -25,8 +26,13 @@ final class SdkDoubleGaugeBuilder implements ExtendedDoubleGaugeBuilder, DoubleG
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       String name) {
-    builder = new InstrumentBuilder(meterProviderSharedState, meterSharedState,
-        InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.DOUBLE, name);
+    builder =
+        new InstrumentBuilder(
+            meterProviderSharedState,
+            meterSharedState,
+            InstrumentType.OBSERVABLE_GAUGE,
+            InstrumentValueType.DOUBLE,
+            name);
   }
 
   @Override

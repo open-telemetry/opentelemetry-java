@@ -59,7 +59,8 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
     add(increment, Attributes.empty());
   }
 
-  static final class SdkDoubleCounterBuilder implements ExtendedDoubleCounterBuilder, DoubleCounterAdviceConfigurer {
+  static final class SdkDoubleCounterBuilder
+      implements ExtendedDoubleCounterBuilder, DoubleCounterAdviceConfigurer {
 
     private final InstrumentBuilder builder;
 
@@ -71,15 +72,16 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
 
-      this.builder = new InstrumentBuilder(
-          meterProviderSharedState,
-          sharedState,
-          InstrumentType.COUNTER,
-          InstrumentValueType.DOUBLE,
-          name,
-          description,
-          unit,
-          adviceBuilder);
+      this.builder =
+          new InstrumentBuilder(
+              meterProviderSharedState,
+              sharedState,
+              InstrumentType.COUNTER,
+              InstrumentValueType.DOUBLE,
+              name,
+              description,
+              unit,
+              adviceBuilder);
     }
 
     @Override
@@ -108,7 +110,8 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
     @Override
     public ObservableDoubleCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
-      return builder.registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback);
+      return builder.registerDoubleAsynchronousInstrument(
+          InstrumentType.OBSERVABLE_COUNTER, callback);
     }
 
     @Override

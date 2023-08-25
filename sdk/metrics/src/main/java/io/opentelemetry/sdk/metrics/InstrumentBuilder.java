@@ -41,8 +41,15 @@ final class InstrumentBuilder {
       InstrumentType type,
       InstrumentValueType valueType,
       String name) {
-    this(meterProviderSharedState, meterSharedState,
-        type, valueType, name, "", DEFAULT_UNIT, Advice.builder());
+    this(
+        meterProviderSharedState,
+        meterSharedState,
+        type,
+        valueType,
+        name,
+        "",
+        DEFAULT_UNIT,
+        Advice.builder());
   }
 
   InstrumentBuilder(

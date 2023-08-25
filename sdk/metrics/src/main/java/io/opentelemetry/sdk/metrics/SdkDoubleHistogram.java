@@ -57,7 +57,8 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
     record(value, Attributes.empty());
   }
 
-  static final class SdkDoubleHistogramBuilder implements ExtendedDoubleHistogramBuilder, DoubleHistogramAdviceConfigurer {
+  static final class SdkDoubleHistogramBuilder
+      implements ExtendedDoubleHistogramBuilder, DoubleHistogramAdviceConfigurer {
 
     private final InstrumentBuilder builder;
 
@@ -65,12 +66,13 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      builder = new InstrumentBuilder(
-          meterProviderSharedState,
-          meterSharedState,
-          InstrumentType.HISTOGRAM,
-          InstrumentValueType.DOUBLE,
-          name);
+      builder =
+          new InstrumentBuilder(
+              meterProviderSharedState,
+              meterSharedState,
+              InstrumentType.HISTOGRAM,
+              InstrumentValueType.DOUBLE,
+              name);
     }
 
     @Override

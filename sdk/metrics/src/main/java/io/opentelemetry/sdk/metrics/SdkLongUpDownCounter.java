@@ -46,7 +46,8 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
     add(increment, Attributes.empty());
   }
 
-  static final class SdkLongUpDownCounterBuilder implements ExtendedLongUpDownCounterBuilder, LongUpDownCounterAdviceConfigurer {
+  static final class SdkLongUpDownCounterBuilder
+      implements ExtendedLongUpDownCounterBuilder, LongUpDownCounterAdviceConfigurer {
 
     private final InstrumentBuilder builder;
 
@@ -54,12 +55,13 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      builder = new InstrumentBuilder(
-          meterProviderSharedState,
-          meterSharedState,
-          InstrumentType.UP_DOWN_COUNTER,
-          InstrumentValueType.LONG,
-          name);
+      builder =
+          new InstrumentBuilder(
+              meterProviderSharedState,
+              meterSharedState,
+              InstrumentType.UP_DOWN_COUNTER,
+              InstrumentValueType.LONG,
+              name);
     }
 
     @Override

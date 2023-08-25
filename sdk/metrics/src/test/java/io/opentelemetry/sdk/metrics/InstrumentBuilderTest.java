@@ -19,11 +19,12 @@ import org.junit.jupiter.api.Test;
 
 class InstrumentBuilderTest {
 
-  public static final MeterProviderSharedState PROVIDER_SHARED_STATE = MeterProviderSharedState.create(
-      TestClock.create(), Resource.getDefault(), ExemplarFilter.alwaysOff(), 0);
+  public static final MeterProviderSharedState PROVIDER_SHARED_STATE =
+      MeterProviderSharedState.create(
+          TestClock.create(), Resource.getDefault(), ExemplarFilter.alwaysOff(), 0);
   static final InstrumentationScopeInfo SCOPE = InstrumentationScopeInfo.create("scope-name");
-  public static final MeterSharedState METER_SHARED_STATE = MeterSharedState.create(SCOPE,
-      Collections.emptyList());
+  public static final MeterSharedState METER_SHARED_STATE =
+      MeterSharedState.create(SCOPE, Collections.emptyList());
 
   @Test
   void stringRepresentation() {
