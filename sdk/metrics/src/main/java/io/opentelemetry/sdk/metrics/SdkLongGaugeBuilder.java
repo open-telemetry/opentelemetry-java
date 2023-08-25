@@ -60,7 +60,7 @@ final class SdkLongGaugeBuilder implements ExtendedLongGaugeBuilder, LongGaugeAd
 
   @Override
   public ObservableLongGauge buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
-    return builder.registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
+    return builder.buildLongAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
   }
 
   @Override

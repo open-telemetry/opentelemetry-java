@@ -60,7 +60,7 @@ final class SdkDoubleGaugeBuilder
 
   @Override
   public ObservableDoubleGauge buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
-    return builder.registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
+    return builder.buildDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
   }
 
   @Override
