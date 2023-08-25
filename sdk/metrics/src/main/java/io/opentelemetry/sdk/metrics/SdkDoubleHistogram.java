@@ -15,6 +15,7 @@ import io.opentelemetry.extension.incubator.metrics.DoubleHistogramAdviceConfigu
 import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleHistogramBuilder;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MutableInstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -66,13 +67,10 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      builder =
-          new InstrumentBuilder(
-              meterProviderSharedState,
-              meterSharedState,
-              InstrumentType.HISTOGRAM,
-              InstrumentValueType.DOUBLE,
-              name);
+      MutableInstrumentDescriptor descriptor =
+          MutableInstrumentDescriptor.create(
+              name, InstrumentType.HISTOGRAM, InstrumentValueType.DOUBLE);
+      builder = new InstrumentBuilder(meterProviderSharedState, meterSharedState, descriptor);
     }
 
     @Override

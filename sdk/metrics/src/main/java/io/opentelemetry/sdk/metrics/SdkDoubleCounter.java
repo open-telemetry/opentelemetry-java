@@ -17,6 +17,7 @@ import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleCounterBuilder
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MutableInstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -72,16 +73,15 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
 
-      this.builder =
-          new InstrumentBuilder(
-              meterProviderSharedState,
-              sharedState,
+      MutableInstrumentDescriptor descriptor =
+          MutableInstrumentDescriptor.create(
+              name,
               InstrumentType.COUNTER,
               InstrumentValueType.DOUBLE,
-              name,
               description,
               unit,
               adviceBuilder);
+      this.builder = new InstrumentBuilder(meterProviderSharedState, sharedState, descriptor);
     }
 
     @Override
@@ -110,8 +110,7 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
     @Override
     public ObservableDoubleCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
-      return builder.buildDoubleAsynchronousInstrument(
-          InstrumentType.OBSERVABLE_COUNTER, callback);
+      return builder.buildDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback);
     }
 
     @Override

@@ -15,6 +15,7 @@ import io.opentelemetry.extension.incubator.metrics.LongHistogramAdviceConfigure
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MutableInstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -70,16 +71,16 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
         String description,
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
-      builder =
-          new InstrumentBuilder(
-              meterProviderSharedState,
-              sharedState,
+      MutableInstrumentDescriptor descriptor =
+          MutableInstrumentDescriptor.create(
+              name,
               InstrumentType.HISTOGRAM,
               InstrumentValueType.LONG,
-              name,
               description,
               unit,
               adviceBuilder);
+
+      builder = new InstrumentBuilder(meterProviderSharedState, sharedState, descriptor);
     }
 
     @Override

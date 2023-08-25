@@ -12,6 +12,7 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.extension.incubator.metrics.ExtendedLongGaugeBuilder;
 import io.opentelemetry.extension.incubator.metrics.LongGaugeAdviceConfigurer;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MutableInstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import java.util.List;
@@ -28,16 +29,16 @@ final class SdkLongGaugeBuilder implements ExtendedLongGaugeBuilder, LongGaugeAd
       String description,
       String unit,
       Advice.AdviceBuilder adviceBuilder) {
-    builder =
-        new InstrumentBuilder(
-            meterProviderSharedState,
-            sharedState,
+    MutableInstrumentDescriptor descriptor =
+        MutableInstrumentDescriptor.create(
+            name,
             InstrumentType.OBSERVABLE_GAUGE,
             InstrumentValueType.LONG,
-            name,
             description,
             unit,
             adviceBuilder);
+
+    builder = new InstrumentBuilder(meterProviderSharedState, sharedState, descriptor);
   }
 
   @Override
