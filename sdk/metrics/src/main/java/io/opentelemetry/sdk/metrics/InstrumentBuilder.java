@@ -31,8 +31,8 @@ final class InstrumentBuilder {
   private String description;
   private String unit;
 
-  final MeterSharedState meterSharedState;
-  final String instrumentName;
+  private final MeterSharedState meterSharedState;
+  private final String instrumentName;
   private final Advice.AdviceBuilder adviceBuilder;
 
   InstrumentBuilder(
