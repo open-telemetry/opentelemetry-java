@@ -5,11 +5,14 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor.setIncludes;
+
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
@@ -64,6 +67,12 @@ public final class ViewBuilder {
     return this;
   }
 
+  /** Sets a filter which retains attribute keys included in {@code keysToRetain}. */
+  public ViewBuilder setAttributeFilter(Set<String> keysToRetain) {
+    Objects.requireNonNull(keysToRetain, "keysToRetain");
+    return setAttributeFilter(setIncludes(keysToRetain));
+  }
+
   /**
    * Sets a filter for attributes keys.
    *
@@ -73,7 +82,8 @@ public final class ViewBuilder {
    */
   public ViewBuilder setAttributeFilter(Predicate<String> keyFilter) {
     Objects.requireNonNull(keyFilter, "keyFilter");
-    return addAttributesProcessor(AttributesProcessor.filterByKeyName(keyFilter));
+    this.processor = AttributesProcessor.filterByKeyName(keyFilter);
+    return this;
   }
 
   /**

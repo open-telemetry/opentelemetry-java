@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.view;
 import static io.opentelemetry.sdk.metrics.internal.view.NoopAttributesProcessor.NOOP;
 
 import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
@@ -15,9 +16,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.BiFunction;
+import java.util.Set;
 import java.util.function.Predicate;
-import java.util.function.UnaryOperator;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -73,11 +73,7 @@ public abstract class AttributesProcessor {
    * @param nameFilter a filter for which attribute keys to preserve.
    */
   public static AttributesProcessor filterByKeyName(Predicate<String> nameFilter) {
-    return simple(
-        incoming ->
-            incoming.toBuilder()
-                .removeIf(attributeKey -> !nameFilter.test(attributeKey.getKey()))
-                .build());
+    return new AttributeKeyFilteringProcessor(nameFilter);
   }
 
   /**
@@ -88,19 +84,7 @@ public abstract class AttributesProcessor {
    * @param nameFilter a filter for which baggage keys to select.
    */
   public static AttributesProcessor appendBaggageByKeyName(Predicate<String> nameFilter) {
-    return onBaggage(
-        (incoming, baggage) -> {
-          AttributesBuilder result = Attributes.builder();
-          baggage.forEach(
-              (k, v) -> {
-                if (nameFilter.test(k)) {
-                  result.put(k, v.getValue());
-                }
-              });
-          // Override any baggage keys with existing keys.
-          result.putAll(incoming);
-          return result.build();
-        });
+    return new BaggageAppendingAttributesProcessor(nameFilter);
   }
 
   /**
@@ -111,43 +95,126 @@ public abstract class AttributesProcessor {
    * @param attributes Attributes to append to measurements.
    */
   public static AttributesProcessor append(Attributes attributes) {
-    return simple(incoming -> attributes.toBuilder().putAll(incoming).build());
+    return new AppendingAttributesProcessor(attributes);
   }
 
-  /** Creates a simple attributes processor with no access to context. */
-  static AttributesProcessor simple(UnaryOperator<Attributes> processor) {
-    return new AttributesProcessor() {
-
-      @Override
-      public Attributes process(Attributes incoming, Context context) {
-        return processor.apply(incoming);
-      }
-
-      @Override
-      public boolean usesContext() {
-        return false;
-      }
-    };
+  /** Creates a {@link Predicate} which tests if the {@code set} includes the input. */
+  public static Predicate<String> setIncludes(Set<String> set) {
+    return new SetIncludesPredicate(set);
   }
 
-  /** Creates an Attributes processor that has access to baggage. */
-  static AttributesProcessor onBaggage(BiFunction<Attributes, Baggage, Attributes> processor) {
-    return new AttributesProcessor() {
-      @Override
-      public Attributes process(Attributes incoming, Context context) {
-        return processor.apply(incoming, Baggage.fromContext(context));
-      }
+  /** Predicate which tests if the {@code set} includes the input. */
+  private static class SetIncludesPredicate implements Predicate<String> {
+    private final Set<String> set;
 
-      @Override
-      public boolean usesContext() {
-        return true;
-      }
-    };
+    private SetIncludesPredicate(Set<String> set) {
+      this.set = set;
+    }
+
+    @Override
+    public boolean test(String s) {
+      return set.contains(s);
+    }
+
+    @Override
+    public String toString() {
+      return "SetIncludesPredicate{set=" + set + "}";
+    }
+  }
+
+  /**
+   * Processor which filters attributes according to a {@link AttributeKey#getKey()} {@link
+   * Predicate}.
+   */
+  private static class AttributeKeyFilteringProcessor extends AttributesProcessor {
+
+    private final Predicate<String> nameFilter;
+
+    private AttributeKeyFilteringProcessor(Predicate<String> nameFilter) {
+      this.nameFilter = nameFilter;
+    }
+
+    @Override
+    public Attributes process(Attributes incoming, Context context) {
+      return incoming.toBuilder()
+          .removeIf(attributeKey -> !nameFilter.test(attributeKey.getKey()))
+          .build();
+    }
+
+    @Override
+    public boolean usesContext() {
+      return false;
+    }
+
+    @Override
+    public String toString() {
+      return "AttributeKeyFilteringProcessor{nameFilter=" + nameFilter + "}";
+    }
+  }
+
+  /** Processor which appends a static set of {@link Attributes}. */
+  private static class AppendingAttributesProcessor extends AttributesProcessor {
+
+    private final Attributes additionalAttributes;
+
+    private AppendingAttributesProcessor(Attributes additionalAttributes) {
+      this.additionalAttributes = additionalAttributes;
+    }
+
+    @Override
+    public Attributes process(Attributes incoming, Context context) {
+      return additionalAttributes.toBuilder().putAll(incoming).build();
+    }
+
+    @Override
+    public boolean usesContext() {
+      return false;
+    }
+
+    @Override
+    public String toString() {
+      return "AppendingAttributesProcessor{additionalAttributes=" + additionalAttributes + "}";
+    }
+  }
+
+  /** Processor which appends entries from {@link Baggage} with keys that match a predicate. */
+  private static final class BaggageAppendingAttributesProcessor extends AttributesProcessor {
+
+    private final Predicate<String> nameFilter;
+
+    private BaggageAppendingAttributesProcessor(Predicate<String> nameFilter) {
+      this.nameFilter = nameFilter;
+    }
+
+    @Override
+    public Attributes process(Attributes incoming, Context context) {
+      AttributesBuilder result = Attributes.builder();
+      Baggage.fromContext(context)
+          .forEach(
+              (k, v) -> {
+                if (nameFilter.test(k)) {
+                  result.put(k, v.getValue());
+                }
+              });
+      // Override any baggage keys with existing keys.
+      result.putAll(incoming);
+      return result.build();
+    }
+
+    @Override
+    public boolean usesContext() {
+      return true;
+    }
+
+    @Override
+    public String toString() {
+      return "BaggageAppendingAttributesProcessor{nameFilter=" + nameFilter + "}";
+    }
   }
 
   /** A {@link AttributesProcessor} that runs a sequence of processors. */
   @Immutable
-  static final class JoinedAttributesProcessor extends AttributesProcessor {
+  private static final class JoinedAttributesProcessor extends AttributesProcessor {
     private final Collection<AttributesProcessor> processors;
     private final boolean usesContextCache;
 
@@ -187,6 +254,11 @@ public abstract class AttributesProcessor {
       newList.add(other);
       newList.addAll(processors);
       return new JoinedAttributesProcessor(newList);
+    }
+
+    @Override
+    public String toString() {
+      return "JoinedAttributesProcessor{processors=" + processors + "}";
     }
   }
 }
