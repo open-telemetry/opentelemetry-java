@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
@@ -51,7 +52,12 @@ class ZipkinSpanExporterTest {
     TestSpanData testSpanData = spanBuilder().build();
 
     ZipkinSpanExporter zipkinSpanExporter =
-        new ZipkinSpanExporter(mockEncoder, mockSender, MeterProvider::noop, mockTransformer);
+        new ZipkinSpanExporter(
+            new ZipkinSpanExporterBuilder(),
+            mockEncoder,
+            mockSender,
+            MeterProvider::noop,
+            mockTransformer);
 
     byte[] someBytes = new byte[0];
     Span zipkinSpan =
@@ -82,7 +88,12 @@ class ZipkinSpanExporterTest {
     TestSpanData testSpanData = spanBuilder().build();
 
     ZipkinSpanExporter zipkinSpanExporter =
-        new ZipkinSpanExporter(mockEncoder, mockSender, MeterProvider::noop, mockTransformer);
+        new ZipkinSpanExporter(
+            new ZipkinSpanExporterBuilder(),
+            mockEncoder,
+            mockSender,
+            MeterProvider::noop,
+            mockTransformer);
 
     byte[] someBytes = new byte[0];
     Span zipkinSpan =
@@ -202,6 +213,25 @@ class ZipkinSpanExporterTest {
       assertThat(exporter).extracting("sender.compressionEnabled").isEqualTo(false);
     } finally {
       exporter.shutdown();
+    }
+  }
+
+  @Test
+  void stringRepresentation() {
+    try (ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().build()) {
+      assertThat(exporter.toString())
+          .isEqualTo(
+              "ZipkinSpanExporter{endpoint=http://localhost:9411/api/v2/spans, compressionEnabled=true, readTimeoutMillis=10000}");
+    }
+    try (ZipkinSpanExporter exporter =
+        ZipkinSpanExporter.builder()
+            .setEndpoint("http://zipkin:9411/api/v2/spans")
+            .setReadTimeout(Duration.ofSeconds(15))
+            .setCompression("none")
+            .build()) {
+      assertThat(exporter.toString())
+          .isEqualTo(
+              "ZipkinSpanExporter{endpoint=http://zipkin:9411/api/v2/spans, compressionEnabled=false, readTimeoutMillis=15000}");
     }
   }
 }

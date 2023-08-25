@@ -38,6 +38,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
   private final ThrottlingLogger logger = new ThrottlingLogger(baseLogger);
   private final AtomicBoolean isShutdown = new AtomicBoolean();
+  private final ZipkinSpanExporterBuilder builder;
   private final BytesEncoder<Span> encoder;
   private final Sender sender;
   private final ExporterMetrics exporterMetrics;
@@ -45,10 +46,12 @@ public final class ZipkinSpanExporter implements SpanExporter {
   private final OtelToZipkinSpanTransformer transformer;
 
   ZipkinSpanExporter(
+      ZipkinSpanExporterBuilder builder,
       BytesEncoder<Span> encoder,
       Sender sender,
       Supplier<MeterProvider> meterProviderSupplier,
       OtelToZipkinSpanTransformer transformer) {
+    this.builder = builder;
     this.encoder = encoder;
     this.sender = sender;
     this.exporterMetrics =
@@ -112,6 +115,11 @@ public final class ZipkinSpanExporter implements SpanExporter {
       logger.log(Level.WARNING, "Exception while closing the Zipkin Sender instance", e);
     }
     return CompletableResultCode.ofSuccess();
+  }
+
+  @Override
+  public String toString() {
+    return "ZipkinSpanExporter{" + builder.toString(false) + "}";
   }
 
   /**

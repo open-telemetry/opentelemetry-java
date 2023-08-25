@@ -33,6 +33,7 @@ dependencies {
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
   testImplementation(project(":exporters:otlp:all"))
+  testImplementation(project(":exporters:zipkin"))
   testImplementation(project(":sdk-extensions:jaeger-remote-sampler"))
   testImplementation(project(":extensions:trace-propagators"))
   // As a part of the tests we check that we can parse examples without error. The https://github.com/open-telemetry/opentelemetry-configuration/blob/main/examples/kitchen-sink.yam contains a reference to the xray propagator

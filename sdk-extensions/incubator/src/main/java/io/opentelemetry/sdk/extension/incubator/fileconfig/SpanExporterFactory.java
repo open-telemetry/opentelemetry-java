@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Zipkin;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.util.HashMap;
@@ -44,9 +45,8 @@ final class SpanExporterFactory
       return SpanExporter.composite();
     }
 
-    if (model.getOtlp() != null) {
-      Otlp otlp = model.getOtlp();
-
+    Otlp otlp = model.getOtlp();
+    if (otlp != null) {
       // Translate from file configuration scheme to environment variable scheme. This is ultimately
       // interpreted by Otlp*ExporterProviders, but we want to avoid the dependency on
       // opentelemetry-exporter-otlp
@@ -91,6 +91,29 @@ final class SpanExporterFactory
           FileConfigUtil.assertNotNull(
               spanExporterSpiManager(configProperties, spiHelper).getByName("otlp"),
               "otlp exporter"));
+    }
+
+    Zipkin zipkin = model.getZipkin();
+    if (zipkin != null) {
+      // Translate from file configuration scheme to environment variable scheme. This is ultimately
+      // interpreted by ZipkinSpanExporterProvider, but we want to avoid the dependency on
+      // opentelemetry-exporter-zipkin
+      Map<String, String> properties = new HashMap<>();
+      if (zipkin.getEndpoint() != null) {
+        properties.put("otel.exporter.zipkin.endpoint", zipkin.getEndpoint());
+      }
+      if (zipkin.getTimeout() != null) {
+        properties.put("otel.exporter.zipkin.timeout", Integer.toString(zipkin.getTimeout()));
+      }
+
+      // TODO(jack-berg): add method for creating from map
+      ConfigProperties configProperties = DefaultConfigProperties.createForTest(properties);
+
+      return FileConfigUtil.addAndReturn(
+          closeables,
+          FileConfigUtil.assertNotNull(
+              spanExporterSpiManager(configProperties, spiHelper).getByName("zipkin"),
+              "zipkin exporter"));
     }
 
     // TODO(jack-berg): add support for generic SPI exporters
