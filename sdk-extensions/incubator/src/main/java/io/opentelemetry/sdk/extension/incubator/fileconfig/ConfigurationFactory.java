@@ -26,7 +26,7 @@ import java.util.logging.Logger;
  */
 public final class ConfigurationFactory {
 
-  static final Logger logger = Logger.getLogger(ConfigurationFactory.class.getName());
+  private static final Logger logger = Logger.getLogger(ConfigurationFactory.class.getName());
 
   private ConfigurationFactory() {}
 

@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verify;
 
 import com.google.common.collect.ImmutableMap;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
+import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
@@ -22,6 +23,7 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Console;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Headers;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric.DefaultHistogramAggregation;
@@ -184,6 +186,27 @@ class MetricExporterFactoryTest {
     assertThat(
             configProperties.getString("otel.exporter.otlp.metrics.default.histogram.aggregation"))
         .isEqualTo("base2_exponential_bucket_histogram");
+  }
+
+  @Test
+  void create_Console() {
+    spiHelper = spy(spiHelper);
+    List<Closeable> closeables = new ArrayList<>();
+    LoggingMetricExporter expectedExporter = LoggingMetricExporter.create();
+    cleanup.addCloseable(expectedExporter);
+
+    io.opentelemetry.sdk.metrics.export.MetricExporter exporter =
+        MetricExporterFactory.getInstance()
+            .create(
+                new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
+                        .MetricExporter()
+                    .withConsole(new Console()),
+                spiHelper,
+                closeables);
+    cleanup.addCloseable(exporter);
+    cleanup.addCloseables(closeables);
+
+    assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
   }
 
   @Test

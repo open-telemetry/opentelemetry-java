@@ -95,4 +95,9 @@ public class SystemOutLogRecordExporter implements LogRecordExporter {
     }
     return CompletableResultCode.ofSuccess();
   }
+
+  @Override
+  public String toString() {
+    return "SystemOutLogRecordExporter{}";
+  }
 }

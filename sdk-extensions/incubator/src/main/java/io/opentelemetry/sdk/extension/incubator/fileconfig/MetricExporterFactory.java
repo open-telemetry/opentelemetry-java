@@ -47,54 +47,55 @@ final class MetricExporterFactory
       return null;
     }
 
-    if (model.getOtlp() != null) {
-      OtlpMetric otlp = model.getOtlp();
-
+    OtlpMetric otlpModel = model.getOtlp();
+    if (otlpModel != null) {
       // Translate from file configuration scheme to environment variable scheme. This is ultimately
       // interpreted by Otlp*ExporterProviders, but we want to avoid the dependency on
       // opentelemetry-exporter-otlp
       Map<String, String> properties = new HashMap<>();
-      if (otlp.getProtocol() != null) {
-        properties.put("otel.exporter.otlp.metrics.protocol", otlp.getProtocol());
+      if (otlpModel.getProtocol() != null) {
+        properties.put("otel.exporter.otlp.metrics.protocol", otlpModel.getProtocol());
       }
-      if (otlp.getEndpoint() != null) {
+      if (otlpModel.getEndpoint() != null) {
         // NOTE: Set general otel.exporter.otlp.endpoint instead of signal specific
         // otel.exporter.otlp.metrics.endpoint to allow signal path (i.e. /v1/metrics) to be added
         // if not
         // present
-        properties.put("otel.exporter.otlp.endpoint", otlp.getEndpoint());
+        properties.put("otel.exporter.otlp.endpoint", otlpModel.getEndpoint());
       }
-      if (otlp.getHeaders() != null) {
+      if (otlpModel.getHeaders() != null) {
         properties.put(
             "otel.exporter.otlp.metrics.headers",
-            otlp.getHeaders().getAdditionalProperties().entrySet().stream()
+            otlpModel.getHeaders().getAdditionalProperties().entrySet().stream()
                 .map(entry -> entry.getKey() + "=" + entry.getValue())
                 .collect(joining(",")));
       }
-      if (otlp.getCompression() != null) {
-        properties.put("otel.exporter.otlp.metrics.compression", otlp.getCompression());
+      if (otlpModel.getCompression() != null) {
+        properties.put("otel.exporter.otlp.metrics.compression", otlpModel.getCompression());
       }
-      if (otlp.getTimeout() != null) {
-        properties.put("otel.exporter.otlp.metrics.timeout", Integer.toString(otlp.getTimeout()));
-      }
-      if (otlp.getCertificate() != null) {
-        properties.put("otel.exporter.otlp.metrics.certificate", otlp.getCertificate());
-      }
-      if (otlp.getClientKey() != null) {
-        properties.put("otel.exporter.otlp.metrics.client.key", otlp.getClientKey());
-      }
-      if (otlp.getClientCertificate() != null) {
+      if (otlpModel.getTimeout() != null) {
         properties.put(
-            "otel.exporter.otlp.metrics.client.certificate", otlp.getClientCertificate());
+            "otel.exporter.otlp.metrics.timeout", Integer.toString(otlpModel.getTimeout()));
       }
-      if (otlp.getDefaultHistogramAggregation() != null) {
+      if (otlpModel.getCertificate() != null) {
+        properties.put("otel.exporter.otlp.metrics.certificate", otlpModel.getCertificate());
+      }
+      if (otlpModel.getClientKey() != null) {
+        properties.put("otel.exporter.otlp.metrics.client.key", otlpModel.getClientKey());
+      }
+      if (otlpModel.getClientCertificate() != null) {
+        properties.put(
+            "otel.exporter.otlp.metrics.client.certificate", otlpModel.getClientCertificate());
+      }
+      if (otlpModel.getDefaultHistogramAggregation() != null) {
         properties.put(
             "otel.exporter.otlp.metrics.default.histogram.aggregation",
-            otlp.getDefaultHistogramAggregation().value());
+            otlpModel.getDefaultHistogramAggregation().value());
       }
-      if (otlp.getTemporalityPreference() != null) {
+      if (otlpModel.getTemporalityPreference() != null) {
         properties.put(
-            "otel.exporter.otlp.metrics.temporality.preference", otlp.getTemporalityPreference());
+            "otel.exporter.otlp.metrics.temporality.preference",
+            otlpModel.getTemporalityPreference());
       }
 
       // TODO(jack-berg): add method for creating from map

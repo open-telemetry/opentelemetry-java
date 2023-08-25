@@ -56,13 +56,15 @@ class MetricReaderFactoryTest {
 
   @Test
   void create_PeriodicNullExporter() {
-    assertThat(
-            MetricReaderFactory.getInstance()
-                .create(
-                    new MetricReader().withPeriodic(new PeriodicMetricReader()),
-                    spiHelper,
-                    Collections.emptyList()))
-        .isNull();
+    assertThatThrownBy(
+            () ->
+                MetricReaderFactory.getInstance()
+                    .create(
+                        new MetricReader().withPeriodic(new PeriodicMetricReader()),
+                        spiHelper,
+                        Collections.emptyList()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("exporter required for periodic reader");
   }
 
   @Test

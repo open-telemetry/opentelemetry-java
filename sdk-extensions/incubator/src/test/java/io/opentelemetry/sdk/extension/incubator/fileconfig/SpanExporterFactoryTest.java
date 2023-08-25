@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verify;
 
 import com.google.common.collect.ImmutableMap;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
+import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
@@ -22,6 +23,7 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Console;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Headers;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -161,6 +163,27 @@ class SpanExporterFactoryTest {
         .isEqualTo(clientKeyPath);
     assertThat(configProperties.getString("otel.exporter.otlp.traces.client.certificate"))
         .isEqualTo(clientCertificatePath);
+  }
+
+  @Test
+  void create_Console() {
+    spiHelper = spy(spiHelper);
+    List<Closeable> closeables = new ArrayList<>();
+    LoggingSpanExporter expectedExporter = LoggingSpanExporter.create();
+    cleanup.addCloseable(expectedExporter);
+
+    SpanExporter exporter =
+        SpanExporterFactory.getInstance()
+            .create(
+                new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
+                        .SpanExporter()
+                    .withConsole(new Console()),
+                spiHelper,
+                closeables);
+    cleanup.addCloseable(exporter);
+    cleanup.addCloseables(closeables);
+
+    assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
   }
 
   @Test

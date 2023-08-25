@@ -97,7 +97,6 @@ class ConfigurationFactoryTest {
               .replaceAll(
                   "client_certificate: .*\n",
                   "client_certificate: " + clientCertificatePath + System.lineSeparator());
-
       InputStream is =
           new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
 

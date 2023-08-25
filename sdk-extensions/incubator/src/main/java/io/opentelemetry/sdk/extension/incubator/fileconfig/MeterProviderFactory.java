@@ -34,26 +34,26 @@ final class MeterProviderFactory implements Factory<MeterProvider, SdkMeterProvi
 
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
 
-    List<MetricReader> readers = model.getReaders();
-    if (readers != null) {
-      readers.forEach(
-          processor -> {
+    List<MetricReader> readerModels = model.getReaders();
+    if (readerModels != null) {
+      readerModels.forEach(
+          readerModel -> {
             io.opentelemetry.sdk.metrics.export.MetricReader metricReader =
-                MetricReaderFactory.getInstance().create(processor, spiHelper, closeables);
+                MetricReaderFactory.getInstance().create(readerModel, spiHelper, closeables);
             if (metricReader != null) {
               builder.registerMetricReader(metricReader);
             }
           });
     }
 
-    List<View> views = model.getViews();
-    if (views != null) {
-      views.forEach(
-          view ->
+    List<View> viewModels = model.getViews();
+    if (viewModels != null) {
+      viewModels.forEach(
+          viewModel ->
               builder.registerView(
                   InstrumentSelectorFactory.getInstance()
-                      .create(view.getSelector(), spiHelper, closeables),
-                  ViewFactory.getInstance().create(view.getStream(), spiHelper, closeables)));
+                      .create(viewModel.getSelector(), spiHelper, closeables),
+                  ViewFactory.getInstance().create(viewModel.getStream(), spiHelper, closeables)));
     }
 
     return builder;
