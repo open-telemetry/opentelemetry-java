@@ -42,37 +42,7 @@ final class InstrumentBuilder {
       InstrumentValueType valueType,
       String name) {
     this(meterProviderSharedState, meterSharedState,
-        type, valueType, name, "", DEFAULT_UNIT);
-  }
-
-  InstrumentBuilder(
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      InstrumentType type,
-      InstrumentValueType valueType,
-      String name,
-      String description) {
-    this(meterProviderSharedState, meterSharedState,
-        type, valueType, name, description, DEFAULT_UNIT);
-  }
-
-  InstrumentBuilder(
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      InstrumentType type,
-      InstrumentValueType valueType,
-      String name,
-      String description,
-      String unit) {
-    this(
-        meterProviderSharedState,
-        meterSharedState,
-        type,
-        valueType,
-        name,
-        description,
-        unit,
-        Advice.builder());
+        type, valueType, name, "", DEFAULT_UNIT, Advice.builder());
   }
 
   InstrumentBuilder(

@@ -70,8 +70,7 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
           meterSharedState,
           InstrumentType.HISTOGRAM,
           InstrumentValueType.DOUBLE,
-          name,
-          "");
+          name);
     }
 
     @Override
