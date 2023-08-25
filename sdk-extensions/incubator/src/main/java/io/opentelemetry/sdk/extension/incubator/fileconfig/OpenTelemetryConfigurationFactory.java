@@ -67,8 +67,6 @@ final class OpenTelemetryConfigurationFactory
     }
 
     // TODO(jack-berg): add support for meter provider
-    // TODO(jack-berg): add support for propagators
-    // TODO(jack-berg): add support for resource
     // TODO(jack-berg): add support for general attribute limits
 
     return FileConfigUtil.addAndReturn(closeables, builder.build());
