@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Tracer
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -37,6 +38,10 @@ final class TracerProviderFactory implements Factory<TracerProvider, SdkTracerPr
     SpanLimits spanLimits =
         SpanLimitsFactory.getInstance().create(model.getLimits(), spiHelper, closeables);
     builder.setSpanLimits(spanLimits);
+
+    Sampler sampler =
+        SamplerFactory.getInstance().create(model.getSampler(), spiHelper, closeables);
+    builder.setSampler(sampler);
 
     List<SpanProcessor> processors = model.getProcessors();
     if (processors != null) {
