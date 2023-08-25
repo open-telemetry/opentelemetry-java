@@ -17,8 +17,9 @@ import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import java.util.List;
 import java.util.function.Consumer;
 
-final class SdkLongGaugeBuilder extends AbstractInstrumentBuilder<SdkLongGaugeBuilder>
-    implements ExtendedLongGaugeBuilder, LongGaugeAdviceConfigurer {
+final class SdkLongGaugeBuilder implements ExtendedLongGaugeBuilder, LongGaugeAdviceConfigurer {
+
+  private final InstrumentBuilder builder;
 
   SdkLongGaugeBuilder(
       MeterProviderSharedState meterProviderSharedState,
@@ -27,7 +28,7 @@ final class SdkLongGaugeBuilder extends AbstractInstrumentBuilder<SdkLongGaugeBu
       String description,
       String unit,
       Advice.AdviceBuilder adviceBuilder) {
-    super(
+    builder = new InstrumentBuilder(
         meterProviderSharedState,
         sharedState,
         InstrumentType.OBSERVABLE_GAUGE,
@@ -39,29 +40,41 @@ final class SdkLongGaugeBuilder extends AbstractInstrumentBuilder<SdkLongGaugeBu
   }
 
   @Override
-  protected SdkLongGaugeBuilder getThis() {
-    return this;
-  }
-
-  @Override
   public LongGaugeBuilder setAdvice(Consumer<LongGaugeAdviceConfigurer> adviceConsumer) {
     adviceConsumer.accept(this);
     return this;
   }
 
   @Override
+  public LongGaugeBuilder setDescription(String description) {
+    builder.setDescription(description);
+    return this;
+  }
+
+  @Override
+  public LongGaugeBuilder setUnit(String unit) {
+    builder.setUnit(unit);
+    return this;
+  }
+
+  @Override
   public ObservableLongGauge buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
-    return registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
+    return builder.registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
   }
 
   @Override
   public ObservableLongMeasurement buildObserver() {
-    return buildObservableMeasurement(InstrumentType.OBSERVABLE_GAUGE);
+    return builder.buildObservableMeasurement(InstrumentType.OBSERVABLE_GAUGE);
   }
 
   @Override
   public LongGaugeAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
-    adviceBuilder.setAttributes(attributes);
+    builder.adviceBuilder.setAttributes(attributes);
     return this;
+  }
+
+  @Override
+  public String toString() {
+    return builder.toStringHelper(getClass().getSimpleName());
   }
 }

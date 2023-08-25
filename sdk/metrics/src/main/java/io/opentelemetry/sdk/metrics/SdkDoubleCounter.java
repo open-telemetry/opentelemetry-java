@@ -59,9 +59,9 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
     add(increment, Attributes.empty());
   }
 
-  static final class SdkDoubleCounterBuilder
-      extends AbstractInstrumentBuilder<SdkDoubleCounterBuilder>
-      implements ExtendedDoubleCounterBuilder, DoubleCounterAdviceConfigurer {
+  static final class SdkDoubleCounterBuilder implements ExtendedDoubleCounterBuilder, DoubleCounterAdviceConfigurer {
+
+    private final InstrumentBuilder builder;
 
     SdkDoubleCounterBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -70,7 +70,8 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
         String description,
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
-      super(
+
+      this.builder = new InstrumentBuilder(
           meterProviderSharedState,
           sharedState,
           InstrumentType.COUNTER,
@@ -82,7 +83,14 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
     }
 
     @Override
-    protected SdkDoubleCounterBuilder getThis() {
+    public DoubleCounterBuilder setDescription(String description) {
+      builder.setDescription(description);
+      return this;
+    }
+
+    @Override
+    public DoubleCounterBuilder setUnit(String unit) {
+      builder.setUnit(unit);
       return this;
     }
 
@@ -94,24 +102,29 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
 
     @Override
     public SdkDoubleCounter build() {
-      return buildSynchronousInstrument(SdkDoubleCounter::new);
+      return builder.buildSynchronousInstrument(SdkDoubleCounter::new);
     }
 
     @Override
     public ObservableDoubleCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
-      return registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback);
+      return builder.registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback);
     }
 
     @Override
     public ObservableDoubleMeasurement buildObserver() {
-      return buildObservableMeasurement(InstrumentType.OBSERVABLE_COUNTER);
+      return builder.buildObservableMeasurement(InstrumentType.OBSERVABLE_COUNTER);
     }
 
     @Override
     public DoubleCounterAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
-      adviceBuilder.setAttributes(attributes);
+      builder.adviceBuilder.setAttributes(attributes);
       return this;
+    }
+
+    @Override
+    public String toString() {
+      return builder.toStringHelper(getClass().getSimpleName());
     }
   }
 }

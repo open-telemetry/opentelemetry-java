@@ -17,26 +17,16 @@ import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import java.util.List;
 import java.util.function.Consumer;
 
-final class SdkDoubleGaugeBuilder extends AbstractInstrumentBuilder<SdkDoubleGaugeBuilder>
-    implements ExtendedDoubleGaugeBuilder, DoubleGaugeAdviceConfigurer {
+final class SdkDoubleGaugeBuilder implements ExtendedDoubleGaugeBuilder, DoubleGaugeAdviceConfigurer {
+
+  private final InstrumentBuilder builder;
 
   SdkDoubleGaugeBuilder(
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       String name) {
-    super(
-        meterProviderSharedState,
-        meterSharedState,
-        InstrumentType.OBSERVABLE_GAUGE,
-        InstrumentValueType.DOUBLE,
-        name,
-        "",
-        DEFAULT_UNIT);
-  }
-
-  @Override
-  protected SdkDoubleGaugeBuilder getThis() {
-    return this;
+    builder = new InstrumentBuilder(meterProviderSharedState, meterSharedState,
+        InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.DOUBLE, name);
   }
 
   @Override
@@ -46,23 +36,40 @@ final class SdkDoubleGaugeBuilder extends AbstractInstrumentBuilder<SdkDoubleGau
   }
 
   @Override
+  public DoubleGaugeBuilder setDescription(String description) {
+    builder.setDescription(description);
+    return this;
+  }
+
+  @Override
+  public DoubleGaugeBuilder setUnit(String unit) {
+    builder.setUnit(unit);
+    return this;
+  }
+
+  @Override
   public LongGaugeBuilder ofLongs() {
-    return swapBuilder(SdkLongGaugeBuilder::new);
+    return builder.swapBuilder(SdkLongGaugeBuilder::new);
   }
 
   @Override
   public ObservableDoubleGauge buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
-    return registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
+    return builder.registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
   }
 
   @Override
   public ObservableDoubleMeasurement buildObserver() {
-    return buildObservableMeasurement(InstrumentType.OBSERVABLE_GAUGE);
+    return builder.buildObservableMeasurement(InstrumentType.OBSERVABLE_GAUGE);
   }
 
   @Override
   public DoubleGaugeAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
-    adviceBuilder.setAttributes(attributes);
+    builder.adviceBuilder.setAttributes(attributes);
     return this;
+  }
+
+  @Override
+  public String toString() {
+    return builder.toStringHelper(getClass().getSimpleName());
   }
 }

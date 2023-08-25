@@ -47,8 +47,9 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
   }
 
   static final class SdkDoubleUpDownCounterBuilder
-      extends AbstractInstrumentBuilder<SdkDoubleUpDownCounterBuilder>
       implements ExtendedDoubleUpDownCounterBuilder, DoubleUpDownCounterAdviceConfigurer {
+
+    private final InstrumentBuilder builder;
 
     SdkDoubleUpDownCounterBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -57,7 +58,7 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
         String description,
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
-      super(
+      this.builder = new InstrumentBuilder(
           meterProviderSharedState,
           sharedState,
           InstrumentType.UP_DOWN_COUNTER,
@@ -69,11 +70,6 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
     }
 
     @Override
-    protected SdkDoubleUpDownCounterBuilder getThis() {
-      return this;
-    }
-
-    @Override
     public DoubleUpDownCounterBuilder setAdvice(
         Consumer<DoubleUpDownCounterAdviceConfigurer> adviceConsumer) {
       adviceConsumer.accept(this);
@@ -81,26 +77,43 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
     }
 
     @Override
+    public DoubleUpDownCounterBuilder setDescription(String description) {
+      builder.setDescription(description);
+      return this;
+    }
+
+    @Override
+    public DoubleUpDownCounterBuilder setUnit(String unit) {
+      builder.setUnit(unit);
+      return this;
+    }
+
+    @Override
     public DoubleUpDownCounter build() {
-      return buildSynchronousInstrument(SdkDoubleUpDownCounter::new);
+      return builder.buildSynchronousInstrument(SdkDoubleUpDownCounter::new);
     }
 
     @Override
     public ObservableDoubleUpDownCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
-      return registerDoubleAsynchronousInstrument(
+      return builder.registerDoubleAsynchronousInstrument(
           InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, callback);
     }
 
     @Override
     public ObservableDoubleMeasurement buildObserver() {
-      return buildObservableMeasurement(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER);
+      return builder.buildObservableMeasurement(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER);
     }
 
     @Override
     public DoubleUpDownCounterAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
-      adviceBuilder.setAttributes(attributes);
+      builder.adviceBuilder.setAttributes(attributes);
       return this;
+    }
+
+    @Override
+    public String toString() {
+      return builder.toStringHelper(getClass().getSimpleName());
     }
   }
 }

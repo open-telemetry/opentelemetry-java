@@ -46,27 +46,20 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
     add(increment, Attributes.empty());
   }
 
-  static final class SdkLongUpDownCounterBuilder
-      extends AbstractInstrumentBuilder<SdkLongUpDownCounterBuilder>
-      implements ExtendedLongUpDownCounterBuilder, LongUpDownCounterAdviceConfigurer {
+  static final class SdkLongUpDownCounterBuilder implements ExtendedLongUpDownCounterBuilder, LongUpDownCounterAdviceConfigurer {
+
+    private final InstrumentBuilder builder;
 
     SdkLongUpDownCounterBuilder(
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      super(
+      builder = new InstrumentBuilder(
           meterProviderSharedState,
           meterSharedState,
           InstrumentType.UP_DOWN_COUNTER,
           InstrumentValueType.LONG,
-          name,
-          "",
-          DEFAULT_UNIT);
-    }
-
-    @Override
-    protected SdkLongUpDownCounterBuilder getThis() {
-      return this;
+          name);
     }
 
     @Override
@@ -78,30 +71,47 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
 
     @Override
     public LongUpDownCounter build() {
-      return buildSynchronousInstrument(SdkLongUpDownCounter::new);
+      return builder.buildSynchronousInstrument(SdkLongUpDownCounter::new);
+    }
+
+    @Override
+    public LongUpDownCounterBuilder setDescription(String description) {
+      builder.setDescription(description);
+      return this;
+    }
+
+    @Override
+    public LongUpDownCounterBuilder setUnit(String unit) {
+      builder.setUnit(unit);
+      return this;
     }
 
     @Override
     public DoubleUpDownCounterBuilder ofDoubles() {
-      return swapBuilder(SdkDoubleUpDownCounter.SdkDoubleUpDownCounterBuilder::new);
+      return builder.swapBuilder(SdkDoubleUpDownCounter.SdkDoubleUpDownCounterBuilder::new);
     }
 
     @Override
     public ObservableLongUpDownCounter buildWithCallback(
         Consumer<ObservableLongMeasurement> callback) {
-      return registerLongAsynchronousInstrument(
+      return builder.registerLongAsynchronousInstrument(
           InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, callback);
     }
 
     @Override
     public ObservableLongMeasurement buildObserver() {
-      return buildObservableMeasurement(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER);
+      return builder.buildObservableMeasurement(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER);
     }
 
     @Override
     public LongUpDownCounterAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
-      adviceBuilder.setAttributes(attributes);
+      builder.adviceBuilder.setAttributes(attributes);
       return this;
+    }
+
+    @Override
+    public String toString() {
+      return builder.toStringHelper(getClass().getSimpleName());
     }
   }
 }

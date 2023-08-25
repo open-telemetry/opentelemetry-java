@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongHistogram;
+import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.extension.incubator.metrics.ExtendedLongHistogramBuilder;
 import io.opentelemetry.extension.incubator.metrics.LongHistogramAdviceConfigurer;
@@ -57,9 +58,9 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     record(value, Attributes.empty());
   }
 
-  static final class SdkLongHistogramBuilder
-      extends AbstractInstrumentBuilder<SdkLongHistogramBuilder>
-      implements ExtendedLongHistogramBuilder, LongHistogramAdviceConfigurer {
+  static final class SdkLongHistogramBuilder implements ExtendedLongHistogramBuilder, LongHistogramAdviceConfigurer {
+
+    private final InstrumentBuilder builder;
 
     SdkLongHistogramBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -68,7 +69,7 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
         String description,
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
-      super(
+      builder = new InstrumentBuilder(
           meterProviderSharedState,
           sharedState,
           InstrumentType.HISTOGRAM,
@@ -80,11 +81,6 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     }
 
     @Override
-    protected SdkLongHistogramBuilder getThis() {
-      return this;
-    }
-
-    @Override
     public SdkLongHistogramBuilder setAdvice(
         Consumer<LongHistogramAdviceConfigurer> adviceConsumer) {
       adviceConsumer.accept(this);
@@ -92,22 +88,39 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     }
 
     @Override
+    public LongHistogramBuilder setDescription(String description) {
+      builder.setDescription(description);
+      return this;
+    }
+
+    @Override
+    public LongHistogramBuilder setUnit(String unit) {
+      builder.setUnit(unit);
+      return this;
+    }
+
+    @Override
     public SdkLongHistogram build() {
-      return buildSynchronousInstrument(SdkLongHistogram::new);
+      return builder.buildSynchronousInstrument(SdkLongHistogram::new);
     }
 
     @Override
     public LongHistogramAdviceConfigurer setExplicitBucketBoundaries(List<Long> bucketBoundaries) {
       List<Double> doubleBoundaries =
           bucketBoundaries.stream().map(Long::doubleValue).collect(Collectors.toList());
-      adviceBuilder.setExplicitBucketBoundaries(doubleBoundaries);
+      builder.adviceBuilder.setExplicitBucketBoundaries(doubleBoundaries);
       return this;
     }
 
     @Override
     public LongHistogramAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
-      adviceBuilder.setAttributes(attributes);
+      builder.adviceBuilder.setAttributes(attributes);
       return this;
+    }
+
+    @Override
+    public String toString() {
+      return builder.toStringHelper(getClass().getSimpleName());
     }
   }
 }
