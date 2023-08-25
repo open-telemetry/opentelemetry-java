@@ -43,6 +43,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Stream
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceIdRatioBased;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.View;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Zipkin;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -121,10 +122,20 @@ class ConfigurationReaderTest {
                                     .withTimeout(10_000))));
     SpanProcessor spanProcessor2 =
         new SpanProcessor()
+            .withBatch(
+                new BatchSpanProcessor()
+                    .withExporter(
+                        new SpanExporter()
+                            .withZipkin(
+                                new Zipkin()
+                                    .withEndpoint("http://localhost:9411/api/v2/spans")
+                                    .withTimeout(10_000))));
+    SpanProcessor spanProcessor3 =
+        new SpanProcessor()
             .withSimple(
                 new SimpleSpanProcessor()
                     .withExporter(new SpanExporter().withConsole(new Console())));
-    tracerProvider.withProcessors(Arrays.asList(spanProcessor1, spanProcessor2));
+    tracerProvider.withProcessors(Arrays.asList(spanProcessor1, spanProcessor2, spanProcessor3));
 
     expected.withTracerProvider(tracerProvider);
     // end TracerProvider config
@@ -247,7 +258,7 @@ class ConfigurationReaderTest {
       assertThat(configTracerProvider.getLimits()).isEqualTo(spanLimits);
       assertThat(configTracerProvider.getSampler()).isEqualTo(sampler);
       assertThat(configTracerProvider.getProcessors())
-          .isEqualTo(Arrays.asList(spanProcessor1, spanProcessor2));
+          .isEqualTo(Arrays.asList(spanProcessor1, spanProcessor2, spanProcessor3));
 
       // LoggerProvider config
       LoggerProvider configLoggerProvider = config.getLoggerProvider();
