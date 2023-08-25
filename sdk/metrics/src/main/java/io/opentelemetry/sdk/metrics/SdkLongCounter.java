@@ -115,7 +115,7 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
 
     @Override
     public LongCounterAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
-      builder.adviceBuilder.setAttributes(attributes);
+      builder.setAdviceAttributes(attributes);
       return this;
     }
 

@@ -118,7 +118,7 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
 
     @Override
     public DoubleCounterAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
-      builder.adviceBuilder.setAttributes(attributes);
+      builder.setAdviceAttributes(attributes);
       return this;
     }
 

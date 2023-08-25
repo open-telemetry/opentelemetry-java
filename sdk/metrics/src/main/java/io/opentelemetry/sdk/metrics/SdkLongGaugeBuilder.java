@@ -69,7 +69,7 @@ final class SdkLongGaugeBuilder implements ExtendedLongGaugeBuilder, LongGaugeAd
 
   @Override
   public LongGaugeAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
-    builder.adviceBuilder.setAttributes(attributes);
+    builder.setAdviceAttributes(attributes);
     return this;
   }
 

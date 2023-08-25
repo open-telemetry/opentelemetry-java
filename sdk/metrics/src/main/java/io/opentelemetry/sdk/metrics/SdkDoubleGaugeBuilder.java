@@ -64,7 +64,7 @@ final class SdkDoubleGaugeBuilder implements ExtendedDoubleGaugeBuilder, DoubleG
 
   @Override
   public DoubleGaugeAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
-    builder.adviceBuilder.setAttributes(attributes);
+    builder.setAdviceAttributes(attributes);
     return this;
   }
 

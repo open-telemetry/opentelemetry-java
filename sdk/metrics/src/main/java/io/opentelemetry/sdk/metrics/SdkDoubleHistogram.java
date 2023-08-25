@@ -106,13 +106,13 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
     @Override
     public DoubleHistogramAdviceConfigurer setExplicitBucketBoundaries(
         List<Double> bucketBoundaries) {
-      builder.adviceBuilder.setExplicitBucketBoundaries(bucketBoundaries);
+      builder.setExplicitBucketBoundaries(bucketBoundaries);
       return this;
     }
 
     @Override
     public DoubleHistogramAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
-      builder.adviceBuilder.setAttributes(attributes);
+      builder.setAdviceAttributes(attributes);
       return this;
     }
 

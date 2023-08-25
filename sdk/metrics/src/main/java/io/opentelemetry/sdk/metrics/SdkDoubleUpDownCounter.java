@@ -107,7 +107,7 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
 
     @Override
     public DoubleUpDownCounterAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
-      builder.adviceBuilder.setAttributes(attributes);
+      builder.setAdviceAttributes(attributes);
       return this;
     }
 
