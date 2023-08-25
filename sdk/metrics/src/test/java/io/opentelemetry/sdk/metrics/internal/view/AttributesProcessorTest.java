@@ -18,8 +18,21 @@ import org.junit.jupiter.api.Test;
 /** Tests for the {@link AttributesProcessor} DSL-ish library. */
 class AttributesProcessorTest {
   @Test
-  void filterKeyName_removesKeys() {
+  void filterKeyName_Predicate() {
     AttributesProcessor processor = AttributesProcessor.filterByKeyName("test"::equals);
+
+    assertThat(
+            processor.process(
+                Attributes.builder().put("remove", "me").put("test", "keep").build(),
+                Context.root()))
+        .hasSize(1)
+        .containsEntry("test", "keep");
+  }
+
+  @Test
+  void filterKeyName_SetIncludes() {
+    AttributesProcessor processor =
+        AttributesProcessor.filterByKeyName(setIncludes(Collections.singleton("test")));
 
     assertThat(
             processor.process(
