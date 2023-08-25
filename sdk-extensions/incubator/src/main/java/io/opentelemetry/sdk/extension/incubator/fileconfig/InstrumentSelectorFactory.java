@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import java.io.Closeable;
 import java.util.List;
-import java.util.Locale;
 import javax.annotation.Nullable;
 
 final class InstrumentSelectorFactory implements Factory<Selector, InstrumentSelector> {
@@ -40,7 +39,7 @@ final class InstrumentSelectorFactory implements Factory<Selector, InstrumentSel
     if (model.getInstrumentType() != null) {
       InstrumentType instrumentType;
       try {
-        instrumentType = InstrumentType.valueOf(model.getInstrumentType().toUpperCase(Locale.ROOT));
+        instrumentType = InstrumentType.valueOf(model.getInstrumentType().name());
       } catch (IllegalArgumentException e) {
         throw new ConfigurationException(
             "Unrecognized instrument type: " + model.getInstrumentType(), e);

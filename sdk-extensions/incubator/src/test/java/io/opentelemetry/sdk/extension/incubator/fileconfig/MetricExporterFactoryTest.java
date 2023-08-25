@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Headers;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric.DefaultHistogramAggregation;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Prometheus;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.Closeable;
@@ -148,7 +149,8 @@ class MetricExporterFactoryTest {
                             .withClientKey(clientKeyPath)
                             .withClientCertificate(clientCertificatePath)
                             .withTemporalityPreference("delta")
-                            .withDefaultHistogramAggregation("base2_exponential_bucket_histogram")),
+                            .withDefaultHistogramAggregation(
+                                DefaultHistogramAggregation.BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(exporter);

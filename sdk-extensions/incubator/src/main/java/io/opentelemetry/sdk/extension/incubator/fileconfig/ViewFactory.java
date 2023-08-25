@@ -13,8 +13,6 @@ import io.opentelemetry.sdk.metrics.ViewBuilder;
 import java.io.Closeable;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 final class ViewFactory implements Factory<Stream, View> {
@@ -41,31 +39,12 @@ final class ViewFactory implements Factory<Stream, View> {
       builder.setDescription(model.getDescription());
     }
     if (model.getAttributeKeys() != null) {
-      builder.setAttributeFilter(new AttributeKeyFilter(new HashSet<>(model.getAttributeKeys())));
+      builder.setAttributeFilter(new HashSet<>(model.getAttributeKeys()));
     }
     if (model.getAggregation() != null) {
       builder.setAggregation(
           AggregationFactory.getInstance().create(model.getAggregation(), spiHelper, closeables));
     }
     return builder.build();
-  }
-
-  private static class AttributeKeyFilter implements Predicate<String> {
-
-    private final Set<String> allowedKeys;
-
-    private AttributeKeyFilter(Set<String> allowedKeys) {
-      this.allowedKeys = allowedKeys;
-    }
-
-    @Override
-    public boolean test(String s) {
-      return false;
-    }
-
-    @Override
-    public String toString() {
-      return "AttributeKeyFilter{allowedKeys=" + allowedKeys + "}";
-    }
   }
 }

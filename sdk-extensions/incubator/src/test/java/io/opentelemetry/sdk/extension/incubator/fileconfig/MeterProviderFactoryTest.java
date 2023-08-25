@@ -95,19 +95,14 @@ class MeterProviderFactoryTest {
                             new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
                                     .View()
                                 .withSelector(new Selector().withInstrumentName("instrument-name"))
-                                .withStream(new Stream().withName("stream-name")))),
+                                .withStream(
+                                    new Stream().withName("stream-name").withAttributeKeys(null)))),
                 spiHelper,
                 closeables)
             .build();
     cleanup.addCloseable(provider);
     cleanup.addCloseables(closeables);
 
-    // Compare using toString, after stripping attributesProcessor since it lacks a toString
-    // implementation
-    assertThat(provider.toString().replaceAll("attributesProcessor=.*,", "attributesProcessor{}"))
-        .isEqualTo(
-            expectedProvider
-                .toString()
-                .replaceAll("attributesProcessor=.*,", "attributesProcessor{}"));
+    assertThat(provider.toString()).isEqualTo(expectedProvider.toString());
   }
 }

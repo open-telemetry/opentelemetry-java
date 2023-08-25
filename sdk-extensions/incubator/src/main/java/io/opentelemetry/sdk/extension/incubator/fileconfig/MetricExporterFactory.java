@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporter
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.Closeable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,7 +90,7 @@ final class MetricExporterFactory
       if (otlp.getDefaultHistogramAggregation() != null) {
         properties.put(
             "otel.exporter.otlp.metrics.default.histogram.aggregation",
-            otlp.getDefaultHistogramAggregation());
+            otlp.getDefaultHistogramAggregation().value());
       }
       if (otlp.getTemporalityPreference() != null) {
         properties.put(
@@ -107,7 +108,13 @@ final class MetricExporterFactory
     }
 
     if (model.getConsole() != null) {
-      throw new ConfigurationException("console exporter not currently supported");
+      return FileConfigUtil.addAndReturn(
+          closeables,
+          FileConfigUtil.assertNotNull(
+              metricExporterSpiManager(
+                      DefaultConfigProperties.createForTest(Collections.emptyMap()), spiHelper)
+                  .getByName("logging"),
+              "logging exporter"));
     }
 
     if (model.getPrometheus() != null) {

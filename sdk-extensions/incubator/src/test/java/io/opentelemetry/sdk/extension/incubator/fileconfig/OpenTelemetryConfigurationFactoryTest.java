@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
@@ -22,6 +23,7 @@ import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOn;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Attributes;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessor;
@@ -37,7 +39,9 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReader;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Resource;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sampler;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Selector;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporter;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessor;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Stream;
@@ -55,7 +59,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -121,6 +124,37 @@ class OpenTelemetryConfigurationFactoryTest {
   }
 
   @Test
+  void create_Disabled() {
+    List<Closeable> closeables = new ArrayList<>();
+    OpenTelemetrySdk expectedSdk = OpenTelemetrySdk.builder().build();
+    cleanup.addCloseable(expectedSdk);
+
+    OpenTelemetrySdk sdk =
+        OpenTelemetryConfigurationFactory.getInstance()
+            .create(
+                new OpenTelemetryConfiguration()
+                    .withFileFormat("0.1")
+                    .withDisabled(true)
+                    // Logger provider configuration should be ignored since SDK is disabled
+                    .withLoggerProvider(
+                        new LoggerProvider()
+                            .withProcessors(
+                                Collections.singletonList(
+                                    new LogRecordProcessor()
+                                        .withSimple(
+                                            new SimpleLogRecordProcessor()
+                                                .withExporter(
+                                                    new LogRecordExporter()
+                                                        .withOtlp(new Otlp())))))),
+                spiHelper,
+                closeables);
+    cleanup.addCloseable(sdk);
+    cleanup.addCloseables(closeables);
+
+    assertThat(sdk.toString()).isEqualTo(expectedSdk.toString());
+  }
+
+  @Test
   void create_Configured() {
     List<Closeable> closeables = new ArrayList<>();
     io.opentelemetry.sdk.resources.Resource expectedResource =
@@ -165,6 +199,7 @@ class OpenTelemetryConfigurationFactoryTest {
                             .setMaxNumberOfAttributesPerEvent(5)
                             .setMaxNumberOfAttributesPerLink(6)
                             .build())
+                    .setSampler(alwaysOn())
                     .addSpanProcessor(
                         io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(
                                 OtlpGrpcSpanExporter.getDefault())
@@ -222,6 +257,7 @@ class OpenTelemetryConfigurationFactoryTest {
                                     .withLinkCountLimit(4)
                                     .withEventAttributeCountLimit(5)
                                     .withLinkAttributeCountLimit(6))
+                            .withSampler(new Sampler().withAlwaysOn(new AlwaysOn()))
                             .withProcessors(
                                 Collections.singletonList(
                                     new SpanProcessor()
@@ -245,17 +281,15 @@ class OpenTelemetryConfigurationFactoryTest {
                                             .model.View()
                                         .withSelector(
                                             new Selector().withInstrumentName("instrument-name"))
-                                        .withStream(new Stream().withName("stream-name"))))),
+                                        .withStream(
+                                            new Stream()
+                                                .withName("stream-name")
+                                                .withAttributeKeys(null))))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 
-    // Compare using toString, after stripping attributesProcessor since it lacks a toString
-    // implementation
-    Assertions.assertThat(
-            sdk.toString().replaceAll("attributesProcessor=.*,", "attributesProcessor{}"))
-        .isEqualTo(
-            expectedSdk.toString().replaceAll("attributesProcessor=.*,", "attributesProcessor{}"));
+    assertThat(sdk.toString()).isEqualTo(expectedSdk.toString());
   }
 }

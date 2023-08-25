@@ -34,6 +34,8 @@ dependencies {
   testImplementation(project(":sdk-extensions:autoconfigure"))
   testImplementation(project(":exporters:otlp:all"))
   testImplementation(project(":exporters:prometheus"))
+  testImplementation(project(":exporters:logging"))
+  testImplementation(project(":sdk-extensions:jaeger-remote-sampler"))
   testImplementation(project(":extensions:trace-propagators"))
   // As a part of the tests we check that we can parse examples without error. The https://github.com/open-telemetry/opentelemetry-configuration/blob/main/examples/kitchen-sink.yam contains a reference to the xray propagator
   testImplementation("io.opentelemetry.contrib:opentelemetry-aws-xray-propagator")
@@ -53,7 +55,7 @@ dependencies {
 // ... proceed with normal sourcesJar, compileJava, etc
 
 // TODO(jack-berg): update ref to be released version when available
-val configurationRef = "2107dbb6f2a6c99fe2f55d550796ee7e2286fd1d"
+val configurationRef = "0eb96de17c6533f668163873d95bd026bce1d8fb"
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 

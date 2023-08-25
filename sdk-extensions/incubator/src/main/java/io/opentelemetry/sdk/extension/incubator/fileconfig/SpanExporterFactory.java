@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterPro
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,6 +92,16 @@ final class SpanExporterFactory
           FileConfigUtil.assertNotNull(
               spanExporterSpiManager(configProperties, spiHelper).getByName("otlp"),
               "otlp exporter"));
+    }
+
+    if (model.getConsole() != null) {
+      return FileConfigUtil.addAndReturn(
+          closeables,
+          FileConfigUtil.assertNotNull(
+              spanExporterSpiManager(
+                      DefaultConfigProperties.createForTest(Collections.emptyMap()), spiHelper)
+                  .getByName("logging"),
+              "logging exporter"));
     }
 
     // TODO(jack-berg): add support for generic SPI exporters

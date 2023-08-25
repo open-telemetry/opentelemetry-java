@@ -10,8 +10,8 @@ import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Aggregation;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2ExponentialBucketHistogram;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogram;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExponentialBucketHistogram;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,12 +54,13 @@ class AggregationFactoryTest {
             new Aggregation().withLastValue(new Object()),
             io.opentelemetry.sdk.metrics.Aggregation.lastValue()),
         Arguments.of(
-            new Aggregation().withExponentialBucketHistogram(new ExponentialBucketHistogram()),
+            new Aggregation()
+                .withBase2ExponentialBucketHistogram(new Base2ExponentialBucketHistogram()),
             io.opentelemetry.sdk.metrics.Aggregation.base2ExponentialBucketHistogram()),
         Arguments.of(
             new Aggregation()
-                .withExponentialBucketHistogram(
-                    new ExponentialBucketHistogram().withMaxSize(1).withMaxScale(2)),
+                .withBase2ExponentialBucketHistogram(
+                    new Base2ExponentialBucketHistogram().withMaxSize(1).withMaxScale(2)),
             io.opentelemetry.sdk.metrics.Aggregation.base2ExponentialBucketHistogram(1, 2)),
         Arguments.of(
             new Aggregation()

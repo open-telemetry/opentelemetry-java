@@ -40,26 +40,13 @@ class InstrumentSelectorFactoryTest {
   }
 
   @Test
-  void create_InvalidInstrumentType() {
-    assertThatThrownBy(
-            () ->
-                InstrumentSelectorFactory.getInstance()
-                    .create(
-                        new Selector().withInstrumentType("foo"),
-                        mock(SpiHelper.class),
-                        Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unrecognized instrument type: foo");
-  }
-
-  @Test
   void create() {
     assertThat(
             InstrumentSelectorFactory.getInstance()
                 .create(
                     new Selector()
                         .withInstrumentName("instrument-name")
-                        .withInstrumentType("counter")
+                        .withInstrumentType(Selector.InstrumentType.COUNTER)
                         .withMeterName("meter-name")
                         .withMeterSchemaUrl("https://opentelemetry.io/schemas/1.16.0")
                         .withMeterVersion("1.0.0"),

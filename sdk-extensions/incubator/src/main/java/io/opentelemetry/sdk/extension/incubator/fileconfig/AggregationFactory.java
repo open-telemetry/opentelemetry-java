@@ -8,8 +8,8 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Aggregation;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2ExponentialBucketHistogram;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogram;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExponentialBucketHistogram;
 import java.io.Closeable;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -41,7 +41,8 @@ final class AggregationFactory
     if (model.getLastValue() != null) {
       return io.opentelemetry.sdk.metrics.Aggregation.lastValue();
     }
-    ExponentialBucketHistogram exponentialBucketHistogram = model.getExponentialBucketHistogram();
+    Base2ExponentialBucketHistogram exponentialBucketHistogram =
+        model.getBase2ExponentialBucketHistogram();
     if (exponentialBucketHistogram != null) {
       Integer maxScale = exponentialBucketHistogram.getMaxScale();
       if (maxScale == null) {

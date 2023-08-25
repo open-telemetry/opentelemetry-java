@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import static java.util.stream.Collectors.joining;
-
 import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -79,7 +77,6 @@ final class MetricReaderFactory
       }
       Prometheus prometheusModel = exporterModel.getPrometheus();
       if (prometheusModel != null) {
-
         // Translate from file configuration scheme to environment variable scheme. This is
         // ultimately
         // interpreted by PrometheusMetricReaderProvider, but we want to avoid the dependency on
@@ -103,23 +100,7 @@ final class MetricReaderFactory
                 "prometheus reader"));
       }
 
-      if (exporterModel.getConsole() != null) {
-        throw new ConfigurationException(
-            "console exporter not currently supported in this context");
-      }
-
-      if (exporterModel.getOtlp() != null) {
-        throw new ConfigurationException(
-            "console exporter not currently supported in this context");
-      }
-
-      // TODO(jack-berg): add support for generic SPI exporters
-      if (!exporterModel.getAdditionalProperties().isEmpty()) {
-        throw new ConfigurationException(
-            "Unrecognized metric exporter(s): "
-                + exporterModel.getAdditionalProperties().keySet().stream()
-                    .collect(joining(",", "[", "]")));
-      }
+      throw new ConfigurationException("prometheus is the only currently supported pull reader");
     }
 
     return null;
