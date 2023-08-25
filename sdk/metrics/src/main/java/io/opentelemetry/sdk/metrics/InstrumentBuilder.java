@@ -38,11 +38,11 @@ final class InstrumentBuilder {
     this.descriptor = descriptor;
   }
 
-  public void setUnit(String unit) {
+  void setUnit(String unit) {
     descriptor.setUnit(unit);
   }
 
-  public void setDescription(String description) {
+  void setDescription(String description) {
     descriptor.setDescription(description);
   }
 
@@ -99,11 +99,11 @@ final class InstrumentBuilder {
     return className + "{descriptor=" + descriptor.toImmutable() + "}";
   }
 
-  public void setAdviceAttributes(List<AttributeKey<?>> attributes) {
+  void setAdviceAttributes(List<AttributeKey<?>> attributes) {
     descriptor.setAdviceAttributes(attributes);
   }
 
-  public void setExplicitBucketBoundaries(List<Double> bucketBoundaries) {
+  void setExplicitBucketBoundaries(List<Double> bucketBoundaries) {
     descriptor.setExplicitBucketBoundaries(bucketBoundaries);
   }
 
