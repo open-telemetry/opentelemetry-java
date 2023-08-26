@@ -21,7 +21,7 @@ val DEPENDENCY_BOMS = listOf(
   "org.assertj:assertj-bom:3.24.2",
   "org.junit:junit-bom:5.10.0",
   "org.testcontainers:testcontainers-bom:1.19.0",
-  "org.snakeyaml:snakeyaml-engine:2.6"
+  "org.snakeyaml:snakeyaml-engine:2.7"
 )
 
 val autoValueVersion = "1.10.3"
