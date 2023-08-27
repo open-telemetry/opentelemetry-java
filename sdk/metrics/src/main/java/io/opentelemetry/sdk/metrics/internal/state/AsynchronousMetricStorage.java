@@ -132,8 +132,9 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
             ? registeredReader.getLastCollectEpochNanos()
             : measurement.startEpochNanos();
 
-    measurement = measurement.withAttributes(processedAttributes)
-                             .withStartEpochNanos(start);
+    measurement = measurement
+        .withAttributes(processedAttributes)
+        .withStartEpochNanos(start);
 
     recordPoint(processedAttributes, measurement);
   }
@@ -161,17 +162,12 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
       return;
     }
 
-    T dataPoint = null;
-    switch (memoryMode) {
-      case REUSABLE_DATA:
-        dataPoint = reusablePointsPool.borrowObject();
-        aggregator.toPoint(measurement, dataPoint);
-        break;
-      case IMMUTABLE_DATA:
-        dataPoint = aggregator.toPoint(measurement);
-        break;
-      default:
-        throw new IllegalStateException("Unsupported memory mode: " + memoryMode);
+    T dataPoint;
+    if (memoryMode == REUSABLE_DATA) {
+      dataPoint = reusablePointsPool.borrowObject();
+      aggregator.toPoint(measurement, dataPoint);
+    } else {
+      dataPoint = aggregator.toPoint(measurement);
     }
 
     points.put(attributes, dataPoint);
@@ -206,15 +202,10 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
       Map<Attributes, T> lastPoints = this.lastPoints;
 
       Collection<T> deltaPoints;
-      switch (memoryMode) {
-        case REUSABLE_DATA:
-          deltaPoints = reusableResultList;
-          break;
-        case IMMUTABLE_DATA:
-          deltaPoints = new ArrayList<>();
-          break;
-        default:
-          throw new IllegalStateException("Unsupported memory mode: " + memoryMode);
+      if (memoryMode == REUSABLE_DATA) {
+        deltaPoints = reusableResultList;
+      } else {
+        deltaPoints = new ArrayList<>();
       }
 
       points.forEach(
@@ -223,64 +214,46 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
 
             T deltaPoint;
             if (lastPoint == null) {
-              switch (memoryMode) {
-                case REUSABLE_DATA:
-                  deltaPoint = reusablePointsPool.borrowObject();
-                  aggregator.copyPoint(v, deltaPoint);
-                  break;
-                case IMMUTABLE_DATA:
-                  deltaPoint = v;
-                  break;
-                default:
-                  throw new IllegalStateException("Unsupported memory mode: " + memoryMode);
+              if (memoryMode == REUSABLE_DATA) {
+                deltaPoint = reusablePointsPool.borrowObject();
+                aggregator.copyPoint(v, deltaPoint);
+              } else {
+                deltaPoint = v;
               }
             } else {
-              switch (memoryMode) {
-                case REUSABLE_DATA:
-                  aggregator.diffInPlace(lastPoint, v);
-                  deltaPoint = lastPoint;
+              if (memoryMode == REUSABLE_DATA) {
+                aggregator.diffInPlace(lastPoint, v);
+                deltaPoint = lastPoint;
 
-                  // Remaining last points are returned to reusablePointsPool, but
-                  // this reusable point is still used, so don't return it to pool yet
-                  lastPoints.remove(k);
-                  break;
-                case IMMUTABLE_DATA:
-                  deltaPoint = aggregator.diff(lastPoint, v);
-                  break;
-                default:
-                  throw new IllegalStateException("Unsupported memory mode");
+                // Remaining last points are returned to reusablePointsPool, but
+                // this reusable point is still used, so don't return it to pool yet
+                lastPoints.remove(k);
+              } else {
+                deltaPoint = aggregator.diff(lastPoint, v);
               }
             }
 
             deltaPoints.add(deltaPoint);
           });
 
-      switch (memoryMode) {
-        case REUSABLE_DATA:
-          lastPoints.forEach((k, v) -> reusablePointsPool.returnObject(v));
-          lastPoints.clear();
-          this.points = lastPoints;
-          break;
-        case IMMUTABLE_DATA:
-          this.points = new HashMap<>();
-          break;
+      if (memoryMode == REUSABLE_DATA) {
+        lastPoints.forEach((k, v) -> reusablePointsPool.returnObject(v));
+        lastPoints.clear();
+        this.points = lastPoints;
+      } else {
+        this.points = new HashMap<>();
       }
 
       this.lastPoints = points;
       result = deltaPoints;
     } else /* CUMULATIVE */ {
-      switch (memoryMode) {
-        case REUSABLE_DATA:
-          points.forEach((k, v) -> reusableResultList.add(v));
-          points.clear();
-          result = reusableResultList;
-          break;
-        case IMMUTABLE_DATA:
-          result = points.values();
-          points = new HashMap<>();
-          break;
-        default:
-          throw new IllegalStateException("Unsupported memory mode: " + memoryMode);
+      if (memoryMode == REUSABLE_DATA) {
+        points.forEach((k, v) -> reusableResultList.add(v));
+        points.clear();
+        result = reusableResultList;
+      } else {
+        result = points.values();
+        points = new HashMap<>();
       }
     }
 
