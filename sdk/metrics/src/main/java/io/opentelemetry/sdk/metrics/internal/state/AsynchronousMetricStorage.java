@@ -139,9 +139,9 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
     } else {
       measurement =
           measurement.hasDoubleValue()
-              ? ImmutableMeasurement.doubleMeasurement(
+              ? ImmutableMeasurement.createDouble(
                   start, measurement.epochNanos(), measurement.doubleValue(), processedAttributes)
-              : ImmutableMeasurement.longMeasurement(
+              : ImmutableMeasurement.createLong(
                   start, measurement.epochNanos(), measurement.longValue(), processedAttributes);
     }
 
@@ -165,12 +165,12 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
       } else {
         measurement =
             measurement.hasDoubleValue()
-                ? ImmutableMeasurement.doubleMeasurement(
+                ? ImmutableMeasurement.createDouble(
                     measurement.startEpochNanos(),
                     measurement.epochNanos(),
                     measurement.doubleValue(),
                     attributes)
-                : ImmutableMeasurement.longMeasurement(
+                : ImmutableMeasurement.createLong(
                     measurement.startEpochNanos(),
                     measurement.epochNanos(),
                     measurement.longValue(),

@@ -21,7 +21,7 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 @AutoValue
 public abstract class ImmutableMeasurement implements Measurement {
 
-  static ImmutableMeasurement doubleMeasurement(
+  static ImmutableMeasurement createDouble(
       long startEpochNanos, long epochNanos, double value, Attributes attributes) {
     return new AutoValue_ImmutableMeasurement(
         startEpochNanos,
@@ -33,7 +33,7 @@ public abstract class ImmutableMeasurement implements Measurement {
         attributes);
   }
 
-  static ImmutableMeasurement longMeasurement(
+  static ImmutableMeasurement createLong(
       long startEpochNanos, long epochNanos, long value, Attributes attributes) {
     return new AutoValue_ImmutableMeasurement(
         startEpochNanos,

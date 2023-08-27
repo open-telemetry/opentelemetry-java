@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.doubleMeasurement;
-import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.longMeasurement;
+import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.createDouble;
+import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.createLong;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
@@ -114,7 +114,7 @@ public final class SdkObservableMeasurement
     Measurement measurement = null;
     switch (activeReader.getReader().getMemoryMode()) {
       case IMMUTABLE_DATA:
-        measurement = longMeasurement(startEpochNanos, epochNanos, value, attributes);
+        measurement = createLong(startEpochNanos, epochNanos, value, attributes);
         break;
       case REUSABLE_DATA:
         LeasedMeasurement.setLongMeasurement(
@@ -144,7 +144,7 @@ public final class SdkObservableMeasurement
     Measurement measurement = null;
     switch (activeReader.getReader().getMemoryMode()) {
       case IMMUTABLE_DATA:
-        measurement = doubleMeasurement(startEpochNanos, epochNanos, value, attributes);
+        measurement = createDouble(startEpochNanos, epochNanos, value, attributes);
         break;
       case REUSABLE_DATA:
         LeasedMeasurement.setDoubleMeasurement(

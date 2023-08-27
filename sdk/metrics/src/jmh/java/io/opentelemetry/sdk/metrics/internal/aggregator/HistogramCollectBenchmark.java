@@ -18,7 +18,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -33,7 +32,6 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
-import org.openjdk.jol.info.GraphLayout;
 
 /**
  * Measures the collection path for various histogram aggregations. Should be used primarily to
@@ -45,7 +43,6 @@ import org.openjdk.jol.info.GraphLayout;
 @Warmup(iterations = 2, batchSize = 10)
 @Fork(1)
 public class HistogramCollectBenchmark {
-  private static final Logger logger = Logger.getLogger(HistogramCollectBenchmark.class.getName());
 
   private static final int cardinality = 100;
   private static final int measurementsPerSeries = 10_000;

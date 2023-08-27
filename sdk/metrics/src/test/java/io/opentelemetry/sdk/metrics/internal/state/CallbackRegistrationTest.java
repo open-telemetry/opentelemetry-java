@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.doubleMeasurement;
-import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.longMeasurement;
+import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.createDouble;
+import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.createLong;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -147,7 +147,7 @@ class CallbackRegistrationTest {
 
     assertThat(counter.get()).isEqualTo(1.1);
     verify(storage1)
-        .record(doubleMeasurement(0, 1, 1.1, Attributes.builder().put("key", "val").build()));
+        .record(createDouble(0, 1, 1.1, Attributes.builder().put("key", "val").build()));
     verify(storage2, never()).record(any());
     verify(storage3, never()).record(any());
   }
@@ -167,9 +167,9 @@ class CallbackRegistrationTest {
     assertThat(counter.get()).isEqualTo(1);
     verify(storage1, never()).record(any());
     verify(storage2)
-        .record(longMeasurement(0, 1, 1, Attributes.builder().put("key", "val").build()));
+        .record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
     verify(storage3)
-        .record(longMeasurement(0, 1, 1, Attributes.builder().put("key", "val").build()));
+        .record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
   }
 
   @Test
@@ -191,11 +191,11 @@ class CallbackRegistrationTest {
     assertThat(doubleCounter.get()).isEqualTo(1.1);
     assertThat(longCounter.get()).isEqualTo(1);
     verify(storage1)
-        .record(doubleMeasurement(0, 1, 1.1, Attributes.builder().put("key", "val").build()));
+        .record(createDouble(0, 1, 1.1, Attributes.builder().put("key", "val").build()));
     verify(storage2)
-        .record(longMeasurement(0, 1, 1, Attributes.builder().put("key", "val").build()));
+        .record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
     verify(storage3)
-        .record(longMeasurement(0, 1, 1, Attributes.builder().put("key", "val").build()));
+        .record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
   }
 
   @Test
