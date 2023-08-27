@@ -10,7 +10,10 @@ import javax.annotation.Nullable;
 /**
  * Array-based Stack.
  *
- * <p>Not thread-safe
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ *
+ * <p>This class is not thread-safe.
  */
 public class ArrayBasedStack<T> {
   static final int DEFAULT_CAPACITY = 10;

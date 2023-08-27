@@ -13,6 +13,10 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 /**
  * A long or double measurement recorded from {@link ObservableLongMeasurement} or {@link
  * ObservableDoubleMeasurement}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ *
  */
 @AutoValue
 public abstract class ImmutableMeasurement implements Measurement {

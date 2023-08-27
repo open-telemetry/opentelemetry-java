@@ -8,7 +8,14 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import io.opentelemetry.api.common.Attributes;
 import javax.annotation.Nullable;
 
-/** A mutable {@link Measurement} implementation, that is leased to other objects temporarily. */
+/**
+ * A mutable {@link Measurement} implementation, that is leased to other objects temporarily.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ *
+ * <p>This class is not thread-safe.
+ */
 public class LeasedMeasurement implements Measurement {
 
   static void setDoubleMeasurement(

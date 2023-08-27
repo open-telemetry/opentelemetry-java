@@ -26,6 +26,11 @@ import javax.annotation.Nullable;
  *
  * @param <K> The map key type
  * @param <V> The map value type
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ *
+ * <p>This class is not thread-safe.
  */
 public class PooledHashMap<K, V> implements Map<K, V> {
   private static final int DEFAULT_CAPACITY = 16;

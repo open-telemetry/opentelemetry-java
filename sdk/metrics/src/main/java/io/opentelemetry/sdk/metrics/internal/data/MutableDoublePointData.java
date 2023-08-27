@@ -12,6 +12,14 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
+/**
+ * A mutable {@link DoublePointData}
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ *
+ * <p>This class is not thread-safe.
+ */
 public class MutableDoublePointData implements DoublePointData {
 
   private long startEpochNanos;

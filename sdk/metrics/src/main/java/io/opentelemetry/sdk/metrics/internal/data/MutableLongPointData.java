@@ -12,6 +12,14 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
+/**
+ * Mutable {@link LongPointData}
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ *
+ * <p>This class is not thread-safe.
+ */
 public class MutableLongPointData implements LongPointData {
 
   private long value;
