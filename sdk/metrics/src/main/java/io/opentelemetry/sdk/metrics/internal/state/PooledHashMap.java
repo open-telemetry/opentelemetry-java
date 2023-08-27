@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * A bucket-based hash map with an internal re-usable map entry objects pool
  *
@@ -49,9 +51,9 @@ public class PooledHashMap<K, V> implements Map<K, V> {
    *
    * @param capacity The initial number of buckets to start with
    */
-  @SuppressWarnings({"rawtypes", "unchecked"})
+  @SuppressWarnings({"unchecked"})
   public PooledHashMap(int capacity) {
-    this.table = new ArrayList[capacity];
+    this.table = (ArrayList<Entry<K, V>>[]) new ArrayList<?>[capacity];
     this.entryPool = new ObjectPool<>(Entry::new);
     this.size = 0;
   }
@@ -78,8 +80,8 @@ public class PooledHashMap<K, V> implements Map<K, V> {
   @Override
   @Nullable
   public V put(K key, V value) {
-    Objects.requireNonNull(key, "This map does not support null keys");
-    Objects.requireNonNull(value, "This map does not support null values");
+    requireNonNull(key, "This map does not support null keys");
+    requireNonNull(value, "This map does not support null values");
     if (size > LOAD_FACTOR * table.length) {
       rehash();
     }
@@ -107,10 +109,10 @@ public class PooledHashMap<K, V> implements Map<K, V> {
     return null;
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked", "NullAway"})
+  @SuppressWarnings({"unchecked"})
   private void rehash() {
     ArrayList<Entry<K, V>>[] oldTable = table;
-    table = new ArrayList[2 * oldTable.length];
+    table = (ArrayList<Entry<K, V>>[]) new ArrayList<?>[2 * oldTable.length];
 
     // put() to new table below will reset size back to correct number
     size = 0;
@@ -118,11 +120,10 @@ public class PooledHashMap<K, V> implements Map<K, V> {
     for (int i = 0; i < oldTable.length; i++) {
       ArrayList<Entry<K, V>> bucket = oldTable[i];
       if (bucket != null) {
-        bucket.forEach(
-            entry -> {
-              put(entry.key, entry.value);
-              entryPool.returnObject(entry);
-            });
+        for (Entry<K, V> entry : bucket) {
+          put(requireNonNull(entry.key), requireNonNull(entry.value));
+          entryPool.returnObject(entry);
+        }
         bucket.clear();
       }
     }
