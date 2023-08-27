@@ -77,12 +77,16 @@ public class LeasedMeasurement implements Measurement {
     this.attributes = attributes;
   }
 
-  public void setAttributes(Attributes attributes) {
-    this.attributes = attributes;
+  @Override
+  public Measurement withStartEpochNanos(long startEpochNanos) {
+    this.startEpochNanos = startEpochNanos;
+    return this;
   }
 
-  public void setStartEpochNanos(long startEpochNanos) {
-    this.startEpochNanos = startEpochNanos;
+  @Override
+  public Measurement withAttributes(Attributes attributes) {
+    this.attributes = attributes;
+    return this;
   }
 
   @Override

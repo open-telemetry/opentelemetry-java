@@ -132,18 +132,8 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
             ? registeredReader.getLastCollectEpochNanos()
             : measurement.startEpochNanos();
 
-    if (measurement instanceof LeasedMeasurement) {
-      LeasedMeasurement leasedMeasurement = (LeasedMeasurement) measurement;
-      leasedMeasurement.setAttributes(processedAttributes);
-      leasedMeasurement.setStartEpochNanos(start);
-    } else {
-      measurement =
-          measurement.hasDoubleValue()
-              ? ImmutableMeasurement.createDouble(
-                  start, measurement.epochNanos(), measurement.doubleValue(), processedAttributes)
-              : ImmutableMeasurement.createLong(
-                  start, measurement.epochNanos(), measurement.longValue(), processedAttributes);
-    }
+    measurement = measurement.withAttributes(processedAttributes)
+                             .withStartEpochNanos(start);
 
     recordPoint(processedAttributes, measurement);
   }
@@ -159,23 +149,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
               + maxCardinality
               + ").");
       attributes = MetricStorage.CARDINALITY_OVERFLOW;
-      if (measurement instanceof LeasedMeasurement) {
-        LeasedMeasurement leasedMeasurement = (LeasedMeasurement) measurement;
-        leasedMeasurement.setAttributes(attributes);
-      } else {
-        measurement =
-            measurement.hasDoubleValue()
-                ? ImmutableMeasurement.createDouble(
-                    measurement.startEpochNanos(),
-                    measurement.epochNanos(),
-                    measurement.doubleValue(),
-                    attributes)
-                : ImmutableMeasurement.createLong(
-                    measurement.startEpochNanos(),
-                    measurement.epochNanos(),
-                    measurement.longValue(),
-                    attributes);
-      }
+      measurement = measurement.withAttributes(attributes);
     } else if (points.containsKey(
         attributes)) { // Check there is not already a recording for the attributes
       throttlingLogger.log(

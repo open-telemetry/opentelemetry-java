@@ -44,4 +44,22 @@ public abstract class ImmutableMeasurement implements Measurement {
         0.0,
         attributes);
   }
+
+  @Override
+  public Measurement withAttributes(Attributes attributes) {
+    if (hasDoubleValue()) {
+      return createDouble(startEpochNanos(), epochNanos(), doubleValue(), attributes);
+    } else {
+      return createLong(startEpochNanos(), epochNanos(), longValue(), attributes);
+    }
+  }
+
+  @Override
+  public Measurement withStartEpochNanos(long startEpochNanos) {
+    if (hasDoubleValue()) {
+      return createDouble(startEpochNanos, epochNanos(), doubleValue(), attributes());
+    } else {
+      return createLong(startEpochNanos, epochNanos(), longValue(), attributes());
+    }
+  }
 }
