@@ -118,10 +118,11 @@ class MetricReaderFactoryTest {
   }
 
   @Test
-  void create_PullPrometheusDefault() {
+  void create_PullPrometheusDefault() throws IOException {
+    int port = randomAvailablePort();
     spiHelper = spy(spiHelper);
     List<Closeable> closeables = new ArrayList<>();
-    PrometheusHttpServer expectedReader = PrometheusHttpServer.create();
+    PrometheusHttpServer expectedReader = PrometheusHttpServer.builder().setPort(port).build();
     // Close the reader to avoid port conflict with the new instance created by MetricReaderFactory
     expectedReader.close();
 
@@ -131,7 +132,9 @@ class MetricReaderFactoryTest {
                 new MetricReader()
                     .withPull(
                         new PullMetricReader()
-                            .withExporter(new MetricExporter().withPrometheus(new Prometheus()))),
+                            .withExporter(
+                                new MetricExporter()
+                                    .withPrometheus(new Prometheus().withPort(port)))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(reader);
@@ -145,18 +148,12 @@ class MetricReaderFactoryTest {
             eq(ConfigurableMetricReaderProvider.class), any(), any(), configCaptor.capture());
     ConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("otel.exporter.prometheus.host")).isNull();
-    assertThat(configProperties.getInt("otel.exporter.prometheus.host")).isNull();
+    assertThat(configProperties.getInt("otel.exporter.prometheus.port")).isEqualTo(port);
   }
 
   @Test
   void create_PullPrometheusConfigured() throws IOException {
-    // Find a random unused port. There's a small race if another process takes it before we
-    // initialize. Consider adding retries to this test if it flakes, presumably it never will on
-    // CI since there's no prometheus there blocking the well-known port.
-    int port;
-    try (ServerSocket socket2 = new ServerSocket(0)) {
-      port = socket2.getLocalPort();
-    }
+    int port = randomAvailablePort();
 
     spiHelper = spy(spiHelper);
     List<Closeable> closeables = new ArrayList<>();
@@ -226,5 +223,16 @@ class MetricReaderFactoryTest {
                         Collections.emptyList()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("prometheus is the only currently supported pull reader");
+  }
+
+  /**
+   * Find a random unused port. There's a small race if another process takes it before we
+   * initialize. Consider adding retries to this test if it flakes, presumably it never will on CI
+   * since there's no prometheus there blocking the well-known port.
+   */
+  private static int randomAvailablePort() throws IOException {
+    try (ServerSocket socket2 = new ServerSocket(0)) {
+      return socket2.getLocalPort();
+    }
   }
 }
