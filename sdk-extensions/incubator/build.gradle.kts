@@ -32,7 +32,9 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
+  testImplementation(project(":exporters:logging"))
   testImplementation(project(":exporters:otlp:all"))
+  testImplementation(project(":exporters:prometheus"))
   testImplementation(project(":exporters:zipkin"))
   testImplementation(project(":sdk-extensions:jaeger-remote-sampler"))
   testImplementation(project(":extensions:trace-propagators"))

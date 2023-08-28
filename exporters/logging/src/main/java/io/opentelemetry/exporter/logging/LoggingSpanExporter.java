@@ -93,4 +93,9 @@ public final class LoggingSpanExporter implements SpanExporter {
     }
     return flush();
   }
+
+  @Override
+  public String toString() {
+    return "LoggingSpanExporter{}";
+  }
 }
