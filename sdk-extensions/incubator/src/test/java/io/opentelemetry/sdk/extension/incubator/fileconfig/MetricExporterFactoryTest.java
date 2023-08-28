@@ -63,7 +63,6 @@ class MetricExporterFactoryTest {
   void create_Null() {
     assertThat(MetricExporterFactory.getInstance().create(null, spiHelper, new ArrayList<>()))
         .isNull();
-    ;
   }
 
   @Test

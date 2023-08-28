@@ -207,6 +207,7 @@ class OpenTelemetryConfigurationFactoryTest {
                     .build())
             .setMeterProvider(
                 SdkMeterProvider.builder()
+                    .setResource(expectedResource)
                     .registerMetricReader(
                         io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
                                 OtlpGrpcMetricExporter.getDefault())

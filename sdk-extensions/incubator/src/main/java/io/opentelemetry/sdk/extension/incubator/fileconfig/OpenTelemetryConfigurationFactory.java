@@ -77,6 +77,7 @@ final class OpenTelemetryConfigurationFactory
               closeables,
               MeterProviderFactory.getInstance()
                   .create(model.getMeterProvider(), spiHelper, closeables)
+                  .setResource(resource)
                   .build()));
     }
 

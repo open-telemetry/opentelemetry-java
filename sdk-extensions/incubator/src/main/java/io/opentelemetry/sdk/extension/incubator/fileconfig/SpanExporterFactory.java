@@ -45,53 +45,9 @@ final class SpanExporterFactory
       return SpanExporter.composite();
     }
 
-    if (model.getOtlp() != null) {
-      Otlp otlp = model.getOtlp();
-
-      // Translate from file configuration scheme to environment variable scheme. This is ultimately
-      // interpreted by Otlp*ExporterProviders, but we want to avoid the dependency on
-      // opentelemetry-exporter-otlp
-      Map<String, String> properties = new HashMap<>();
-      if (otlp.getProtocol() != null) {
-        properties.put("otel.exporter.otlp.traces.protocol", otlp.getProtocol());
-      }
-      if (otlp.getEndpoint() != null) {
-        // NOTE: Set general otel.exporter.otlp.endpoint instead of signal specific
-        // otel.exporter.otlp.traces.endpoint to allow signal path (i.e. /v1/traces) to be added if
-        // not present
-        properties.put("otel.exporter.otlp.endpoint", otlp.getEndpoint());
-      }
-      if (otlp.getHeaders() != null) {
-        properties.put(
-            "otel.exporter.otlp.traces.headers",
-            otlp.getHeaders().getAdditionalProperties().entrySet().stream()
-                .map(entry -> entry.getKey() + "=" + entry.getValue())
-                .collect(joining(",")));
-      }
-      if (otlp.getCompression() != null) {
-        properties.put("otel.exporter.otlp.traces.compression", otlp.getCompression());
-      }
-      if (otlp.getTimeout() != null) {
-        properties.put("otel.exporter.otlp.traces.timeout", Integer.toString(otlp.getTimeout()));
-      }
-      if (otlp.getCertificate() != null) {
-        properties.put("otel.exporter.otlp.traces.certificate", otlp.getCertificate());
-      }
-      if (otlp.getClientKey() != null) {
-        properties.put("otel.exporter.otlp.traces.client.key", otlp.getClientKey());
-      }
-      if (otlp.getClientCertificate() != null) {
-        properties.put("otel.exporter.otlp.traces.client.certificate", otlp.getClientCertificate());
-      }
-
-      // TODO(jack-berg): add method for creating from map
-      ConfigProperties configProperties = DefaultConfigProperties.createForTest(properties);
-
-      return FileConfigUtil.addAndReturn(
-          closeables,
-          FileConfigUtil.assertNotNull(
-              spanExporterSpiManager(configProperties, spiHelper).getByName("otlp"),
-              "otlp exporter"));
+    Otlp otlpModel = model.getOtlp();
+    if (otlpModel != null) {
+      return FileConfigUtil.addAndReturn(closeables, createOtlpExporter(otlpModel, spiHelper));
     }
 
     if (model.getConsole() != null) {
@@ -112,6 +68,50 @@ final class SpanExporterFactory
     }
 
     return SpanExporter.composite();
+  }
+
+  private static SpanExporter createOtlpExporter(Otlp model, SpiHelper spiHelper) {
+    // Translate from file configuration scheme to environment variable scheme. This is ultimately
+    // interpreted by Otlp*ExporterProviders, but we want to avoid the dependency on
+    // opentelemetry-exporter-otlp
+    Map<String, String> properties = new HashMap<>();
+    if (model.getProtocol() != null) {
+      properties.put("otel.exporter.otlp.traces.protocol", model.getProtocol());
+    }
+    if (model.getEndpoint() != null) {
+      // NOTE: Set general otel.exporter.otlp.endpoint instead of signal specific
+      // otel.exporter.otlp.traces.endpoint to allow signal path (i.e. /v1/traces) to be added if
+      // not present
+      properties.put("otel.exporter.otlp.endpoint", model.getEndpoint());
+    }
+    if (model.getHeaders() != null) {
+      properties.put(
+          "otel.exporter.otlp.traces.headers",
+          model.getHeaders().getAdditionalProperties().entrySet().stream()
+              .map(entry -> entry.getKey() + "=" + entry.getValue())
+              .collect(joining(",")));
+    }
+    if (model.getCompression() != null) {
+      properties.put("otel.exporter.otlp.traces.compression", model.getCompression());
+    }
+    if (model.getTimeout() != null) {
+      properties.put("otel.exporter.otlp.traces.timeout", Integer.toString(model.getTimeout()));
+    }
+    if (model.getCertificate() != null) {
+      properties.put("otel.exporter.otlp.traces.certificate", model.getCertificate());
+    }
+    if (model.getClientKey() != null) {
+      properties.put("otel.exporter.otlp.traces.client.key", model.getClientKey());
+    }
+    if (model.getClientCertificate() != null) {
+      properties.put("otel.exporter.otlp.traces.client.certificate", model.getClientCertificate());
+    }
+
+    // TODO(jack-berg): add method for creating from map
+    ConfigProperties configProperties = DefaultConfigProperties.createForTest(properties);
+
+    return FileConfigUtil.assertNotNull(
+        spanExporterSpiManager(configProperties, spiHelper).getByName("otlp"), "otlp exporter");
   }
 
   private static NamedSpiManager<SpanExporter> spanExporterSpiManager(
