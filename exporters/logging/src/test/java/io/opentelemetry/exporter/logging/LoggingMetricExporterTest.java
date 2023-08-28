@@ -114,4 +114,9 @@ class LoggingMetricExporterTest {
     assertThat(exporter.shutdown().isSuccess()).isTrue();
     logs.assertContains("Calling shutdown() multiple times.");
   }
+
+  @Test
+  void stringRepresentation() {
+    assertThat(LoggingMetricExporter.create().toString()).isEqualTo("LoggingMetricExporter{}");
+  }
 }
