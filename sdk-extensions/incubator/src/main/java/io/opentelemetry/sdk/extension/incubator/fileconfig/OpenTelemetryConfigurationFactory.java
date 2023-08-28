@@ -56,7 +56,11 @@ final class OpenTelemetryConfigurationFactory
           FileConfigUtil.addAndReturn(
               closeables,
               LoggerProviderFactory.getInstance()
-                  .create(model.getLoggerProvider(), spiHelper, closeables)
+                  .create(
+                      LoggerProviderAndAttributeLimits.create(
+                          model.getAttributeLimits(), model.getLoggerProvider()),
+                      spiHelper,
+                      closeables)
                   .setResource(resource)
                   .build()));
     }
@@ -66,7 +70,11 @@ final class OpenTelemetryConfigurationFactory
           FileConfigUtil.addAndReturn(
               closeables,
               TracerProviderFactory.getInstance()
-                  .create(model.getTracerProvider(), spiHelper, closeables)
+                  .create(
+                      TracerProviderAndAttributeLimits.create(
+                          model.getAttributeLimits(), model.getTracerProvider()),
+                      spiHelper,
+                      closeables)
                   .setResource(resource)
                   .build()));
     }

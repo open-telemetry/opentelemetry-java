@@ -15,7 +15,8 @@ import java.io.Closeable;
 import java.util.List;
 import javax.annotation.Nullable;
 
-final class LoggerProviderFactory implements Factory<LoggerProvider, SdkLoggerProviderBuilder> {
+final class LoggerProviderFactory
+    implements Factory<LoggerProviderAndAttributeLimits, SdkLoggerProviderBuilder> {
 
   private static final LoggerProviderFactory INSTANCE = new LoggerProviderFactory();
 
@@ -27,18 +28,28 @@ final class LoggerProviderFactory implements Factory<LoggerProvider, SdkLoggerPr
 
   @Override
   public SdkLoggerProviderBuilder create(
-      @Nullable LoggerProvider model, SpiHelper spiHelper, List<Closeable> closeables) {
+      @Nullable LoggerProviderAndAttributeLimits model,
+      SpiHelper spiHelper,
+      List<Closeable> closeables) {
+    SdkLoggerProviderBuilder builder = SdkLoggerProvider.builder();
     if (model == null) {
-      return SdkLoggerProvider.builder();
+      return builder;
+    }
+    LoggerProvider loggerProviderModel = model.getLoggerProvider();
+    if (loggerProviderModel == null) {
+      return builder;
     }
 
-    SdkLoggerProviderBuilder builder = SdkLoggerProvider.builder();
-
     LogLimits logLimits =
-        LogLimitsFactory.getInstance().create(model.getLimits(), spiHelper, closeables);
+        LogLimitsFactory.getInstance()
+            .create(
+                LogRecordLimitsAndAttributeLimits.create(
+                    model.getAttributeLimits(), loggerProviderModel.getLimits()),
+                spiHelper,
+                closeables);
     builder.setLogLimits(() -> logLimits);
 
-    List<LogRecordProcessor> processors = model.getProcessors();
+    List<LogRecordProcessor> processors = loggerProviderModel.getProcessors();
     if (processors != null) {
       processors.forEach(
           processor ->

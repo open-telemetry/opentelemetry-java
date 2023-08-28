@@ -10,6 +10,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimits;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporter;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimits;
@@ -54,7 +55,11 @@ class LoggerProviderFactoryTest {
 
     SdkLoggerProvider provider =
         LoggerProviderFactory.getInstance()
-            .create(new LoggerProvider(), spiHelper, closeables)
+            .create(
+                LoggerProviderAndAttributeLimits.create(
+                    new AttributeLimits(), new LoggerProvider()),
+                spiHelper,
+                closeables)
             .build();
     cleanup.addCloseable(provider);
     cleanup.addCloseables(closeables);
@@ -83,18 +88,20 @@ class LoggerProviderFactoryTest {
     SdkLoggerProvider provider =
         LoggerProviderFactory.getInstance()
             .create(
-                new LoggerProvider()
-                    .withLimits(
-                        new LogRecordLimits()
-                            .withAttributeCountLimit(1)
-                            .withAttributeValueLengthLimit(2))
-                    .withProcessors(
-                        Collections.singletonList(
-                            new LogRecordProcessor()
-                                .withBatch(
-                                    new BatchLogRecordProcessor()
-                                        .withExporter(
-                                            new LogRecordExporter().withOtlp(new Otlp()))))),
+                LoggerProviderAndAttributeLimits.create(
+                    new AttributeLimits(),
+                    new LoggerProvider()
+                        .withLimits(
+                            new LogRecordLimits()
+                                .withAttributeCountLimit(1)
+                                .withAttributeValueLengthLimit(2))
+                        .withProcessors(
+                            Collections.singletonList(
+                                new LogRecordProcessor()
+                                    .withBatch(
+                                        new BatchLogRecordProcessor()
+                                            .withExporter(
+                                                new LogRecordExporter().withOtlp(new Otlp())))))),
                 spiHelper,
                 closeables)
             .build();

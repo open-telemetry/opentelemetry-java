@@ -12,6 +12,7 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOn;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimits;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessor;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sampler;
@@ -56,7 +57,11 @@ class TracerProviderFactoryTest {
 
     SdkTracerProvider provider =
         TracerProviderFactory.getInstance()
-            .create(new TracerProvider(), spiHelper, closeables)
+            .create(
+                TracerProviderAndAttributeLimits.create(
+                    new AttributeLimits(), new TracerProvider()),
+                spiHelper,
+                closeables)
             .build();
     cleanup.addCloseable(provider);
     cleanup.addCloseables(closeables);
@@ -89,23 +94,26 @@ class TracerProviderFactoryTest {
     SdkTracerProvider provider =
         TracerProviderFactory.getInstance()
             .create(
-                new TracerProvider()
-                    .withLimits(
-                        new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                                .SpanLimits()
-                            .withAttributeCountLimit(1)
-                            .withAttributeValueLengthLimit(2)
-                            .withEventCountLimit(3)
-                            .withLinkCountLimit(4)
-                            .withEventAttributeCountLimit(5)
-                            .withLinkAttributeCountLimit(6))
-                    .withSampler(new Sampler().withAlwaysOn(new AlwaysOn()))
-                    .withProcessors(
-                        Collections.singletonList(
-                            new SpanProcessor()
-                                .withBatch(
-                                    new BatchSpanProcessor()
-                                        .withExporter(new SpanExporter().withOtlp(new Otlp()))))),
+                TracerProviderAndAttributeLimits.create(
+                    new AttributeLimits(),
+                    new TracerProvider()
+                        .withLimits(
+                            new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
+                                    .SpanLimits()
+                                .withAttributeCountLimit(1)
+                                .withAttributeValueLengthLimit(2)
+                                .withEventCountLimit(3)
+                                .withLinkCountLimit(4)
+                                .withEventAttributeCountLimit(5)
+                                .withLinkAttributeCountLimit(6))
+                        .withSampler(new Sampler().withAlwaysOn(new AlwaysOn()))
+                        .withProcessors(
+                            Collections.singletonList(
+                                new SpanProcessor()
+                                    .withBatch(
+                                        new BatchSpanProcessor()
+                                            .withExporter(
+                                                new SpanExporter().withOtlp(new Otlp())))))),
                 spiHelper,
                 closeables)
             .build();
