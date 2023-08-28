@@ -139,4 +139,9 @@ class LoggingSpanExporterTest {
     assertThat(exporter.shutdown().isSuccess()).isTrue();
     logs.assertContains("Calling shutdown() multiple times.");
   }
+
+  @Test
+  void stringRepresentation() {
+    assertThat(LoggingSpanExporter.create().toString()).isEqualTo("LoggingSpanExporter{}");
+  }
 }

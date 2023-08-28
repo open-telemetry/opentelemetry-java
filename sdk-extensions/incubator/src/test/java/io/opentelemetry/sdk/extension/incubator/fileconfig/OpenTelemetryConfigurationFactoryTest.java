@@ -14,6 +14,7 @@ import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
+import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
@@ -30,16 +31,26 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRec
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimits;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessor;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LoggerProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporter;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReader;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReader;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Resource;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sampler;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Selector;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporter;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessor;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Stream;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProvider;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
@@ -194,6 +205,17 @@ class OpenTelemetryConfigurationFactoryTest {
                                 OtlpGrpcSpanExporter.getDefault())
                             .build())
                     .build())
+            .setMeterProvider(
+                SdkMeterProvider.builder()
+                    .setResource(expectedResource)
+                    .registerMetricReader(
+                        io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
+                                OtlpGrpcMetricExporter.getDefault())
+                            .build())
+                    .registerView(
+                        InstrumentSelector.builder().setName("instrument-name").build(),
+                        View.builder().setName("stream-name").build())
+                    .build())
             .build();
     cleanup.addCloseable(expectedSdk);
 
@@ -243,7 +265,27 @@ class OpenTelemetryConfigurationFactoryTest {
                                         .withBatch(
                                             new BatchSpanProcessor()
                                                 .withExporter(
-                                                    new SpanExporter().withOtlp(new Otlp())))))),
+                                                    new SpanExporter().withOtlp(new Otlp()))))))
+                    .withMeterProvider(
+                        new MeterProvider()
+                            .withReaders(
+                                Collections.singletonList(
+                                    new MetricReader()
+                                        .withPeriodic(
+                                            new PeriodicMetricReader()
+                                                .withExporter(
+                                                    new MetricExporter()
+                                                        .withOtlp(new OtlpMetric())))))
+                            .withViews(
+                                Collections.singletonList(
+                                    new io.opentelemetry.sdk.extension.incubator.fileconfig.internal
+                                            .model.View()
+                                        .withSelector(
+                                            new Selector().withInstrumentName("instrument-name"))
+                                        .withStream(
+                                            new Stream()
+                                                .withName("stream-name")
+                                                .withAttributeKeys(null))))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(sdk);

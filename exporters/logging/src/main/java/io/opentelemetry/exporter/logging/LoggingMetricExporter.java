@@ -103,4 +103,9 @@ public final class LoggingMetricExporter implements MetricExporter {
     }
     return flush();
   }
+
+  @Override
+  public String toString() {
+    return "LoggingMetricExporter{}";
+  }
 }
