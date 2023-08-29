@@ -139,6 +139,8 @@ public class PooledHashMap<K, V> implements Map<K, V> {
   @Nullable
   @SuppressWarnings("unchecked")
   public V get(Object key) {
+    requireNonNull(key, "This map does not support null keys");
+
     int bucket = getBucket((K) key);
     ArrayList<Entry<K, V>> entries = table[bucket];
     if (entries != null) {

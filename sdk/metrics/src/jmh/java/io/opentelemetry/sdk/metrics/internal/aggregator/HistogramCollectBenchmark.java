@@ -7,14 +7,20 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -58,24 +64,31 @@ public class HistogramCollectBenchmark {
 
     @Setup
     public void setup() {
-      PeriodicMetricReader metricReader =
-          PeriodicMetricReader.builder(
-                  // Configure an exporter that configures the temporality and aggregation
-                  // for the test case, but otherwise drops the data on export
-                  new NoopMetricExporter(aggregationTemporality, aggregationGenerator.aggregation))
-              // Effectively disable periodic reading so reading is only done on #flush()
-              .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
-              .build();
-      SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
-      SdkMeterProviderUtil.registerMetricReaderWithCardinalitySelector(
-          builder, metricReader, unused -> cardinality);
+      SdkMeterProviderBuilder builder =
+          SdkMeterProvider.builder()
+              .registerMetricReader(
+                  PeriodicMetricReader.builder(
+                          // Configure an exporter that configures the temporality and aggregation
+                          // for the test case, but otherwise drops the data on export
+                          new NoopMetricExporter(
+                              aggregationTemporality, aggregationGenerator.aggregation))
+                      // Effectively disable periodic reading so reading is only done on #flush()
+                      .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
+                      .build());
       // Disable examplars
       SdkMeterProviderUtil.setExemplarFilter(builder, ExemplarFilter.alwaysOff());
       sdkMeterProvider = builder.build();
       histogram = sdkMeterProvider.get("meter").histogramBuilder("histogram").build();
 
       random = new Random();
-      attributesList = AttributesGenerator.generate(cardinality);
+      attributesList = new ArrayList<>(cardinality);
+      String last = "aaaaaaaaaaaaaaaaaaaaaaaaaa";
+      for (int i = 0; i < cardinality; i++) {
+        char[] chars = last.toCharArray();
+        chars[random.nextInt(last.length())] = (char) (random.nextInt(26) + 'a');
+        last = new String(chars);
+        attributesList.add(Attributes.builder().put("key", last).build());
+      }
     }
 
     @TearDown
@@ -107,6 +120,42 @@ public class HistogramCollectBenchmark {
 
     AggregationGenerator(Aggregation aggregation) {
       this.aggregation = aggregation;
+    }
+  }
+
+  private static class NoopMetricExporter implements MetricExporter {
+    private final AggregationTemporality aggregationTemporality;
+    private final Aggregation aggregation;
+
+    private NoopMetricExporter(
+        AggregationTemporality aggregationTemporality, Aggregation aggregation) {
+      this.aggregationTemporality = aggregationTemporality;
+      this.aggregation = aggregation;
+    }
+
+    @Override
+    public CompletableResultCode export(Collection<MetricData> metrics) {
+      return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public CompletableResultCode flush() {
+      return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public CompletableResultCode shutdown() {
+      return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public Aggregation getDefaultAggregation(InstrumentType instrumentType) {
+      return aggregation;
+    }
+
+    @Override
+    public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+      return aggregationTemporality;
     }
   }
 }

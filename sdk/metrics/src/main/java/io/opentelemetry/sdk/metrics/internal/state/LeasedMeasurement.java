@@ -60,7 +60,7 @@ public class LeasedMeasurement implements Measurement {
   @Nullable private Attributes attributes;
 
   /** Sets the values. */
-  public void set(
+  private void set(
       long startEpochNanos,
       long epochNanos,
       boolean hasLongValue,

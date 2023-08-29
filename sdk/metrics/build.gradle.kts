@@ -28,7 +28,6 @@ dependencies {
 
   jmh(project(":sdk:trace"))
   jmh(project(":sdk:testing"))
-  jmh(project(":sdk:metrics:testing-internal"))
 }
 
 testing {
@@ -47,7 +46,6 @@ testing {
         implementation("org.openjdk.jmh:jmh-core")
         implementation("org.openjdk.jmh:jmh-generator-bytecode")
         annotationProcessor("org.openjdk.jmh:jmh-generator-annprocess")
-        implementation(project(":sdk:metrics:testing-internal"))
       }
     }
   }

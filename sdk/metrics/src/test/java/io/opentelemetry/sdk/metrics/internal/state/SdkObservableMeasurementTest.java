@@ -49,13 +49,16 @@ public class SdkObservableMeasurementTest {
             Advice.empty());
 
     InMemoryMetricReader reader1 =
-        InMemoryMetricReader.create(
-            instrumentType -> CUMULATIVE, DefaultAggregationSelector.getDefault(), memoryMode);
+        InMemoryMetricReader.builder()
+            .setAggregationTemporalitySelector(instrumentType -> CUMULATIVE)
+            .setMemoryMode(memoryMode)
+            .build();
     registeredReader1 = RegisteredReader.create(reader1, ViewRegistry.create());
 
-    InMemoryMetricReader reader2 =
-        InMemoryMetricReader.create(
-            instrumentType -> CUMULATIVE, DefaultAggregationSelector.getDefault(), memoryMode);
+    InMemoryMetricReader reader2 = InMemoryMetricReader
+        .builder()
+        .setMemoryMode(memoryMode)
+        .build();
     registeredReader2 = RegisteredReader.create(reader2, ViewRegistry.create());
 
     measurementArgumentCaptor = ArgumentCaptor.forClass(Measurement.class);

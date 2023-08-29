@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 /**
@@ -88,6 +89,26 @@ public class MutableDoublePointData implements DoublePointData {
     this.attributes = attributes;
     this.value = value;
     this.exemplars = exemplars;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    MutableDoublePointData pointData = (MutableDoublePointData) o;
+    return startEpochNanos == pointData.startEpochNanos
+        && epochNanos == pointData.epochNanos
+        && Double.compare(value, pointData.value) == 0
+        && Objects.equals(attributes,
+        pointData.attributes)
+        && Objects.equals(exemplars, pointData.exemplars);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(startEpochNanos, epochNanos, attributes, value, exemplars);
   }
 
   @Override

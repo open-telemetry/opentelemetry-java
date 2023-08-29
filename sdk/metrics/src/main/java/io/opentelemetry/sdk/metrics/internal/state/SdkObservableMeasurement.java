@@ -13,6 +13,7 @@ import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import java.util.List;
@@ -35,6 +36,8 @@ public final class SdkObservableMeasurement
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final InstrumentDescriptor instrumentDescriptor;
   private final List<AsynchronousMetricStorage<?, ?>> storages;
+
+  /** Only used when {@code activeReader}'s memoryMode is {@link MemoryMode#REUSABLE_DATA} */
   private final LeasedMeasurement leasedMeasurement = new LeasedMeasurement();
 
   // These fields are set before invoking callbacks. They allow measurements to be recorded to the

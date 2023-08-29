@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 public class ArrayBasedStack<T> {
   static final int DEFAULT_CAPACITY = 10;
 
-  // Using native array instead of ArrayList since I plan to add eviction
+  // NOTE (asafm): Using native array instead of ArrayList since I plan to add eviction
   // if the initial portion of the stack is not used for several cycles of collection
   private T[] array;
 

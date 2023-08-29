@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.internal.aggregator;
+package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.metrics.export.MemoryMode.IMMUTABLE_DATA;
 

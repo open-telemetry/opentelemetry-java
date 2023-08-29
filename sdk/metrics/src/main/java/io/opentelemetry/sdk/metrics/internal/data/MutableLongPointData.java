@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 /**
@@ -88,6 +89,25 @@ public class MutableLongPointData implements LongPointData {
     this.attributes = attributes;
     this.value = value;
     this.exemplars = exemplars;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    MutableLongPointData that = (MutableLongPointData) o;
+    return value == that.value
+        && startEpochNanos == that.startEpochNanos
+        && epochNanos == that.epochNanos
+        && Objects.equals(attributes, that.attributes)
+        && Objects.equals(exemplars, that.exemplars);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(value, startEpochNanos, epochNanos, attributes, exemplars);
   }
 
   @Override
