@@ -91,7 +91,7 @@ final class MetricReaderFactory
         }
 
         // TODO(jack-berg): add method for creating from map
-        ConfigProperties configProperties = DefaultConfigProperties.createForTest(properties);
+        ConfigProperties configProperties = DefaultConfigProperties.createFromMap(properties);
 
         return FileConfigUtil.addAndReturn(
             closeables,

@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 public class SpiHelperTest {
 
   private static final ConfigProperties EMPTY =
-      DefaultConfigProperties.createForTest(Collections.emptyMap());
+      DefaultConfigProperties.createFromMap(Collections.emptyMap());
 
   @Test
   public void canRetrieveByName() {

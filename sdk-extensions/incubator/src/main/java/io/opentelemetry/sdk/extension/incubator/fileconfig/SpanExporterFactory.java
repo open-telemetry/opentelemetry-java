@@ -108,7 +108,7 @@ final class SpanExporterFactory
     }
 
     // TODO(jack-berg): add method for creating from map
-    ConfigProperties configProperties = DefaultConfigProperties.createForTest(properties);
+    ConfigProperties configProperties = DefaultConfigProperties.createFromMap(properties);
 
     return FileConfigUtil.assertNotNull(
         spanExporterSpiManager(configProperties, spiHelper).getByName("otlp"), "otlp exporter");
@@ -117,7 +117,7 @@ final class SpanExporterFactory
   private static SpanExporter createConsoleExporter(SpiHelper spiHelper) {
     return FileConfigUtil.assertNotNull(
         spanExporterSpiManager(
-                DefaultConfigProperties.createForTest(Collections.emptyMap()), spiHelper)
+                DefaultConfigProperties.createFromMap(Collections.emptyMap()), spiHelper)
             .getByName("logging"),
         "logging exporter");
   }
@@ -135,7 +135,7 @@ final class SpanExporterFactory
     }
 
     // TODO(jack-berg): add method for creating from map
-    ConfigProperties configProperties = DefaultConfigProperties.createForTest(properties);
+    ConfigProperties configProperties = DefaultConfigProperties.createFromMap(properties);
 
     return FileConfigUtil.assertNotNull(
         spanExporterSpiManager(configProperties, spiHelper).getByName("zipkin"), "zipkin exporter");

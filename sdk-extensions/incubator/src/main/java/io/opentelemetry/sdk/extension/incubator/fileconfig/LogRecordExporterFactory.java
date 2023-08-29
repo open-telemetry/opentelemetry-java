@@ -98,7 +98,7 @@ final class LogRecordExporterFactory
     }
 
     // TODO(jack-berg): add method for creating from map
-    ConfigProperties configProperties = DefaultConfigProperties.createForTest(properties);
+    ConfigProperties configProperties = DefaultConfigProperties.createFromMap(properties);
 
     return FileConfigUtil.assertNotNull(
         logRecordExporterSpiManager(configProperties, spiHelper).getByName("otlp"),

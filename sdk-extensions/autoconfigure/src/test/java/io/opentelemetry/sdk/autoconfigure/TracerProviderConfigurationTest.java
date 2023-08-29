@@ -47,7 +47,7 @@ import org.mockito.quality.Strictness;
 class TracerProviderConfigurationTest {
 
   private static final ConfigProperties EMPTY =
-      DefaultConfigProperties.createForTest(Collections.emptyMap());
+      DefaultConfigProperties.createFromMap(Collections.emptyMap());
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
@@ -74,7 +74,7 @@ class TracerProviderConfigurationTest {
     SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
     TracerProviderConfiguration.configureTracerProvider(
         tracerProviderBuilder,
-        DefaultConfigProperties.createForTest(properties),
+        DefaultConfigProperties.createFromMap(properties),
         spiHelper,
         MeterProvider.noop(),
         (a, unused) -> a,
@@ -130,7 +130,7 @@ class TracerProviderConfigurationTest {
 
     try (BatchSpanProcessor processor =
         TracerProviderConfiguration.configureBatchSpanProcessor(
-            DefaultConfigProperties.createForTest(properties),
+            DefaultConfigProperties.createFromMap(properties),
             mockSpanExporter,
             MeterProvider.noop())) {
       assertThat(processor)
@@ -160,7 +160,7 @@ class TracerProviderConfigurationTest {
 
     SpanLimits config =
         TracerProviderConfiguration.configureSpanLimits(
-            DefaultConfigProperties.createForTest(
+            DefaultConfigProperties.createFromMap(
                 ImmutableMap.of(
                     "otel.attribute.value.length.limit", "100",
                     "otel.attribute.count.limit", "5")));
@@ -175,7 +175,7 @@ class TracerProviderConfigurationTest {
 
     config =
         TracerProviderConfiguration.configureSpanLimits(
-            DefaultConfigProperties.createForTest(
+            DefaultConfigProperties.createFromMap(
                 ImmutableMap.of(
                     "otel.attribute.value.length.limit", "100",
                     "otel.span.attribute.value.length.limit", "200",
@@ -200,7 +200,7 @@ class TracerProviderConfigurationTest {
     assertThat(
             TracerProviderConfiguration.configureSampler(
                 "traceidratio",
-                DefaultConfigProperties.createForTest(
+                DefaultConfigProperties.createFromMap(
                     Collections.singletonMap("otel.traces.sampler.arg", "0.5")),
                 spiHelper))
         .isEqualTo(Sampler.traceIdRatioBased(0.5));
@@ -216,7 +216,7 @@ class TracerProviderConfigurationTest {
     assertThat(
             TracerProviderConfiguration.configureSampler(
                 "parentbased_traceidratio",
-                DefaultConfigProperties.createForTest(
+                DefaultConfigProperties.createFromMap(
                     Collections.singletonMap("otel.traces.sampler.arg", "0.4")),
                 spiHelper))
         .isEqualTo(Sampler.parentBased(Sampler.traceIdRatioBased(0.4)));

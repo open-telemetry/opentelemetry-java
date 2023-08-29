@@ -108,7 +108,7 @@ final class SamplerFactory
 
       // TODO(jack-berg): add method for creating from map
       ConfigProperties configProperties =
-          DefaultConfigProperties.createForTest(
+          DefaultConfigProperties.createFromMap(
               Collections.singletonMap("otel.traces.sampler.arg", otelTraceSamplerArg));
 
       return FileConfigUtil.addAndReturn(

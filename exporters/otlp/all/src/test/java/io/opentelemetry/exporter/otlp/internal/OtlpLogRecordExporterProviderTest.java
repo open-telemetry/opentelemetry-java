@@ -92,7 +92,7 @@ class OtlpLogRecordExporterProviderTest {
     assertThatThrownBy(
             () ->
                 provider.createExporter(
-                    DefaultConfigProperties.createForTest(
+                    DefaultConfigProperties.createFromMap(
                         Collections.singletonMap("otel.exporter.otlp.protocol", "foo"))))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP logs protocol: foo");
@@ -103,12 +103,12 @@ class OtlpLogRecordExporterProviderTest {
     // Verifies createExporter after resetting the spy overrides
     Mockito.reset(provider);
     try (LogRecordExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap()))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap()))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcLogRecordExporter.class);
     }
     try (LogRecordExporter exporter =
         provider.createExporter(
-            DefaultConfigProperties.createForTest(
+            DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.exporter.otlp.protocol", "http/protobuf")))) {
       assertThat(exporter).isInstanceOf(OtlpHttpLogRecordExporter.class);
     }
@@ -117,7 +117,7 @@ class OtlpLogRecordExporterProviderTest {
   @Test
   void createExporter_GrpcDefaults() {
     try (LogRecordExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap()))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap()))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcLogRecordExporter.class);
       verify(grpcBuilder, times(1)).build();
       verify(grpcBuilder, never()).setEndpoint(any());
@@ -144,7 +144,7 @@ class OtlpLogRecordExporterProviderTest {
     config.put("otel.experimental.exporter.otlp.retry.enabled", "true");
 
     try (LogRecordExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(config))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcLogRecordExporter.class);
       verify(grpcBuilder, times(1)).build();
       verify(grpcBuilder).setEndpoint("https://localhost:443/");
@@ -178,7 +178,7 @@ class OtlpLogRecordExporterProviderTest {
     config.put("otel.exporter.otlp.logs.timeout", "15s");
 
     try (LogRecordExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(config))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcLogRecordExporter.class);
       verify(grpcBuilder, times(1)).build();
       verify(grpcBuilder).setEndpoint("https://localhost:443/");
@@ -196,7 +196,7 @@ class OtlpLogRecordExporterProviderTest {
   void createExporter_HttpDefaults() {
     try (LogRecordExporter exporter =
         provider.createExporter(
-            DefaultConfigProperties.createForTest(
+            DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.exporter.otlp.logs.protocol", "http/protobuf")))) {
       assertThat(exporter).isInstanceOf(OtlpHttpLogRecordExporter.class);
       verify(httpBuilder, times(1)).build();
@@ -225,7 +225,7 @@ class OtlpLogRecordExporterProviderTest {
     config.put("otel.experimental.exporter.otlp.retry.enabled", "true");
 
     try (LogRecordExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(config))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(exporter).isInstanceOf(OtlpHttpLogRecordExporter.class);
       verify(httpBuilder, times(1)).build();
       verify(httpBuilder).setEndpoint("https://localhost:443/v1/logs");
@@ -261,7 +261,7 @@ class OtlpLogRecordExporterProviderTest {
     config.put("otel.exporter.otlp.logs.timeout", "15s");
 
     try (LogRecordExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(config))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(exporter).isInstanceOf(OtlpHttpLogRecordExporter.class);
       verify(httpBuilder, times(1)).build();
       verify(httpBuilder).setEndpoint("https://localhost:443/v1/logs");

@@ -35,7 +35,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class MetricExporterConfigurationTest {
 
   private static final ConfigProperties EMPTY =
-      DefaultConfigProperties.createForTest(Collections.emptyMap());
+      DefaultConfigProperties.createFromMap(Collections.emptyMap());
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
@@ -101,7 +101,7 @@ class MetricExporterConfigurationTest {
                 MetricExporterConfiguration.configureExporter(
                     "otlp",
                     MetricExporterConfiguration.metricExporterSpiManager(
-                        DefaultConfigProperties.createForTest(
+                        DefaultConfigProperties.createFromMap(
                             ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
                         spiHelper)))
         .isInstanceOf(ConfigurationException.class)

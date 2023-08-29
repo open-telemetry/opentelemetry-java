@@ -39,20 +39,20 @@ class OtlpConfigUtilTest {
   void getOtlpProtocolDefault() {
     assertThat(
             OtlpConfigUtil.getOtlpProtocol(
-                DATA_TYPE_TRACES, DefaultConfigProperties.createForTest(Collections.emptyMap())))
+                DATA_TYPE_TRACES, DefaultConfigProperties.createFromMap(Collections.emptyMap())))
         .isEqualTo(PROTOCOL_GRPC);
 
     assertThat(
             OtlpConfigUtil.getOtlpProtocol(
                 DATA_TYPE_TRACES,
-                DefaultConfigProperties.createForTest(
+                DefaultConfigProperties.createFromMap(
                     ImmutableMap.of("otel.exporter.otlp.protocol", "foo"))))
         .isEqualTo("foo");
 
     assertThat(
             OtlpConfigUtil.getOtlpProtocol(
                 DATA_TYPE_TRACES,
-                DefaultConfigProperties.createForTest(
+                DefaultConfigProperties.createFromMap(
                     ImmutableMap.of(
                         "otel.exporter.otlp.protocol", "foo",
                         "otel.exporter.otlp.traces.protocol", "bar"))))
@@ -318,7 +318,7 @@ class OtlpConfigUtilTest {
 
     OtlpConfigUtil.configureOtlpExporterBuilder(
         dataType,
-        DefaultConfigProperties.createForTest(properties),
+        DefaultConfigProperties.createFromMap(properties),
         endpoint::set,
         (value1, value2) -> {},
         value -> {},
@@ -362,7 +362,7 @@ class OtlpConfigUtilTest {
       Map<String, String> properties) {
     AtomicReference<AggregationTemporalitySelector> temporalityRef = new AtomicReference<>();
     OtlpConfigUtil.configureOtlpAggregationTemporality(
-        DefaultConfigProperties.createForTest(properties), temporalityRef::set);
+        DefaultConfigProperties.createFromMap(properties), temporalityRef::set);
     // We apply the temporality selector to a HISTOGRAM instrument to simplify assertions
     return temporalityRef.get().getAggregationTemporality(InstrumentType.HISTOGRAM);
   }
@@ -409,7 +409,7 @@ class OtlpConfigUtilTest {
       Map<String, String> properties) {
     AtomicReference<DefaultAggregationSelector> aggregationRef = new AtomicReference<>();
     OtlpConfigUtil.configureOtlpHistogramDefaultAggregation(
-        DefaultConfigProperties.createForTest(properties), aggregationRef::set);
+        DefaultConfigProperties.createFromMap(properties), aggregationRef::set);
     // We apply the temporality selector to a HISTOGRAM instrument to simplify assertions
     return aggregationRef.get();
   }
