@@ -107,9 +107,7 @@ final class SpanExporterFactory
       properties.put("otel.exporter.otlp.traces.client.certificate", model.getClientCertificate());
     }
 
-    // TODO(jack-berg): add method for creating from map
     ConfigProperties configProperties = DefaultConfigProperties.createFromMap(properties);
-
     return FileConfigUtil.assertNotNull(
         spanExporterSpiManager(configProperties, spiHelper).getByName("otlp"), "otlp exporter");
   }
@@ -134,9 +132,7 @@ final class SpanExporterFactory
       properties.put("otel.exporter.zipkin.timeout", Integer.toString(model.getTimeout()));
     }
 
-    // TODO(jack-berg): add method for creating from map
     ConfigProperties configProperties = DefaultConfigProperties.createFromMap(properties);
-
     return FileConfigUtil.assertNotNull(
         spanExporterSpiManager(configProperties, spiHelper).getByName("zipkin"), "zipkin exporter");
   }

@@ -90,9 +90,7 @@ final class MetricReaderFactory
               "otel.exporter.prometheus.port", String.valueOf(prometheusModel.getPort()));
         }
 
-        // TODO(jack-berg): add method for creating from map
         ConfigProperties configProperties = DefaultConfigProperties.createFromMap(properties);
-
         return FileConfigUtil.addAndReturn(
             closeables,
             FileConfigUtil.assertNotNull(

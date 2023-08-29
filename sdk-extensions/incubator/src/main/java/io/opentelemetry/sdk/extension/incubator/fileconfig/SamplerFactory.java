@@ -106,11 +106,9 @@ final class SamplerFactory
               .map(entry -> entry.getKey() + "=" + entry.getValue())
               .collect(joining(","));
 
-      // TODO(jack-berg): add method for creating from map
       ConfigProperties configProperties =
           DefaultConfigProperties.createFromMap(
               Collections.singletonMap("otel.traces.sampler.arg", otelTraceSamplerArg));
-
       return FileConfigUtil.addAndReturn(
           closeables,
           FileConfigUtil.assertNotNull(
