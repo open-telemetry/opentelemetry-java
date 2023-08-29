@@ -93,16 +93,17 @@ public class MutableDoublePointData implements DoublePointData {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o)
+    if (this == o) {
       return true;
-    if (o == null || getClass() != o.getClass())
+    }
+    if (o == null || !(o instanceof MutableDoublePointData)) {
       return false;
+    }
     MutableDoublePointData pointData = (MutableDoublePointData) o;
     return startEpochNanos == pointData.startEpochNanos
         && epochNanos == pointData.epochNanos
         && Double.compare(value, pointData.value) == 0
-        && Objects.equals(attributes,
-        pointData.attributes)
+        && Objects.equals(attributes, pointData.attributes)
         && Objects.equals(exemplars, pointData.exemplars);
   }
 

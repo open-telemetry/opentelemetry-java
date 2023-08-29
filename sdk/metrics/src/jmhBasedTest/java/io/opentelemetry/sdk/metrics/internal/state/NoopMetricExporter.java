@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import static io.opentelemetry.sdk.metrics.export.MemoryMode.IMMUTABLE_DATA;
-
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -20,10 +18,6 @@ public class NoopMetricExporter implements MetricExporter {
   private final AggregationTemporality aggregationTemporality;
   private final Aggregation aggregation;
   private final MemoryMode memoryMode;
-
-  NoopMetricExporter(AggregationTemporality aggregationTemporality, Aggregation aggregation) {
-    this(aggregationTemporality, aggregation, IMMUTABLE_DATA);
-  }
 
   /**
    * Create a {@link NoopMetricExporter} with aggregationTemporality, aggregation and memory mode.

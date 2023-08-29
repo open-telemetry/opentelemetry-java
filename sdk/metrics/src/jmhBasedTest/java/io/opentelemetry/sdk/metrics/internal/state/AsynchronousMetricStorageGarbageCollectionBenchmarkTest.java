@@ -10,10 +10,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.MemoryMode;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import io.opentelemetry.sdk.resources.Resource;
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
 import org.openjdk.jmh.infra.BenchmarkParams;
@@ -28,21 +28,18 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 public class AsynchronousMetricStorageGarbageCollectionBenchmarkTest {
 
   /**
-   * This test validates that in {@link MemoryMode#REUSABLE_DATA},
-   * {@link AsynchronousMetricStorage#collect(Resource, InstrumentationScopeInfo, long, long)}
-   * barely allocates memory which is
-   * then subsequently garbage collected. It is done so comparatively to
+   * This test validates that in {@link MemoryMode#REUSABLE_DATA}, {@link
+   * AsynchronousMetricStorage#collect(Resource, InstrumentationScopeInfo, long, long)} barely
+   * allocates memory which is then subsequently garbage collected. It is done so comparatively to
    * {@link MemoryMode#IMMUTABLE_DATA},
    *
-   * <p>It runs the JMH test {@link AsynchronousMetricStorageGarbageCollectionBenchmark} with
-   * GC profiler, and measures for each parameter combination the garbage collector normalized
-   * rate (bytes allocated per Operation).
+   * <p>It runs the JMH test {@link AsynchronousMetricStorageGarbageCollectionBenchmark} with GC
+   * profiler, and measures for each parameter combination the garbage collector normalized rate
+   * (bytes allocated per Operation).
    *
-   * <p>Memory allocations can be hidden even at an innocent foreach loop on a collection,
-   * which under the hood allocates an internal object O(N) times. Someone can
-   * accidentally refactor such loop, resulting in 30% increase of garbage collected
-   * objects during a single collect() run.
-   *
+   * <p>Memory allocations can be hidden even at an innocent foreach loop on a collection, which
+   * under the hood allocates an internal object O(N) times. Someone can accidentally refactor such
+   * loop, resulting in 30% increase of garbage collected objects during a single collect() run.
    */
   @SuppressWarnings("rawtypes")
   @Test

@@ -15,7 +15,6 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -30,12 +29,11 @@ import org.mockito.ArgumentCaptor;
 public class SdkObservableMeasurementTest {
 
   private AsynchronousMetricStorage mockAsyncStorage1;
-  private AsynchronousMetricStorage mockAsyncStorage2;
   private RegisteredReader registeredReader1;
-  private RegisteredReader registeredReader2;
   private SdkObservableMeasurement sdkObservableMeasurement;
   private ArgumentCaptor<Measurement> measurementArgumentCaptor;
 
+  @SuppressWarnings("unchecked")
   private void setup(MemoryMode memoryMode) {
     InstrumentationScopeInfo instrumentationScopeInfo =
         InstrumentationScopeInfo.builder("test-scope").build();
@@ -55,16 +53,13 @@ public class SdkObservableMeasurementTest {
             .build();
     registeredReader1 = RegisteredReader.create(reader1, ViewRegistry.create());
 
-    InMemoryMetricReader reader2 = InMemoryMetricReader
-        .builder()
-        .setMemoryMode(memoryMode)
-        .build();
-    registeredReader2 = RegisteredReader.create(reader2, ViewRegistry.create());
+    InMemoryMetricReader reader2 = InMemoryMetricReader.builder().setMemoryMode(memoryMode).build();
+    RegisteredReader registeredReader2 = RegisteredReader.create(reader2, ViewRegistry.create());
 
     measurementArgumentCaptor = ArgumentCaptor.forClass(Measurement.class);
     mockAsyncStorage1 = mock(AsynchronousMetricStorage.class);
     when(mockAsyncStorage1.getRegisteredReader()).thenReturn(registeredReader1);
-    mockAsyncStorage2 = mock(AsynchronousMetricStorage.class);
+    AsynchronousMetricStorage mockAsyncStorage2 = mock(AsynchronousMetricStorage.class);
     when(mockAsyncStorage2.getRegisteredReader()).thenReturn(registeredReader2);
 
     sdkObservableMeasurement =

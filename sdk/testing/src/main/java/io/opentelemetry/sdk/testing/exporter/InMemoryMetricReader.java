@@ -65,12 +65,12 @@ public class InMemoryMetricReader implements MetricReader {
     private MemoryMode memoryMode = IMMUTABLE_DATA;
 
     /**
-     * Creates a builder with always-cumulative {@link AggregationTemporalitySelector},
-     * default {@link DefaultAggregationSelector} and {@link MemoryMode#IMMUTABLE_DATA}
-     * {@link MemoryMode}
+     * Creates an {@link InMemoryMetricReaderBuilder} with defaults.
+     *
+     * <p>Creates a builder with always-cumulative {@link AggregationTemporalitySelector}, default
+     * {@link DefaultAggregationSelector} and {@link MemoryMode#IMMUTABLE_DATA} {@link MemoryMode}
      */
-    public InMemoryMetricReaderBuilder() {
-    }
+    public InMemoryMetricReaderBuilder() {}
 
     public InMemoryMetricReaderBuilder setAggregationTemporalitySelector(
         AggregationTemporalitySelector aggregationTemporalitySelector) {
@@ -84,6 +84,12 @@ public class InMemoryMetricReader implements MetricReader {
       return this;
     }
 
+    /**
+     * Sets the {@link MemoryMode}.
+     *
+     * @param memoryMode the {@link MemoryMode} to set
+     * @return this {@link InMemoryMetricReaderBuilder}
+     */
     public InMemoryMetricReaderBuilder setMemoryMode(MemoryMode memoryMode) {
       this.memoryMode = memoryMode;
       return this;
@@ -91,19 +97,15 @@ public class InMemoryMetricReader implements MetricReader {
 
     public InMemoryMetricReader build() {
       return new InMemoryMetricReader(
-          aggregationTemporalitySelector,
-          defaultAggregationSelector,
-          memoryMode);
+          aggregationTemporalitySelector, defaultAggregationSelector, memoryMode);
     }
   }
 
   /**
    * Creates an {@link InMemoryMetricReaderBuilder} with defaults.
    *
-   * @return a builder with always-cumulative {@link AggregationTemporalitySelector},
-   * default {@link DefaultAggregationSelector} and {@link MemoryMode#IMMUTABLE_DATA}
-   * {@link MemoryMode}
-   *
+   * @return a builder with always-cumulative {@link AggregationTemporalitySelector}, default {@link
+   *     DefaultAggregationSelector} and {@link MemoryMode#IMMUTABLE_DATA} {@link MemoryMode}
    * @since 1.29.0
    */
   public static InMemoryMetricReaderBuilder builder() {

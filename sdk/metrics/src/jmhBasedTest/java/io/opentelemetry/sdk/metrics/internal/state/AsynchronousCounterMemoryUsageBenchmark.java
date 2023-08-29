@@ -29,21 +29,22 @@ import java.util.concurrent.atomic.AtomicLong;
  * You have to run it manually for each parameter, since it's not JMH-based, and we need a clean
  * heap before we start.
  *
- * <p>This benchmark class has additional usage: You can use it to see memory allocation frame graphs for a
- * single run.
+ * <p>This benchmark class has additional usage: You can use it to see memory allocation frame
+ * graphs for a single run.
  *
  * <p>Steps:
+ *
  * <ol>
- * <li> Follow download instructions for async-profiler, located at
- * https://github.com/async-profiler/async-profiler
- * <li>Assuming you have extracted it at
- * /tmp/async-profiler-2.9-macos, add the following to your JVM arguments of your run configuration:
- *
- * <p>-agentpath:/tmp/async-profiler-2.9-macos/build/libasyncProfiler.so=start,event=alloc,flamegraph,file=/tmp/profiled_data.html
- *
- * <li>Tune the parameters as you see fit
- * <li>Run the class
- * <li>Open /tmp/profiled_data.html with your browser
+ *   <li>Follow download instructions for async-profiler, located at
+ *       https://github.com/async-profiler/async-profiler
+ *   <li>Assuming you have extracted it at /tmp/async-profiler-2.9-macos, add the following to your
+ *       JVM arguments of your run configuration:
+ *       <pre>
+ *       -agentpath:/tmp/async-profiler-2.9-macos/build/libasyncProfiler.so=start,event=alloc,flamegraph,file=/tmp/profiled_data.html
+ *       </pre>
+ *   <li>Tune the parameters as you see fit
+ *   <li>Run the class
+ *   <li>Open /tmp/profiled_data.html with your browser
  * </ol>
  */
 @SuppressWarnings("SystemOut")
@@ -69,8 +70,7 @@ public class AsynchronousCounterMemoryUsageBenchmark {
   }
 
   @SuppressWarnings("DefaultCharset")
-  private void measure()
-      throws ExecutionException, InterruptedException, TimeoutException {
+  private void measure() throws ExecutionException, InterruptedException, TimeoutException {
     // Parameters
     AggregationTemporality aggregationTemporality = AggregationTemporality.CUMULATIVE;
     MemoryMode memoryMode = MemoryMode.IMMUTABLE_DATA;

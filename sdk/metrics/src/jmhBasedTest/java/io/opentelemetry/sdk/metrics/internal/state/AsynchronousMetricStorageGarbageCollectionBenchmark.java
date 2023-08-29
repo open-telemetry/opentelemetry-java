@@ -33,21 +33,21 @@ import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
 /**
- * Run this through {@link AsynchronousMetricStorageGarbageCollectionBenchmarkTest}, as it runs
- * it embedded with the GC profiler which what this test designed for (No need for command line run)
+ * Run this through {@link AsynchronousMetricStorageGarbageCollectionBenchmarkTest}, as it runs it
+ * embedded with the GC profiler which what this test designed for (No need for command line run)
  *
- * <p>This test creates 10 asynchronous counters (any asynchronous instrument will do as the code path
- * is almost the same for all async instrument types), and 1000 attribute sets.
- * Each time the test runs, it calls `flush` which effectively calls the callback for each counter.
- * Each such callback records a random number for each of the 1000 attribute sets.
- * The result list ends up in {@link NoopMetricExporter} which does nothing with it.
+ * <p>This test creates 10 asynchronous counters (any asynchronous instrument will do as the code
+ * path is almost the same for all async instrument types), and 1000 attribute sets. Each time the
+ * test runs, it calls `flush` which effectively calls the callback for each counter. Each such
+ * callback records a random number for each of the 1000 attribute sets. The result list ends up in
+ * {@link NoopMetricExporter} which does nothing with it.
  *
- * <p>This is repeated 100 times, collectively called Operation in the statistics and
- * each such operation is repeated 20 times - known as Iteration.
+ * <p>This is repeated 100 times, collectively called Operation in the statistics and each such
+ * operation is repeated 20 times - known as Iteration.
  *
- * <p>Each such test is repeated, with a brand new JVM, for all combinations of
- * {@link MemoryMode} and {@link AggregationTemporality}. This is done since each combination
- * has a different code path.
+ * <p>Each such test is repeated, with a brand new JVM, for all combinations of {@link MemoryMode}
+ * and {@link AggregationTemporality}. This is done since each combination has a different code
+ * path.
  */
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)

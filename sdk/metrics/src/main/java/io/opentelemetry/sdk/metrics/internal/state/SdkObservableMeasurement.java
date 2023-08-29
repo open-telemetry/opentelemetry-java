@@ -37,7 +37,7 @@ public final class SdkObservableMeasurement
   private final InstrumentDescriptor instrumentDescriptor;
   private final List<AsynchronousMetricStorage<?, ?>> storages;
 
-  /** Only used when {@code activeReader}'s memoryMode is {@link MemoryMode#REUSABLE_DATA} */
+  /** Only used when {@code activeReader}'s memoryMode is {@link MemoryMode#REUSABLE_DATA}. */
   private final LeasedMeasurement leasedMeasurement = new LeasedMeasurement();
 
   // These fields are set before invoking callbacks. They allow measurements to be recorded to the

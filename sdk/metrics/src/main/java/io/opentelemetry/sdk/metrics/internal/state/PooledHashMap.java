@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -12,8 +14,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * A bucket-based hash map with an internal re-usable map entry objects pool
@@ -26,13 +26,13 @@ import static java.util.Objects.requireNonNull;
  * key-value of the put operation. The borrowed object is returned to the pool when the map entry
  * key is removed from the map.
  *
- * @param <K> The map key type
- * @param <V> The map value type
- *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  *
  * <p>This class is not thread-safe.
+ *
+ * @param <K> The map key type
+ * @param <V> The map value type
  */
 public class PooledHashMap<K, V> implements Map<K, V> {
   private static final int DEFAULT_CAPACITY = 16;
