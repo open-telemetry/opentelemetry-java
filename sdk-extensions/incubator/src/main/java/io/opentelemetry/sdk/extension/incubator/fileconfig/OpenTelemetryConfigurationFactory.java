@@ -31,15 +31,14 @@ final class OpenTelemetryConfigurationFactory
   @Override
   public OpenTelemetrySdk create(
       @Nullable OpenTelemetryConfiguration model, SpiHelper spiHelper, List<Closeable> closeables) {
+    OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
     if (model == null) {
-      return FileConfigUtil.addAndReturn(closeables, OpenTelemetrySdk.builder().build());
+      return FileConfigUtil.addAndReturn(closeables, builder.build());
     }
 
     if (!"0.1".equals(model.getFileFormat())) {
       throw new ConfigurationException("Unsupported file format. Supported formats include: 0.1");
     }
-
-    OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
 
     if (Objects.equals(Boolean.TRUE, model.getDisabled())) {
       return builder.build();
@@ -88,8 +87,6 @@ final class OpenTelemetryConfigurationFactory
                   .setResource(resource)
                   .build()));
     }
-
-    // TODO(jack-berg): add support for general attribute limits
 
     return FileConfigUtil.addAndReturn(closeables, builder.build());
   }
