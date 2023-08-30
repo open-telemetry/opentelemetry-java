@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 
 /**
  * A mutable {@link DoublePointData}
@@ -26,7 +25,7 @@ public class MutableDoublePointData implements DoublePointData {
   private long startEpochNanos;
   private long epochNanos;
 
-  @Nullable private Attributes attributes;
+  private Attributes attributes = Attributes.empty();
 
   private double value;
   private List<DoubleExemplarData> exemplars = Collections.emptyList();
@@ -46,8 +45,6 @@ public class MutableDoublePointData implements DoublePointData {
     return epochNanos;
   }
 
-  // attributes is null only upon initial creation and never returned as such
-  @SuppressWarnings({"NullAway", "NullableProblems"})
   @Override
   public Attributes getAttributes() {
     return attributes;

@@ -26,9 +26,7 @@ public class MutableLongPointData implements LongPointData {
   private long value;
   private long startEpochNanos;
   private long epochNanos;
-
-  @Nullable private Attributes attributes;
-
+  private Attributes attributes  = Attributes.empty();
   private List<LongExemplarData> exemplars = Collections.emptyList();
 
   @Override
@@ -46,8 +44,6 @@ public class MutableLongPointData implements LongPointData {
     return epochNanos;
   }
 
-  // attributes is null only upon initial creation and never returned as such
-  @SuppressWarnings({"NullAway", "NullableProblems"})
   @Override
   public Attributes getAttributes() {
     return attributes;
