@@ -28,7 +28,7 @@ class ZipkinSpanExporterProviderTest {
   @Test
   void createExporter_Default() {
     try (SpanExporter spanExporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap()))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap()))) {
       assertThat(spanExporter).isInstanceOf(ZipkinSpanExporter.class);
       assertThat(spanExporter)
           .extracting("sender")
@@ -49,7 +49,7 @@ class ZipkinSpanExporterProviderTest {
     config.put("otel.exporter.zipkin.timeout", "1s");
 
     try (SpanExporter spanExporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(config))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(spanExporter).isInstanceOf(ZipkinSpanExporter.class);
       assertThat(spanExporter)
           .extracting("sender")

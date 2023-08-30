@@ -52,7 +52,7 @@ final class PropagatorsFactory implements Factory<List<String>, ContextPropagato
             ConfigurablePropagatorProvider.class,
             ConfigurablePropagatorProvider::getName,
             ConfigurablePropagatorProvider::getPropagator,
-            DefaultConfigProperties.createForTest(Collections.emptyMap()));
+            DefaultConfigProperties.createFromMap(Collections.emptyMap()));
     Set<TextMapPropagator> propagators = new LinkedHashSet<>();
     for (String propagator : model) {
       propagators.add(getPropagator(propagator, spiPropagatorsManager));

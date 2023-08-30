@@ -43,7 +43,7 @@ class LoggerProviderConfigurationTest {
     SdkLoggerProviderBuilder builder = SdkLoggerProvider.builder();
     LoggerProviderConfiguration.configureLoggerProvider(
         builder,
-        DefaultConfigProperties.createForTest(Collections.emptyMap()),
+        DefaultConfigProperties.createFromMap(Collections.emptyMap()),
         SpiHelper.create(LoggerProviderConfiguration.class.getClassLoader()),
         MeterProvider.noop(),
         (a, unused) -> a,
@@ -86,7 +86,7 @@ class LoggerProviderConfigurationTest {
 
     List<LogRecordProcessor> logRecordProcessors =
         LoggerProviderConfiguration.configureLogRecordProcessors(
-            DefaultConfigProperties.createForTest(Collections.emptyMap()),
+            DefaultConfigProperties.createFromMap(Collections.emptyMap()),
             ImmutableMap.of(
                 "logging",
                 SystemOutLogRecordExporter.create(),
@@ -116,7 +116,7 @@ class LoggerProviderConfigurationTest {
 
     try (BatchLogRecordProcessor processor =
         LoggerProviderConfiguration.configureBatchLogRecordProcessor(
-            DefaultConfigProperties.createForTest(properties),
+            DefaultConfigProperties.createFromMap(properties),
             SystemOutLogRecordExporter.create(),
             MeterProvider.noop())) {
       assertThat(processor)

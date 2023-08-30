@@ -31,7 +31,7 @@ class ResourceConfigurationFuzzTest {
     public void getAttributesWithRandomValues(String value1, String value2) {
       Attributes attributes =
           ResourceConfiguration.createEnvironmentResource(
-                  DefaultConfigProperties.createForTest(
+                  DefaultConfigProperties.createFromMap(
                       singletonMap(
                           ResourceConfiguration.ATTRIBUTE_PROPERTY,
                           "key1=" + escaper.escape(value1) + ",key2=" + escaper.escape(value2))))

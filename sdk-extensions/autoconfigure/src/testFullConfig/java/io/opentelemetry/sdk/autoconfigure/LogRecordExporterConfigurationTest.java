@@ -29,7 +29,7 @@ class LogRecordExporterConfigurationTest {
   void configureExporter_KnownSpiExportersOnClasspath() {
     NamedSpiManager<LogRecordExporter> spiExportersManager =
         LogRecordExporterConfiguration.logRecordExporterSpiManager(
-            DefaultConfigProperties.createForTest(Collections.emptyMap()), spiHelper);
+            DefaultConfigProperties.createFromMap(Collections.emptyMap()), spiHelper);
 
     assertThat(LogRecordExporterConfiguration.configureExporter("logging", spiExportersManager))
         .isInstanceOf(SystemOutLogRecordExporter.class);
@@ -47,7 +47,7 @@ class LogRecordExporterConfigurationTest {
                 LogRecordExporterConfiguration.configureExporter(
                     "otlp",
                     LogRecordExporterConfiguration.logRecordExporterSpiManager(
-                        DefaultConfigProperties.createForTest(
+                        DefaultConfigProperties.createFromMap(
                             ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
                         spiHelper)))
         .isInstanceOf(ConfigurationException.class)
