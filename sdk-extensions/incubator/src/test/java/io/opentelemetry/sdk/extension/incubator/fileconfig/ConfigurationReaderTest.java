@@ -27,6 +27,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Metric
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric.DefaultHistogramAggregation;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBased;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReader;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Prometheus;
@@ -42,6 +43,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Stream
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceIdRatioBased;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.View;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Zipkin;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -56,6 +58,7 @@ class ConfigurationReaderTest {
     OpenTelemetryConfiguration expected = new OpenTelemetryConfiguration();
 
     expected.withFileFormat("0.1");
+    expected.withDisabled(false);
 
     // General config
     Resource resource =
@@ -119,10 +122,20 @@ class ConfigurationReaderTest {
                                     .withTimeout(10_000))));
     SpanProcessor spanProcessor2 =
         new SpanProcessor()
+            .withBatch(
+                new BatchSpanProcessor()
+                    .withExporter(
+                        new SpanExporter()
+                            .withZipkin(
+                                new Zipkin()
+                                    .withEndpoint("http://localhost:9411/api/v2/spans")
+                                    .withTimeout(10_000))));
+    SpanProcessor spanProcessor3 =
+        new SpanProcessor()
             .withSimple(
                 new SimpleSpanProcessor()
                     .withExporter(new SpanExporter().withConsole(new Console())));
-    tracerProvider.withProcessors(Arrays.asList(spanProcessor1, spanProcessor2));
+    tracerProvider.withProcessors(Arrays.asList(spanProcessor1, spanProcessor2, spanProcessor3));
 
     expected.withTracerProvider(tracerProvider);
     // end TracerProvider config
@@ -192,7 +205,8 @@ class ConfigurationReaderTest {
                                     .withTimeout(10_000)
                                     .withTemporalityPreference("delta")
                                     .withDefaultHistogramAggregation(
-                                        "exponential_bucket_histogram"))));
+                                        DefaultHistogramAggregation
+                                            .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM))));
     MetricReader metricReader3 =
         new MetricReader()
             .withPeriodic(
@@ -205,7 +219,8 @@ class ConfigurationReaderTest {
             .withSelector(
                 new Selector()
                     .withInstrumentName("my-instrument")
-                    .withInstrumentType("histogram")
+                    .withInstrumentType(Selector.InstrumentType.HISTOGRAM)
+                    .withUnit("ms")
                     .withMeterName("my-meter")
                     .withMeterVersion("1.0.0")
                     .withMeterSchemaUrl("https://opentelemetry.io/schemas/1.16.0"))
@@ -243,7 +258,7 @@ class ConfigurationReaderTest {
       assertThat(configTracerProvider.getLimits()).isEqualTo(spanLimits);
       assertThat(configTracerProvider.getSampler()).isEqualTo(sampler);
       assertThat(configTracerProvider.getProcessors())
-          .isEqualTo(Arrays.asList(spanProcessor1, spanProcessor2));
+          .isEqualTo(Arrays.asList(spanProcessor1, spanProcessor2, spanProcessor3));
 
       // LoggerProvider config
       LoggerProvider configLoggerProvider = config.getLoggerProvider();

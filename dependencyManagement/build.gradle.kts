@@ -10,18 +10,18 @@ rootProject.extra["versions"] = dependencyVersions
 val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.15.2",
   "com.google.guava:guava-bom:32.1.2-jre",
-  "com.google.protobuf:protobuf-bom:3.24.0",
-  "com.linecorp.armeria:armeria-bom:1.24.3",
+  "com.google.protobuf:protobuf-bom:3.24.2",
+  "com.linecorp.armeria:armeria-bom:1.25.2",
   "com.squareup.okhttp3:okhttp-bom:4.11.0",
   "com.squareup.okio:okio-bom:3.5.0", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.57.2",
-  "io.netty:netty-bom:4.1.96.Final",
+  "io.netty:netty-bom:4.1.97.Final",
   "io.zipkin.brave:brave-bom:5.16.0",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.4",
   "org.assertj:assertj-bom:3.24.2",
   "org.junit:junit-bom:5.10.0",
-  "org.testcontainers:testcontainers-bom:1.18.3",
-  "org.snakeyaml:snakeyaml-engine:2.6"
+  "org.testcontainers:testcontainers-bom:1.19.0",
+  "org.snakeyaml:snakeyaml-engine:2.7"
 )
 
 val autoValueVersion = "1.10.3"
@@ -60,12 +60,12 @@ val DEPENDENCIES = listOf(
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit5:1.1.0",
   "com.uber.nullaway:nullaway:0.10.12",
-  // TODO(anuraaga): Skip 1.8 because of https://github.com/rohanpadhye/JQF/issues/172
-  "edu.berkeley.cs.jqf:jqf-fuzz:1.7",
+  "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
   "io.opentelemetry.proto:opentelemetry-proto:1.0.0-alpha",
+  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.29.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
   "junit:junit:4.13.2",

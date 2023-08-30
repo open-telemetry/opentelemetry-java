@@ -32,7 +32,7 @@ class SpanExporterConfigurationTest {
   void configureExporter_KnownSpiExportersOnClasspath() {
     NamedSpiManager<SpanExporter> spiExportersManager =
         SpanExporterConfiguration.spanExporterSpiManager(
-            DefaultConfigProperties.createForTest(Collections.emptyMap()), spiHelper);
+            DefaultConfigProperties.createFromMap(Collections.emptyMap()), spiHelper);
 
     assertThat(SpanExporterConfiguration.configureExporter("jaeger", spiExportersManager))
         .isInstanceOf(io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter.class);
@@ -49,7 +49,7 @@ class SpanExporterConfigurationTest {
   @Test
   void configureOtlpSpansUnsupportedProtocol() {
     ConfigProperties config =
-        DefaultConfigProperties.createForTest(
+        DefaultConfigProperties.createFromMap(
             ImmutableMap.of("otel.exporter.otlp.protocol", "foo"));
     assertThatThrownBy(
             () ->
@@ -63,7 +63,7 @@ class SpanExporterConfigurationTest {
   @Test
   void configureOtlpTimeout() {
     ConfigProperties config =
-        DefaultConfigProperties.createForTest(
+        DefaultConfigProperties.createFromMap(
             Collections.singletonMap("otel.exporter.otlp.timeout", "10"));
     try (SpanExporter exporter =
         SpanExporterConfiguration.configureExporter(

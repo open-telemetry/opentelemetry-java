@@ -19,7 +19,6 @@ import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -87,7 +86,6 @@ final class MeterProviderConfiguration {
             exporterName ->
                 MetricExporterConfiguration.configureReader(
                     exporterName, config, spiHelper, metricExporterCustomizer, closeables))
-        .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }
 

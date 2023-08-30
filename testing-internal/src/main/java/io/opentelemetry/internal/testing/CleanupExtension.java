@@ -23,6 +23,11 @@ public class CleanupExtension implements AfterEachCallback {
     this.closeables.addAll(closeables);
   }
 
+  /** Add a {@link Closeable} to be cleaned up after test completion. */
+  public void addCloseable(Closeable closeable) {
+    this.closeables.add(closeable);
+  }
+
   @Override
   public void afterEach(ExtensionContext context) {
     for (Closeable closeable : closeables) {

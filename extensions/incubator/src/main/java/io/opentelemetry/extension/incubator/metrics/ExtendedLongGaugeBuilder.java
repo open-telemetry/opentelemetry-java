@@ -21,4 +21,9 @@ public interface ExtendedLongGaugeBuilder extends LongGaugeBuilder {
    * @return The LongGauge instrument.
    */
   LongGauge build();
+
+  /** Specify advice for gauge implementations. */
+  default LongGaugeBuilder setAdvice(Consumer<LongGaugeAdviceConfigurer> adviceConsumer) {
+    return this;
+  }
 }

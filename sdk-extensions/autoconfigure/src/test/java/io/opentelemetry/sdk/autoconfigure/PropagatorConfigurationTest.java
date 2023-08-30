@@ -24,7 +24,7 @@ class PropagatorConfigurationTest {
   void defaultPropagators() {
     ContextPropagators contextPropagators =
         PropagatorConfiguration.configurePropagators(
-            DefaultConfigProperties.createForTest(Collections.emptyMap()),
+            DefaultConfigProperties.createFromMap(Collections.emptyMap()),
             spiHelper,
             (a, unused) -> a);
 
@@ -36,7 +36,7 @@ class PropagatorConfigurationTest {
   void configurePropagators_none() {
     ContextPropagators contextPropagators =
         PropagatorConfiguration.configurePropagators(
-            DefaultConfigProperties.createForTest(
+            DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.propagators", "none")),
             spiHelper,
             (a, unused) -> a);
@@ -49,7 +49,7 @@ class PropagatorConfigurationTest {
     assertThatThrownBy(
             () ->
                 PropagatorConfiguration.configurePropagators(
-                    DefaultConfigProperties.createForTest(
+                    DefaultConfigProperties.createFromMap(
                         Collections.singletonMap("otel.propagators", "none,blather")),
                     spiHelper,
                     (a, unused) -> a))
@@ -62,7 +62,7 @@ class PropagatorConfigurationTest {
     assertThatThrownBy(
             () ->
                 PropagatorConfiguration.configurePropagators(
-                    DefaultConfigProperties.createForTest(
+                    DefaultConfigProperties.createFromMap(
                         Collections.singletonMap("otel.propagators", "b3")),
                     spiHelper,
                     (a, config) -> a))

@@ -53,7 +53,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
    * Create a {@link DefaultConfigProperties} from the {@code properties}, ignoring system
    * properties and environment variables.
    */
-  public static DefaultConfigProperties createForTest(Map<String, String> properties) {
+  public static DefaultConfigProperties createFromMap(Map<String, String> properties) {
     return new DefaultConfigProperties(properties, Collections.emptyMap(), Collections.emptyMap());
   }
 

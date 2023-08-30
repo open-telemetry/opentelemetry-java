@@ -57,7 +57,7 @@ class ResourceConfigurationTest {
   void createEnvironmentResource_WithResourceAttributes() {
     Attributes attributes =
         ResourceConfiguration.createEnvironmentResource(
-                DefaultConfigProperties.createForTest(
+                DefaultConfigProperties.createFromMap(
                     singletonMap(
                         ResourceConfiguration.ATTRIBUTE_PROPERTY,
                         "service.name=myService,appName=MyApp")))
@@ -73,7 +73,7 @@ class ResourceConfigurationTest {
   void createEnvironmentResource_WithServiceName() {
     Attributes attributes =
         ResourceConfiguration.createEnvironmentResource(
-                DefaultConfigProperties.createForTest(
+                DefaultConfigProperties.createFromMap(
                     singletonMap(ResourceConfiguration.SERVICE_NAME_PROPERTY, "myService")))
             .getAttributes();
 
@@ -84,7 +84,7 @@ class ResourceConfigurationTest {
   void createEnvironmentResource_ServiceNamePriority() {
     Attributes attributes =
         ResourceConfiguration.createEnvironmentResource(
-                DefaultConfigProperties.createForTest(
+                DefaultConfigProperties.createFromMap(
                     ImmutableMap.of(
                         ResourceConfiguration.ATTRIBUTE_PROPERTY,
                         "service.name=myService,appName=MyApp",
@@ -102,7 +102,7 @@ class ResourceConfigurationTest {
   void createEnvironmentResource_EmptyResourceAttributes() {
     Attributes attributes =
         ResourceConfiguration.createEnvironmentResource(
-                DefaultConfigProperties.createForTest(
+                DefaultConfigProperties.createFromMap(
                     singletonMap(ResourceConfiguration.ATTRIBUTE_PROPERTY, "")))
             .getAttributes();
 
@@ -112,7 +112,7 @@ class ResourceConfigurationTest {
   @Test
   void filterAttributes() {
     ConfigProperties configProperties =
-        DefaultConfigProperties.createForTest(ImmutableMap.of(DISABLED_ATTRIBUTE_KEYS, "foo,bar"));
+        DefaultConfigProperties.createFromMap(ImmutableMap.of(DISABLED_ATTRIBUTE_KEYS, "foo,bar"));
 
     Resource resourceNoSchema =
         Resource.builder().put("foo", "val").put("bar", "val").put("baz", "val").build();

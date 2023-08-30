@@ -11,7 +11,7 @@ import java.io.InputStream;
 import org.snakeyaml.engine.v2.api.Load;
 import org.snakeyaml.engine.v2.api.LoadSettings;
 
-class ConfigurationReader {
+final class ConfigurationReader {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
 

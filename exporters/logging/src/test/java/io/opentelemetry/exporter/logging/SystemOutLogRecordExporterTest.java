@@ -61,6 +61,12 @@ class SystemOutLogRecordExporterTest {
     assertThat(exporter.shutdown().isSuccess()).isTrue();
   }
 
+  @Test
+  void stringRepresentation() {
+    assertThat(SystemOutLogRecordExporter.create().toString())
+        .isEqualTo("SystemOutLogRecordExporter{}");
+  }
+
   private static LogRecordData sampleLog(long timestamp) {
     return TestLogRecordData.builder()
         .setResource(Resource.empty())

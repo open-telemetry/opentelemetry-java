@@ -34,7 +34,7 @@ class LogRecordExporterConfigurationTest {
   void configureExporter_KnownSpiExportersNotOnClasspath() {
     NamedSpiManager<LogRecordExporter> spiExportersManager =
         LogRecordExporterConfiguration.logRecordExporterSpiManager(
-            DefaultConfigProperties.createForTest(Collections.emptyMap()), spiHelper);
+            DefaultConfigProperties.createFromMap(Collections.emptyMap()), spiHelper);
 
     assertThatThrownBy(() -> configureExporter("logging", spiExportersManager))
         .isInstanceOf(ConfigurationException.class)
@@ -64,7 +64,7 @@ class LogRecordExporterConfigurationTest {
     assertThatThrownBy(
             () ->
                 LogRecordExporterConfiguration.configureLogRecordExporters(
-                    DefaultConfigProperties.createForTest(
+                    DefaultConfigProperties.createFromMap(
                         ImmutableMap.of("otel.logs.exporter", "otlp,otlp")),
                     spiHelper,
                     (a, unused) -> a,
@@ -82,7 +82,7 @@ class LogRecordExporterConfigurationTest {
     assertThatThrownBy(
             () ->
                 LogRecordExporterConfiguration.configureLogRecordExporters(
-                    DefaultConfigProperties.createForTest(
+                    DefaultConfigProperties.createFromMap(
                         ImmutableMap.of("otel.logs.exporter", "foo")),
                     spiHelper,
                     (a, unused) -> a,
@@ -100,7 +100,7 @@ class LogRecordExporterConfigurationTest {
     assertThatThrownBy(
             () ->
                 LogRecordExporterConfiguration.configureLogRecordExporters(
-                    DefaultConfigProperties.createForTest(
+                    DefaultConfigProperties.createFromMap(
                         ImmutableMap.of("otel.logs.exporter", "otlp,none")),
                     spiHelper,
                     (a, unused) -> a,

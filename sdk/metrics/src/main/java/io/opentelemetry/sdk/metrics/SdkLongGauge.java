@@ -5,17 +5,21 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.LongGaugeBuilder;
 import io.opentelemetry.api.metrics.ObservableLongGauge;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.extension.incubator.metrics.ExtendedLongGaugeBuilder;
 import io.opentelemetry.extension.incubator.metrics.LongGauge;
+import io.opentelemetry.extension.incubator.metrics.LongGaugeAdviceConfigurer;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
+import java.util.List;
 import java.util.function.Consumer;
 
 final class SdkLongGauge extends AbstractInstrument implements LongGauge {
@@ -38,7 +42,7 @@ final class SdkLongGauge extends AbstractInstrument implements LongGauge {
   }
 
   static final class SdkLongGaugeBuilder extends AbstractInstrumentBuilder<SdkLongGaugeBuilder>
-      implements ExtendedLongGaugeBuilder {
+      implements ExtendedLongGaugeBuilder, LongGaugeAdviceConfigurer {
 
     SdkLongGaugeBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -67,6 +71,18 @@ final class SdkLongGauge extends AbstractInstrument implements LongGauge {
     @Override
     public SdkLongGauge build() {
       return buildSynchronousInstrument(SdkLongGauge::new);
+    }
+
+    @Override
+    public LongGaugeBuilder setAdvice(Consumer<LongGaugeAdviceConfigurer> adviceConsumer) {
+      adviceConsumer.accept(this);
+      return this;
+    }
+
+    @Override
+    public LongGaugeAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
+      adviceBuilder.setAttributes(attributes);
+      return this;
     }
 
     @Override

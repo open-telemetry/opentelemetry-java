@@ -5,17 +5,21 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableDoubleUpDownCounter;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.extension.incubator.metrics.DoubleUpDownCounterAdviceConfigurer;
+import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleUpDownCounterBuilder;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
+import java.util.List;
 import java.util.function.Consumer;
 
 final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleUpDownCounter {
@@ -44,7 +48,7 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
 
   static final class SdkDoubleUpDownCounterBuilder
       extends AbstractInstrumentBuilder<SdkDoubleUpDownCounterBuilder>
-      implements DoubleUpDownCounterBuilder {
+      implements ExtendedDoubleUpDownCounterBuilder, DoubleUpDownCounterAdviceConfigurer {
 
     SdkDoubleUpDownCounterBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -70,6 +74,13 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
     }
 
     @Override
+    public DoubleUpDownCounterBuilder setAdvice(
+        Consumer<DoubleUpDownCounterAdviceConfigurer> adviceConsumer) {
+      adviceConsumer.accept(this);
+      return this;
+    }
+
+    @Override
     public DoubleUpDownCounter build() {
       return buildSynchronousInstrument(SdkDoubleUpDownCounter::new);
     }
@@ -84,6 +95,12 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
     @Override
     public ObservableDoubleMeasurement buildObserver() {
       return buildObservableMeasurement(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER);
+    }
+
+    @Override
+    public DoubleUpDownCounterAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
+      adviceBuilder.setAttributes(attributes);
+      return this;
     }
   }
 }

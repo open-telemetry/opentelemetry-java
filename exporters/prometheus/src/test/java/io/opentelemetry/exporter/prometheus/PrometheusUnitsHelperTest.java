@@ -24,18 +24,13 @@ class PrometheusUnitsHelperTest {
     return Stream.of(
         // Simple expansion - storage Bytes
         Arguments.of("By", "bytes"),
-        Arguments.of("B", "bytes"),
-        // Simple expansion - storage KB
-        Arguments.of("KB", "kilobytes"),
+        // Simple expansion - storage KBy
         Arguments.of("KBy", "kilobytes"),
-        // Simple expansion - storage MB
-        Arguments.of("MB", "megabytes"),
+        // Simple expansion - storage MBy
         Arguments.of("MBy", "megabytes"),
-        // Simple expansion - storage GB
-        Arguments.of("GB", "gigabytes"),
+        // Simple expansion - storage GBy
         Arguments.of("GBy", "gigabytes"),
-        // Simple expansion - storage TB
-        Arguments.of("TB", "terabytes"),
+        // Simple expansion - storage TBy
         Arguments.of("TBy", "terabytes"),
         // Simple expansion - storage KiBy
         Arguments.of("KiBy", "kibibytes"),
@@ -61,8 +56,6 @@ class PrometheusUnitsHelperTest {
         Arguments.of("min", "minutes"),
         // Simple expansion - special symbol - %
         Arguments.of("%", "percent"),
-        // Simple expansion - special symbols - $
-        Arguments.of("$", "dollars"),
         // Simple expansion - frequency
         Arguments.of("Hz", "hertz"),
         // Simple expansion - temperature
@@ -90,7 +83,7 @@ class PrometheusUnitsHelperTest {
         // Units expressing rate - per month
         Arguments.of("J/mo", "joules_per_month"),
         // Units expressing rate - per year
-        Arguments.of("TB/y", "terabytes_per_year"),
+        Arguments.of("TBy/y", "terabytes_per_year"),
         // Units expressing rate - 'per' units, both units unknown
         Arguments.of("v/v", "v_per_v"),
         // Units expressing rate - 'per' units, first unit unknown

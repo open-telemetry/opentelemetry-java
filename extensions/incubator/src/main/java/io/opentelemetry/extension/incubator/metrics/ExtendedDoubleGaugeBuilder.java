@@ -21,4 +21,9 @@ public interface ExtendedDoubleGaugeBuilder extends DoubleGaugeBuilder {
    * @return The DoubleGauge instrument.
    */
   DoubleGauge build();
+
+  /** Specify advice for gauge implementations. */
+  default DoubleGaugeBuilder setAdvice(Consumer<DoubleGaugeAdviceConfigurer> adviceConsumer) {
+    return this;
+  }
 }

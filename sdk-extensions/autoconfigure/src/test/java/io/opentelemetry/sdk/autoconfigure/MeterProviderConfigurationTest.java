@@ -51,7 +51,7 @@ class MeterProviderConfigurationTest {
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
     MeterProviderConfiguration.configureMeterProvider(
         builder,
-        DefaultConfigProperties.createForTest(configWithDefault),
+        DefaultConfigProperties.createFromMap(configWithDefault),
         SpiHelper.create(MeterProviderConfigurationTest.class.getClassLoader()),
         (a, b) -> a,
         new ArrayList<>());
