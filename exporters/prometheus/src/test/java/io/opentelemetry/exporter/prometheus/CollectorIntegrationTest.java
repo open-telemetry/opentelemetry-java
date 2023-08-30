@@ -154,12 +154,16 @@ class CollectorIntegrationTest {
                 Objects.requireNonNull(
                     resource.getAttributes().get(ResourceAttributes.TELEMETRY_SDK_VERSION))));
 
-    assertThat(resourceMetrics.getScopeMetricsCount()).isEqualTo(1);
-    ScopeMetrics scopeMetrics = resourceMetrics.getScopeMetrics(0);
-    assertThat(scopeMetrics.getScope().getName()).isEqualTo("otelcol/prometheusreceiver");
+    assertThat(resourceMetrics.getScopeMetricsCount()).isEqualTo(2);
+    ScopeMetrics testScopeMetrics =
+        resourceMetrics.getScopeMetricsList().stream()
+            .filter(scopeMetrics -> scopeMetrics.getScope().getName().equals("test"))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("missing scope with name \"test\""));
+    assertThat(testScopeMetrics.getScope().getVersion()).isEqualTo("1.0.0");
 
     Optional<Metric> optRequestTotal =
-        scopeMetrics.getMetricsList().stream()
+        testScopeMetrics.getMetricsList().stream()
             .filter(metric -> metric.getName().equals("requests_total"))
             .findFirst();
     assertThat(optRequestTotal).isPresent();
@@ -179,28 +183,6 @@ class CollectorIntegrationTest {
             stringKeyValue("animal", "bear"),
             // Scope name and version are serialized as attributes to disambiguate metrics with the
             // same name in different scopes
-            stringKeyValue("otel_scope_name", "test"),
-            stringKeyValue("otel_scope_version", "1.0.0"));
-
-    // Scope is serialized as info type metric, which is transformed to non-monotonic cumulative sum
-    Optional<Metric> optTestScopeInfo =
-        scopeMetrics.getMetricsList().stream()
-            .filter(metric -> metric.getName().equals("otel_scope_info"))
-            .findFirst();
-    assertThat(optTestScopeInfo).isPresent();
-    Metric testScopeInfo = optTestScopeInfo.get();
-    assertThat(testScopeInfo.getDataCase()).isEqualTo(Metric.DataCase.SUM);
-
-    Sum testScopeInfoSum = testScopeInfo.getSum();
-    assertThat(testScopeInfoSum.getAggregationTemporality())
-        .isEqualTo(AggregationTemporality.AGGREGATION_TEMPORALITY_CUMULATIVE);
-    assertThat(testScopeInfoSum.getIsMonotonic()).isFalse();
-    assertThat(testScopeInfoSum.getDataPointsCount()).isEqualTo(1);
-
-    NumberDataPoint testScopeInfoDataPoint = testScopeInfoSum.getDataPoints(0);
-    assertThat(testScopeInfoDataPoint.getAsDouble()).isEqualTo(1.0);
-    assertThat(testScopeInfoDataPoint.getAttributesList())
-        .containsExactlyInAnyOrder(
             stringKeyValue("otel_scope_name", "test"),
             stringKeyValue("otel_scope_version", "1.0.0"));
   }
