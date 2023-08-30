@@ -12,6 +12,7 @@ import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanLinks;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
@@ -102,7 +103,12 @@ public final class OtTracePropagator implements TextMapPropagator {
       return context;
     }
 
-    Context extractedContext = context.with(Span.wrap(spanContext));
+    if (Span.fromContextOrNull(context) == null) {
+      context = context.with(Span.wrap(spanContext));
+    } else {
+      SpanLinks existingLinks = SpanLinks.fromContext(context);
+      context = context.with(existingLinks.with(spanContext));
+    }
 
     // Baggage is only extracted if there is a valid SpanContext
     if (carrier != null) {
@@ -119,11 +125,11 @@ public final class OtTracePropagator implements TextMapPropagator {
       }
       Baggage baggage = baggageBuilder.build();
       if (!baggage.isEmpty()) {
-        extractedContext = extractedContext.with(baggage);
+        context = context.with(baggage);
       }
     }
 
-    return extractedContext;
+    return context;
   }
 
   private static SpanContext buildSpanContext(

@@ -47,8 +47,8 @@ public interface TextMapPropagator {
    * Returns a {@link TextMapPropagator} which simply delegates injection and extraction to the
    * provided propagators.
    *
-   * <p>Invocation order of {@code TextMapPropagator#inject()} and {@code
-   * TextMapPropagator#extract()} for registered trace propagators is undefined.
+   * <p>{@code TextMapPropagator#inject()} and {@code TextMapPropagator#extract()} are invoked
+   * in the argument order.
    */
   static TextMapPropagator composite(TextMapPropagator... propagators) {
     return composite(Arrays.asList(propagators));
@@ -58,8 +58,8 @@ public interface TextMapPropagator {
    * Returns a {@link TextMapPropagator} which simply delegates injection and extraction to the
    * provided propagators.
    *
-   * <p>Invocation order of {@code TextMapPropagator#inject()} and {@code
-   * TextMapPropagator#extract()} for registered trace propagators is undefined.
+   * <p>{@code TextMapPropagator#inject()} and {@code TextMapPropagator#extract()} are invoked
+   * in the iteration order.
    */
   static TextMapPropagator composite(Iterable<TextMapPropagator> propagators) {
     List<TextMapPropagator> propagatorsList = new ArrayList<>();

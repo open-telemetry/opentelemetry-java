@@ -17,6 +17,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.SpanLinks;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
@@ -178,6 +179,14 @@ final class SdkSpanBuilder implements SpanBuilder {
     } else {
       // New child span.
       traceId = parentSpanContext.getTraceId();
+    }
+    if(parentSpanContext.isRemote()) {
+      // We can't remove the links from the context after we've applied them.
+      // Only option is to only do this if the parentSpanContext is remote.
+      SpanLinks spanLinks = SpanLinks.fromContext(parentContext);
+      // adding the link with an attribute representing the propagator name would be better
+      // but the current API would need some invasive changes to make that possible.
+      spanLinks.consume(this::addLink);
     }
     List<LinkData> immutableLinks =
         links == null ? Collections.emptyList() : Collections.unmodifiableList(links);
