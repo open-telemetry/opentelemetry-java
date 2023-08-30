@@ -23,8 +23,11 @@ import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.junit.jupiter.api.Test;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class LoggerProviderFactoryTest {
 
@@ -33,81 +36,55 @@ class LoggerProviderFactoryTest {
   private final SpiHelper spiHelper =
       SpiHelper.create(LoggerProviderFactoryTest.class.getClassLoader());
 
-  @Test
-  void create_Null() {
+  @ParameterizedTest
+  @MethodSource("createArguments")
+  void create(LoggerProviderAndAttributeLimits model, SdkLoggerProvider expectedProvider) {
     List<Closeable> closeables = new ArrayList<>();
-    SdkLoggerProvider expectedProvider = SdkLoggerProvider.builder().build();
     cleanup.addCloseable(expectedProvider);
 
     SdkLoggerProvider provider =
-        LoggerProviderFactory.getInstance().create(null, spiHelper, closeables).build();
+        LoggerProviderFactory.getInstance().create(model, spiHelper, closeables).build();
     cleanup.addCloseable(provider);
     cleanup.addCloseables(closeables);
 
     assertThat(provider.toString()).isEqualTo(expectedProvider.toString());
   }
 
-  @Test
-  void create_Defaults() {
-    List<Closeable> closeables = new ArrayList<>();
-    SdkLoggerProvider expectedProvider = SdkLoggerProvider.builder().build();
-    cleanup.addCloseable(expectedProvider);
-
-    SdkLoggerProvider provider =
-        LoggerProviderFactory.getInstance()
-            .create(
-                LoggerProviderAndAttributeLimits.create(
-                    new AttributeLimits(), new LoggerProvider()),
-                spiHelper,
-                closeables)
-            .build();
-    cleanup.addCloseable(provider);
-    cleanup.addCloseables(closeables);
-
-    assertThat(provider.toString()).isEqualTo(expectedProvider.toString());
-  }
-
-  @Test
-  void create_Configured() {
-    List<Closeable> closeables = new ArrayList<>();
-    SdkLoggerProvider expectedProvider =
-        SdkLoggerProvider.builder()
-            .setLogLimits(
-                () ->
-                    LogLimits.builder()
-                        .setMaxNumberOfAttributes(1)
-                        .setMaxAttributeValueLength(2)
+  private static Stream<Arguments> createArguments() {
+    return Stream.of(
+        Arguments.of(null, SdkLoggerProvider.builder().build()),
+        Arguments.of(
+            LoggerProviderAndAttributeLimits.create(null, null),
+            SdkLoggerProvider.builder().build()),
+        Arguments.of(
+            LoggerProviderAndAttributeLimits.create(new AttributeLimits(), new LoggerProvider()),
+            SdkLoggerProvider.builder().build()),
+        Arguments.of(
+            LoggerProviderAndAttributeLimits.create(
+                new AttributeLimits(),
+                new LoggerProvider()
+                    .withLimits(
+                        new LogRecordLimits()
+                            .withAttributeCountLimit(1)
+                            .withAttributeValueLengthLimit(2))
+                    .withProcessors(
+                        Collections.singletonList(
+                            new LogRecordProcessor()
+                                .withBatch(
+                                    new BatchLogRecordProcessor()
+                                        .withExporter(
+                                            new LogRecordExporter().withOtlp(new Otlp())))))),
+            SdkLoggerProvider.builder()
+                .setLogLimits(
+                    () ->
+                        LogLimits.builder()
+                            .setMaxNumberOfAttributes(1)
+                            .setMaxAttributeValueLength(2)
+                            .build())
+                .addLogRecordProcessor(
+                    io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor.builder(
+                            OtlpGrpcLogRecordExporter.getDefault())
                         .build())
-            .addLogRecordProcessor(
-                io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor.builder(
-                        OtlpGrpcLogRecordExporter.getDefault())
-                    .build())
-            .build();
-    cleanup.addCloseable(expectedProvider);
-
-    SdkLoggerProvider provider =
-        LoggerProviderFactory.getInstance()
-            .create(
-                LoggerProviderAndAttributeLimits.create(
-                    new AttributeLimits(),
-                    new LoggerProvider()
-                        .withLimits(
-                            new LogRecordLimits()
-                                .withAttributeCountLimit(1)
-                                .withAttributeValueLengthLimit(2))
-                        .withProcessors(
-                            Collections.singletonList(
-                                new LogRecordProcessor()
-                                    .withBatch(
-                                        new BatchLogRecordProcessor()
-                                            .withExporter(
-                                                new LogRecordExporter().withOtlp(new Otlp())))))),
-                spiHelper,
-                closeables)
-            .build();
-    cleanup.addCloseable(provider);
-    cleanup.addCloseables(closeables);
-
-    assertThat(provider.toString()).isEqualTo(expectedProvider.toString());
+                .build()));
   }
 }

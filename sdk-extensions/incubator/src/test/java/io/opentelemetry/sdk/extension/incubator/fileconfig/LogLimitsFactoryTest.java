@@ -33,6 +33,8 @@ class LogLimitsFactoryTest {
     return Stream.of(
         Arguments.of(null, LogLimits.builder().build()),
         Arguments.of(
+            LogRecordLimitsAndAttributeLimits.create(null, null), LogLimits.builder().build()),
+        Arguments.of(
             LogRecordLimitsAndAttributeLimits.create(new AttributeLimits(), new LogRecordLimits()),
             LogLimits.builder().build()),
         Arguments.of(

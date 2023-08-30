@@ -25,8 +25,11 @@ import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.junit.jupiter.api.Test;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class TracerProviderFactoryTest {
 
@@ -35,91 +38,64 @@ class TracerProviderFactoryTest {
   private final SpiHelper spiHelper =
       SpiHelper.create(TracerProviderFactoryTest.class.getClassLoader());
 
-  @Test
-  void create_Null() {
+  @ParameterizedTest
+  @MethodSource("createArguments")
+  void create(TracerProviderAndAttributeLimits model, SdkTracerProvider expectedProvider) {
     List<Closeable> closeables = new ArrayList<>();
-    SdkTracerProvider expectedProvider = SdkTracerProvider.builder().build();
     cleanup.addCloseable(expectedProvider);
 
     SdkTracerProvider provider =
-        TracerProviderFactory.getInstance().create(null, spiHelper, closeables).build();
+        TracerProviderFactory.getInstance().create(model, spiHelper, closeables).build();
     cleanup.addCloseable(provider);
     cleanup.addCloseables(closeables);
 
     assertThat(provider.toString()).isEqualTo(expectedProvider.toString());
   }
 
-  @Test
-  void create_Defaults() {
-    List<Closeable> closeables = new ArrayList<>();
-    SdkTracerProvider expectedProvider = SdkTracerProvider.builder().build();
-    cleanup.addCloseable(expectedProvider);
-
-    SdkTracerProvider provider =
-        TracerProviderFactory.getInstance()
-            .create(
-                TracerProviderAndAttributeLimits.create(
-                    new AttributeLimits(), new TracerProvider()),
-                spiHelper,
-                closeables)
-            .build();
-    cleanup.addCloseable(provider);
-    cleanup.addCloseables(closeables);
-
-    assertThat(provider.toString()).isEqualTo(expectedProvider.toString());
-  }
-
-  @Test
-  void create_Configured() {
-    List<Closeable> closeables = new ArrayList<>();
-    SdkTracerProvider expectedProvider =
-        SdkTracerProvider.builder()
-            .setSpanLimits(
-                SpanLimits.builder()
-                    .setMaxNumberOfAttributes(1)
-                    .setMaxAttributeValueLength(2)
-                    .setMaxNumberOfEvents(3)
-                    .setMaxNumberOfLinks(4)
-                    .setMaxNumberOfAttributesPerEvent(5)
-                    .setMaxNumberOfAttributesPerLink(6)
-                    .build())
-            .setSampler(alwaysOn())
-            .addSpanProcessor(
-                io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(
-                        OtlpGrpcSpanExporter.getDefault())
-                    .build())
-            .build();
-    cleanup.addCloseable(expectedProvider);
-
-    SdkTracerProvider provider =
-        TracerProviderFactory.getInstance()
-            .create(
-                TracerProviderAndAttributeLimits.create(
-                    new AttributeLimits(),
-                    new TracerProvider()
-                        .withLimits(
-                            new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                                    .SpanLimits()
-                                .withAttributeCountLimit(1)
-                                .withAttributeValueLengthLimit(2)
-                                .withEventCountLimit(3)
-                                .withLinkCountLimit(4)
-                                .withEventAttributeCountLimit(5)
-                                .withLinkAttributeCountLimit(6))
-                        .withSampler(new Sampler().withAlwaysOn(new AlwaysOn()))
-                        .withProcessors(
-                            Collections.singletonList(
-                                new SpanProcessor()
-                                    .withBatch(
-                                        new BatchSpanProcessor()
-                                            .withExporter(
-                                                new SpanExporter().withOtlp(new Otlp())))))),
-                spiHelper,
-                closeables)
-            .build();
-    cleanup.addCloseable(provider);
-    cleanup.addCloseables(closeables);
-
-    assertThat(provider.toString()).isEqualTo(expectedProvider.toString());
+  private static Stream<Arguments> createArguments() {
+    return Stream.of(
+        Arguments.of(null, SdkTracerProvider.builder().build()),
+        Arguments.of(
+            TracerProviderAndAttributeLimits.create(null, null),
+            SdkTracerProvider.builder().build()),
+        Arguments.of(
+            TracerProviderAndAttributeLimits.create(new AttributeLimits(), new TracerProvider()),
+            SdkTracerProvider.builder().build()),
+        Arguments.of(
+            TracerProviderAndAttributeLimits.create(
+                new AttributeLimits(),
+                new TracerProvider()
+                    .withLimits(
+                        new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
+                                .SpanLimits()
+                            .withAttributeCountLimit(1)
+                            .withAttributeValueLengthLimit(2)
+                            .withEventCountLimit(3)
+                            .withLinkCountLimit(4)
+                            .withEventAttributeCountLimit(5)
+                            .withLinkAttributeCountLimit(6))
+                    .withSampler(new Sampler().withAlwaysOn(new AlwaysOn()))
+                    .withProcessors(
+                        Collections.singletonList(
+                            new SpanProcessor()
+                                .withBatch(
+                                    new BatchSpanProcessor()
+                                        .withExporter(new SpanExporter().withOtlp(new Otlp())))))),
+            SdkTracerProvider.builder()
+                .setSpanLimits(
+                    SpanLimits.builder()
+                        .setMaxNumberOfAttributes(1)
+                        .setMaxAttributeValueLength(2)
+                        .setMaxNumberOfEvents(3)
+                        .setMaxNumberOfLinks(4)
+                        .setMaxNumberOfAttributesPerEvent(5)
+                        .setMaxNumberOfAttributesPerLink(6)
+                        .build())
+                .setSampler(alwaysOn())
+                .addSpanProcessor(
+                    io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(
+                            OtlpGrpcSpanExporter.getDefault())
+                        .build())
+                .build()));
   }
 }
