@@ -18,6 +18,7 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -26,6 +27,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterPro
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Console;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Headers;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Zipkin;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.io.IOException;
@@ -184,6 +186,74 @@ class SpanExporterFactoryTest {
     cleanup.addCloseables(closeables);
 
     assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
+  }
+
+  @Test
+  void create_ZipkinDefaults() {
+    spiHelper = spy(spiHelper);
+    List<Closeable> closeables = new ArrayList<>();
+    ZipkinSpanExporter expectedExporter = ZipkinSpanExporter.builder().build();
+
+    cleanup.addCloseable(expectedExporter);
+
+    SpanExporter exporter =
+        SpanExporterFactory.getInstance()
+            .create(
+                new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
+                        .SpanExporter()
+                    .withZipkin(new Zipkin()),
+                spiHelper,
+                closeables);
+    cleanup.addCloseable(exporter);
+    cleanup.addCloseables(closeables);
+
+    assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
+
+    ArgumentCaptor<ConfigProperties> configCaptor = ArgumentCaptor.forClass(ConfigProperties.class);
+    verify(spiHelper)
+        .loadConfigurable(
+            eq(ConfigurableSpanExporterProvider.class), any(), any(), configCaptor.capture());
+    ConfigProperties configProperties = configCaptor.getValue();
+    assertThat(configProperties.getString("otel.exporter.zipkin.endpoint")).isNull();
+    assertThat(configProperties.getDuration("otel.exporter.zipkin.timeout")).isNull();
+  }
+
+  @Test
+  void create_ZipkinConfigured() {
+    spiHelper = spy(spiHelper);
+    List<Closeable> closeables = new ArrayList<>();
+    ZipkinSpanExporter expectedExporter =
+        ZipkinSpanExporter.builder()
+            .setEndpoint("http://zipkin:9411/v1/v2/spans")
+            .setReadTimeout(Duration.ofSeconds(15))
+            .build();
+    cleanup.addCloseable(expectedExporter);
+
+    SpanExporter exporter =
+        SpanExporterFactory.getInstance()
+            .create(
+                new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
+                        .SpanExporter()
+                    .withZipkin(
+                        new Zipkin()
+                            .withEndpoint("http://zipkin:9411/v1/v2/spans")
+                            .withTimeout(15_000)),
+                spiHelper,
+                closeables);
+    cleanup.addCloseable(exporter);
+    cleanup.addCloseables(closeables);
+
+    assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
+
+    ArgumentCaptor<ConfigProperties> configCaptor = ArgumentCaptor.forClass(ConfigProperties.class);
+    verify(spiHelper)
+        .loadConfigurable(
+            eq(ConfigurableSpanExporterProvider.class), any(), any(), configCaptor.capture());
+    ConfigProperties configProperties = configCaptor.getValue();
+    assertThat(configProperties.getString("otel.exporter.zipkin.endpoint"))
+        .isEqualTo("http://zipkin:9411/v1/v2/spans");
+    assertThat(configProperties.getDuration("otel.exporter.zipkin.timeout"))
+        .isEqualTo(Duration.ofSeconds(15));
   }
 
   @Test

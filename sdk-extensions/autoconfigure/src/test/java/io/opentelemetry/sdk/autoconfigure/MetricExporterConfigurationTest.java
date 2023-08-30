@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 class MetricExporterConfigurationTest {
 
   private static final ConfigProperties EMPTY =
-      DefaultConfigProperties.createForTest(Collections.emptyMap());
+      DefaultConfigProperties.createFromMap(Collections.emptyMap());
 
   private final SpiHelper spiHelper =
       SpiHelper.create(MetricExporterConfigurationTest.class.getClassLoader());

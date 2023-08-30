@@ -76,7 +76,7 @@ class PrometheusMetricReaderProviderTest {
     when(configProperties.getString(any())).thenReturn(null);
 
     try (MetricReader metricReader =
-        provider.createMetricReader(DefaultConfigProperties.createForTest(config))) {
+        provider.createMetricReader(DefaultConfigProperties.createFromMap(config))) {
       assertThat(metricReader)
           .extracting("server", as(InstanceOfAssertFactories.type(HttpServer.class)))
           .satisfies(

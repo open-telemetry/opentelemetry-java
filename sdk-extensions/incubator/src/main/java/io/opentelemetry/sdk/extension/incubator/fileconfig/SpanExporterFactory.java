@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Zipkin;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.util.Collections;
@@ -51,13 +52,12 @@ final class SpanExporterFactory
     }
 
     if (model.getConsole() != null) {
-      return FileConfigUtil.addAndReturn(
-          closeables,
-          FileConfigUtil.assertNotNull(
-              spanExporterSpiManager(
-                      DefaultConfigProperties.createForTest(Collections.emptyMap()), spiHelper)
-                  .getByName("logging"),
-              "logging exporter"));
+      return FileConfigUtil.addAndReturn(closeables, createConsoleExporter(spiHelper));
+    }
+
+    Zipkin zipkinModel = model.getZipkin();
+    if (zipkinModel != null) {
+      return FileConfigUtil.addAndReturn(closeables, createZipkinExporter(zipkinModel, spiHelper));
     }
 
     // TODO(jack-berg): add support for generic SPI exporters
@@ -107,11 +107,34 @@ final class SpanExporterFactory
       properties.put("otel.exporter.otlp.traces.client.certificate", model.getClientCertificate());
     }
 
-    // TODO(jack-berg): add method for creating from map
-    ConfigProperties configProperties = DefaultConfigProperties.createForTest(properties);
-
+    ConfigProperties configProperties = DefaultConfigProperties.createFromMap(properties);
     return FileConfigUtil.assertNotNull(
         spanExporterSpiManager(configProperties, spiHelper).getByName("otlp"), "otlp exporter");
+  }
+
+  private static SpanExporter createConsoleExporter(SpiHelper spiHelper) {
+    return FileConfigUtil.assertNotNull(
+        spanExporterSpiManager(
+                DefaultConfigProperties.createFromMap(Collections.emptyMap()), spiHelper)
+            .getByName("logging"),
+        "logging exporter");
+  }
+
+  private static SpanExporter createZipkinExporter(Zipkin model, SpiHelper spiHelper) {
+    // Translate from file configuration scheme to environment variable scheme. This is ultimately
+    // interpreted by ZipkinSpanExporterProvider, but we want to avoid the dependency on
+    // opentelemetry-exporter-zipkin
+    Map<String, String> properties = new HashMap<>();
+    if (model.getEndpoint() != null) {
+      properties.put("otel.exporter.zipkin.endpoint", model.getEndpoint());
+    }
+    if (model.getTimeout() != null) {
+      properties.put("otel.exporter.zipkin.timeout", Integer.toString(model.getTimeout()));
+    }
+
+    ConfigProperties configProperties = DefaultConfigProperties.createFromMap(properties);
+    return FileConfigUtil.assertNotNull(
+        spanExporterSpiManager(configProperties, spiHelper).getByName("zipkin"), "zipkin exporter");
   }
 
   private static NamedSpiManager<SpanExporter> spanExporterSpiManager(

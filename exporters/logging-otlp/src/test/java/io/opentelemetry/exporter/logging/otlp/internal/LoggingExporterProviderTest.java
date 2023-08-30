@@ -21,7 +21,7 @@ class LoggingExporterProviderTest {
     LoggingLogRecordExporterProvider provider = new LoggingLogRecordExporterProvider();
     assertThat(provider.getName()).isEqualTo("logging-otlp");
     assertThat(
-            provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap())))
+            provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap())))
         .isInstanceOf(OtlpJsonLoggingLogRecordExporter.class);
   }
 
@@ -30,7 +30,7 @@ class LoggingExporterProviderTest {
     LoggingMetricExporterProvider provider = new LoggingMetricExporterProvider();
     assertThat(provider.getName()).isEqualTo("logging-otlp");
     assertThat(
-            provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap())))
+            provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap())))
         .isInstanceOf(OtlpJsonLoggingMetricExporter.class);
   }
 
@@ -39,7 +39,7 @@ class LoggingExporterProviderTest {
     LoggingSpanExporterProvider provider = new LoggingSpanExporterProvider();
     assertThat(provider.getName()).isEqualTo("logging-otlp");
     assertThat(
-            provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap())))
+            provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap())))
         .isInstanceOf(OtlpJsonLoggingSpanExporter.class);
   }
 }
