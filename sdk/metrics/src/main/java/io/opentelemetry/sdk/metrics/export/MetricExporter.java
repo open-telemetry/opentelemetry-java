@@ -44,7 +44,7 @@ public interface MetricExporter
    * Returns the memory mode used by this exporter's associated reader.
    *
    * @return The {@link MemoryMode} used by this exporter's associated reader
-   * @since 1.28.0
+   * @since 1.29.0
    */
   default MemoryMode getMemoryMode() {
     return IMMUTABLE_DATA;
