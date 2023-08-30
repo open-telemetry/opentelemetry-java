@@ -72,7 +72,7 @@ class B3PropagationIntegrationTest {
               .setParent(incomingContext)
               .startSpan();
       try (Scope ignored = span.makeCurrent()) {
-        return HttpResponse.from(
+        return HttpResponse.of(
             client
                 .get()
                 .get("/backend")

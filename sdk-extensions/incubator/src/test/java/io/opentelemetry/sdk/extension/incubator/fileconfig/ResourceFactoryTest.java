@@ -1,0 +1,47 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.sdk.extension.incubator.fileconfig;
+
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.mockito.Mockito.mock;
+
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Attributes;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import java.util.Collections;
+import org.junit.jupiter.api.Test;
+
+class ResourceFactoryTest {
+
+  @Test
+  void create_Null() {
+    assertThat(
+            ResourceFactory.getInstance()
+                .create(null, mock(SpiHelper.class), Collections.emptyList()))
+        .isEqualTo(Resource.getDefault());
+  }
+
+  @Test
+  void create() {
+    assertThat(
+            ResourceFactory.getInstance()
+                .create(
+                    new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
+                            .Resource()
+                        .withAttributes(
+                            new Attributes()
+                                .withServiceName("my-service")
+                                .withAdditionalProperty("key", "val")),
+                    mock(SpiHelper.class),
+                    Collections.emptyList()))
+        .isEqualTo(
+            Resource.getDefault().toBuilder()
+                .put(ResourceAttributes.SERVICE_NAME, "my-service")
+                .put("key", "val")
+                .build());
+  }
+}

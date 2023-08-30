@@ -35,7 +35,7 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "8.12"
+  toolVersion = "10.12.2"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
@@ -46,7 +46,7 @@ dependencyCheck {
     "checkstyle",
     "annotationProcessor",
     "animalsniffer",
-    "spotless-1972451482", // spotless-1972451482 is a weird configuration that's only added in jaeger-proto
+    "spotless865457264", // spotless865457264 is a weird configuration that's only added in jaeger-proto, jaeger-remote-sampler
     "js2p",
     "jmhAnnotationProcessor",
     "jmhCompileClasspath",
@@ -163,7 +163,7 @@ plugins.withId("otel.publish-conventions") {
   tasks {
     register("generateVersionResource") {
       val moduleName = otelJava.moduleName
-      val propertiesDir = moduleName.map { File(buildDir, "generated/properties/${it.replace('.', '/')}") }
+      val propertiesDir = moduleName.map { File(layout.buildDirectory.asFile.get(), "generated/properties/${it.replace('.', '/')}") }
 
       inputs.property("project.version", project.version.toString())
       outputs.dir(propertiesDir)
@@ -176,7 +176,7 @@ plugins.withId("otel.publish-conventions") {
 
   sourceSets {
     main {
-      output.dir("$buildDir/generated/properties", "builtBy" to "generateVersionResource")
+      output.dir("${layout.buildDirectory.asFile.get()}/generated/properties", "builtBy" to "generateVersionResource")
     }
   }
 }
@@ -212,6 +212,14 @@ dependencies {
   // Workaround for @javax.annotation.Generated
   // see: https://github.com/grpc/grpc-java/issues/3633
   compileOnly("javax.annotation:javax.annotation-api")
+
+  modules {
+    // checkstyle uses the very old google-collections which causes Java 9 module conflict with
+    // guava which is also on the classpath
+    module("com.google.collections:google-collections") {
+      replacedBy("com.google.guava:guava", "google-collections is now part of Guava")
+    }
+  }
 }
 
 testing {

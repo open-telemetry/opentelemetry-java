@@ -154,16 +154,6 @@ final class PrometheusUnitsHelper {
         return "gigabytes";
       case "TBy":
         return "terabytes";
-      case "B":
-        return "bytes";
-      case "KB":
-        return "kilobytes";
-      case "MB":
-        return "megabytes";
-      case "GB":
-        return "gigabytes";
-      case "TB":
-        return "terabytes";
         // SI
       case "m":
         return "meters";
@@ -186,8 +176,6 @@ final class PrometheusUnitsHelper {
         return "";
       case "%":
         return "percent";
-      case "$":
-        return "dollars";
       default:
         return unitAbbreviation;
     }

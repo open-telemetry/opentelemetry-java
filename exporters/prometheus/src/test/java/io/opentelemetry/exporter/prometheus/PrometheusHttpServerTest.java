@@ -13,6 +13,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
 import com.linecorp.armeria.client.WebClient;
+import com.linecorp.armeria.client.retry.RetryRule;
+import com.linecorp.armeria.client.retry.RetryingClient;
 import com.linecorp.armeria.common.AggregatedHttpResponse;
 import com.linecorp.armeria.common.HttpHeaderNames;
 import com.linecorp.armeria.common.HttpMethod;
@@ -68,7 +70,10 @@ class PrometheusHttpServerTest {
     prometheusServer = PrometheusHttpServer.builder().setHost("localhost").setPort(0).build();
     prometheusServer.register(metricProducer);
 
-    client = WebClient.of("http://localhost:" + prometheusServer.getAddress().getPort());
+    client =
+        WebClient.builder("http://localhost:" + prometheusServer.getAddress().getPort())
+            .decorator(RetryingClient.newDecorator(RetryRule.failsafe()))
+            .build();
   }
 
   @BeforeEach
@@ -180,6 +185,7 @@ class PrometheusHttpServerTest {
   void fetchPrometheusCompressed() throws IOException {
     WebClient client =
         WebClient.builder("http://localhost:" + prometheusServer.getAddress().getPort())
+            .decorator(RetryingClient.newDecorator(RetryRule.failsafe()))
             .addHeader(HttpHeaderNames.ACCEPT_ENCODING, "gzip")
             .build();
     AggregatedHttpResponse response = client.get("/").aggregate().join();

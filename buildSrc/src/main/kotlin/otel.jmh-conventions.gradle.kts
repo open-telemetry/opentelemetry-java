@@ -25,8 +25,9 @@ jmh {
 }
 
 jmhReport {
-  jmhResultPath = file("$buildDir/results/jmh/results.json").absolutePath
-  jmhReportOutput = file("$buildDir/results/jmh").absolutePath
+  val buildDirectory = layout.buildDirectory.asFile.get()
+  jmhResultPath = file("$buildDirectory/results/jmh/results.json").absolutePath
+  jmhReportOutput = file("$buildDirectory/results/jmh").absolutePath
 }
 
 tasks {

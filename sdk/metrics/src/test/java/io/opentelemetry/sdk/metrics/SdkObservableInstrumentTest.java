@@ -83,7 +83,7 @@ class SdkObservableInstrumentTest {
                 + "unit=unit, "
                 + "type=COUNTER, "
                 + "valueType=DOUBLE, "
-                + "advice=Advice{explicitBucketBoundaries=null}}"
+                + "advice=Advice{explicitBucketBoundaries=null, attributes=null}}"
                 + "]}}");
   }
 }

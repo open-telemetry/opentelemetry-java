@@ -54,27 +54,23 @@ class ConfigurableMetricExporterTest {
 
   @Test
   void configureExporter_emptyClassLoader() {
-    assertThatThrownBy(
-            () ->
-                MetricExporterConfiguration.configureExporter(
-                    "testExporter",
-                    MetricExporterConfiguration.metricExporterSpiManager(
-                        DefaultConfigProperties.createForTest(Collections.emptyMap()),
-                        SpiHelper.create(new URLClassLoader(new URL[] {}, null)))))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("testExporter");
+    assertThat(
+            MetricExporterConfiguration.configureExporter(
+                "testExporter",
+                MetricExporterConfiguration.metricExporterSpiManager(
+                    DefaultConfigProperties.createForTest(Collections.emptyMap()),
+                    SpiHelper.create(new URLClassLoader(new URL[] {}, null)))))
+        .isNull();
   }
 
   @Test
   void configureExporter_exporterNotFound() {
-    assertThatThrownBy(
-            () ->
-                MetricExporterConfiguration.configureExporter(
-                    "catExporter",
-                    MetricExporterConfiguration.metricExporterSpiManager(
-                        DefaultConfigProperties.createForTest(Collections.emptyMap()), spiHelper)))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("catExporter");
+    assertThat(
+            MetricExporterConfiguration.configureExporter(
+                "catExporter",
+                MetricExporterConfiguration.metricExporterSpiManager(
+                    DefaultConfigProperties.createForTest(Collections.emptyMap()), spiHelper)))
+        .isNull();
   }
 
   @Test

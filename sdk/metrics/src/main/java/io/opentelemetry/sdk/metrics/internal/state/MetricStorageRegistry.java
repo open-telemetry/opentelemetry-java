@@ -22,9 +22,10 @@ import java.util.logging.Logger;
  *
  * <p>Each descriptor in the registry results in an exported metric stream. Under normal
  * circumstances each descriptor shares a unique {@link MetricDescriptor#getName()}. When multiple
- * descriptors share the same name, an identity conflict has occurred. The registry detects identity
- * conflicts on {@link #register(MetricStorage)} and logs diagnostic information when they occur.
- * See {@link MetricDescriptor#isCompatibleWith(MetricDescriptor)} for definition of compatibility.
+ * descriptors share the same name, but have some difference in identifying fields, an identity
+ * conflict has occurred. The registry detects identity conflicts on {@link
+ * #register(MetricStorage)} and logs diagnostic information when they occur. See {@link
+ * MetricDescriptor#equals(Object)} for definition of identity equality.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
@@ -75,9 +76,9 @@ public class MetricStorageRegistry {
         continue;
       }
       MetricDescriptor existing = storage.getMetricDescriptor();
+      // TODO: consider this alternative
       // Check compatibility of metrics which share the same case-insensitive name
-      if (existing.getName().equalsIgnoreCase(descriptor.getName())
-          && !existing.isCompatibleWith(descriptor)) {
+      if (existing.getName().equalsIgnoreCase(descriptor.getName())) {
         logger.log(Level.WARNING, DebugUtils.duplicateMetricErrorMessage(existing, descriptor));
         break; // Only log information about the first conflict found to reduce noise
       }

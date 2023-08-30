@@ -60,6 +60,18 @@ public final class SdkMeterProviderBuilder {
   }
 
   /**
+   * Merge a {@link Resource} with the current.
+   *
+   * @param resource {@link Resource} to merge with current.
+   * @since 1.29.0
+   */
+  public SdkMeterProviderBuilder addResource(Resource resource) {
+    Objects.requireNonNull(resource, "resource");
+    this.resource = this.resource.merge(resource);
+    return this;
+  }
+
+  /**
    * Assign an {@link ExemplarFilter} for all metrics created by Meters.
    *
    * <p>Note: not currently stable but available for experimental use via {@link
@@ -133,16 +145,5 @@ public final class SdkMeterProviderBuilder {
   /** Returns an {@link SdkMeterProvider} built with the configuration of this builder. */
   public SdkMeterProvider build() {
     return new SdkMeterProvider(registeredViews, metricReaders, clock, resource, exemplarFilter);
-  }
-
-  /**
-   * Merge custom resource object with the current resource object.
-   *
-   * @param resource {@link Resource} object to merge with current.
-   */
-  public SdkMeterProviderBuilder addResource(Resource resource) {
-    Objects.requireNonNull(resource, "resource");
-    this.resource = this.resource.merge(resource);
-    return this;
   }
 }

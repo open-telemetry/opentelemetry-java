@@ -8,11 +8,13 @@ package io.opentelemetry.sdk.metrics;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleHistogramBuilder;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorageRegistry;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -106,7 +108,7 @@ class IdentityTest {
   }
 
   @Test
-  void sameMeterDifferentInstrumentNoViews() {
+  void sameMeterDifferentInstrumentNameNoViews() {
     SdkMeterProvider meterProvider = builder.build();
 
     meterProvider.get("meter1").counterBuilder("counter1").build().add(10);
@@ -126,6 +128,139 @@ class IdentityTest {
                     .hasName("counter2")
                     .hasLongSumSatisfying(
                         sum -> sum.hasPointsSatisfying(point -> point.hasValue(10))));
+
+    assertThat(metricStorageRegistryLogs.getEvents()).hasSize(0);
+  }
+
+  @Test
+  void sameMeterDifferentInstrumentNameCaseNoViews() {
+    SdkMeterProvider meterProvider = builder.build();
+
+    meterProvider.get("meter1").counterBuilder("Counter1").build().add(10);
+    meterProvider.get("meter1").counterBuilder("counter1").build().add(10);
+
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            metricData ->
+                assertThat(metricData)
+                    .hasInstrumentationScope(forMeter("meter1"))
+                    .hasName("Counter1")
+                    .hasLongSumSatisfying(
+                        sum -> sum.hasPointsSatisfying(point -> point.hasValue(20))));
+
+    assertThat(metricStorageRegistryLogs.getEvents()).hasSize(0);
+  }
+
+  @Test
+  @SuppressLogger(MetricStorageRegistry.class)
+  void sameMeterSameInstrumentNameDifferentIdentifyingFieldsNoViews() {
+    SdkMeterProvider meterProvider = builder.build();
+
+    meterProvider.get("meter1").counterBuilder("counter1").build().add(10);
+    // Same name, different unit
+    meterProvider.get("meter1").counterBuilder("counter1").setUnit("unit1").build().add(10);
+    // Same name, different description
+    meterProvider
+        .get("meter1")
+        .counterBuilder("counter1")
+        .setDescription("description1")
+        .build()
+        .add(10);
+    // Same name, different value type
+    meterProvider.get("meter1").counterBuilder("counter1").ofDoubles().build().add(10);
+    // Same name, different instrument type
+    meterProvider.get("meter1").upDownCounterBuilder("counter1").build().add(10);
+
+    // When name is the same, but some identifying field is different (unit, description, value
+    // type, instrument type) we produce different metric streams are produced and log a warning
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            metricData ->
+                assertThat(metricData)
+                    .hasInstrumentationScope(forMeter("meter1"))
+                    .hasName("counter1")
+                    .hasLongSumSatisfying(
+                        sum -> sum.isMonotonic().hasPointsSatisfying(point -> point.hasValue(10))),
+            metricData ->
+                assertThat(metricData)
+                    .hasInstrumentationScope(forMeter("meter1"))
+                    .hasName("counter1")
+                    .hasUnit("unit1")
+                    .hasLongSumSatisfying(
+                        sum -> sum.isMonotonic().hasPointsSatisfying(point -> point.hasValue(10))),
+            metricData ->
+                assertThat(metricData)
+                    .hasInstrumentationScope(forMeter("meter1"))
+                    .hasName("counter1")
+                    .hasDescription("description1")
+                    .hasLongSumSatisfying(
+                        sum -> sum.isMonotonic().hasPointsSatisfying(point -> point.hasValue(10))),
+            metricData ->
+                assertThat(metricData)
+                    .hasInstrumentationScope(forMeter("meter1"))
+                    .hasName("counter1")
+                    .hasDoubleSumSatisfying(
+                        sum -> sum.isMonotonic().hasPointsSatisfying(point -> point.hasValue(10))),
+            metricData ->
+                assertThat(metricData)
+                    .hasInstrumentationScope(forMeter("meter1"))
+                    .hasName("counter1")
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.isNotMonotonic().hasPointsSatisfying(point -> point.hasValue(10))));
+
+    assertThat(metricStorageRegistryLogs.getEvents())
+        .allSatisfy(
+            logEvent ->
+                assertThat(logEvent.getMessage()).contains("Found duplicate metric definition"))
+        .hasSize(4);
+  }
+
+  @Test
+  void sameMeterSameInstrumentNameDifferentNonIdentifyingFieldsNoViews() {
+    SdkMeterProvider meterProvider = builder.build();
+
+    // Register histogram1, with and without advice. First registration without advice wins.
+    meterProvider.get("meter1").histogramBuilder("histogram1").build().record(8);
+    ((ExtendedDoubleHistogramBuilder) meterProvider.get("meter1").histogramBuilder("histogram1"))
+        .setAdvice(advice -> advice.setExplicitBucketBoundaries(Arrays.asList(10.0, 20.0, 30.0)))
+        .build()
+        .record(8);
+
+    // Register histogram2, with and without advice. First registration with advice wins.
+    ((ExtendedDoubleHistogramBuilder) meterProvider.get("meter1").histogramBuilder("histogram2"))
+        .setAdvice(advice -> advice.setExplicitBucketBoundaries(Arrays.asList(10.0, 20.0, 30.0)))
+        .build()
+        .record(8);
+    meterProvider.get("meter1").histogramBuilder("histogram2").build().record(8);
+
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            metricData ->
+                assertThat(metricData)
+                    .hasInstrumentationScope(forMeter("meter1"))
+                    .hasName("histogram1")
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasBucketCounts(
+                                            0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                        .hasBucketBoundaries(
+                                            0d, 5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d,
+                                            1_000d, 2_500d, 5_000d, 7_500d, 10_000d))),
+            metricData ->
+                assertThat(metricData)
+                    .hasInstrumentationScope(forMeter("meter1"))
+                    .hasName("histogram2")
+                    .hasHistogramSatisfying(
+                        histogram ->
+                            histogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasBucketCounts(2, 0, 0, 0)
+                                        .hasBucketBoundaries(10.0, 20.0, 30.0))));
 
     assertThat(metricStorageRegistryLogs.getEvents()).hasSize(0);
   }

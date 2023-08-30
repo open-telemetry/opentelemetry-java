@@ -6,13 +6,13 @@
 package io.opentelemetry.sdk.metrics.internal.descriptor;
 
 import com.google.auto.value.AutoValue;
-import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.concurrent.Immutable;
 
@@ -29,6 +29,7 @@ import javax.annotation.concurrent.Immutable;
 public abstract class MetricDescriptor {
 
   private final AtomicReference<SourceInfo> viewSourceInfo = new AtomicReference<>();
+  private int hashcode;
 
   /**
    * Constructs a metric descriptor with no instrument and default view.
@@ -94,36 +95,38 @@ public abstract class MetricDescriptor {
     return AggregationUtil.aggregationName(getView().getAggregation());
   }
 
-  @Memoized
+  /** Uses case-insensitive version of {@link #getName()}. */
   @Override
-  public abstract int hashCode();
+  public final int hashCode() {
+    int result = hashcode;
+    if (result == 0) {
+      result = 1;
+      result *= 1000003;
+      result ^= getName().toLowerCase(Locale.ROOT).hashCode();
+      result *= 1000003;
+      result ^= getDescription().hashCode();
+      result *= 1000003;
+      result ^= getView().hashCode();
+      result *= 1000003;
+      result ^= getSourceInstrument().hashCode();
+      hashcode = result;
+    }
+    return result;
+  }
 
-  /**
-   * Returns true if another metric descriptor is compatible with this one.
-   *
-   * <p>A metric descriptor is compatible with another if the following are true:
-   *
-   * <ul>
-   *   <li>{@link #getName()} is equal
-   *   <li>{@link #getDescription()} is equal
-   *   <li>{@link #getAggregationName()} is equal
-   *   <li>{@link InstrumentDescriptor#getName()} is equal
-   *   <li>{@link InstrumentDescriptor#getDescription()} is equal
-   *   <li>{@link InstrumentDescriptor#getUnit()} is equal
-   *   <li>{@link InstrumentDescriptor#getType()} is equal
-   *   <li>{@link InstrumentDescriptor#getValueType()} is equal
-   * </ul>
-   */
-  public boolean isCompatibleWith(MetricDescriptor other) {
-    return getName().equals(other.getName())
-        && getDescription().equals(other.getDescription())
-        && getAggregationName().equals(other.getAggregationName())
-        && getSourceInstrument().getName().equals(other.getSourceInstrument().getName())
-        && getSourceInstrument()
-            .getDescription()
-            .equals(other.getSourceInstrument().getDescription())
-        && getSourceInstrument().getUnit().equals(other.getSourceInstrument().getUnit())
-        && getSourceInstrument().getType().equals(other.getSourceInstrument().getType())
-        && getSourceInstrument().getValueType().equals(other.getSourceInstrument().getValueType());
+  /** Uses case-insensitive version of {@link #getName()}. */
+  @Override
+  public final boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    }
+    if (o instanceof MetricDescriptor) {
+      MetricDescriptor that = (MetricDescriptor) o;
+      return this.getName().equalsIgnoreCase(that.getName())
+          && this.getDescription().equals(that.getDescription())
+          && this.getView().equals(that.getView())
+          && this.getSourceInstrument().equals(that.getSourceInstrument());
+    }
+    return false;
   }
 }

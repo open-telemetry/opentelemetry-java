@@ -1,4 +1,4 @@
 Comparing source compatibility of  against 
-***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder  (not serializable)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.metrics.ViewBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder addResource(io.opentelemetry.sdk.resources.Resource)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.ViewBuilder setAttributeFilter(java.util.Set<java.lang.String>)
