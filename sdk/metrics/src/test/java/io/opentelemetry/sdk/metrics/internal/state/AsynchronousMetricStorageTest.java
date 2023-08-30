@@ -107,12 +107,9 @@ class AsynchronousMetricStorageTest {
   void recordLong(MemoryMode memoryMode) {
     setup(memoryMode);
 
-    longCounterStorage.record(
-        createLong(0, 1, 1, Attributes.builder().put("key", "a").build()));
-    longCounterStorage.record(
-        createLong(0, 1, 2, Attributes.builder().put("key", "b").build()));
-    longCounterStorage.record(
-        createLong(0, 1, 3, Attributes.builder().put("key", "c").build()));
+    longCounterStorage.record(createLong(0, 1, 1, Attributes.builder().put("key", "a").build()));
+    longCounterStorage.record(createLong(0, 1, 2, Attributes.builder().put("key", "b").build()));
+    longCounterStorage.record(createLong(0, 1, 3, Attributes.builder().put("key", "c").build()));
 
     assertThat(longCounterStorage.collect(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
@@ -219,10 +216,8 @@ class AsynchronousMetricStorageTest {
   void record_DuplicateAttributes(MemoryMode memoryMode) {
     setup(memoryMode);
 
-    longCounterStorage.record(
-        createLong(0, 1, 1, Attributes.builder().put("key1", "a").build()));
-    longCounterStorage.record(
-        createLong(0, 1, 2, Attributes.builder().put("key1", "a").build()));
+    longCounterStorage.record(createLong(0, 1, 1, Attributes.builder().put("key1", "a").build()));
+    longCounterStorage.record(createLong(0, 1, 2, Attributes.builder().put("key1", "a").build()));
 
     assertThat(longCounterStorage.collect(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
@@ -386,12 +381,9 @@ class AsynchronousMetricStorageTest {
   public void collect_reusableData_reusedObjectsAreReturnedOnSecondCall() {
     setup(REUSABLE_DATA);
 
-    longCounterStorage.record(
-        createLong(0, 1, 1, Attributes.builder().put("key", "a").build()));
-    longCounterStorage.record(
-        createLong(0, 1, 2, Attributes.builder().put("key", "b").build()));
-    longCounterStorage.record(
-        createLong(0, 1, 3, Attributes.builder().put("key", "c").build()));
+    longCounterStorage.record(createLong(0, 1, 1, Attributes.builder().put("key", "a").build()));
+    longCounterStorage.record(createLong(0, 1, 2, Attributes.builder().put("key", "b").build()));
+    longCounterStorage.record(createLong(0, 1, 3, Attributes.builder().put("key", "c").build()));
 
     MetricData firstCollectMetricData =
         longCounterStorage.collect(resource, scope, 0, testClock.nanoTime());

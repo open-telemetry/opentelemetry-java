@@ -132,9 +132,7 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
             ? registeredReader.getLastCollectEpochNanos()
             : measurement.startEpochNanos();
 
-    measurement = measurement
-        .withAttributes(processedAttributes)
-        .withStartEpochNanos(start);
+    measurement = measurement.withAttributes(processedAttributes).withStartEpochNanos(start);
 
     recordPoint(processedAttributes, measurement);
   }

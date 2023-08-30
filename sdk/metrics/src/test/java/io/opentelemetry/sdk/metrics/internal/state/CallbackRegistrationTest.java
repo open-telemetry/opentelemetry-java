@@ -166,10 +166,8 @@ class CallbackRegistrationTest {
 
     assertThat(counter.get()).isEqualTo(1);
     verify(storage1, never()).record(any());
-    verify(storage2)
-        .record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
-    verify(storage3)
-        .record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
+    verify(storage2).record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
+    verify(storage3).record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
   }
 
   @Test
@@ -192,10 +190,8 @@ class CallbackRegistrationTest {
     assertThat(longCounter.get()).isEqualTo(1);
     verify(storage1)
         .record(createDouble(0, 1, 1.1, Attributes.builder().put("key", "val").build()));
-    verify(storage2)
-        .record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
-    verify(storage3)
-        .record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
+    verify(storage2).record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
+    verify(storage3).record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
   }
 
   @Test

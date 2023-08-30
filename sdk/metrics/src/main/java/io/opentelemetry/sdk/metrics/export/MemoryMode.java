@@ -26,9 +26,9 @@ public enum MemoryMode {
   /**
    * Uses immutable data structures.
    *
-   * <p>In this mode, the {@link MetricData} collected by the reader, is immutable, meant to be used once.
-   * This allows running {@link MetricReader} collection operations concurrently, at the expense of
-   * increased garbage collection.
+   * <p>In this mode, the {@link MetricData} collected by the reader, is immutable, meant to be used
+   * once. This allows running {@link MetricReader} collection operations concurrently, at the
+   * expense of increased garbage collection.
    *
    * <p>More specifically, {@link MetricData} objects returned by the registered {@link
    * MetricProducer} are immutable.
