@@ -16,7 +16,8 @@ import java.io.Closeable;
 import java.util.List;
 import javax.annotation.Nullable;
 
-final class TracerProviderFactory implements Factory<TracerProvider, SdkTracerProviderBuilder> {
+final class TracerProviderFactory
+    implements Factory<TracerProviderAndAttributeLimits, SdkTracerProviderBuilder> {
 
   private static final TracerProviderFactory INSTANCE = new TracerProviderFactory();
 
@@ -28,22 +29,33 @@ final class TracerProviderFactory implements Factory<TracerProvider, SdkTracerPr
 
   @Override
   public SdkTracerProviderBuilder create(
-      @Nullable TracerProvider model, SpiHelper spiHelper, List<Closeable> closeables) {
+      @Nullable TracerProviderAndAttributeLimits model,
+      SpiHelper spiHelper,
+      List<Closeable> closeables) {
+    SdkTracerProviderBuilder builder = SdkTracerProvider.builder();
     if (model == null) {
-      return SdkTracerProvider.builder();
+      return builder;
+    }
+    TracerProvider tracerProviderModel = model.getTracerProvider();
+    if (tracerProviderModel == null) {
+      return builder;
     }
 
-    SdkTracerProviderBuilder builder = SdkTracerProvider.builder();
-
     SpanLimits spanLimits =
-        SpanLimitsFactory.getInstance().create(model.getLimits(), spiHelper, closeables);
+        SpanLimitsFactory.getInstance()
+            .create(
+                SpanLimitsAndAttributeLimits.create(
+                    model.getAttributeLimits(), tracerProviderModel.getLimits()),
+                spiHelper,
+                closeables);
     builder.setSpanLimits(spanLimits);
 
     Sampler sampler =
-        SamplerFactory.getInstance().create(model.getSampler(), spiHelper, closeables);
+        SamplerFactory.getInstance()
+            .create(tracerProviderModel.getSampler(), spiHelper, closeables);
     builder.setSampler(sampler);
 
-    List<SpanProcessor> processors = model.getProcessors();
+    List<SpanProcessor> processors = tracerProviderModel.getProcessors();
     if (processors != null) {
       processors.forEach(
           processor ->
