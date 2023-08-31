@@ -103,12 +103,12 @@ class SerializerTest {
                 + "# TYPE double_gauge_no_attributes_seconds gauge\n"
                 + "# HELP double_gauge_no_attributes_seconds unused\n"
                 + "double_gauge_no_attributes_seconds{otel_scope_name=\"full\",otel_scope_version=\"version\"} 7.0 1633950672000\n"
-                + "# TYPE double_gauge_multiple_attributes gauge\n"
-                + "# HELP double_gauge_multiple_attributes unused\n"
-                + "double_gauge_multiple_attributes_ratio{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672000\n"
                 + "# TYPE double_gauge_multiple_attributes_seconds gauge\n"
                 + "# HELP double_gauge_multiple_attributes_seconds unused\n"
-                + "double_gauge_multiple_attributes_seconds{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672000\n");
+                + "double_gauge_multiple_attributes_seconds{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672000\n"
+                + "# TYPE double_gauge_colliding_attributes_seconds gauge\n"
+                + "# HELP double_gauge_colliding_attributes_seconds unused\n"
+                + "double_gauge_colliding_attributes_seconds{otel_scope_name=\"full\",otel_scope_version=\"version\",foo_bar=\"a;b\",type=\"dgma\"} 8.0 1633950672000\n");
   }
 
   @Test
@@ -178,12 +178,12 @@ class SerializerTest {
                 + "# TYPE double_gauge_no_attributes_seconds gauge\n"
                 + "# HELP double_gauge_no_attributes_seconds unused\n"
                 + "double_gauge_no_attributes_seconds{otel_scope_name=\"full\",otel_scope_version=\"version\"} 7.0 1633950672.000\n"
-                + "# TYPE double_gauge_multiple_attributes gauge\n"
-                + "# HELP double_gauge_multiple_attributes unused\n"
-                + "double_gauge_multiple_attributes_ratio{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672.000\n"
                 + "# TYPE double_gauge_multiple_attributes_seconds gauge\n"
                 + "# HELP double_gauge_multiple_attributes_seconds unused\n"
                 + "double_gauge_multiple_attributes_seconds{otel_scope_name=\"full\",otel_scope_version=\"version\",animal=\"bear\",type=\"dgma\"} 8.0 1633950672.000\n"
+                + "# TYPE double_gauge_colliding_attributes_seconds gauge\n"
+                + "# HELP double_gauge_colliding_attributes_seconds unused\n"
+                + "double_gauge_colliding_attributes_seconds{otel_scope_name=\"full\",otel_scope_version=\"version\",foo_bar=\"a;b\",type=\"dgma\"} 8.0 1633950672.000\n"
                 + "# EOF\n");
   }
 

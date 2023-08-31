@@ -445,6 +445,9 @@ abstract class Serializer {
   private static void writeAttributePairs(
       Writer writer, boolean initialComma, Attributes attributes) throws IOException {
     try {
+      // This logic handles colliding attribute keys by joining the values,
+      // separated by a semicolon. It relies on the attributes being sorted, so that
+      // colliding attribute keys are in subsequent iterations of the for loop.
       attributes.forEach(
           new BiConsumer<AttributeKey<?>, Object>() {
             boolean initialAttribute = true;

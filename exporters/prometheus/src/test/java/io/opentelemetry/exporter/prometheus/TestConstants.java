@@ -366,7 +366,7 @@ class TestConstants {
               .build(),
           "double.gauge.colliding.attributes",
           "unused",
-          "1",
+          "s",
           ImmutableGaugeData.create(
               Collections.singletonList(
                   ImmutableDoublePointData.create(
