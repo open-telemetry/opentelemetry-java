@@ -210,6 +210,8 @@ public final class DefaultConfigProperties implements ConfigProperties {
   public Map<String, String> getMap(String name) {
     return getList(ConfigUtil.normalizePropertyKey(name)).stream()
         .map(keyValuePair -> filterBlanksAndNulls(keyValuePair.split("=", 2)))
+        // Filter entries with an empty value, i.e. "foo="
+        .filter(splitKeyValuePairs -> !(splitKeyValuePairs.size() == 1))
         .map(
             splitKeyValuePairs -> {
               if (splitKeyValuePairs.size() != 2) {
