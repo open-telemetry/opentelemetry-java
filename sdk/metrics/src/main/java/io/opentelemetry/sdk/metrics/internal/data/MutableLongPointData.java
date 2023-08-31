@@ -25,7 +25,7 @@ public class MutableLongPointData implements LongPointData {
   private long value;
   private long startEpochNanos;
   private long epochNanos;
-  private Attributes attributes  = Attributes.empty();
+  private Attributes attributes = Attributes.empty();
   private List<LongExemplarData> exemplars = Collections.emptyList();
 
   @Override

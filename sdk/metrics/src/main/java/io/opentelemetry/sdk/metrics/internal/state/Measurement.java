@@ -41,6 +41,4 @@ public interface Measurement {
    *     startEpochNanos updated
    */
   Measurement withStartEpochNanos(long startEpochNanos);
-
-
 }
