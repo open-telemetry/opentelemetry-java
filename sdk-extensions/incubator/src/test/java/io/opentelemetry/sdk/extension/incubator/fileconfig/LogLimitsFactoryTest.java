@@ -9,40 +9,43 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimits;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimits;
 import io.opentelemetry.sdk.logs.LogLimits;
 import java.util.Collections;
-import org.junit.jupiter.api.Test;
+import java.util.stream.Stream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class LogLimitsFactoryTest {
 
-  @Test
-  void create_Null() {
+  @ParameterizedTest
+  @MethodSource("createArguments")
+  void create(LogRecordLimitsAndAttributeLimits model, LogLimits expectedLogLimits) {
     assertThat(
             LogLimitsFactory.getInstance()
-                .create(null, mock(SpiHelper.class), Collections.emptyList()))
-        .isEqualTo(LogLimits.getDefault());
+                .create(model, mock(SpiHelper.class), Collections.emptyList()))
+        .isEqualTo(expectedLogLimits);
   }
 
-  @Test
-  void create_Defaults() {
-    assertThat(
-            LogLimitsFactory.getInstance()
-                .create(new LogRecordLimits(), mock(SpiHelper.class), Collections.emptyList()))
-        .isEqualTo(LogLimits.getDefault());
-  }
-
-  @Test
-  void create() {
-    assertThat(
-            LogLimitsFactory.getInstance()
-                .create(
-                    new LogRecordLimits()
-                        .withAttributeCountLimit(1)
-                        .withAttributeValueLengthLimit(2),
-                    mock(SpiHelper.class),
-                    Collections.emptyList()))
-        .isEqualTo(
-            LogLimits.builder().setMaxNumberOfAttributes(1).setMaxAttributeValueLength(2).build());
+  private static Stream<Arguments> createArguments() {
+    return Stream.of(
+        Arguments.of(null, LogLimits.builder().build()),
+        Arguments.of(
+            LogRecordLimitsAndAttributeLimits.create(null, null), LogLimits.builder().build()),
+        Arguments.of(
+            LogRecordLimitsAndAttributeLimits.create(new AttributeLimits(), new LogRecordLimits()),
+            LogLimits.builder().build()),
+        Arguments.of(
+            LogRecordLimitsAndAttributeLimits.create(
+                new AttributeLimits().withAttributeValueLengthLimit(1).withAttributeCountLimit(2),
+                new LogRecordLimits()),
+            LogLimits.builder().setMaxAttributeValueLength(1).setMaxNumberOfAttributes(2).build()),
+        Arguments.of(
+            LogRecordLimitsAndAttributeLimits.create(
+                new AttributeLimits().withAttributeValueLengthLimit(1).withAttributeCountLimit(2),
+                new LogRecordLimits().withAttributeValueLengthLimit(3).withAttributeCountLimit(4)),
+            LogLimits.builder().setMaxAttributeValueLength(3).setMaxNumberOfAttributes(4).build()));
   }
 }

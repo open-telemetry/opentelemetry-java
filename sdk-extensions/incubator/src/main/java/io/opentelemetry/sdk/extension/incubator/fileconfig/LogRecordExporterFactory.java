@@ -97,9 +97,7 @@ final class LogRecordExporterFactory
       properties.put("otel.exporter.otlp.logs.client.certificate", otlp.getClientCertificate());
     }
 
-    // TODO(jack-berg): add method for creating from map
-    ConfigProperties configProperties = DefaultConfigProperties.createForTest(properties);
-
+    ConfigProperties configProperties = DefaultConfigProperties.createFromMap(properties);
     return FileConfigUtil.assertNotNull(
         logRecordExporterSpiManager(configProperties, spiHelper).getByName("otlp"),
         "otlp exporter");

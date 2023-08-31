@@ -92,7 +92,7 @@ class OtlpSpanExporterProviderTest {
     assertThatThrownBy(
             () ->
                 provider.createExporter(
-                    DefaultConfigProperties.createForTest(
+                    DefaultConfigProperties.createFromMap(
                         Collections.singletonMap("otel.exporter.otlp.protocol", "foo"))))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP traces protocol: foo");
@@ -103,12 +103,12 @@ class OtlpSpanExporterProviderTest {
     // Verifies createExporter after resetting the spy overrides
     Mockito.reset(provider);
     try (SpanExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap()))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap()))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcSpanExporter.class);
     }
     try (SpanExporter exporter =
         provider.createExporter(
-            DefaultConfigProperties.createForTest(
+            DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.exporter.otlp.protocol", "http/protobuf")))) {
       assertThat(exporter).isInstanceOf(OtlpHttpSpanExporter.class);
     }
@@ -117,7 +117,7 @@ class OtlpSpanExporterProviderTest {
   @Test
   void createExporter_GrpcDefaults() {
     try (SpanExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap()))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap()))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcSpanExporter.class);
       verify(grpcBuilder, times(1)).build();
       verify(grpcBuilder, never()).setEndpoint(any());
@@ -144,7 +144,7 @@ class OtlpSpanExporterProviderTest {
     config.put("otel.experimental.exporter.otlp.retry.enabled", "true");
 
     try (SpanExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(config))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcSpanExporter.class);
       verify(grpcBuilder, times(1)).build();
       verify(grpcBuilder).setEndpoint("https://localhost:443/");
@@ -178,7 +178,7 @@ class OtlpSpanExporterProviderTest {
     config.put("otel.exporter.otlp.traces.timeout", "15s");
 
     try (SpanExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(config))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcSpanExporter.class);
       verify(grpcBuilder, times(1)).build();
       verify(grpcBuilder).setEndpoint("https://localhost:443/");
@@ -196,7 +196,7 @@ class OtlpSpanExporterProviderTest {
   void createExporter_HttpDefaults() {
     try (SpanExporter exporter =
         provider.createExporter(
-            DefaultConfigProperties.createForTest(
+            DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.exporter.otlp.traces.protocol", "http/protobuf")))) {
       assertThat(exporter).isInstanceOf(OtlpHttpSpanExporter.class);
       verify(httpBuilder, times(1)).build();
@@ -225,7 +225,7 @@ class OtlpSpanExporterProviderTest {
     config.put("otel.experimental.exporter.otlp.retry.enabled", "true");
 
     try (SpanExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(config))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(exporter).isInstanceOf(OtlpHttpSpanExporter.class);
       verify(httpBuilder, times(1)).build();
       verify(httpBuilder).setEndpoint("https://localhost:443/v1/traces");
@@ -261,7 +261,7 @@ class OtlpSpanExporterProviderTest {
     config.put("otel.exporter.otlp.traces.timeout", "15s");
 
     try (SpanExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(config))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(exporter).isInstanceOf(OtlpHttpSpanExporter.class);
       verify(httpBuilder, times(1)).build();
       verify(httpBuilder).setEndpoint("https://localhost:443/v1/traces");

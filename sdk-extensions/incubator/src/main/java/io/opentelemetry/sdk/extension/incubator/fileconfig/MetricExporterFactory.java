@@ -117,8 +117,7 @@ final class MetricExporterFactory
           "otel.exporter.otlp.metrics.temporality.preference", model.getTemporalityPreference());
     }
 
-    // TODO(jack-berg): add method for creating from map
-    ConfigProperties configProperties = DefaultConfigProperties.createForTest(properties);
+    ConfigProperties configProperties = DefaultConfigProperties.createFromMap(properties);
     return FileConfigUtil.assertNotNull(
         metricExporterSpiManager(configProperties, spiHelper).getByName("otlp"), "otlp exporter");
   }
@@ -126,7 +125,7 @@ final class MetricExporterFactory
   private static MetricExporter createConsoleExporter(SpiHelper spiHelper) {
     return FileConfigUtil.assertNotNull(
         metricExporterSpiManager(
-                DefaultConfigProperties.createForTest(Collections.emptyMap()), spiHelper)
+                DefaultConfigProperties.createFromMap(Collections.emptyMap()), spiHelper)
             .getByName("logging"),
         "logging exporter");
   }

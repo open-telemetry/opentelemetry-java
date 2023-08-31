@@ -42,7 +42,7 @@ class MeterProviderConfigurationTest {
             () -> {
               MeterProviderConfiguration.configureMeterProvider(
                   SdkMeterProvider.builder(),
-                  DefaultConfigProperties.createForTest(
+                  DefaultConfigProperties.createFromMap(
                       ImmutableMap.of(
                           "otel.metrics.exporter",
                           "logging",
@@ -65,7 +65,7 @@ class MeterProviderConfigurationTest {
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
     MeterProviderConfiguration.configureMeterProvider(
         builder,
-        DefaultConfigProperties.createForTest(
+        DefaultConfigProperties.createFromMap(
             Collections.singletonMap("otel.metrics.exporter", "logging")),
         spiHelper,
         (a, b) -> a,
@@ -77,7 +77,7 @@ class MeterProviderConfigurationTest {
     builder = SdkMeterProvider.builder();
     MeterProviderConfiguration.configureMeterProvider(
         builder,
-        DefaultConfigProperties.createForTest(
+        DefaultConfigProperties.createFromMap(
             ImmutableMap.of(
                 "otel.metrics.exporter",
                 "logging",

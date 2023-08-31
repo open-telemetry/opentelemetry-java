@@ -92,7 +92,7 @@ class OtlpMetricExporterProviderTest {
     assertThatThrownBy(
             () ->
                 provider.createExporter(
-                    DefaultConfigProperties.createForTest(
+                    DefaultConfigProperties.createFromMap(
                         Collections.singletonMap("otel.exporter.otlp.protocol", "foo"))))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP metrics protocol: foo");
@@ -103,12 +103,12 @@ class OtlpMetricExporterProviderTest {
     // Verifies createExporter after resetting the spy overrides
     Mockito.reset(provider);
     try (MetricExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap()))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap()))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcMetricExporter.class);
     }
     try (MetricExporter exporter =
         provider.createExporter(
-            DefaultConfigProperties.createForTest(
+            DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.exporter.otlp.protocol", "http/protobuf")))) {
       assertThat(exporter).isInstanceOf(OtlpHttpMetricExporter.class);
     }
@@ -117,7 +117,7 @@ class OtlpMetricExporterProviderTest {
   @Test
   void createExporter_GrpcDefaults() {
     try (MetricExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap()))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap()))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcMetricExporter.class);
       verify(grpcBuilder, times(1)).build();
       verify(grpcBuilder, never()).setEndpoint(any());
@@ -144,7 +144,7 @@ class OtlpMetricExporterProviderTest {
     config.put("otel.experimental.exporter.otlp.retry.enabled", "true");
 
     try (MetricExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(config))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcMetricExporter.class);
       verify(grpcBuilder, times(1)).build();
       verify(grpcBuilder).setEndpoint("https://localhost:443/");
@@ -178,7 +178,7 @@ class OtlpMetricExporterProviderTest {
     config.put("otel.exporter.otlp.metrics.timeout", "15s");
 
     try (MetricExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(config))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcMetricExporter.class);
       verify(grpcBuilder, times(1)).build();
       verify(grpcBuilder).setEndpoint("https://localhost:443/");
@@ -196,7 +196,7 @@ class OtlpMetricExporterProviderTest {
   void createExporter_HttpDefaults() {
     try (MetricExporter exporter =
         provider.createExporter(
-            DefaultConfigProperties.createForTest(
+            DefaultConfigProperties.createFromMap(
                 Collections.singletonMap(
                     "otel.exporter.otlp.metrics.protocol", "http/protobuf")))) {
       assertThat(exporter).isInstanceOf(OtlpHttpMetricExporter.class);
@@ -226,7 +226,7 @@ class OtlpMetricExporterProviderTest {
     config.put("otel.experimental.exporter.otlp.retry.enabled", "true");
 
     try (MetricExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(config))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(exporter).isInstanceOf(OtlpHttpMetricExporter.class);
       verify(httpBuilder, times(1)).build();
       verify(httpBuilder).setEndpoint("https://localhost:443/v1/metrics");
@@ -262,7 +262,7 @@ class OtlpMetricExporterProviderTest {
     config.put("otel.exporter.otlp.metrics.timeout", "15s");
 
     try (MetricExporter exporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(config))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(exporter).isInstanceOf(OtlpHttpMetricExporter.class);
       verify(httpBuilder, times(1)).build();
       verify(httpBuilder).setEndpoint("https://localhost:443/v1/metrics");
