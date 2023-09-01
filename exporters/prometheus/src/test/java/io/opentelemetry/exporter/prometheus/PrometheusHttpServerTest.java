@@ -287,8 +287,8 @@ class PrometheusHttpServerTest {
                 + "# TYPE otel_scope_info info\n"
                 + "# HELP otel_scope_info Scope metadata\n"
                 + "otel_scope_info{otel_scope_name=\"scope2\"} 1\n"
-                + "# TYPE foo_total counter\n"
-                + "# HELP foo_total description1\n"
+                + "# TYPE foo_unit_total counter\n"
+                + "# HELP foo_unit_total description1\n"
                 + "foo_unit_total{otel_scope_name=\"scope1\"} 1.0 0\n"
                 + "foo_unit_total{otel_scope_name=\"scope2\"} 2.0 0\n");
 

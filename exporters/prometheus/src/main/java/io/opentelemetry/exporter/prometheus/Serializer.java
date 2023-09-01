@@ -86,7 +86,7 @@ abstract class Serializer {
 
   abstract String contentType();
 
-  abstract String headerName(String name, PrometheusType type);
+  abstract String headerName(String name, MetricData rawMetric, PrometheusType type);
 
   abstract void writeHelp(Writer writer, String description) throws IOException;
 
@@ -158,7 +158,7 @@ abstract class Serializer {
     // Write header based on first metric
     MetricData first = metrics.get(0);
     PrometheusType type = PrometheusType.forMetric(first);
-    String headerName = headerName(NameSanitizer.INSTANCE.apply(first.getName()), type);
+    String headerName = headerName(metricName, first, type);
     String description = metrics.get(0).getDescription();
 
     writer.write("# TYPE ");
@@ -512,10 +512,7 @@ abstract class Serializer {
     }
 
     @Override
-    String headerName(String name, PrometheusType type) {
-      if (type == PrometheusType.COUNTER && !name.endsWith("_total")) {
-        return name + "_total";
-      }
+    String headerName(String name, MetricData rawMetric, PrometheusType type) {
       return name;
     }
 
@@ -568,7 +565,13 @@ abstract class Serializer {
     }
 
     @Override
-    String headerName(String name, PrometheusType type) {
+    String headerName(String name, MetricData rawMetric, PrometheusType type) {
+      // If the name didn't originally have a _total suffix, and we added it later, omit it from the
+      // header.
+      String sanitizedOriginalName = NameSanitizer.INSTANCE.apply(rawMetric.getName());
+      if (!sanitizedOriginalName.endsWith("_total") && (type == PrometheusType.COUNTER)) {
+        return name.substring(0, name.length() - "_total".length());
+      }
       return name;
     }
 

@@ -15,7 +15,7 @@ import javax.annotation.concurrent.Immutable;
 
 /** A class that maps a raw metric name to Prometheus equivalent name. */
 class PrometheusMetricNameMapper implements BiFunction<MetricData, PrometheusType, String> {
-
+  private static final String TOTAL_SUFFIX = "_total";
   static final PrometheusMetricNameMapper INSTANCE = new PrometheusMetricNameMapper();
 
   private final Map<ImmutableMappingKey, String> cache = new ConcurrentHashMap<>();
@@ -42,15 +42,21 @@ class PrometheusMetricNameMapper implements BiFunction<MetricData, PrometheusTyp
     String name = NameSanitizer.INSTANCE.apply(rawMetric.getName());
     String prometheusEquivalentUnit =
         PrometheusUnitsHelper.getEquivalentPrometheusUnit(rawMetric.getUnit());
+    boolean shouldAppendUnit =
+        !StringUtils.isNullOrEmpty(prometheusEquivalentUnit)
+            && !name.contains(prometheusEquivalentUnit);
+    // trim counter's _total suffix so the unit is placed before it.
+    if (prometheusType == PrometheusType.COUNTER && name.endsWith(TOTAL_SUFFIX)) {
+      name = name.substring(0, name.length() - TOTAL_SUFFIX.length());
+    }
     // append prometheus unit if not null or empty.
-    if (!StringUtils.isNullOrEmpty(prometheusEquivalentUnit)
-        && !name.contains(prometheusEquivalentUnit)) {
+    if (shouldAppendUnit) {
       name = name + "_" + prometheusEquivalentUnit;
     }
 
-    // special case - counter
-    if (prometheusType == PrometheusType.COUNTER && !name.contains("total")) {
-      name = name + "_total";
+    // replace _total suffix, or add if it wasn't already present.
+    if (prometheusType == PrometheusType.COUNTER) {
+      name = name + TOTAL_SUFFIX;
     }
     // special case - gauge
     if (rawMetric.getUnit().equals("1")
