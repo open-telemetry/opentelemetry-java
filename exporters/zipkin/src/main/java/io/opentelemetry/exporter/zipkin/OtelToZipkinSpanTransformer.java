@@ -6,9 +6,9 @@
 package io.opentelemetry.exporter.zipkin;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_PEER_PORT;
-import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_SOCK_PEER_ADDR;
-import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.PEER_SERVICE;
+import static io.opentelemetry.semconv.SemanticAttributes.PEER_SERVICE;
+import static io.opentelemetry.semconv.SemanticAttributes.SERVER_SOCKET_ADDRESS;
+import static io.opentelemetry.semconv.SemanticAttributes.SERVER_SOCKET_PORT;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentelemetry.semconv.ResourceAttributes;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.function.Supplier;
@@ -173,8 +173,8 @@ final class OtelToZipkinSpanTransformer {
       if (serviceName != null) {
         Endpoint.Builder endpoint = Endpoint.newBuilder();
         endpoint.serviceName(serviceName);
-        endpoint.ip(attributes.get(NET_SOCK_PEER_ADDR));
-        Long port = attributes.get(NET_PEER_PORT);
+        endpoint.ip(attributes.get(SERVER_SOCKET_ADDRESS));
+        Long port = attributes.get(SERVER_SOCKET_PORT);
         if (port != null) {
           endpoint.port(port.intValue());
         }

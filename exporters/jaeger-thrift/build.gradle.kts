@@ -12,7 +12,7 @@ dependencies {
   api(project(":sdk:all"))
 
   implementation(project(":sdk:all"))
-  implementation(project(":semconv"))
+  implementation("io.opentelemetry.semconv:opentelemetry-semconv")
 
   implementation("com.fasterxml.jackson.jr:jackson-jr-objects")
   implementation("io.jaegertracing:jaeger-client") {

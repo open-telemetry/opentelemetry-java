@@ -15,7 +15,7 @@ val mrJarVersions = listOf(9)
 dependencies {
   api(project(":api:all"))
 
-  implementation(project(":semconv"))
+  implementation("io.opentelemetry.semconv:opentelemetry-semconv")
 
   annotationProcessor("com.google.auto.value:auto-value")
 

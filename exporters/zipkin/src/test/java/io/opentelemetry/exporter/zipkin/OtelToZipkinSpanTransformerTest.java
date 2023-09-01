@@ -16,9 +16,9 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.spanBuilder;
 import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.zipkinSpan;
 import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.zipkinSpanBuilder;
-import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_PEER_PORT;
-import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NET_SOCK_PEER_ADDR;
-import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.PEER_SERVICE;
+import static io.opentelemetry.semconv.SemanticAttributes.PEER_SERVICE;
+import static io.opentelemetry.semconv.SemanticAttributes.SERVER_SOCKET_ADDRESS;
+import static io.opentelemetry.semconv.SemanticAttributes.SERVER_SOCKET_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -29,8 +29,8 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.ResourceAttributes;
+import io.opentelemetry.semconv.SemanticAttributes;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collections;
@@ -176,8 +176,8 @@ class OtelToZipkinSpanTransformerTest {
     Attributes attributes =
         Attributes.builder()
             .put(PEER_SERVICE, "remote-test-service")
-            .put(NET_SOCK_PEER_ADDR, "8.8.8.8")
-            .put(NET_PEER_PORT, 42L)
+            .put(SERVER_SOCKET_ADDRESS, "8.8.8.8")
+            .put(SERVER_SOCKET_PORT, 42L)
             .build();
 
     SpanData spanData =
@@ -201,8 +201,8 @@ class OtelToZipkinSpanTransformerTest {
             .localEndpoint(expectedLocalEndpoint)
             .remoteEndpoint(expectedRemoteEndpoint)
             .putTag(PEER_SERVICE.getKey(), "remote-test-service")
-            .putTag(NET_SOCK_PEER_ADDR.getKey(), "8.8.8.8")
-            .putTag(NET_PEER_PORT.getKey(), "42")
+            .putTag(SERVER_SOCKET_ADDRESS.getKey(), "8.8.8.8")
+            .putTag(SERVER_SOCKET_PORT.getKey(), "42")
             .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
             .build();
 
@@ -217,8 +217,8 @@ class OtelToZipkinSpanTransformerTest {
     Attributes attributes =
         Attributes.builder()
             .put(PEER_SERVICE, "remote-test-service")
-            .put(NET_SOCK_PEER_ADDR, "8.8.8.8")
-            .put(NET_PEER_PORT, 42L)
+            .put(SERVER_SOCKET_ADDRESS, "8.8.8.8")
+            .put(SERVER_SOCKET_PORT, 42L)
             .build();
 
     SpanData spanData =
@@ -239,8 +239,8 @@ class OtelToZipkinSpanTransformerTest {
             .localEndpoint(expectedLocalEndpoint)
             .remoteEndpoint(null)
             .putTag(PEER_SERVICE.getKey(), "remote-test-service")
-            .putTag(NET_SOCK_PEER_ADDR.getKey(), "8.8.8.8")
-            .putTag(NET_PEER_PORT.getKey(), "42")
+            .putTag(SERVER_SOCKET_ADDRESS.getKey(), "8.8.8.8")
+            .putTag(SERVER_SOCKET_PORT.getKey(), "42")
             .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
             .build();
 
@@ -253,7 +253,10 @@ class OtelToZipkinSpanTransformerTest {
       names = {"CLIENT", "PRODUCER"})
   void generateSpan_RemoteEndpointMappingWhenServiceNameIsMissing(SpanKind spanKind) {
     Attributes attributes =
-        Attributes.builder().put(NET_SOCK_PEER_ADDR, "8.8.8.8").put(NET_PEER_PORT, 42L).build();
+        Attributes.builder()
+            .put(SERVER_SOCKET_ADDRESS, "8.8.8.8")
+            .put(SERVER_SOCKET_PORT, 42L)
+            .build();
 
     SpanData spanData =
         spanBuilder()
@@ -272,8 +275,8 @@ class OtelToZipkinSpanTransformerTest {
         zipkinSpan(toZipkinSpanKind(spanKind), localIp).toBuilder()
             .localEndpoint(expectedLocalEndpoint)
             .remoteEndpoint(null)
-            .putTag(NET_SOCK_PEER_ADDR.getKey(), "8.8.8.8")
-            .putTag(NET_PEER_PORT.getKey(), "42")
+            .putTag(SERVER_SOCKET_ADDRESS.getKey(), "8.8.8.8")
+            .putTag(SERVER_SOCKET_PORT.getKey(), "42")
             .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
             .build();
 
@@ -288,7 +291,7 @@ class OtelToZipkinSpanTransformerTest {
     Attributes attributes =
         Attributes.builder()
             .put(PEER_SERVICE, "remote-test-service")
-            .put(NET_SOCK_PEER_ADDR, "8.8.8.8")
+            .put(SERVER_SOCKET_ADDRESS, "8.8.8.8")
             .build();
 
     SpanData spanData =
@@ -312,7 +315,7 @@ class OtelToZipkinSpanTransformerTest {
             .localEndpoint(expectedLocalEndpoint)
             .remoteEndpoint(expectedRemoteEndpoint)
             .putTag(PEER_SERVICE.getKey(), "remote-test-service")
-            .putTag(NET_SOCK_PEER_ADDR.getKey(), "8.8.8.8")
+            .putTag(SERVER_SOCKET_ADDRESS.getKey(), "8.8.8.8")
             .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
             .build();
 
@@ -417,7 +420,10 @@ class OtelToZipkinSpanTransformerTest {
   void generateSpan_AlreadyHasHttpStatusInfo() {
     Attributes attributes =
         Attributes.of(
-            SemanticAttributes.HTTP_STATUS_CODE, 404L, stringKey("error"), "A user provided error");
+            SemanticAttributes.HTTP_RESPONSE_STATUS_CODE,
+            404L,
+            stringKey("error"),
+            "A user provided error");
     SpanData data =
         spanBuilder()
             .setAttributes(attributes)
@@ -430,7 +436,7 @@ class OtelToZipkinSpanTransformerTest {
         .isEqualTo(
             zipkinSpan(Span.Kind.CLIENT, localIp).toBuilder()
                 .clearTags()
-                .putTag(SemanticAttributes.HTTP_STATUS_CODE.getKey(), "404")
+                .putTag(SemanticAttributes.HTTP_RESPONSE_STATUS_CODE.getKey(), "404")
                 .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "ERROR")
                 .putTag("error", "A user provided error")
                 .build());

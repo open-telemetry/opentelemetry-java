@@ -10,7 +10,7 @@ dependencies {
 
   implementation(project(":exporters:otlp:all"))
   implementation(project(":api:events"))
-  implementation(project(":semconv"))
+  implementation("io.opentelemetry.semconv:opentelemetry-semconv")
 
   compileOnly("com.google.errorprone:error_prone_annotations")
 

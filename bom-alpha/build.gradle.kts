@@ -14,4 +14,6 @@ javaPlatform.allowDependencies()
 dependencies {
   // Add dependency on opentelemetry-bom to ensure synchronization between alpha and stable artifacts
   api(platform(project(":bom")))
+
+  otelBom.addExtra("io.opentelemetry.semconv", "opentelemetry-semconv", "1.21.0-alpha")
 }

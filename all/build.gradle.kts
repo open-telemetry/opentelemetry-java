@@ -52,6 +52,7 @@ dependencies {
   testImplementation("io.opentelemetry:opentelemetry-extension-aws")
   testImplementation("io.opentelemetry:opentelemetry-sdk-extension-resources")
   testImplementation("io.opentelemetry:opentelemetry-sdk-extension-aws")
+  testImplementation("io.opentelemetry.semconv:opentelemetry-semconv")
 
   testImplementation("com.tngtech.archunit:archunit-junit5")
 }
