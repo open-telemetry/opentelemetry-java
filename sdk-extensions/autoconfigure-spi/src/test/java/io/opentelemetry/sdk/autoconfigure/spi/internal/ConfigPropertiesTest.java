@@ -157,12 +157,6 @@ class ConfigPropertiesTest {
   void invalidMap() {
     assertThatThrownBy(
             () ->
-                DefaultConfigProperties.createFromMap(Collections.singletonMap("map", "a=1,b="))
-                    .getMap("map"))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Invalid map property: map=a=1,b=");
-    assertThatThrownBy(
-            () ->
                 DefaultConfigProperties.createFromMap(Collections.singletonMap("map", "a=1,b"))
                     .getMap("map"))
         .isInstanceOf(ConfigurationException.class)
@@ -281,7 +275,7 @@ class ConfigPropertiesTest {
     properties.put("test.double", "5.4");
     properties.put("test.boolean", "true");
     properties.put("test.list", "cat,dog,bear");
-    properties.put("test.map", "cat=meow,dog=bark,bear=growl");
+    properties.put("test.map", "cat=meow,dog=bark,bear=growl,bird=");
     properties.put("test.duration", "1s");
     return properties;
   }
