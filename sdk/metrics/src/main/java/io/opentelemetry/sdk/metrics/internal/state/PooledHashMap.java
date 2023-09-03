@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
  * @param <K> The map key type
  * @param <V> The map value type
  */
+@SuppressWarnings("ForLoopReplaceableByForEach")
 public class PooledHashMap<K, V> implements Map<K, V> {
   private static final int DEFAULT_CAPACITY = 16;
   private static final float LOAD_FACTOR = 0.75f;
@@ -92,6 +93,7 @@ public class PooledHashMap<K, V> implements Map<K, V> {
       entries = new ArrayList<>();
       table[bucket] = entries;
     } else {
+      // Don't optimize to enhanced for-loop since implicit iterator used allocated memory in O(n)
       for (int i = 0; i < entries.size(); i++) {
         Entry<K, V> entry = entries.get(i);
         if (Objects.equals(entry.key, key)) {
@@ -164,6 +166,8 @@ public class PooledHashMap<K, V> implements Map<K, V> {
   @Nullable
   @SuppressWarnings("unchecked")
   public V remove(Object key) {
+    requireNonNull(key, "This map does not support null keys");
+
     int bucket = getBucket((K) key);
     ArrayList<Entry<K, V>> entries = table[bucket];
     if (entries != null) {
@@ -193,6 +197,8 @@ public class PooledHashMap<K, V> implements Map<K, V> {
 
   @Override
   public boolean containsKey(Object key) {
+    requireNonNull(key, "This map does not support null keys");
+
     return get(key) != null;
   }
 

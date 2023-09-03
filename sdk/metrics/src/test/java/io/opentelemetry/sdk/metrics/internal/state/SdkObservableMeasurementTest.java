@@ -120,7 +120,7 @@ public class SdkObservableMeasurementTest {
 
       verify(mockAsyncStorage1).record(measurementArgumentCaptor.capture());
       Measurement firstMeasurement = measurementArgumentCaptor.getValue();
-      assertThat(firstMeasurement).isInstanceOf(LeasedMeasurement.class);
+      assertThat(firstMeasurement).isInstanceOf(MutableMeasurement.class);
       assertThat(firstMeasurement.doubleValue()).isEqualTo(4.3);
       assertThat(firstMeasurement.startEpochNanos()).isEqualTo(0);
       assertThat(firstMeasurement.epochNanos()).isEqualTo(10);
@@ -129,7 +129,7 @@ public class SdkObservableMeasurementTest {
 
       verify(mockAsyncStorage1, times(2)).record(measurementArgumentCaptor.capture());
       Measurement secondMeasurement = measurementArgumentCaptor.getValue();
-      assertThat(secondMeasurement).isInstanceOf(LeasedMeasurement.class);
+      assertThat(secondMeasurement).isInstanceOf(MutableMeasurement.class);
       assertThat(secondMeasurement.doubleValue()).isEqualTo(5.3);
       assertThat(secondMeasurement.startEpochNanos()).isEqualTo(0);
       assertThat(secondMeasurement.epochNanos()).isEqualTo(10);
@@ -152,7 +152,7 @@ public class SdkObservableMeasurementTest {
 
       verify(mockAsyncStorage1).record(measurementArgumentCaptor.capture());
       Measurement firstMeasurement = measurementArgumentCaptor.getValue();
-      assertThat(firstMeasurement).isInstanceOf(LeasedMeasurement.class);
+      assertThat(firstMeasurement).isInstanceOf(MutableMeasurement.class);
       assertThat(firstMeasurement.longValue()).isEqualTo(2);
       assertThat(firstMeasurement.startEpochNanos()).isEqualTo(0);
       assertThat(firstMeasurement.epochNanos()).isEqualTo(10);
@@ -161,7 +161,7 @@ public class SdkObservableMeasurementTest {
 
       verify(mockAsyncStorage1, times(2)).record(measurementArgumentCaptor.capture());
       Measurement secondMeasurement = measurementArgumentCaptor.getValue();
-      assertThat(secondMeasurement).isInstanceOf(LeasedMeasurement.class);
+      assertThat(secondMeasurement).isInstanceOf(MutableMeasurement.class);
       assertThat(secondMeasurement.longValue()).isEqualTo(6);
       assertThat(secondMeasurement.startEpochNanos()).isEqualTo(0);
       assertThat(secondMeasurement.epochNanos()).isEqualTo(10);

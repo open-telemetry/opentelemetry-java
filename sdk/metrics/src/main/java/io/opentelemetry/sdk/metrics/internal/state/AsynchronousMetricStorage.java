@@ -123,7 +123,6 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
    * Record callback measurement from {@link ObservableLongMeasurement} or {@link
    * ObservableDoubleMeasurement}.
    */
-  @SuppressWarnings("UnnecessaryDefaultInEnumSwitch")
   void record(Measurement measurement) {
     Context context = Context.current();
     Attributes processedAttributes = attributesProcessor.process(measurement.attributes(), context);
@@ -137,7 +136,6 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
     recordPoint(processedAttributes, measurement);
   }
 
-  @SuppressWarnings("UnnecessaryDefaultInEnumSwitch")
   private void recordPoint(Attributes attributes, Measurement measurement) {
     if (points.size() >= maxCardinality) {
       throttlingLogger.log(

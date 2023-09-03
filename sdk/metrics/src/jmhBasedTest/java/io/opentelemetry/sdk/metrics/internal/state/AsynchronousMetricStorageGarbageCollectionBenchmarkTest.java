@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import org.assertj.core.data.Offset;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.openjdk.jmh.infra.BenchmarkParams;
 import org.openjdk.jmh.results.BenchmarkResult;
@@ -44,6 +45,13 @@ public class AsynchronousMetricStorageGarbageCollectionBenchmarkTest {
   @SuppressWarnings("rawtypes")
   @Test
   public void normalizedAllocationRateTest() throws RunnerException {
+    // GitHub CI has an environment variable (CI=true). We can use it to skip
+    // this test since it's a lengthy one (roughly 10 seconds) and have it running
+    // only in GitHub CI
+    Assumptions.assumeTrue(
+        "true".equals(System.getenv("CI")),
+        "This test should only run in GitHub CI since it's long");
+
     // Runs AsynchronousMetricStorageMemoryProfilingBenchmark
     // with garbage collection profiler
     Options opt =

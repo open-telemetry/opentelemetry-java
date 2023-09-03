@@ -57,50 +57,6 @@ public class InMemoryMetricReader implements MetricReader {
   private volatile MetricProducer metricProducer = MetricProducer.noop();
   private final MemoryMode memoryMode;
 
-  public static class InMemoryMetricReaderBuilder {
-    private AggregationTemporalitySelector aggregationTemporalitySelector =
-        AggregationTemporalitySelector.alwaysCumulative();
-    private DefaultAggregationSelector defaultAggregationSelector =
-        DefaultAggregationSelector.getDefault();
-    private MemoryMode memoryMode = IMMUTABLE_DATA;
-
-    /**
-     * Creates an {@link InMemoryMetricReaderBuilder} with defaults.
-     *
-     * <p>Creates a builder with always-cumulative {@link AggregationTemporalitySelector}, default
-     * {@link DefaultAggregationSelector} and {@link MemoryMode#IMMUTABLE_DATA} {@link MemoryMode}
-     */
-    public InMemoryMetricReaderBuilder() {}
-
-    public InMemoryMetricReaderBuilder setAggregationTemporalitySelector(
-        AggregationTemporalitySelector aggregationTemporalitySelector) {
-      this.aggregationTemporalitySelector = aggregationTemporalitySelector;
-      return this;
-    }
-
-    public InMemoryMetricReaderBuilder setDefaultAggregationSelector(
-        DefaultAggregationSelector defaultAggregationSelector) {
-      this.defaultAggregationSelector = defaultAggregationSelector;
-      return this;
-    }
-
-    /**
-     * Sets the {@link MemoryMode}.
-     *
-     * @param memoryMode the {@link MemoryMode} to set
-     * @return this {@link InMemoryMetricReaderBuilder}
-     */
-    public InMemoryMetricReaderBuilder setMemoryMode(MemoryMode memoryMode) {
-      this.memoryMode = memoryMode;
-      return this;
-    }
-
-    public InMemoryMetricReader build() {
-      return new InMemoryMetricReader(
-          aggregationTemporalitySelector, defaultAggregationSelector, memoryMode);
-    }
-  }
-
   /**
    * Creates an {@link InMemoryMetricReaderBuilder} with defaults.
    *
@@ -155,7 +111,7 @@ public class InMemoryMetricReader implements MetricReader {
     this(aggregationTemporalitySelector, defaultAggregationSelector, IMMUTABLE_DATA);
   }
 
-  private InMemoryMetricReader(
+  InMemoryMetricReader(
       AggregationTemporalitySelector aggregationTemporalitySelector,
       DefaultAggregationSelector defaultAggregationSelector,
       MemoryMode memoryMode) {

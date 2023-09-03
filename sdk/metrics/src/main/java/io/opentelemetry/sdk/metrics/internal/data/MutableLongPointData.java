@@ -104,7 +104,18 @@ public class MutableLongPointData implements LongPointData {
 
   @Override
   public int hashCode() {
-    return Objects.hash(value, startEpochNanos, epochNanos, attributes, exemplars);
+    int hashcode = 1;
+    hashcode *= 1000003;
+    hashcode ^= (int) ((startEpochNanos >>> 32) ^ startEpochNanos);
+    hashcode *= 1000003;
+    hashcode ^= (int) ((epochNanos >>> 32) ^ epochNanos);
+    hashcode *= 1000003;
+    hashcode ^= attributes.hashCode();
+    hashcode *= 1000003;
+    hashcode ^= (int) ((value >>> 32) ^ value);
+    hashcode *= 1000003;
+    hashcode ^= exemplars.hashCode();
+    return hashcode;
   }
 
   @Override

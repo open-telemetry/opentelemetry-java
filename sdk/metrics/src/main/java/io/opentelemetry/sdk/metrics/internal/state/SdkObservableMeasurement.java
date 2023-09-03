@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.metrics.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -38,7 +39,7 @@ public final class SdkObservableMeasurement
   private final List<AsynchronousMetricStorage<?, ?>> storages;
 
   /** Only used when {@code activeReader}'s memoryMode is {@link MemoryMode#REUSABLE_DATA}. */
-  private final LeasedMeasurement leasedMeasurement = new LeasedMeasurement();
+  private final MutableMeasurement mutableMeasurement = new MutableMeasurement();
 
   // These fields are set before invoking callbacks. They allow measurements to be recorded to the
   // storages for correct reader, and with the correct time.
@@ -106,7 +107,6 @@ public final class SdkObservableMeasurement
     record(value, Attributes.empty());
   }
 
-  @SuppressWarnings("UnnecessaryDefaultInEnumSwitch")
   @Override
   public void record(long value, Attributes attributes) {
     if (activeReader == null) {
@@ -114,20 +114,17 @@ public final class SdkObservableMeasurement
       return;
     }
 
-    Measurement measurement = null;
-    switch (activeReader.getReader().getMemoryMode()) {
-      case IMMUTABLE_DATA:
-        measurement = createLong(startEpochNanos, epochNanos, value, attributes);
-        break;
-      case REUSABLE_DATA:
-        LeasedMeasurement.setLongMeasurement(
-            leasedMeasurement, startEpochNanos, epochNanos, value, attributes);
-        measurement = leasedMeasurement;
-        break;
-      default:
-        throw new IllegalStateException(
-            "Unsupported memory mode: " + activeReader.getReader().getMemoryMode());
+    Measurement measurement;
+
+    MemoryMode memoryMode = activeReader.getReader().getMemoryMode();
+    if (Objects.requireNonNull(memoryMode) == MemoryMode.IMMUTABLE_DATA) {
+      measurement = createLong(startEpochNanos, epochNanos, value, attributes);
+    } else {
+      MutableMeasurement.setLongMeasurement(
+          mutableMeasurement, startEpochNanos, epochNanos, value, attributes);
+      measurement = mutableMeasurement;
     }
+
     doRecord(measurement);
   }
 
@@ -136,7 +133,6 @@ public final class SdkObservableMeasurement
     record(value, Attributes.empty());
   }
 
-  @SuppressWarnings("UnnecessaryDefaultInEnumSwitch")
   @Override
   public void record(double value, Attributes attributes) {
     if (activeReader == null) {
@@ -144,19 +140,14 @@ public final class SdkObservableMeasurement
       return;
     }
 
-    Measurement measurement = null;
-    switch (activeReader.getReader().getMemoryMode()) {
-      case IMMUTABLE_DATA:
-        measurement = createDouble(startEpochNanos, epochNanos, value, attributes);
-        break;
-      case REUSABLE_DATA:
-        LeasedMeasurement.setDoubleMeasurement(
-            leasedMeasurement, startEpochNanos, epochNanos, value, attributes);
-        measurement = leasedMeasurement;
-        break;
-      default:
-        throw new IllegalStateException(
-            "Unsupported memory mode: " + activeReader.getReader().getMemoryMode());
+    Measurement measurement;
+    MemoryMode memoryMode = activeReader.getReader().getMemoryMode();
+    if (Objects.requireNonNull(memoryMode) == MemoryMode.IMMUTABLE_DATA) {
+      measurement = createDouble(startEpochNanos, epochNanos, value, attributes);
+    } else {
+      MutableMeasurement.setDoubleMeasurement(
+          mutableMeasurement, startEpochNanos, epochNanos, value, attributes);
+      measurement = mutableMeasurement;
     }
 
     doRecord(measurement);

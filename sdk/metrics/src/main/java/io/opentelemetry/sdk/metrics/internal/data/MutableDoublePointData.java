@@ -99,14 +99,25 @@ public class MutableDoublePointData implements DoublePointData {
     MutableDoublePointData pointData = (MutableDoublePointData) o;
     return startEpochNanos == pointData.startEpochNanos
         && epochNanos == pointData.epochNanos
-        && Double.compare(value, pointData.value) == 0
+        && Double.doubleToLongBits(value) == Double.doubleToLongBits(pointData.value)
         && Objects.equals(attributes, pointData.attributes)
         && Objects.equals(exemplars, pointData.exemplars);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(startEpochNanos, epochNanos, attributes, value, exemplars);
+    int hashcode = 1;
+    hashcode *= 1000003;
+    hashcode ^= (int) ((startEpochNanos >>> 32) ^ startEpochNanos);
+    hashcode *= 1000003;
+    hashcode ^= (int) ((epochNanos >>> 32) ^ epochNanos);
+    hashcode *= 1000003;
+    hashcode ^= attributes.hashCode();
+    hashcode *= 1000003;
+    hashcode ^= (int) ((Double.doubleToLongBits(value) >>> 32) ^ Double.doubleToLongBits(value));
+    hashcode *= 1000003;
+    hashcode ^= exemplars.hashCode();
+    return hashcode;
   }
 
   @Override

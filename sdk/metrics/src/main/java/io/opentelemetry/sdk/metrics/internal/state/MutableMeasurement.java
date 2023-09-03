@@ -9,22 +9,22 @@ import io.opentelemetry.api.common.Attributes;
 import javax.annotation.Nullable;
 
 /**
- * A mutable {@link Measurement} implementation, that is leased to other objects temporarily.
+ * A mutable {@link Measurement} implementation
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  *
  * <p>This class is not thread-safe.
  */
-public class LeasedMeasurement implements Measurement {
+public class MutableMeasurement implements Measurement {
 
   static void setDoubleMeasurement(
-      LeasedMeasurement leasedMeasurement,
+      MutableMeasurement mutableMeasurement,
       long startEpochNanos,
       long epochNanos,
       double value,
       Attributes attributes) {
-    leasedMeasurement.set(
+    mutableMeasurement.set(
         startEpochNanos,
         epochNanos,
         /* hasLongValue= */ false,
@@ -35,12 +35,12 @@ public class LeasedMeasurement implements Measurement {
   }
 
   static void setLongMeasurement(
-      LeasedMeasurement leasedMeasurement,
+      MutableMeasurement mutableMeasurement,
       long startEpochNanos,
       long epochNanos,
       long value,
       Attributes attributes) {
-    leasedMeasurement.set(
+    mutableMeasurement.set(
         startEpochNanos,
         epochNanos,
         /* hasLongValue= */ true,
