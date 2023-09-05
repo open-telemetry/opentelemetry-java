@@ -7,7 +7,7 @@ jobs:
   markdown-link-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install markdown-link-check
         # TODO(jack-berg): use latest when config file reading bug is fixed: https://github.com/tcort/markdown-link-check/issues/246
