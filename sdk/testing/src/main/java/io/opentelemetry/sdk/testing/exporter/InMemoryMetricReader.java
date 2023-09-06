@@ -75,20 +75,6 @@ public class InMemoryMetricReader implements MetricReader {
   }
 
   /**
-   * Create an {@link InMemoryMetricReader} with an {@link AggregationTemporalitySelector}.
-   *
-   * @param aggregationTemporalitySelector The {@link AggregationTemporalitySelector} to be used in
-   *     the reader
-   * @return a new {@link InMemoryMetricReader} which uses {@code aggregationTemporalitySelector}
-   */
-  public static InMemoryMetricReader create(
-      AggregationTemporalitySelector aggregationTemporalitySelector) {
-
-    return new InMemoryMetricReader(
-        aggregationTemporalitySelector, DefaultAggregationSelector.getDefault());
-  }
-
-  /**
    * Returns a new {@link InMemoryMetricReader}.
    *
    * @since 1.26.0

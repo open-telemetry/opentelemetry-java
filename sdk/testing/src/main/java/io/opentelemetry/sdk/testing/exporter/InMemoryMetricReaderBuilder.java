@@ -11,7 +11,7 @@ import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MemoryMode;
 
-public class InMemoryMetricReaderBuilder {
+public final class InMemoryMetricReaderBuilder {
   private AggregationTemporalitySelector aggregationTemporalitySelector =
       AggregationTemporalitySelector.alwaysCumulative();
   private DefaultAggregationSelector defaultAggregationSelector =
@@ -32,6 +32,13 @@ public class InMemoryMetricReaderBuilder {
     return this;
   }
 
+  /**
+   * Sets the {@link DefaultAggregationSelector}
+   *
+   * @param defaultAggregationSelector the {@link DefaultAggregationSelector} to set
+   * @return this {@link InMemoryMetricReaderBuilder}
+   */
+  @SuppressWarnings("unused")
   public InMemoryMetricReaderBuilder setDefaultAggregationSelector(
       DefaultAggregationSelector defaultAggregationSelector) {
     this.defaultAggregationSelector = defaultAggregationSelector;
