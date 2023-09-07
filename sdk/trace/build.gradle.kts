@@ -24,8 +24,6 @@ dependencies {
 
   compileOnly(project(":sdk:trace-shaded-deps"))
 
-  implementation("io.opentelemetry.semconv:opentelemetry-semconv")
-
   annotationProcessor("com.google.auto.value:auto-value")
 
   testAnnotationProcessor("com.google.auto.value:auto-value")

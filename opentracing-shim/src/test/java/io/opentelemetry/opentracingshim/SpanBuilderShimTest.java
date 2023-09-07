@@ -5,6 +5,7 @@
 
 package io.opentelemetry.opentracingshim;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.opentracingshim.TestUtils.getBaggageMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,7 +24,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
-import io.opentelemetry.semconv.SemanticAttributes;
 import io.opentracing.References;
 import io.opentracing.noop.NoopSpan;
 import io.opentracing.tag.Tags;
@@ -169,12 +169,12 @@ class SpanBuilderShimTest {
         assertThat(links.get(0).getSpanContext()).isEqualTo(parentSpan1.getSpan().getSpanContext());
         assertThat(links.get(1).getSpanContext()).isEqualTo(parentSpan2.getSpan().getSpanContext());
         assertThat(links.get(2).getSpanContext()).isEqualTo(parentSpan3.getSpan().getSpanContext());
-        assertThat(links.get(0).getAttributes().get(SemanticAttributes.OPENTRACING_REF_TYPE))
-            .isEqualTo(SemanticAttributes.OpentracingRefTypeValues.FOLLOWS_FROM);
-        assertThat(links.get(1).getAttributes().get(SemanticAttributes.OPENTRACING_REF_TYPE))
-            .isEqualTo(SemanticAttributes.OpentracingRefTypeValues.CHILD_OF);
-        assertThat(links.get(2).getAttributes().get(SemanticAttributes.OPENTRACING_REF_TYPE))
-            .isEqualTo(SemanticAttributes.OpentracingRefTypeValues.FOLLOWS_FROM);
+        assertThat(links.get(0).getAttributes().get(stringKey("opentracing.ref_type")))
+            .isEqualTo("follows_from");
+        assertThat(links.get(1).getAttributes().get(stringKey("opentracing.ref_type")))
+            .isEqualTo("child_of");
+        assertThat(links.get(2).getAttributes().get(stringKey("opentracing.ref_type")))
+            .isEqualTo("follows_from");
 
       } finally {
         childSpan.finish();
@@ -372,7 +372,7 @@ class SpanBuilderShimTest {
     try {
       SpanData spanData = ((ReadableSpan) span.getSpan()).toSpanData();
       assertThat(spanData.getAttributes().size()).isEqualTo(1);
-      assertThat(spanData.getAttributes().get(AttributeKey.stringKey("foo"))).isEqualTo("10");
+      assertThat(spanData.getAttributes().get(stringKey("foo"))).isEqualTo("10");
     } finally {
       span.finish();
     }

@@ -5,12 +5,13 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Attributes;
-import io.opentelemetry.semconv.ResourceAttributes;
 import java.io.Closeable;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -37,7 +38,7 @@ final class AttributesFactory
 
     String serviceName = model.getServiceName();
     if (serviceName != null) {
-      builder.put(ResourceAttributes.SERVICE_NAME, serviceName);
+      builder.put(stringKey("service.name"), serviceName);
     }
 
     model

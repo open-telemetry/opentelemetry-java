@@ -52,7 +52,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import io.opentelemetry.semconv.ResourceAttributes;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -276,7 +275,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
             .addPropertiesSupplier(() -> singletonMap("otel.service.name", "test-service"))
             .build();
 
-    assertThat(autoConfigured.getResource().getAttribute(ResourceAttributes.SERVICE_NAME))
+    assertThat(autoConfigured.getResource().getAttribute(stringKey("service.name")))
         .isEqualTo("test-service");
     assertThat(autoConfigured.getConfig().getString("key")).isEqualTo("value");
     assertThat(autoConfigured.getConfig().getString("otel.key")).isEqualTo("otel-value");
@@ -301,7 +300,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
                 config -> singletonMap("some-key", config.getString("some-key", "") + "-2"))
             .build();
 
-    assertThat(autoConfigured.getResource().getAttribute(ResourceAttributes.SERVICE_NAME))
+    assertThat(autoConfigured.getResource().getAttribute(stringKey("service.name")))
         .isEqualTo("overridden-service-name");
     assertThat(autoConfigured.getConfig().getString("some-key")).isEqualTo("override-2");
     assertThat(autoConfigured.getConfig().getString("some.key")).isEqualTo("override-2");

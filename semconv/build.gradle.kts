@@ -10,5 +10,4 @@ otelJava.moduleName.set("io.opentelemetry.semconv")
 
 dependencies {
   api(project(":api:all"))
-  implementation("io.opentelemetry.semconv:opentelemetry-semconv")
 }

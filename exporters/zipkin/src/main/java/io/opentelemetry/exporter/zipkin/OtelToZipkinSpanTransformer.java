@@ -5,10 +5,8 @@
 
 package io.opentelemetry.exporter.zipkin;
 
+import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static io.opentelemetry.semconv.SemanticAttributes.PEER_SERVICE;
-import static io.opentelemetry.semconv.SemanticAttributes.SERVER_SOCKET_ADDRESS;
-import static io.opentelemetry.semconv.SemanticAttributes.SERVER_SOCKET_PORT;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -21,7 +19,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.ResourceAttributes;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.function.Supplier;
@@ -35,6 +32,12 @@ import zipkin2.Span;
  * https://github.com/census-instrumentation/opencensus-java/tree/c960b19889de5e4a7b25f90919d28b066590d4f0/exporters/trace/zipkin
  */
 final class OtelToZipkinSpanTransformer {
+
+  private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
+  private static final AttributeKey<String> PEER_SERVICE = stringKey("peer.service");
+  private static final AttributeKey<String> SERVER_SOCKET_ADDRESS =
+      stringKey("server.socket.address");
+  private static final AttributeKey<Long> SERVER_SOCKET_PORT = longKey("server.socket.port");
 
   static final String KEY_INSTRUMENTATION_SCOPE_NAME = "otel.scope.name";
   static final String KEY_INSTRUMENTATION_SCOPE_VERSION = "otel.scope.version";
@@ -151,9 +154,9 @@ final class OtelToZipkinSpanTransformer {
     endpoint.ip(ipAddressSupplier.get());
 
     // use the service.name from the Resource, if it's been set.
-    String serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME);
+    String serviceNameValue = resourceAttributes.get(SERVICE_NAME);
     if (serviceNameValue == null) {
-      serviceNameValue = Resource.getDefault().getAttribute(ResourceAttributes.SERVICE_NAME);
+      serviceNameValue = Resource.getDefault().getAttribute(SERVICE_NAME);
     }
     // In practice should never be null unless the default Resource spec is changed.
     if (serviceNameValue != null) {

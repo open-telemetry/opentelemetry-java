@@ -17,7 +17,6 @@ dependencies {
 
   implementation(project(":exporters:common"))
   implementation(project(":exporters:sender:okhttp"))
-  implementation("io.opentelemetry.semconv:opentelemetry-semconv")
   implementation(project(":sdk-extensions:autoconfigure-spi"))
 
   compileOnly("io.grpc:grpc-stub")

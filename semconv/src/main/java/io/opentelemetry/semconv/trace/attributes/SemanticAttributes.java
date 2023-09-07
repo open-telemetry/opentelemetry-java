@@ -15,7 +15,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import java.util.List;
 
 /**
- * @deprecated Use {@link io.opentelemetry.semconv.SemanticAttributes} from <a
+ * @deprecated Use {@code io.opentelemetry.semconv.SemanticAttributes} from <a
  *     href="https://github.com/open-telemetry/semantic-conventions-java">io.opentelemetry.semconv:opentelemetry-semconv:{{version}}</a>
  *     instead.
  */

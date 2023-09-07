@@ -17,6 +17,7 @@ import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.events.EventEmitter;
 import io.opentelemetry.api.logs.Logger;
@@ -71,7 +72,6 @@ import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.semconv.ResourceAttributes;
 import java.io.UncheckedIOException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -106,6 +106,8 @@ import org.testcontainers.utility.MountableFile;
 @Testcontainers(disabledWithoutDocker = true)
 abstract class OtlpExporterIntegrationTest {
 
+  private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
+
   private static final String COLLECTOR_IMAGE =
       "ghcr.io/open-telemetry/opentelemetry-java/otel-collector";
   private static final Integer COLLECTOR_OTLP_GRPC_PORT = 4317;
@@ -114,9 +116,7 @@ abstract class OtlpExporterIntegrationTest {
   private static final Integer COLLECTOR_OTLP_HTTP_MTLS_PORT = 5318;
   private static final Integer COLLECTOR_HEALTH_CHECK_PORT = 13133;
   private static final Resource RESOURCE =
-      Resource.getDefault().toBuilder()
-          .put(ResourceAttributes.SERVICE_NAME, "integration test")
-          .build();
+      Resource.getDefault().toBuilder().put(SERVICE_NAME, "integration test").build();
 
   @RegisterExtension
   static final SelfSignedCertificateExtension serverTls = new SelfSignedCertificateExtension();
@@ -285,7 +285,7 @@ abstract class OtlpExporterIntegrationTest {
     assertThat(resourceSpans.getResource().getAttributesList())
         .contains(
             KeyValue.newBuilder()
-                .setKey(ResourceAttributes.SERVICE_NAME.getKey())
+                .setKey(SERVICE_NAME.getKey())
                 .setValue(AnyValue.newBuilder().setStringValue("integration test").build())
                 .build());
     assertThat(resourceSpans.getScopeSpansCount()).isEqualTo(1);
@@ -414,7 +414,7 @@ abstract class OtlpExporterIntegrationTest {
     assertThat(resourceMetrics.getResource().getAttributesList())
         .contains(
             KeyValue.newBuilder()
-                .setKey(ResourceAttributes.SERVICE_NAME.getKey())
+                .setKey(SERVICE_NAME.getKey())
                 .setValue(AnyValue.newBuilder().setStringValue("integration test").build())
                 .build());
     assertThat(resourceMetrics.getScopeMetricsCount()).isEqualTo(1);
@@ -562,7 +562,7 @@ abstract class OtlpExporterIntegrationTest {
     assertThat(resourceLogs.getResource().getAttributesList())
         .contains(
             KeyValue.newBuilder()
-                .setKey(ResourceAttributes.SERVICE_NAME.getKey())
+                .setKey(SERVICE_NAME.getKey())
                 .setValue(AnyValue.newBuilder().setStringValue("integration test").build())
                 .build());
     assertThat(resourceLogs.getScopeLogsCount()).isEqualTo(1);

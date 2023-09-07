@@ -11,12 +11,12 @@ import io.jaegertracing.thriftjava.Process;
 import io.jaegertracing.thriftjava.Span;
 import io.jaegertracing.thriftjava.Tag;
 import io.jaegertracing.thriftjava.TagType;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.semconv.ResourceAttributes;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -39,6 +39,8 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 @Deprecated
 public final class JaegerThriftSpanExporter implements SpanExporter {
+
+  private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
 
   static final String DEFAULT_ENDPOINT = "http://localhost:14268/api/traces";
 
@@ -121,9 +123,9 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
   private Process createProcess(Resource resource) {
     Process result = new Process(this.process);
 
-    String serviceName = resource.getAttribute(ResourceAttributes.SERVICE_NAME);
+    String serviceName = resource.getAttribute(SERVICE_NAME);
     if (serviceName == null || serviceName.isEmpty()) {
-      serviceName = Resource.getDefault().getAttribute(ResourceAttributes.SERVICE_NAME);
+      serviceName = Resource.getDefault().getAttribute(SERVICE_NAME);
     }
     // In practice should never be null unless the default Resource spec is changed.
     if (serviceName != null) {

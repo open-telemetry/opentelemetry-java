@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.jaeger.thrift;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.fasterxml.jackson.jr.stree.JacksonJrsTreeCodec;
@@ -15,7 +17,6 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.opentelemetry.semconv.ResourceAttributes;
 import java.time.Duration;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -84,7 +85,7 @@ class JaegerThriftIntegrationTest {
                 .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter.build()))
                 .setResource(
                     Resource.getDefault().toBuilder()
-                        .put(ResourceAttributes.SERVICE_NAME, SERVICE_NAME)
+                        .put(stringKey("service.name"), SERVICE_NAME)
                         .build())
                 .build())
         .build();

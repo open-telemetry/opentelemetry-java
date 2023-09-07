@@ -19,7 +19,6 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.SemanticAttributes;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -32,6 +31,14 @@ import org.assertj.core.api.AbstractAssert;
 
 /** Assertions for an exported {@link SpanData}. */
 public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
+
+  private static final AttributeKey<String> EXCEPTION_TYPE =
+      AttributeKey.stringKey("exception.type");
+  private static final AttributeKey<String> EXCEPTION_MESSAGE =
+      AttributeKey.stringKey("exception.message");
+  private static final AttributeKey<String> EXCEPTION_STACKTRACE =
+      AttributeKey.stringKey("exception.stacktrace");
+  private static final String EXCEPTION_EVENT_NAME = "exception";
 
   SpanDataAssert(@Nullable SpanData actual) {
     super(actual, SpanDataAssert.class);
@@ -377,7 +384,7 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
   public SpanDataAssert hasException(Throwable exception) {
     EventData exceptionEvent =
         actual.getEvents().stream()
-            .filter(event -> event.getName().equals(SemanticAttributes.EXCEPTION_EVENT_NAME))
+            .filter(event -> event.getName().equals(EXCEPTION_EVENT_NAME))
             .findFirst()
             .orElse(null);
 
@@ -391,16 +398,16 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
 
     assertThat(exceptionEvent.getAttributes())
         .as("exception.type")
-        .containsEntry(SemanticAttributes.EXCEPTION_TYPE, exception.getClass().getCanonicalName());
+        .containsEntry(EXCEPTION_TYPE, exception.getClass().getCanonicalName());
     if (exception.getMessage() != null) {
       assertThat(exceptionEvent.getAttributes())
           .as("exception.message")
-          .containsEntry(SemanticAttributes.EXCEPTION_MESSAGE, exception.getMessage());
+          .containsEntry(EXCEPTION_MESSAGE, exception.getMessage());
     }
 
     // Exceptions used in assertions always have a different stack trace, just confirm it was
     // recorded.
-    String stackTrace = exceptionEvent.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
+    String stackTrace = exceptionEvent.getAttributes().get(EXCEPTION_STACKTRACE);
     assertThat(stackTrace).as("exception.stacktrace").isNotNull();
 
     return this;
