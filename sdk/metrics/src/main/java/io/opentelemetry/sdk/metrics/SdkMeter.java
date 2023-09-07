@@ -108,7 +108,8 @@ final class SdkMeter implements Meter {
   public DoubleGaugeBuilder gaugeBuilder(String name) {
     return !checkValidInstrumentName(name)
         ? NOOP_METER.gaugeBuilder(NOOP_INSTRUMENT_NAME)
-        : new SdkDoubleGaugeBuilder(meterProviderSharedState, meterSharedState, name);
+        : new SdkDoubleGauge.SdkDoubleGaugeBuilder(
+            meterProviderSharedState, meterSharedState, name);
   }
 
   @Override
