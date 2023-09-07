@@ -48,6 +48,7 @@ testing {
 
         implementation("io.grpc:grpc-netty")
         implementation("io.grpc:grpc-stub")
+        implementation("io.grpc:grpc-inprocess")
       }
       targets {
         all {
@@ -67,6 +68,7 @@ testing {
 
         implementation("io.grpc:grpc-netty-shaded")
         implementation("io.grpc:grpc-stub")
+        implementation("io.grpc:grpc-inprocess")
       }
       targets {
         all {
@@ -86,6 +88,7 @@ testing {
 
         implementation("io.grpc:grpc-okhttp")
         implementation("io.grpc:grpc-stub")
+        implementation("io.grpc:grpc-inprocess")
       }
       targets {
         all {
