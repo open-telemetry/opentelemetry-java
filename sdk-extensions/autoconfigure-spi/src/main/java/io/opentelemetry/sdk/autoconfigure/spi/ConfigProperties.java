@@ -184,7 +184,7 @@ public interface ConfigProperties {
   /**
    * Returns a Map configuration property. The format of the original value must be comma-separated
    * for each key, with an '=' separating the key and value. For instance, <code>
-   * service.name=Greatest Service,host.name=localhost</code> Empty values will be removed.
+   * service.name=Greatest Service,host.name=localhost</code>. Empty values will be removed.
    *
    * @return an empty map if the property has not been configured.
    * @throws ConfigurationException for malformed map strings.

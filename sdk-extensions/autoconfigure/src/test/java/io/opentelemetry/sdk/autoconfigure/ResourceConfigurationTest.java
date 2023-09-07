@@ -30,7 +30,8 @@ class ResourceConfigurationTest {
   void customConfigResource() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.service.name", "test-service");
-    props.put("otel.resource.attributes", "food=cheesecake,drink=juice");
+    props.put(
+        "otel.resource.attributes", "food=cheesecake,drink=juice,animal=  ,color=,shape=square");
     props.put("otel.experimental.resource.disabled-keys", "drink");
 
     assertThat(
@@ -42,6 +43,7 @@ class ResourceConfigurationTest {
             Resource.getDefault().toBuilder()
                 .put(ResourceAttributes.SERVICE_NAME, "test-service")
                 .put("food", "cheesecake")
+                .put("shape", "square")
                 .setSchemaUrl(ResourceAttributes.SCHEMA_URL)
                 .build());
   }
