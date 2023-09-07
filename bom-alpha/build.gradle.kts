@@ -1,5 +1,3 @@
-import java.util.function.Consumer
-
 plugins {
   id("otel.bom-conventions")
 }
