@@ -5,7 +5,7 @@
 
 ## Project Status
 
-See [OpenTelemetry Instrumentation for Java][otel-instrumentation-java].
+See [Java status on OpenTelemetry.io][otel-java-status].
 
 ## Getting Started
 
@@ -326,8 +326,8 @@ Maintainers Emeritus:
 
 Made with [contrib.rocks](https://contrib.rocks).
 
-[ci-image]: https://github.com/open-telemetry/opentelemetry-java/workflows/Continuous%20Build/badge.svg
-[ci-url]: https://github.com/open-telemetry/opentelemetry-java/actions?query=workflow%3Aci+branch%3Amain
+[ci-image]: https://github.com/open-telemetry/opentelemetry-java/workflows/Build/badge.svg
+[ci-url]: https://github.com/open-telemetry/opentelemetry-java/actions?query=workflow%3ABuild+branch%3Amain
 [codecov-image]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/main/graph/badge.svg
 [codecov-url]: https://app.codecov.io/gh/open-telemetry/opentelemetry-java/branch/main/
 [Manual instrumentation]: https://opentelemetry.io/docs/java/manual_instrumentation/
@@ -336,4 +336,4 @@ Made with [contrib.rocks](https://contrib.rocks).
 [opentelemetry-java-instrumentation]: https://github.com/open-telemetry/opentelemetry-java-instrumentation
 [opentelemetry-java-docs]: https://github.com/open-telemetry/opentelemetry-java-docs
 [opentelemetry.io]: https://opentelemetry.io
-[otel-instrumentation-java]: https://opentelemetry.io/docs/instrumentation/java/#status-and-releases
+[otel-java-status]: https://opentelemetry.io/docs/instrumentation/java/#status-and-releases

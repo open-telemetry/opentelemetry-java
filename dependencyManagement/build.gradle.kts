@@ -14,7 +14,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.linecorp.armeria:armeria-bom:1.25.2",
   "com.squareup.okhttp3:okhttp-bom:4.11.0",
   "com.squareup.okio:okio-bom:3.5.0", // applies to transitive dependencies of okhttp
-  "io.grpc:grpc-bom:1.57.2",
+  "io.grpc:grpc-bom:1.58.0",
   "io.netty:netty-bom:4.1.97.Final",
   "io.zipkin.brave:brave-bom:5.16.0",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.4",
@@ -29,7 +29,7 @@ val errorProneVersion = "2.21.1"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
-val slf4jVersion = "2.0.7"
+val slf4jVersion = "2.0.9"
 val opencensusVersion = "0.31.1"
 val prometheusClientVersion = "0.16.0"
 
@@ -59,7 +59,7 @@ val DEPENDENCIES = listOf(
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit5:1.1.0",
-  "com.uber.nullaway:nullaway:0.10.12",
+  "com.uber.nullaway:nullaway:0.10.13",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",

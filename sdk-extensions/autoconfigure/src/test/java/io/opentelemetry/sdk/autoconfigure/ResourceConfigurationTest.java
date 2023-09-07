@@ -29,7 +29,8 @@ class ResourceConfigurationTest {
   void customConfigResource() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.service.name", "test-service");
-    props.put("otel.resource.attributes", "food=cheesecake,drink=juice");
+    props.put(
+        "otel.resource.attributes", "food=cheesecake,drink=juice,animal=  ,color=,shape=square");
     props.put("otel.experimental.resource.disabled-keys", "drink");
 
     assertThat(
@@ -41,6 +42,7 @@ class ResourceConfigurationTest {
             Resource.getDefault().toBuilder()
                 .put(stringKey("service.name"), "test-service")
                 .put("food", "cheesecake")
+                .put("shape", "square")
                 .setSchemaUrl("https://opentelemetry.io/schemas/1.21.0")
                 .build());
   }
