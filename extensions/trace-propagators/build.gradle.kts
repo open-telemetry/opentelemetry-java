@@ -14,6 +14,8 @@ dependencies {
 
   compileOnly(project(":sdk-extensions:autoconfigure-spi"))
 
+  testImplementation(project(":sdk:testing"))
+
   testImplementation("io.jaegertracing:jaeger-client")
   testImplementation("com.google.guava:guava")
 }
