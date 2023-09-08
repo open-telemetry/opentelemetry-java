@@ -12,7 +12,6 @@ import static org.mockito.Mockito.mock;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Attributes;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Stream;
@@ -82,7 +81,7 @@ class AttributesFactoryTest {
                     Collections.emptyList()))
         .isEqualTo(
             io.opentelemetry.api.common.Attributes.builder()
-                .put(ResourceAttributes.SERVICE_NAME, "my-service")
+                .put("service.name", "my-service")
                 .put("strKey", "val")
                 .put("longKey", 1L)
                 .put("intKey", 2)

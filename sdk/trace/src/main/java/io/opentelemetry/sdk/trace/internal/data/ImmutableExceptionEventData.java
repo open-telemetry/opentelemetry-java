@@ -7,11 +7,11 @@ package io.opentelemetry.sdk.trace.internal.data;
 
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.internal.AttributeUtil;
 import io.opentelemetry.sdk.trace.SpanLimits;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import javax.annotation.concurrent.Immutable;
@@ -20,6 +20,14 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @Immutable
 abstract class ImmutableExceptionEventData implements ExceptionEventData {
+
+  private static final AttributeKey<String> EXCEPTION_TYPE =
+      AttributeKey.stringKey("exception.type");
+  private static final AttributeKey<String> EXCEPTION_MESSAGE =
+      AttributeKey.stringKey("exception.message");
+  private static final AttributeKey<String> EXCEPTION_STACKTRACE =
+      AttributeKey.stringKey("exception.stacktrace");
+  private static final String EXCEPTION_EVENT_NAME = "exception";
 
   /**
    * Returns a new immutable {@code Event}.
@@ -46,7 +54,7 @@ abstract class ImmutableExceptionEventData implements ExceptionEventData {
 
   @Override
   public final String getName() {
-    return SemanticAttributes.EXCEPTION_EVENT_NAME;
+    return EXCEPTION_EVENT_NAME;
   }
 
   @Override
@@ -56,18 +64,17 @@ abstract class ImmutableExceptionEventData implements ExceptionEventData {
     Attributes additionalAttributes = getAdditionalAttributes();
     AttributesBuilder attributesBuilder = Attributes.builder();
 
-    attributesBuilder.put(
-        SemanticAttributes.EXCEPTION_TYPE, exception.getClass().getCanonicalName());
+    attributesBuilder.put(EXCEPTION_TYPE, exception.getClass().getCanonicalName());
     String message = exception.getMessage();
     if (message != null) {
-      attributesBuilder.put(SemanticAttributes.EXCEPTION_MESSAGE, message);
+      attributesBuilder.put(EXCEPTION_MESSAGE, message);
     }
 
     StringWriter stringWriter = new StringWriter();
     try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
       exception.printStackTrace(printWriter);
     }
-    attributesBuilder.put(SemanticAttributes.EXCEPTION_STACKTRACE, stringWriter.toString());
+    attributesBuilder.put(EXCEPTION_STACKTRACE, stringWriter.toString());
     attributesBuilder.putAll(additionalAttributes);
 
     SpanLimits spanLimits = getSpanLimits();

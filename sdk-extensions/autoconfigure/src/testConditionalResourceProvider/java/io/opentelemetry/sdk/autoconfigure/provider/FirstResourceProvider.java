@@ -5,17 +5,18 @@
 
 package io.opentelemetry.sdk.autoconfigure.provider;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ConditionalResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
 public class FirstResourceProvider implements ConditionalResourceProvider {
 
   @Override
   public Resource createResource(ConfigProperties config) {
-    return Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, "test-service"));
+    return Resource.create(Attributes.of(stringKey("service.name"), "test-service"));
   }
 
   @Override

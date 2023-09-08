@@ -5,18 +5,17 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.autoconfigure.ResourceConfiguration.DISABLED_ATTRIBUTE_KEYS;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.Collections.singletonMap;
 
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -41,10 +40,10 @@ class ResourceConfigurationTest {
                 (r, c) -> r))
         .isEqualTo(
             Resource.getDefault().toBuilder()
-                .put(ResourceAttributes.SERVICE_NAME, "test-service")
+                .put(stringKey("service.name"), "test-service")
                 .put("food", "cheesecake")
                 .put("shape", "square")
-                .setSchemaUrl(ResourceAttributes.SCHEMA_URL)
+                .setSchemaUrl("https://opentelemetry.io/schemas/1.21.0")
                 .build());
   }
 
@@ -67,7 +66,7 @@ class ResourceConfigurationTest {
 
     assertThat(attributes)
         .hasSize(2)
-        .containsEntry(ResourceAttributes.SERVICE_NAME, "myService")
+        .containsEntry(stringKey("service.name"), "myService")
         .containsEntry("appName", "MyApp");
   }
 
@@ -79,7 +78,7 @@ class ResourceConfigurationTest {
                     singletonMap(ResourceConfiguration.SERVICE_NAME_PROPERTY, "myService")))
             .getAttributes();
 
-    assertThat(attributes).hasSize(1).containsEntry(ResourceAttributes.SERVICE_NAME, "myService");
+    assertThat(attributes).hasSize(1).containsEntry(stringKey("service.name"), "myService");
   }
 
   @Test
@@ -96,7 +95,7 @@ class ResourceConfigurationTest {
 
     assertThat(attributes)
         .hasSize(2)
-        .containsEntry(ResourceAttributes.SERVICE_NAME, "ReallyMyService")
+        .containsEntry(stringKey("service.name"), "ReallyMyService")
         .containsEntry("appName", "MyApp");
   }
 
@@ -126,8 +125,8 @@ class ResourceConfigurationTest {
             resource -> {
               assertThat(resource.getSchemaUrl()).isNull();
               assertThat(resource.getAttributes()).containsEntry("baz", "val");
-              assertThat(resource.getAttributes().get(AttributeKey.stringKey("foo"))).isNull();
-              assertThat(resource.getAttributes().get(AttributeKey.stringKey("bar"))).isNull();
+              assertThat(resource.getAttributes().get(stringKey("foo"))).isNull();
+              assertThat(resource.getAttributes().get(stringKey("bar"))).isNull();
             });
 
     assertThat(ResourceConfiguration.filterAttributes(resourceWithSchema, configProperties))
@@ -135,8 +134,8 @@ class ResourceConfigurationTest {
             resource -> {
               assertThat(resource.getSchemaUrl()).isEqualTo("http://example.com");
               assertThat(resource.getAttributes()).containsEntry("baz", "val");
-              assertThat(resource.getAttributes().get(AttributeKey.stringKey("foo"))).isNull();
-              assertThat(resource.getAttributes().get(AttributeKey.stringKey("bar"))).isNull();
+              assertThat(resource.getAttributes().get(stringKey("foo"))).isNull();
+              assertThat(resource.getAttributes().get(stringKey("bar"))).isNull();
             });
   }
 }

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.opentracingshim;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.opentracingshim.TestUtils.getBaggageMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,7 +17,6 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import io.opentracing.log.Fields;
 import io.opentracing.tag.Tags;
 import java.math.BigInteger;
@@ -93,7 +93,7 @@ class SpanShimTest {
 
     SpanData spanData = ((ReadableSpan) span).toSpanData();
     assertThat(spanData.getAttributes().size()).isEqualTo(1);
-    assertThat(spanData.getAttributes().get(AttributeKey.stringKey("foo"))).isEqualTo("1");
+    assertThat(spanData.getAttributes().get(stringKey("foo"))).isEqualTo("1");
   }
 
   @Test
@@ -275,28 +275,15 @@ class SpanShimTest {
 
     EventData eventData = spanData.getEvents().get(0);
     assertThat(eventData.getName()).isEqualTo("exception");
-    assertThat(
-            eventData
-                .getAttributes()
-                .get(AttributeKey.stringKey(SemanticAttributes.EXCEPTION_TYPE.getKey())))
-        .isEqualTo("kind");
-    assertThat(
-            eventData
-                .getAttributes()
-                .get(AttributeKey.stringKey(SemanticAttributes.EXCEPTION_MESSAGE.getKey())))
-        .isEqualTo("message");
-    assertThat(
-            eventData
-                .getAttributes()
-                .get(AttributeKey.stringKey(SemanticAttributes.EXCEPTION_STACKTRACE.getKey())))
-        .isEqualTo("stack");
+    assertThat(eventData.getAttributes().get(stringKey("exception.type"))).isEqualTo("kind");
+    assertThat(eventData.getAttributes().get(stringKey("exception.message"))).isEqualTo("message");
+    assertThat(eventData.getAttributes().get(stringKey("exception.stacktrace"))).isEqualTo("stack");
 
     verifyAttributes(eventData);
   }
 
   private static void verifyAttributes(EventData eventData) {
-    assertThat(eventData.getAttributes().get(AttributeKey.stringKey("keyForString")))
-        .isEqualTo("value");
+    assertThat(eventData.getAttributes().get(stringKey("keyForString"))).isEqualTo("value");
     assertThat(eventData.getAttributes().get(AttributeKey.longKey("keyForInt"))).isEqualTo(1);
     assertThat(eventData.getAttributes().get(AttributeKey.doubleKey("keyForDouble")))
         .isEqualTo(1.0);

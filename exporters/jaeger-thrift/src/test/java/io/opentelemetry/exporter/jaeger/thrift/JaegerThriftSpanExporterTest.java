@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.jaeger.thrift;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
@@ -17,7 +18,6 @@ import io.jaegertracing.thriftjava.SpanRef;
 import io.jaegertracing.thriftjava.SpanRefType;
 import io.jaegertracing.thriftjava.Tag;
 import io.jaegertracing.thriftjava.TagType;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
@@ -30,7 +30,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
@@ -79,9 +78,9 @@ class JaegerThriftSpanExporterTest {
         testSpanData(
             Resource.create(
                 Attributes.of(
-                    ResourceAttributes.SERVICE_NAME,
+                    stringKey("service.name"),
                     "myServiceName",
-                    AttributeKey.stringKey("resource-attr-key"),
+                    stringKey("resource-attr-key"),
                     "resource-attr-value")),
             "GET /api/endpoint",
             SPAN_CONTEXT,
@@ -140,9 +139,9 @@ class JaegerThriftSpanExporterTest {
         testSpanData(
             Resource.create(
                 Attributes.of(
-                    ResourceAttributes.SERVICE_NAME,
+                    stringKey("service.name"),
                     "myServiceName1",
-                    AttributeKey.stringKey("resource-attr-key-1"),
+                    stringKey("resource-attr-key-1"),
                     "resource-attr-value-1")),
             "GET /api/endpoint/1",
             SPAN_CONTEXT,
@@ -152,9 +151,9 @@ class JaegerThriftSpanExporterTest {
         testSpanData(
             Resource.create(
                 Attributes.of(
-                    ResourceAttributes.SERVICE_NAME,
+                    stringKey("service.name"),
                     "myServiceName2",
-                    AttributeKey.stringKey("resource-attr-key-2"),
+                    stringKey("resource-attr-key-2"),
                     "resource-attr-value-2")),
             "GET /api/endpoint/2",
             SPAN_CONTEXT_2,

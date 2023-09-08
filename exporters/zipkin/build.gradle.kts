@@ -14,7 +14,6 @@ dependencies {
   api("io.zipkin.reporter2:zipkin-reporter")
 
   implementation(project(":exporters:common"))
-  implementation(project(":semconv"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
 
   implementation("io.zipkin.reporter2:zipkin-sender-okhttp3")

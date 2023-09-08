@@ -18,7 +18,6 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.ImplicitContextKeyed;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.log.Fields;
@@ -34,6 +33,15 @@ import javax.annotation.Nullable;
  * link OTel's Span and OT Span/SpanContext.
  */
 final class SpanShim implements Span, ImplicitContextKeyed {
+
+  private static final AttributeKey<String> EXCEPTION_TYPE =
+      AttributeKey.stringKey("exception.type");
+  private static final AttributeKey<String> EXCEPTION_MESSAGE =
+      AttributeKey.stringKey("exception.message");
+  private static final AttributeKey<String> EXCEPTION_STACKTRACE =
+      AttributeKey.stringKey("exception.stacktrace");
+  private static final String EXCEPTION_EVENT_NAME = "exception";
+
   private static final String DEFAULT_EVENT_NAME = "log";
   private static final String ERROR = "error";
   private static final ContextKey<SpanShim> SPAN_SHIM_KEY =
@@ -203,7 +211,7 @@ final class SpanShim implements Span, ImplicitContextKeyed {
       throwable = findThrowable(fields);
       isError = true;
       if (throwable == null) {
-        name = SemanticAttributes.EXCEPTION_EVENT_NAME;
+        name = EXCEPTION_EVENT_NAME;
       }
     }
     Attributes attributes = convertToAttributes(fields, isError, throwable != null);
@@ -253,11 +261,11 @@ final class SpanShim implements Span, ImplicitContextKeyed {
         AttributeKey<String> attributeKey = null;
         if (isError && !isRecordingException) {
           if (key.equals(Fields.ERROR_KIND)) {
-            attributeKey = SemanticAttributes.EXCEPTION_TYPE;
+            attributeKey = EXCEPTION_TYPE;
           } else if (key.equals(Fields.MESSAGE)) {
-            attributeKey = SemanticAttributes.EXCEPTION_MESSAGE;
+            attributeKey = EXCEPTION_MESSAGE;
           } else if (key.equals(Fields.STACK)) {
-            attributeKey = SemanticAttributes.EXCEPTION_STACKTRACE;
+            attributeKey = EXCEPTION_STACKTRACE;
           }
         }
         if (isRecordingException && key.equals(Fields.ERROR_OBJECT)) {

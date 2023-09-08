@@ -28,7 +28,6 @@ dependencies {
   implementation("com.fasterxml.jackson.core:jackson-databind")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
   implementation(project(":sdk-extensions:autoconfigure"))
-  implementation(project(":semconv"))
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))

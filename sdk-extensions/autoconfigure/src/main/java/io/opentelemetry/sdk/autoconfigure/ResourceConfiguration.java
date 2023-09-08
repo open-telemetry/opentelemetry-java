@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -15,7 +16,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.ConditionalResourceProvid
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -31,6 +31,9 @@ import java.util.function.BiFunction;
  * @since 1.28.0
  */
 public final class ResourceConfiguration {
+
+  private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
+  private static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.21.0";
 
   // Visible for testing
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
@@ -73,10 +76,10 @@ public final class ResourceConfiguration {
     }
     String serviceName = config.getString(SERVICE_NAME_PROPERTY);
     if (serviceName != null) {
-      resourceAttributes.put(ResourceAttributes.SERVICE_NAME, serviceName);
+      resourceAttributes.put(SERVICE_NAME, serviceName);
     }
 
-    return Resource.create(resourceAttributes.build(), ResourceAttributes.SCHEMA_URL);
+    return Resource.create(resourceAttributes.build(), SCHEMA_URL);
   }
 
   static Resource configureResource(

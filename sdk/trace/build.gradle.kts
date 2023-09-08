@@ -24,8 +24,6 @@ dependencies {
 
   compileOnly(project(":sdk:trace-shaded-deps"))
 
-  implementation(project(":semconv"))
-
   annotationProcessor("com.google.auto.value:auto-value")
 
   testAnnotationProcessor("com.google.auto.value:auto-value")

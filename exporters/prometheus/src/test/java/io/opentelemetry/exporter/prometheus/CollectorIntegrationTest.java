@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -29,7 +30,6 @@ import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
 import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.UncheckedIOException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -139,20 +139,19 @@ class CollectorIntegrationTest {
             // Resource attributes from the metric SDK resource translated to target_info
             stringKeyValue(
                 "service_name",
-                Objects.requireNonNull(
-                    resource.getAttributes().get(ResourceAttributes.SERVICE_NAME))),
+                Objects.requireNonNull(resource.getAttributes().get(stringKey("service.name")))),
             stringKeyValue(
                 "telemetry_sdk_name",
                 Objects.requireNonNull(
-                    resource.getAttributes().get(ResourceAttributes.TELEMETRY_SDK_NAME))),
+                    resource.getAttributes().get(stringKey("telemetry.sdk.name")))),
             stringKeyValue(
                 "telemetry_sdk_language",
                 Objects.requireNonNull(
-                    resource.getAttributes().get(ResourceAttributes.TELEMETRY_SDK_LANGUAGE))),
+                    resource.getAttributes().get(stringKey("telemetry.sdk.language")))),
             stringKeyValue(
                 "telemetry_sdk_version",
                 Objects.requireNonNull(
-                    resource.getAttributes().get(ResourceAttributes.TELEMETRY_SDK_VERSION))));
+                    resource.getAttributes().get(stringKey("telemetry.sdk.version")))));
 
     assertThat(resourceMetrics.getScopeMetricsCount()).isEqualTo(2);
     ScopeMetrics testScopeMetrics =
