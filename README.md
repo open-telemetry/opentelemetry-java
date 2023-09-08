@@ -17,6 +17,10 @@ write your own **manual instrumentation**, or how to set up the OpenTelemetry
 Java SDK, see [Manual instrumentation][]. Fully-functional examples
 are available in [opentelemetry-java-docs][].
 
+If you are looking for generated classes for
+the [OpenTelemetry semantic conventions][opentelemetry-semantic-conventions],
+see [semantic-conventions-java][opentelemetry-semantic-conventions-java].
+
 For a general overview of OpenTelemetry, visit [opentelemetry.io][].
 
 Would you like to get involved with the project? Read our [contributing guide](CONTRIBUTING.md). We welcome
@@ -40,7 +44,6 @@ This project contains the following top level components:
 
 * [OpenTelemetry API](api/):
   * [stable apis](api/all/src/main/java/io/opentelemetry/api/) including `Tracer`, `Span`, `SpanContext`, `Meter`, and `Baggage`
-  * [semantic conventions](semconv/) Generated code for the OpenTelemetry semantic conventions.
   * [context api](context/src/main/java/io/opentelemetry/context/) The OpenTelemetry Context implementation.
 * [extensions](extensions/) define additional API extensions, which are not part of the core API.
 * [sdk](sdk/) defines the implementation of the OpenTelemetry API.
@@ -115,7 +118,7 @@ dependencies {
 }
 ```
 
-Note that if you want to use any artifacts that have not fully stabilized yet (such as the [semantic conventions constants](https://github.com/open-telemetry/opentelemetry-java/tree/main/semconv), then you will need to add an entry for the Alpha BOM as well, e.g.
+Note that if you want to use any artifacts that have not fully stabilized yet (such as the [prometheus exporter](https://github.com/open-telemetry/opentelemetry-java/tree/main/exporters/prometheus), then you will need to add an entry for the Alpha BOM as well, e.g.
 
 ```groovy
 dependencies {
@@ -123,7 +126,7 @@ dependencies {
   implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.29.0-alpha')
 
   implementation('io.opentelemetry:opentelemetry-api')
-  implementation('io.opentelemetry:opentelemetry-semconv')
+  implementation('io.opentelemetry:opentelemetry-exporter-prometheus')
   implementation('io.opentelemetry:opentelemetry-sdk-extension-autoconfigure')
 }
 ```
@@ -222,12 +225,11 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 ### API
 
 
-| Component                         | Description                                                                                                                                                                           | Artifact ID                | Version                                                     | Javadoc                                                                                                                                                         |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [API](./api/all)                  | OpenTelemetry API, including metrics, traces, baggage, context                                                                                                                        | `opentelemetry-api`        | <!--VERSION_STABLE-->1.29.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-api.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-api)               |
-| [Events API](./api/events)        | OpenTelemetry Event API for emitting events.                                                                                                                                          | `opentelemetry-api-events` | <!--VERSION_UNSTABLE-->1.29.0-alpha<!--/VERSION_UNSTABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-api-events.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-api-events) |
-| [Context API](./context)          | OpenTelemetry context API                                                                                                                                                             | `opentelemetry-context`    | <!--VERSION_STABLE-->1.29.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-context.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-context)       |
-| [Semantic Conventions](./semconv) | Generated code for OpenTelemetry semantic conventions (deprecated, moved to [open-telemetry/semantic-conventions-java](https://github.com/open-telemetry/semantic-conventions-java)) | `opentelemetry-semconv`    | <!--VERSION_UNSTABLE-->1.29.0-alpha<!--/VERSION_UNSTABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-semconv.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-semconv)       |
+| Component                         | Description                                                                                                                                                                          | Artifact ID                | Version                                                     | Javadoc                                                                                                                                                         |
+|-----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------|-------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [API](./api/all)                  | OpenTelemetry API, including metrics, traces, baggage, context                                                                                                                       | `opentelemetry-api`        | <!--VERSION_STABLE-->1.29.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-api.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-api)               |
+| [Events API](./api/events)        | OpenTelemetry Event API for emitting events.                                                                                                                                         | `opentelemetry-api-events` | <!--VERSION_UNSTABLE-->1.29.0-alpha<!--/VERSION_UNSTABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-api-events.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-api-events) |
+| [Context API](./context)          | OpenTelemetry context API                                                                                                                                                            | `opentelemetry-context`    | <!--VERSION_STABLE-->1.29.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-context.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-context)       |
 
 ### API Extensions
 
@@ -335,5 +337,7 @@ Made with [contrib.rocks](https://contrib.rocks).
 [maven-url]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry/opentelemetry-api
 [opentelemetry-java-instrumentation]: https://github.com/open-telemetry/opentelemetry-java-instrumentation
 [opentelemetry-java-docs]: https://github.com/open-telemetry/opentelemetry-java-docs
+[opentelemetry-semantic-conventions]: https://opentelemetry.io/docs/specs/semconv/
+[opentelemetry-semantic-conventions-java]: https://github.com/open-telemetry/semantic-conventions-java
 [opentelemetry.io]: https://opentelemetry.io
 [otel-java-status]: https://opentelemetry.io/docs/instrumentation/java/#status-and-releases

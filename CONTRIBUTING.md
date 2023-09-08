@@ -76,8 +76,6 @@ with a few exceptions / comments:
 * Components like the [Kotlin Extension](./extensions/kotlin) are included which are required for
   the API / SDK to function in key areas of the Java ecosystem. Inclusion is subject to maintainers'
   discretion.
-* The [semconv](./semconv) module contains generated classes representing
-  the [semantic conventions](https://github.com/open-telemetry/semantic-conventions).
 * As a general rule, components which implement semantic conventions belong elsewhere.
 
 Other repositories in the OpenTelemetry Java ecosystem include:
