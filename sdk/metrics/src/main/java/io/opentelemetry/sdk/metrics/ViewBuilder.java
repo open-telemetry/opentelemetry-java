@@ -67,7 +67,11 @@ public final class ViewBuilder {
     return this;
   }
 
-  /** Sets a filter which retains attribute keys included in {@code keysToRetain}. */
+  /**
+   * Sets a filter which retains attribute keys included in {@code keysToRetain}.
+   *
+   * @since 1.30.0
+   */
   public ViewBuilder setAttributeFilter(Set<String> keysToRetain) {
     Objects.requireNonNull(keysToRetain, "keysToRetain");
     return setAttributeFilter(setIncludes(keysToRetain));
