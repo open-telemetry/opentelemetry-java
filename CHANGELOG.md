@@ -2,6 +2,66 @@
 
 ## Unreleased
 
+## Version 1.30.0 (2023-09-08)
+
+### API
+
+#### Incubator
+
+* Add experimental synchronous gauge
+  ([#5506](https://github.com/open-telemetry/opentelemetry-java/pull/5506))
+
+### SDK
+
+#### Metrics
+
+* Add attributes advice API
+  ([#5677](https://github.com/open-telemetry/opentelemetry-java/pull/5677),
+  [#5722](https://github.com/open-telemetry/opentelemetry-java/pull/5722))
+* Add AttributesProcessor toString, add attribute filter helper
+  ([#5765](https://github.com/open-telemetry/opentelemetry-java/pull/5765))
+* Increase metric name maximum length from 63 to 255 characters
+  ([#5697](https://github.com/open-telemetry/opentelemetry-java/pull/5697))
+
+#### Exporter
+
+* Prometheus exporter: remove non-ucum units from conversion
+  ([#5719](https://github.com/open-telemetry/opentelemetry-java/pull/5719))
+* Prometheus exporter: add units to metric names in TYPE and HELP comments
+  ([#5718](https://github.com/open-telemetry/opentelemetry-java/pull/5718))
+
+#### SDK Extensions
+
+* Add support for file based configuration to incubator
+  ([#5687](https://github.com/open-telemetry/opentelemetry-java/pull/5687),
+  [#5751](https://github.com/open-telemetry/opentelemetry-java/pull/5751),
+  [#5758](https://github.com/open-telemetry/opentelemetry-java/pull/5758),
+  [#5757](https://github.com/open-telemetry/opentelemetry-java/pull/5757),
+  [#5755](https://github.com/open-telemetry/opentelemetry-java/pull/5755),
+  [#5763](https://github.com/open-telemetry/opentelemetry-java/pull/5763),
+  [#5766](https://github.com/open-telemetry/opentelemetry-java/pull/5766),
+  [#5773](https://github.com/open-telemetry/opentelemetry-java/pull/5773),
+  [#5771](https://github.com/open-telemetry/opentelemetry-java/pull/5771),
+  [#5779](https://github.com/open-telemetry/opentelemetry-java/pull/5779))
+* Autoconfigure ConfigProperties#getMap filters entries with blank values instead of throwing
+  ([#5784](https://github.com/open-telemetry/opentelemetry-java/pull/5784))
+
+### Semantic conventions
+
+* DEPRECATION: `io.opentelemetry:opentelemetry-semconv` is deprecated for removal. Please use
+  `io.opentelemetry.semconv:opentelemetry-semconv:1.21.0-alpha` instead, which is published
+  from [open-telemetry/semantic-conventions-java](https://github.com/open-telemetry/semantic-conventions-java).
+  The new repository is published in lockstep
+  with [open-telemetry/semantic-conventions](https://github.com/open-telemetry/semantic-conventions).
+  ([#5786](https://github.com/open-telemetry/opentelemetry-java/pull/5786))
+
+### Project Tooling
+
+* Update Gradle Wrapper from 8.2.1 to 8.3
+  ([#5728](https://github.com/open-telemetry/opentelemetry-java/pull/5728))
+* Remove dependabot and `update-gradle-wrapper` task in favor of renovate
+  ([#5746](https://github.com/open-telemetry/opentelemetry-java/pull/5746))
+
 ## Version 1.29.0 (2023-08-11)
 
 ### API

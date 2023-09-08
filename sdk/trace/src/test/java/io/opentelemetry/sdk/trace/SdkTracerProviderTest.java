@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -19,7 +20,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -82,7 +82,7 @@ class SdkTracerProviderTest {
   @Test
   void builder_serviceNameProvided() {
     Resource resource =
-        Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, "mySpecialService"));
+        Resource.create(Attributes.of(stringKey("service.name"), "mySpecialService"));
 
     SdkTracerProvider tracerProvider =
         SdkTracerProvider.builder()

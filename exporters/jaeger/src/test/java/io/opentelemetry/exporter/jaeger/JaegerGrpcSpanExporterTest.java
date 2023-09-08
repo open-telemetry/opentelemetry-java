@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.jaeger;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -17,7 +18,6 @@ import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.SpanContext;
@@ -38,7 +38,6 @@ import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -127,9 +126,9 @@ class JaegerGrpcSpanExporterTest {
         testSpanData(
             Resource.create(
                 Attributes.of(
-                    ResourceAttributes.SERVICE_NAME,
+                    stringKey("service.name"),
                     "myServiceName",
-                    AttributeKey.stringKey("resource-attr-key"),
+                    stringKey("resource-attr-key"),
                     "resource-attr-value")),
             "GET /api/endpoint");
 
@@ -161,9 +160,9 @@ class JaegerGrpcSpanExporterTest {
         testSpanData(
             Resource.create(
                 Attributes.of(
-                    ResourceAttributes.SERVICE_NAME,
+                    stringKey("service.name"),
                     "myServiceName1",
-                    AttributeKey.stringKey("resource-attr-key-1"),
+                    stringKey("resource-attr-key-1"),
                     "resource-attr-value-1")),
             "GET /api/endpoint/1");
 
@@ -171,9 +170,9 @@ class JaegerGrpcSpanExporterTest {
         testSpanData(
             Resource.create(
                 Attributes.of(
-                    ResourceAttributes.SERVICE_NAME,
+                    stringKey("service.name"),
                     "myServiceName2",
-                    AttributeKey.stringKey("resource-attr-key-2"),
+                    stringKey("resource-attr-key-2"),
                     "resource-attr-value-2")),
             "GET /api/endpoint/2");
 

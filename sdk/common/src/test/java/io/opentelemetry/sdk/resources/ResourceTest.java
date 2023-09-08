@@ -21,7 +21,6 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
@@ -238,12 +237,10 @@ class ResourceTest {
   @Test
   void testDefaultResources() {
     Resource resource = Resource.getDefault();
-    assertThat(resource.getAttribute(ResourceAttributes.SERVICE_NAME))
-        .isEqualTo("unknown_service:java");
-    assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_NAME))
-        .isEqualTo("opentelemetry");
-    assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_LANGUAGE)).isEqualTo("java");
-    assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_VERSION))
+    assertThat(resource.getAttribute(stringKey("service.name"))).isEqualTo("unknown_service:java");
+    assertThat(resource.getAttribute(stringKey("telemetry.sdk.name"))).isEqualTo("opentelemetry");
+    assertThat(resource.getAttribute(stringKey("telemetry.sdk.language"))).isEqualTo("java");
+    assertThat(resource.getAttribute(stringKey("telemetry.sdk.version")))
         .isEqualTo(System.getProperty("otel.test.project-version"));
   }
 
@@ -257,7 +254,7 @@ class ResourceTest {
 
     // then no exception is thrown
     // and
-    assertThat(builder.build().getAttribute(ResourceAttributes.SERVICE_NAME))
+    assertThat(builder.build().getAttribute(stringKey("service.name")))
         .isEqualTo("unknown_service:java");
   }
 

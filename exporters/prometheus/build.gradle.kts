@@ -18,8 +18,6 @@ dependencies {
 
   annotationProcessor("com.google.auto.value:auto-value")
 
-  testImplementation(project(":semconv"))
-
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
 
   testImplementation("com.google.guava:guava")

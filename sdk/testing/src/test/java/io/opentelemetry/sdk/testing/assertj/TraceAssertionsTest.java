@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
@@ -27,7 +28,6 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,9 +48,9 @@ class TraceAssertionsTest {
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
       InstrumentationScopeInfo.builder("opentelemetry").setVersion("1.0").build();
 
-  private static final AttributeKey<String> DOG = AttributeKey.stringKey("dog");
-  private static final AttributeKey<String> BEAR = AttributeKey.stringKey("bear");
-  private static final AttributeKey<String> CAT = AttributeKey.stringKey("cat");
+  private static final AttributeKey<String> DOG = stringKey("dog");
+  private static final AttributeKey<String> BEAR = stringKey("bear");
+  private static final AttributeKey<String> CAT = stringKey("cat");
   private static final AttributeKey<Boolean> WARM = AttributeKey.booleanKey("warm");
   private static final AttributeKey<Long> TEMPERATURE = AttributeKey.longKey("temperature");
   private static final AttributeKey<Double> LENGTH = AttributeKey.doubleKey("length");
@@ -59,7 +59,7 @@ class TraceAssertionsTest {
       AttributeKey.booleanArrayKey("conditions");
   private static final AttributeKey<List<Long>> SCORES = AttributeKey.longArrayKey("scores");
   private static final AttributeKey<List<Double>> COINS = AttributeKey.doubleArrayKey("coins");
-  private static final AttributeKey<String> UNSET = AttributeKey.stringKey("unset");
+  private static final AttributeKey<String> UNSET = stringKey("unset");
 
   private static final Attributes ATTRIBUTES =
       Attributes.builder()
@@ -78,11 +78,11 @@ class TraceAssertionsTest {
           EventData.create(20, "event2", Attributes.builder().put("cookie monster", "yum").build()),
           EventData.create(
               30,
-              SemanticAttributes.EXCEPTION_EVENT_NAME,
+              "exception",
               Attributes.builder()
-                  .put(SemanticAttributes.EXCEPTION_TYPE, "java.lang.IllegalArgumentException")
-                  .put(SemanticAttributes.EXCEPTION_MESSAGE, "bad argument")
-                  .put(SemanticAttributes.EXCEPTION_STACKTRACE, "some obfuscated stack")
+                  .put(stringKey("exception.type"), "java.lang.IllegalArgumentException")
+                  .put(stringKey("exception.message"), "bad argument")
+                  .put(stringKey("exception.stacktrace"), "some obfuscated stack")
                   .build()));
   private static final List<LinkData> LINKS =
       Arrays.asList(
@@ -155,7 +155,7 @@ class TraceAssertionsTest {
                         attributes ->
                             assertThat(attributes)
                                 .hasSize(2)
-                                .containsEntry(AttributeKey.stringKey("dog"), "bark")
+                                .containsEntry(stringKey("dog"), "bark")
                                 .hasEntrySatisfying(DOG, value -> assertThat(value).hasSize(4))
                                 .hasEntrySatisfying(
                                     AttributeKey.booleanKey("dog is cute"),
@@ -224,9 +224,8 @@ class TraceAssertionsTest {
             attributes ->
                 assertThat(attributes)
                     .hasSize(8)
-                    .containsEntry(AttributeKey.stringKey("bear"), "mya")
-                    .hasEntrySatisfying(
-                        AttributeKey.stringKey("bear"), value -> assertThat(value).hasSize(3))
+                    .containsEntry(stringKey("bear"), "mya")
+                    .hasEntrySatisfying(stringKey("bear"), value -> assertThat(value).hasSize(3))
                     .containsEntry("bear", "mya")
                     .containsEntry("warm", true)
                     .containsEntry("temperature", 30)
@@ -241,9 +240,9 @@ class TraceAssertionsTest {
                     .containsEntryWithLongValuesOf("scores", Arrays.asList(0L, 1L))
                     .containsEntry("coins", 0.01, 0.05, 0.1)
                     .containsEntryWithDoubleValuesOf("coins", Arrays.asList(0.01, 0.05, 0.1))
-                    .containsKey(AttributeKey.stringKey("bear"))
+                    .containsKey(stringKey("bear"))
                     .containsKey("bear")
-                    .doesNotContainKey(AttributeKey.stringKey("cat"))
+                    .doesNotContainKey(stringKey("cat"))
                     .doesNotContainKey("cat")
                     .containsOnly(
                         attributeEntry("bear", "mya"),
@@ -270,18 +269,16 @@ class TraceAssertionsTest {
                   .hasAttributesSatisfying(attributes -> assertThat(attributes).isEmpty());
               assertThat(events.get(2))
                   .hasAttributesSatisfying(
-                      equalTo(
-                          SemanticAttributes.EXCEPTION_TYPE, "java.lang.IllegalArgumentException"))
+                      equalTo(stringKey("exception.type"), "java.lang.IllegalArgumentException"))
                   .hasAttributesSatisfyingExactly(
-                      equalTo(
-                          SemanticAttributes.EXCEPTION_TYPE, "java.lang.IllegalArgumentException"),
-                      equalTo(SemanticAttributes.EXCEPTION_MESSAGE, "bad argument"),
-                      equalTo(SemanticAttributes.EXCEPTION_STACKTRACE, "some obfuscated stack"));
+                      equalTo(stringKey("exception.type"), "java.lang.IllegalArgumentException"),
+                      equalTo(stringKey("exception.message"), "bad argument"),
+                      equalTo(stringKey("exception.stacktrace"), "some obfuscated stack"));
             })
         .hasEventsSatisfyingExactly(
             event -> event.hasName("event"),
             event -> event.hasName("event2"),
-            event -> event.hasName(SemanticAttributes.EXCEPTION_EVENT_NAME))
+            event -> event.hasName("exception"))
         .hasException(new IllegalArgumentException("bad argument"))
         .hasLinks(LINKS)
         .hasLinks(LINKS.toArray(new LinkData[0]))
@@ -358,7 +355,7 @@ class TraceAssertionsTest {
                             resource.hasAttributesSatisfying(
                                 attributes ->
                                     assertThat(attributes)
-                                        .containsEntry(AttributeKey.stringKey("dog"), "meow"))))
+                                        .containsEntry(stringKey("dog"), "meow"))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
@@ -404,7 +401,7 @@ class TraceAssertionsTest {
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).startsAt(Instant.EPOCH))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(() -> assertThat(SPAN1).hasAttribute(AttributeKey.stringKey("foo"), "bar"))
+    assertThatThrownBy(() -> assertThat(SPAN1).hasAttribute(stringKey("foo"), "bar"))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasAttributes(Attributes.empty()))
         .isInstanceOf(AssertionError.class);
@@ -462,8 +459,7 @@ class TraceAssertionsTest {
             () ->
                 assertThat(SPAN1)
                     .hasAttributesSatisfying(
-                        attributes ->
-                            assertThat(attributes).containsKey(AttributeKey.stringKey("cat"))))
+                        attributes -> assertThat(attributes).containsKey(stringKey("cat"))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
@@ -475,9 +471,7 @@ class TraceAssertionsTest {
             () ->
                 assertThat(SPAN1)
                     .hasAttributesSatisfying(
-                        attributes ->
-                            assertThat(attributes)
-                                .doesNotContainKey(AttributeKey.stringKey("bear"))))
+                        attributes -> assertThat(attributes).doesNotContainKey(stringKey("bear"))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
@@ -502,8 +496,7 @@ class TraceAssertionsTest {
                         attributes ->
                             assertThat(attributes)
                                 .hasEntrySatisfying(
-                                    AttributeKey.stringKey("bear"),
-                                    value -> assertThat(value).hasSize(2))))
+                                    stringKey("bear"), value -> assertThat(value).hasSize(2))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasEvents()).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasEvents(Collections.emptyList()))
@@ -561,9 +554,9 @@ class TraceAssertionsTest {
                             assertThat(events.get(2))
                                 .hasAttributesSatisfyingExactly(
                                     equalTo(
-                                        SemanticAttributes.EXCEPTION_TYPE,
+                                        stringKey("exception.type"),
                                         "java.lang.IllegalArgumentException"),
-                                    equalTo(SemanticAttributes.EXCEPTION_MESSAGE, "bad argument"))))
+                                    equalTo(stringKey("exception.message"), "bad argument"))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () -> assertThat(SPAN1).hasException(new IllegalStateException("bad argument")))
@@ -608,14 +601,11 @@ class TraceAssertionsTest {
     assertThatThrownBy(
             () ->
                 assertThat(RESOURCE.getAttributes())
-                    .containsOnly(
-                        entry(AttributeKey.stringKey("dog"), "bark"),
-                        entry(AttributeKey.stringKey("cat"), "meow")))
+                    .containsOnly(entry(stringKey("dog"), "bark"), entry(stringKey("cat"), "meow")))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
-                assertThat(RESOURCE.getAttributes())
-                    .containsOnly(entry(AttributeKey.stringKey("cat"), "meow")))
+                assertThat(RESOURCE.getAttributes()).containsOnly(entry(stringKey("cat"), "meow")))
         .isInstanceOf(AssertionError.class);
   }
 

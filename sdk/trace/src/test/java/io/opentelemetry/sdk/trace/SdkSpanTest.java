@@ -38,7 +38,6 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Duration;
@@ -745,10 +744,10 @@ class SdkSpanTest {
       assertThat(events).hasSize(1);
       EventData event = events.get(0);
       assertThat(event.getName()).isEqualTo("exception");
-      assertThat(event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE))
+      assertThat(event.getAttributes().get(stringKey("exception.type")))
           .isEqualTo("java.lang.IllegalStateException".substring(0, maxLength));
-      assertThat(event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE)).isEqualTo(strVal);
-      assertThat(event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE).length())
+      assertThat(event.getAttributes().get(stringKey("exception.message"))).isEqualTo(strVal);
+      assertThat(event.getAttributes().get(stringKey("exception.stacktrace")).length())
           .isLessThanOrEqualTo(maxLength);
     } finally {
       span.end();
@@ -918,9 +917,9 @@ class SdkSpanTest {
     assertThat(event.getAttributes())
         .isEqualTo(
             Attributes.builder()
-                .put(SemanticAttributes.EXCEPTION_TYPE, "java.lang.IllegalStateException")
-                .put(SemanticAttributes.EXCEPTION_MESSAGE, "there was an exception")
-                .put(SemanticAttributes.EXCEPTION_STACKTRACE, stacktrace)
+                .put("exception.type", "java.lang.IllegalStateException")
+                .put("exception.message", "there was an exception")
+                .put("exception.stacktrace", stacktrace)
                 .build());
 
     assertThat(event)
@@ -942,7 +941,7 @@ class SdkSpanTest {
     List<EventData> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(1);
     EventData event = events.get(0);
-    assertThat(event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE)).isNull();
+    assertThat(event.getAttributes().get(stringKey("exception.message"))).isNull();
   }
 
   private static class InnerClassException extends Exception {}
@@ -957,7 +956,7 @@ class SdkSpanTest {
     List<EventData> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(1);
     EventData event = events.get(0);
-    assertThat(event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE))
+    assertThat(event.getAttributes().get(stringKey("exception.type")))
         .isEqualTo("io.opentelemetry.sdk.trace.SdkSpanTest.InnerClassException");
   }
 

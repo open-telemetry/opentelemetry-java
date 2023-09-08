@@ -53,7 +53,6 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanLimits;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -159,7 +158,7 @@ class OpenTelemetryConfigurationFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     io.opentelemetry.sdk.resources.Resource expectedResource =
         io.opentelemetry.sdk.resources.Resource.getDefault().toBuilder()
-            .put(ResourceAttributes.SERVICE_NAME, "my-service")
+            .put("service.name", "my-service")
             .put("key", "val")
             .build();
     OpenTelemetrySdk expectedSdk =
