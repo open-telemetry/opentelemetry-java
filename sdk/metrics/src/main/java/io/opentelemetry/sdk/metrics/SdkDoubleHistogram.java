@@ -64,12 +64,13 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      builder = new InstrumentBuilder(
-          meterProviderSharedState,
-          meterSharedState,
-          InstrumentType.HISTOGRAM,
-          InstrumentValueType.DOUBLE,
-          name);
+      builder =
+          new InstrumentBuilder(
+              meterProviderSharedState,
+              meterSharedState,
+              InstrumentType.HISTOGRAM,
+              InstrumentValueType.DOUBLE,
+              name);
     }
 
     @Override

@@ -67,12 +67,13 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      this.builder = new InstrumentBuilder(
-          meterProviderSharedState,
-          meterSharedState,
-          InstrumentType.COUNTER,
-          InstrumentValueType.LONG,
-          name);
+      this.builder =
+          new InstrumentBuilder(
+              meterProviderSharedState,
+              meterSharedState,
+              InstrumentType.COUNTER,
+              InstrumentValueType.LONG,
+              name);
     }
 
     @Override
@@ -99,7 +100,8 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
 
     @Override
     public ObservableLongCounter buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
-      return builder.registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback);
+      return builder.registerLongAsynchronousInstrument(
+          InstrumentType.OBSERVABLE_COUNTER, callback);
     }
 
     @Override

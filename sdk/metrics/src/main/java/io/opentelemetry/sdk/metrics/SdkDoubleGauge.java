@@ -47,8 +47,13 @@ final class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      builder = new InstrumentBuilder(meterProviderSharedState, meterSharedState,
-          InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.DOUBLE, name);
+      builder =
+          new InstrumentBuilder(
+              meterProviderSharedState,
+              meterSharedState,
+              InstrumentType.OBSERVABLE_GAUGE,
+              InstrumentValueType.DOUBLE,
+              name);
     }
 
     @Override
@@ -82,7 +87,8 @@ final class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
     @Override
     public ObservableDoubleGauge buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
       // TODO: use InstrumentType.GAUGE when available
-      return builder.registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
+      return builder.registerDoubleAsynchronousInstrument(
+          InstrumentType.OBSERVABLE_GAUGE, callback);
     }
 
     @Override
