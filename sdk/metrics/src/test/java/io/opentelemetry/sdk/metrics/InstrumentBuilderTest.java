@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MutableInstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
@@ -28,16 +29,16 @@ class InstrumentBuilderTest {
 
   @Test
   void stringRepresentation() {
-    InstrumentBuilder builder =
-        new InstrumentBuilder(
-            PROVIDER_SHARED_STATE,
-            METER_SHARED_STATE,
+    MutableInstrumentDescriptor descriptor =
+        MutableInstrumentDescriptor.create(
+            "instrument-name",
             InstrumentType.COUNTER,
             InstrumentValueType.LONG,
-            "instrument-name",
             "instrument-description",
             "instrument-unit",
             Advice.builder());
+    InstrumentBuilder builder =
+        new InstrumentBuilder(PROVIDER_SHARED_STATE, METER_SHARED_STATE, descriptor);
     assertThat(builder.toString())
         .isEqualTo(
             "InstrumentBuilder{"
@@ -54,16 +55,17 @@ class InstrumentBuilderTest {
 
   @Test
   void toStringHelper() {
-    InstrumentBuilder builder =
-        new InstrumentBuilder(
-            PROVIDER_SHARED_STATE,
-            METER_SHARED_STATE,
+    MutableInstrumentDescriptor descriptor =
+        MutableInstrumentDescriptor.create(
+            "instrument-name",
             InstrumentType.HISTOGRAM,
             InstrumentValueType.DOUBLE,
-            "instrument-name",
             "instrument-description",
             "instrument-unit",
             Advice.builder());
+    InstrumentBuilder builder =
+        new InstrumentBuilder(PROVIDER_SHARED_STATE, METER_SHARED_STATE, descriptor);
+
     assertThat(builder.toStringHelper("FooBuilder"))
         .isEqualTo(
             "FooBuilder{"

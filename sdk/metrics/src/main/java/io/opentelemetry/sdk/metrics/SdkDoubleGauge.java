@@ -14,6 +14,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.extension.incubator.metrics.DoubleGauge;
 import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleGaugeBuilder;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MutableInstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -47,13 +48,11 @@ final class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      builder =
-          new InstrumentBuilder(
-              meterProviderSharedState,
-              meterSharedState,
-              InstrumentType.OBSERVABLE_GAUGE,
-              InstrumentValueType.DOUBLE,
-              name);
+
+      MutableInstrumentDescriptor descriptor =
+          MutableInstrumentDescriptor.create(
+              name, InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.DOUBLE);
+      builder = new InstrumentBuilder(meterProviderSharedState, meterSharedState, descriptor);
     }
 
     @Override
@@ -87,8 +86,7 @@ final class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
     @Override
     public ObservableDoubleGauge buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
       // TODO: use InstrumentType.GAUGE when available
-      return builder.buildDoubleAsynchronousInstrument(
-          InstrumentType.OBSERVABLE_GAUGE, callback);
+      return builder.buildDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
     }
 
     @Override
