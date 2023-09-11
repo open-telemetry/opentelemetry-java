@@ -87,7 +87,7 @@ final class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
     @Override
     public ObservableDoubleGauge buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
       // TODO: use InstrumentType.GAUGE when available
-      return builder.registerDoubleAsynchronousInstrument(
+      return builder.buildDoubleAsynchronousInstrument(
           InstrumentType.OBSERVABLE_GAUGE, callback);
     }
 

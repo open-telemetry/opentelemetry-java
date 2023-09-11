@@ -90,7 +90,7 @@ final class SdkLongGauge extends AbstractInstrument implements LongGauge {
     @Override
     public ObservableLongGauge buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
       // TODO: use InstrumentType.GAUGE when available
-      return builder.registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
+      return builder.buildLongAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
     }
 
     @Override

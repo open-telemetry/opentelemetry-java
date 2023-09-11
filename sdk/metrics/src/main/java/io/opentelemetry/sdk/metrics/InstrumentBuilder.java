@@ -99,7 +99,7 @@ final class InstrumentBuilder {
     return instrumentFactory.apply(descriptor, storage);
   }
 
-  SdkObservableInstrument registerDoubleAsynchronousInstrument(
+  SdkObservableInstrument buildDoubleAsynchronousInstrument(
       InstrumentType type, Consumer<ObservableDoubleMeasurement> updater) {
     SdkObservableMeasurement sdkObservableMeasurement = buildObservableMeasurement(type);
     Runnable runnable = () -> updater.accept(sdkObservableMeasurement);
@@ -109,7 +109,7 @@ final class InstrumentBuilder {
     return new SdkObservableInstrument(meterSharedState, callbackRegistration);
   }
 
-  SdkObservableInstrument registerLongAsynchronousInstrument(
+  SdkObservableInstrument buildLongAsynchronousInstrument(
       InstrumentType type, Consumer<ObservableLongMeasurement> updater) {
     SdkObservableMeasurement sdkObservableMeasurement = buildObservableMeasurement(type);
     Runnable runnable = () -> updater.accept(sdkObservableMeasurement);
