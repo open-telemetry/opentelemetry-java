@@ -39,8 +39,10 @@ final class SdkLongGauge extends AbstractInstrument implements LongGauge {
     set(increment, Attributes.empty());
   }
 
-  static final class SdkLongGaugeBuilder extends AbstractInstrumentBuilder<SdkLongGaugeBuilder>
+  static final class SdkLongGaugeBuilder
       implements ExtendedLongGaugeBuilder {
+
+    private final InstrumentBuilder builder;
 
     SdkLongGaugeBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -49,7 +51,7 @@ final class SdkLongGauge extends AbstractInstrument implements LongGauge {
         String description,
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
-      super(
+      builder = new InstrumentBuilder(
           meterProviderSharedState,
           sharedState,
           // TODO: use InstrumentType.GAUGE when available
@@ -62,31 +64,43 @@ final class SdkLongGauge extends AbstractInstrument implements LongGauge {
     }
 
     @Override
-    protected SdkLongGaugeBuilder getThis() {
+    public LongGaugeBuilder setDescription(String description) {
+      builder.setDescription(description);
+      return this;
+    }
+
+    @Override
+    public LongGaugeBuilder setUnit(String unit) {
+      builder.setUnit(unit);
       return this;
     }
 
     @Override
     public SdkLongGauge build() {
-      return buildSynchronousInstrument(SdkLongGauge::new);
+      return builder.buildSynchronousInstrument(SdkLongGauge::new);
     }
 
     @Override
     public ExtendedLongGaugeBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
-      adviceBuilder.setAttributes(attributes);
+      builder.setAdviceAttributes(attributes);
       return this;
     }
 
     @Override
     public ObservableLongGauge buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
       // TODO: use InstrumentType.GAUGE when available
-      return registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
+      return builder.registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
     }
 
     @Override
     public ObservableLongMeasurement buildObserver() {
       // TODO: use InstrumentType.GAUGE when available
-      return buildObservableMeasurement(InstrumentType.OBSERVABLE_GAUGE);
+      return builder.buildObservableMeasurement(InstrumentType.OBSERVABLE_GAUGE);
+    }
+
+    @Override
+    public String toString() {
+      return builder.toStringHelper(getClass().getSimpleName());
     }
   }
 }
