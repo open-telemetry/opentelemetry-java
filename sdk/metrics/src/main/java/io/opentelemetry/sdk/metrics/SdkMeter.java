@@ -42,12 +42,12 @@ final class SdkMeter implements Meter {
    *   <li>They are not null or empty strings.
    *   <li>They are case-insensitive, ASCII strings.
    *   <li>The first character must be an alphabetic character.
-   *   <li>Subsequent characters must belong to the alphanumeric characters, '_', '.', and '-'.
+   *   <li>Subsequent characters must belong to the alphanumeric characters, '_', '.', '/', and '-'.
    *   <li>They can have a maximum length of 255 characters.
    * </ul>
    */
   private static final Pattern VALID_INSTRUMENT_NAME_PATTERN =
-      Pattern.compile("([A-Za-z]){1}([A-Za-z0-9\\_\\-\\.]){0,254}");
+      Pattern.compile("([A-Za-z]){1}([A-Za-z0-9\\_\\-\\./]){0,254}");
 
   private static final Meter NOOP_METER = MeterProvider.noop().get("noop");
   private static final String NOOP_INSTRUMENT_NAME = "noop";
