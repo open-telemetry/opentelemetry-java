@@ -1,0 +1,103 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.sdk.autoconfigure;
+
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.exporter.logging.LoggingSpanExporter;
+import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collections;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.io.TempDir;
+
+class FileConfigurationTest {
+
+  @RegisterExtension private static final CleanupExtension cleanup = new CleanupExtension();
+
+  @Test
+  void configFile_Valid(@TempDir Path tempDir) throws IOException {
+    String yaml =
+        "file_format: \"0.1\"\n"
+            + "resource:\n"
+            + "  attributes:\n"
+            + "    service.name: test\n"
+            + "tracer_provider:\n"
+            + "  processors:\n"
+            + "    - simple:\n"
+            + "        exporter:\n"
+            + "          console: {}\n";
+    Path path = tempDir.resolve("otel-config.yaml");
+    Files.write(path, yaml.getBytes(StandardCharsets.UTF_8));
+    ConfigProperties config =
+        DefaultConfigProperties.createFromMap(
+            Collections.singletonMap("OTEL_CONFIG_FILE", path.toString()));
+    OpenTelemetrySdk expectedSdk =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(
+                SdkTracerProvider.builder()
+                    .setResource(
+                        Resource.getDefault().toBuilder().put("service.name", "test").build())
+                    .addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter.create()))
+                    .build())
+            .setPropagators(
+                ContextPropagators.create(
+                    TextMapPropagator.composite(
+                        W3CTraceContextPropagator.getInstance(),
+                        W3CBaggagePropagator.getInstance())))
+            .build();
+    cleanup.addCloseable(expectedSdk);
+
+    AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
+        AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).build();
+    cleanup.addCloseable(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
+
+    assertThat(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().toString())
+        .isEqualTo(expectedSdk.toString());
+    // AutoConfiguredOpenTelemetrySdk#getResource() is set to a dummy value when configuring from
+    // file
+    assertThat(autoConfiguredOpenTelemetrySdk.getResource()).isEqualTo(Resource.getDefault());
+  }
+
+  @Test
+  void configFile_Error(@TempDir Path tempDir) throws IOException {
+    String yaml =
+        "file_format: \"0.1\"\n"
+            + "resource:\n"
+            + "  attributes:\n"
+            + "    service.name: test\n"
+            + "tracer_provider:\n"
+            + "  processors:\n"
+            + "    - simple:\n"
+            + "        exporter:\n"
+            + "          foo: {}\n";
+    Path path = tempDir.resolve("otel-config.yaml");
+    Files.write(path, yaml.getBytes(StandardCharsets.UTF_8));
+    ConfigProperties config =
+        DefaultConfigProperties.createFromMap(
+            Collections.singletonMap("OTEL_CONFIG_FILE", path.toString()));
+
+    assertThatThrownBy(() -> AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).build())
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Unrecognized span exporter(s): [foo]");
+  }
+}

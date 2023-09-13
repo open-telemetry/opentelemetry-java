@@ -40,10 +40,11 @@ environment variables, e.g., `OTEL_TRACES_EXPORTER=zipkin`.
   * [Periodic Metric Reader](#periodic-metric-reader)
   * [Metric exporters](#metric-exporters)
     + [Prometheus exporter](#prometheus-exporter)
-  * [Cardinality limits](#cardinality-limits)
+  * [Cardinality Limits](#cardinality-limits)
 - [Logger provider](#logger-provider)
-- [Batch log record processor](#batch-log-record-processor)
+  * [Batch log record processor](#batch-log-record-processor)
 - [Customizing the OpenTelemetry SDK](#customizing-the-opentelemetry-sdk)
+- [File Configuration](#file-configuration)
 
 <!-- tocstop -->
 
@@ -347,7 +348,7 @@ a Prometheus server scrapes from.
 
 The following configuration options are specific to `SdkLoggerProvider`. See [general configuration](#general-configuration) for general configuration.
 
-## Batch log record processor
+### Batch log record processor
 
 | System property                 | Environment variable            | Description                                                                        |
 |---------------------------------|---------------------------------|------------------------------------------------------------------------------------|
@@ -361,3 +362,22 @@ The following configuration options are specific to `SdkLoggerProvider`. See [ge
 Autoconfiguration exposes SPI [hooks](../autoconfigure-spi/src/main/java/io/opentelemetry/sdk/autoconfigure/spi) for customizing behavior programmatically as needed.
 It's recommended to use the above configuration properties where possible, only implementing the SPI to add functionality not found in the
 SDK by default.
+
+## File Configuration
+
+**Experimental**: File based configuration is experimental and subject to breaking changes.
+
+File configuration allows for configuration via a YAML as described
+in [opentelemetry-configuration](https://github.com/open-telemetry/opentelemetry-configuration)
+and [file configuration](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/file-configuration.md).
+
+To use, include `io.opentelemetry:opentelemetry-sdk-extension:incubator:<version>` and specify the
+path to the config file as described in the table below.
+
+| System property  | Environment variable | Purpose                                                              |
+|------------------|----------------------|----------------------------------------------------------------------|
+| otel.config.file | OTEL_CONFIG_FILE     | The path to the SDK configuration file. Defaults to unset. If unset, |
+
+NOTE: When a config file is specified, other environment variables described in this document along
+with SPI [customizations](#customizing-the-opentelemetry-sdk) are ignored. The contents of the file
+alone dictate SDK configuration.
