@@ -44,8 +44,10 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceI
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.View;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Zipkin;
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -275,5 +277,60 @@ class ConfigurationReaderTest {
       // All configuration
       assertThat(config).isEqualTo(expected);
     }
+  }
+
+  @Test
+  void nullValuesParsedToEmptyObjects() {
+    String objectPlaceholderString =
+        "file_format: \"0.1\"\n"
+            + "tracer_provider:\n"
+            + "  processors:\n"
+            + "    - batch:\n"
+            + "        exporter:\n"
+            + "          console: {}\n"
+            + "meter_provider:\n"
+            + "  views:\n"
+            + "    - selector:\n"
+            + "        instrument_type: histogram\n"
+            + "      stream:\n"
+            + "        aggregation:\n"
+            + "          drop: {}\n";
+    OpenTelemetryConfiguration objectPlaceholderModel =
+        ConfigurationReader.parse(
+            new ByteArrayInputStream(objectPlaceholderString.getBytes(StandardCharsets.UTF_8)));
+
+    String noOjbectPlaceholderString =
+        "file_format: \"0.1\"\n"
+            + "tracer_provider:\n"
+            + "  processors:\n"
+            + "    - batch:\n"
+            + "        exporter:\n"
+            + "          console:\n"
+            + "meter_provider:\n"
+            + "  views:\n"
+            + "    - selector:\n"
+            + "        instrument_type: histogram\n"
+            + "      stream:\n"
+            + "        aggregation:\n"
+            + "          drop:\n";
+    OpenTelemetryConfiguration noObjectPlaceholderModel =
+        ConfigurationReader.parse(
+            new ByteArrayInputStream(noOjbectPlaceholderString.getBytes(StandardCharsets.UTF_8)));
+
+    SpanExporter exporter =
+        noObjectPlaceholderModel
+            .getTracerProvider()
+            .getProcessors()
+            .get(0)
+            .getBatch()
+            .getExporter();
+    assertThat(exporter.getConsole()).isNotNull();
+    assertThat(exporter.getOtlp()).isNull();
+
+    Aggregation aggregation= noObjectPlaceholderModel.getMeterProvider().getViews().get(0).getStream().getAggregation();
+    assertThat(aggregation.getDrop()).isNotNull();
+    assertThat(aggregation.getSum()).isNull();
+
+    assertThat(objectPlaceholderModel).isEqualTo(noObjectPlaceholderModel);
   }
 }

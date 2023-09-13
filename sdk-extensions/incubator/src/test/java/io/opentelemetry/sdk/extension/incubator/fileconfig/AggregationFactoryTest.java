@@ -11,11 +11,14 @@ import static org.mockito.Mockito.mock;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Aggregation;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2ExponentialBucketHistogram;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Drop;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogram;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Stream;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LastValue;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sum;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -45,13 +48,13 @@ class AggregationFactoryTest {
         Arguments.of(
             new Aggregation(), io.opentelemetry.sdk.metrics.Aggregation.defaultAggregation()),
         Arguments.of(
-            new Aggregation().withDrop(new Object()),
+            new Aggregation().withDrop(new Drop()),
             io.opentelemetry.sdk.metrics.Aggregation.drop()),
         Arguments.of(
-            new Aggregation().withSum(new Object()),
+            new Aggregation().withSum(new Sum()),
             io.opentelemetry.sdk.metrics.Aggregation.sum()),
         Arguments.of(
-            new Aggregation().withLastValue(new Object()),
+            new Aggregation().withLastValue(new LastValue()),
             io.opentelemetry.sdk.metrics.Aggregation.lastValue()),
         Arguments.of(
             new Aggregation()
