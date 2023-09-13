@@ -24,6 +24,14 @@ public interface ReadWriteLogRecord {
    */
   <T> ReadWriteLogRecord setAttribute(AttributeKey<T> key, T value);
 
+  /**
+   * Sets attributes to the {@link ReadWriteLogRecord}. If the {@link ReadWriteLogRecord} previously
+   * contained a mapping for any of the keys, the old values are replaced by the specified values.
+   *
+   * @param attributes the attributes
+   * @return this.
+   * @since 1.31.0
+   */
   @SuppressWarnings("unchecked")
   default ReadWriteLogRecord setAllAttributes(Attributes attributes) {
     if (attributes == null || attributes.isEmpty()) {
