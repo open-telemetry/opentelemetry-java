@@ -9,10 +9,14 @@ import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigTest
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -26,6 +30,8 @@ import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.slf4j.event.Level;
 
 class ConfigurationFactoryTest {
@@ -134,5 +140,37 @@ class ConfigurationFactoryTest {
     logCapturer.assertContains(
         "Closing io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter");
     logCapturer.assertContains("Closing io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor");
+  }
+
+  @Test
+  void shutdownHook() throws InterruptedException {
+    OpenTelemetrySdk sdk = mock(OpenTelemetrySdk.class);
+
+    Thread thread = ConfigurationFactory.shutdownHook(sdk);
+    thread.start();
+    thread.join();
+
+    verify(sdk).close();
+  }
+
+  @Test
+  void registersShutdownHook() {
+    try (MockedStatic<ConfigurationFactory> configurationFactory =
+        Mockito.mockStatic(ConfigurationFactory.class)) {
+      Thread thread = new Thread();
+      configurationFactory
+          .when(() -> ConfigurationFactory.parseAndInterpret(any()))
+          .thenCallRealMethod();
+      configurationFactory.when(() -> ConfigurationFactory.shutdownHook(any())).thenReturn(thread);
+
+      String yaml = "file_format: \"0.1\"\n";
+
+      OpenTelemetrySdk openTelemetrySdk =
+          ConfigurationFactory.parseAndInterpret(
+              new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
+
+      configurationFactory.verify(() -> ConfigurationFactory.shutdownHook(openTelemetrySdk));
+      assertThat(Runtime.getRuntime().removeShutdownHook(thread)).isTrue();
+    }
   }
 }

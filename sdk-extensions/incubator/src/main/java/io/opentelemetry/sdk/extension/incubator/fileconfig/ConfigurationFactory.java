@@ -46,9 +46,12 @@ public final class ConfigurationFactory {
     }
 
     List<Closeable> closeables = new ArrayList<>();
+    OpenTelemetrySdk sdk;
     try {
-      return OpenTelemetryConfigurationFactory.getInstance()
-          .create(model, SpiHelper.create(ConfigurationFactory.class.getClassLoader()), closeables);
+      sdk =
+          OpenTelemetryConfigurationFactory.getInstance()
+              .create(
+                  model, SpiHelper.create(ConfigurationFactory.class.getClassLoader()), closeables);
     } catch (RuntimeException e) {
       logger.info(
           "Error encountered interpreting configuration. Closing partially configured components.");
@@ -66,5 +69,16 @@ public final class ConfigurationFactory {
       }
       throw new ConfigurationException("Unexpected configuration error", e);
     }
+
+    // Register hook to shutdown SDK when runtime shuts down
+    // TODO(jack-berg): Should we omit this and instead document that users should register their
+    // own shutdown hook?
+    Runtime.getRuntime().addShutdownHook(shutdownHook(sdk));
+    return sdk;
+  }
+
+  // Visible for testing
+  static Thread shutdownHook(OpenTelemetrySdk sdk) {
+    return new Thread(sdk::close);
   }
 }
