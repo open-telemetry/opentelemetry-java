@@ -327,7 +327,8 @@ class ConfigurationReaderTest {
     assertThat(exporter.getConsole()).isNotNull();
     assertThat(exporter.getOtlp()).isNull();
 
-    Aggregation aggregation= noObjectPlaceholderModel.getMeterProvider().getViews().get(0).getStream().getAggregation();
+    Aggregation aggregation =
+        noObjectPlaceholderModel.getMeterProvider().getViews().get(0).getStream().getAggregation();
     assertThat(aggregation.getDrop()).isNotNull();
     assertThat(aggregation.getSum()).isNull();
 

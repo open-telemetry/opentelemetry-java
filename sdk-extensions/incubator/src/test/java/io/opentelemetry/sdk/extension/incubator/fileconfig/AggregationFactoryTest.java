@@ -13,12 +13,12 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Aggreg
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2ExponentialBucketHistogram;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Drop;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogram;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LastValue;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sum;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Stream;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LastValue;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sum;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -51,8 +51,7 @@ class AggregationFactoryTest {
             new Aggregation().withDrop(new Drop()),
             io.opentelemetry.sdk.metrics.Aggregation.drop()),
         Arguments.of(
-            new Aggregation().withSum(new Sum()),
-            io.opentelemetry.sdk.metrics.Aggregation.sum()),
+            new Aggregation().withSum(new Sum()), io.opentelemetry.sdk.metrics.Aggregation.sum()),
         Arguments.of(
             new Aggregation().withLastValue(new LastValue()),
             io.opentelemetry.sdk.metrics.Aggregation.lastValue()),
