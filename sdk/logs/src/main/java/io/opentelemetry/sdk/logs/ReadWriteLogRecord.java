@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 
 /**
@@ -23,7 +24,15 @@ public interface ReadWriteLogRecord {
    */
   <T> ReadWriteLogRecord setAttribute(AttributeKey<T> key, T value);
 
-  // TODO: add additional setters
+  @SuppressWarnings("unchecked")
+  default ReadWriteLogRecord setAllAttributes(Attributes attributes) {
+    if (attributes == null || attributes.isEmpty()) {
+      return this;
+    }
+    attributes.forEach(
+        (attributeKey, value) -> this.setAttribute((AttributeKey<Object>) attributeKey, value));
+    return this;
+  }
 
   /** Return an immutable {@link LogRecordData} instance representing this log record. */
   LogRecordData toLogRecordData();
