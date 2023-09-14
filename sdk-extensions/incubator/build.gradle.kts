@@ -55,8 +55,8 @@ dependencies {
 // ... proceed with normal sourcesJar, compileJava, etc
 
 // TODO(jack-berg): update ref to be released version when available
-val configurationRef = "ad219187cdb03c8d8ea1a2311afd280bf64d2262"
-val configurationRepoZip = "https://github.com/jack-berg/opentelemetry-configuration/archive/$configurationRef.zip"
+val configurationRef = "0508846f82ed54b230fa638e1e7556c52efee25e"
+val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 
 val downloadConfigurationSchema by tasks.registering(Download::class) {
