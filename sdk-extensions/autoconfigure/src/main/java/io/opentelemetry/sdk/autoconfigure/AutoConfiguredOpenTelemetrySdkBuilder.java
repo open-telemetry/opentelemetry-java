@@ -338,6 +338,10 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
     AutoConfiguredOpenTelemetrySdk fromFileConfiguration = maybeConfigureFromFile(config);
     if (fromFileConfiguration != null) {
+      if (registerShutdownHook) {
+        Runtime.getRuntime()
+            .addShutdownHook(shutdownHook(fromFileConfiguration.getOpenTelemetrySdk()));
+      }
       return fromFileConfiguration;
     }
 

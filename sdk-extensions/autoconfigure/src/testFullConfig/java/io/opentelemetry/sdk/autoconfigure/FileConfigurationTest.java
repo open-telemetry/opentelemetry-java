@@ -7,6 +7,12 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -26,6 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
@@ -34,8 +41,11 @@ class FileConfigurationTest {
 
   @RegisterExtension private static final CleanupExtension cleanup = new CleanupExtension();
 
-  @Test
-  void configFile_Valid(@TempDir Path tempDir) throws IOException {
+  @TempDir private Path tempDir;
+  private Path configFilePath;
+
+  @BeforeEach
+  void setup() throws IOException {
     String yaml =
         "file_format: \"0.1\"\n"
             + "resource:\n"
@@ -46,11 +56,15 @@ class FileConfigurationTest {
             + "    - simple:\n"
             + "        exporter:\n"
             + "          console: {}\n";
-    Path path = tempDir.resolve("otel-config.yaml");
-    Files.write(path, yaml.getBytes(StandardCharsets.UTF_8));
+    configFilePath = tempDir.resolve("otel-config.yaml");
+    Files.write(configFilePath, yaml.getBytes(StandardCharsets.UTF_8));
+  }
+
+  @Test
+  void configFile_Valid() {
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
-            Collections.singletonMap("OTEL_CONFIG_FILE", path.toString()));
+            Collections.singletonMap("OTEL_CONFIG_FILE", configFilePath.toString()));
     OpenTelemetrySdk expectedSdk =
         OpenTelemetrySdk.builder()
             .setTracerProvider(
@@ -66,9 +80,12 @@ class FileConfigurationTest {
                         W3CBaggagePropagator.getInstance())))
             .build();
     cleanup.addCloseable(expectedSdk);
+    AutoConfiguredOpenTelemetrySdkBuilder builder = spy(AutoConfiguredOpenTelemetrySdk.builder());
+    Thread thread = new Thread();
+    doReturn(thread).when(builder).shutdownHook(any());
 
     AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
-        AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).build();
+        builder.setConfig(config).build();
     cleanup.addCloseable(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
 
     assertThat(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().toString())
@@ -76,6 +93,22 @@ class FileConfigurationTest {
     // AutoConfiguredOpenTelemetrySdk#getResource() is set to a dummy value when configuring from
     // file
     assertThat(autoConfiguredOpenTelemetrySdk.getResource()).isEqualTo(Resource.getDefault());
+    verify(builder, times(1)).shutdownHook(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
+    assertThat(Runtime.getRuntime().removeShutdownHook(thread)).isTrue();
+  }
+
+  @Test
+  void configFile_NoShutdownHook() {
+    ConfigProperties config =
+        DefaultConfigProperties.createFromMap(
+            Collections.singletonMap("OTEL_CONFIG_FILE", configFilePath.toString()));
+    AutoConfiguredOpenTelemetrySdkBuilder builder = spy(AutoConfiguredOpenTelemetrySdk.builder());
+
+    AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
+        builder.setConfig(config).disableShutdownHook().build();
+    cleanup.addCloseable(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
+
+    verify(builder, never()).shutdownHook(any());
   }
 
   @Test
