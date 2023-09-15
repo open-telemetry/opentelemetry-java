@@ -110,6 +110,7 @@ class SdkMeterTest {
     assertThat(checkValidInstrumentName("a1234567890")).isTrue();
     assertThat(checkValidInstrumentName("a_-.")).isTrue();
     assertThat(checkValidInstrumentName(new String(new char[255]).replace('\0', 'a'))).isTrue();
+    assertThat(checkValidInstrumentName("a/b")).isTrue();
 
     // Empty and null not allowed
     assertThat(checkValidInstrumentName(null)).isFalse();
