@@ -6,6 +6,9 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A {@link CollectionRegistration} is passed to each {@link MetricReader} registered with {@link
@@ -13,5 +16,27 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
  *
  * @since 1.14.0
  */
-// TODO(jack-berg): Have methods when custom MetricReaders are supported
-public interface CollectionRegistration {}
+public interface CollectionRegistration {
+
+  /**
+   * Get the {@link MetricProducer}s associated with the {@link SdkMeterProvider}.
+   *
+   * <p>Note: {@link MetricReader} implementations are expected to call this each time they collect
+   * metrics.
+   *
+   * @since 1.31.0
+   */
+  default List<MetricProducer> getMetricProducers() {
+    return Collections.emptyList();
+  }
+
+  /**
+   * Returns the resource associated with the {@link SdkMeterProvider}. MUST be used to call {@link
+   * MetricProducer#produce(Resource)}.
+   *
+   * @since 1.31.0
+   */
+  default Resource getResource() {
+    return Resource.getDefault();
+  }
+}

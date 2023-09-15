@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -16,20 +17,17 @@ import java.util.concurrent.TimeUnit;
 /**
  * A metric reader reads metrics from an {@link SdkMeterProvider}.
  *
- * <p>Custom implementations of {@link MetricReader} are not currently supported. Please use one of
- * the built-in readers such as {@link PeriodicMetricReader}.
- *
  * @since 1.14.0
  */
 public interface MetricReader
     extends AggregationTemporalitySelector, DefaultAggregationSelector, Closeable {
 
   /**
-   * Called by {@link SdkMeterProvider} and supplies the {@link MetricReader} with a handle to
-   * collect metrics.
-   *
-   * <p>{@link CollectionRegistration} is currently an empty interface because custom
-   * implementations of {@link MetricReader} are not currently supported.
+   * Called by {@link SdkMeterProvider} on initialization to supply the {@link MetricReader} with
+   * {@link MetricProducer}s used to collect metrics. {@link MetricReader} implementations call
+   * {@link CollectionRegistration#getMetricProducers()} to obtain references to producers, and call
+   * each {@link MetricProducer#produce(Resource)} with {@link
+   * CollectionRegistration#getResource()}.
    */
   void register(CollectionRegistration registration);
 

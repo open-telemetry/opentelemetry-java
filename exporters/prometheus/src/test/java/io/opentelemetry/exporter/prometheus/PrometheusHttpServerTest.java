@@ -26,12 +26,13 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
+import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
-import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -56,7 +57,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class PrometheusHttpServerTest {
   private static final AtomicReference<List<MetricData>> metricData = new AtomicReference<>();
-  private static final MetricProducer metricProducer = metricData::get;
+  private static final MetricProducer metricProducer = unused -> metricData.get();
 
   static PrometheusHttpServer prometheusServer;
   static WebClient client;
@@ -68,7 +69,18 @@ class PrometheusHttpServerTest {
   static void beforeAll() {
     // Register the SDK metric producer with the prometheus reader.
     prometheusServer = PrometheusHttpServer.builder().setHost("localhost").setPort(0).build();
-    prometheusServer.register(metricProducer);
+    prometheusServer.register(
+        new CollectionRegistration() {
+          @Override
+          public List<MetricProducer> getMetricProducers() {
+            return Collections.singletonList(metricProducer);
+          }
+
+          @Override
+          public Resource getResource() {
+            return Resource.empty(); // Not used
+          }
+        });
 
     client =
         WebClient.builder("http://localhost:" + prometheusServer.getAddress().getPort())
