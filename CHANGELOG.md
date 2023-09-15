@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## Version 1.30.1 (2023-09-11)
+
+* Fix autoconfigure bug creating multiple `PrometheusHttpServer` instances with same port
+  ([#5911](https://github.com/open-telemetry/opentelemetry-java/pull/5811))
+
 ## Version 1.30.0 (2023-09-08)
 
 ### API
