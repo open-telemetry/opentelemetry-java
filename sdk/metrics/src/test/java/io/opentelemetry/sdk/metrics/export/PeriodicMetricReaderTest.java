@@ -67,15 +67,12 @@ class PeriodicMetricReaderTest {
               /* isMonotonic= */ true, AggregationTemporality.CUMULATIVE, LONG_POINT_LIST));
 
   @Mock private CollectionRegistration collectionRegistration;
-  @Mock private MetricProducer metricProducer;
   @Mock private MetricExporter metricExporter;
 
   @BeforeEach
   void setup() {
-    when(collectionRegistration.getMetricProducers())
-        .thenReturn(Collections.singletonList(metricProducer));
-    when(collectionRegistration.getResource()).thenReturn(Resource.getDefault());
-    when(metricProducer.produce(any())).thenReturn(Collections.singletonList(METRIC_DATA));
+    when(collectionRegistration.collectAllMetrics())
+        .thenReturn(Collections.singletonList(METRIC_DATA));
   }
 
   @Test
@@ -126,12 +123,12 @@ class PeriodicMetricReaderTest {
         PeriodicMetricReader.builder(waitingMetricExporter)
             .setInterval(Duration.ofMillis(100))
             .build();
-    when(metricProducer.produce(any())).thenReturn(Collections.emptyList());
+    when(collectionRegistration.collectAllMetrics()).thenReturn(Collections.emptyList());
     reader.register(collectionRegistration);
 
     try {
       assertThat(reader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-      verify(metricProducer).produce(any());
+      verify(collectionRegistration).collectAllMetrics();
       assertThat(waitingMetricExporter.exportTimes.size()).isEqualTo(0);
     } finally {
       reader.shutdown();

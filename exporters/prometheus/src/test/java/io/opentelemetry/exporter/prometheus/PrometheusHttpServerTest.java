@@ -27,7 +27,6 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
-import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
@@ -38,6 +37,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -57,7 +57,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class PrometheusHttpServerTest {
   private static final AtomicReference<List<MetricData>> metricData = new AtomicReference<>();
-  private static final MetricProducer metricProducer = unused -> metricData.get();
 
   static PrometheusHttpServer prometheusServer;
   static WebClient client;
@@ -72,13 +71,8 @@ class PrometheusHttpServerTest {
     prometheusServer.register(
         new CollectionRegistration() {
           @Override
-          public List<MetricProducer> getMetricProducers() {
-            return Collections.singletonList(metricProducer);
-          }
-
-          @Override
-          public Resource getResource() {
-            return Resource.empty(); // Not used
+          public Collection<MetricData> collectAllMetrics() {
+            return metricData.get();
           }
         });
 

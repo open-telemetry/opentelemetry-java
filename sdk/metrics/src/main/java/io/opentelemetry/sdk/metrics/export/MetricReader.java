@@ -9,7 +9,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -25,9 +24,7 @@ public interface MetricReader
   /**
    * Called by {@link SdkMeterProvider} on initialization to supply the {@link MetricReader} with
    * {@link MetricProducer}s used to collect metrics. {@link MetricReader} implementations call
-   * {@link CollectionRegistration#getMetricProducers()} to obtain references to producers, and call
-   * each {@link MetricProducer#produce(Resource)} with {@link
-   * CollectionRegistration#getResource()}.
+   * {@link CollectionRegistration#collectAllMetrics()} to read metrics.
    */
   void register(CollectionRegistration registration);
 

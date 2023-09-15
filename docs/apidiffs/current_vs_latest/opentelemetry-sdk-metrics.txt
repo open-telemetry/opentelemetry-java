@@ -1,8 +1,8 @@
 Comparing source compatibility of  against 
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.export.CollectionRegistration  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) java.util.List<io.opentelemetry.sdk.metrics.export.MetricProducer> getMetricProducers()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.Resource getResource()
+	+++  NEW METHOD: PUBLIC(+) java.util.Collection<io.opentelemetry.sdk.metrics.data.MetricData> collectAllMetrics()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.export.CollectionRegistration noop()
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.export.MetricProducer  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object

@@ -208,13 +208,19 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     }
 
     @Override
-    public List<MetricProducer> getMetricProducers() {
-      return metricProducers;
-    }
-
-    @Override
-    public Resource getResource() {
-      return sharedState.getResource();
+    public Collection<MetricData> collectAllMetrics() {
+      if (metricProducers.isEmpty()) {
+        return Collections.emptyList();
+      }
+      Resource resource = sharedState.getResource();
+      if (metricProducers.size() == 1) {
+        return metricProducers.get(0).produce(resource);
+      }
+      List<MetricData> metricData = new ArrayList<>();
+      for (MetricProducer metricProducer : metricProducers) {
+        metricData.addAll(metricProducer.produce(resource));
+      }
+      return Collections.unmodifiableList(metricData);
     }
   }
 }

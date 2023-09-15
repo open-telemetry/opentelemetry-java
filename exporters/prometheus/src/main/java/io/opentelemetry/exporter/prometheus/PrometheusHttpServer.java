@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.internal.export.MultiMetricProducerReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
@@ -60,8 +59,7 @@ public final class PrometheusHttpServer implements MetricReader {
 
   private final HttpServer server;
   private final ExecutorService executor;
-  private final MultiMetricProducerReader multiMetricProducerReader =
-      MultiMetricProducerReader.create();
+  private volatile CollectionRegistration collectionRegistration = CollectionRegistration.noop();
 
   /**
    * Returns a new {@link PrometheusHttpServer} which can be registered to an {@link
@@ -83,7 +81,8 @@ public final class PrometheusHttpServer implements MetricReader {
     } catch (IOException e) {
       throw new UncheckedIOException("Could not create Prometheus HTTP server", e);
     }
-    MetricsHandler metricsHandler = new MetricsHandler(multiMetricProducerReader::readAll);
+    MetricsHandler metricsHandler =
+        new MetricsHandler(() -> collectionRegistration.collectAllMetrics());
     server.createContext("/", metricsHandler);
     server.createContext("/metrics", metricsHandler);
     server.createContext("/-/healthy", HealthHandler.INSTANCE);
@@ -133,7 +132,7 @@ public final class PrometheusHttpServer implements MetricReader {
 
   @Override
   public void register(CollectionRegistration registration) {
-    multiMetricProducerReader.register(registration);
+    this.collectionRegistration = registration;
   }
 
   @Override

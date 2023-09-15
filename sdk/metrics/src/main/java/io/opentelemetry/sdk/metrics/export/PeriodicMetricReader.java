@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.internal.export.MultiMetricProducerReader;
 import java.util.Collection;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -39,8 +38,7 @@ public final class PeriodicMetricReader implements MetricReader {
   private final ScheduledExecutorService scheduler;
   private final Scheduled scheduled;
   private final Object lock = new Object();
-  private final MultiMetricProducerReader multiMetricProducerReader =
-      MultiMetricProducerReader.create();
+  private volatile CollectionRegistration collectionRegistration = CollectionRegistration.noop();
 
   @Nullable private volatile ScheduledFuture<?> scheduledFuture;
 
@@ -113,7 +111,7 @@ public final class PeriodicMetricReader implements MetricReader {
 
   @Override
   public void register(CollectionRegistration collectionRegistration) {
-    multiMetricProducerReader.register(collectionRegistration);
+    this.collectionRegistration = collectionRegistration;
     start();
   }
 
@@ -154,7 +152,7 @@ public final class PeriodicMetricReader implements MetricReader {
       CompletableResultCode flushResult = new CompletableResultCode();
       if (exportAvailable.compareAndSet(true, false)) {
         try {
-          Collection<MetricData> metricData = multiMetricProducerReader.readAll();
+          Collection<MetricData> metricData = collectionRegistration.collectAllMetrics();
           if (metricData.isEmpty()) {
             logger.log(Level.FINE, "No metric data to export - skipping export.");
             flushResult.succeed();

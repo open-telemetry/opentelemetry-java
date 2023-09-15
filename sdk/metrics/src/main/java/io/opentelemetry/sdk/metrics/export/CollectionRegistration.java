@@ -6,9 +6,9 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * A {@link CollectionRegistration} is passed to each {@link MetricReader} registered with {@link
@@ -19,24 +19,22 @@ import java.util.List;
 public interface CollectionRegistration {
 
   /**
-   * Get the {@link MetricProducer}s associated with the {@link SdkMeterProvider}.
-   *
-   * <p>Note: {@link MetricReader} implementations are expected to call this each time they collect
-   * metrics.
-   *
-   * @since 1.31.0
+   * Returns a noop {@link CollectionRegistration}, useful for {@link MetricReader}s to hold before
+   * {@link MetricReader#register(CollectionRegistration)} is called.
    */
-  default List<MetricProducer> getMetricProducers() {
-    return Collections.emptyList();
+  static CollectionRegistration noop() {
+    return new CollectionRegistration() {
+      @Override
+      public Collection<MetricData> collectAllMetrics() {
+        return Collections.emptyList();
+      }
+    };
   }
 
   /**
-   * Returns the resource associated with the {@link SdkMeterProvider}. MUST be used to call {@link
-   * MetricProducer#produce(Resource)}.
-   *
-   * @since 1.31.0
+   * Collect all metrics, including metrics from the SDK and any registered {@link MetricProducer}s.
    */
-  default Resource getResource() {
-    return Resource.getDefault();
+  default Collection<MetricData> collectAllMetrics() {
+    return Collections.emptyList();
   }
 }
