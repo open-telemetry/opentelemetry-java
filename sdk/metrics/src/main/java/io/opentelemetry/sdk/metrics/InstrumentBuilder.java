@@ -39,7 +39,6 @@ final class InstrumentBuilder {
 
   public void setUnit(String unit) {
     descriptor.setUnit(unit);
-    ;
   }
 
   public void setDescription(String description) {

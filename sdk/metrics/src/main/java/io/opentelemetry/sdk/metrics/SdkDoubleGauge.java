@@ -51,6 +51,7 @@ final class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
 
       MutableInstrumentDescriptor descriptor =
           MutableInstrumentDescriptor.create(
+              // TODO: use InstrumentType.GAUGE when available
               name, InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.DOUBLE);
       builder = new InstrumentBuilder(meterProviderSharedState, meterSharedState, descriptor);
     }
