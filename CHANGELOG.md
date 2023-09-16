@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* Update `queueSize` metric description and attribute name for `processorType`
+  ([#5836](https://github.com/open-telemetry/opentelemetry-java/pull/5836))
+
 ## Version 1.30.1 (2023-09-11)
 
 * Fix autoconfigure bug creating multiple `PrometheusHttpServer` instances with same port
