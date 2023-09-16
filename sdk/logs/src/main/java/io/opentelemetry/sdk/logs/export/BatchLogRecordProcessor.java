@@ -45,7 +45,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
   private static final String WORKER_THREAD_NAME =
       BatchLogRecordProcessor.class.getSimpleName() + "_WorkerThread";
   private static final AttributeKey<String> LOG_RECORD_PROCESSOR_TYPE_LABEL =
-      AttributeKey.stringKey("logRecordProcessorType");
+      AttributeKey.stringKey("processorType");
   private static final AttributeKey<Boolean> LOG_RECORD_PROCESSOR_DROPPED_LABEL =
       AttributeKey.booleanKey("dropped");
   private static final String LOG_RECORD_PROCESSOR_TYPE_VALUE =
@@ -172,7 +172,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       meter
           .gaugeBuilder("queueSize")
           .ofLongs()
-          .setDescription("The number of logs queued")
+          .setDescription("The number of items queued")
           .setUnit("1")
           .buildWithCallback(
               result ->

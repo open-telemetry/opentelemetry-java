@@ -48,7 +48,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
   private static final String WORKER_THREAD_NAME =
       BatchSpanProcessor.class.getSimpleName() + "_WorkerThread";
   private static final AttributeKey<String> SPAN_PROCESSOR_TYPE_LABEL =
-      AttributeKey.stringKey("spanProcessorType");
+      AttributeKey.stringKey("processorType");
   private static final AttributeKey<Boolean> SPAN_PROCESSOR_DROPPED_LABEL =
       AttributeKey.booleanKey("dropped");
   private static final String SPAN_PROCESSOR_TYPE_VALUE = BatchSpanProcessor.class.getSimpleName();
@@ -189,7 +189,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       meter
           .gaugeBuilder("queueSize")
           .ofLongs()
-          .setDescription("The number of spans queued")
+          .setDescription("The number of items queued")
           .setUnit("1")
           .buildWithCallback(
               result ->
