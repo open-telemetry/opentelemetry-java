@@ -24,6 +24,8 @@ public interface ReadWriteLogRecord {
    */
   <T> ReadWriteLogRecord setAttribute(AttributeKey<T> key, T value);
 
+  // TODO: add additional setters
+
   /**
    * Sets attributes to the {@link ReadWriteLogRecord}. If the {@link ReadWriteLogRecord} previously
    * contained a mapping for any of the keys, the old values are replaced by the specified values.
