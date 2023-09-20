@@ -215,10 +215,7 @@ class SerializerTest {
   void outOfOrderedAttributes() {
     // Alternative attributes implementation which sorts entries by the order they were added rather
     // than lexicographically
-    // a_key should be dropped since the Serializer expects / asserts lexicographical ordering in
-    // order to merge duplicate keys
-    // b.key should be merged with b_key since after a_key is dropped, it is equal to the previously
-    // processed b_key
+    // all attributes are retained, we log a warning, and b_key and b.key are not be merged
     LinkedHashMap<AttributeKey<?>, Object> attributesMap = new LinkedHashMap<>();
     attributesMap.put(AttributeKey.stringKey("b_key"), "val1");
     attributesMap.put(AttributeKey.stringKey("a_key"), "val2");
@@ -249,7 +246,7 @@ class SerializerTest {
                 + "otel_scope_info{otel_scope_name=\"scope\",otel_scope_version=\"1.0.0\"} 1\n"
                 + "# TYPE sum_seconds_total counter\n"
                 + "# HELP sum_seconds_total description\n"
-                + "sum_seconds_total{otel_scope_name=\"scope\",otel_scope_version=\"1.0.0\",b_key=\"val1;val3\"} 5.0 1633950672000\n");
+                + "sum_seconds_total{otel_scope_name=\"scope\",otel_scope_version=\"1.0.0\",b_key=\"val1\",a_key=\"val2\",b_key=\"val3\"} 5.0 1633950672000\n");
     logCapturer.assertContains(
         "Dropping out-of-order attribute a_key=val2, which occurred after b_key. This can occur when an alternative Attribute implementation is used.");
   }

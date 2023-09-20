@@ -470,18 +470,18 @@ abstract class Serializer {
                   // This key collides with the previous one. Append the value
                   // to the previous value instead of writing the key again.
                   writer.write(';');
-                } else if (compare < 0) {
-                  THROTTLING_LOGGER.log(
-                      Level.WARNING,
-                      "Dropping out-of-order attribute "
-                          + sanitizedKey
-                          + "="
-                          + value
-                          + ", which occurred after "
-                          + previousKey
-                          + ". This can occur when an alternative Attribute implementation is used.");
-                  return;
                 } else {
+                  if (compare < 0) {
+                    THROTTLING_LOGGER.log(
+                        Level.WARNING,
+                        "Dropping out-of-order attribute "
+                            + sanitizedKey
+                            + "="
+                            + value
+                            + ", which occurred after "
+                            + previousKey
+                            + ". This can occur when an alternative Attribute implementation is used.");
+                  }
                   if (!initialAttribute) {
                     writer.write('"');
                   }
