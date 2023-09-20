@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
+import java.net.URI;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -29,6 +30,16 @@ public final class OkHttpUtil {
             TimeUnit.SECONDS,
             new SynchronousQueue<>(),
             new DaemonThreadFactory("okhttp-dispatch")));
+  }
+
+  /**
+   * Appends a path to the provided {@link URI} without removing the existing uri's path.
+   *
+   * @param target The provided URI to append the path to.
+   * @param pathToAppend The path to append.
+   */
+  public static URI appendPathToUri(URI target, String pathToAppend) {
+    return target.resolve(target.getPath() + "/" + pathToAppend).normalize();
   }
 
   private OkHttpUtil() {}

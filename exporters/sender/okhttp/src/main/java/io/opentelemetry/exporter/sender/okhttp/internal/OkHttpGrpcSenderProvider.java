@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
+import static io.opentelemetry.exporter.sender.okhttp.internal.OkHttpUtil.appendPathToUri;
+
 import io.grpc.Channel;
 import io.opentelemetry.exporter.internal.grpc.GrpcSender;
 import io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider;
@@ -40,7 +42,7 @@ public class OkHttpGrpcSenderProvider implements GrpcSenderProvider {
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager) {
     return new OkHttpGrpcSender<>(
-        endpoint.resolve(endpointPath).toString(),
+        appendPathToUri(endpoint, endpointPath).toString(),
         compressionEnabled,
         timeoutNanos,
         headers,
