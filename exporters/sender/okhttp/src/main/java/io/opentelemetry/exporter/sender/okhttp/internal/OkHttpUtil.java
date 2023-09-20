@@ -39,14 +39,14 @@ public final class OkHttpUtil {
    * @param pathToAppend The path to append.
    */
   public static URI appendPathToUri(URI target, String pathToAppend) {
-    return target.resolve(combinePaths(target.getPath(), pathToAppend)).normalize();
-  }
-
-  private static String combinePaths(String first, String second) {
-    if (first.isEmpty()) {
-      return second;
-    }
-    return first + "/" + second;
+    return URI.create(
+            target.getScheme()
+                + "://"
+                + target.getAuthority()
+                + target.getPath()
+                + "/"
+                + pathToAppend)
+        .normalize();
   }
 
   private OkHttpUtil() {}
