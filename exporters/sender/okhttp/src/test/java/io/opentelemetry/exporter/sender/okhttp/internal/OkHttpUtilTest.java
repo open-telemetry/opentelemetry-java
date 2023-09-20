@@ -17,9 +17,12 @@ class OkHttpUtilTest {
   @CsvSource({
     "https://one.name/existing/path,extra,https://one.name/existing/path/extra",
     "https://one.name,extra,https://one.name/extra",
+    "http://one.name:60794,extra,http://one.name:60794/extra",
     "https://one.name/path/with/slash/,extra,https://one.name/path/with/slash/extra",
     "https://one.name/path/with/slash/,extra/segment,https://one.name/path/with/slash/extra/segment",
     "https://one.name/path/with/slash/,/absoluteextra,https://one.name/path/with/slash/absoluteextra",
+    "https://one.name,/absoluteextra,https://one.name/absoluteextra",
+    "https://one.name.slash/,/absoluteextra,https://one.name.slash/absoluteextra",
   })
   void appendPathToUri(String original, String path, String expected) {
     URI target = URI.create(original);
