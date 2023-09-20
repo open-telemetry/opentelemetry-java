@@ -23,14 +23,35 @@ import static io.opentelemetry.exporter.prometheus.TestConstants.NON_MONOTONIC_C
 import static io.opentelemetry.exporter.prometheus.TestConstants.SUMMARY;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 class SerializerTest {
+
+  @RegisterExtension
+  private final LogCapturer logCapturer =
+      LogCapturer.create().captureForLogger(Serializer.class.getName());
 
   @Test
   void prometheus004() {
@@ -109,6 +130,7 @@ class SerializerTest {
                 + "# TYPE double_gauge_colliding_attributes_seconds gauge\n"
                 + "# HELP double_gauge_colliding_attributes_seconds unused\n"
                 + "double_gauge_colliding_attributes_seconds{otel_scope_name=\"full\",otel_scope_version=\"version\",foo_bar=\"a;b\",type=\"dgma\"} 8.0 1633950672000\n");
+    assertThat(logCapturer.size()).isZero();
   }
 
   @Test
@@ -185,6 +207,51 @@ class SerializerTest {
                 + "# HELP double_gauge_colliding_attributes_seconds unused\n"
                 + "double_gauge_colliding_attributes_seconds{otel_scope_name=\"full\",otel_scope_version=\"version\",foo_bar=\"a;b\",type=\"dgma\"} 8.0 1633950672.000\n"
                 + "# EOF\n");
+    assertThat(logCapturer.size()).isZero();
+  }
+
+  @Test
+  @SuppressLogger(Serializer.class)
+  void outOfOrderedAttributes() {
+    // Alternative attributes implementation which sorts entries by the order they were added rather
+    // than lexicographically
+    // a_key should be dropped since the Serializer expects / asserts lexicographical ordering in
+    // order to merge duplicate keys
+    // b.key should be merged with b_key since after a_key is dropped, it is equal to the previously
+    // processed b_key
+    LinkedHashMap<AttributeKey<?>, Object> attributesMap = new LinkedHashMap<>();
+    attributesMap.put(AttributeKey.stringKey("b_key"), "val1");
+    attributesMap.put(AttributeKey.stringKey("a_key"), "val2");
+    attributesMap.put(AttributeKey.stringKey("b.key"), "val3");
+    Attributes attributes = new MapAttributes(attributesMap);
+
+    MetricData metricData =
+        ImmutableMetricData.createDoubleSum(
+            Resource.builder().put("kr", "vr").build(),
+            InstrumentationScopeInfo.builder("scope").setVersion("1.0.0").build(),
+            "sum",
+            "description",
+            "s",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                Collections.singletonList(
+                    ImmutableDoublePointData.create(
+                        1633947011000000000L, 1633950672000000000L, attributes, 5))));
+
+    assertThat(serialize004(metricData))
+        .isEqualTo(
+            "# TYPE target info\n"
+                + "# HELP target Target metadata\n"
+                + "target_info{kr=\"vr\"} 1\n"
+                + "# TYPE otel_scope_info info\n"
+                + "# HELP otel_scope_info Scope metadata\n"
+                + "otel_scope_info{otel_scope_name=\"scope\",otel_scope_version=\"1.0.0\"} 1\n"
+                + "# TYPE sum_seconds_total counter\n"
+                + "# HELP sum_seconds_total description\n"
+                + "sum_seconds_total{otel_scope_name=\"scope\",otel_scope_version=\"1.0.0\",b_key=\"val1;val3\"} 5.0 1633950672000\n");
+    logCapturer.assertContains(
+        "Dropping out-of-order attribute a_key=val2, which occurred after b_key. This can occur when an alternative Attribute implementation is used.");
   }
 
   private static String serialize004(MetricData... metrics) {
@@ -204,6 +271,48 @@ class SerializerTest {
       return bos.toString("UTF-8");
     } catch (IOException e) {
       throw new UncheckedIOException(e);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private static class MapAttributes implements Attributes {
+
+    private final LinkedHashMap<AttributeKey<?>, Object> map;
+
+    @SuppressWarnings("NonApiType")
+    private MapAttributes(LinkedHashMap<AttributeKey<?>, Object> map) {
+      this.map = map;
+    }
+
+    @Nullable
+    @Override
+    public <T> T get(AttributeKey<T> key) {
+      return (T) map.get(key);
+    }
+
+    @Override
+    public void forEach(BiConsumer<? super AttributeKey<?>, ? super Object> consumer) {
+      map.forEach(consumer);
+    }
+
+    @Override
+    public int size() {
+      return map.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return map.isEmpty();
+    }
+
+    @Override
+    public Map<AttributeKey<?>, Object> asMap() {
+      return map;
+    }
+
+    @Override
+    public AttributesBuilder toBuilder() {
+      throw new UnsupportedOperationException("not supported");
     }
   }
 }

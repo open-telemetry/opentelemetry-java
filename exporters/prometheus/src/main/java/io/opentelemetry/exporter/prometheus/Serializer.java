@@ -25,6 +25,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -58,12 +59,18 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /** Serializes metrics into Prometheus exposition formats. */
 // Adapted from
 // https://github.com/prometheus/client_java/blob/master/simpleclient_common/src/main/java/io/prometheus/client/exporter/common/TextFormat.java
 abstract class Serializer {
+
+  private static final Logger LOGGER = Logger.getLogger(Serializer.class.getName());
+  private static final ThrottlingLogger THROTTLING_LOGGER = new ThrottlingLogger(LOGGER);
+
   static Serializer create(@Nullable String acceptHeader, Predicate<String> filter) {
     if (acceptHeader == null) {
       return new Prometheus004Serializer(filter);
@@ -458,10 +465,22 @@ abstract class Serializer {
             public void accept(AttributeKey<?> key, Object value) {
               try {
                 String sanitizedKey = NameSanitizer.INSTANCE.apply(key.getKey());
-                if (sanitizedKey.equals(previousKey)) {
+                int compare = sanitizedKey.compareTo(previousKey);
+                if (compare == 0) {
                   // This key collides with the previous one. Append the value
                   // to the previous value instead of writing the key again.
                   writer.write(';');
+                } else if (compare < 0) {
+                  THROTTLING_LOGGER.log(
+                      Level.WARNING,
+                      "Dropping out-of-order attribute "
+                          + sanitizedKey
+                          + "="
+                          + value
+                          + ", which occurred after "
+                          + previousKey
+                          + ". This can occur when an alternative Attribute implementation is used.");
+                  return;
                 } else {
                   if (!initialAttribute) {
                     writer.write('"');
