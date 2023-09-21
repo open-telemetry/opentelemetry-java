@@ -7,13 +7,11 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.LongGaugeBuilder;
 import io.opentelemetry.api.metrics.ObservableLongGauge;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.extension.incubator.metrics.ExtendedLongGaugeBuilder;
 import io.opentelemetry.extension.incubator.metrics.LongGauge;
-import io.opentelemetry.extension.incubator.metrics.LongGaugeAdviceConfigurer;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
@@ -42,7 +40,7 @@ final class SdkLongGauge extends AbstractInstrument implements LongGauge {
   }
 
   static final class SdkLongGaugeBuilder extends AbstractInstrumentBuilder<SdkLongGaugeBuilder>
-      implements ExtendedLongGaugeBuilder, LongGaugeAdviceConfigurer {
+      implements ExtendedLongGaugeBuilder {
 
     SdkLongGaugeBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -74,13 +72,7 @@ final class SdkLongGauge extends AbstractInstrument implements LongGauge {
     }
 
     @Override
-    public LongGaugeBuilder setAdvice(Consumer<LongGaugeAdviceConfigurer> adviceConsumer) {
-      adviceConsumer.accept(this);
-      return this;
-    }
-
-    @Override
-    public LongGaugeAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
+    public ExtendedLongGaugeBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
       adviceBuilder.setAttributes(attributes);
       return this;
     }

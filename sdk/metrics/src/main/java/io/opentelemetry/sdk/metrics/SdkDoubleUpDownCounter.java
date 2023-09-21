@@ -8,11 +8,9 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
-import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableDoubleUpDownCounter;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.extension.incubator.metrics.DoubleUpDownCounterAdviceConfigurer;
 import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleUpDownCounterBuilder;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -48,7 +46,7 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
 
   static final class SdkDoubleUpDownCounterBuilder
       extends AbstractInstrumentBuilder<SdkDoubleUpDownCounterBuilder>
-      implements ExtendedDoubleUpDownCounterBuilder, DoubleUpDownCounterAdviceConfigurer {
+      implements ExtendedDoubleUpDownCounterBuilder {
 
     SdkDoubleUpDownCounterBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -74,13 +72,6 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
     }
 
     @Override
-    public DoubleUpDownCounterBuilder setAdvice(
-        Consumer<DoubleUpDownCounterAdviceConfigurer> adviceConsumer) {
-      adviceConsumer.accept(this);
-      return this;
-    }
-
-    @Override
     public DoubleUpDownCounter build() {
       return buildSynchronousInstrument(SdkDoubleUpDownCounter::new);
     }
@@ -98,7 +89,8 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
     }
 
     @Override
-    public DoubleUpDownCounterAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
+    public ExtendedDoubleUpDownCounterBuilder setAttributesAdvice(
+        List<AttributeKey<?>> attributes) {
       adviceBuilder.setAttributes(attributes);
       return this;
     }

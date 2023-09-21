@@ -8,11 +8,9 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
-import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleCounter;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.extension.incubator.metrics.DoubleCounterAdviceConfigurer;
 import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleCounterBuilder;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
@@ -61,7 +59,7 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
 
   static final class SdkDoubleCounterBuilder
       extends AbstractInstrumentBuilder<SdkDoubleCounterBuilder>
-      implements ExtendedDoubleCounterBuilder, DoubleCounterAdviceConfigurer {
+      implements ExtendedDoubleCounterBuilder {
 
     SdkDoubleCounterBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -87,12 +85,6 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
     }
 
     @Override
-    public DoubleCounterBuilder setAdvice(Consumer<DoubleCounterAdviceConfigurer> adviceConsumer) {
-      adviceConsumer.accept(this);
-      return this;
-    }
-
-    @Override
     public SdkDoubleCounter build() {
       return buildSynchronousInstrument(SdkDoubleCounter::new);
     }
@@ -109,7 +101,7 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
     }
 
     @Override
-    public DoubleCounterAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
+    public ExtendedDoubleCounterBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
       adviceBuilder.setAttributes(attributes);
       return this;
     }

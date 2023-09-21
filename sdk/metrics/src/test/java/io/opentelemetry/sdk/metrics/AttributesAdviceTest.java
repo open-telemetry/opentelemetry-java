@@ -153,7 +153,7 @@ class AttributesAdviceTest {
                         meterProvider.get("meter").counterBuilder(name).ofDoubles();
                     if (attributesAdvice != null) {
                       ((ExtendedDoubleCounterBuilder) doubleCounterBuilder)
-                          .setAdvice(advice -> advice.setAttributes(attributesAdvice));
+                          .setAttributesAdvice(attributesAdvice);
                     }
                     DoubleCounter counter = doubleCounterBuilder.build();
                     return counter::add;
@@ -170,7 +170,7 @@ class AttributesAdviceTest {
                         meterProvider.get("meter").counterBuilder(name);
                     if (attributesAdvice != null) {
                       ((ExtendedLongCounterBuilder) doubleCounterBuilder)
-                          .setAdvice(advice -> advice.setAttributes(attributesAdvice));
+                          .setAttributesAdvice(attributesAdvice);
                     }
                     LongCounter counter = doubleCounterBuilder.build();
                     return counter::add;
@@ -187,7 +187,7 @@ class AttributesAdviceTest {
                         meterProvider.get("meter").gaugeBuilder(name);
                     if (attributesAdvice != null) {
                       ((ExtendedDoubleGaugeBuilder) doubleGaugeBuilder)
-                          .setAdvice(advice -> advice.setAttributes(attributesAdvice));
+                          .setAttributesAdvice(attributesAdvice);
                     }
                     AtomicDouble valueRef = new AtomicDouble();
                     AtomicReference<Attributes> attributesRef = new AtomicReference<>();
@@ -211,7 +211,7 @@ class AttributesAdviceTest {
                         meterProvider.get("meter").gaugeBuilder(name).ofLongs();
                     if (attributesAdvice != null) {
                       ((ExtendedLongGaugeBuilder) doubleGaugeBuilder)
-                          .setAdvice(advice -> advice.setAttributes(attributesAdvice));
+                          .setAttributesAdvice(attributesAdvice);
                     }
                     AtomicLong valueRef = new AtomicLong();
                     AtomicReference<Attributes> attributesRef = new AtomicReference<>();
@@ -235,7 +235,7 @@ class AttributesAdviceTest {
                         meterProvider.get("meter").histogramBuilder(name);
                     if (attributesAdvice != null) {
                       ((ExtendedDoubleHistogramBuilder) doubleHistogramBuilder)
-                          .setAdvice(advice -> advice.setAttributes(attributesAdvice));
+                          .setAttributesAdvice(attributesAdvice);
                     }
                     DoubleHistogram histogram = doubleHistogramBuilder.build();
                     return histogram::record;
@@ -252,7 +252,7 @@ class AttributesAdviceTest {
                         meterProvider.get("meter").histogramBuilder(name).ofLongs();
                     if (attributesAdvice != null) {
                       ((ExtendedLongHistogramBuilder) doubleHistogramBuilder)
-                          .setAdvice(advice -> advice.setAttributes(attributesAdvice));
+                          .setAttributesAdvice(attributesAdvice);
                     }
                     LongHistogram histogram = doubleHistogramBuilder.build();
                     return histogram::record;
@@ -269,7 +269,7 @@ class AttributesAdviceTest {
                         meterProvider.get("meter").upDownCounterBuilder(name).ofDoubles();
                     if (attributesAdvice != null) {
                       ((ExtendedDoubleUpDownCounterBuilder) doubleUpDownCounterBuilder)
-                          .setAdvice(advice -> advice.setAttributes(attributesAdvice));
+                          .setAttributesAdvice(attributesAdvice);
                     }
                     DoubleUpDownCounter upDownCounter = doubleUpDownCounterBuilder.build();
                     return upDownCounter::add;
@@ -286,7 +286,7 @@ class AttributesAdviceTest {
                         meterProvider.get("meter").upDownCounterBuilder(name);
                     if (attributesAdvice != null) {
                       ((ExtendedLongUpDownCounterBuilder) doubleUpDownCounterBuilder)
-                          .setAdvice(advice -> advice.setAttributes(attributesAdvice));
+                          .setAttributesAdvice(attributesAdvice);
                     }
                     LongUpDownCounter upDownCounter = doubleUpDownCounterBuilder.build();
                     return upDownCounter::add;
