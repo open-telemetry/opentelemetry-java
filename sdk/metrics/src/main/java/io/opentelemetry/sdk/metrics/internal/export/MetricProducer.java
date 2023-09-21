@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.metrics.internal.export;
 
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
-import io.opentelemetry.sdk.metrics.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.util.Collection;
 import java.util.Collections;

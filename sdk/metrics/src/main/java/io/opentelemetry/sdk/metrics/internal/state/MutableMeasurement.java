@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
-import javax.annotation.Nullable;
 
 /**
  * A mutable {@link Measurement} implementation
@@ -57,7 +56,7 @@ public class MutableMeasurement implements Measurement {
   private boolean hasDoubleValue;
   private double doubleValue;
 
-  @Nullable private Attributes attributes;
+  private Attributes attributes = Attributes.empty();
 
   /** Sets the values. */
   private void set(
@@ -119,7 +118,6 @@ public class MutableMeasurement implements Measurement {
     return doubleValue;
   }
 
-  @SuppressWarnings("NullAway")
   @Override
   public Attributes attributes() {
     return attributes;

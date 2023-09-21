@@ -5,9 +5,10 @@
 
 package io.opentelemetry.sdk.testing.exporter;
 
-import static io.opentelemetry.sdk.metrics.export.MemoryMode.IMMUTABLE_DATA;
+import static io.opentelemetry.sdk.common.export.MemoryMode.IMMUTABLE_DATA;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -15,7 +16,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
-import io.opentelemetry.sdk.metrics.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import java.util.Collection;

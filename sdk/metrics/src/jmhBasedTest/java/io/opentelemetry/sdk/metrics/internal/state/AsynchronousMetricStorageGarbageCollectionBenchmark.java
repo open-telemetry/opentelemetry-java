@@ -6,11 +6,11 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
@@ -68,14 +68,10 @@ public class AsynchronousMetricStorageGarbageCollectionBenchmark {
     List<Attributes> attributesList;
 
     /** Creates a ThreadState. */
+    @SuppressWarnings("unused")
     public ThreadState() {
       cardinality = 1000;
       countersCount = 10;
-    }
-
-    public ThreadState(int countersCount, int cardinality) {
-      this.cardinality = cardinality;
-      this.countersCount = countersCount;
     }
 
     @SuppressWarnings("SpellCheckingInspection")

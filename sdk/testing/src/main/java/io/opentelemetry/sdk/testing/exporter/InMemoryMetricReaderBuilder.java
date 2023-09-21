@@ -5,11 +5,11 @@
 
 package io.opentelemetry.sdk.testing.exporter;
 
-import static io.opentelemetry.sdk.metrics.export.MemoryMode.IMMUTABLE_DATA;
+import static io.opentelemetry.sdk.common.export.MemoryMode.IMMUTABLE_DATA;
 
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
-import io.opentelemetry.sdk.metrics.export.MemoryMode;
 
 public final class InMemoryMetricReaderBuilder {
   private AggregationTemporalitySelector aggregationTemporalitySelector =
@@ -33,7 +33,7 @@ public final class InMemoryMetricReaderBuilder {
   }
 
   /**
-   * Sets the {@link DefaultAggregationSelector}
+   * Sets the {@link DefaultAggregationSelector}.
    *
    * @param defaultAggregationSelector the {@link DefaultAggregationSelector} to set
    * @return this {@link InMemoryMetricReaderBuilder}

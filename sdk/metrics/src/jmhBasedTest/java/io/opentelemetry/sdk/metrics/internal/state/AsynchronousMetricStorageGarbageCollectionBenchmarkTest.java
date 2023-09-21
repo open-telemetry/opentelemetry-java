@@ -8,8 +8,8 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.export.MemoryMode;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.HashMap;
