@@ -43,7 +43,7 @@ repositories {
 
 dependencies {
   implementation(enforcedPlatform("com.squareup.wire:wire-bom:4.8.1"))
-  implementation("com.google.auto.value:auto-value-annotations:1.10.3")
+  implementation("com.google.auto.value:auto-value-annotations:1.10.4")
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:6.21.0")
   // Needed for japicmp but not automatically brought in for some reason.
@@ -58,7 +58,7 @@ dependencies {
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.1.0")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.6.0")
   // at the moment 1.9.0 is the latest version supported by codeql
-  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0")
+  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.10")
   implementation("org.owasp:dependency-check-gradle:8.4.0")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:1.7.1")
 }

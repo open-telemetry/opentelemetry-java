@@ -61,10 +61,10 @@ afterEvaluate {
       }
     }
   }
-  otelBom.fallbacks.forEach { fallback ->
+  otelBom.additionalDependencies.forEach { dependency ->
     dependencies {
       constraints {
-        api(fallback)
+        api(dependency)
       }
     }
   }

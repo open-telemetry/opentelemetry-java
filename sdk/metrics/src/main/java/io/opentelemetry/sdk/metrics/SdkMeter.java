@@ -42,12 +42,12 @@ final class SdkMeter implements Meter {
    *   <li>They are not null or empty strings.
    *   <li>They are case-insensitive, ASCII strings.
    *   <li>The first character must be an alphabetic character.
-   *   <li>Subsequent characters must belong to the alphanumeric characters, '_', '.', and '-'.
-   *   <li>They can have a maximum length of 63 characters.
+   *   <li>Subsequent characters must belong to the alphanumeric characters, '_', '.', '/', and '-'.
+   *   <li>They can have a maximum length of 255 characters.
    * </ul>
    */
   private static final Pattern VALID_INSTRUMENT_NAME_PATTERN =
-      Pattern.compile("([A-Za-z]){1}([A-Za-z0-9\\_\\-\\.]){0,62}");
+      Pattern.compile("([A-Za-z]){1}([A-Za-z0-9\\_\\-\\./]){0,254}");
 
   private static final Meter NOOP_METER = MeterProvider.noop().get("noop");
   private static final String NOOP_INSTRUMENT_NAME = "noop";
@@ -108,7 +108,8 @@ final class SdkMeter implements Meter {
   public DoubleGaugeBuilder gaugeBuilder(String name) {
     return !checkValidInstrumentName(name)
         ? NOOP_METER.gaugeBuilder(NOOP_INSTRUMENT_NAME)
-        : new SdkDoubleGaugeBuilder(meterProviderSharedState, meterSharedState, name);
+        : new SdkDoubleGauge.SdkDoubleGaugeBuilder(
+            meterProviderSharedState, meterSharedState, name);
   }
 
   @Override
@@ -162,7 +163,7 @@ final class SdkMeter implements Meter {
           Level.WARNING,
           "Instrument name \""
               + name
-              + "\" is invalid, returning noop instrument. Instrument names must consist of 63 or fewer characters including alphanumeric, _, ., -, and start with a letter.",
+              + "\" is invalid, returning noop instrument. Instrument names must consist of 255 or fewer characters including alphanumeric, _, ., -, and start with a letter.",
           new AssertionError());
     }
 

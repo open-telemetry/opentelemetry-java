@@ -11,7 +11,6 @@ import static org.mockito.Mockito.mock;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -40,7 +39,7 @@ class ResourceFactoryTest {
                     Collections.emptyList()))
         .isEqualTo(
             Resource.getDefault().toBuilder()
-                .put(ResourceAttributes.SERVICE_NAME, "my-service")
+                .put("service.name", "my-service")
                 .put("key", "val")
                 .build());
   }

@@ -49,7 +49,7 @@ class TestConstants {
               .build(),
           "monotonic.cumulative.double.sum",
           "description",
-          "1",
+          "s",
           ImmutableSumData.create(
               /* isMonotonic= */ true,
               AggregationTemporality.CUMULATIVE,
@@ -69,7 +69,7 @@ class TestConstants {
               .build(),
           "monotonic.cumulative.double.sum.suffix.total",
           "description",
-          "1",
+          "s",
           ImmutableSumData.create(
               /* isMonotonic= */ true,
               AggregationTemporality.CUMULATIVE,
@@ -109,7 +109,7 @@ class TestConstants {
               .build(),
           "delta.double.sum",
           "unused",
-          "1",
+          "s",
           ImmutableSumData.create(
               /* isMonotonic= */ true,
               AggregationTemporality.DELTA,
@@ -129,7 +129,7 @@ class TestConstants {
               .build(),
           "monotonic.cumulative.long.sum",
           "unused",
-          "1",
+          "s",
           ImmutableSumData.create(
               /* isMonotonic= */ true,
               AggregationTemporality.CUMULATIVE,
@@ -168,7 +168,7 @@ class TestConstants {
               .build(),
           "delta.long.sum",
           "unused",
-          "1",
+          "s",
           ImmutableSumData.create(
               /* isMonotonic= */ true,
               AggregationTemporality.DELTA,
@@ -188,7 +188,7 @@ class TestConstants {
               .build(),
           "double.gauge",
           "unused",
-          "1",
+          "s",
           ImmutableGaugeData.create(
               Collections.singletonList(
                   ImmutableDoublePointData.create(
@@ -202,7 +202,7 @@ class TestConstants {
               .build(),
           "long.gauge",
           "unused",
-          "1",
+          "s",
           ImmutableGaugeData.create(
               Collections.singletonList(
                   ImmutableLongPointData.create(
@@ -216,7 +216,7 @@ class TestConstants {
               .build(),
           "summary",
           "unused",
-          "1",
+          "s",
           ImmutableSummaryData.create(
               Collections.singletonList(
                   ImmutableSummaryPointData.create(
@@ -238,7 +238,7 @@ class TestConstants {
               .build(),
           "delta.histogram",
           "unused",
-          "1",
+          "s",
           ImmutableHistogramData.create(
               AggregationTemporality.DELTA,
               Collections.singletonList(
@@ -264,7 +264,7 @@ class TestConstants {
               .build(),
           "cumulative.histogram.no.attributes",
           "unused",
-          "1",
+          "s",
           ImmutableHistogramData.create(
               AggregationTemporality.CUMULATIVE,
               Collections.singletonList(
@@ -299,7 +299,7 @@ class TestConstants {
               .build(),
           "cumulative.histogram.single.attribute",
           "unused",
-          "1",
+          "s",
           ImmutableHistogramData.create(
               AggregationTemporality.CUMULATIVE,
               Collections.singletonList(
@@ -334,7 +334,7 @@ class TestConstants {
               .build(),
           "double.gauge.no.attributes",
           "unused",
-          "1",
+          "s",
           ImmutableGaugeData.create(
               Collections.singletonList(
                   ImmutableDoublePointData.create(
@@ -349,12 +349,30 @@ class TestConstants {
               .build(),
           "double.gauge.multiple.attributes",
           "unused",
-          "1",
+          "s",
           ImmutableGaugeData.create(
               Collections.singletonList(
                   ImmutableDoublePointData.create(
                       1633947011000000000L,
                       1633950672000000000L,
                       Attributes.of(TYPE, "dgma", stringKey("animal"), "bear"),
+                      8))));
+  static final MetricData DOUBLE_GAUGE_COLLIDING_ATTRIBUTES =
+      ImmutableMetricData.createDoubleGauge(
+          Resource.create(Attributes.of(stringKey("kr"), "vr")),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
+          "double.gauge.colliding.attributes",
+          "unused",
+          "s",
+          ImmutableGaugeData.create(
+              Collections.singletonList(
+                  ImmutableDoublePointData.create(
+                      1633947011000000000L,
+                      1633950672000000000L,
+                      Attributes.of(
+                          TYPE, "dgma", stringKey("foo.bar"), "a", stringKey("foo_bar"), "b"),
                       8))));
 }
