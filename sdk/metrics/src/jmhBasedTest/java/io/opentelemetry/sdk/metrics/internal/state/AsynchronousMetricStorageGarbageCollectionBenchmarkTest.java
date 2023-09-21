@@ -59,6 +59,7 @@ public class AsynchronousMetricStorageGarbageCollectionBenchmarkTest {
             .include(AsynchronousMetricStorageGarbageCollectionBenchmark.class.getSimpleName())
             .addProfiler("gc")
             .shouldFailOnError(true)
+            .jvmArgs("-Xmx1500m")
             .build();
     Collection<RunResult> results = new Runner(opt).run();
 
