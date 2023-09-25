@@ -54,6 +54,14 @@ Same settings as above for `main`, except:
 
   (So that bot PR branches can be deleted)
 
+### `benchmarks`
+
+- Everything UNCHECKED
+
+  (This branch is currently only used for directly pushing benchmarking results from the
+  [overhead benchmark](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/benchmark.yml)
+  job)
+
 ## Secrets and variables > Actions
 
 * `GPG_PASSWORD` - stored in OpenTelemetry-Java 1Password
