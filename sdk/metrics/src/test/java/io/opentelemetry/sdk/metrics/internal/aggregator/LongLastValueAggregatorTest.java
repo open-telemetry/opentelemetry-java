@@ -27,7 +27,6 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongLastValueAggregator}. */
@@ -119,7 +118,7 @@ class LongLastValueAggregatorTest {
     /* Assert that latest measurement is kept and set on {@code previous} */
     assertThat(previous.getStartEpochNanos()).isEqualTo(0);
     assertThat(previous.getEpochNanos()).isEqualTo(1);
-    Assertions.assertThat(previous.getAttributes()).isEqualTo(Attributes.empty());
+    assertThat(previous.getAttributes()).isEqualTo(Attributes.empty());
     assertThat(previous.getValue()).isEqualTo(2);
     assertThat(previous.getExemplars()).isEqualTo(exemplars);
   }
@@ -162,7 +161,7 @@ class LongLastValueAggregatorTest {
 
     assertThat(toPointData.getStartEpochNanos()).isEqualTo(pointData.getStartEpochNanos());
     assertThat(toPointData.getEpochNanos()).isEqualTo(pointData.getEpochNanos());
-    Assertions.assertThat(toPointData.getAttributes()).isEqualTo(pointData.getAttributes());
+    assertThat(toPointData.getAttributes()).isEqualTo(pointData.getAttributes());
     assertThat(toPointData.getValue()).isEqualTo(pointData.getValue());
     assertThat(toPointData.getExemplars()).isEqualTo(pointData.getExemplars());
   }

@@ -273,7 +273,6 @@ class LongSumAggregatorTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void toMetricData() {
     AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(10);
