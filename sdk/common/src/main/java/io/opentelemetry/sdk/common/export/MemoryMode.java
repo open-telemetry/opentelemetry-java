@@ -9,7 +9,7 @@ package io.opentelemetry.sdk.common.export;
 public enum MemoryMode {
 
   /**
-   * Reuses objects to reduce garbage collection.
+   * Reuses objects to reduce allocations.
    *
    * <p>In this mode, the different signal readers, reuses objects to significantly reduce garbage
    * collection, at the expense of disallowing concurrent collection operations.
