@@ -23,7 +23,6 @@ public enum MemoryMode {
    *
    * <p>In this mode, the SDK passes immutable objects to exporters / readers, increasing allocations but ensuring safe concurrent exports.
    *
-   * <p>More specifically, data objects returned by the SDK are immutable.
    */
   IMMUTABLE_DATA
 }
