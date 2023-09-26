@@ -13,8 +13,6 @@ public enum MemoryMode {
    *
    * <p>In this mode, the SDK reuses objects to reduce allocations, at the expense of disallowing concurrent collections / exports.
    *
-   * <p>More specifically, data objects returned by the SDK to be used by readers or exporters are
-   * reused across collection calls
    */
   REUSABLE_DATA,
 
