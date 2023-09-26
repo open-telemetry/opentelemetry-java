@@ -21,9 +21,7 @@ public enum MemoryMode {
   /**
    * Uses immutable data structures.
    *
-   * <p>In this mode, the data collected by the readers, is immutable, meant to be used once. This
-   * allows running reader's collection operations concurrently, at the expense of increased garbage
-   * collection.
+   * <p>In this mode, the SDK passes immutable objects to exporters / readers, increasing allocations but ensuring safe concurrent exports.
    *
    * <p>More specifically, data objects returned by the SDK are immutable.
    */
