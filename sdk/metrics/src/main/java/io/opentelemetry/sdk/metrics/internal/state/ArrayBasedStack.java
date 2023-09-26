@@ -15,7 +15,8 @@ import javax.annotation.Nullable;
  *
  * <p>This class is not thread-safe.
  */
-public class ArrayBasedStack<T> {
+public final class ArrayBasedStack<T> {
+  // Visible for test
   static final int DEFAULT_CAPACITY = 10;
 
   // NOTE (asafm): Using native array instead of ArrayList since I plan to add eviction

@@ -62,7 +62,7 @@ public class InMemoryMetricReader implements MetricReader {
    *
    * @return a builder with always-cumulative {@link AggregationTemporalitySelector}, default {@link
    *     DefaultAggregationSelector} and {@link MemoryMode#IMMUTABLE_DATA} {@link MemoryMode}
-   * @since 1.29.0
+   * @since 1.31.0
    */
   public static InMemoryMetricReaderBuilder builder() {
     return new InMemoryMetricReaderBuilder();

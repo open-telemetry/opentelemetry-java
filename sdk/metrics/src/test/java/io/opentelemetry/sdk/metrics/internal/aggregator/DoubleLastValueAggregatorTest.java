@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -25,7 +26,6 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link AggregatorHandle}. */
@@ -194,12 +194,11 @@ class DoubleLastValueAggregatorTest {
 
     aggregator.copyPoint(pointData, toPointData);
 
-    Assertions.assertThat(toPointData.getStartEpochNanos())
-        .isEqualTo(pointData.getStartEpochNanos());
-    Assertions.assertThat(toPointData.getEpochNanos()).isEqualTo(pointData.getEpochNanos());
+    assertThat(toPointData.getStartEpochNanos()).isEqualTo(pointData.getStartEpochNanos());
+    assertThat(toPointData.getEpochNanos()).isEqualTo(pointData.getEpochNanos());
     assertThat(toPointData.getAttributes()).isEqualTo(pointData.getAttributes());
-    Assertions.assertThat(toPointData.getValue()).isEqualTo(pointData.getValue());
-    Assertions.assertThat(toPointData.getExemplars()).isEqualTo(pointData.getExemplars());
+    assertThat(toPointData.getValue()).isEqualTo(pointData.getValue());
+    assertThat(toPointData.getExemplars()).isEqualTo(pointData.getExemplars());
   }
 
   @Test

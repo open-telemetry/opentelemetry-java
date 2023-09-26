@@ -51,7 +51,7 @@ public interface MetricReader
    * Returns the memory mode used by this reader.
    *
    * @return The {@link MemoryMode} used by this instance
-   * @since 1.29.0
+   * @since 1.31.0
    */
   default MemoryMode getMemoryMode() {
     return IMMUTABLE_DATA;
