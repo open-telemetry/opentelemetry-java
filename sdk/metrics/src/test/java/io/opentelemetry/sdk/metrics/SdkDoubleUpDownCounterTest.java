@@ -254,4 +254,18 @@ class SdkDoubleUpDownCounterTest {
                                             .hasValue(20_000)
                                             .hasAttributes(attributeEntry(keys[3], values[3])))));
   }
+
+  @Test
+  void testToString() {
+    String expected =
+        "SdkDoubleUpDownCounter{descriptor=InstrumentDescriptor{name=testUpDownCounter, description=description, unit=ms, type=UP_DOWN_COUNTER, valueType=DOUBLE, advice=Advice{explicitBucketBoundaries=null, attributes=null}}}";
+    DoubleUpDownCounter counter =
+        sdkMeter
+            .upDownCounterBuilder("testUpDownCounter")
+            .ofDoubles()
+            .setDescription("description")
+            .setUnit("ms")
+            .build();
+    assertThat(counter).hasToString(expected);
+  }
 }
