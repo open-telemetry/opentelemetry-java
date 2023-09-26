@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.export;
 
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
@@ -42,6 +43,10 @@ public interface MetricProducer extends CollectionRegistration {
   /**
    * Returns a collection of produced {@link MetricData}s to be exported. This will only be those
    * metrics that have been produced since the last time this method was called.
+   *
+   * <p>If {@link MetricReader#getMemoryMode()} is configured to {@link MemoryMode#REUSABLE_DATA} do
+   * not keep the result or any of its contained objects as they are to be reused to return the
+   * result for the next call of {@code collectAllMetrics}
    *
    * @return a collection of produced {@link MetricData}s to be exported.
    */

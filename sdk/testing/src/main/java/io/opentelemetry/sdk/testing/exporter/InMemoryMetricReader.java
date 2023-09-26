@@ -5,7 +5,10 @@
 
 package io.opentelemetry.sdk.testing.exporter;
 
+import static io.opentelemetry.sdk.common.export.MemoryMode.IMMUTABLE_DATA;
+
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -52,6 +55,18 @@ public class InMemoryMetricReader implements MetricReader {
   private final DefaultAggregationSelector defaultAggregationSelector;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
   private volatile MetricProducer metricProducer = MetricProducer.noop();
+  private final MemoryMode memoryMode;
+
+  /**
+   * Creates an {@link InMemoryMetricReaderBuilder} with defaults.
+   *
+   * @return a builder with always-cumulative {@link AggregationTemporalitySelector}, default {@link
+   *     DefaultAggregationSelector} and {@link MemoryMode#IMMUTABLE_DATA} {@link MemoryMode}
+   * @since 1.29.0
+   */
+  public static InMemoryMetricReaderBuilder builder() {
+    return new InMemoryMetricReaderBuilder();
+  }
 
   /** Returns a new {@link InMemoryMetricReader}. */
   public static InMemoryMetricReader create() {
@@ -79,8 +94,16 @@ public class InMemoryMetricReader implements MetricReader {
   private InMemoryMetricReader(
       AggregationTemporalitySelector aggregationTemporalitySelector,
       DefaultAggregationSelector defaultAggregationSelector) {
+    this(aggregationTemporalitySelector, defaultAggregationSelector, IMMUTABLE_DATA);
+  }
+
+  InMemoryMetricReader(
+      AggregationTemporalitySelector aggregationTemporalitySelector,
+      DefaultAggregationSelector defaultAggregationSelector,
+      MemoryMode memoryMode) {
     this.aggregationTemporalitySelector = aggregationTemporalitySelector;
     this.defaultAggregationSelector = defaultAggregationSelector;
+    this.memoryMode = memoryMode;
   }
 
   /** Returns all metrics accumulated since the last call. */
@@ -116,6 +139,11 @@ public class InMemoryMetricReader implements MetricReader {
   public CompletableResultCode shutdown() {
     isShutdown.set(true);
     return CompletableResultCode.ofSuccess();
+  }
+
+  @Override
+  public MemoryMode getMemoryMode() {
+    return memoryMode;
   }
 
   @Override

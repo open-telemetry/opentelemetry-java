@@ -45,6 +45,7 @@ val DEPENDENCIES = listOf(
   "io.opencensus:opencensus-contrib-exemplar-util:${opencensusVersion}",
   "org.openjdk.jmh:jmh-core:${jmhVersion}",
   "org.openjdk.jmh:jmh-generator-bytecode:${jmhVersion}",
+  "org.openjdk.jmh:jmh-generator-annprocess:${jmhVersion}",
   "org.mockito:mockito-core:${mockitoVersion}",
   "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
   "org.slf4j:slf4j-simple:${slf4jVersion}",
