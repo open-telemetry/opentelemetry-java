@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.common.export;
 
-/** The type of memory allocation used during signal collection in the different readers. */
+/** The memory semantics of the SDK. */
 public enum MemoryMode {
 
   /**
