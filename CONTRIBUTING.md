@@ -52,7 +52,7 @@ $ ./gradlew check
 
 Note: this gradle task will potentially generate changes to files in
 the `docs/apidiffs/current_vs_latest`
-directory. Please make sure to include any changes to these files in your pull request (i.e. 
+directory. Please make sure to include any changes to these files in your pull request (i.e.
 add those files to your commits in the PR).
 
 ## PR Review
