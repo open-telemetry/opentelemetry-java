@@ -73,14 +73,14 @@ public final class LongSumAssert extends AbstractAssert<LongSumAssert, SumData<L
     return myself;
   }
 
-  /** Asserts the sum has points matching all of the given assertions and no more, in any order. */
+  /** Asserts the sum has points matching all the given assertions and no more, in any order. */
   @SafeVarargs
   @SuppressWarnings("varargs")
   public final LongSumAssert hasPointsSatisfying(Consumer<LongPointAssert>... assertions) {
     return hasPointsSatisfying(Arrays.asList(assertions));
   }
 
-  /** Asserts the sum has points matching all of the given assertions and no more, in any order. */
+  /** Asserts the sum has points matching all the given assertions and no more, in any order. */
   public LongSumAssert hasPointsSatisfying(
       Iterable<? extends Consumer<LongPointAssert>> assertions) {
     assertThat(actual.getPoints())

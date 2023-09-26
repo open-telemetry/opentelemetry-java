@@ -41,6 +41,13 @@ testing {
         }
       }
     }
+    register<JvmTestSuite>("jmhBasedTest") {
+      dependencies {
+        implementation("org.openjdk.jmh:jmh-core")
+        implementation("org.openjdk.jmh:jmh-generator-bytecode")
+        annotationProcessor("org.openjdk.jmh:jmh-generator-annprocess")
+      }
+    }
   }
 }
 

@@ -8,7 +8,7 @@ requirements and recommendations.
 
 If you want to add new features or change behavior, please make sure your changes follow the
 [OpenTelemetry Specification](https://github.com/open-telemetry/opentelemetry-specification).
-Otherwise file an issue or submit a PR to the specification repo first.
+Otherwise, file an issue or submit a PR to the specification repo first.
 
 Make sure to review the projects [license](LICENSE) and sign the
 [CNCF CLA](https://identity.linuxfoundation.org/projects/cncf). A signed CLA will be enforced by an
@@ -52,7 +52,8 @@ $ ./gradlew check
 
 Note: this gradle task will potentially generate changes to files in
 the `docs/apidiffs/current_vs_latest`
-directory. Please make sure to include any changes to these files in your pull request.
+directory. Please make sure to include any changes to these files in your pull request (i.e.
+add those files to your commits in the PR).
 
 ## PR Review
 

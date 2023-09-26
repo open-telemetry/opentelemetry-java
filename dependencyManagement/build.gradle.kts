@@ -25,7 +25,7 @@ val DEPENDENCY_BOMS = listOf(
 )
 
 val autoValueVersion = "1.10.4"
-val errorProneVersion = "2.21.1"
+val errorProneVersion = "2.22.0"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
@@ -45,6 +45,7 @@ val DEPENDENCIES = listOf(
   "io.opencensus:opencensus-contrib-exemplar-util:${opencensusVersion}",
   "org.openjdk.jmh:jmh-core:${jmhVersion}",
   "org.openjdk.jmh:jmh-generator-bytecode:${jmhVersion}",
+  "org.openjdk.jmh:jmh-generator-annprocess:${jmhVersion}",
   "org.mockito:mockito-core:${mockitoVersion}",
   "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
   "org.slf4j:slf4j-simple:${slf4jVersion}",
@@ -54,7 +55,7 @@ val DEPENDENCIES = listOf(
   "io.prometheus:simpleclient_httpserver:${prometheusClientVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.24.0",
+  "com.google.api.grpc:proto-google-common-protos:2.25.1",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
@@ -69,7 +70,7 @@ val DEPENDENCIES = listOf(
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
   "junit:junit:4.13.2",
-  "nl.jqno.equalsverifier:equalsverifier:3.15.1",
+  "nl.jqno.equalsverifier:equalsverifier:3.15.2",
   "org.awaitility:awaitility:4.2.0",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
   "org.codehaus.mojo:animal-sniffer-annotations:1.23",

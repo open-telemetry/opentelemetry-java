@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.export;
 
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collection;
@@ -33,6 +34,10 @@ public interface CollectionRegistration {
 
   /**
    * Collect all metrics, including metrics from the SDK and any registered {@link MetricProducer}s.
+   *
+   * <p>If {@link MetricReader#getMemoryMode()} is configured to {@link MemoryMode#REUSABLE_DATA} do
+   * not keep the result or any of its contained objects as they are to be reused to return the
+   * result for the next call to this method.
    */
   default Collection<MetricData> collectAllMetrics() {
     return Collections.emptyList();

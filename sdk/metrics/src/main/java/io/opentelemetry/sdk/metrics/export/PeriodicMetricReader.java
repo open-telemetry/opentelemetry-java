@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -71,6 +72,11 @@ public final class PeriodicMetricReader implements MetricReader {
   @Override
   public Aggregation getDefaultAggregation(InstrumentType instrumentType) {
     return exporter.getDefaultAggregation(instrumentType);
+  }
+
+  @Override
+  public MemoryMode getMemoryMode() {
+    return exporter.getMemoryMode();
   }
 
   @Override
