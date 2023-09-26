@@ -25,7 +25,6 @@ import io.opentelemetry.sdk.metrics.internal.data.MutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import java.util.Collections;
 import java.util.List;
 import org.assertj.core.api.Assertions;
@@ -120,7 +119,7 @@ class LongLastValueAggregatorTest {
     /* Assert that latest measurement is kept and set on {@code previous} */
     assertThat(previous.getStartEpochNanos()).isEqualTo(0);
     assertThat(previous.getEpochNanos()).isEqualTo(1);
-    OpenTelemetryAssertions.assertThat(previous.getAttributes()).isEqualTo(Attributes.empty());
+    Assertions.assertThat(previous.getAttributes()).isEqualTo(Attributes.empty());
     assertThat(previous.getValue()).isEqualTo(2);
     assertThat(previous.getExemplars()).isEqualTo(exemplars);
   }
@@ -161,13 +160,11 @@ class LongLastValueAggregatorTest {
 
     aggregator.copyPoint(pointData, toPointData);
 
-    Assertions.assertThat(toPointData.getStartEpochNanos())
-        .isEqualTo(pointData.getStartEpochNanos());
-    Assertions.assertThat(toPointData.getEpochNanos()).isEqualTo(pointData.getEpochNanos());
-    OpenTelemetryAssertions.assertThat(toPointData.getAttributes())
-        .isEqualTo(pointData.getAttributes());
-    Assertions.assertThat(toPointData.getValue()).isEqualTo(pointData.getValue());
-    Assertions.assertThat(toPointData.getExemplars()).isEqualTo(pointData.getExemplars());
+    assertThat(toPointData.getStartEpochNanos()).isEqualTo(pointData.getStartEpochNanos());
+    assertThat(toPointData.getEpochNanos()).isEqualTo(pointData.getEpochNanos());
+    Assertions.assertThat(toPointData.getAttributes()).isEqualTo(pointData.getAttributes());
+    assertThat(toPointData.getValue()).isEqualTo(pointData.getValue());
+    assertThat(toPointData.getExemplars()).isEqualTo(pointData.getExemplars());
   }
 
   @Test

@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
  * @param <V> The map value type
  */
 @SuppressWarnings("ForLoopReplaceableByForEach")
-public class PooledHashMap<K, V> implements Map<K, V> {
+public final class PooledHashMap<K, V> implements Map<K, V> {
   private static final int DEFAULT_CAPACITY = 16;
   private static final float LOAD_FACTOR = 0.75f;
 

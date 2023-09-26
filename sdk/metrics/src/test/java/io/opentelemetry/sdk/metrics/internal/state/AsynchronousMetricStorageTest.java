@@ -378,7 +378,7 @@ class AsynchronousMetricStorageTest {
   }
 
   @Test
-  public void collect_reusableData_reusedObjectsAreReturnedOnSecondCall() {
+  void collect_reusableData_reusedObjectsAreReturnedOnSecondCall() {
     setup(REUSABLE_DATA);
 
     longCounterStorage.record(createLong(0, 1, 1, Attributes.builder().put("key", "a").build()));

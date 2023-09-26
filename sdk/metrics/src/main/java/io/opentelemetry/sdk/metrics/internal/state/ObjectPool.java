@@ -20,7 +20,7 @@ import java.util.function.Supplier;
  *
  * <p>This class is not thread-safe.
  */
-public class ObjectPool<T> {
+public final class ObjectPool<T> {
   private final ArrayBasedStack<T> pool;
   private final Supplier<T> objectCreator;
 

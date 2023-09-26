@@ -15,7 +15,7 @@ import io.opentelemetry.api.common.Attributes;
  *
  * <p>This class is not thread-safe.
  */
-public class MutableMeasurement implements Measurement {
+public final class MutableMeasurement implements Measurement {
 
   static void setDoubleMeasurement(
       MutableMeasurement mutableMeasurement,
