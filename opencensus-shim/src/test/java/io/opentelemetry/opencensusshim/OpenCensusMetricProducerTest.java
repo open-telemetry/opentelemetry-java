@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.opencensusshim.metrics;
+package io.opentelemetry.opencensusshim;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
@@ -21,7 +21,6 @@ import io.opencensus.trace.TraceId;
 import io.opencensus.trace.TraceOptions;
 import io.opencensus.trace.Tracestate;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.opencensusshim.OpenCensusMetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Duration;

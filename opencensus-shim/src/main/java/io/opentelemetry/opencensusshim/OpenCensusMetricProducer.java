@@ -7,7 +7,6 @@ package io.opentelemetry.opencensusshim;
 
 import io.opencensus.metrics.Metrics;
 import io.opencensus.metrics.export.MetricProducerManager;
-import io.opentelemetry.opencensusshim.internal.metrics.MetricAdapter;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
@@ -26,7 +25,7 @@ import java.util.List;
 public final class OpenCensusMetricProducer implements MetricProducer {
   private final MetricProducerManager openCensusMetricStorage;
 
-  OpenCensusMetricProducer(MetricProducerManager openCensusMetricStorage) {
+  private OpenCensusMetricProducer(MetricProducerManager openCensusMetricStorage) {
     this.openCensusMetricStorage = openCensusMetricStorage;
   }
 

@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Random;
 import javax.annotation.Nullable;
 
-class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
+final class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
 
   private static final Tracer OTEL_TRACER =
       GlobalOpenTelemetry.getTracer("io.opentelemetry.opencensusshim", OtelVersion.VERSION);
@@ -67,6 +67,29 @@ class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
   @Nullable private final SpanContext ocRemoteParentSpanContext;
   @Nullable private Sampler ocSampler;
   @Nullable private SpanKind otelKind;
+
+  private OpenTelemetrySpanBuilderImpl(
+      String name,
+      @Nullable SpanContext ocRemoteParentSpanContext,
+      @Nullable Span ocParent,
+      OpenTelemetrySpanBuilderImpl.Options options) {
+    this.name = checkNotNull(name, "name");
+    this.ocParent = ocParent;
+    this.ocRemoteParentSpanContext = ocRemoteParentSpanContext;
+    this.options = options;
+  }
+
+  static OpenTelemetrySpanBuilderImpl createWithParent(
+      String spanName, @Nullable Span parent, OpenTelemetrySpanBuilderImpl.Options options) {
+    return new OpenTelemetrySpanBuilderImpl(spanName, null, parent, options);
+  }
+
+  static OpenTelemetrySpanBuilderImpl createWithRemoteParent(
+      String spanName,
+      @Nullable SpanContext remoteParentSpanContext,
+      OpenTelemetrySpanBuilderImpl.Options options) {
+    return new OpenTelemetrySpanBuilderImpl(spanName, remoteParentSpanContext, null, options);
+  }
 
   @Override
   public SpanBuilder setSampler(Sampler sampler) {
@@ -153,29 +176,6 @@ class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
     }
     io.opentelemetry.api.trace.Span otSpan = otelSpanBuilder.startSpan();
     return new OpenTelemetrySpanImpl(otSpan);
-  }
-
-  private OpenTelemetrySpanBuilderImpl(
-      String name,
-      @Nullable SpanContext ocRemoteParentSpanContext,
-      @Nullable Span ocParent,
-      OpenTelemetrySpanBuilderImpl.Options options) {
-    this.name = checkNotNull(name, "name");
-    this.ocParent = ocParent;
-    this.ocRemoteParentSpanContext = ocRemoteParentSpanContext;
-    this.options = options;
-  }
-
-  static OpenTelemetrySpanBuilderImpl createWithParent(
-      String spanName, @Nullable Span parent, OpenTelemetrySpanBuilderImpl.Options options) {
-    return new OpenTelemetrySpanBuilderImpl(spanName, null, parent, options);
-  }
-
-  static OpenTelemetrySpanBuilderImpl createWithRemoteParent(
-      String spanName,
-      @Nullable SpanContext remoteParentSpanContext,
-      OpenTelemetrySpanBuilderImpl.Options options) {
-    return new OpenTelemetrySpanBuilderImpl(spanName, remoteParentSpanContext, null, options);
   }
 
   private static boolean makeSamplingDecision(

@@ -22,6 +22,7 @@ public final class OpenTelemetryContextManager implements ContextManager {
   private static final Logger LOGGER =
       Logger.getLogger(OpenTelemetryContextManager.class.getName());
 
+  @SuppressWarnings("unused") // Loaded via reflection
   public OpenTelemetryContextManager() {}
 
   @Override

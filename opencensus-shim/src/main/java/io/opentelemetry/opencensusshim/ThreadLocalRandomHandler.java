@@ -15,10 +15,10 @@ import javax.annotation.concurrent.ThreadSafe;
  * implementation in opencensus-impl, however we do not want to depend on opencensus-impl here.
  */
 @ThreadSafe
-public final class ThreadLocalRandomHandler extends RandomHandler {
+final class ThreadLocalRandomHandler extends RandomHandler {
 
   /** Constructs a new {@code ThreadLocalRandomHandler}. */
-  public ThreadLocalRandomHandler() {}
+  ThreadLocalRandomHandler() {}
 
   @Override
   public Random current() {
