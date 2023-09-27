@@ -16,6 +16,7 @@ import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.internal.state.DefaultSynchronousMetricStorage;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -164,6 +165,14 @@ class SdkDoubleCounterTest {
     assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
     logs.assertContains(
         "Counters can only increase. Instrument testCounter has recorded a negative value.");
+  }
+
+  @Test
+  @SuppressLogger(DefaultSynchronousMetricStorage.class)
+  void doubleCounterAdd_NaN() {
+    DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
+    doubleCounter.add(Double.NaN);
+    assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
   }
 
   @Test

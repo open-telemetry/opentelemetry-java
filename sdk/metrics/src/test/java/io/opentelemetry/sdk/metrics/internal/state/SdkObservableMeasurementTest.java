@@ -7,11 +7,15 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.metrics.data.AggregationTemporality.CUMULATIVE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -21,12 +25,17 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
-import org.assertj.core.util.Lists;
+import java.util.Arrays;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.ArgumentCaptor;
 
 @SuppressWarnings("rawtypes")
-public class SdkObservableMeasurementTest {
+class SdkObservableMeasurementTest {
+
+  @RegisterExtension
+  final LogCapturer logs =
+      LogCapturer.create().captureForLogger(SdkObservableMeasurement.class.getName());
 
   private AsynchronousMetricStorage mockAsyncStorage1;
   private RegisteredReader registeredReader1;
@@ -66,11 +75,11 @@ public class SdkObservableMeasurementTest {
         SdkObservableMeasurement.create(
             instrumentationScopeInfo,
             instrumentDescriptor,
-            Lists.newArrayList(mockAsyncStorage1, mockAsyncStorage2));
+            Arrays.asList(mockAsyncStorage1, mockAsyncStorage2));
   }
 
   @Test
-  public void testRecordLongImmutableData() {
+  void recordLong_ImmutableData() {
     setup(MemoryMode.IMMUTABLE_DATA);
 
     sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
@@ -90,7 +99,7 @@ public class SdkObservableMeasurementTest {
   }
 
   @Test
-  public void testRecordDoubleReturnImmutableData() {
+  void recordDouble_ImmutableData() {
     setup(MemoryMode.IMMUTABLE_DATA);
 
     sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
@@ -110,7 +119,7 @@ public class SdkObservableMeasurementTest {
   }
 
   @Test
-  public void testRecordDoubleReturnReusableData() {
+  void recordDouble_ReusableData() {
     setup(MemoryMode.REUSABLE_DATA);
 
     sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
@@ -142,7 +151,7 @@ public class SdkObservableMeasurementTest {
   }
 
   @Test
-  public void testRecordLongReturnReusableData() {
+  void recordLong_ReusableData() {
     setup(MemoryMode.REUSABLE_DATA);
 
     sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
@@ -171,5 +180,17 @@ public class SdkObservableMeasurementTest {
     } finally {
       sdkObservableMeasurement.unsetActiveReader();
     }
+  }
+
+  @Test
+  @SuppressLogger(SdkObservableMeasurement.class)
+  void recordDouble_NaN() {
+    setup(MemoryMode.REUSABLE_DATA);
+    sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
+    sdkObservableMeasurement.record(Double.NaN);
+
+    verify(mockAsyncStorage1, never()).record(any());
+    logs.assertContains(
+        "Instrument testCounter has recorded measurement Not-a-Number (NaN) value with attributes {}. Dropping measurement.");
   }
 }

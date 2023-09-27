@@ -139,6 +139,16 @@ public final class SdkObservableMeasurement
       logNoActiveReader();
       return;
     }
+    if (Double.isNaN(value)) {
+      logger.log(
+          Level.WARNING,
+          "Instrument "
+              + instrumentDescriptor.getName()
+              + " has recorded measurement Not-a-Number (NaN) value with attributes "
+              + attributes
+              + ". Dropping measurement.");
+      return;
+    }
 
     Measurement measurement;
     MemoryMode memoryMode = activeReader.getReader().getMemoryMode();

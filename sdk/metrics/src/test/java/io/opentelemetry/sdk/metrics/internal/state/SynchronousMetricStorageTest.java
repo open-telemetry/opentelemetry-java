@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -25,6 +26,7 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyMetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
@@ -68,6 +70,25 @@ public class SynchronousMetricStorageTest {
           ((AggregatorFactory) Aggregation.sum())
               .createAggregator(DESCRIPTOR, ExemplarFilter.alwaysOff()));
   private final AttributesProcessor attributesProcessor = AttributesProcessor.noop();
+
+  @Test
+  void recordDouble_NaN() {
+    DefaultSynchronousMetricStorage<?, ?> storage =
+        new DefaultSynchronousMetricStorage<>(
+            cumulativeReader,
+            METRIC_DESCRIPTOR,
+            aggregator,
+            attributesProcessor,
+            CARDINALITY_LIMIT);
+
+    storage.recordDouble(Double.NaN, Attributes.empty(), Context.current());
+
+    logs.assertContains(
+        "Instrument name has recorded measurement Not-a-Number (NaN) value with attributes {}. Dropping measurement.");
+    verify(aggregator, never()).createHandle();
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10))
+        .isEqualTo(EmptyMetricData.getInstance());
+  }
 
   @Test
   void attributesProcessor_applied() {
