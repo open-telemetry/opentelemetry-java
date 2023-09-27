@@ -19,20 +19,15 @@ import java.util.concurrent.TimeUnit;
 /**
  * A metric reader reads metrics from an {@link SdkMeterProvider}.
  *
- * <p>Custom implementations of {@link MetricReader} are not currently supported. Please use one of
- * the built-in readers such as {@link PeriodicMetricReader}.
- *
  * @since 1.14.0
  */
 public interface MetricReader
     extends AggregationTemporalitySelector, DefaultAggregationSelector, Closeable {
 
   /**
-   * Called by {@link SdkMeterProvider} and supplies the {@link MetricReader} with a handle to
-   * collect metrics.
-   *
-   * <p>{@link CollectionRegistration} is currently an empty interface because custom
-   * implementations of {@link MetricReader} are not currently supported.
+   * Called by {@link SdkMeterProvider} on initialization to supply the {@link MetricReader} with
+   * {@link MetricProducer}s used to collect metrics. {@link MetricReader} implementations call
+   * {@link CollectionRegistration#collectAllMetrics()} to read metrics.
    */
   void register(CollectionRegistration registration);
 

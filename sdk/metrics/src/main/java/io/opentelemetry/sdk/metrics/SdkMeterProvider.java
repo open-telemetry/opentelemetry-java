@@ -13,11 +13,12 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
+import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.export.CardinalityLimitSelector;
-import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
@@ -45,6 +46,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
 
   private final List<RegisteredView> registeredViews;
   private final List<RegisteredReader> registeredReaders;
+  private final List<MetricProducer> metricProducers;
   private final MeterProviderSharedState sharedState;
   private final ComponentRegistry<SdkMeter> registry;
   private final AtomicBoolean isClosed = new AtomicBoolean(false);
@@ -57,6 +59,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   SdkMeterProvider(
       List<RegisteredView> registeredViews,
       IdentityHashMap<MetricReader, CardinalityLimitSelector> metricReaders,
+      List<MetricProducer> metricProducers,
       Clock clock,
       Resource resource,
       ExemplarFilter exemplarFilter) {
@@ -70,6 +73,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
                         entry.getKey(),
                         ViewRegistry.create(entry.getKey(), entry.getValue(), registeredViews)))
             .collect(toList());
+    this.metricProducers = metricProducers;
     this.sharedState =
         MeterProviderSharedState.create(clock, resource, exemplarFilter, startEpochNanos);
     this.registry =
@@ -77,8 +81,11 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
             instrumentationLibraryInfo ->
                 new SdkMeter(sharedState, instrumentationLibraryInfo, registeredReaders));
     for (RegisteredReader registeredReader : registeredReaders) {
-      MetricProducer producer = new LeasedMetricProducer(registry, sharedState, registeredReader);
-      registeredReader.getReader().register(producer);
+      List<MetricProducer> readerMetricProducers = new ArrayList<>(metricProducers);
+      readerMetricProducers.add(new LeasedMetricProducer(registry, sharedState, registeredReader));
+      registeredReader
+          .getReader()
+          .register(new SdkCollectionRegistration(readerMetricProducers, sharedState));
       registeredReader.setLastCollectEpochNanos(startEpochNanos);
     }
   }
@@ -154,6 +161,8 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
         + sharedState.getResource()
         + ", metricReaders="
         + registeredReaders.stream().map(RegisteredReader::getReader).collect(toList())
+        + ", metricProducers="
+        + metricProducers
         + ", views="
         + registeredViews
         + "}";
@@ -176,7 +185,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     }
 
     @Override
-    public Collection<MetricData> collectAllMetrics() {
+    public Collection<MetricData> produce(Resource unused) {
       Collection<SdkMeter> meters = registry.getComponents();
       List<MetricData> result = new ArrayList<>();
       long collectTime = sharedState.getClock().now();
@@ -185,6 +194,33 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       }
       registeredReader.setLastCollectEpochNanos(collectTime);
       return Collections.unmodifiableCollection(result);
+    }
+  }
+
+  private static class SdkCollectionRegistration implements CollectionRegistration {
+    private final List<MetricProducer> metricProducers;
+    private final MeterProviderSharedState sharedState;
+
+    private SdkCollectionRegistration(
+        List<MetricProducer> metricProducers, MeterProviderSharedState sharedState) {
+      this.metricProducers = metricProducers;
+      this.sharedState = sharedState;
+    }
+
+    @Override
+    public Collection<MetricData> collectAllMetrics() {
+      if (metricProducers.isEmpty()) {
+        return Collections.emptyList();
+      }
+      Resource resource = sharedState.getResource();
+      if (metricProducers.size() == 1) {
+        return metricProducers.get(0).produce(resource);
+      }
+      List<MetricData> metricData = new ArrayList<>();
+      for (MetricProducer metricProducer : metricProducers) {
+        metricData.addAll(metricProducer.produce(resource));
+      }
+      return Collections.unmodifiableList(metricData);
     }
   }
 }

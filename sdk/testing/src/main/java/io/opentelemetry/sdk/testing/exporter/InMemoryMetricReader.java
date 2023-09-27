@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -54,7 +53,7 @@ public class InMemoryMetricReader implements MetricReader {
   private final AggregationTemporalitySelector aggregationTemporalitySelector;
   private final DefaultAggregationSelector defaultAggregationSelector;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
-  private volatile MetricProducer metricProducer = MetricProducer.noop();
+  private volatile CollectionRegistration collectionRegistration = CollectionRegistration.noop();
   private final MemoryMode memoryMode;
 
   /**
@@ -111,12 +110,12 @@ public class InMemoryMetricReader implements MetricReader {
     if (isShutdown.get()) {
       return Collections.emptyList();
     }
-    return metricProducer.collectAllMetrics();
+    return collectionRegistration.collectAllMetrics();
   }
 
   @Override
-  public void register(CollectionRegistration registration) {
-    this.metricProducer = MetricProducer.asMetricProducer(registration);
+  public void register(CollectionRegistration collectionRegistration) {
+    this.collectionRegistration = collectionRegistration;
   }
 
   @Override
