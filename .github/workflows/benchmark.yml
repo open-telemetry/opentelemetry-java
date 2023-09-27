@@ -1,0 +1,43 @@
+name: Benchmark Main
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  sdk-benchmark:
+    name: Benchmark SDK
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: setup-java
+        name: Set up Java for build
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/gradle-build-action@v2
+        with:
+          arguments: |
+            jmhJar
+        env:
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+
+      - name: Run Benchmark
+        run: |
+          cd sdk/trace/build
+          java -jar libs/opentelemetry-sdk-trace-*-jmh.jar -rf json SpanBenchmark SpanPipelineBenchmark ExporterBenchmark
+
+      - name: Store benchmark results
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'jmh'
+          output-file-path: sdk/trace/build/jmh-result.json
+          gh-pages-branch: benchmarks
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          benchmark-data-dir-path: ""
+          auto-push: true
