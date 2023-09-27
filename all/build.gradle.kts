@@ -97,7 +97,6 @@ tasks.named<JacocoReport>("jacocoTestReport") {
           !it.absolutePath.contains("io/opentelemetry/exporter/jaeger/proto/") &&
           !it.absolutePath.contains("io/opentelemetry/exporter/jaeger/internal/protobuf/") &&
           !it.absolutePath.contains("io/opentelemetry/sdk/extension/trace/jaeger/proto/") &&
-          !it.absolutePath.contains("io/opentelemetry/semconv/trace/attributes/") &&
           !it.absolutePath.contains("AutoValue_")
       },
     )
