@@ -1,2 +1,21 @@
 Comparing source compatibility of  against 
-No changes.
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.export.CollectionRegistration  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) java.util.Collection<io.opentelemetry.sdk.metrics.data.MetricData> collectAllMetrics()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.export.CollectionRegistration noop()
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.export.MetricExporter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.export.MemoryMode getMemoryMode()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.export.MetricProducer  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.Collection<io.opentelemetry.sdk.metrics.data.MetricData> produce(io.opentelemetry.sdk.resources.Resource)
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.export.MetricReader  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.export.MemoryMode getMemoryMode()
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.metrics.export.PeriodicMetricReader  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.export.MemoryMode getMemoryMode()
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder registerMetricProducer(io.opentelemetry.sdk.metrics.export.MetricProducer)

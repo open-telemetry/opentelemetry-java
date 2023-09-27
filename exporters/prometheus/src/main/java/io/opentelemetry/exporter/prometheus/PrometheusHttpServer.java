@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
@@ -60,7 +59,7 @@ public final class PrometheusHttpServer implements MetricReader {
 
   private final HttpServer server;
   private final ExecutorService executor;
-  private volatile MetricProducer metricProducer = MetricProducer.noop();
+  private volatile CollectionRegistration collectionRegistration = CollectionRegistration.noop();
 
   /**
    * Returns a new {@link PrometheusHttpServer} which can be registered to an {@link
@@ -83,7 +82,7 @@ public final class PrometheusHttpServer implements MetricReader {
       throw new UncheckedIOException("Could not create Prometheus HTTP server", e);
     }
     MetricsHandler metricsHandler =
-        new MetricsHandler(() -> getMetricProducer().collectAllMetrics());
+        new MetricsHandler(() -> collectionRegistration.collectAllMetrics());
     server.createContext("/", metricsHandler);
     server.createContext("/metrics", metricsHandler);
     server.createContext("/-/healthy", HealthHandler.INSTANCE);
@@ -110,10 +109,6 @@ public final class PrometheusHttpServer implements MetricReader {
     throw exception;
   }
 
-  private MetricProducer getMetricProducer() {
-    return metricProducer;
-  }
-
   private void start() {
     // server.start must be called from a daemon thread for it to be a daemon.
     if (Thread.currentThread().isDaemon()) {
@@ -131,13 +126,13 @@ public final class PrometheusHttpServer implements MetricReader {
   }
 
   @Override
-  public void register(CollectionRegistration registration) {
-    this.metricProducer = MetricProducer.asMetricProducer(registration);
+  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+    return AggregationTemporality.CUMULATIVE;
   }
 
   @Override
-  public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
-    return AggregationTemporality.CUMULATIVE;
+  public void register(CollectionRegistration registration) {
+    this.collectionRegistration = registration;
   }
 
   @Override

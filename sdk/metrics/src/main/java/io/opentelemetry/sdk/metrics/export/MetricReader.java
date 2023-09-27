@@ -5,7 +5,10 @@
 
 package io.opentelemetry.sdk.metrics.export;
 
+import static io.opentelemetry.sdk.common.export.MemoryMode.IMMUTABLE_DATA;
+
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -16,20 +19,15 @@ import java.util.concurrent.TimeUnit;
 /**
  * A metric reader reads metrics from an {@link SdkMeterProvider}.
  *
- * <p>Custom implementations of {@link MetricReader} are not currently supported. Please use one of
- * the built-in readers such as {@link PeriodicMetricReader}.
- *
  * @since 1.14.0
  */
 public interface MetricReader
     extends AggregationTemporalitySelector, DefaultAggregationSelector, Closeable {
 
   /**
-   * Called by {@link SdkMeterProvider} and supplies the {@link MetricReader} with a handle to
-   * collect metrics.
-   *
-   * <p>{@link CollectionRegistration} is currently an empty interface because custom
-   * implementations of {@link MetricReader} are not currently supported.
+   * Called by {@link SdkMeterProvider} on initialization to supply the {@link MetricReader} with
+   * {@link MetricProducer}s used to collect metrics. {@link MetricReader} implementations call
+   * {@link CollectionRegistration#collectAllMetrics()} to read metrics.
    */
   void register(CollectionRegistration registration);
 
@@ -42,6 +40,16 @@ public interface MetricReader
   @Override
   default Aggregation getDefaultAggregation(InstrumentType instrumentType) {
     return Aggregation.defaultAggregation();
+  }
+
+  /**
+   * Returns the memory mode used by this reader.
+   *
+   * @return The {@link MemoryMode} used by this instance
+   * @since 1.31.0
+   */
+  default MemoryMode getMemoryMode() {
+    return IMMUTABLE_DATA;
   }
 
   /**

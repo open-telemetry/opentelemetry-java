@@ -25,6 +25,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -58,12 +59,18 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /** Serializes metrics into Prometheus exposition formats. */
 // Adapted from
 // https://github.com/prometheus/client_java/blob/master/simpleclient_common/src/main/java/io/prometheus/client/exporter/common/TextFormat.java
 abstract class Serializer {
+
+  private static final Logger LOGGER = Logger.getLogger(Serializer.class.getName());
+  private static final ThrottlingLogger THROTTLING_LOGGER = new ThrottlingLogger(LOGGER);
+
   static Serializer create(@Nullable String acceptHeader, Predicate<String> filter) {
     if (acceptHeader == null) {
       return new Prometheus004Serializer(filter);
@@ -445,27 +452,58 @@ abstract class Serializer {
   private static void writeAttributePairs(
       Writer writer, boolean initialComma, Attributes attributes) throws IOException {
     try {
+      // This logic handles colliding attribute keys by joining the values,
+      // separated by a semicolon. It relies on the attributes being sorted, so that
+      // colliding attribute keys are in subsequent iterations of the for loop.
       attributes.forEach(
           new BiConsumer<AttributeKey<?>, Object>() {
-            private boolean prefixWithComma = initialComma;
+            boolean initialAttribute = true;
+            String previousKey = "";
+            String previousValue = "";
 
             @Override
             public void accept(AttributeKey<?> key, Object value) {
               try {
-                if (prefixWithComma) {
-                  writer.write(',');
+                String sanitizedKey = NameSanitizer.INSTANCE.apply(key.getKey());
+                int compare = sanitizedKey.compareTo(previousKey);
+                if (compare == 0) {
+                  // This key collides with the previous one. Append the value
+                  // to the previous value instead of writing the key again.
+                  writer.write(';');
                 } else {
-                  prefixWithComma = true;
+                  if (compare < 0) {
+                    THROTTLING_LOGGER.log(
+                        Level.WARNING,
+                        "Dropping out-of-order attribute "
+                            + sanitizedKey
+                            + "="
+                            + value
+                            + ", which occurred after "
+                            + previousKey
+                            + ". This can occur when an alternative Attribute implementation is used.");
+                  }
+                  if (!initialAttribute) {
+                    writer.write('"');
+                  }
+                  if (initialComma || !initialAttribute) {
+                    writer.write(',');
+                  }
+                  writer.write(sanitizedKey);
+                  writer.write("=\"");
                 }
-                writer.write(NameSanitizer.INSTANCE.apply(key.getKey()));
-                writer.write("=\"");
-                writeEscapedLabelValue(writer, value.toString());
-                writer.write('"');
+                String stringValue = value.toString();
+                writeEscapedLabelValue(writer, stringValue);
+                previousKey = sanitizedKey;
+                previousValue = stringValue;
+                initialAttribute = false;
               } catch (IOException e) {
                 throw new UncheckedIOException(e);
               }
             }
           });
+      if (!attributes.isEmpty()) {
+        writer.write('"');
+      }
     } catch (UncheckedIOException e) {
       throw e.getCause();
     }

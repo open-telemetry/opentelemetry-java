@@ -357,4 +357,22 @@ class TestConstants {
                       1633950672000000000L,
                       Attributes.of(TYPE, "dgma", stringKey("animal"), "bear"),
                       8))));
+  static final MetricData DOUBLE_GAUGE_COLLIDING_ATTRIBUTES =
+      ImmutableMetricData.createDoubleGauge(
+          Resource.create(Attributes.of(stringKey("kr"), "vr")),
+          InstrumentationScopeInfo.builder("full")
+              .setVersion("version")
+              .setAttributes(Attributes.of(stringKey("ks"), "vs"))
+              .build(),
+          "double.gauge.colliding.attributes",
+          "unused",
+          "s",
+          ImmutableGaugeData.create(
+              Collections.singletonList(
+                  ImmutableDoublePointData.create(
+                      1633947011000000000L,
+                      1633950672000000000L,
+                      Attributes.of(
+                          TYPE, "dgma", stringKey("foo.bar"), "a", stringKey("foo_bar"), "b"),
+                      8))));
 }

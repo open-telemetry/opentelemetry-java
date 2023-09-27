@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
@@ -36,6 +37,7 @@ public final class SdkMeterProviderBuilder {
   private Resource resource = Resource.getDefault();
   private final IdentityHashMap<MetricReader, CardinalityLimitSelector> metricReaders =
       new IdentityHashMap<>();
+  private final List<MetricProducer> metricProducers = new ArrayList<>();
   private final List<RegisteredView> registeredViews = new ArrayList<>();
   private ExemplarFilter exemplarFilter = DEFAULT_EXEMPLAR_FILTER;
 
@@ -119,11 +121,7 @@ public final class SdkMeterProviderBuilder {
     return this;
   }
 
-  /**
-   * Registers a {@link MetricReader}.
-   *
-   * <p>Note: custom implementations of {@link MetricReader} are not currently supported.
-   */
+  /** Registers a {@link MetricReader}. */
   public SdkMeterProviderBuilder registerMetricReader(MetricReader reader) {
     metricReaders.put(reader, CardinalityLimitSelector.defaultCardinalityLimitSelector());
     return this;
@@ -142,8 +140,19 @@ public final class SdkMeterProviderBuilder {
     return this;
   }
 
+  /**
+   * Registers a {@link MetricProducer}.
+   *
+   * @since 1.31.0
+   */
+  public SdkMeterProviderBuilder registerMetricProducer(MetricProducer metricProducer) {
+    metricProducers.add(metricProducer);
+    return this;
+  }
+
   /** Returns an {@link SdkMeterProvider} built with the configuration of this builder. */
   public SdkMeterProvider build() {
-    return new SdkMeterProvider(registeredViews, metricReaders, clock, resource, exemplarFilter);
+    return new SdkMeterProvider(
+        registeredViews, metricReaders, metricProducers, clock, resource, exemplarFilter);
   }
 }

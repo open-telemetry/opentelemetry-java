@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
+import io.opentelemetry.sdk.metrics.internal.data.MutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.state.Measurement;
@@ -58,12 +59,37 @@ public final class DoubleLastValueAggregator
   }
 
   @Override
+  public void diffInPlace(DoublePointData previousReusable, DoublePointData current) {
+    ((MutableDoublePointData) previousReusable).set(current);
+  }
+
+  @Override
   public DoublePointData toPoint(Measurement measurement) {
     return ImmutableDoublePointData.create(
         measurement.startEpochNanos(),
         measurement.epochNanos(),
         measurement.attributes(),
         measurement.doubleValue());
+  }
+
+  @Override
+  public void toPoint(Measurement measurement, DoublePointData reusablePoint) {
+    ((MutableDoublePointData) reusablePoint)
+        .set(
+            measurement.startEpochNanos(),
+            measurement.epochNanos(),
+            measurement.attributes(),
+            measurement.doubleValue());
+  }
+
+  @Override
+  public DoublePointData createReusablePoint() {
+    return new MutableDoublePointData();
+  }
+
+  @Override
+  public void copyPoint(DoublePointData point, DoublePointData toReusablePoint) {
+    ((MutableDoublePointData) toReusablePoint).set(point);
   }
 
   @Override

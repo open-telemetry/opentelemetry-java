@@ -21,7 +21,8 @@ import io.opencensus.trace.TraceId;
 import io.opencensus.trace.TraceOptions;
 import io.opencensus.trace.Tracestate;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
+import io.opentelemetry.opencensusshim.OpenCensusMetricProducer;
+import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Duration;
 import java.util.Arrays;
@@ -31,8 +32,7 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 
 class OpenCensusMetricProducerTest {
-  private final MetricProducer openCensusMetrics =
-      OpenCensusMetricProducer.create(Resource.empty());
+  private final MetricProducer openCensusMetrics = OpenCensusMetricProducer.create();
 
   private static final Measure.MeasureLong LATENCY_MS =
       Measure.MeasureLong.create("task_latency", "The task latency in milliseconds", "ms");
@@ -69,7 +69,7 @@ class OpenCensusMetricProducerTest {
         .atMost(Duration.ofSeconds(10))
         .untilAsserted(
             () ->
-                assertThat(openCensusMetrics.collectAllMetrics())
+                assertThat(openCensusMetrics.produce(Resource.empty()))
                     .satisfiesExactly(
                         metric ->
                             assertThat(metric)

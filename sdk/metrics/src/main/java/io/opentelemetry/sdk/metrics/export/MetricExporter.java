@@ -5,7 +5,10 @@
 
 package io.opentelemetry.sdk.metrics.export;
 
+import static io.opentelemetry.sdk.common.export.MemoryMode.IMMUTABLE_DATA;
+
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -36,6 +39,16 @@ public interface MetricExporter
   @Override
   default Aggregation getDefaultAggregation(InstrumentType instrumentType) {
     return Aggregation.defaultAggregation();
+  }
+
+  /**
+   * Returns the memory mode used by this exporter's associated reader.
+   *
+   * @return The {@link MemoryMode} used by this exporter's associated reader
+   * @since 1.31.0
+   */
+  default MemoryMode getMemoryMode() {
+    return IMMUTABLE_DATA;
   }
 
   /**
