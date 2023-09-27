@@ -338,10 +338,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
     AutoConfiguredOpenTelemetrySdk fromFileConfiguration = maybeConfigureFromFile(config);
     if (fromFileConfiguration != null) {
-      if (registerShutdownHook) {
-        Runtime.getRuntime()
-            .addShutdownHook(shutdownHook(fromFileConfiguration.getOpenTelemetrySdk()));
-      }
+      maybeRegisterShutdownHook(fromFileConfiguration.getOpenTelemetrySdk());
+      maybeSetAsGlobal(fromFileConfiguration.getOpenTelemetrySdk());
       return fromFileConfiguration;
     }
 
@@ -405,18 +403,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         openTelemetrySdk = sdkBuilder.build();
       }
 
-      // NOTE: Shutdown hook registration is untested. Modify with caution.
-      if (registerShutdownHook) {
-        Runtime.getRuntime().addShutdownHook(shutdownHook(openTelemetrySdk));
-      }
-
-      if (setResultAsGlobal) {
-        GlobalOpenTelemetry.set(openTelemetrySdk);
-        GlobalEventEmitterProvider.set(
-            SdkEventEmitterProvider.create(openTelemetrySdk.getSdkLoggerProvider()));
-        logger.log(
-            Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetrySdk);
-      }
+      maybeRegisterShutdownHook(openTelemetrySdk);
+      maybeSetAsGlobal(openTelemetrySdk);
 
       return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
     } catch (RuntimeException e) {
@@ -470,6 +458,24 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       }
       throw new ConfigurationException("Unexpected error configuring from file", e);
     }
+  }
+
+  private void maybeRegisterShutdownHook(OpenTelemetrySdk openTelemetrySdk) {
+    if (!registerShutdownHook) {
+      return;
+    }
+    Runtime.getRuntime().addShutdownHook(shutdownHook(openTelemetrySdk));
+  }
+
+  private void maybeSetAsGlobal(OpenTelemetrySdk openTelemetrySdk) {
+    if (!setResultAsGlobal) {
+      return;
+    }
+    GlobalOpenTelemetry.set(openTelemetrySdk);
+    GlobalEventEmitterProvider.set(
+        SdkEventEmitterProvider.create(openTelemetrySdk.getSdkLoggerProvider()));
+    logger.log(
+        Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetrySdk);
   }
 
   @SuppressWarnings("deprecation") // Support deprecated SdkTracerProviderConfigurer
