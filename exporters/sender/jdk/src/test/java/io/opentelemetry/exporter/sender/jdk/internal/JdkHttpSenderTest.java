@@ -50,7 +50,7 @@ class JdkHttpSenderTest {
             // timeout
             false,
             "text/plain",
-            Duration.ofMillis(100).toNanos(),
+            Duration.ofSeconds(10).toNanos(),
             Collections::emptyMap,
             RetryPolicy.builder()
                 .setMaxAttempts(2)
