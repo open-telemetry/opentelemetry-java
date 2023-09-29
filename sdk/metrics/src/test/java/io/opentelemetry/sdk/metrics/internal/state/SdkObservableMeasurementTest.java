@@ -29,13 +29,14 @@ import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.ArgumentCaptor;
+import org.slf4j.event.Level;
 
 @SuppressWarnings("rawtypes")
 class SdkObservableMeasurementTest {
 
   @RegisterExtension
   final LogCapturer logs =
-      LogCapturer.create().captureForLogger(SdkObservableMeasurement.class.getName());
+      LogCapturer.create().captureForLogger(SdkObservableMeasurement.class.getName(), Level.DEBUG);
 
   private AsynchronousMetricStorage mockAsyncStorage1;
   private RegisteredReader registeredReader1;

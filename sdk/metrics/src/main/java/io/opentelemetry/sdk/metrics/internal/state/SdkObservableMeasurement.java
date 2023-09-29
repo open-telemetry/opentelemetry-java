@@ -141,7 +141,7 @@ public final class SdkObservableMeasurement
     }
     if (Double.isNaN(value)) {
       logger.log(
-          Level.WARNING,
+          Level.FINE,
           "Instrument "
               + instrumentDescriptor.getName()
               + " has recorded measurement Not-a-Number (NaN) value with attributes "

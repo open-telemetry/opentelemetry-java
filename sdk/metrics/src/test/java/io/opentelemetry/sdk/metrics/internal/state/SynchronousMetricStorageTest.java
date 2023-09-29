@@ -39,6 +39,7 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.event.Level;
 
 @SuppressLogger(DefaultSynchronousMetricStorage.class)
 public class SynchronousMetricStorageTest {
@@ -58,7 +59,8 @@ public class SynchronousMetricStorageTest {
   private static final int CARDINALITY_LIMIT = 25;
 
   @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(DefaultSynchronousMetricStorage.class);
+  LogCapturer logs =
+      LogCapturer.create().captureForType(DefaultSynchronousMetricStorage.class, Level.DEBUG);
 
   private final RegisteredReader deltaReader =
       RegisteredReader.create(InMemoryMetricReader.createDelta(), ViewRegistry.create());

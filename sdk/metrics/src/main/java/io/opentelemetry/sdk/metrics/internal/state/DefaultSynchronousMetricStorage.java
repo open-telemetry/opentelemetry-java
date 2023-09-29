@@ -91,7 +91,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   public void recordDouble(double value, Attributes attributes, Context context) {
     if (Double.isNaN(value)) {
       logger.log(
-          Level.WARNING,
+          Level.FINE,
           "Instrument "
               + metricDescriptor.getSourceInstrument().getName()
               + " has recorded measurement Not-a-Number (NaN) value with attributes "
