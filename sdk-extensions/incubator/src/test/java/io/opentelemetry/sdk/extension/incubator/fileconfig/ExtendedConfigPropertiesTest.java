@@ -120,6 +120,35 @@ class ExtendedConfigPropertiesTest {
   }
 
   @Test
+  void dotNotation() {
+    assertThat(extendedConfigProps.getString("other.str_key")).isEqualTo("str_value");
+    assertThat(extendedConfigProps.getInt("other.int_key")).isEqualTo(1);
+    assertThat(extendedConfigProps.getDouble("other.float_key")).isEqualTo(1.1);
+    assertThat(extendedConfigProps.getBoolean("other.bool_key")).isEqualTo(true);
+    assertThat(extendedConfigProps.getList("other.str_list_key"))
+        .isEqualTo(Arrays.asList("val1", "val2"));
+    assertThat(extendedConfigProps.getList("other.int_list_key"))
+        .isEqualTo(Arrays.asList("1", "2"));
+    assertThat(extendedConfigProps.getList("other.float_list_key"))
+        .isEqualTo(Arrays.asList("1.1", "2.2"));
+    assertThat(extendedConfigProps.getList("other.bool_list_key"))
+        .isEqualTo(Arrays.asList("true", "false"));
+    assertThat(extendedConfigProps.getString("other.map_key.str_key1")).isEqualTo("str_value1");
+    assertThat(extendedConfigProps.getInt("other.map_key.int_key1")).isEqualTo(2);
+    assertThat(extendedConfigProps.getString("other.map_key.map_key1.str_key2"))
+        .isEqualTo("str_value2");
+    assertThat(extendedConfigProps.getInt("other.map_key.map_key1.int_key2")).isEqualTo(3);
+    List<ExtendedConfigProperties> extendedConfigProperties =
+        extendedConfigProps.getListConfigProperties("other.list_key");
+    assertThat(extendedConfigProperties).isNotNull().hasSize(2);
+    ExtendedConfigProperties otherMapKeyProps =
+        extendedConfigProps.getConfigProperties("other.map_key");
+    assertThat(otherMapKeyProps.getString("str_key1")).isEqualTo("str_value1");
+    assertThat(otherMapKeyProps.getInt("int_key1")).isEqualTo(2);
+    assertThat(otherMapKeyProps.getConfigProperties("map_key1")).isNotNull();
+  }
+
+  @Test
   void defaults() {
     assertThat(extendedConfigProps.getString("foo", "bar")).isEqualTo("bar");
     assertThat(extendedConfigProps.getInt("foo", 1)).isEqualTo(1);
@@ -128,6 +157,15 @@ class ExtendedConfigPropertiesTest {
     assertThat(extendedConfigProps.getBoolean("foo", true)).isTrue();
     assertThat(extendedConfigProps.getList("foo", Collections.singletonList("bar")))
         .isEqualTo(Collections.singletonList("bar"));
+
+    // Dot notation
+    assertThat(extendedConfigProps.getString("foo.bar", "baz")).isEqualTo("baz");
+    assertThat(extendedConfigProps.getInt("foo.bar", 1)).isEqualTo(1);
+    assertThat(extendedConfigProps.getLong("foo.bar", 1)).isEqualTo(1);
+    assertThat(extendedConfigProps.getDouble("foo.bar", 1.1)).isEqualTo(1.1);
+    assertThat(extendedConfigProps.getBoolean("foo.bar", true)).isTrue();
+    assertThat(extendedConfigProps.getList("foo.bar", Collections.singletonList("baz")))
+        .isEqualTo(Collections.singletonList("baz"));
   }
 
   @Test
@@ -140,6 +178,10 @@ class ExtendedConfigPropertiesTest {
     assertThat(extendedConfigProps.getList("foo")).isEmpty();
     assertThat(extendedConfigProps.getConfigProperties("foo")).isNull();
     assertThat(extendedConfigProps.getListConfigProperties("foo")).isNull();
+
+    // Dot notation
+    assertThat(extendedConfigProps.getString("other.missing_key")).isNull();
+    assertThat(extendedConfigProps.getString("other.map_key.missing_key")).isNull();
   }
 
   @Test
@@ -155,6 +197,16 @@ class ExtendedConfigPropertiesTest {
     assertThat(otherProps.getList("str_key")).isEmpty();
     assertThat(otherProps.getConfigProperties("str_key")).isNull();
     assertThat(otherProps.getListConfigProperties("str_key")).isNull();
+
+    // Dot notation
+    assertThat(extendedConfigProps.getString("other.int_key")).isNull();
+    assertThat(extendedConfigProps.getInt("other.str_key")).isNull();
+    assertThat(extendedConfigProps.getLong("other.str_key")).isNull();
+    assertThat(extendedConfigProps.getDouble("other.str_key")).isNull();
+    assertThat(extendedConfigProps.getBoolean("other.str_key")).isNull();
+    assertThat(extendedConfigProps.getList("other.str_key")).isEmpty();
+    assertThat(extendedConfigProps.getConfigProperties("other.str_key")).isNull();
+    assertThat(extendedConfigProps.getListConfigProperties("other.str_key")).isNull();
   }
 
   @Test

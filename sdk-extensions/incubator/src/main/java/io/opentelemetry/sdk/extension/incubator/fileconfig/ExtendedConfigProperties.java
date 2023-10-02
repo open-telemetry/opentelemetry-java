@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
 /**
@@ -110,6 +111,9 @@ public final class ExtendedConfigProperties implements ConfigProperties {
   @Override
   public String getString(String name) {
     Object value = simpleEntries.get(name);
+    if (value == null && hasDotNotation(name)) {
+      return applyToChild(name, ExtendedConfigProperties::getString);
+    }
     if (value instanceof String) {
       return (String) value;
     }
@@ -120,6 +124,9 @@ public final class ExtendedConfigProperties implements ConfigProperties {
   @Override
   public Boolean getBoolean(String name) {
     Object value = simpleEntries.get(name);
+    if (value == null && hasDotNotation(name)) {
+      return applyToChild(name, ExtendedConfigProperties::getBoolean);
+    }
     if (value instanceof Boolean) {
       return (Boolean) value;
     }
@@ -130,6 +137,9 @@ public final class ExtendedConfigProperties implements ConfigProperties {
   @Override
   public Integer getInt(String name) {
     Object value = simpleEntries.get(name);
+    if (value == null && hasDotNotation(name)) {
+      return applyToChild(name, ExtendedConfigProperties::getInt);
+    }
     if (value instanceof Integer) {
       return (Integer) value;
     }
@@ -140,6 +150,9 @@ public final class ExtendedConfigProperties implements ConfigProperties {
   @Override
   public Long getLong(String name) {
     Object value = simpleEntries.get(name);
+    if (value == null && hasDotNotation(name)) {
+      return applyToChild(name, ExtendedConfigProperties::getLong);
+    }
     if (value instanceof Integer) {
       return ((Integer) value).longValue();
     }
@@ -153,6 +166,9 @@ public final class ExtendedConfigProperties implements ConfigProperties {
   @Override
   public Double getDouble(String name) {
     Object value = simpleEntries.get(name);
+    if (value == null && hasDotNotation(name)) {
+      return applyToChild(name, ExtendedConfigProperties::getDouble);
+    }
     if (value instanceof Float) {
       return ((Float) value).doubleValue();
     }
@@ -170,9 +186,16 @@ public final class ExtendedConfigProperties implements ConfigProperties {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "NullAway"})
   public List<String> getList(String name) {
     Object value = simpleEntries.get(name);
+    if (value == null && hasDotNotation(name)) {
+      List<String> result = applyToChild(name, ExtendedConfigProperties::getList);
+      if (result != null) {
+        return result;
+      }
+      return Collections.emptyList();
+    }
     if (value instanceof List) {
       return (List<String>) value;
     }
@@ -184,14 +207,47 @@ public final class ExtendedConfigProperties implements ConfigProperties {
     throw new UnsupportedOperationException("Use getConfigProperties(String) instead");
   }
 
+  private static boolean hasDotNotation(String name) {
+    return name.contains(".");
+  }
+
+  /** Should only be called after {@link #hasDotNotation(String)} returns {@code true}. */
+  @Nullable
+  private <T> T applyToChild(
+      String name, BiFunction<ExtendedConfigProperties, String, T> function) {
+    String[] parts = name.split("\\.", 2);
+    assert parts.length == 2;
+    if (parts.length != 2) {
+      throw new IllegalStateException("Error!");
+    }
+    ExtendedConfigProperties childProps = getConfigPropertiesInternal(parts[0]);
+    if (childProps == null) {
+      return null;
+    }
+    return function.apply(childProps, parts[1]);
+  }
+
   @Nullable
   public ExtendedConfigProperties getConfigProperties(String name) {
+    ExtendedConfigProperties value = getConfigPropertiesInternal(name);
+    if (value == null && hasDotNotation(name)) {
+      return applyToChild(name, ExtendedConfigProperties::getConfigProperties);
+    }
+    return value;
+  }
+
+  @Nullable
+  private ExtendedConfigProperties getConfigPropertiesInternal(String name) {
     return mapEntries.get(name);
   }
 
   @Nullable
   public List<ExtendedConfigProperties> getListConfigProperties(String name) {
-    return listEntries.get(name);
+    List<ExtendedConfigProperties> value = listEntries.get(name);
+    if (value == null && hasDotNotation(name)) {
+      return applyToChild(name, ExtendedConfigProperties::getListConfigProperties);
+    }
+    return value;
   }
 
   @Override
