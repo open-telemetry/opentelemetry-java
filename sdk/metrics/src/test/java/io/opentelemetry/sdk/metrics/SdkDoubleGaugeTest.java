@@ -15,13 +15,15 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableDoubleGauge;
 import io.opentelemetry.extension.incubator.metrics.DoubleGauge;
 import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleGaugeBuilder;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.internal.state.DefaultSynchronousMetricStorage;
+import io.opentelemetry.sdk.metrics.internal.state.SdkObservableMeasurement;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.util.stream.IntStream;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SdkDoubleGauge}. */
@@ -55,11 +57,19 @@ class SdkDoubleGaugeTest {
   }
 
   @Test
+  @SuppressLogger(DefaultSynchronousMetricStorage.class)
+  void set_NaN() {
+    DoubleGauge gauge = ((ExtendedDoubleGaugeBuilder) sdkMeter.gaugeBuilder("testGauge")).build();
+    gauge.set(Double.NaN);
+    assertThat(cumulativeReader.collectAllMetrics()).hasSize(0);
+  }
+
+  @Test
   void observable_RemoveCallback() {
     ObservableDoubleGauge gauge =
         sdkMeter.gaugeBuilder("testGauge").buildWithCallback(measurement -> measurement.record(10));
 
-    Assertions.assertThat(cumulativeReader.collectAllMetrics())
+    assertThat(cumulativeReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -69,7 +79,16 @@ class SdkDoubleGaugeTest {
 
     gauge.close();
 
-    Assertions.assertThat(cumulativeReader.collectAllMetrics()).hasSize(0);
+    assertThat(cumulativeReader.collectAllMetrics()).hasSize(0);
+  }
+
+  @Test
+  @SuppressLogger(SdkObservableMeasurement.class)
+  void observable_NaN() {
+    sdkMeter
+        .gaugeBuilder("testGauge")
+        .buildWithCallback(measurement -> measurement.record(Double.NaN));
+    assertThat(cumulativeReader.collectAllMetrics()).hasSize(0);
   }
 
   @Test

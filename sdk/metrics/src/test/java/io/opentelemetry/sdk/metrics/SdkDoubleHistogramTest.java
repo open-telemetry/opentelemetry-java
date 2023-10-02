@@ -16,6 +16,7 @@ import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.internal.state.DefaultSynchronousMetricStorage;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -264,6 +265,14 @@ class SdkDoubleHistogramTest {
     assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
     logs.assertContains(
         "Histograms can only record non-negative values. Instrument testHistogram has recorded a negative value.");
+  }
+
+  @Test
+  @SuppressLogger(DefaultSynchronousMetricStorage.class)
+  void doubleHistogramRecord_NaN() {
+    DoubleHistogram histogram = sdkMeter.histogramBuilder("testHistogram").build();
+    histogram.record(Double.NaN);
+    assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
   }
 
   @Test

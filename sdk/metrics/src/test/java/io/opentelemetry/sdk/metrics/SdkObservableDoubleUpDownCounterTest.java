@@ -8,12 +8,15 @@ package io.opentelemetry.sdk.metrics;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleUpDownCounter;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.internal.state.SdkObservableMeasurement;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -52,6 +55,20 @@ class SdkObservableDoubleUpDownCounterTest {
 
     counter.close();
 
+    assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
+  }
+
+  @Test
+  @SuppressLogger(SdkObservableMeasurement.class)
+  void observable_NaN() {
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProvider =
+        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
+    sdkMeterProvider
+        .get(getClass().getName())
+        .upDownCounterBuilder("testCounter")
+        .ofDoubles()
+        .buildWithCallback(measurement -> measurement.record(Double.NaN));
     assertThat(sdkMeterReader.collectAllMetrics()).hasSize(0);
   }
 
