@@ -29,7 +29,7 @@ class JaegerGrpcSpanExporterProviderTest {
   @Test
   void createExporter_Default() {
     try (SpanExporter spanExporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(Collections.emptyMap()))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap()))) {
       assertThat(spanExporter)
           .isInstanceOf(io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter.class);
       assertThat(spanExporter)
@@ -52,7 +52,7 @@ class JaegerGrpcSpanExporterProviderTest {
     config.put("otel.exporter.jaeger.timeout", "1s");
 
     try (SpanExporter spanExporter =
-        provider.createExporter(DefaultConfigProperties.createForTest(config))) {
+        provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(spanExporter)
           .isInstanceOf(io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter.class);
       assertThat(spanExporter)

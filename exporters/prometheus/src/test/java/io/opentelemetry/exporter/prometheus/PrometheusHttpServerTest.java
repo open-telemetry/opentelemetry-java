@@ -13,6 +13,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
 import com.linecorp.armeria.client.WebClient;
+import com.linecorp.armeria.client.retry.RetryRule;
+import com.linecorp.armeria.client.retry.RetryingClient;
 import com.linecorp.armeria.common.AggregatedHttpResponse;
 import com.linecorp.armeria.common.HttpHeaderNames;
 import com.linecorp.armeria.common.HttpMethod;
@@ -24,17 +26,18 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
-import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -54,7 +57,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class PrometheusHttpServerTest {
   private static final AtomicReference<List<MetricData>> metricData = new AtomicReference<>();
-  private static final MetricProducer metricProducer = metricData::get;
 
   static PrometheusHttpServer prometheusServer;
   static WebClient client;
@@ -66,9 +68,18 @@ class PrometheusHttpServerTest {
   static void beforeAll() {
     // Register the SDK metric producer with the prometheus reader.
     prometheusServer = PrometheusHttpServer.builder().setHost("localhost").setPort(0).build();
-    prometheusServer.register(metricProducer);
+    prometheusServer.register(
+        new CollectionRegistration() {
+          @Override
+          public Collection<MetricData> collectAllMetrics() {
+            return metricData.get();
+          }
+        });
 
-    client = WebClient.of("http://localhost:" + prometheusServer.getAddress().getPort());
+    client =
+        WebClient.builder("http://localhost:" + prometheusServer.getAddress().getPort())
+            .decorator(RetryingClient.newDecorator(RetryRule.failsafe()))
+            .build();
   }
 
   @BeforeEach
@@ -180,6 +191,7 @@ class PrometheusHttpServerTest {
   void fetchPrometheusCompressed() throws IOException {
     WebClient client =
         WebClient.builder("http://localhost:" + prometheusServer.getAddress().getPort())
+            .decorator(RetryingClient.newDecorator(RetryRule.failsafe()))
             .addHeader(HttpHeaderNames.ACCEPT_ENCODING, "gzip")
             .build();
     AggregatedHttpResponse response = client.get("/").aggregate().join();
@@ -281,8 +293,8 @@ class PrometheusHttpServerTest {
                 + "# TYPE otel_scope_info info\n"
                 + "# HELP otel_scope_info Scope metadata\n"
                 + "otel_scope_info{otel_scope_name=\"scope2\"} 1\n"
-                + "# TYPE foo_total counter\n"
-                + "# HELP foo_total description1\n"
+                + "# TYPE foo_unit_total counter\n"
+                + "# HELP foo_unit_total description1\n"
                 + "foo_unit_total{otel_scope_name=\"scope1\"} 1.0 0\n"
                 + "foo_unit_total{otel_scope_name=\"scope2\"} 2.0 0\n");
 

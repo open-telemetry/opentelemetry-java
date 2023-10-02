@@ -12,6 +12,7 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import java.net.InetAddress;
 import java.time.Duration;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -68,13 +69,14 @@ public final class ZipkinSpanExporterBuilder {
    * implementation uses a Supplier that returns a single unchanging IP address that is captured at
    * creation time.
    *
-   * @param supplier - A supplier that returns an InetAddress that may be null.
+   * @param localIpAddressSupplier - A supplier that returns an InetAddress that may be null.
    * @return this
    * @since 1.18.0
    */
-  public ZipkinSpanExporterBuilder setLocalIpAddressSupplier(Supplier<InetAddress> supplier) {
-    requireNonNull(supplier, "encoder");
-    this.localIpAddressSupplier = supplier;
+  public ZipkinSpanExporterBuilder setLocalIpAddressSupplier(
+      Supplier<InetAddress> localIpAddressSupplier) {
+    requireNonNull(localIpAddressSupplier, "localIpAddressSupplier");
+    this.localIpAddressSupplier = localIpAddressSupplier;
     return this;
   }
 
@@ -151,6 +153,21 @@ public final class ZipkinSpanExporterBuilder {
     return this;
   }
 
+  String toString(boolean includePrefixAndSuffix) {
+    StringJoiner joiner =
+        includePrefixAndSuffix
+            ? new StringJoiner(", ", "ZipkinSpanExporterBuilder{", "}")
+            : new StringJoiner(", ");
+    joiner.add("endpoint=" + endpoint);
+    joiner.add("compressionEnabled=" + compressionEnabled);
+    joiner.add("readTimeoutMillis=" + readTimeoutMillis);
+    // Note: omit sender because we can't log the configuration in any readable way
+    // Note: omit encoder because we can't log the configuration in any readable way
+    // Note: omit localIpAddressSupplier because we can't log the configuration in any readable way
+    // Note: omit meterProviderSupplier because we can't log the configuration in any readable way
+    return joiner.toString();
+  }
+
   /**
    * Builds a {@link ZipkinSpanExporter}.
    *
@@ -168,6 +185,6 @@ public final class ZipkinSpanExporterBuilder {
     }
     OtelToZipkinSpanTransformer transformer =
         OtelToZipkinSpanTransformer.create(localIpAddressSupplier);
-    return new ZipkinSpanExporter(encoder, sender, meterProviderSupplier, transformer);
+    return new ZipkinSpanExporter(this, encoder, sender, meterProviderSupplier, transformer);
   }
 }

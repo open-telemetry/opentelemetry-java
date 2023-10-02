@@ -14,7 +14,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +34,7 @@ class DelegatingSpanDataTest {
     private SpanDataWithClientType(SpanData delegate) {
       super(delegate);
       String clientType;
-      String userAgent = delegate.getAttributes().get(SemanticAttributes.USER_AGENT_ORIGINAL);
+      String userAgent = delegate.getAttributes().get(stringKey("user_agent.original"));
       if (userAgent != null) {
         clientType = parseUserAgent(userAgent);
       } else {

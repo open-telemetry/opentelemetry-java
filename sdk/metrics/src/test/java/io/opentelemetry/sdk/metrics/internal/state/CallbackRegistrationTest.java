@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import static io.opentelemetry.sdk.metrics.internal.state.Measurement.doubleMeasurement;
-import static io.opentelemetry.sdk.metrics.internal.state.Measurement.longMeasurement;
+import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.createDouble;
+import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.createLong;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -19,6 +19,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
@@ -76,6 +77,7 @@ class CallbackRegistrationTest {
 
   @BeforeEach
   void setup() {
+    when(reader.getMemoryMode()).thenReturn(MemoryMode.IMMUTABLE_DATA);
     registeredReader = RegisteredReader.create(reader, ViewRegistry.create());
     when(storage1.getRegisteredReader()).thenReturn(registeredReader);
     when(storage2.getRegisteredReader()).thenReturn(registeredReader);
@@ -106,7 +108,7 @@ class CallbackRegistrationTest {
                 + "unit=unit, "
                 + "type=OBSERVABLE_COUNTER, "
                 + "valueType=LONG, "
-                + "advice=Advice{explicitBucketBoundaries=null}"
+                + "advice=Advice{explicitBucketBoundaries=null, attributes=null}"
                 + "}]}");
     assertThat(
             CallbackRegistration.create(Arrays.asList(measurement1, measurement2), callback)
@@ -120,14 +122,14 @@ class CallbackRegistrationTest {
                 + "unit=unit, "
                 + "type=OBSERVABLE_COUNTER, "
                 + "valueType=LONG, "
-                + "advice=Advice{explicitBucketBoundaries=null}}, "
+                + "advice=Advice{explicitBucketBoundaries=null, attributes=null}}, "
                 + "InstrumentDescriptor{"
                 + "name=long-counter, "
                 + "description=description, "
                 + "unit=unit, "
                 + "type=OBSERVABLE_COUNTER, "
                 + "valueType=LONG, "
-                + "advice=Advice{explicitBucketBoundaries=null}"
+                + "advice=Advice{explicitBucketBoundaries=null, attributes=null}"
                 + "}]}");
   }
 
@@ -145,7 +147,7 @@ class CallbackRegistrationTest {
 
     assertThat(counter.get()).isEqualTo(1.1);
     verify(storage1)
-        .record(doubleMeasurement(0, 1, 1.1, Attributes.builder().put("key", "val").build()));
+        .record(createDouble(0, 1, 1.1, Attributes.builder().put("key", "val").build()));
     verify(storage2, never()).record(any());
     verify(storage3, never()).record(any());
   }
@@ -164,10 +166,8 @@ class CallbackRegistrationTest {
 
     assertThat(counter.get()).isEqualTo(1);
     verify(storage1, never()).record(any());
-    verify(storage2)
-        .record(longMeasurement(0, 1, 1, Attributes.builder().put("key", "val").build()));
-    verify(storage3)
-        .record(longMeasurement(0, 1, 1, Attributes.builder().put("key", "val").build()));
+    verify(storage2).record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
+    verify(storage3).record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
   }
 
   @Test
@@ -189,11 +189,9 @@ class CallbackRegistrationTest {
     assertThat(doubleCounter.get()).isEqualTo(1.1);
     assertThat(longCounter.get()).isEqualTo(1);
     verify(storage1)
-        .record(doubleMeasurement(0, 1, 1.1, Attributes.builder().put("key", "val").build()));
-    verify(storage2)
-        .record(longMeasurement(0, 1, 1, Attributes.builder().put("key", "val").build()));
-    verify(storage3)
-        .record(longMeasurement(0, 1, 1, Attributes.builder().put("key", "val").build()));
+        .record(createDouble(0, 1, 1.1, Attributes.builder().put("key", "val").build()));
+    verify(storage2).record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
+    verify(storage3).record(createLong(0, 1, 1, Attributes.builder().put("key", "val").build()));
   }
 
   @Test

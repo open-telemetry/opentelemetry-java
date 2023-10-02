@@ -1,5 +1,5 @@
-# the benefit of this over dependabot is that this also analyzes transitive dependencies
-# while dependabot (at least currently) only analyzes top-level dependencies
+# the benefit of this over renovate is that this also analyzes transitive dependencies
+# while renovate (at least currently) only analyzes top-level dependencies
 name: OWASP dependency check (daily)
 
 on:
@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-java@v3
         with:

@@ -26,7 +26,7 @@ class ConfigPropertiesTest {
   void allValid() {
     Map<String, String> properties = makeTestProps();
 
-    ConfigProperties config = DefaultConfigProperties.createForTest(properties);
+    ConfigProperties config = DefaultConfigProperties.createFromMap(properties);
     assertThat(config.getString("test.string")).isEqualTo("str");
     assertThat(config.getInt("test.int")).isEqualTo(10);
     assertThat(config.getLong("test.long")).isEqualTo(20);
@@ -41,7 +41,7 @@ class ConfigPropertiesTest {
   void allValidUsingHyphens() {
     Map<String, String> properties = makeTestProps();
 
-    ConfigProperties config = DefaultConfigProperties.createForTest(properties);
+    ConfigProperties config = DefaultConfigProperties.createFromMap(properties);
     assertThat(config.getString("test-string")).isEqualTo("str");
     assertThat(config.getInt("test-int")).isEqualTo(10);
     assertThat(config.getLong("test-long")).isEqualTo(20);
@@ -54,7 +54,7 @@ class ConfigPropertiesTest {
 
   @Test
   void allMissing() {
-    ConfigProperties config = DefaultConfigProperties.createForTest(emptyMap());
+    ConfigProperties config = DefaultConfigProperties.createFromMap(emptyMap());
     assertThat(config.getString("test.string")).isNull();
     assertThat(config.getInt("test.int")).isNull();
     assertThat(config.getLong("test.long")).isNull();
@@ -75,7 +75,7 @@ class ConfigPropertiesTest {
     properties.put("test.map", "");
     properties.put("test.duration", "");
 
-    ConfigProperties config = DefaultConfigProperties.createForTest(properties);
+    ConfigProperties config = DefaultConfigProperties.createFromMap(properties);
     assertThat(config.getString("test.string")).isEmpty();
     assertThat(config.getInt("test.int")).isNull();
     assertThat(config.getLong("test.long")).isNull();
@@ -89,13 +89,13 @@ class ConfigPropertiesTest {
   void invalidInt() {
     assertThatThrownBy(
             () ->
-                DefaultConfigProperties.createForTest(Collections.singletonMap("int", "bar"))
+                DefaultConfigProperties.createFromMap(Collections.singletonMap("int", "bar"))
                     .getInt("int"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid value for property int=bar. Must be a integer.");
     assertThatThrownBy(
             () ->
-                DefaultConfigProperties.createForTest(
+                DefaultConfigProperties.createFromMap(
                         Collections.singletonMap("int", "999999999999999"))
                     .getInt("int"))
         .isInstanceOf(ConfigurationException.class)
@@ -106,13 +106,13 @@ class ConfigPropertiesTest {
   void invalidLong() {
     assertThatThrownBy(
             () ->
-                DefaultConfigProperties.createForTest(Collections.singletonMap("long", "bar"))
+                DefaultConfigProperties.createFromMap(Collections.singletonMap("long", "bar"))
                     .getLong("long"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid value for property long=bar. Must be a long.");
     assertThatThrownBy(
             () ->
-                DefaultConfigProperties.createForTest(
+                DefaultConfigProperties.createFromMap(
                         Collections.singletonMap("long", "99223372036854775807"))
                     .getLong("long"))
         .isInstanceOf(ConfigurationException.class)
@@ -123,13 +123,13 @@ class ConfigPropertiesTest {
   void invalidDouble() {
     assertThatThrownBy(
             () ->
-                DefaultConfigProperties.createForTest(Collections.singletonMap("double", "bar"))
+                DefaultConfigProperties.createFromMap(Collections.singletonMap("double", "bar"))
                     .getDouble("double"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid value for property double=bar. Must be a double.");
     assertThatThrownBy(
             () ->
-                DefaultConfigProperties.createForTest(Collections.singletonMap("double", "1.0.1"))
+                DefaultConfigProperties.createFromMap(Collections.singletonMap("double", "1.0.1"))
                     .getDouble("double"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid value for property double=1.0.1. Must be a double.");
@@ -138,7 +138,7 @@ class ConfigPropertiesTest {
   @Test
   void uncleanList() {
     assertThat(
-            DefaultConfigProperties.createForTest(
+            DefaultConfigProperties.createFromMap(
                     Collections.singletonMap("list", "  a  ,b,c  ,  d,,   ,"))
                 .getList("list"))
         .containsExactly("a", "b", "c", "d");
@@ -147,7 +147,7 @@ class ConfigPropertiesTest {
   @Test
   void uncleanMap() {
     assertThat(
-            DefaultConfigProperties.createForTest(
+            DefaultConfigProperties.createFromMap(
                     Collections.singletonMap("map", "  a=1  ,b=2,c = 3  ,  d=  4,,  ,"))
                 .getMap("map"))
         .containsExactly(entry("a", "1"), entry("b", "2"), entry("c", "3"), entry("d", "4"));
@@ -157,19 +157,13 @@ class ConfigPropertiesTest {
   void invalidMap() {
     assertThatThrownBy(
             () ->
-                DefaultConfigProperties.createForTest(Collections.singletonMap("map", "a=1,b="))
-                    .getMap("map"))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Invalid map property: map=a=1,b=");
-    assertThatThrownBy(
-            () ->
-                DefaultConfigProperties.createForTest(Collections.singletonMap("map", "a=1,b"))
+                DefaultConfigProperties.createFromMap(Collections.singletonMap("map", "a=1,b"))
                     .getMap("map"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid map property: map=a=1,b");
     assertThatThrownBy(
             () ->
-                DefaultConfigProperties.createForTest(Collections.singletonMap("map", "a=1,=b"))
+                DefaultConfigProperties.createFromMap(Collections.singletonMap("map", "a=1,=b"))
                     .getMap("map"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid map property: map=a=1,=b");
@@ -179,13 +173,13 @@ class ConfigPropertiesTest {
   void invalidDuration() {
     assertThatThrownBy(
             () ->
-                DefaultConfigProperties.createForTest(Collections.singletonMap("duration", "1a1ms"))
+                DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "1a1ms"))
                     .getDuration("duration"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid duration property duration=1a1ms. Expected number, found: 1a1");
     assertThatThrownBy(
             () ->
-                DefaultConfigProperties.createForTest(Collections.singletonMap("duration", "9mm"))
+                DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "9mm"))
                     .getDuration("duration"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid duration property duration=9mm. Invalid duration string, found: mm");
@@ -194,36 +188,36 @@ class ConfigPropertiesTest {
   @Test
   void durationUnitParsing() {
     assertThat(
-            DefaultConfigProperties.createForTest(Collections.singletonMap("duration", "1"))
+            DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "1"))
                 .getDuration("duration"))
         .isEqualTo(Duration.ofMillis(1));
     assertThat(
-            DefaultConfigProperties.createForTest(Collections.singletonMap("duration", "2ms"))
+            DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "2ms"))
                 .getDuration("duration"))
         .isEqualTo(Duration.ofMillis(2));
     assertThat(
-            DefaultConfigProperties.createForTest(Collections.singletonMap("duration", "3s"))
+            DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "3s"))
                 .getDuration("duration"))
         .isEqualTo(Duration.ofSeconds(3));
     assertThat(
-            DefaultConfigProperties.createForTest(Collections.singletonMap("duration", "4m"))
+            DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "4m"))
                 .getDuration("duration"))
         .isEqualTo(Duration.ofMinutes(4));
     assertThat(
-            DefaultConfigProperties.createForTest(Collections.singletonMap("duration", "5h"))
+            DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "5h"))
                 .getDuration("duration"))
         .isEqualTo(Duration.ofHours(5));
     assertThat(
-            DefaultConfigProperties.createForTest(Collections.singletonMap("duration", "6d"))
+            DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "6d"))
                 .getDuration("duration"))
         .isEqualTo(Duration.ofDays(6));
     // Check Space handling
     assertThat(
-            DefaultConfigProperties.createForTest(Collections.singletonMap("duration", "7 ms"))
+            DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "7 ms"))
                 .getDuration("duration"))
         .isEqualTo(Duration.ofMillis(7));
     assertThat(
-            DefaultConfigProperties.createForTest(Collections.singletonMap("duration", "8   ms"))
+            DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "8   ms"))
                 .getDuration("duration"))
         .isEqualTo(Duration.ofMillis(8));
   }
@@ -281,7 +275,7 @@ class ConfigPropertiesTest {
     properties.put("test.double", "5.4");
     properties.put("test.boolean", "true");
     properties.put("test.list", "cat,dog,bear");
-    properties.put("test.map", "cat=meow,dog=bark,bear=growl");
+    properties.put("test.map", "cat=meow,dog=bark,bear=growl,bird=");
     properties.put("test.duration", "1s");
     return properties;
   }

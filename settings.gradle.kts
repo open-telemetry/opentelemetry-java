@@ -1,12 +1,11 @@
 pluginManagement {
   plugins {
-    id("com.github.ben-manes.versions") version "0.47.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("com.gradle.enterprise") version "3.14.1"
-    id("de.undercouch.download") version "5.4.0"
+    id("com.gradle.enterprise") version "3.15"
+    id("de.undercouch.download") version "5.5.0"
     id("org.jsonschema2pojo") version "1.2.1"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
-    id("org.graalvm.buildtools.native") version "0.9.24"
+    id("org.graalvm.buildtools.native") version "0.9.25"
   }
 }
 
@@ -25,7 +24,6 @@ rootProject.name = "opentelemetry-java"
 include(":all")
 include(":api:all")
 include(":api:events")
-include(":semconv")
 include(":bom")
 include(":bom-alpha")
 include(":context")

@@ -18,7 +18,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import io.opentracing.References;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -34,14 +33,15 @@ import javax.annotation.concurrent.Immutable;
 
 final class SpanBuilderShim implements SpanBuilder {
 
+  private static final AttributeKey<String> OPENTRACING_REF_TYPE =
+      stringKey("opentracing.ref_type");
+  private static final String OPEN_TRACING_REF_TYPE_CHILD_OF = "child_of";
+  private static final String OPEN_TRACING_REF_TYPE_FOLLOWS_FROM = "follows_from";
+
   private static final Attributes CHILD_OF_ATTR =
-      Attributes.of(
-          SemanticAttributes.OPENTRACING_REF_TYPE,
-          SemanticAttributes.OpentracingRefTypeValues.CHILD_OF);
+      Attributes.of(OPENTRACING_REF_TYPE, OPEN_TRACING_REF_TYPE_CHILD_OF);
   private static final Attributes FOLLOWS_FROM_ATTR =
-      Attributes.of(
-          SemanticAttributes.OPENTRACING_REF_TYPE,
-          SemanticAttributes.OpentracingRefTypeValues.FOLLOWS_FROM);
+      Attributes.of(OPENTRACING_REF_TYPE, OPEN_TRACING_REF_TYPE_FOLLOWS_FROM);
 
   private final Tracer tracer;
   private final String spanName;

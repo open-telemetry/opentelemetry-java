@@ -33,7 +33,7 @@ class ConfigurableLogRecordExporterTest {
   @Test
   void configureLogRecordExporters_spiExporter() {
     ConfigProperties config =
-        DefaultConfigProperties.createForTest(
+        DefaultConfigProperties.createFromMap(
             ImmutableMap.of("test.option", "true", "otel.logs.exporter", "testExporter"));
     List<Closeable> closeables = new ArrayList<>();
 
@@ -60,7 +60,7 @@ class ConfigurableLogRecordExporterTest {
   @Test
   void configureLogRecordExporters_emptyClassLoader() {
     ConfigProperties config =
-        DefaultConfigProperties.createForTest(
+        DefaultConfigProperties.createFromMap(
             ImmutableMap.of("test.option", "true", "otel.logs.exporter", "testExporter"));
     List<Closeable> closeables = new ArrayList<>();
 

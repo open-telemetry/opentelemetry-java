@@ -170,7 +170,7 @@ is a representation of the entity producing telemetry.
 | otel.service.name                        | OTEL_SERVICE_NAME                        | Specify logical service name. Takes precedence over `service.name` defined with `otel.resource.attributes` |
 | otel.experimental.resource.disabled-keys | OTEL_EXPERIMENTAL_RESOURCE_DISABLED_KEYS | Specify resource attribute keys that are filtered.                                                         |
 
-You almost always want to specify the [`service.name`](https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/resource/semantic_conventions#service) for your application.
+You almost always want to specify the [`service.name`](https://opentelemetry.io/docs/specs/semconv/resource/#service) for your application.
 It corresponds to how you describe the application, for example `authservice` could be an application that authenticates requests, and `cats` could be an application that returns information about [cats](https://en.wikipedia.org/wiki/Cat).
 You would specify that by setting service name property in one of the following ways:
 * directly via `OTEL_SERVICE_NAME=authservice` or `-Dotel.service.name=cats`

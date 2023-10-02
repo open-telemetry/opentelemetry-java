@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
@@ -13,45 +12,42 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 /**
  * A long or double measurement recorded from {@link ObservableLongMeasurement} or {@link
  * ObservableDoubleMeasurement}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
-@AutoValue
-public abstract class Measurement {
+public interface Measurement {
+  long startEpochNanos();
 
-  static Measurement doubleMeasurement(
-      long startEpochNanos, long epochNanos, double value, Attributes attributes) {
-    return new AutoValue_Measurement(
-        startEpochNanos,
-        epochNanos,
-        /* hasLongValue= */ false,
-        0L,
-        /* hasDoubleValue= */ true,
-        value,
-        attributes);
-  }
+  long epochNanos();
 
-  static Measurement longMeasurement(
-      long startEpochNanos, long epochNanos, long value, Attributes attributes) {
-    return new AutoValue_Measurement(
-        startEpochNanos,
-        epochNanos,
-        /* hasLongValue= */ true,
-        value,
-        /* hasDoubleValue= */ false,
-        0.0,
-        attributes);
-  }
+  boolean hasLongValue();
 
-  public abstract long startEpochNanos();
+  long longValue();
 
-  public abstract long epochNanos();
+  boolean hasDoubleValue();
 
-  public abstract boolean hasLongValue();
+  double doubleValue();
 
-  public abstract long longValue();
+  Attributes attributes();
 
-  public abstract boolean hasDoubleValue();
+  /**
+   * Updates the attributes.
+   *
+   * @param attributes The attributes to update
+   * @return The updated object. For {@link ImmutableMeasurement} it will be a new object with the
+   *     updated attributes and for {@link MutableMeasurement} it will return itself with the
+   *     attributes updated
+   */
+  Measurement withAttributes(Attributes attributes);
 
-  public abstract double doubleValue();
-
-  public abstract Attributes attributes();
+  /**
+   * Updates the startEpochNanos.
+   *
+   * @param startEpochNanos start epoch nanosecond
+   * @return The updated object. For {@link ImmutableMeasurement} it will be a new object with the
+   *     updated startEpochNanos and for {@link MutableMeasurement} it will return itself with the
+   *     startEpochNanos updated
+   */
+  Measurement withStartEpochNanos(long startEpochNanos);
 }

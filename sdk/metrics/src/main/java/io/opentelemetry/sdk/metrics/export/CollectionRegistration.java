@@ -5,7 +5,11 @@
 
 package io.opentelemetry.sdk.metrics.export;
 
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * A {@link CollectionRegistration} is passed to each {@link MetricReader} registered with {@link
@@ -13,5 +17,29 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
  *
  * @since 1.14.0
  */
-// TODO(jack-berg): Have methods when custom MetricReaders are supported
-public interface CollectionRegistration {}
+public interface CollectionRegistration {
+
+  /**
+   * Returns a noop {@link CollectionRegistration}, useful for {@link MetricReader}s to hold before
+   * {@link MetricReader#register(CollectionRegistration)} is called.
+   */
+  static CollectionRegistration noop() {
+    return new CollectionRegistration() {
+      @Override
+      public Collection<MetricData> collectAllMetrics() {
+        return Collections.emptyList();
+      }
+    };
+  }
+
+  /**
+   * Collect all metrics, including metrics from the SDK and any registered {@link MetricProducer}s.
+   *
+   * <p>If {@link MetricReader#getMemoryMode()} is configured to {@link MemoryMode#REUSABLE_DATA} do
+   * not keep the result or any of its contained objects as they are to be reused to return the
+   * result for the next call to this method.
+   */
+  default Collection<MetricData> collectAllMetrics() {
+    return Collections.emptyList();
+  }
+}

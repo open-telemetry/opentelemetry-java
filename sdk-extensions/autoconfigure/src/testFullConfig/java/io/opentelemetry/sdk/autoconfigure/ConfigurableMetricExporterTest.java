@@ -39,7 +39,7 @@ class ConfigurableMetricExporterTest {
   @Test
   void configureExporter_spiExporter() {
     ConfigProperties config =
-        DefaultConfigProperties.createForTest(ImmutableMap.of("test.option", "true"));
+        DefaultConfigProperties.createFromMap(ImmutableMap.of("test.option", "true"));
 
     try (MetricExporter metricExporter =
         MetricExporterConfiguration.configureExporter(
@@ -54,33 +54,29 @@ class ConfigurableMetricExporterTest {
 
   @Test
   void configureExporter_emptyClassLoader() {
-    assertThatThrownBy(
-            () ->
-                MetricExporterConfiguration.configureExporter(
-                    "testExporter",
-                    MetricExporterConfiguration.metricExporterSpiManager(
-                        DefaultConfigProperties.createForTest(Collections.emptyMap()),
-                        SpiHelper.create(new URLClassLoader(new URL[] {}, null)))))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("testExporter");
+    assertThat(
+            MetricExporterConfiguration.configureExporter(
+                "testExporter",
+                MetricExporterConfiguration.metricExporterSpiManager(
+                    DefaultConfigProperties.createFromMap(Collections.emptyMap()),
+                    SpiHelper.create(new URLClassLoader(new URL[] {}, null)))))
+        .isNull();
   }
 
   @Test
   void configureExporter_exporterNotFound() {
-    assertThatThrownBy(
-            () ->
-                MetricExporterConfiguration.configureExporter(
-                    "catExporter",
-                    MetricExporterConfiguration.metricExporterSpiManager(
-                        DefaultConfigProperties.createForTest(Collections.emptyMap()), spiHelper)))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("catExporter");
+    assertThat(
+            MetricExporterConfiguration.configureExporter(
+                "catExporter",
+                MetricExporterConfiguration.metricExporterSpiManager(
+                    DefaultConfigProperties.createFromMap(Collections.emptyMap()), spiHelper)))
+        .isNull();
   }
 
   @Test
   void configureMetricReaders_multipleWithNone() {
     ConfigProperties config =
-        DefaultConfigProperties.createForTest(
+        DefaultConfigProperties.createFromMap(
             ImmutableMap.of("otel.metrics.exporter", "otlp,none"));
     List<Closeable> closeables = new ArrayList<>();
 
@@ -96,7 +92,7 @@ class ConfigurableMetricExporterTest {
 
   @Test
   void configureMetricReaders_defaultExporter() {
-    ConfigProperties config = DefaultConfigProperties.createForTest(Collections.emptyMap());
+    ConfigProperties config = DefaultConfigProperties.createFromMap(Collections.emptyMap());
     List<Closeable> closeables = new ArrayList<>();
 
     List<MetricReader> metricReaders =
@@ -118,7 +114,7 @@ class ConfigurableMetricExporterTest {
   @Test
   void configureMetricReaders_multipleExporters() {
     ConfigProperties config =
-        DefaultConfigProperties.createForTest(
+        DefaultConfigProperties.createFromMap(
             ImmutableMap.of("otel.metrics.exporter", "otlp,logging"));
     List<Closeable> closeables = new ArrayList<>();
 

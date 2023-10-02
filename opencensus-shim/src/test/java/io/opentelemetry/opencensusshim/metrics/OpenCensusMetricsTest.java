@@ -12,6 +12,7 @@ import io.opencensus.stats.Measure;
 import io.opencensus.stats.Stats;
 import io.opencensus.stats.StatsRecorder;
 import io.opencensus.stats.View;
+import io.opentelemetry.opencensusshim.OpenCensusMetricProducer;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.time.Duration;
@@ -26,7 +27,10 @@ class OpenCensusMetricsTest {
   void capturesOpenCensusAndOtelMetrics() throws InterruptedException {
     InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProvider otelMetrics =
-        SdkMeterProvider.builder().registerMetricReader(OpenCensusMetrics.attachTo(reader)).build();
+        SdkMeterProvider.builder()
+            .registerMetricReader(reader)
+            .registerMetricProducer(OpenCensusMetricProducer.create())
+            .build();
     // Record an otel metric.
     otelMetrics.meterBuilder("otel").build().counterBuilder("otel.sum").build().add(1);
     // Record an OpenCensus metric.
@@ -47,7 +51,7 @@ class OpenCensusMetricsTest {
         .untilAsserted(
             () ->
                 assertThat(reader.collectAllMetrics())
-                    .satisfiesExactly(
+                    .satisfiesExactlyInAnyOrder(
                         metric ->
                             assertThat(metric).hasName("otel.sum").hasLongSumSatisfying(sum -> {}),
                         metric ->

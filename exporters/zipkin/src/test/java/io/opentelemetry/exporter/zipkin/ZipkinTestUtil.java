@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.zipkin;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
@@ -14,7 +16,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,7 +48,7 @@ class ZipkinTestUtil {
                 TRACE_ID, PARENT_SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
         .setResource(
             Resource.create(
-                Attributes.builder().put(ResourceAttributes.SERVICE_NAME, "tweetiebird").build()))
+                Attributes.builder().put(stringKey("service.name"), "tweetiebird").build()))
         .setStatus(StatusData.ok())
         .setKind(SpanKind.SERVER)
         .setName("Recv.helloworld.Greeter.SayHello")

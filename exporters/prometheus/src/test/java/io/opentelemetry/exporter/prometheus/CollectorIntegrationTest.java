@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -29,7 +30,6 @@ import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
 import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.UncheckedIOException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -139,27 +139,30 @@ class CollectorIntegrationTest {
             // Resource attributes from the metric SDK resource translated to target_info
             stringKeyValue(
                 "service_name",
-                Objects.requireNonNull(
-                    resource.getAttributes().get(ResourceAttributes.SERVICE_NAME))),
+                Objects.requireNonNull(resource.getAttributes().get(stringKey("service.name")))),
             stringKeyValue(
                 "telemetry_sdk_name",
                 Objects.requireNonNull(
-                    resource.getAttributes().get(ResourceAttributes.TELEMETRY_SDK_NAME))),
+                    resource.getAttributes().get(stringKey("telemetry.sdk.name")))),
             stringKeyValue(
                 "telemetry_sdk_language",
                 Objects.requireNonNull(
-                    resource.getAttributes().get(ResourceAttributes.TELEMETRY_SDK_LANGUAGE))),
+                    resource.getAttributes().get(stringKey("telemetry.sdk.language")))),
             stringKeyValue(
                 "telemetry_sdk_version",
                 Objects.requireNonNull(
-                    resource.getAttributes().get(ResourceAttributes.TELEMETRY_SDK_VERSION))));
+                    resource.getAttributes().get(stringKey("telemetry.sdk.version")))));
 
-    assertThat(resourceMetrics.getScopeMetricsCount()).isEqualTo(1);
-    ScopeMetrics scopeMetrics = resourceMetrics.getScopeMetrics(0);
-    assertThat(scopeMetrics.getScope().getName()).isEqualTo("otelcol/prometheusreceiver");
+    assertThat(resourceMetrics.getScopeMetricsCount()).isEqualTo(2);
+    ScopeMetrics testScopeMetrics =
+        resourceMetrics.getScopeMetricsList().stream()
+            .filter(scopeMetrics -> scopeMetrics.getScope().getName().equals("test"))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("missing scope with name \"test\""));
+    assertThat(testScopeMetrics.getScope().getVersion()).isEqualTo("1.0.0");
 
     Optional<Metric> optRequestTotal =
-        scopeMetrics.getMetricsList().stream()
+        testScopeMetrics.getMetricsList().stream()
             .filter(metric -> metric.getName().equals("requests_total"))
             .findFirst();
     assertThat(optRequestTotal).isPresent();
@@ -179,28 +182,6 @@ class CollectorIntegrationTest {
             stringKeyValue("animal", "bear"),
             // Scope name and version are serialized as attributes to disambiguate metrics with the
             // same name in different scopes
-            stringKeyValue("otel_scope_name", "test"),
-            stringKeyValue("otel_scope_version", "1.0.0"));
-
-    // Scope is serialized as info type metric, which is transformed to non-monotonic cumulative sum
-    Optional<Metric> optTestScopeInfo =
-        scopeMetrics.getMetricsList().stream()
-            .filter(metric -> metric.getName().equals("otel_scope_info"))
-            .findFirst();
-    assertThat(optTestScopeInfo).isPresent();
-    Metric testScopeInfo = optTestScopeInfo.get();
-    assertThat(testScopeInfo.getDataCase()).isEqualTo(Metric.DataCase.SUM);
-
-    Sum testScopeInfoSum = testScopeInfo.getSum();
-    assertThat(testScopeInfoSum.getAggregationTemporality())
-        .isEqualTo(AggregationTemporality.AGGREGATION_TEMPORALITY_CUMULATIVE);
-    assertThat(testScopeInfoSum.getIsMonotonic()).isFalse();
-    assertThat(testScopeInfoSum.getDataPointsCount()).isEqualTo(1);
-
-    NumberDataPoint testScopeInfoDataPoint = testScopeInfoSum.getDataPoints(0);
-    assertThat(testScopeInfoDataPoint.getAsDouble()).isEqualTo(1.0);
-    assertThat(testScopeInfoDataPoint.getAttributesList())
-        .containsExactlyInAnyOrder(
             stringKeyValue("otel_scope_name", "test"),
             stringKeyValue("otel_scope_version", "1.0.0"));
   }

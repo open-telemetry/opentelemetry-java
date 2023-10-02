@@ -27,9 +27,19 @@ dependencies {
   // io.opentelemetry.sdk.extension.incubator.fileconfig
   implementation("com.fasterxml.jackson.core:jackson-databind")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
+  implementation(project(":sdk-extensions:autoconfigure"))
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
+  testImplementation(project(":exporters:logging"))
+  testImplementation(project(":exporters:otlp:all"))
+  testImplementation(project(":exporters:prometheus"))
+  testImplementation(project(":exporters:zipkin"))
+  testImplementation(project(":sdk-extensions:jaeger-remote-sampler"))
+  testImplementation(project(":extensions:trace-propagators"))
+  // As a part of the tests we check that we can parse examples without error. The https://github.com/open-telemetry/opentelemetry-configuration/blob/main/examples/kitchen-sink.yam contains a reference to the xray propagator
+  testImplementation("io.opentelemetry.contrib:opentelemetry-aws-xray-propagator")
+  testImplementation("com.linecorp.armeria:armeria-junit5")
 
   testImplementation("com.google.guava:guava-testlib")
 }
@@ -45,12 +55,13 @@ dependencies {
 // ... proceed with normal sourcesJar, compileJava, etc
 
 // TODO(jack-berg): update ref to be released version when available
-val configurationRef = "2107dbb6f2a6c99fe2f55d550796ee7e2286fd1d"
+val configurationRef = "0508846f82ed54b230fa638e1e7556c52efee25e"
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
+val buildDirectory = layout.buildDirectory.asFile.get()
 
 val downloadConfigurationSchema by tasks.registering(Download::class) {
   src(configurationRepoZip)
-  dest("$buildDir/configuration/opentelemetry-configuration.zip")
+  dest("$buildDirectory/configuration/opentelemetry-configuration.zip")
   overwrite(false)
 }
 
@@ -63,16 +74,20 @@ val unzipConfigurationSchema by tasks.registering(Copy::class) {
     val pathParts = path.split("/")
     path = pathParts.subList(1, pathParts.size).joinToString("/")
   })
-  into("$buildDir/configuration/")
+  into("$buildDirectory/configuration/")
 }
 
 jsonSchema2Pojo {
-  sourceFiles = setOf(file("$buildDir/configuration/schema"))
-  targetDirectory = file("$buildDir/generated/sources/js2p/java/main")
+  sourceFiles = setOf(file("$buildDirectory/configuration/schema"))
+  targetDirectory = file("$buildDirectory/generated/sources/js2p/java/main")
   targetPackage = "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model"
 
   // Clear old source files to avoid contaminated source dir when updating
   removeOldOutput = true
+
+  // Include @Nullable annotation. Note: jsonSchmea2Pojo will not add @Nullable annotations on getters
+  // so we perform some steps in jsonSchema2PojoPostProcessing to add these.
+  includeJsr305Annotations = true
 
   // Prefer builders to setters
   includeSetters = false
@@ -92,26 +107,30 @@ generateJsonSchema2Pojo.dependsOn(unzipConfigurationSchema)
 val jsonSchema2PojoPostProcessing by tasks.registering(Copy::class) {
   dependsOn(generateJsonSchema2Pojo)
 
-  from("$buildDir/generated/sources/js2p")
-  into("$buildDir/generated/sources/js2p-tmp")
+  from("$buildDirectory/generated/sources/js2p")
+  into("$buildDirectory/generated/sources/js2p-tmp")
   filter {
     it
-      // Replace java 9+ @Generated annotation with java 8 version
-      .replace("import javax.annotation.processing.Generated", "import javax.annotation.Generated")
+      // Remove @Nullable annotation so it can be deterministically added later
+      .replace("import javax.annotation.Nullable;\n", "")
+      // Replace java 9+ @Generated annotation with java 8 version, add @Nullable annotation
+      .replace("import javax.annotation.processing.Generated;", "import javax.annotation.Nullable;\nimport javax.annotation.Generated;")
       // Add @SuppressWarnings("rawtypes") annotation to address raw types used in jsonschema2pojo builders
       .replace("@Generated(\"jsonschema2pojo\")", "@Generated(\"jsonschema2pojo\")\n@SuppressWarnings(\"rawtypes\")")
+      // Add @Nullable annotations to all getters
+      .replace("( *)public ([a-zA-Z]*) get([a-zA-Z]*)".toRegex(), "$1@Nullable\n$1public $2 get$3")
   }
 }
 val overwriteJs2p by tasks.registering(Copy::class) {
   dependsOn(jsonSchema2PojoPostProcessing)
 
-  from("$buildDir/generated/sources/js2p-tmp")
-  into("$buildDir/generated/sources/js2p")
+  from("$buildDirectory/generated/sources/js2p-tmp")
+  into("$buildDirectory/generated/sources/js2p")
 }
 val deleteJs2pTmp by tasks.registering(Delete::class) {
   dependsOn(overwriteJs2p)
 
-  delete("$buildDir/generated/sources/js2p-tmp/")
+  delete("$buildDirectory/generated/sources/js2p-tmp/")
 }
 
 tasks.getByName("compileJava").dependsOn(deleteJs2pTmp)
@@ -127,7 +146,7 @@ tasks {
     environment(
       mapOf(
         // Expose the kitchen sink example file to tests
-        "CONFIG_EXAMPLE_DIR" to "$buildDir/configuration/examples/"
+        "CONFIG_EXAMPLE_DIR" to "$buildDirectory/configuration/examples/"
       )
     )
   }

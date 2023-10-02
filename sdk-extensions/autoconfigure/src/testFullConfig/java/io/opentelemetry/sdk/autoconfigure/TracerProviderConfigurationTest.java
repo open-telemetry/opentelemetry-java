@@ -29,7 +29,7 @@ public class TracerProviderConfigurationTest {
   @Test
   void configuration() {
     ConfigProperties config =
-        DefaultConfigProperties.createForTest(ImmutableMap.of("test.option", "true"));
+        DefaultConfigProperties.createFromMap(ImmutableMap.of("test.option", "true"));
     Sampler sampler =
         TracerProviderConfiguration.configureSampler("testSampler", config, spiHelper);
 
@@ -42,7 +42,7 @@ public class TracerProviderConfigurationTest {
   @Test
   void emptyClassLoader() {
     ConfigProperties config =
-        DefaultConfigProperties.createForTest(ImmutableMap.of("test.option", "true"));
+        DefaultConfigProperties.createFromMap(ImmutableMap.of("test.option", "true"));
     assertThatThrownBy(
             () ->
                 TracerProviderConfiguration.configureSampler(
@@ -57,7 +57,7 @@ public class TracerProviderConfigurationTest {
             () ->
                 TracerProviderConfiguration.configureSampler(
                     "catSampler",
-                    DefaultConfigProperties.createForTest(Collections.emptyMap()),
+                    DefaultConfigProperties.createFromMap(Collections.emptyMap()),
                     spiHelper))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("catSampler");
@@ -68,7 +68,7 @@ public class TracerProviderConfigurationTest {
     assertThat(
             TracerProviderConfiguration.configureSampler(
                 "parentbased_jaeger_remote",
-                DefaultConfigProperties.createForTest(Collections.emptyMap()),
+                DefaultConfigProperties.createFromMap(Collections.emptyMap()),
                 spiHelper))
         .satisfies(
             sampler -> {

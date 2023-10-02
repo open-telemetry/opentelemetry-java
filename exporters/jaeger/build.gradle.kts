@@ -17,7 +17,6 @@ dependencies {
 
   implementation(project(":exporters:common"))
   implementation(project(":exporters:sender:okhttp"))
-  implementation(project(":semconv"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
 
   compileOnly("io.grpc:grpc-stub")

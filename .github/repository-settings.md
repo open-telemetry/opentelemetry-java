@@ -36,11 +36,11 @@ Same settings as above for `main`, except:
 
   (So that opentelemetrybot can create release branches)
 
-### `dependabot/**/**` and `opentelemetrybot/*` and `gradlew-update-*`
+### `renovate/**/**`, and `opentelemetrybot/*`
 
 * Require status checks to pass before merging: UNCHECKED
 
-  (So that dependabot PRs can be rebased)
+  (So that renovate PRs can be rebased)
 
 * Restrict who can push to matching branches: UNCHECKED
 
@@ -48,11 +48,19 @@ Same settings as above for `main`, except:
 
 * Allow force pushes > Everyone
 
-  (So that dependabot PRs can be rebased)
+  (So that renovate PRs can be rebased)
 
 * Allow deletions: CHECKED
 
   (So that bot PR branches can be deleted)
+
+### `benchmarks`
+
+- Everything UNCHECKED
+
+  (This branch is currently only used for directly pushing benchmarking results from the
+  [overhead benchmark](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/benchmark.yml)
+  job)
 
 ## Secrets and variables > Actions
 

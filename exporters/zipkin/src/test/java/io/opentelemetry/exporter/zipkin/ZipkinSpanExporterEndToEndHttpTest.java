@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.zipkin;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -30,7 +31,6 @@ import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collections;
@@ -219,7 +219,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
         .setLinks(Collections.emptyList())
         .setEndEpochNanos(END_EPOCH_NANOS)
         .setHasEnded(true)
-        .setResource(Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, SERVICE_NAME)));
+        .setResource(Resource.create(Attributes.of(stringKey("service.name"), SERVICE_NAME)));
   }
 
   private static Span buildZipkinSpan(InetAddress localAddress, String traceId) {

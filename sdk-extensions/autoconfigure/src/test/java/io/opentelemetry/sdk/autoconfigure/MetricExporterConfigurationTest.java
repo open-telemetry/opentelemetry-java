@@ -6,46 +6,34 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.sdk.autoconfigure.MetricExporterConfiguration.configureExporter;
-import static io.opentelemetry.sdk.autoconfigure.MetricExporterConfiguration.configureReader;
+import static io.opentelemetry.sdk.autoconfigure.MetricExporterConfiguration.configureMetricReader;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import java.io.Closeable;
-import java.util.ArrayList;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.util.Collections;
-import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
 class MetricExporterConfigurationTest {
 
   private static final ConfigProperties EMPTY =
-      DefaultConfigProperties.createForTest(Collections.emptyMap());
-
-  @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
+      DefaultConfigProperties.createFromMap(Collections.emptyMap());
 
   private final SpiHelper spiHelper =
       SpiHelper.create(MetricExporterConfigurationTest.class.getClassLoader());
 
   @Test
-  void configureReader_PrometheusNotOnClasspath() {
-    List<Closeable> closeables = new ArrayList<>();
+  void configureExporter_UnknownExporter() {
+    NamedSpiManager<MetricExporter> spiExportersManager =
+        MetricExporterConfiguration.metricExporterSpiManager(EMPTY, spiHelper);
 
-    assertThatThrownBy(
-            () -> configureReader("prometheus", EMPTY, spiHelper, (a, b) -> a, new ArrayList<>()))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage(
-            "otel.metrics.exporter set to \"prometheus\" but opentelemetry-exporter-prometheus"
-                + " not found on classpath. Make sure to add it as a dependency.");
-    cleanup.addCloseables(closeables);
-    assertThat(closeables).isEmpty();
+    assertThat(configureExporter("foo", spiExportersManager)).isNull();
   }
 
   @Test
@@ -68,9 +56,25 @@ class MetricExporterConfigurationTest {
         .hasMessage(
             "otel.metrics.exporter set to \"otlp\" but opentelemetry-exporter-otlp"
                 + " not found on classpath. Make sure to add it as a dependency.");
+  }
 
-    // Unrecognized exporter
-    assertThatThrownBy(() -> configureExporter("foo", spiExportersManager))
-        .hasMessage("Unrecognized value for otel.metrics.exporter: foo");
+  @Test
+  void configureMetricReader_UnknownExporter() {
+    NamedSpiManager<MetricReader> spiMetricReadersManager =
+        MetricExporterConfiguration.metricReadersSpiManager(EMPTY, spiHelper);
+
+    assertThat(configureMetricReader("foo", spiMetricReadersManager)).isNull();
+  }
+
+  @Test
+  void configureMetricReader_KnownSpiExportersNotOnClasspath() {
+    NamedSpiManager<MetricReader> spiMetricReadersManager =
+        MetricExporterConfiguration.metricReadersSpiManager(EMPTY, spiHelper);
+
+    assertThatThrownBy(() -> configureMetricReader("prometheus", spiMetricReadersManager))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage(
+            "otel.metrics.exporter set to \"prometheus\" but opentelemetry-exporter-prometheus"
+                + " not found on classpath. Make sure to add it as a dependency.");
   }
 }

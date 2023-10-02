@@ -5,24 +5,26 @@
 
 package io.opentelemetry.exporter.jaeger;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.internal.Process;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.IOException;
 import java.util.List;
 
 final class ProcessMarshaler extends MarshalerWithSize {
 
+  private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
+
   private final byte[] serviceNameUtf8;
   private final List<KeyValueMarshaler> tags;
 
   static ProcessMarshaler create(Resource resource) {
-    String serviceName = resource.getAttribute(ResourceAttributes.SERVICE_NAME);
+    String serviceName = resource.getAttribute(SERVICE_NAME);
     if (serviceName == null || serviceName.isEmpty()) {
-      serviceName = Resource.getDefault().getAttribute(ResourceAttributes.SERVICE_NAME);
+      serviceName = Resource.getDefault().getAttribute(SERVICE_NAME);
     }
 
     return new ProcessMarshaler(

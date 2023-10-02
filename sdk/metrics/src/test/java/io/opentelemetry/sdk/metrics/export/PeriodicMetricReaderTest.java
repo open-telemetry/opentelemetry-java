@@ -26,7 +26,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
-import io.opentelemetry.sdk.metrics.internal.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.time.Duration;
@@ -67,17 +66,19 @@ class PeriodicMetricReaderTest {
           ImmutableSumData.create(
               /* isMonotonic= */ true, AggregationTemporality.CUMULATIVE, LONG_POINT_LIST));
 
-  @Mock private MetricProducer metricProducer;
+  @Mock private CollectionRegistration collectionRegistration;
   @Mock private MetricExporter metricExporter;
 
   @BeforeEach
   void setup() {
-    when(metricProducer.collectAllMetrics()).thenReturn(Collections.singletonList(METRIC_DATA));
+    when(collectionRegistration.collectAllMetrics())
+        .thenReturn(Collections.singletonList(METRIC_DATA));
   }
 
   @Test
   @SuppressWarnings({"rawtypes", "unchecked"})
   void startOnlyOnce() {
+
     ScheduledExecutorService scheduler = mock(ScheduledExecutorService.class);
 
     ScheduledFuture mock = mock(ScheduledFuture.class);
@@ -89,7 +90,7 @@ class PeriodicMetricReaderTest {
             .setExecutor(scheduler)
             .build();
 
-    reader.register(metricProducer);
+    reader.register(collectionRegistration);
 
     verify(scheduler, times(1)).scheduleAtFixedRate(any(), anyLong(), anyLong(), any());
   }
@@ -102,7 +103,7 @@ class PeriodicMetricReaderTest {
             .setInterval(Duration.ofMillis(100))
             .build();
 
-    reader.register(metricProducer);
+    reader.register(collectionRegistration);
     try {
       assertThat(waitingMetricExporter.waitForNumberOfExports(1))
           .containsExactly(Collections.singletonList(METRIC_DATA));
@@ -122,12 +123,12 @@ class PeriodicMetricReaderTest {
         PeriodicMetricReader.builder(waitingMetricExporter)
             .setInterval(Duration.ofMillis(100))
             .build();
-    when(metricProducer.collectAllMetrics()).thenReturn(Collections.emptyList());
-    reader.register(metricProducer);
+    when(collectionRegistration.collectAllMetrics()).thenReturn(Collections.emptyList());
+    reader.register(collectionRegistration);
 
     try {
       assertThat(reader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-      verify(metricProducer).collectAllMetrics();
+      verify(collectionRegistration).collectAllMetrics();
       assertThat(waitingMetricExporter.exportTimes.size()).isEqualTo(0);
     } finally {
       reader.shutdown();
@@ -142,7 +143,7 @@ class PeriodicMetricReaderTest {
             .setInterval(Duration.ofNanos(Long.MAX_VALUE))
             .build();
 
-    reader.register(metricProducer);
+    reader.register(collectionRegistration);
     assertThat(reader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
 
     try {
@@ -164,7 +165,7 @@ class PeriodicMetricReaderTest {
             .setInterval(Duration.ofMillis(100))
             .build();
 
-    reader.register(metricProducer);
+    reader.register(collectionRegistration);
     try {
       assertThat(waitingMetricExporter.waitForNumberOfExports(2))
           .containsExactly(
@@ -181,7 +182,7 @@ class PeriodicMetricReaderTest {
         PeriodicMetricReader.builder(waitingMetricExporter)
             .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
             .build();
-    reader.register(metricProducer);
+    reader.register(collectionRegistration);
     reader.shutdown();
 
     // This export was called during shutdown.
@@ -198,7 +199,7 @@ class PeriodicMetricReaderTest {
             PeriodicMetricReader.builder(new WaitingMetricExporter())
                 .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
                 .build());
-    reader.register(metricProducer);
+    reader.register(collectionRegistration);
     reader.close();
 
     verify(reader, times(1)).shutdown();

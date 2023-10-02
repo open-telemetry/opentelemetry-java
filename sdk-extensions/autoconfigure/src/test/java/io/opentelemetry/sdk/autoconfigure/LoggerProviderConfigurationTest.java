@@ -44,7 +44,7 @@ class LoggerProviderConfigurationTest {
     SdkLoggerProviderBuilder builder = SdkLoggerProvider.builder();
     LoggerProviderConfiguration.configureLoggerProvider(
         builder,
-        DefaultConfigProperties.createForTest(properties),
+        DefaultConfigProperties.createFromMap(properties),
         SpiHelper.create(LoggerProviderConfiguration.class.getClassLoader()),
         MeterProvider.noop(),
         (a, unused) -> a,
@@ -73,12 +73,12 @@ class LoggerProviderConfigurationTest {
   void configureLogLimits() {
     assertThat(
             LoggerProviderConfiguration.configureLogLimits(
-                DefaultConfigProperties.createForTest(Collections.emptyMap())))
+                DefaultConfigProperties.createFromMap(Collections.emptyMap())))
         .isEqualTo(LogLimits.getDefault());
 
     LogLimits config =
         LoggerProviderConfiguration.configureLogLimits(
-            DefaultConfigProperties.createForTest(
+            DefaultConfigProperties.createFromMap(
                 ImmutableMap.of(
                     "otel.attribute.value.length.limit", "100",
                     "otel.attribute.count.limit", "5")));

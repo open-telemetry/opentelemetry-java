@@ -5,8 +5,9 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
-import static io.opentelemetry.sdk.metrics.internal.state.Measurement.doubleMeasurement;
-import static io.opentelemetry.sdk.metrics.internal.state.Measurement.longMeasurement;
+import static io.opentelemetry.sdk.common.export.MemoryMode.REUSABLE_DATA;
+import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.createDouble;
+import static io.opentelemetry.sdk.metrics.internal.state.ImmutableMeasurement.createLong;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.mockito.ArgumentMatchers.any;
@@ -16,12 +17,16 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.data.MutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -31,10 +36,12 @@ import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
-import org.junit.jupiter.api.BeforeEach;
+import java.util.Collection;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -65,9 +72,10 @@ class AsynchronousMetricStorageTest {
   private AsynchronousMetricStorage<?, ?> longCounterStorage;
   private AsynchronousMetricStorage<?, ?> doubleCounterStorage;
 
-  @BeforeEach
-  void setup() {
+  // Not using @BeforeEach since many methods require executing them for each MemoryMode
+  void setup(MemoryMode memoryMode) {
     when(reader.getAggregationTemporality(any())).thenReturn(AggregationTemporality.CUMULATIVE);
+    when(reader.getMemoryMode()).thenReturn(memoryMode);
     registeredReader = RegisteredReader.create(reader, ViewRegistry.create());
 
     longCounterStorage =
@@ -94,14 +102,14 @@ class AsynchronousMetricStorageTest {
                 Advice.empty()));
   }
 
-  @Test
-  void recordLong() {
-    longCounterStorage.record(
-        longMeasurement(0, 1, 1, Attributes.builder().put("key", "a").build()));
-    longCounterStorage.record(
-        longMeasurement(0, 1, 2, Attributes.builder().put("key", "b").build()));
-    longCounterStorage.record(
-        longMeasurement(0, 1, 3, Attributes.builder().put("key", "c").build()));
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void recordLong(MemoryMode memoryMode) {
+    setup(memoryMode);
+
+    longCounterStorage.record(createLong(0, 1, 1, Attributes.builder().put("key", "a").build()));
+    longCounterStorage.record(createLong(0, 1, 2, Attributes.builder().put("key", "b").build()));
+    longCounterStorage.record(createLong(0, 1, 3, Attributes.builder().put("key", "c").build()));
 
     assertThat(longCounterStorage.collect(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
@@ -119,14 +127,17 @@ class AsynchronousMetricStorageTest {
     assertThat(logs.size()).isEqualTo(0);
   }
 
-  @Test
-  void recordDouble() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void recordDouble(MemoryMode memoryMode) {
+    setup(memoryMode);
+
     doubleCounterStorage.record(
-        doubleMeasurement(0, 1, 1.1, Attributes.builder().put("key", "a").build()));
+        createDouble(0, 1, 1.1, Attributes.builder().put("key", "a").build()));
     doubleCounterStorage.record(
-        doubleMeasurement(0, 1, 2.2, Attributes.builder().put("key", "b").build()));
+        createDouble(0, 1, 2.2, Attributes.builder().put("key", "b").build()));
     doubleCounterStorage.record(
-        doubleMeasurement(0, 1, 3.3, Attributes.builder().put("key", "c").build()));
+        createDouble(0, 1, 3.3, Attributes.builder().put("key", "c").build()));
 
     assertThat(doubleCounterStorage.collect(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
@@ -146,8 +157,11 @@ class AsynchronousMetricStorageTest {
     assertThat(logs.size()).isEqualTo(0);
   }
 
-  @Test
-  void record_ProcessesAttributes() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void record_ProcessesAttributes(MemoryMode memoryMode) {
+    setup(memoryMode);
+
     AsynchronousMetricStorage<?, ?> storage =
         AsynchronousMetricStorage.create(
             registeredReader,
@@ -166,7 +180,7 @@ class AsynchronousMetricStorageTest {
                 Advice.empty()));
 
     storage.record(
-        longMeasurement(0, 1, 1, Attributes.builder().put("key1", "a").put("key2", "b").build()));
+        createLong(0, 1, 1, Attributes.builder().put("key1", "a").put("key2", "b").build()));
 
     assertThat(storage.collect(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
@@ -180,11 +194,14 @@ class AsynchronousMetricStorageTest {
     assertThat(logs.size()).isEqualTo(0);
   }
 
-  @Test
-  void record_MaxCardinality() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void record_MaxCardinality(MemoryMode memoryMode) {
+    setup(memoryMode);
+
     for (int i = 0; i <= CARDINALITY_LIMIT + 1; i++) {
       longCounterStorage.record(
-          longMeasurement(0, 1, 1, Attributes.builder().put("key" + i, "val").build()));
+          createLong(0, 1, 1, Attributes.builder().put("key" + i, "val").build()));
     }
 
     assertThat(longCounterStorage.collect(resource, scope, 0, testClock.nanoTime()))
@@ -194,12 +211,13 @@ class AsynchronousMetricStorageTest {
     logs.assertContains("Instrument long-counter has exceeded the maximum allowed cardinality");
   }
 
-  @Test
-  void record_DuplicateAttributes() {
-    longCounterStorage.record(
-        longMeasurement(0, 1, 1, Attributes.builder().put("key1", "a").build()));
-    longCounterStorage.record(
-        longMeasurement(0, 1, 2, Attributes.builder().put("key1", "a").build()));
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void record_DuplicateAttributes(MemoryMode memoryMode) {
+    setup(memoryMode);
+
+    longCounterStorage.record(createLong(0, 1, 1, Attributes.builder().put("key1", "a").build()));
+    longCounterStorage.record(createLong(0, 1, 2, Attributes.builder().put("key1", "a").build()));
 
     assertThat(longCounterStorage.collect(resource, scope, 0, testClock.nanoTime()))
         .satisfies(
@@ -214,10 +232,13 @@ class AsynchronousMetricStorageTest {
         "Instrument long-counter has recorded multiple values for the same attributes: {key1=\"a\"}");
   }
 
-  @Test
-  void collect_CumulativeReportsCumulativeObservations() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void collect_CumulativeReportsCumulativeObservations(MemoryMode memoryMode) {
+    setup(memoryMode);
+
     // Record measurement and collect at time 10
-    longCounterStorage.record(longMeasurement(0, 10, 3, Attributes.empty()));
+    longCounterStorage.record(createLong(0, 10, 3, Attributes.empty()));
     assertThat(longCounterStorage.collect(resource, scope, 0, 0))
         .hasLongSumSatisfying(
             sum ->
@@ -232,9 +253,9 @@ class AsynchronousMetricStorageTest {
     registeredReader.setLastCollectEpochNanos(10);
 
     // Record measurements and collect at time 30
-    longCounterStorage.record(longMeasurement(0, 30, 3, Attributes.empty()));
+    longCounterStorage.record(createLong(0, 30, 3, Attributes.empty()));
     longCounterStorage.record(
-        longMeasurement(0, 30, 6, Attributes.builder().put("key", "value1").build()));
+        createLong(0, 30, 6, Attributes.builder().put("key", "value1").build()));
     assertThat(longCounterStorage.collect(resource, scope, 0, 0))
         .hasLongSumSatisfying(
             sum ->
@@ -255,9 +276,9 @@ class AsynchronousMetricStorageTest {
     registeredReader.setLastCollectEpochNanos(30);
 
     // Record measurement and collect at time 35
-    longCounterStorage.record(longMeasurement(0, 35, 4, Attributes.empty()));
+    longCounterStorage.record(createLong(0, 35, 4, Attributes.empty()));
     longCounterStorage.record(
-        longMeasurement(0, 35, 5, Attributes.builder().put("key", "value2").build()));
+        createLong(0, 35, 5, Attributes.builder().put("key", "value2").build()));
     assertThat(longCounterStorage.collect(resource, scope, 0, 0))
         .hasLongSumSatisfying(
             sum ->
@@ -277,8 +298,11 @@ class AsynchronousMetricStorageTest {
                                 .hasAttributes(Attributes.builder().put("key", "value2").build())));
   }
 
-  @Test
-  void collect_DeltaComputesDiff() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void collect_DeltaComputesDiff(MemoryMode memoryMode) {
+    setup(memoryMode);
+
     when(reader.getAggregationTemporality(any())).thenReturn(AggregationTemporality.DELTA);
     longCounterStorage =
         AsynchronousMetricStorage.create(
@@ -293,7 +317,7 @@ class AsynchronousMetricStorageTest {
                 Advice.empty()));
 
     // Record measurement and collect at time 10
-    longCounterStorage.record(longMeasurement(0, 10, 3, Attributes.empty()));
+    longCounterStorage.record(createLong(0, 10, 3, Attributes.empty()));
     assertThat(longCounterStorage.collect(resource, scope, 0, 0))
         .hasLongSumSatisfying(
             sum ->
@@ -308,9 +332,9 @@ class AsynchronousMetricStorageTest {
     registeredReader.setLastCollectEpochNanos(10);
 
     // Record measurement and collect at time 30
-    longCounterStorage.record(longMeasurement(0, 30, 3, Attributes.empty()));
+    longCounterStorage.record(createLong(0, 30, 3, Attributes.empty()));
     longCounterStorage.record(
-        longMeasurement(0, 30, 6, Attributes.builder().put("key", "value1").build()));
+        createLong(0, 30, 6, Attributes.builder().put("key", "value1").build()));
     assertThat(longCounterStorage.collect(resource, scope, 0, 0))
         .hasLongSumSatisfying(
             sum ->
@@ -331,9 +355,9 @@ class AsynchronousMetricStorageTest {
     registeredReader.setLastCollectEpochNanos(30);
 
     // Record measurement and collect at time 35
-    longCounterStorage.record(longMeasurement(0, 35, 4, Attributes.empty()));
+    longCounterStorage.record(createLong(0, 35, 4, Attributes.empty()));
     longCounterStorage.record(
-        longMeasurement(0, 35, 5, Attributes.builder().put("key", "value2").build()));
+        createLong(0, 35, 5, Attributes.builder().put("key", "value2").build()));
     assertThat(longCounterStorage.collect(resource, scope, 0, 0))
         .hasLongSumSatisfying(
             sum ->
@@ -351,5 +375,55 @@ class AsynchronousMetricStorageTest {
                                 .hasEpochNanos(35)
                                 .hasValue(5)
                                 .hasAttributes(Attributes.builder().put("key", "value2").build())));
+  }
+
+  @Test
+  void collect_reusableData_reusedObjectsAreReturnedOnSecondCall() {
+    setup(REUSABLE_DATA);
+
+    longCounterStorage.record(createLong(0, 1, 1, Attributes.builder().put("key", "a").build()));
+    longCounterStorage.record(createLong(0, 1, 2, Attributes.builder().put("key", "b").build()));
+    longCounterStorage.record(createLong(0, 1, 3, Attributes.builder().put("key", "c").build()));
+
+    MetricData firstCollectMetricData =
+        longCounterStorage.collect(resource, scope, 0, testClock.nanoTime());
+    assertThat(firstCollectMetricData)
+        .satisfies(
+            metricData ->
+                assertThat(metricData)
+                    .hasLongSumSatisfying(
+                        sum ->
+                            sum.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(1)
+                                        .hasAttributes(attributeEntry("key", "a"))
+                                        .isInstanceOf(MutableLongPointData.class),
+                                point ->
+                                    point
+                                        .hasValue(2)
+                                        .hasAttributes(attributeEntry("key", "b"))
+                                        .isInstanceOf(MutableLongPointData.class),
+                                point ->
+                                    point
+                                        .hasValue(3)
+                                        .hasAttributes(attributeEntry("key", "c"))
+                                        .isInstanceOf(MutableLongPointData.class))));
+
+    MetricData secondCollectMetricData =
+        longCounterStorage.collect(resource, scope, 0, testClock.nanoTime());
+
+    Collection<? extends PointData> secondCollectPoints =
+        secondCollectMetricData.getData().getPoints();
+    Collection<? extends PointData> firstCollectionPoints =
+        firstCollectMetricData.getData().getPoints();
+    assertThat(secondCollectPoints).hasSameSizeAs(firstCollectionPoints);
+
+    // Show that second returned objects have been used in first collect response as well
+    // which proves there is reuse.
+    for (PointData firstCollectionPoint : firstCollectionPoints) {
+      assertThat(secondCollectPoints)
+          .anySatisfy(point -> assertThat(point).isSameAs(firstCollectionPoint));
+    }
   }
 }

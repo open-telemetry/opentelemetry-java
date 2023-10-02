@@ -22,7 +22,7 @@ class SpanExporterConfigurationTest {
   void configureExporter_KnownSpiExportersNotOnClasspath() {
     NamedSpiManager<SpanExporter> spiExportersManager =
         SpanExporterConfiguration.spanExporterSpiManager(
-            DefaultConfigProperties.createForTest(Collections.emptyMap()),
+            DefaultConfigProperties.createFromMap(Collections.emptyMap()),
             SpiHelper.create(SpanExporterConfigurationTest.class.getClassLoader()));
 
     assertThatThrownBy(() -> configureExporter("jaeger", spiExportersManager))

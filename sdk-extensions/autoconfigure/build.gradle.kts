@@ -11,7 +11,6 @@ dependencies {
   api(project(":sdk-extensions:autoconfigure-spi"))
 
   implementation(project(":api:events"))
-  implementation(project(":semconv"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 
@@ -36,10 +35,6 @@ testing {
       }
     }
     register<JvmTestSuite>("testConditionalResourceProvider") {
-      dependencies {
-        implementation(project(":semconv"))
-      }
-
       targets {
         all {
           testTask {
@@ -63,7 +58,6 @@ testing {
         implementation(project(":sdk:testing"))
         implementation(project(":sdk:trace-shaded-deps"))
         implementation(project(":sdk-extensions:jaeger-remote-sampler"))
-        implementation(project(":semconv"))
 
         implementation("com.google.guava:guava")
         implementation("io.opentelemetry.proto:opentelemetry-proto")
