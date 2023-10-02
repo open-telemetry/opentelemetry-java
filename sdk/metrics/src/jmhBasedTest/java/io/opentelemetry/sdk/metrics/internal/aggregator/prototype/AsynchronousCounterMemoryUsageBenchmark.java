@@ -4,6 +4,7 @@
  */
 package io.opentelemetry.sdk.metrics.internal.aggregator.prototype;
 
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.internal.aggregator.prototype.AsynchronousMetricStorageGarbageCollectionBenchmarkPrototype.Filter;
 import java.lang.management.ManagementFactory;
@@ -44,6 +45,7 @@ public class AsynchronousCounterMemoryUsageBenchmark {
   private void measure()
       throws ExecutionException, InterruptedException, TimeoutException {
     // Parameters
+    MemoryMode memoryMode = MemoryMode.REUSABLE_DATA;
     AggregationTemporality aggregationTemporality = AggregationTemporality.CUMULATIVE;
     int countersCount = 50;
     int cardinality = 100_000;
@@ -53,7 +55,7 @@ public class AsynchronousCounterMemoryUsageBenchmark {
 
     AsynchronousMetricStorageGarbageCollectionBenchmarkPrototype.ThreadState benchmarkSetup =
         new AsynchronousMetricStorageGarbageCollectionBenchmarkPrototype.ThreadState(
-            countersCount, cardinality, attributesToAllow, countersToAllows);
+            countersCount, cardinality, attributesToAllow, countersToAllows, memoryMode);
 
     benchmarkSetup.aggregationTemporality = aggregationTemporality;
     benchmarkSetup.filter = filter;

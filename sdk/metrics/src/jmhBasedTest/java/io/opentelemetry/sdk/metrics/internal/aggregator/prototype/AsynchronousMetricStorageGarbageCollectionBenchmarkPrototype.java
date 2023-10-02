@@ -73,11 +73,13 @@ public class AsynchronousMetricStorageGarbageCollectionBenchmarkPrototype {
         int countersCount,
         int cardinality,
         int attributesToAllow,
-        int countersToAllow) {
+        int countersToAllow,
+        MemoryMode memoryMode) {
       this.cardinality = cardinality;
       this.countersCount = countersCount;
       this.attributesToAllow = attributesToAllow;
       this.countersToAllow = countersToAllow;
+      this.memoryMode = memoryMode;
     }
 
     @SuppressWarnings("SpellCheckingInspection")
