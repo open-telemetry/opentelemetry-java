@@ -58,6 +58,7 @@ testing {
         implementation(project(":sdk:testing"))
         implementation(project(":sdk:trace-shaded-deps"))
         implementation(project(":sdk-extensions:jaeger-remote-sampler"))
+        implementation(project(":sdk-extensions:incubator"))
 
         implementation("com.google.guava:guava")
         implementation("io.opentelemetry.proto:opentelemetry-proto")
