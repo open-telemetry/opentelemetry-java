@@ -1,6 +1,7 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator.prototype;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -12,11 +13,15 @@ public class NoopMetricExporter implements MetricExporter {
   private final AggregationTemporality aggregationTemporality;
   private final Aggregation aggregation;
   private int pointSoFar = 0;
+  private final MemoryMode memoryMode;
 
   public NoopMetricExporter(
-      AggregationTemporality aggregationTemporality, Aggregation aggregation) {
+      AggregationTemporality aggregationTemporality,
+      Aggregation aggregation,
+      MemoryMode memoryMode) {
     this.aggregationTemporality = aggregationTemporality;
     this.aggregation = aggregation;
+    this.memoryMode = memoryMode;
   }
 
   @SuppressWarnings("SystemOut")
@@ -50,5 +55,10 @@ public class NoopMetricExporter implements MetricExporter {
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
     return aggregationTemporality;
+  }
+
+  @Override
+  public MemoryMode getMemoryMode() {
+    return memoryMode;
   }
 }

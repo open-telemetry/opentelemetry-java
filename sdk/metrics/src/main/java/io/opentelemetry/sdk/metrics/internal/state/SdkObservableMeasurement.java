@@ -140,7 +140,7 @@ public final class SdkObservableMeasurement
             instrumentDescriptor.getType(),
             instrumentDescriptor.getUnit(),
             attributes)) {
-	    }
+
       Measurement measurement;
 
       MemoryMode memoryMode = activeReader.getReader().getMemoryMode();

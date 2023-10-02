@@ -1,7 +1,7 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator.prototype;
 
-import static io.opentelemetry.sdk.metrics.internal.aggregator.prototype.AsynchronousMetricStorageGarbageCollectionBenchmark.Filter.NO_FILTER;
-import static io.opentelemetry.sdk.metrics.internal.aggregator.prototype.AsynchronousMetricStorageGarbageCollectionBenchmark.Filter.WITH_FILTER;
+import static io.opentelemetry.sdk.metrics.internal.aggregator.prototype.AsynchronousMetricStorageGarbageCollectionBenchmarkPrototype.Filter.NO_FILTER;
+import static io.opentelemetry.sdk.metrics.internal.aggregator.prototype.AsynchronousMetricStorageGarbageCollectionBenchmarkPrototype.Filter.WITH_FILTER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -27,7 +27,7 @@ public class AsynchronousMetricStorageGarbageCollectionBenchmarkTest {
     // with garbage collection profiler
     Options opt =
         new OptionsBuilder()
-            .include(AsynchronousMetricStorageGarbageCollectionBenchmark.class.getSimpleName())
+            .include(AsynchronousMetricStorageGarbageCollectionBenchmarkPrototype.class.getSimpleName())
             .addProfiler("gc")
             .shouldFailOnError(true)
             .build();
@@ -41,6 +41,15 @@ public class AsynchronousMetricStorageGarbageCollectionBenchmarkTest {
 
         String filter = benchmarkParams.getParam("filter");
         String aggregationTemporality = benchmarkParams.getParam("aggregationTemporality");
+        if (filter == null) {
+          Collection<String> paramsKeys = benchmarkParams.getParamsKeys();
+          paramsKeys.forEach(param -> {
+            System.out.println("param key = " + param
+                + ", param = " + benchmarkParams.getParam(param));
+          });
+        }
+
+
         assertThat(filter).isNotNull();
         assertThat(aggregationTemporality).isNotNull();
 
@@ -59,11 +68,11 @@ public class AsynchronousMetricStorageGarbageCollectionBenchmarkTest {
     assertThat(resultMap).hasSameSizeAs(AggregationTemporality.values());
 
     resultMap.forEach(
-        (aggregationTemporality, memoryModeToAllocRateMap) -> {
+        (aggregationTemporality, filterToAllocRateMap) -> {
           Double withoutFilterDataAllocRate =
-              memoryModeToAllocRateMap.get(NO_FILTER.toString());
+              filterToAllocRateMap.get(NO_FILTER.toString());
           Double withFilterDataAllocRate =
-              memoryModeToAllocRateMap.get(WITH_FILTER.toString());
+              filterToAllocRateMap.get(WITH_FILTER.toString());
 
           assertThat(withoutFilterDataAllocRate).isNotNull().isNotZero();
           assertThat(withFilterDataAllocRate).isNotNull().isNotZero();

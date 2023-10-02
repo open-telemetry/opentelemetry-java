@@ -5,8 +5,7 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator.prototype;
 
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.internal.aggregator.prototype.AsynchronousMetricStorageGarbageCollectionBenchmark.Filter;
-
+import io.opentelemetry.sdk.metrics.internal.aggregator.prototype.AsynchronousMetricStorageGarbageCollectionBenchmarkPrototype.Filter;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,15 +51,15 @@ public class AsynchronousCounterMemoryUsageBenchmark {
     int attributesToAllow = 1000;
     Filter filter = Filter.WITH_FILTER;
 
-    AsynchronousMetricStorageGarbageCollectionBenchmark.ThreadState benchmarkSetup =
-        new AsynchronousMetricStorageGarbageCollectionBenchmark.ThreadState(
+    AsynchronousMetricStorageGarbageCollectionBenchmarkPrototype.ThreadState benchmarkSetup =
+        new AsynchronousMetricStorageGarbageCollectionBenchmarkPrototype.ThreadState(
             countersCount, cardinality, attributesToAllow, countersToAllows);
 
     benchmarkSetup.aggregationTemporality = aggregationTemporality;
     benchmarkSetup.filter = filter;
 
-    AsynchronousMetricStorageGarbageCollectionBenchmark benchmark =
-        new AsynchronousMetricStorageGarbageCollectionBenchmark();
+    AsynchronousMetricStorageGarbageCollectionBenchmarkPrototype benchmark =
+        new AsynchronousMetricStorageGarbageCollectionBenchmarkPrototype();
 
     benchmarkSetup.setup();
 
@@ -153,8 +152,8 @@ public class AsynchronousCounterMemoryUsageBenchmark {
   }
 
   private static void runBenchmark(
-      AsynchronousMetricStorageGarbageCollectionBenchmark benchmark,
-      AsynchronousMetricStorageGarbageCollectionBenchmark.ThreadState threadState) {
+      AsynchronousMetricStorageGarbageCollectionBenchmarkPrototype benchmark,
+      AsynchronousMetricStorageGarbageCollectionBenchmarkPrototype.ThreadState threadState) {
     benchmark.recordAndCollect(threadState);
   }
 }

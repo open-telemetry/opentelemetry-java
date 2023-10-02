@@ -3,6 +3,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator.prototype;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -39,7 +40,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @Measurement(iterations = 20, batchSize = 100)
 @Warmup(iterations = 10, batchSize = 10)
 @Fork(1)
-public class AsynchronousMetricStorageGarbageCollectionBenchmark {
+public class AsynchronousMetricStorageGarbageCollectionBenchmarkPrototype {
 
   public enum Filter {
     NO_FILTER,
@@ -53,12 +54,14 @@ public class AsynchronousMetricStorageGarbageCollectionBenchmark {
     private final int attributesToAllow;
     private final int countersToAllow;
     @Param public AggregationTemporality aggregationTemporality;
+    public MemoryMode memoryMode = MemoryMode.REUSABLE_DATA;
     @Param public Filter filter;
     SdkMeterProvider sdkMeterProvider;
     private final Random random = new Random();
     List<Attributes> attributesList;
 
     /** Creates a ThreadState. */
+    @SuppressWarnings("unused")
     public ThreadState() {
       cardinality = 1000;
       countersCount = 10;
@@ -84,7 +87,7 @@ public class AsynchronousMetricStorageGarbageCollectionBenchmark {
           PeriodicMetricReader.builder(
                   // Configure an exporter that configures the temporality and aggregation
                   // for the test case, but otherwise drops the data on export
-                  new NoopMetricExporter(aggregationTemporality, Aggregation.sum()))
+                  new NoopMetricExporter(aggregationTemporality, Aggregation.sum(), memoryMode))
               // Effectively disable periodic reading so reading is only done on #flush()
               .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
               .build();
