@@ -21,7 +21,8 @@ public interface Body {
   /** An enum that represents all the possible value types for an {@code Body}. */
   enum Type {
     EMPTY,
-    STRING
+    STRING,
+    ANY_VALUE
   }
 
   /**

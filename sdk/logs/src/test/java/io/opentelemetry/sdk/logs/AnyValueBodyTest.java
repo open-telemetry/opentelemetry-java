@@ -1,0 +1,128 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.sdk.logs;
+
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+
+import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.extension.incubator.logs.AnyValue;
+import io.opentelemetry.extension.incubator.logs.ExtendedLogRecordBuilder;
+import io.opentelemetry.extension.incubator.logs.KeyAnyValue;
+import io.opentelemetry.sdk.logs.data.Body;
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
+import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import org.junit.jupiter.api.Test;
+
+class AnyValueBodyTest {
+
+  @Test
+  @SuppressWarnings("DoubleBraceInitialization")
+  void anyValueBody() {
+    InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
+    SdkLoggerProvider provider =
+        SdkLoggerProvider.builder()
+            .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter))
+            .build();
+    Logger logger = provider.get(AnyValueBodyTest.class.getName());
+
+    // AnyValue can be a primitive type, like a string, long, double, boolean
+    extendedLogRecordBuilder(logger).setBody(AnyValue.ofLong(1)).emit();
+    assertThat(exporter.getFinishedLogRecordItems())
+        .hasSize(1)
+        .satisfiesExactly(
+            logRecordData -> {
+              assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
+              assertThat(logRecordData.getBody().asString()).isEqualTo("1");
+            });
+    exporter.reset();
+
+    // ...or a byte array of raw data
+    extendedLogRecordBuilder(logger)
+        .setBody(AnyValue.ofBytes("hello world".getBytes(StandardCharsets.UTF_8)))
+        .emit();
+    assertThat(exporter.getFinishedLogRecordItems())
+        .hasSize(1)
+        .satisfiesExactly(
+            logRecordData -> {
+              assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
+              assertThat(logRecordData.getBody().asString()).isEqualTo("68656c6c6f20776f726c64");
+            });
+    exporter.reset();
+
+    // But most commonly it will be used to represent complex structured like a map
+    extendedLogRecordBuilder(logger)
+        .setBody(
+            // The protocol data structure uses a repeated KeyValue to represent a map:
+            // https://github.com/open-telemetry/opentelemetry-proto/blob/ac3242b03157295e4ee9e616af53b81517b06559/opentelemetry/proto/common/v1/common.proto#L59
+            // The comment says that keys aren't allowed to repeat themselves, and because its
+            // represented as a repeated KeyValue, we need to at least offer the ability to preserve
+            // order.
+            // Accepting a Map<String, AnyValue<?>> makes for a cleaner API, but ordering of the
+            // entries is lost. To accommodate use cases where ordering should be preserved we
+            // accept an array of key value pairs, but also a map based alternative (see the
+            // key_value_list_key entry).
+            AnyValue.ofKeyAnyValueArray(
+                KeyAnyValue.of("str_key", AnyValue.ofString("value")),
+                KeyAnyValue.of("bool_key", AnyValue.ofBoolean(true)),
+                KeyAnyValue.of("long_key", AnyValue.ofLong(1L)),
+                KeyAnyValue.of("double_key", AnyValue.ofDouble(1.1)),
+                KeyAnyValue.of(
+                    "bytes_key", AnyValue.ofBytes("bytes".getBytes(StandardCharsets.UTF_8))),
+                KeyAnyValue.of(
+                    "arr_key",
+                    AnyValue.ofArray(
+                        AnyValue.ofString("entry1"), AnyValue.ofLong(2), AnyValue.ofDouble(3.3))),
+                KeyAnyValue.of(
+                    "key_value_list_key",
+                    AnyValue.ofMap(
+                        new LinkedHashMap<String, AnyValue<?>>() {
+                          {
+                            put("child_str_key1", AnyValue.ofString("child_value1"));
+                            put("child_str_key2", AnyValue.ofString("child_value2"));
+                          }
+                        }))))
+        .emit();
+    assertThat(exporter.getFinishedLogRecordItems())
+        .hasSize(1)
+        .satisfiesExactly(
+            logRecordData -> {
+              assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
+              assertThat(logRecordData.getBody().asString())
+                  .isEqualTo(
+                      "["
+                          + "str_key=value, "
+                          + "bool_key=true, "
+                          + "long_key=1, "
+                          + "double_key=1.1, "
+                          + "bytes_key=6279746573, "
+                          + "arr_key=[entry1, 2, 3.3], "
+                          + "key_value_list_key=[child_str_key1=child_value1, child_str_key2=child_value2]"
+                          + "]");
+            });
+    exporter.reset();
+
+    // ..or an array (optionally with heterogeneous types)
+    extendedLogRecordBuilder(logger)
+        .setBody(
+            AnyValue.ofArray(
+                AnyValue.ofString("entry1"), AnyValue.ofString("entry2"), AnyValue.ofLong(3)))
+        .emit();
+    assertThat(exporter.getFinishedLogRecordItems())
+        .hasSize(1)
+        .satisfiesExactly(
+            logRecordData -> {
+              assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
+              assertThat(logRecordData.getBody().asString()).isEqualTo("[entry1, entry2, 3]");
+            });
+    exporter.reset();
+  }
+
+  ExtendedLogRecordBuilder extendedLogRecordBuilder(Logger logger) {
+    return (ExtendedLogRecordBuilder) logger.logRecordBuilder();
+  }
+}
