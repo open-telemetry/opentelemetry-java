@@ -22,14 +22,11 @@ public interface CollectionRegistration {
   /**
    * Returns a noop {@link CollectionRegistration}, useful for {@link MetricReader}s to hold before
    * {@link MetricReader#register(CollectionRegistration)} is called.
+   *
+   * @since 1.31.0
    */
   static CollectionRegistration noop() {
-    return new CollectionRegistration() {
-      @Override
-      public Collection<MetricData> collectAllMetrics() {
-        return Collections.emptyList();
-      }
-    };
+    return new CollectionRegistration() {};
   }
 
   /**
@@ -38,6 +35,8 @@ public interface CollectionRegistration {
    * <p>If {@link MetricReader#getMemoryMode()} is configured to {@link MemoryMode#REUSABLE_DATA} do
    * not keep the result or any of its contained objects as they are to be reused to return the
    * result for the next call to this method.
+   *
+   * @since 1.31.0
    */
   default Collection<MetricData> collectAllMetrics() {
     return Collections.emptyList();
