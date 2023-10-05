@@ -34,8 +34,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class MetricExporterConfigurationTest {
 
-  private static final ConfigProperties EMPTY =
-      DefaultConfigProperties.createFromMap(Collections.emptyMap());
+  private static final ConfigProperties CONFIG_PROPERTIES =
+      DefaultConfigProperties.createFromMap(
+          Collections.singletonMap("otel.exporter.prometheus.port", "0"));
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
@@ -48,7 +49,7 @@ class MetricExporterConfigurationTest {
 
     MetricReader reader =
         MetricExporterConfiguration.configureReader(
-            "prometheus", EMPTY, spiHelper, (a, b) -> a, closeables);
+            "prometheus", CONFIG_PROPERTIES, spiHelper, (a, b) -> a, closeables);
     cleanup.addCloseables(closeables);
 
     assertThat(reader).isInstanceOf(PrometheusHttpServer.class);
@@ -60,7 +61,7 @@ class MetricExporterConfigurationTest {
   void configureExporter_KnownSpiExportersOnClasspath(
       String exporterName, Class<? extends Closeable> expectedExporter) {
     NamedSpiManager<MetricExporter> spiExportersManager =
-        MetricExporterConfiguration.metricExporterSpiManager(EMPTY, spiHelper);
+        MetricExporterConfiguration.metricExporterSpiManager(CONFIG_PROPERTIES, spiHelper);
 
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureExporter(exporterName, spiExportersManager);
@@ -81,7 +82,7 @@ class MetricExporterConfigurationTest {
   void configureMetricReader_KnownSpiExportersOnClasspath(
       String exporterName, Class<? extends Closeable> expectedExporter) {
     NamedSpiManager<MetricReader> spiMetricReadersManager =
-        MetricExporterConfiguration.metricReadersSpiManager(EMPTY, spiHelper);
+        MetricExporterConfiguration.metricReadersSpiManager(CONFIG_PROPERTIES, spiHelper);
 
     MetricReader metricReader =
         MetricExporterConfiguration.configureMetricReader(exporterName, spiMetricReadersManager);
