@@ -31,7 +31,7 @@ class AnyValueBodyTest {
     Logger logger = provider.get(AnyValueBodyTest.class.getName());
 
     // AnyValue can be a primitive type, like a string, long, double, boolean
-    extendedLogRecordBuilder(logger).setBody(AnyValue.ofLong(1)).emit();
+    extendedLogRecordBuilder(logger).setBody(AnyValue.of(1)).emit();
     assertThat(exporter.getFinishedLogRecordItems())
         .hasSize(1)
         .satisfiesExactly(
@@ -43,7 +43,7 @@ class AnyValueBodyTest {
 
     // ...or a byte array of raw data
     extendedLogRecordBuilder(logger)
-        .setBody(AnyValue.ofBytes("hello world".getBytes(StandardCharsets.UTF_8)))
+        .setBody(AnyValue.of("hello world".getBytes(StandardCharsets.UTF_8)))
         .emit();
     assertThat(exporter.getFinishedLogRecordItems())
         .hasSize(1)
@@ -66,24 +66,22 @@ class AnyValueBodyTest {
             // entries is lost. To accommodate use cases where ordering should be preserved we
             // accept an array of key value pairs, but also a map based alternative (see the
             // key_value_list_key entry).
-            AnyValue.ofKeyAnyValueArray(
-                KeyAnyValue.of("str_key", AnyValue.ofString("value")),
-                KeyAnyValue.of("bool_key", AnyValue.ofBoolean(true)),
-                KeyAnyValue.of("long_key", AnyValue.ofLong(1L)),
-                KeyAnyValue.of("double_key", AnyValue.ofDouble(1.1)),
-                KeyAnyValue.of(
-                    "bytes_key", AnyValue.ofBytes("bytes".getBytes(StandardCharsets.UTF_8))),
+            AnyValue.of(
+                KeyAnyValue.of("str_key", AnyValue.of("value")),
+                KeyAnyValue.of("bool_key", AnyValue.of(true)),
+                KeyAnyValue.of("long_key", AnyValue.of(1L)),
+                KeyAnyValue.of("double_key", AnyValue.of(1.1)),
+                KeyAnyValue.of("bytes_key", AnyValue.of("bytes".getBytes(StandardCharsets.UTF_8))),
                 KeyAnyValue.of(
                     "arr_key",
-                    AnyValue.ofArray(
-                        AnyValue.ofString("entry1"), AnyValue.ofLong(2), AnyValue.ofDouble(3.3))),
+                    AnyValue.of(AnyValue.of("entry1"), AnyValue.of(2), AnyValue.of(3.3))),
                 KeyAnyValue.of(
                     "key_value_list_key",
-                    AnyValue.ofMap(
+                    AnyValue.of(
                         new LinkedHashMap<String, AnyValue<?>>() {
                           {
-                            put("child_str_key1", AnyValue.ofString("child_value1"));
-                            put("child_str_key2", AnyValue.ofString("child_value2"));
+                            put("child_str_key1", AnyValue.of("child_value1"));
+                            put("child_str_key2", AnyValue.of("child_value2"));
                           }
                         }))))
         .emit();
@@ -108,9 +106,7 @@ class AnyValueBodyTest {
 
     // ..or an array (optionally with heterogeneous types)
     extendedLogRecordBuilder(logger)
-        .setBody(
-            AnyValue.ofArray(
-                AnyValue.ofString("entry1"), AnyValue.ofString("entry2"), AnyValue.ofLong(3)))
+        .setBody(AnyValue.of(AnyValue.of("entry1"), AnyValue.of("entry2"), AnyValue.of(3)))
         .emit();
     assertThat(exporter.getFinishedLogRecordItems())
         .hasSize(1)
