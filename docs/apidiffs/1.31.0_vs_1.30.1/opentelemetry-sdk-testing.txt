@@ -1,0 +1,12 @@
+Comparing source compatibility of  against 
+***  MODIFIED CLASS: PUBLIC io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricReaderBuilder builder()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.export.MemoryMode getMemoryMode()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricReaderBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader build()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricReaderBuilder setAggregationTemporalitySelector(io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricReaderBuilder setDefaultAggregationSelector(io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryMetricReaderBuilder setMemoryMode(io.opentelemetry.sdk.common.export.MemoryMode)
