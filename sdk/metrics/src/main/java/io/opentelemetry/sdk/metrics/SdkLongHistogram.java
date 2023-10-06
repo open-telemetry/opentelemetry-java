@@ -10,7 +10,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.extension.incubator.metrics.ExtendedLongHistogramBuilder;
-import io.opentelemetry.extension.incubator.metrics.LongHistogramAdviceConfigurer;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -18,7 +17,6 @@ import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -59,7 +57,7 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
 
   static final class SdkLongHistogramBuilder
       extends AbstractInstrumentBuilder<SdkLongHistogramBuilder>
-      implements ExtendedLongHistogramBuilder, LongHistogramAdviceConfigurer {
+      implements ExtendedLongHistogramBuilder {
 
     SdkLongHistogramBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -85,19 +83,13 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     }
 
     @Override
-    public SdkLongHistogramBuilder setAdvice(
-        Consumer<LongHistogramAdviceConfigurer> adviceConsumer) {
-      adviceConsumer.accept(this);
-      return this;
-    }
-
-    @Override
     public SdkLongHistogram build() {
       return buildSynchronousInstrument(SdkLongHistogram::new);
     }
 
     @Override
-    public LongHistogramAdviceConfigurer setExplicitBucketBoundaries(List<Long> bucketBoundaries) {
+    public ExtendedLongHistogramBuilder setExplicitBucketBoundariesAdvice(
+        List<Long> bucketBoundaries) {
       List<Double> doubleBoundaries =
           bucketBoundaries.stream().map(Long::doubleValue).collect(Collectors.toList());
       adviceBuilder.setExplicitBucketBoundaries(doubleBoundaries);
@@ -105,7 +97,7 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     }
 
     @Override
-    public LongHistogramAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
+    public ExtendedLongHistogramBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
       adviceBuilder.setAttributes(attributes);
       return this;
     }

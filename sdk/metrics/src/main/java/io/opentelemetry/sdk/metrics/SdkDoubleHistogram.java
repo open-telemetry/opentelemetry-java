@@ -10,7 +10,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.extension.incubator.metrics.DoubleHistogramAdviceConfigurer;
 import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleHistogramBuilder;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
@@ -18,7 +17,6 @@ import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,7 +56,7 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
 
   static final class SdkDoubleHistogramBuilder
       extends AbstractInstrumentBuilder<SdkDoubleHistogramBuilder>
-      implements ExtendedDoubleHistogramBuilder, DoubleHistogramAdviceConfigurer {
+      implements ExtendedDoubleHistogramBuilder {
 
     SdkDoubleHistogramBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -80,13 +78,6 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
     }
 
     @Override
-    public SdkDoubleHistogramBuilder setAdvice(
-        Consumer<DoubleHistogramAdviceConfigurer> adviceConsumer) {
-      adviceConsumer.accept(this);
-      return this;
-    }
-
-    @Override
     public SdkDoubleHistogram build() {
       return buildSynchronousInstrument(SdkDoubleHistogram::new);
     }
@@ -97,14 +88,14 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
     }
 
     @Override
-    public DoubleHistogramAdviceConfigurer setExplicitBucketBoundaries(
+    public ExtendedDoubleHistogramBuilder setExplicitBucketBoundariesAdvice(
         List<Double> bucketBoundaries) {
       adviceBuilder.setExplicitBucketBoundaries(bucketBoundaries);
       return this;
     }
 
     @Override
-    public DoubleHistogramAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
+    public ExtendedDoubleHistogramBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
       adviceBuilder.setAttributes(attributes);
       return this;
     }

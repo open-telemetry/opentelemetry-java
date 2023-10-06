@@ -5,7 +5,9 @@
 
 package io.opentelemetry.extension.incubator.metrics;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
+import java.util.List;
 import java.util.function.Consumer;
 
 /** Extended {@link DoubleGaugeBuilder} with experimental APIs. */
@@ -22,8 +24,11 @@ public interface ExtendedDoubleGaugeBuilder extends DoubleGaugeBuilder {
    */
   DoubleGauge build();
 
-  /** Specify advice for gauge implementations. */
-  default DoubleGaugeBuilder setAdvice(Consumer<DoubleGaugeAdviceConfigurer> adviceConsumer) {
+  /**
+   * Specify the attribute advice, which suggests the recommended set of attribute keys to be used
+   * for this gauge.
+   */
+  default ExtendedDoubleGaugeBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
     return this;
   }
 }

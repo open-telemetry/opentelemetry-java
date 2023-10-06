@@ -9,12 +9,10 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
-import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.extension.incubator.metrics.ExtendedLongUpDownCounterBuilder;
-import io.opentelemetry.extension.incubator.metrics.LongUpDownCounterAdviceConfigurer;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
@@ -48,7 +46,7 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
 
   static final class SdkLongUpDownCounterBuilder
       extends AbstractInstrumentBuilder<SdkLongUpDownCounterBuilder>
-      implements ExtendedLongUpDownCounterBuilder, LongUpDownCounterAdviceConfigurer {
+      implements ExtendedLongUpDownCounterBuilder {
 
     SdkLongUpDownCounterBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -66,13 +64,6 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
 
     @Override
     protected SdkLongUpDownCounterBuilder getThis() {
-      return this;
-    }
-
-    @Override
-    public LongUpDownCounterBuilder setAdvice(
-        Consumer<LongUpDownCounterAdviceConfigurer> adviceConsumer) {
-      adviceConsumer.accept(this);
       return this;
     }
 
@@ -99,7 +90,7 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
     }
 
     @Override
-    public LongUpDownCounterAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
+    public ExtendedLongUpDownCounterBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
       adviceBuilder.setAttributes(attributes);
       return this;
     }

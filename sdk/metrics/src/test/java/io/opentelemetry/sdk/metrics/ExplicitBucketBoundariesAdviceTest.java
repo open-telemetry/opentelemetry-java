@@ -179,10 +179,7 @@ class ExplicitBucketBoundariesAdviceTest {
                   DoubleHistogram build =
                       ((ExtendedDoubleHistogramBuilder)
                               meterProvider.get("meter").histogramBuilder("histogram"))
-                          .setAdvice(
-                              advice ->
-                                  advice.setExplicitBucketBoundaries(
-                                      Arrays.asList(10.0, 20.0, 30.0)))
+                          .setExplicitBucketBoundariesAdvice(Arrays.asList(10.0, 20.0, 30.0))
                           .build();
                   return build::record;
                 }),
@@ -192,9 +189,7 @@ class ExplicitBucketBoundariesAdviceTest {
                   LongHistogram build =
                       ((ExtendedLongHistogramBuilder)
                               meterProvider.get("meter").histogramBuilder("histogram").ofLongs())
-                          .setAdvice(
-                              advice ->
-                                  advice.setExplicitBucketBoundaries(Arrays.asList(10L, 20L, 30L)))
+                          .setExplicitBucketBoundariesAdvice(Arrays.asList(10L, 20L, 30L))
                           .build();
                   return build::record;
                 }));

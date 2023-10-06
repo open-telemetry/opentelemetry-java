@@ -5,15 +5,18 @@
 
 package io.opentelemetry.extension.incubator.metrics;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
-import java.util.function.Consumer;
+import java.util.List;
 
 /** Extended {@link LongUpDownCounterBuilder} with experimental APIs. */
 public interface ExtendedLongUpDownCounterBuilder extends LongUpDownCounterBuilder {
 
-  /** Specify advice for up down counter implementations. */
-  default LongUpDownCounterBuilder setAdvice(
-      Consumer<LongUpDownCounterAdviceConfigurer> adviceConsumer) {
+  /**
+   * Specify the attribute advice, which suggests the recommended set of attribute keys to be used
+   * for this up down counter.
+   */
+  default ExtendedLongUpDownCounterBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
     return this;
   }
 }
