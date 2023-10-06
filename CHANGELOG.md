@@ -11,8 +11,8 @@
 
 ### SDK
 
-* BatchLogRecordProcessor and BatchSpanProcessor unify `queueSize` metric 
-  description and attribute name for `processorType` 
+* BatchLogRecordProcessor and BatchSpanProcessor unify `queueSize` metric
+  description and attribute name for `processorType`
   ([#5836](https://github.com/open-telemetry/opentelemetry-java/pull/5836))
 
 #### Metrics
@@ -54,7 +54,7 @@
   ([#5807](https://github.com/open-telemetry/opentelemetry-java/pull/5807))
 
 ### Project Tooling
-  
+
 * Add Benchmark workflows
   ([#5842](https://github.com/open-telemetry/opentelemetry-java/pull/5842),
   [#5874](https://github.com/open-telemetry/opentelemetry-java/pull/5874))
