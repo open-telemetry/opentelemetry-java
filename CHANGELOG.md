@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### API
+
+#### Incubator
+
+* Refactor advice API to simplify usage
+  ([#5848](https://github.com/open-telemetry/opentelemetry-java/pull/5848))
+
 ### SDK
 
 * BatchLogRecordProcessor and BatchSpanProcessor unify `queueSize` metric 
