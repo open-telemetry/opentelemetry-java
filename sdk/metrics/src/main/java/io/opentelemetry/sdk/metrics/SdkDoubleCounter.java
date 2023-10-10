@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
+import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleCounter;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.context.Context;
@@ -58,8 +59,7 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
     add(increment, Attributes.empty());
   }
 
-  static final class SdkDoubleCounterBuilder
-      implements ExtendedDoubleCounterBuilder {
+  static final class SdkDoubleCounterBuilder implements ExtendedDoubleCounterBuilder {
 
     private final InstrumentBuilder builder;
 
@@ -79,12 +79,6 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
               unit,
               adviceBuilder);
       this.builder = new InstrumentBuilder(meterProviderSharedState, sharedState, descriptor);
-    }
-
-    @Override
-    public DoubleCounterBuilder setAdvice(Consumer<DoubleCounterAdviceConfigurer> adviceConsumer) {
-      adviceConsumer.accept(this);
-      return this;
     }
 
     @Override

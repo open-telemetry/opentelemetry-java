@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
+import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableDoubleUpDownCounter;
 import io.opentelemetry.context.Context;
@@ -45,8 +46,7 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
     add(increment, Attributes.empty());
   }
 
-  static final class SdkDoubleUpDownCounterBuilder
-      implements ExtendedDoubleUpDownCounterBuilder {
+  static final class SdkDoubleUpDownCounterBuilder implements ExtendedDoubleUpDownCounterBuilder {
 
     private final InstrumentBuilder builder;
 

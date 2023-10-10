@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.LongGaugeBuilder;
 import io.opentelemetry.api.metrics.ObservableLongGauge;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
@@ -40,8 +41,7 @@ final class SdkLongGauge extends AbstractInstrument implements LongGauge {
     set(increment, Attributes.empty());
   }
 
-  static final class SdkLongGaugeBuilder
-      implements ExtendedLongGaugeBuilder {
+  static final class SdkLongGaugeBuilder implements ExtendedLongGaugeBuilder {
 
     private final InstrumentBuilder builder;
 

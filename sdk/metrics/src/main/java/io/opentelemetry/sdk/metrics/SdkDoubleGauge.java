@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.LongGaugeBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleGauge;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
@@ -40,8 +41,7 @@ final class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
     set(increment, Attributes.empty());
   }
 
-  static final class SdkDoubleGaugeBuilder
-      implements ExtendedDoubleGaugeBuilder {
+  static final class SdkDoubleGaugeBuilder implements ExtendedDoubleGaugeBuilder {
     private final InstrumentBuilder builder;
 
     SdkDoubleGaugeBuilder(
