@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.metrics;
 
+import java.util.List;
+
 /**
  * Builder class for {@link LongHistogram}.
  *
@@ -30,6 +32,20 @@ public interface LongHistogramBuilder {
    *     Unit</a>
    */
   LongHistogramBuilder setUnit(String unit);
+
+  /**
+   * Set the explicit bucket buckets boundaries advice, which suggests the recommended set of
+   * explicit bucket boundaries for this histogram.
+   *
+   * @param bucketBoundaries The explicit bucket boundaries advice.
+   * @see <a
+   *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-advisory-parameter-explicitbucketboundaries">Explicit
+   *     bucket boundaries advisory parameter</a>
+   * @since 1.32.0
+   */
+  default LongHistogramBuilder setExplicitBucketBoundariesAdvice(List<Long> bucketBoundaries) {
+    return this;
+  }
 
   /**
    * Builds and returns a Histogram instrument with the configuration.
