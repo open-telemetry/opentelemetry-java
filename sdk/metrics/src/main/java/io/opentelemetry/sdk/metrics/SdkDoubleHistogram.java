@@ -56,8 +56,7 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
     record(value, Attributes.empty());
   }
 
-  static final class SdkDoubleHistogramBuilder
-      implements ExtendedDoubleHistogramBuilder {
+  static final class SdkDoubleHistogramBuilder implements ExtendedDoubleHistogramBuilder {
 
     private final InstrumentBuilder builder;
 

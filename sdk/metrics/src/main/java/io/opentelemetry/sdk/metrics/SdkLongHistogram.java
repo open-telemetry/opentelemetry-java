@@ -57,8 +57,7 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     record(value, Attributes.empty());
   }
 
-  static final class SdkLongHistogramBuilder
-      implements ExtendedLongHistogramBuilder {
+  static final class SdkLongHistogramBuilder implements ExtendedLongHistogramBuilder {
 
     private final InstrumentBuilder builder;
 
