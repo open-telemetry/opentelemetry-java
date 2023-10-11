@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
-import io.opentelemetry.sdk.metrics.internal.descriptor.MutableInstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
@@ -29,16 +28,13 @@ class InstrumentBuilderTest {
 
   @Test
   void stringRepresentation() {
-    MutableInstrumentDescriptor descriptor =
-        MutableInstrumentDescriptor.create(
-            "instrument-name",
-            InstrumentType.COUNTER,
-            InstrumentValueType.LONG,
-            "instrument-description",
-            "instrument-unit",
-            Advice.builder());
     InstrumentBuilder builder =
-        new InstrumentBuilder(PROVIDER_SHARED_STATE, METER_SHARED_STATE, descriptor);
+        new InstrumentBuilder("instrument-name", PROVIDER_SHARED_STATE, METER_SHARED_STATE)
+            .setType(InstrumentType.COUNTER)
+            .setValueType(InstrumentValueType.LONG)
+            .setDescription("instrument-description")
+            .setUnit("instrument-unit")
+            .setAdviceBuilder(Advice.builder());
     assertThat(builder.toString())
         .isEqualTo(
             "InstrumentBuilder{"
@@ -55,16 +51,13 @@ class InstrumentBuilderTest {
 
   @Test
   void toStringHelper() {
-    MutableInstrumentDescriptor descriptor =
-        MutableInstrumentDescriptor.create(
-            "instrument-name",
-            InstrumentType.HISTOGRAM,
-            InstrumentValueType.DOUBLE,
-            "instrument-description",
-            "instrument-unit",
-            Advice.builder());
     InstrumentBuilder builder =
-        new InstrumentBuilder(PROVIDER_SHARED_STATE, METER_SHARED_STATE, descriptor);
+        new InstrumentBuilder("instrument-name", PROVIDER_SHARED_STATE, METER_SHARED_STATE)
+            .setType(InstrumentType.HISTOGRAM)
+            .setValueType(InstrumentValueType.DOUBLE)
+            .setDescription("instrument-description")
+            .setUnit("instrument-unit")
+            .setAdviceBuilder(Advice.builder());
 
     assertThat(builder.toStringHelper("FooBuilder"))
         .isEqualTo(

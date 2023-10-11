@@ -16,7 +16,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.extension.incubator.metrics.ExtendedLongCounterBuilder;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.descriptor.MutableInstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -68,10 +67,10 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      MutableInstrumentDescriptor descriptor =
-          MutableInstrumentDescriptor.create(
-              name, InstrumentType.COUNTER, InstrumentValueType.LONG);
-      this.builder = new InstrumentBuilder(meterProviderSharedState, meterSharedState, descriptor);
+      this.builder =
+          new InstrumentBuilder(name, meterProviderSharedState, meterSharedState)
+              .setType(InstrumentType.COUNTER)
+              .setValueType(InstrumentValueType.LONG);
     }
 
     @Override

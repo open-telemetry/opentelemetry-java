@@ -10,7 +10,6 @@ import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.descriptor.MutableInstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
@@ -20,44 +19,63 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 
 /** Helper to make implementing builders easier. */
 final class InstrumentBuilder {
 
+  private final String name;
   private final MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState;
-  private final MutableInstrumentDescriptor descriptor;
+  @Nullable private InstrumentType type = null;
+  @Nullable private InstrumentValueType valueType;
+  private Advice.AdviceBuilder adviceBuilder = Advice.builder();
+  private String description = "";
+  private String unit = "";
 
   InstrumentBuilder(
+      String name,
       MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      MutableInstrumentDescriptor descriptor) {
+      MeterSharedState meterSharedState) {
+    this.name = name;
     this.meterProviderSharedState = meterProviderSharedState;
     this.meterSharedState = meterSharedState;
-    this.descriptor = descriptor;
   }
 
-  public void setUnit(String unit) {
-    descriptor.setUnit(unit);
+  public InstrumentBuilder setUnit(String unit) {
+    this.unit = unit;
+    return this;
   }
 
-  public void setDescription(String description) {
-    descriptor.setDescription(description);
+  public InstrumentBuilder setType(InstrumentType type) {
+    this.type = type;
+    return this;
+  }
+
+  public InstrumentBuilder setValueType(InstrumentValueType valueType) {
+    this.valueType = valueType;
+    return this;
+  }
+
+  public InstrumentBuilder setAdviceBuilder(Advice.AdviceBuilder adviceBuilder) {
+    this.adviceBuilder = adviceBuilder;
+    return this;
+  }
+
+  public InstrumentBuilder setDescription(String description) {
+    this.description = description;
+    return this;
   }
 
   <T> T swapBuilder(SwapBuilder<T> swapper) {
     return swapper.newBuilder(
-        meterProviderSharedState,
-        meterSharedState,
-        descriptor.getName(),
-        descriptor.getDescription(),
-        descriptor.getUnit(),
-        descriptor.getAdviceBuilder());
+        meterProviderSharedState, meterSharedState, name, description, unit, adviceBuilder);
   }
 
   <I extends AbstractInstrument> I buildSynchronousInstrument(
       BiFunction<InstrumentDescriptor, WriteableMetricStorage, I> instrumentFactory) {
-    InstrumentDescriptor descriptor = this.descriptor.toImmutable();
+    validateType();
+    InstrumentDescriptor descriptor = newDescriptor();
     WriteableMetricStorage storage =
         meterSharedState.registerSynchronousMetricStorage(descriptor, meterProviderSharedState);
     return instrumentFactory.apply(descriptor, storage);
@@ -84,9 +102,26 @@ final class InstrumentBuilder {
   }
 
   SdkObservableMeasurement buildObservableMeasurement(InstrumentType type) {
-    this.descriptor.setType(type);
-    InstrumentDescriptor descriptor = this.descriptor.toImmutable();
+    this.type = type;
+    validateType();
+    InstrumentDescriptor descriptor = newDescriptor();
     return meterSharedState.registerObservableMeasurement(descriptor);
+  }
+
+  @SuppressWarnings("NullAway")
+  private InstrumentDescriptor newDescriptor() {
+    validateType();
+    return InstrumentDescriptor.create(
+        name, description, unit, type, valueType, adviceBuilder.build());
+  }
+
+  private void validateType() {
+    if (type == null) {
+      throw new IllegalStateException("The instrument type must be configured before build().");
+    }
+    if (valueType == null) {
+      throw new IllegalStateException("The valueType must be configured before build().");
+    }
   }
 
   @Override
@@ -95,7 +130,7 @@ final class InstrumentBuilder {
   }
 
   String toStringHelper(String className) {
-    return className + "{descriptor=" + descriptor.toImmutable() + "}";
+    return className + "{descriptor=" + newDescriptor() + "}";
   }
 
   @FunctionalInterface
@@ -110,10 +145,10 @@ final class InstrumentBuilder {
   }
 
   void setAdviceAttributes(List<AttributeKey<?>> attributes) {
-    descriptor.setAdviceAttributes(attributes);
+    adviceBuilder.setAttributes(attributes);
   }
 
   void setExplicitBucketBoundaries(List<Double> bucketBoundaries) {
-    descriptor.setExplicitBucketBoundaries(bucketBoundaries);
+    adviceBuilder.setExplicitBucketBoundaries(bucketBoundaries);
   }
 }

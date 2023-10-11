@@ -15,7 +15,6 @@ import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.extension.incubator.metrics.ExtendedLongUpDownCounterBuilder;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.descriptor.MutableInstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -54,10 +53,10 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      MutableInstrumentDescriptor descriptor =
-          MutableInstrumentDescriptor.create(
-              name, InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG);
-      this.builder = new InstrumentBuilder(meterProviderSharedState, meterSharedState, descriptor);
+      this.builder =
+          new InstrumentBuilder(name, meterProviderSharedState, meterSharedState)
+              .setType(InstrumentType.UP_DOWN_COUNTER)
+              .setValueType(InstrumentValueType.LONG);
     }
 
     @Override

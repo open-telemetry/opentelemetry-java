@@ -15,7 +15,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.extension.incubator.metrics.DoubleGauge;
 import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleGaugeBuilder;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.descriptor.MutableInstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -49,11 +48,11 @@ final class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
         MeterSharedState meterSharedState,
         String name) {
 
-      MutableInstrumentDescriptor descriptor =
-          MutableInstrumentDescriptor.create(
+      builder =
+          new InstrumentBuilder(name, meterProviderSharedState, meterSharedState)
               // TODO: use InstrumentType.GAUGE when available
-              name, InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.DOUBLE);
-      builder = new InstrumentBuilder(meterProviderSharedState, meterSharedState, descriptor);
+              .setType(InstrumentType.OBSERVABLE_GAUGE)
+              .setValueType(InstrumentValueType.DOUBLE);
     }
 
     @Override

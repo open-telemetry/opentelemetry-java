@@ -15,7 +15,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleUpDownCounterBuilder;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.descriptor.MutableInstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
@@ -57,15 +56,13 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
         String description,
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
-      MutableInstrumentDescriptor descriptor =
-          MutableInstrumentDescriptor.create(
-              name,
-              InstrumentType.UP_DOWN_COUNTER,
-              InstrumentValueType.DOUBLE,
-              description,
-              unit,
-              adviceBuilder);
-      this.builder = new InstrumentBuilder(meterProviderSharedState, sharedState, descriptor);
+      this.builder =
+          new InstrumentBuilder(name, meterProviderSharedState, sharedState)
+              .setDescription(description)
+              .setType(InstrumentType.UP_DOWN_COUNTER)
+              .setValueType(InstrumentValueType.DOUBLE)
+              .setUnit(unit)
+              .setAdviceBuilder(adviceBuilder);
     }
 
     @Override
