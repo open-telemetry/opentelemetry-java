@@ -10,6 +10,7 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import okhttp3.Dispatcher;
+import okhttp3.Request;
 
 /**
  * Utilities for OkHttp.
@@ -29,6 +30,14 @@ public final class OkHttpUtil {
             TimeUnit.SECONDS,
             new SynchronousQueue<>(),
             new DaemonThreadFactory("okhttp-dispatch")));
+  }
+
+  /**
+   * Returns a {@link Request.Builder} with a tag to identify a request created by OTel. The tag can
+   * later be checked by an automatic instrumentation to avoid tracing OTel exporter's calls.
+   */
+  public static Request.Builder newRequestBuilder() {
+    return new Request.Builder().tag("suppress_instrumentation");
   }
 
   private OkHttpUtil() {}

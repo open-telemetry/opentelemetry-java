@@ -51,6 +51,8 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import static io.opentelemetry.exporter.sender.okhttp.internal.OkHttpUtil.newRequestBuilder;
+
 /**
  * A {@link GrpcSender} which uses OkHttp instead of grpc-java.
  *
@@ -107,7 +109,7 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
 
   @Override
   public void send(T request, Runnable onSuccess, BiConsumer<GrpcResponse, Throwable> onError) {
-    Request.Builder requestBuilder = new Request.Builder().url(url).headers(headers);
+    Request.Builder requestBuilder = newRequestBuilder().url(url).headers(headers);
 
     RequestBody requestBody = new GrpcRequestBody(request, compressionEnabled);
     requestBuilder.post(requestBody);

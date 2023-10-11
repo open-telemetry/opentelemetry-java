@@ -31,6 +31,8 @@ import okio.BufferedSink;
 import okio.GzipSink;
 import okio.Okio;
 
+import static io.opentelemetry.exporter.sender.okhttp.internal.OkHttpUtil.newRequestBuilder;
+
 /**
  * {@link HttpSender} which is backed by OkHttp.
  *
@@ -91,7 +93,7 @@ public final class OkHttpHttpSender implements HttpSender {
       int contentLength,
       Consumer<Response> onResponse,
       Consumer<Throwable> onError) {
-    Request.Builder requestBuilder = new Request.Builder().url(url);
+    Request.Builder requestBuilder = newRequestBuilder().url(url);
     headerSupplier.get().forEach(requestBuilder::addHeader);
     RequestBody body = new RawRequestBody(marshaler, contentLength, mediaType);
     if (compressionEnabled) {
