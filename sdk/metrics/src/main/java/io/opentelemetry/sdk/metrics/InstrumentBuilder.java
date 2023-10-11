@@ -42,27 +42,27 @@ final class InstrumentBuilder {
     this.meterSharedState = meterSharedState;
   }
 
-  public InstrumentBuilder setUnit(String unit) {
+  InstrumentBuilder setUnit(String unit) {
     this.unit = unit;
     return this;
   }
 
-  public InstrumentBuilder setType(InstrumentType type) {
+  InstrumentBuilder setType(InstrumentType type) {
     this.type = type;
     return this;
   }
 
-  public InstrumentBuilder setValueType(InstrumentValueType valueType) {
+  InstrumentBuilder setValueType(InstrumentValueType valueType) {
     this.valueType = valueType;
     return this;
   }
 
-  public InstrumentBuilder setAdviceBuilder(Advice.AdviceBuilder adviceBuilder) {
+  InstrumentBuilder setAdviceBuilder(Advice.AdviceBuilder adviceBuilder) {
     this.adviceBuilder = adviceBuilder;
     return this;
   }
 
-  public InstrumentBuilder setDescription(String description) {
+  InstrumentBuilder setDescription(String description) {
     this.description = description;
     return this;
   }
