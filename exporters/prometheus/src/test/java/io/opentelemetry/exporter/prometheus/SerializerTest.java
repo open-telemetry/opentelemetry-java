@@ -241,14 +241,34 @@ class SerializerTest {
             "# TYPE target info\n"
                 + "# HELP target Target metadata\n"
                 + "target_info{kr=\"vr\"} 1\n"
-                + "# TYPE otel_scope_info info\n"
-                + "# HELP otel_scope_info Scope metadata\n"
-                + "otel_scope_info{otel_scope_name=\"scope\",otel_scope_version=\"1.0.0\"} 1\n"
                 + "# TYPE sum_seconds_total counter\n"
                 + "# HELP sum_seconds_total description\n"
                 + "sum_seconds_total{otel_scope_name=\"scope\",otel_scope_version=\"1.0.0\",b_key=\"val1\",a_key=\"val2\",b_key=\"val3\"} 5.0 1633950672000\n");
     logCapturer.assertContains(
         "Dropping out-of-order attribute a_key=val2, which occurred after b_key. This can occur when an alternative Attribute implementation is used.");
+  }
+
+  @Test
+  void emptyResource() {
+    MetricData metricData =
+        ImmutableMetricData.createDoubleSum(
+            Resource.empty(),
+            InstrumentationScopeInfo.builder("scope").setVersion("1.0.0").build(),
+            "monotonic.cumulative.double.sum",
+            "description",
+            "s",
+            ImmutableSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                Collections.singletonList(
+                    ImmutableDoublePointData.create(
+                        1633947011000000000L, 1633950672000000000L, Attributes.empty(), 5))));
+
+    assertThat(serialize004(metricData))
+        .isEqualTo(
+            "# TYPE monotonic_cumulative_double_sum_seconds_total counter\n"
+                + "# HELP monotonic_cumulative_double_sum_seconds_total description\n"
+                + "monotonic_cumulative_double_sum_seconds_total{otel_scope_name=\"scope\",otel_scope_version=\"1.0.0\"} 5.0 1633950672000\n");
   }
 
   private static String serialize004(MetricData... metrics) {
