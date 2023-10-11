@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
+import static io.opentelemetry.exporter.sender.okhttp.internal.OkHttpUtil.newRequestBuilder;
+
 import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.http.HttpSender;
@@ -30,8 +32,6 @@ import okhttp3.ResponseBody;
 import okio.BufferedSink;
 import okio.GzipSink;
 import okio.Okio;
-
-import static io.opentelemetry.exporter.sender.okhttp.internal.OkHttpUtil.newRequestBuilder;
 
 /**
  * {@link HttpSender} which is backed by OkHttp.

@@ -23,6 +23,8 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
+import static io.opentelemetry.exporter.sender.okhttp.internal.OkHttpUtil.newRequestBuilder;
+
 import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcResponse;
@@ -50,8 +52,6 @@ import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
-import static io.opentelemetry.exporter.sender.okhttp.internal.OkHttpUtil.newRequestBuilder;
 
 /**
  * A {@link GrpcSender} which uses OkHttp instead of grpc-java.
