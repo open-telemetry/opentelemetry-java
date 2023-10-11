@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static java.util.stream.Collectors.toList;
-
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongHistogram;
@@ -19,11 +17,11 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 final class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
   private static final Logger logger = Logger.getLogger(SdkLongHistogram.class.getName());
@@ -94,18 +92,16 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     @Override
     public ExtendedLongHistogramBuilder setExplicitBucketBoundariesAdvice(
         List<Long> bucketBoundaries) {
-      double[] boundaries;
+      List<Double> boundaries;
       try {
         Objects.requireNonNull(bucketBoundaries, "bucketBoundaries must not be null");
-        boundaries =
-            ExplicitBucketHistogramUtils.validateBucketBoundaries(
-                bucketBoundaries.stream().mapToDouble(Long::doubleValue).toArray());
+        boundaries = bucketBoundaries.stream().map(Long::doubleValue).collect(Collectors.toList());
+        ExplicitBucketHistogramUtils.validateBucketBoundaries(boundaries);
       } catch (IllegalArgumentException | NullPointerException e) {
         logger.warning("Error setting explicit bucket boundaries advice: " + e.getMessage());
         return this;
       }
-      adviceBuilder.setExplicitBucketBoundaries(
-          Arrays.stream(boundaries).boxed().collect(toList()));
+      adviceBuilder.setExplicitBucketBoundaries(boundaries);
       return this;
     }
 
