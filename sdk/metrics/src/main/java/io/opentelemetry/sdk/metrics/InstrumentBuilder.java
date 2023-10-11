@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 
 /** Helper to make implementing builders easier. */
 final class InstrumentBuilder {
@@ -27,33 +26,27 @@ final class InstrumentBuilder {
   private final String name;
   private final MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState;
-  @Nullable private InstrumentType type = null;
-  @Nullable private InstrumentValueType valueType;
+  private final InstrumentValueType valueType;
+  private InstrumentType type;
   private Advice.AdviceBuilder adviceBuilder = Advice.builder();
   private String description = "";
   private String unit = "";
 
   InstrumentBuilder(
       String name,
+      InstrumentType type,
+      InstrumentValueType valueType,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState) {
     this.name = name;
+    this.type = type;
+    this.valueType = valueType;
     this.meterProviderSharedState = meterProviderSharedState;
     this.meterSharedState = meterSharedState;
   }
 
   InstrumentBuilder setUnit(String unit) {
     this.unit = unit;
-    return this;
-  }
-
-  InstrumentBuilder setType(InstrumentType type) {
-    this.type = type;
-    return this;
-  }
-
-  InstrumentBuilder setValueType(InstrumentValueType valueType) {
-    this.valueType = valueType;
     return this;
   }
 
@@ -74,7 +67,6 @@ final class InstrumentBuilder {
 
   <I extends AbstractInstrument> I buildSynchronousInstrument(
       BiFunction<InstrumentDescriptor, WriteableMetricStorage, I> instrumentFactory) {
-    validateType();
     InstrumentDescriptor descriptor = newDescriptor();
     WriteableMetricStorage storage =
         meterSharedState.registerSynchronousMetricStorage(descriptor, meterProviderSharedState);
@@ -103,25 +95,13 @@ final class InstrumentBuilder {
 
   SdkObservableMeasurement buildObservableMeasurement(InstrumentType type) {
     this.type = type;
-    validateType();
     InstrumentDescriptor descriptor = newDescriptor();
     return meterSharedState.registerObservableMeasurement(descriptor);
   }
 
-  @SuppressWarnings("NullAway")
   private InstrumentDescriptor newDescriptor() {
-    validateType();
     return InstrumentDescriptor.create(
         name, description, unit, type, valueType, adviceBuilder.build());
-  }
-
-  private void validateType() {
-    if (type == null) {
-      throw new IllegalStateException("The instrument type must be configured before build().");
-    }
-    if (valueType == null) {
-      throw new IllegalStateException("The valueType must be configured before build().");
-    }
   }
 
   @Override

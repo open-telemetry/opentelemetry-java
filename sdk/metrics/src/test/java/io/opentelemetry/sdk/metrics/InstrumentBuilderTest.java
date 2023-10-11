@@ -29,9 +29,12 @@ class InstrumentBuilderTest {
   @Test
   void stringRepresentation() {
     InstrumentBuilder builder =
-        new InstrumentBuilder("instrument-name", PROVIDER_SHARED_STATE, METER_SHARED_STATE)
-            .setType(InstrumentType.COUNTER)
-            .setValueType(InstrumentValueType.LONG)
+        new InstrumentBuilder(
+                "instrument-name",
+                InstrumentType.COUNTER,
+                InstrumentValueType.LONG,
+                PROVIDER_SHARED_STATE,
+                METER_SHARED_STATE)
             .setDescription("instrument-description")
             .setUnit("instrument-unit")
             .setAdviceBuilder(Advice.builder());
@@ -52,9 +55,12 @@ class InstrumentBuilderTest {
   @Test
   void toStringHelper() {
     InstrumentBuilder builder =
-        new InstrumentBuilder("instrument-name", PROVIDER_SHARED_STATE, METER_SHARED_STATE)
-            .setType(InstrumentType.HISTOGRAM)
-            .setValueType(InstrumentValueType.DOUBLE)
+        new InstrumentBuilder(
+                "instrument-name",
+                InstrumentType.HISTOGRAM,
+                InstrumentValueType.DOUBLE,
+                PROVIDER_SHARED_STATE,
+                METER_SHARED_STATE)
             .setDescription("instrument-description")
             .setUnit("instrument-unit")
             .setAdviceBuilder(Advice.builder());

@@ -68,10 +68,13 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
       builder =
-          new InstrumentBuilder(name, meterProviderSharedState, sharedState)
+          new InstrumentBuilder(
+                  name,
+                  InstrumentType.HISTOGRAM,
+                  InstrumentValueType.LONG,
+                  meterProviderSharedState,
+                  sharedState)
               .setDescription(description)
-              .setType(InstrumentType.HISTOGRAM)
-              .setValueType(InstrumentValueType.LONG)
               .setUnit(unit)
               .setAdviceBuilder(adviceBuilder);
     }

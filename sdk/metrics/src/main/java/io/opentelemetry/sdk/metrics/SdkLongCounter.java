@@ -68,9 +68,12 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
         MeterSharedState meterSharedState,
         String name) {
       this.builder =
-          new InstrumentBuilder(name, meterProviderSharedState, meterSharedState)
-              .setType(InstrumentType.COUNTER)
-              .setValueType(InstrumentValueType.LONG);
+          new InstrumentBuilder(
+              name,
+              InstrumentType.COUNTER,
+              InstrumentValueType.LONG,
+              meterProviderSharedState,
+              meterSharedState);
     }
 
     @Override

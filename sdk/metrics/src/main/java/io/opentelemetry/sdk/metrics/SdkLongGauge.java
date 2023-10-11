@@ -52,12 +52,15 @@ final class SdkLongGauge extends AbstractInstrument implements LongGauge {
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
 
+      // TODO: use InstrumentType.GAUGE when available
       builder =
-          new InstrumentBuilder(name, meterProviderSharedState, sharedState)
+          new InstrumentBuilder(
+                  name,
+                  InstrumentType.OBSERVABLE_GAUGE,
+                  InstrumentValueType.LONG,
+                  meterProviderSharedState,
+                  sharedState)
               .setDescription(description)
-              // TODO: use InstrumentType.GAUGE when available
-              .setType(InstrumentType.OBSERVABLE_GAUGE)
-              .setValueType(InstrumentValueType.LONG)
               .setUnit(unit)
               .setAdviceBuilder(adviceBuilder);
     }

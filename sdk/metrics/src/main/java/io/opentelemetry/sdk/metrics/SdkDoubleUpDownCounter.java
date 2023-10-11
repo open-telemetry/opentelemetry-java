@@ -57,10 +57,13 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
       this.builder =
-          new InstrumentBuilder(name, meterProviderSharedState, sharedState)
+          new InstrumentBuilder(
+                  name,
+                  InstrumentType.UP_DOWN_COUNTER,
+                  InstrumentValueType.DOUBLE,
+                  meterProviderSharedState,
+                  sharedState)
               .setDescription(description)
-              .setType(InstrumentType.UP_DOWN_COUNTER)
-              .setValueType(InstrumentValueType.DOUBLE)
               .setUnit(unit)
               .setAdviceBuilder(adviceBuilder);
     }

@@ -54,9 +54,12 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
         MeterSharedState meterSharedState,
         String name) {
       this.builder =
-          new InstrumentBuilder(name, meterProviderSharedState, meterSharedState)
-              .setType(InstrumentType.UP_DOWN_COUNTER)
-              .setValueType(InstrumentValueType.LONG);
+          new InstrumentBuilder(
+              name,
+              InstrumentType.UP_DOWN_COUNTER,
+              InstrumentValueType.LONG,
+              meterProviderSharedState,
+              meterSharedState);
     }
 
     @Override

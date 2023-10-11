@@ -70,9 +70,12 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
       this.builder =
-          new InstrumentBuilder(name, meterProviderSharedState, sharedState)
-              .setType(InstrumentType.COUNTER)
-              .setValueType(InstrumentValueType.DOUBLE)
+          new InstrumentBuilder(
+                  name,
+                  InstrumentType.COUNTER,
+                  InstrumentValueType.DOUBLE,
+                  meterProviderSharedState,
+                  sharedState)
               .setUnit(unit)
               .setDescription(description)
               .setAdviceBuilder(adviceBuilder);

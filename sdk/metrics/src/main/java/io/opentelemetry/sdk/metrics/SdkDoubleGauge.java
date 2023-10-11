@@ -48,11 +48,14 @@ final class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
         MeterSharedState meterSharedState,
         String name) {
 
+      // TODO: use InstrumentType.GAUGE when available
       builder =
-          new InstrumentBuilder(name, meterProviderSharedState, meterSharedState)
-              // TODO: use InstrumentType.GAUGE when available
-              .setType(InstrumentType.OBSERVABLE_GAUGE)
-              .setValueType(InstrumentValueType.DOUBLE);
+          new InstrumentBuilder(
+              name,
+              InstrumentType.OBSERVABLE_GAUGE,
+              InstrumentValueType.DOUBLE,
+              meterProviderSharedState,
+              meterSharedState);
     }
 
     @Override
