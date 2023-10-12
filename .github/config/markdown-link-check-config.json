@@ -3,10 +3,5 @@
   "aliveStatusCodes": [
     200,
     403
-  ],
-  "ignorePatterns": [
-    {
-      "pattern": "^https://(www\\.)?javadoc\\.io"
-    }
   ]
 }
