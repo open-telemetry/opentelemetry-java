@@ -232,6 +232,16 @@ public final class DefaultConfigProperties implements ExtendedConfigProperties {
                 Map.Entry::getKey, Map.Entry::getValue, (first, next) -> next, LinkedHashMap::new));
   }
 
+  @Nullable
+  @Override
+  public ExtendedConfigProperties getConfigProperties(String name) {
+    Map<String, String> mapProperties = getMap(name);
+    if (mapProperties.isEmpty()) {
+      return null;
+    }
+    return DefaultConfigProperties.createFromMap(mapProperties);
+  }
+
   /**
    * Return a new {@link DefaultConfigProperties} by overriding the {@code previousProperties} with
    * the {@code overrides}.
