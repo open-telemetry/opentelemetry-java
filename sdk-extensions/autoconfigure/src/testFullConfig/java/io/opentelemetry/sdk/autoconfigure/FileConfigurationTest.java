@@ -28,6 +28,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedConfigProperties;
 import io.opentelemetry.sdk.logs.internal.SdkEventEmitterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -44,7 +45,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 class FileConfigurationTest {
 
-  @RegisterExtension private static final CleanupExtension cleanup = new CleanupExtension();
+  @RegisterExtension static final CleanupExtension cleanup = new CleanupExtension();
 
   @TempDir private Path tempDir;
   private Path configFilePath;
@@ -60,7 +61,11 @@ class FileConfigurationTest {
             + "  processors:\n"
             + "    - simple:\n"
             + "        exporter:\n"
-            + "          console: {}\n";
+            + "          console: {}\n"
+            + "other:\n"
+            + "  str_key: str_value\n"
+            + "  map_key:\n"
+            + "    str_key1: str_value1\n";
     configFilePath = tempDir.resolve("otel-config.yaml");
     Files.write(configFilePath, yaml.getBytes(StandardCharsets.UTF_8));
     GlobalOpenTelemetry.resetForTest();
@@ -174,5 +179,28 @@ class FileConfigurationTest {
     assertThatThrownBy(() -> AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).build())
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Unrecognized span exporter(s): [foo]");
+  }
+
+  @Test
+  void configFile_ExtendedConfigProperties() {
+    ConfigProperties config =
+        DefaultConfigProperties.createFromMap(
+            Collections.singletonMap("OTEL_CONFIG_FILE", configFilePath.toString()));
+
+    AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
+        AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).setResultAsGlobal().build();
+    OpenTelemetrySdk openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
+    cleanup.addCloseable(openTelemetrySdk);
+
+    // getConfig() should return ExtendedConfigProperties generic representation of the config file
+    ConfigProperties config1 = autoConfiguredOpenTelemetrySdk.getConfig();
+    assertThat(config1).isInstanceOf(ExtendedConfigProperties.class);
+    ExtendedConfigProperties extendedConfigProps = (ExtendedConfigProperties) config1;
+    ExtendedConfigProperties otherProps = extendedConfigProps.getConfigProperties("other");
+    assertThat(otherProps).isNotNull();
+    assertThat(otherProps.getString("str_key")).isEqualTo("str_value");
+    ExtendedConfigProperties otherMapKeyProps = otherProps.getConfigProperties("map_key");
+    assertThat(otherMapKeyProps).isNotNull();
+    assertThat(otherMapKeyProps.getString("str_key1")).isEqualTo("str_value1");
   }
 }

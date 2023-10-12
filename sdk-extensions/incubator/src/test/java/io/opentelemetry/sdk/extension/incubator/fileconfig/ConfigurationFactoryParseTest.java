@@ -53,10 +53,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-class ConfigurationReaderTest {
+class ConfigurationFactoryParseTest {
 
   @Test
-  void read_KitchenSinkExampleFile() throws IOException {
+  void parse_KitchenSinkExampleFile() throws IOException {
     OpenTelemetryConfiguration expected = new OpenTelemetryConfiguration();
 
     expected.withFileFormat("0.1");
@@ -250,7 +250,7 @@ class ConfigurationReaderTest {
 
     try (FileInputStream configExampleFile =
         new FileInputStream(System.getenv("CONFIG_EXAMPLE_DIR") + "/kitchen-sink.yaml")) {
-      OpenTelemetryConfiguration config = ConfigurationReader.parse(configExampleFile);
+      OpenTelemetryConfiguration config = ConfigurationFactory.parse(configExampleFile);
 
       // General config
       assertThat(config.getFileFormat()).isEqualTo("0.1");
@@ -299,7 +299,7 @@ class ConfigurationReaderTest {
             + "        aggregation:\n"
             + "          drop: {}\n";
     OpenTelemetryConfiguration objectPlaceholderModel =
-        ConfigurationReader.parse(
+        ConfigurationFactory.parse(
             new ByteArrayInputStream(objectPlaceholderString.getBytes(StandardCharsets.UTF_8)));
 
     String noOjbectPlaceholderString =
@@ -317,7 +317,7 @@ class ConfigurationReaderTest {
             + "        aggregation:\n"
             + "          drop:\n";
     OpenTelemetryConfiguration noObjectPlaceholderModel =
-        ConfigurationReader.parse(
+        ConfigurationFactory.parse(
             new ByteArrayInputStream(noOjbectPlaceholderString.getBytes(StandardCharsets.UTF_8)));
 
     SpanExporter exporter =

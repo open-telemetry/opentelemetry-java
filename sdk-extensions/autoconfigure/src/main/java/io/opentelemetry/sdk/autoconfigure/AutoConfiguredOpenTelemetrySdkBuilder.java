@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvide
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedConfigProperties;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
@@ -441,12 +442,20 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     try {
       Class<?> configurationFactory =
           Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.ConfigurationFactory");
-      Method parseAndInterpret =
-          configurationFactory.getMethod("parseAndInterpret", InputStream.class);
-      OpenTelemetrySdk sdk = (OpenTelemetrySdk) parseAndInterpret.invoke(null, fis);
+      Method parse = configurationFactory.getMethod("parse", InputStream.class);
+      Object model = parse.invoke(null, fis);
+      Class<?> openTelemetryConfiguration =
+          Class.forName(
+              "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration");
+      Method interpret = configurationFactory.getMethod("interpret", openTelemetryConfiguration);
+      OpenTelemetrySdk sdk = (OpenTelemetrySdk) interpret.invoke(null, model);
+      Method toConfigProperties =
+          configurationFactory.getMethod("toConfigProperties", openTelemetryConfiguration);
+      ExtendedConfigProperties configProperties =
+          (ExtendedConfigProperties) toConfigProperties.invoke(null, model);
       // Note: can't access file configuration resource without reflection so setting a dummy
       // resource
-      return AutoConfiguredOpenTelemetrySdk.create(sdk, Resource.getDefault(), config);
+      return AutoConfiguredOpenTelemetrySdk.create(sdk, Resource.getDefault(), configProperties);
     } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
       throw new ConfigurationException(
           "Error configuring from file. Is opentelemetry-sdk-extension-incubator on the classpath?",
