@@ -43,7 +43,6 @@ class ResourceConfigurationTest {
                 .put(stringKey("service.name"), "test-service")
                 .put("food", "cheesecake")
                 .put("shape", "square")
-                .setSchemaUrl("https://opentelemetry.io/schemas/1.21.0")
                 .build());
   }
 
