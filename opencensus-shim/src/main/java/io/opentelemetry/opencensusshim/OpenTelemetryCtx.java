@@ -10,7 +10,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import javax.annotation.Nullable;
 
-class OpenTelemetryCtx implements ContextHandle {
+final class OpenTelemetryCtx implements ContextHandle {
 
   private final Context context;
 

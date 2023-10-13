@@ -39,7 +39,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 
-class OpenTelemetryNoRecordEventsSpanImpl extends Span implements io.opentelemetry.api.trace.Span {
+final class OpenTelemetryNoRecordEventsSpanImpl extends Span
+    implements io.opentelemetry.api.trace.Span {
   private static final EnumSet<Options> NOT_RECORD_EVENTS_SPAN_OPTIONS =
       EnumSet.noneOf(Options.class);
 
