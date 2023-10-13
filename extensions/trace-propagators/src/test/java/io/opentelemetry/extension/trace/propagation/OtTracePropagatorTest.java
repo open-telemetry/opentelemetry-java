@@ -328,9 +328,8 @@ class OtTracePropagatorTest {
 
   @Test
   void extract_Baggage_CapitalizedHeaders() {
-    String capitalizedBaggageHeader = capitalizeFirstLetter(
-        OtTracePropagator.PREFIX_BAGGAGE_HEADER + "some-key",
-        "-");
+    String capitalizedBaggageHeader =
+        capitalizeFirstLetter(OtTracePropagator.PREFIX_BAGGAGE_HEADER + "some-key", "-");
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID);
     carrier.put(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
