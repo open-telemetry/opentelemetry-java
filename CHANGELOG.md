@@ -2,13 +2,71 @@
 
 ## Unreleased
 
-* Update `queueSize` metric description and attribute name for `processorType`
+## Version 1.31.0 (2023-10-06)
+
+### API
+
+#### Incubator
+
+* Refactor advice API to simplify usage
+  ([#5848](https://github.com/open-telemetry/opentelemetry-java/pull/5848))
+
+### SDK
+
+* BatchLogRecordProcessor and BatchSpanProcessor unify `queueSize` metric
+  description and attribute name for `processorType`
   ([#5836](https://github.com/open-telemetry/opentelemetry-java/pull/5836))
+
+#### Metrics
+
+* Allow instrument names to contain a forward slash
+  ([#5824](https://github.com/open-telemetry/opentelemetry-java/pull/5824))
+* Memory Mode support: Adding memory mode, and implementing it for Asynchronous Instruments
+  ([#5709](https://github.com/open-telemetry/opentelemetry-java/pull/5709),
+  [#5855](https://github.com/open-telemetry/opentelemetry-java/pull/5855))
+* Stabilize MetricProducer, allow custom MetricReaders
+  ([#5835](https://github.com/open-telemetry/opentelemetry-java/pull/5835))
+* Drop NaN measurements to metric instruments
+  ([#5859](https://github.com/open-telemetry/opentelemetry-java/pull/5859))
+* Fix flaky MetricExporterConfigurationTest
+  ([#5877](https://github.com/open-telemetry/opentelemetry-java/pull/5877))
+
+#### Logs
+
+* Add addAllAttributes() to ReadWriteLogRecord.
+  ([#5825](https://github.com/open-telemetry/opentelemetry-java/pull/5825))
+
+#### Exporters
+
+* Prometheus exporter: handle colliding metric attribute keys
+  ([#5717](https://github.com/open-telemetry/opentelemetry-java/pull/5717))
+
+#### SDK Extensions
+
+* File configuration ConfigurationReader handles null values as empty
+  ([#5829](https://github.com/open-telemetry/opentelemetry-java/pull/5829))
+
+#### Semantic conventions
+
+* BREAKING: Stop publishing `io.opentelemetry:opentelemetry-semconv`. Please use
+  `io.opentelemetry.semconv:opentelemetry-semconv:1.21.0-alpha` instead, which is published
+  from [open-telemetry/semantic-conventions-java](https://github.com/open-telemetry/semantic-conventions-java).
+  The new repository is published in lockstep
+  with [open-telemetry/semantic-conventions](https://github.com/open-telemetry/semantic-conventions).
+  ([#5807](https://github.com/open-telemetry/opentelemetry-java/pull/5807))
+
+### Project Tooling
+
+* Add Benchmark workflows
+  ([#5842](https://github.com/open-telemetry/opentelemetry-java/pull/5842),
+  [#5874](https://github.com/open-telemetry/opentelemetry-java/pull/5874))
+* Add clearer docs around coroutine support with an example
+  ([#5799](https://github.com/open-telemetry/opentelemetry-java/pull/5799))
 
 ## Version 1.30.1 (2023-09-11)
 
 * Fix autoconfigure bug creating multiple `PrometheusHttpServer` instances with same port
-  ([#5911](https://github.com/open-telemetry/opentelemetry-java/pull/5811))
+  ([#5811](https://github.com/open-telemetry/opentelemetry-java/pull/5811))
 
 ## Version 1.30.0 (2023-09-08)
 

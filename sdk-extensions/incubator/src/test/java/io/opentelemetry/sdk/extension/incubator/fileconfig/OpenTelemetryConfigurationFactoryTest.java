@@ -38,6 +38,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTe
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReader;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Propagator;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Resource;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sampler;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Selector;
@@ -223,9 +224,16 @@ class OpenTelemetryConfigurationFactoryTest {
             .create(
                 new OpenTelemetryConfiguration()
                     .withFileFormat("0.1")
-                    .withPropagators(
-                        Arrays.asList(
-                            "tracecontext", "baggage", "ottrace", "b3multi", "b3", "jaeger"))
+                    .withPropagator(
+                        new Propagator()
+                            .withComposite(
+                                Arrays.asList(
+                                    "tracecontext",
+                                    "baggage",
+                                    "ottrace",
+                                    "b3multi",
+                                    "b3",
+                                    "jaeger")))
                     .withResource(
                         new Resource()
                             .withAttributes(

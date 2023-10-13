@@ -54,8 +54,8 @@ dependencies {
 // 6. deleteJs2pTmp - delete tmp directory
 // ... proceed with normal sourcesJar, compileJava, etc
 
-// TODO(jack-berg): update ref to be released version when available
-val configurationRef = "0508846f82ed54b230fa638e1e7556c52efee25e"
+val configurationTag = "0.1.0"
+val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.opencensusshim.internal.metrics;
+package io.opentelemetry.opencensusshim;
 
 import io.opencensus.common.Timestamp;
 import io.opencensus.metrics.LabelKey;
@@ -55,13 +55,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
-/**
- * Adapts an OpenCensus metric into the OpenTelemetry metric data API.
- *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
- */
-public final class MetricAdapter {
+/** Adapts an OpenCensus metric into the OpenTelemetry metric data API. */
+final class MetricAdapter {
   private MetricAdapter() {}
 
   // All OpenCensus metrics come from this shim.
@@ -81,7 +76,7 @@ public final class MetricAdapter {
    * @param otelResource The resource associated with the opentelemetry SDK.
    * @param censusMetric The OpenCensus metric to convert.
    */
-  public static MetricData convert(Resource otelResource, Metric censusMetric) {
+  static MetricData convert(Resource otelResource, Metric censusMetric) {
     // Note: we can't just adapt interfaces, we need to do full copy because OTel data API uses
     // auto-value vs. pure interfaces.
     switch (censusMetric.getMetricDescriptor().getType()) {

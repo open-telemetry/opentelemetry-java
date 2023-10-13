@@ -8,19 +8,19 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.15.2",
-  "com.google.guava:guava-bom:32.1.2-jre",
-  "com.google.protobuf:protobuf-bom:3.24.3",
+  "com.fasterxml.jackson:jackson-bom:2.15.3",
+  "com.google.guava:guava-bom:32.1.3-jre",
+  "com.google.protobuf:protobuf-bom:3.24.4",
   "com.linecorp.armeria:armeria-bom:1.25.2",
   "com.squareup.okhttp3:okhttp-bom:4.11.0",
   "com.squareup.okio:okio-bom:3.6.0", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.58.0",
-  "io.netty:netty-bom:4.1.99.Final",
+  "io.netty:netty-bom:4.1.100.Final",
   "io.zipkin.brave:brave-bom:5.16.0",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.4",
   "org.assertj:assertj-bom:3.24.2",
   "org.junit:junit-bom:5.10.0",
-  "org.testcontainers:testcontainers-bom:1.19.0",
+  "org.testcontainers:testcontainers-bom:1.19.1",
   "org.snakeyaml:snakeyaml-engine:2.7"
 )
 
@@ -55,7 +55,7 @@ val DEPENDENCIES = listOf(
   "io.prometheus:simpleclient_httpserver:${prometheusClientVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.25.1",
+  "com.google.api.grpc:proto-google-common-protos:2.26.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",

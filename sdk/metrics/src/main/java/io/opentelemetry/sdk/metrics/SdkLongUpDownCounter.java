@@ -14,7 +14,6 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.extension.incubator.metrics.ExtendedLongUpDownCounterBuilder;
-import io.opentelemetry.extension.incubator.metrics.LongUpDownCounterAdviceConfigurer;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
@@ -46,62 +45,66 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
     add(increment, Attributes.empty());
   }
 
-  static final class SdkLongUpDownCounterBuilder
-      extends AbstractInstrumentBuilder<SdkLongUpDownCounterBuilder>
-      implements ExtendedLongUpDownCounterBuilder, LongUpDownCounterAdviceConfigurer {
+  static final class SdkLongUpDownCounterBuilder implements ExtendedLongUpDownCounterBuilder {
+
+    private final InstrumentBuilder builder;
 
     SdkLongUpDownCounterBuilder(
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      super(
-          meterProviderSharedState,
-          meterSharedState,
-          InstrumentType.UP_DOWN_COUNTER,
-          InstrumentValueType.LONG,
-          name,
-          "",
-          DEFAULT_UNIT);
+      this.builder =
+          new InstrumentBuilder(
+              name,
+              InstrumentType.UP_DOWN_COUNTER,
+              InstrumentValueType.LONG,
+              meterProviderSharedState,
+              meterSharedState);
     }
 
     @Override
-    protected SdkLongUpDownCounterBuilder getThis() {
+    public LongUpDownCounterBuilder setDescription(String description) {
+      builder.setDescription(description);
       return this;
     }
 
     @Override
-    public LongUpDownCounterBuilder setAdvice(
-        Consumer<LongUpDownCounterAdviceConfigurer> adviceConsumer) {
-      adviceConsumer.accept(this);
+    public LongUpDownCounterBuilder setUnit(String unit) {
+      builder.setUnit(unit);
       return this;
     }
 
     @Override
     public LongUpDownCounter build() {
-      return buildSynchronousInstrument(SdkLongUpDownCounter::new);
+      return builder.buildSynchronousInstrument(SdkLongUpDownCounter::new);
     }
 
     @Override
     public DoubleUpDownCounterBuilder ofDoubles() {
-      return swapBuilder(SdkDoubleUpDownCounter.SdkDoubleUpDownCounterBuilder::new);
+      return builder.swapBuilder(SdkDoubleUpDownCounter.SdkDoubleUpDownCounterBuilder::new);
     }
 
     @Override
     public ObservableLongUpDownCounter buildWithCallback(
         Consumer<ObservableLongMeasurement> callback) {
-      return registerLongAsynchronousInstrument(
+      return builder.buildLongAsynchronousInstrument(
           InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, callback);
     }
 
     @Override
     public ObservableLongMeasurement buildObserver() {
-      return buildObservableMeasurement(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER);
+      return builder.buildObservableMeasurement(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER);
     }
 
     @Override
-    public LongUpDownCounterAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
-      adviceBuilder.setAttributes(attributes);
+    public ExtendedLongUpDownCounterBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
+      builder.setAdviceAttributes(attributes);
       return this;
+    }
+
+    @Override
+    public String toString() {
+      return builder.toStringHelper(getClass().getSimpleName());
     }
   }
 }

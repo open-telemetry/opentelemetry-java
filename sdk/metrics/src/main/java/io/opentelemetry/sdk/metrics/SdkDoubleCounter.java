@@ -12,7 +12,6 @@ import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleCounter;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.extension.incubator.metrics.DoubleCounterAdviceConfigurer;
 import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleCounterBuilder;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
@@ -59,9 +58,9 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
     add(increment, Attributes.empty());
   }
 
-  static final class SdkDoubleCounterBuilder
-      extends AbstractInstrumentBuilder<SdkDoubleCounterBuilder>
-      implements ExtendedDoubleCounterBuilder, DoubleCounterAdviceConfigurer {
+  static final class SdkDoubleCounterBuilder implements ExtendedDoubleCounterBuilder {
+
+    private final InstrumentBuilder builder;
 
     SdkDoubleCounterBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -70,48 +69,55 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
         String description,
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
-      super(
-          meterProviderSharedState,
-          sharedState,
-          InstrumentType.COUNTER,
-          InstrumentValueType.DOUBLE,
-          name,
-          description,
-          unit,
-          adviceBuilder);
-    }
-
-    @Override
-    protected SdkDoubleCounterBuilder getThis() {
-      return this;
-    }
-
-    @Override
-    public DoubleCounterBuilder setAdvice(Consumer<DoubleCounterAdviceConfigurer> adviceConsumer) {
-      adviceConsumer.accept(this);
-      return this;
+      this.builder =
+          new InstrumentBuilder(
+                  name,
+                  InstrumentType.COUNTER,
+                  InstrumentValueType.DOUBLE,
+                  meterProviderSharedState,
+                  sharedState)
+              .setUnit(unit)
+              .setDescription(description)
+              .setAdviceBuilder(adviceBuilder);
     }
 
     @Override
     public SdkDoubleCounter build() {
-      return buildSynchronousInstrument(SdkDoubleCounter::new);
+      return builder.buildSynchronousInstrument(SdkDoubleCounter::new);
+    }
+
+    @Override
+    public DoubleCounterBuilder setDescription(String description) {
+      builder.setDescription(description);
+      return this;
+    }
+
+    @Override
+    public DoubleCounterBuilder setUnit(String unit) {
+      builder.setUnit(unit);
+      return this;
     }
 
     @Override
     public ObservableDoubleCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
-      return registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback);
+      return builder.buildDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback);
     }
 
     @Override
     public ObservableDoubleMeasurement buildObserver() {
-      return buildObservableMeasurement(InstrumentType.OBSERVABLE_COUNTER);
+      return builder.buildObservableMeasurement(InstrumentType.OBSERVABLE_COUNTER);
     }
 
     @Override
-    public DoubleCounterAdviceConfigurer setAttributes(List<AttributeKey<?>> attributes) {
-      adviceBuilder.setAttributes(attributes);
+    public ExtendedDoubleCounterBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
+      builder.setAdviceAttributes(attributes);
       return this;
+    }
+
+    @Override
+    public String toString() {
+      return builder.toStringHelper(getClass().getSimpleName());
     }
   }
 }

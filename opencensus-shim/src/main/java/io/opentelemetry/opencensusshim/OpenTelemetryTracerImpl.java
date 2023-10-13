@@ -30,10 +30,10 @@ import io.opencensus.trace.Tracer;
 import io.opencensus.trace.config.TraceConfig;
 import javax.annotation.Nullable;
 
-class OpenTelemetryTracerImpl extends Tracer {
+final class OpenTelemetryTracerImpl extends Tracer {
   private final OpenTelemetrySpanBuilderImpl.Options spanBuilderOptions;
 
-  public OpenTelemetryTracerImpl(RandomHandler randomHandler, TraceConfig traceConfig) {
+  OpenTelemetryTracerImpl(RandomHandler randomHandler, TraceConfig traceConfig) {
     spanBuilderOptions = new OpenTelemetrySpanBuilderImpl.Options(randomHandler, traceConfig);
   }
 

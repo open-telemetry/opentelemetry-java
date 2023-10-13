@@ -31,6 +31,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMe
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBased;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReader;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Prometheus;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Propagator;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReader;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Resource;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sampler;
@@ -50,7 +51,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class ConfigurationReaderTest {
@@ -71,9 +71,12 @@ class ConfigurationReaderTest {
         new AttributeLimits().withAttributeValueLengthLimit(4096).withAttributeCountLimit(128);
     expected.withAttributeLimits(attributeLimits);
 
-    List<String> propagators =
-        Arrays.asList("tracecontext", "baggage", "b3", "b3multi", "jaeger", "xray", "ottrace");
-    expected.withPropagators(propagators);
+    Propagator propagator =
+        new Propagator()
+            .withComposite(
+                Arrays.asList(
+                    "tracecontext", "baggage", "b3", "b3multi", "jaeger", "xray", "ottrace"));
+    expected.withPropagator(propagator);
 
     // TracerProvider config
     TracerProvider tracerProvider = new TracerProvider();
@@ -253,7 +256,7 @@ class ConfigurationReaderTest {
       assertThat(config.getFileFormat()).isEqualTo("0.1");
       assertThat(config.getResource()).isEqualTo(resource);
       assertThat(config.getAttributeLimits()).isEqualTo(attributeLimits);
-      assertThat(config.getPropagators()).isEqualTo(propagators);
+      assertThat(config.getPropagator()).isEqualTo(propagator);
 
       // TracerProvider config
       TracerProvider configTracerProvider = config.getTracerProvider();
