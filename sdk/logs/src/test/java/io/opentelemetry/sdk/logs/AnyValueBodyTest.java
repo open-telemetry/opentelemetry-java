@@ -13,6 +13,7 @@ import io.opentelemetry.extension.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.extension.incubator.logs.KeyAnyValue;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
+import io.opentelemetry.sdk.logs.internal.AnyValueBody;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
@@ -38,6 +39,8 @@ class AnyValueBodyTest {
             logRecordData -> {
               assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
               assertThat(logRecordData.getBody().asString()).isEqualTo("1");
+              assertThat(((AnyValueBody) logRecordData.getBody()).getAnyValue())
+                  .isEqualTo(AnyValue.of(1));
             });
     exporter.reset();
 
@@ -51,6 +54,8 @@ class AnyValueBodyTest {
             logRecordData -> {
               assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
               assertThat(logRecordData.getBody().asString()).isEqualTo("68656c6c6f20776f726c64");
+              assertThat(((AnyValueBody) logRecordData.getBody()).getAnyValue())
+                  .isEqualTo(AnyValue.of("hello world".getBytes(StandardCharsets.UTF_8)));
             });
     exporter.reset();
 
@@ -101,6 +106,27 @@ class AnyValueBodyTest {
                           + "arr_key=[entry1, 2, 3.3], "
                           + "key_value_list_key=[child_str_key1=child_value1, child_str_key2=child_value2]"
                           + "]");
+              assertThat(((AnyValueBody) logRecordData.getBody()).getAnyValue())
+                  .isEqualTo(
+                      AnyValue.of(
+                          KeyAnyValue.of("str_key", AnyValue.of("value")),
+                          KeyAnyValue.of("bool_key", AnyValue.of(true)),
+                          KeyAnyValue.of("long_key", AnyValue.of(1L)),
+                          KeyAnyValue.of("double_key", AnyValue.of(1.1)),
+                          KeyAnyValue.of(
+                              "bytes_key", AnyValue.of("bytes".getBytes(StandardCharsets.UTF_8))),
+                          KeyAnyValue.of(
+                              "arr_key",
+                              AnyValue.of(AnyValue.of("entry1"), AnyValue.of(2), AnyValue.of(3.3))),
+                          KeyAnyValue.of(
+                              "key_value_list_key",
+                              AnyValue.of(
+                                  new LinkedHashMap<String, AnyValue<?>>() {
+                                    {
+                                      put("child_str_key1", AnyValue.of("child_value1"));
+                                      put("child_str_key2", AnyValue.of("child_value2"));
+                                    }
+                                  }))));
             });
     exporter.reset();
 
@@ -114,6 +140,9 @@ class AnyValueBodyTest {
             logRecordData -> {
               assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
               assertThat(logRecordData.getBody().asString()).isEqualTo("[entry1, entry2, 3]");
+              assertThat(((AnyValueBody) logRecordData.getBody()).getAnyValue())
+                  .isEqualTo(
+                      AnyValue.of(AnyValue.of("entry1"), AnyValue.of("entry2"), AnyValue.of(3)));
             });
     exporter.reset();
   }

@@ -5,6 +5,8 @@
 
 package io.opentelemetry.extension.incubator.logs;
 
+import java.util.Objects;
+
 final class AnyValueLong implements AnyValue<Long> {
 
   private final long value;
@@ -35,5 +37,18 @@ final class AnyValueLong implements AnyValue<Long> {
   @Override
   public String toString() {
     return "AnyValueLong{" + asString() + "}";
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    return (o instanceof AnyValue) && Objects.equals(this.value, ((AnyValue<?>) o).getValue());
+  }
+
+  @Override
+  public int hashCode() {
+    return Long.hashCode(value);
   }
 }

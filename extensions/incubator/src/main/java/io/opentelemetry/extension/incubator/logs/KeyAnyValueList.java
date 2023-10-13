@@ -23,14 +23,14 @@ final class KeyAnyValueList implements AnyValue<List<KeyAnyValue>> {
   }
 
   static AnyValue<List<KeyAnyValue>> create(KeyAnyValue... value) {
-    Objects.requireNonNull(value, "value");
+    Objects.requireNonNull(value, "value must not be null");
     List<KeyAnyValue> list = new ArrayList<>(value.length);
     list.addAll(Arrays.asList(value));
     return new KeyAnyValueList(Collections.unmodifiableList(list));
   }
 
   static AnyValue<List<KeyAnyValue>> createFromMap(Map<String, AnyValue<?>> value) {
-    Objects.requireNonNull(value, "value");
+    Objects.requireNonNull(value, "value must not be null");
     KeyAnyValue[] array =
         value.entrySet().stream()
             .map(entry -> KeyAnyValue.of(entry.getKey(), entry.getValue()))
@@ -58,5 +58,18 @@ final class KeyAnyValueList implements AnyValue<List<KeyAnyValue>> {
   @Override
   public String toString() {
     return "KeyAnyValueList{" + asString() + "}";
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    return (o instanceof AnyValue) && Objects.equals(this.value, ((AnyValue<?>) o).getValue());
+  }
+
+  @Override
+  public int hashCode() {
+    return value.hashCode();
   }
 }

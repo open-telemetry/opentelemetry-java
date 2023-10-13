@@ -22,7 +22,7 @@ final class AnyValueArray implements AnyValue<List<AnyValue<?>>> {
   }
 
   static AnyValue<List<AnyValue<?>>> create(AnyValue<?>... value) {
-    Objects.requireNonNull(value, "value");
+    Objects.requireNonNull(value, "value must not be null");
     List<AnyValue<?>> list = new ArrayList<>(value.length);
     list.addAll(Arrays.asList(value));
     return new AnyValueArray(Collections.unmodifiableList(list));
@@ -46,5 +46,18 @@ final class AnyValueArray implements AnyValue<List<AnyValue<?>>> {
   @Override
   public String toString() {
     return "AnyValueArray{" + asString() + "}";
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    return (o instanceof AnyValue) && Objects.equals(this.value, ((AnyValue<?>) o).getValue());
+  }
+
+  @Override
+  public int hashCode() {
+    return value.hashCode();
   }
 }

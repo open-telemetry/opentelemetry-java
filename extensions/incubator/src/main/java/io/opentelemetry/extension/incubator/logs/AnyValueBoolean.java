@@ -5,6 +5,8 @@
 
 package io.opentelemetry.extension.incubator.logs;
 
+import java.util.Objects;
+
 final class AnyValueBoolean implements AnyValue<Boolean> {
 
   private final boolean value;
@@ -35,5 +37,18 @@ final class AnyValueBoolean implements AnyValue<Boolean> {
   @Override
   public String toString() {
     return "AnyValueBoolean{" + asString() + "}";
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    return (o instanceof AnyValue) && Objects.equals(this.value, ((AnyValue<?>) o).getValue());
+  }
+
+  @Override
+  public int hashCode() {
+    return Boolean.hashCode(value);
   }
 }

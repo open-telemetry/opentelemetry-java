@@ -5,6 +5,8 @@
 
 package io.opentelemetry.extension.incubator.logs;
 
+import java.util.Objects;
+
 final class AnyValueDouble implements AnyValue<Double> {
 
   private final double value;
@@ -19,7 +21,7 @@ final class AnyValueDouble implements AnyValue<Double> {
 
   @Override
   public AnyValueType getType() {
-    return AnyValueType.LONG;
+    return AnyValueType.DOUBLE;
   }
 
   @Override
@@ -35,5 +37,18 @@ final class AnyValueDouble implements AnyValue<Double> {
   @Override
   public String toString() {
     return "AnyValueDouble{" + asString() + "}";
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    return (o instanceof AnyValue) && Objects.equals(this.value, ((AnyValue<?>) o).getValue());
+  }
+
+  @Override
+  public int hashCode() {
+    return Double.hashCode(value);
   }
 }

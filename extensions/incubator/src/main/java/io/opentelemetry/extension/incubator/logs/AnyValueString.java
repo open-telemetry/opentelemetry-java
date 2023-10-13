@@ -16,7 +16,7 @@ final class AnyValueString implements AnyValue<String> {
   }
 
   static AnyValue<String> create(String value) {
-    Objects.requireNonNull(value, "value");
+    Objects.requireNonNull(value, "value must not be null");
     return new AnyValueString(value);
   }
 
@@ -38,5 +38,18 @@ final class AnyValueString implements AnyValue<String> {
   @Override
   public String toString() {
     return "AnyValueString{" + value + "}";
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    return (o instanceof AnyValue) && Objects.equals(this.value, ((AnyValue<?>) o).getValue());
+  }
+
+  @Override
+  public int hashCode() {
+    return value.hashCode();
   }
 }

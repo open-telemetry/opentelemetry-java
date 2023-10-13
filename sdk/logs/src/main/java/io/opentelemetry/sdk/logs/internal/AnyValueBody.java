@@ -35,4 +35,9 @@ public final class AnyValueBody implements Body {
   public AnyValue<?> getAnyValue() {
     return value;
   }
+
+  @Override
+  public String toString() {
+    return "AnyValueBody{" + asString() + "}";
+  }
 }

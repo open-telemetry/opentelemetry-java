@@ -6,12 +6,15 @@
 package io.opentelemetry.extension.incubator.logs;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import io.opentelemetry.api.internal.OtelEncodingUtils;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -19,6 +22,142 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 class AnyValueTest {
+
+  @Test
+  void anyValue_OfString() {
+    assertThat(AnyValue.of("foo"))
+        .satisfies(
+            anyValue -> {
+              assertThat(anyValue.getType()).isEqualTo(AnyValueType.STRING);
+              assertThat(anyValue.getValue()).isEqualTo("foo");
+              assertThat(anyValue).hasSameHashCodeAs(AnyValue.of("foo"));
+            });
+  }
+
+  @Test
+  void anyValue_OfBoolean() {
+    assertThat(AnyValue.of(true))
+        .satisfies(
+            anyValue -> {
+              assertThat(anyValue.getType()).isEqualTo(AnyValueType.BOOLEAN);
+              assertThat(anyValue.getValue()).isEqualTo(true);
+              assertThat(anyValue).hasSameHashCodeAs(AnyValue.of(true));
+            });
+  }
+
+  @Test
+  void anyValue_OfLong() {
+    assertThat(AnyValue.of(1L))
+        .satisfies(
+            anyValue -> {
+              assertThat(anyValue.getType()).isEqualTo(AnyValueType.LONG);
+              assertThat(anyValue.getValue()).isEqualTo(1L);
+              assertThat(anyValue).hasSameHashCodeAs(AnyValue.of(1L));
+            });
+  }
+
+  @Test
+  void anyValue_OfDouble() {
+    assertThat(AnyValue.of(1.1))
+        .satisfies(
+            anyValue -> {
+              assertThat(anyValue.getType()).isEqualTo(AnyValueType.DOUBLE);
+              assertThat(anyValue.getValue()).isEqualTo(1.1);
+              assertThat(anyValue).hasSameHashCodeAs(AnyValue.of(1.1));
+            });
+  }
+
+  @Test
+  void anyValue_OfByteArray() {
+    assertThat(AnyValue.of(new byte[] {'a', 'b'}))
+        .satisfies(
+            anyValue -> {
+              assertThat(anyValue.getType()).isEqualTo(AnyValueType.BYTES);
+              assertThat(anyValue.getValue()).isEqualTo(new byte[] {'a', 'b'});
+              assertThat(anyValue).hasSameHashCodeAs(AnyValue.of(new byte[] {'a', 'b'}));
+            });
+  }
+
+  @Test
+  void anyValue_OfAnyValueArray() {
+    assertThat(AnyValue.of(AnyValue.of(true), AnyValue.of(1L)))
+        .satisfies(
+            anyValue -> {
+              assertThat(anyValue.getType()).isEqualTo(AnyValueType.ARRAY);
+              assertThat(anyValue.getValue())
+                  .isEqualTo(Arrays.asList(AnyValue.of(true), AnyValue.of(1L)));
+              assertThat(anyValue)
+                  .hasSameHashCodeAs(AnyValue.of(AnyValue.of(true), AnyValue.of(1L)));
+            });
+  }
+
+  @Test
+  @SuppressWarnings("DoubleBraceInitialization")
+  void anyValue_OfKeyValueList() {
+    assertThat(
+            AnyValue.of(
+                KeyAnyValue.of("bool", AnyValue.of(true)), KeyAnyValue.of("long", AnyValue.of(1L))))
+        .satisfies(
+            anyValue -> {
+              assertThat(anyValue.getType()).isEqualTo(AnyValueType.KEY_VALUE_LIST);
+              assertThat(anyValue.getValue())
+                  .isEqualTo(
+                      Arrays.asList(
+                          KeyAnyValue.of("bool", AnyValue.of(true)),
+                          KeyAnyValue.of("long", AnyValue.of(1L))));
+              assertThat(anyValue)
+                  .hasSameHashCodeAs(
+                      AnyValue.of(
+                          KeyAnyValue.of("bool", AnyValue.of(true)),
+                          KeyAnyValue.of("long", AnyValue.of(1L))));
+            });
+
+    assertThat(
+            AnyValue.of(
+                new LinkedHashMap<String, AnyValue<?>>() {
+                  {
+                    put("bool", AnyValue.of(true));
+                    put("long", AnyValue.of(1L));
+                  }
+                }))
+        .satisfies(
+            anyValue -> {
+              assertThat(anyValue.getType()).isEqualTo(AnyValueType.KEY_VALUE_LIST);
+              assertThat(anyValue.getValue())
+                  .isEqualTo(
+                      Arrays.asList(
+                          KeyAnyValue.of("bool", AnyValue.of(true)),
+                          KeyAnyValue.of("long", AnyValue.of(1L))));
+              assertThat(anyValue)
+                  .hasSameHashCodeAs(
+                      AnyValue.of(
+                          new LinkedHashMap<String, AnyValue<?>>() {
+                            {
+                              put("bool", AnyValue.of(true));
+                              put("long", AnyValue.of(1L));
+                            }
+                          }));
+            });
+  }
+
+  @Test
+  void anyValue_NullsNotAllowed() {
+    assertThatThrownBy(() -> AnyValue.of((String) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("value must not be null");
+    assertThatThrownBy(() -> AnyValue.of((byte[]) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("value must not be null");
+    assertThatThrownBy(() -> AnyValue.of((AnyValue<?>[]) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("value must not be null");
+    assertThatThrownBy(() -> AnyValue.of((KeyAnyValue[]) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("value must not be null");
+    assertThatThrownBy(() -> AnyValue.of((Map<String, AnyValue<?>>) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("value must not be null");
+  }
 
   @ParameterizedTest
   @MethodSource("asStringArgs")
@@ -74,6 +213,4 @@ class AnyValueTest {
     byte[] decodedBytes = OtelEncodingUtils.bytesFromBase16(base16Encoded, base16Encoded.length());
     assertThat(new String(decodedBytes, StandardCharsets.UTF_8)).isEqualTo(str);
   }
-
-  // TODO: test equals, hashcode, getType
 }

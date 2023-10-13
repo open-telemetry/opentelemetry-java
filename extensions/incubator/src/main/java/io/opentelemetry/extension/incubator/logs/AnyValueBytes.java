@@ -18,7 +18,7 @@ final class AnyValueBytes implements AnyValue<byte[]> {
   }
 
   static AnyValue<byte[]> create(byte[] value) {
-    Objects.requireNonNull(value, "value");
+    Objects.requireNonNull(value, "value must not be null");
     return new AnyValueBytes(Arrays.copyOf(value, value.length));
   }
 
@@ -34,7 +34,8 @@ final class AnyValueBytes implements AnyValue<byte[]> {
 
   @Override
   public String asString() {
-    // TODO: base64 would be better, but isn't available in android and java
+    // TODO: base64 would be better, but isn't available in android and java. Can we vendor in a
+    // base64 implementation?
     char[] arr = new char[value.length * 2];
     OtelEncodingUtils.bytesToBase16(value, arr, value.length);
     return new String(arr);
@@ -43,5 +44,20 @@ final class AnyValueBytes implements AnyValue<byte[]> {
   @Override
   public String toString() {
     return "AnyValueBytes{" + asString() + "}";
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    return (o instanceof AnyValue)
+        && ((AnyValue<?>) o).getType() == AnyValueType.BYTES
+        && Arrays.equals(this.value, (byte[]) ((AnyValue<?>) o).getValue());
+  }
+
+  @Override
+  public int hashCode() {
+    return Arrays.hashCode(value);
   }
 }
