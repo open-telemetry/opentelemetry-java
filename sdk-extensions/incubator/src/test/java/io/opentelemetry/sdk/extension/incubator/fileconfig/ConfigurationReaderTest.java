@@ -49,14 +49,21 @@ import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class ConfigurationReaderTest {
 
   @Test
-  void read_KitchenSinkExampleFile() throws IOException {
+  void parse_KitchenSinkExampleFile() throws IOException {
     OpenTelemetryConfiguration expected = new OpenTelemetryConfiguration();
 
     expected.withFileFormat("0.1");
@@ -283,7 +290,7 @@ class ConfigurationReaderTest {
   }
 
   @Test
-  void nullValuesParsedToEmptyObjects() {
+  void parse_nullValuesParsedToEmptyObjects() {
     String objectPlaceholderString =
         "file_format: \"0.1\"\n"
             + "tracer_provider:\n"
@@ -336,5 +343,150 @@ class ConfigurationReaderTest {
     assertThat(aggregation.getSum()).isNull();
 
     assertThat(objectPlaceholderModel).isEqualTo(noObjectPlaceholderModel);
+  }
+
+  @Test
+  void parse_nullBoxedPrimitivesParsedToNull() {
+    String yaml =
+        "file_format:\n" // String
+            + "disabled:\n" // Boolean
+            + "attribute_limits:\n"
+            + "  attribute_value_length_limit:\n" // Integer
+            + "tracer_provider:\n"
+            + "  sampler:\n"
+            + "    trace_id_ratio_based:\n"
+            + "      ratio:\n"; // Double
+
+    OpenTelemetryConfiguration model =
+        ConfigurationReader.parse(new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
+
+    assertThat(model.getFileFormat()).isNull();
+    assertThat(model.getDisabled()).isNull();
+    assertThat(model.getAttributeLimits().getAttributeValueLengthLimit()).isNull();
+    assertThat(model.getTracerProvider().getSampler().getTraceIdRatioBased().getRatio()).isNull();
+
+    assertThat(model)
+        .isEqualTo(
+            new OpenTelemetryConfiguration()
+                .withAttributeLimits(new AttributeLimits())
+                .withTracerProvider(
+                    new TracerProvider()
+                        .withSampler(
+                            new Sampler().withTraceIdRatioBased(new TraceIdRatioBased()))));
+  }
+
+  @ParameterizedTest
+  @MethodSource("envVarSubstitutionArgs")
+  void envSubstituteAndLoadYaml(
+      String rawYaml, String expectedSubstituteResult, Object expectedYamlResult) {
+    Map<String, String> environmentVariables = new HashMap<>();
+    environmentVariables.put("VAR_1", "value1");
+    environmentVariables.put("VAR_2", "value2");
+
+    String substitutedYaml =
+        ConfigurationReader.substituteEnvVariables(
+            new ByteArrayInputStream(rawYaml.getBytes(StandardCharsets.UTF_8)),
+            environmentVariables);
+    assertThat(substitutedYaml).isEqualTo(expectedSubstituteResult);
+
+    Object yaml =
+        ConfigurationReader.loadYaml(
+            new ByteArrayInputStream(rawYaml.getBytes(StandardCharsets.UTF_8)),
+            environmentVariables);
+    assertThat(yaml).isEqualTo(expectedYamlResult);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static java.util.stream.Stream<Arguments> envVarSubstitutionArgs() {
+    return java.util.stream.Stream.of(
+        // Simple cases
+        Arguments.of("key1: ${env:VAR_1}", "key1: value1\n", mapOf(entry("key1", "value1"))),
+        Arguments.of(
+            "key1: ${env:VAR_1}\nkey2: value2\n",
+            "key1: value1\nkey2: value2\n",
+            mapOf(entry("key1", "value1"), entry("key2", "value2"))),
+        Arguments.of(
+            "key1: ${env:VAR_1} value1\nkey2: value2\n",
+            "key1: value1 value1\nkey2: value2\n",
+            mapOf(entry("key1", "value1 value1"), entry("key2", "value2"))),
+        // Multiple environment variables referenced
+        Arguments.of(
+            "key1: ${env:VAR_1}${env:VAR_2}\nkey2: value2\n",
+            "key1: value1value2\nkey2: value2\n",
+            mapOf(entry("key1", "value1value2"), entry("key2", "value2"))),
+        Arguments.of(
+            "key1: ${env:VAR_1} ${env:VAR_2}\nkey2: value2\n",
+            "key1: value1 value2\nkey2: value2\n",
+            mapOf(entry("key1", "value1 value2"), entry("key2", "value2"))),
+        // VAR_3 is not defined in environment
+        Arguments.of(
+            "key1: ${env:VAR_3}\nkey2: value2\n",
+            "key1: \nkey2: value2\n",
+            mapOf(entry("key1", null), entry("key2", "value2"))),
+        Arguments.of(
+            "key1: ${env:VAR_1} ${env:VAR_3}\nkey2: value2\n",
+            "key1: value1 \nkey2: value2\n",
+            mapOf(entry("key1", "value1"), entry("key2", "value2"))),
+        // Environment variable keys must match pattern: [a-zA-Z_]+[a-zA-Z0-9_]*
+        Arguments.of(
+            "key1: ${env:VAR&}\nkey2: value2\n",
+            "key1: ${env:VAR&}\nkey2: value2\n",
+            mapOf(entry("key1", "${env:VAR&}"), entry("key2", "value2"))));
+  }
+
+  private static <K, V> Map.Entry<K, V> entry(K key, @Nullable V value) {
+    return new AbstractMap.SimpleEntry<>(key, value);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Map<String, Object> mapOf(Map.Entry<String, ?>... entries) {
+    Map<String, Object> result = new HashMap<>();
+    for (Map.Entry<String, ?> entry : entries) {
+      result.put(entry.getKey(), entry.getValue());
+    }
+    return result;
+  }
+
+  @Test
+  void read_WithEnvironmentVariables() {
+    String yaml =
+        "file_format: \"0.1\"\n"
+            + "tracer_provider:\n"
+            + "  processors:\n"
+            + "    - batch:\n"
+            + "        exporter:\n"
+            + "          otlp:\n"
+            + "            endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}\n"
+            + "    - batch:\n"
+            + "        exporter:\n"
+            + "          otlp:\n"
+            + "            endpoint: ${env:UNSET_ENV_VAR}\n";
+    Map<String, String> envVars = new HashMap<>();
+    envVars.put("OTEL_EXPORTER_OTLP_ENDPOINT", "http://collector:4317");
+    OpenTelemetryConfiguration model =
+        ConfigurationReader.parse(
+            new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)), envVars);
+    assertThat(model)
+        .isEqualTo(
+            new OpenTelemetryConfiguration()
+                .withFileFormat("0.1")
+                .withTracerProvider(
+                    new TracerProvider()
+                        .withProcessors(
+                            Arrays.asList(
+                                new SpanProcessor()
+                                    .withBatch(
+                                        new BatchSpanProcessor()
+                                            .withExporter(
+                                                new SpanExporter()
+                                                    .withOtlp(
+                                                        new Otlp()
+                                                            .withEndpoint(
+                                                                "http://collector:4317")))),
+                                new SpanProcessor()
+                                    .withBatch(
+                                        new BatchSpanProcessor()
+                                            .withExporter(
+                                                new SpanExporter().withOtlp(new Otlp())))))));
   }
 }

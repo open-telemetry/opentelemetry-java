@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -33,6 +34,9 @@ public final class ConfigurationFactory {
   /**
    * Parse the {@code inputStream} YAML to {@link OpenTelemetryConfiguration} and interpret the
    * model to create {@link OpenTelemetrySdk} instance corresponding to the configuration.
+   *
+   * <p>Before parsing, environment variable substitution is performed as described in {@link
+   * ConfigurationReader#substituteEnvVariables(InputStream, Map)}.
    *
    * @param inputStream the configuration YAML
    * @return the {@link OpenTelemetrySdk}
