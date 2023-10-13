@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.LongGaugeBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleGauge;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
@@ -39,55 +40,67 @@ final class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
     set(increment, Attributes.empty());
   }
 
-  static final class SdkDoubleGaugeBuilder extends AbstractInstrumentBuilder<SdkDoubleGaugeBuilder>
-      implements ExtendedDoubleGaugeBuilder {
+  static final class SdkDoubleGaugeBuilder implements ExtendedDoubleGaugeBuilder {
+    private final InstrumentBuilder builder;
 
     SdkDoubleGaugeBuilder(
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      super(
-          meterProviderSharedState,
-          meterSharedState,
-          // TODO: use InstrumentType.GAUGE when available
-          InstrumentType.OBSERVABLE_GAUGE,
-          InstrumentValueType.DOUBLE,
-          name,
-          "",
-          DEFAULT_UNIT);
+
+      // TODO: use InstrumentType.GAUGE when available
+      builder =
+          new InstrumentBuilder(
+              name,
+              InstrumentType.OBSERVABLE_GAUGE,
+              InstrumentValueType.DOUBLE,
+              meterProviderSharedState,
+              meterSharedState);
     }
 
     @Override
-    protected SdkDoubleGaugeBuilder getThis() {
+    public DoubleGaugeBuilder setDescription(String description) {
+      builder.setDescription(description);
+      return this;
+    }
+
+    @Override
+    public DoubleGaugeBuilder setUnit(String unit) {
+      builder.setUnit(unit);
       return this;
     }
 
     @Override
     public SdkDoubleGauge build() {
-      return buildSynchronousInstrument(SdkDoubleGauge::new);
+      return builder.buildSynchronousInstrument(SdkDoubleGauge::new);
     }
 
     @Override
     public ExtendedDoubleGaugeBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
-      adviceBuilder.setAttributes(attributes);
+      builder.setAdviceAttributes(attributes);
       return this;
     }
 
     @Override
     public LongGaugeBuilder ofLongs() {
-      return swapBuilder(SdkLongGauge.SdkLongGaugeBuilder::new);
+      return builder.swapBuilder(SdkLongGauge.SdkLongGaugeBuilder::new);
     }
 
     @Override
     public ObservableDoubleGauge buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
       // TODO: use InstrumentType.GAUGE when available
-      return registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
+      return builder.buildDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
     }
 
     @Override
     public ObservableDoubleMeasurement buildObserver() {
       // TODO: use InstrumentType.GAUGE when available
-      return buildObservableMeasurement(InstrumentType.OBSERVABLE_GAUGE);
+      return builder.buildObservableMeasurement(InstrumentType.OBSERVABLE_GAUGE);
+    }
+
+    @Override
+    public String toString() {
+      return builder.toStringHelper(getClass().getSimpleName());
     }
   }
 }

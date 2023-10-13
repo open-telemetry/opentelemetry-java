@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.LongCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
@@ -58,52 +59,64 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
     add(increment, Attributes.empty());
   }
 
-  static final class SdkLongCounterBuilder extends AbstractInstrumentBuilder<SdkLongCounterBuilder>
-      implements ExtendedLongCounterBuilder {
+  static final class SdkLongCounterBuilder implements ExtendedLongCounterBuilder {
+
+    private final InstrumentBuilder builder;
 
     SdkLongCounterBuilder(
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      super(
-          meterProviderSharedState,
-          meterSharedState,
-          InstrumentType.COUNTER,
-          InstrumentValueType.LONG,
-          name,
-          "",
-          DEFAULT_UNIT);
+      this.builder =
+          new InstrumentBuilder(
+              name,
+              InstrumentType.COUNTER,
+              InstrumentValueType.LONG,
+              meterProviderSharedState,
+              meterSharedState);
     }
 
     @Override
-    protected SdkLongCounterBuilder getThis() {
+    public LongCounterBuilder setDescription(String description) {
+      builder.setDescription(description);
+      return this;
+    }
+
+    @Override
+    public LongCounterBuilder setUnit(String unit) {
+      builder.setUnit(unit);
       return this;
     }
 
     @Override
     public SdkLongCounter build() {
-      return buildSynchronousInstrument(SdkLongCounter::new);
+      return builder.buildSynchronousInstrument(SdkLongCounter::new);
     }
 
     @Override
     public DoubleCounterBuilder ofDoubles() {
-      return swapBuilder(SdkDoubleCounter.SdkDoubleCounterBuilder::new);
+      return builder.swapBuilder(SdkDoubleCounter.SdkDoubleCounterBuilder::new);
     }
 
     @Override
     public ObservableLongCounter buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
-      return registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback);
+      return builder.buildLongAsynchronousInstrument(InstrumentType.OBSERVABLE_COUNTER, callback);
     }
 
     @Override
     public ObservableLongMeasurement buildObserver() {
-      return buildObservableMeasurement(InstrumentType.OBSERVABLE_COUNTER);
+      return builder.buildObservableMeasurement(InstrumentType.OBSERVABLE_COUNTER);
     }
 
     @Override
     public ExtendedLongCounterBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
-      adviceBuilder.setAttributes(attributes);
+      builder.setAdviceAttributes(attributes);
       return this;
+    }
+
+    @Override
+    public String toString() {
+      return builder.toStringHelper(getClass().getSimpleName());
     }
   }
 }
