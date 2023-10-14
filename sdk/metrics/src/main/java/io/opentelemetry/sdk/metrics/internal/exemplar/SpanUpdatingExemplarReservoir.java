@@ -13,7 +13,8 @@ import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import java.util.List;
 
 public class SpanUpdatingExemplarReservoir<T extends ExemplarData> implements ExemplarReservoir<T> {
-  private static final AttributeKey<Boolean> KEY_EXEMPLAR = AttributeKey.booleanKey("otel.exemplar");
+  private static final AttributeKey<Boolean> KEY_EXEMPLAR =
+      AttributeKey.booleanKey("otel.exemplar");
   private final ExemplarReservoir<T> reservoir;
 
   SpanUpdatingExemplarReservoir(ExemplarReservoir<T> reservoir) {

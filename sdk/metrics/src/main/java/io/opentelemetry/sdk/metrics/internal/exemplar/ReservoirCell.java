@@ -66,7 +66,8 @@ class ReservoirCell {
    * #recordLongMeasurement(long, Attributes, Context)} and {@link #getAndResetLong(Attributes)}
    * must not be used when a cell is recording longs.
    */
-  synchronized boolean recordDoubleMeasurement(double value, Attributes attributes, Context context) {
+  synchronized boolean recordDoubleMeasurement(
+      double value, Attributes attributes, Context context) {
     if (hasValue()) {
       return false;
     } else {

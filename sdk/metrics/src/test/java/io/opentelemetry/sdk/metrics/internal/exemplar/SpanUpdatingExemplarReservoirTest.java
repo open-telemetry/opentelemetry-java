@@ -37,7 +37,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class SpanUpdatingExemplarReservoirTest {
   private static final AttributeKey<Boolean> KEY = AttributeKey.booleanKey("otel.exemplar");
   private static final SpanBuilder spanBuilder =
-    SdkTracerProvider.builder().build().get("").spanBuilder("");
+      SdkTracerProvider.builder().build().get("").spanBuilder("");
   @Mock ExemplarReservoir<DoubleExemplarData> doubleParent;
   @Mock ExemplarReservoir<LongExemplarData> longParent;
   @Spy Span span = spanBuilder.startSpan();
@@ -91,10 +91,11 @@ class SpanUpdatingExemplarReservoirTest {
     SpanUpdatingExemplarReservoir<LongExemplarData> reservoir =
         new SpanUpdatingExemplarReservoir<>(longParent);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("test"), "!");
-    List<LongExemplarData> data = Arrays.asList(
-        ImmutableLongExemplarData.create(Attributes.empty(), 123L, SpanContext.getInvalid(), 456L));
+    List<LongExemplarData> data =
+        Arrays.asList(
+            ImmutableLongExemplarData.create(
+                Attributes.empty(), 123L, SpanContext.getInvalid(), 456L));
     doReturn(data).when(longParent).collectAndReset(attributes);
-    assertThat(reservoir.collectAndReset(attributes))
-        .isEqualTo(data);
+    assertThat(reservoir.collectAndReset(attributes)).isEqualTo(data);
   }
 }

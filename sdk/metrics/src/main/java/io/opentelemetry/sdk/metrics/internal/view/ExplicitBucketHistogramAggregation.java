@@ -56,10 +56,10 @@ public final class ExplicitBucketHistogramAggregation implements Aggregation, Ag
             bucketBoundaryArray,
             () ->
                 ExemplarReservoir.spanUpdatingReservoir(
-                  ExemplarReservoir.filtered(
-                      exemplarFilter,
-                      ExemplarReservoir.histogramBucketReservoir(
-                          Clock.getDefault(), bucketBoundaries))));
+                    ExemplarReservoir.filtered(
+                        exemplarFilter,
+                        ExemplarReservoir.histogramBucketReservoir(
+                            Clock.getDefault(), bucketBoundaries))));
   }
 
   @Override

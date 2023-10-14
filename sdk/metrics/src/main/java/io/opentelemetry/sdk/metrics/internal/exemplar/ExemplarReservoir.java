@@ -82,14 +82,10 @@ public interface ExemplarReservoir<T extends ExemplarData> {
     return new SpanUpdatingExemplarReservoir<>(original);
   }
 
-  /**
-   * Offers a {@code double} measurement to be sampled.
-   */
+  /** Offers a {@code double} measurement to be sampled. */
   boolean offerDoubleMeasurement(double value, Attributes attributes, Context context);
 
-  /**
-   * Offers a {@code long} measurement to be sampled.
-   */
+  /** Offers a {@code long} measurement to be sampled. */
   boolean offerLongMeasurement(long value, Attributes attributes, Context context);
 
   /**
