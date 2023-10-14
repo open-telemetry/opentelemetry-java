@@ -24,8 +24,8 @@ class HistogramExemplarReservoir extends FixedSizeExemplarReservoir<DoubleExempl
   }
 
   @Override
-  public void offerLongMeasurement(long value, Attributes attributes, Context context) {
-    super.offerDoubleMeasurement((double) value, attributes, context);
+  public boolean offerLongMeasurement(long value, Attributes attributes, Context context) {
+    return super.offerDoubleMeasurement((double) value, attributes, context);
   }
 
   static class HistogramCellSelector implements ReservoirCellSelector {

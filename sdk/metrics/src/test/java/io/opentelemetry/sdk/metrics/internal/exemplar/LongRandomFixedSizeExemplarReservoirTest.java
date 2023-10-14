@@ -132,11 +132,11 @@ class LongRandomFixedSizeExemplarReservoirTest {
         .satisfiesExactlyInAnyOrder(
             exemplar -> {
               assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
-              assertThat(exemplar.getValue()).isEqualTo(2);
+              assertThat(exemplar.getValue()).isEqualTo(1);
             },
             exemplar -> {
               assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
-              assertThat(exemplar.getValue()).isEqualTo(3);
+              assertThat(exemplar.getValue()).isEqualTo(2);
             });
   }
 }

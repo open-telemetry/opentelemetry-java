@@ -37,21 +37,23 @@ abstract class FixedSizeExemplarReservoir<T extends ExemplarData> implements Exe
   }
 
   @Override
-  public void offerLongMeasurement(long value, Attributes attributes, Context context) {
+  public boolean offerLongMeasurement(long value, Attributes attributes, Context context) {
     int bucket = reservoirCellSelector.reservoirCellIndexFor(storage, value, attributes, context);
-    if (bucket != -1) {
-      this.storage[bucket].recordLongMeasurement(value, attributes, context);
+    if (bucket != -1 && storage[bucket].recordLongMeasurement(value, attributes, context)) {
       this.hasMeasurements = true;
+      return true;
     }
+    return false;
   }
 
   @Override
-  public void offerDoubleMeasurement(double value, Attributes attributes, Context context) {
+  public boolean offerDoubleMeasurement(double value, Attributes attributes, Context context) {
     int bucket = reservoirCellSelector.reservoirCellIndexFor(storage, value, attributes, context);
-    if (bucket != -1) {
-      this.storage[bucket].recordDoubleMeasurement(value, attributes, context);
+    if (bucket != -1 && storage[bucket].recordDoubleMeasurement(value, attributes, context)) {
       this.hasMeasurements = true;
+      return true;
     }
+    return false;
   }
 
   @Override

@@ -77,11 +77,20 @@ public interface ExemplarReservoir<T extends ExemplarData> {
     return new HistogramExemplarReservoir(clock, boundaries);
   }
 
-  /** Offers a {@code double} measurement to be sampled. */
-  void offerDoubleMeasurement(double value, Attributes attributes, Context context);
+  static <T extends ExemplarData> ExemplarReservoir<T> spanUpdatingReservoir(
+      ExemplarReservoir<T> original) {
+    return new SpanUpdatingExemplarReservoir<>(original);
+  }
 
-  /** Offers a {@code long} measurement to be sampled. */
-  void offerLongMeasurement(long value, Attributes attributes, Context context);
+  /**
+   * Offers a {@code double} measurement to be sampled.
+   */
+  boolean offerDoubleMeasurement(double value, Attributes attributes, Context context);
+
+  /**
+   * Offers a {@code long} measurement to be sampled.
+   */
+  boolean offerLongMeasurement(long value, Attributes attributes, Context context);
 
   /**
    * Returns an immutable list of Exemplars for exporting from the current reservoir.

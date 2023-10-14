@@ -49,9 +49,14 @@ class ReservoirCell {
    * #recordDoubleMeasurement(double, Attributes, Context)} and {@link
    * #getAndResetDouble(Attributes)} must not be used when a cell is recording longs.
    */
-  synchronized void recordLongMeasurement(long value, Attributes attributes, Context context) {
-    this.longValue = value;
-    offerMeasurement(attributes, context);
+  synchronized boolean recordLongMeasurement(long value, Attributes attributes, Context context) {
+    if (hasValue()) {
+      return false;
+    } else {
+      this.longValue = value;
+      offerMeasurement(attributes, context);
+      return true;
+    }
   }
 
   /**
@@ -61,9 +66,14 @@ class ReservoirCell {
    * #recordLongMeasurement(long, Attributes, Context)} and {@link #getAndResetLong(Attributes)}
    * must not be used when a cell is recording longs.
    */
-  synchronized void recordDoubleMeasurement(double value, Attributes attributes, Context context) {
-    this.doubleValue = value;
-    offerMeasurement(attributes, context);
+  synchronized boolean recordDoubleMeasurement(double value, Attributes attributes, Context context) {
+    if (hasValue()) {
+      return false;
+    } else {
+      this.doubleValue = value;
+      offerMeasurement(attributes, context);
+      return true;
+    }
   }
 
   private void offerMeasurement(Attributes attributes, Context context) {
@@ -118,6 +128,10 @@ class ReservoirCell {
     this.doubleValue = 0;
     this.spanContext = SpanContext.getInvalid();
     this.recordTime = 0;
+  }
+
+  private boolean hasValue() {
+    return recordTime != 0;
   }
 
   /** Returns filtered attributes for exemplars. */

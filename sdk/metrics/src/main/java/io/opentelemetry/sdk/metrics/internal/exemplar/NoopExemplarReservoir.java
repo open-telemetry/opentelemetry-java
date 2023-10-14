@@ -24,13 +24,15 @@ class NoopExemplarReservoir<T extends ExemplarData> implements ExemplarReservoir
   private NoopExemplarReservoir() {}
 
   @Override
-  public void offerDoubleMeasurement(double value, Attributes attributes, Context context) {
+  public boolean offerDoubleMeasurement(double value, Attributes attributes, Context context) {
     // Do nothing
+    return false;
   }
 
   @Override
-  public void offerLongMeasurement(long value, Attributes attributes, Context context) {
+  public boolean offerLongMeasurement(long value, Attributes attributes, Context context) {
     // Do nothing
+    return false;
   }
 
   @Override

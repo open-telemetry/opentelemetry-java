@@ -45,24 +45,26 @@ public final class SumAggregation implements Aggregation, AggregatorFactory {
         {
           Supplier<ExemplarReservoir<LongExemplarData>> reservoirFactory =
               () ->
-                  ExemplarReservoir.filtered(
-                      exemplarFilter,
-                      ExemplarReservoir.longFixedSizeReservoir(
-                          Clock.getDefault(),
-                          Runtime.getRuntime().availableProcessors(),
-                          RandomSupplier.platformDefault()));
+                  ExemplarReservoir.spanUpdatingReservoir(
+                    ExemplarReservoir.filtered(
+                        exemplarFilter,
+                        ExemplarReservoir.longFixedSizeReservoir(
+                            Clock.getDefault(),
+                            Runtime.getRuntime().availableProcessors(),
+                            RandomSupplier.platformDefault())));
           return (Aggregator<T, U>) new LongSumAggregator(instrumentDescriptor, reservoirFactory);
         }
       case DOUBLE:
         {
           Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirFactory =
               () ->
-                  ExemplarReservoir.filtered(
-                      exemplarFilter,
-                      ExemplarReservoir.doubleFixedSizeReservoir(
-                          Clock.getDefault(),
-                          Runtime.getRuntime().availableProcessors(),
-                          RandomSupplier.platformDefault()));
+                  ExemplarReservoir.spanUpdatingReservoir(
+                    ExemplarReservoir.filtered(
+                        exemplarFilter,
+                        ExemplarReservoir.doubleFixedSizeReservoir(
+                            Clock.getDefault(),
+                            Runtime.getRuntime().availableProcessors(),
+                            RandomSupplier.platformDefault())));
           return (Aggregator<T, U>) new DoubleSumAggregator(instrumentDescriptor, reservoirFactory);
         }
     }
