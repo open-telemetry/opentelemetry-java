@@ -23,6 +23,7 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
+import io.opentelemetry.exporter.internal.InstrumentationUtil;
 import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcResponse;
@@ -112,7 +113,7 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
     RequestBody requestBody = new GrpcRequestBody(request, compressionEnabled);
     requestBuilder.post(requestBody);
 
-    client
+    InstrumentationUtil.suppressInstrumentation(()-> client
         .newCall(requestBuilder.build())
         .enqueue(
             new Callback() {
@@ -156,7 +157,7 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
                     GrpcResponse.create(statusCode, errorMessage),
                     new IllegalStateException(errorMessage));
               }
-            });
+            }));
   }
 
   @Nullable

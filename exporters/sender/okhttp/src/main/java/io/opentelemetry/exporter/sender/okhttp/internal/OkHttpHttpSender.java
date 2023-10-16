@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
+import io.opentelemetry.exporter.internal.InstrumentationUtil;
 import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.http.HttpSender;
@@ -101,7 +102,7 @@ public final class OkHttpHttpSender implements HttpSender {
       requestBuilder.post(body);
     }
 
-    client
+    InstrumentationUtil.suppressInstrumentation(()-> client
         .newCall(requestBuilder.build())
         .enqueue(
             new Callback() {
@@ -132,7 +133,7 @@ public final class OkHttpHttpSender implements HttpSender {
                       });
                 }
               }
-            });
+            }));
   }
 
   @Override
