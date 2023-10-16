@@ -113,51 +113,53 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
     RequestBody requestBody = new GrpcRequestBody(request, compressionEnabled);
     requestBuilder.post(requestBody);
 
-    InstrumentationUtil.suppressInstrumentation(()-> client
-        .newCall(requestBuilder.build())
-        .enqueue(
-            new Callback() {
-              @Override
-              public void onFailure(Call call, IOException e) {
-                String description = e.getMessage();
-                if (description == null) {
-                  description = "";
-                }
-                onError.accept(GrpcResponse.create(2 /* UNKNOWN */, description), e);
-              }
+    InstrumentationUtil.suppressInstrumentation(
+        () ->
+            client
+                .newCall(requestBuilder.build())
+                .enqueue(
+                    new Callback() {
+                      @Override
+                      public void onFailure(Call call, IOException e) {
+                        String description = e.getMessage();
+                        if (description == null) {
+                          description = "";
+                        }
+                        onError.accept(GrpcResponse.create(2 /* UNKNOWN */, description), e);
+                      }
 
-              @Override
-              public void onResponse(Call call, Response response) {
-                // Response body is empty but must be consumed to access trailers.
-                try {
-                  response.body().bytes();
-                } catch (IOException e) {
-                  onError.accept(
-                      GrpcResponse.create(
-                          GrpcExporterUtil.GRPC_STATUS_UNKNOWN,
-                          "Could not consume server response."),
-                      e);
-                  return;
-                }
+                      @Override
+                      public void onResponse(Call call, Response response) {
+                        // Response body is empty but must be consumed to access trailers.
+                        try {
+                          response.body().bytes();
+                        } catch (IOException e) {
+                          onError.accept(
+                              GrpcResponse.create(
+                                  GrpcExporterUtil.GRPC_STATUS_UNKNOWN,
+                                  "Could not consume server response."),
+                              e);
+                          return;
+                        }
 
-                String status = grpcStatus(response);
-                if ("0".equals(status)) {
-                  onSuccess.run();
-                  return;
-                }
+                        String status = grpcStatus(response);
+                        if ("0".equals(status)) {
+                          onSuccess.run();
+                          return;
+                        }
 
-                String errorMessage = grpcMessage(response);
-                int statusCode;
-                try {
-                  statusCode = Integer.parseInt(status);
-                } catch (NumberFormatException ex) {
-                  statusCode = GrpcExporterUtil.GRPC_STATUS_UNKNOWN;
-                }
-                onError.accept(
-                    GrpcResponse.create(statusCode, errorMessage),
-                    new IllegalStateException(errorMessage));
-              }
-            }));
+                        String errorMessage = grpcMessage(response);
+                        int statusCode;
+                        try {
+                          statusCode = Integer.parseInt(status);
+                        } catch (NumberFormatException ex) {
+                          statusCode = GrpcExporterUtil.GRPC_STATUS_UNKNOWN;
+                        }
+                        onError.accept(
+                            GrpcResponse.create(statusCode, errorMessage),
+                            new IllegalStateException(errorMessage));
+                      }
+                    }));
   }
 
   @Nullable

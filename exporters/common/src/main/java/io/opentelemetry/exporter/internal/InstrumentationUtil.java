@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.exporter.internal;
 
 import io.opentelemetry.context.Context;
@@ -9,14 +14,15 @@ import java.util.Objects;
  * any time.
  */
 public class InstrumentationUtil {
-  private static final ContextKey<Boolean> SUPPRESS_INSTRUMENTATION_KEY = ContextKey.named("suppress_instrumentation");
+  private static final ContextKey<Boolean> SUPPRESS_INSTRUMENTATION_KEY =
+      ContextKey.named("suppress_instrumentation");
 
-  private InstrumentationUtil() {
-  }
+  private InstrumentationUtil() {}
 
   /**
-   * Adds a Context boolean key that will allow to identify HTTP calls coming from OTel exporters. The key
-   * later be checked by an automatic instrumentation to avoid tracing OTel exporter's calls.
+   * Adds a Context boolean key that will allow to identify HTTP calls coming from OTel exporters.
+   * The key later be checked by an automatic instrumentation to avoid tracing OTel exporter's
+   * calls.
    */
   public static void suppressInstrumentation(Runnable runnable) {
     Context.current().with(SUPPRESS_INSTRUMENTATION_KEY, true).wrap(runnable).run();
@@ -24,7 +30,9 @@ public class InstrumentationUtil {
 
   /**
    * Checks if an automatic instrumentation should be suppressed with the provided Context.
-   * @return TRUE to suppress the automatic instrumentation, FALSE to continue with the instrumentation.
+   *
+   * @return TRUE to suppress the automatic instrumentation, FALSE to continue with the
+   *     instrumentation.
    */
   public static boolean shouldSuppressInstrumentation(Context context) {
     return Objects.equals(context.get(SUPPRESS_INSTRUMENTATION_KEY), true);
