@@ -60,7 +60,7 @@ class HistogramExemplarReservoirTest {
         .satisfiesExactly(
             exemplar -> {
               assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
-              assertThat(exemplar.getValue()).isEqualTo(4);
+              assertThat(exemplar.getValue()).isEqualTo(3);
               assertThat(exemplar.getFilteredAttributes()).isEmpty();
             });
   }

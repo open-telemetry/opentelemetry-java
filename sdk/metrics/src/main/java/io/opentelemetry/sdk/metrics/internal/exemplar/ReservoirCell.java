@@ -29,6 +29,9 @@ import javax.annotation.Nullable;
  * #getAndResetLong(Attributes)} collection methods.
  */
 class ReservoirCell {
+
+  private static final AttributeKey<Boolean> KEY_EXEMPLAR =
+      AttributeKey.booleanKey("otel.exemplar");
   private final Clock clock;
   @Nullable private Attributes attributes;
   private SpanContext spanContext = SpanContext.getInvalid();
@@ -50,8 +53,10 @@ class ReservoirCell {
    * #getAndResetDouble(Attributes)} must not be used when a cell is recording longs.
    */
   synchronized void recordLongMeasurement(long value, Attributes attributes, Context context) {
-    this.longValue = value;
-    offerMeasurement(attributes, context);
+    if (isEmpty()) {
+      this.longValue = value;
+      offerMeasurement(attributes, context);
+    }
   }
 
   /**
@@ -61,9 +66,12 @@ class ReservoirCell {
    * #recordLongMeasurement(long, Attributes, Context)} and {@link #getAndResetLong(Attributes)}
    * must not be used when a cell is recording longs.
    */
-  synchronized void recordDoubleMeasurement(double value, Attributes attributes, Context context) {
-    this.doubleValue = value;
-    offerMeasurement(attributes, context);
+  synchronized void recordDoubleMeasurement(
+      double value, Attributes attributes, Context context) {
+    if (isEmpty()) {
+      this.doubleValue = value;
+      offerMeasurement(attributes, context);
+    }
   }
 
   private void offerMeasurement(Attributes attributes, Context context) {
@@ -71,6 +79,9 @@ class ReservoirCell {
     // Note: It may make sense in the future to attempt to pull this from an active span.
     this.recordTime = clock.now();
     Span current = Span.fromContext(context);
+    if (current.isRecording()) {
+      current.setAttribute(KEY_EXEMPLAR, true);
+    }
     if (current.getSpanContext().isValid()) {
       this.spanContext = current.getSpanContext();
     }
@@ -118,6 +129,10 @@ class ReservoirCell {
     this.doubleValue = 0;
     this.spanContext = SpanContext.getInvalid();
     this.recordTime = 0;
+  }
+
+  boolean isEmpty() {
+    return recordTime == 0;
   }
 
   /** Returns filtered attributes for exemplars. */
