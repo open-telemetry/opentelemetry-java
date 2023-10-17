@@ -12,7 +12,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.google.guava:guava-bom:32.1.3-jre",
   "com.google.protobuf:protobuf-bom:3.24.4",
   "com.linecorp.armeria:armeria-bom:1.25.2",
-  "com.squareup.okhttp3:okhttp-bom:4.11.0",
+  "com.squareup.okhttp3:okhttp-bom:4.12.0",
   "com.squareup.okio:okio-bom:3.6.0", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.58.0",
   "io.netty:netty-bom:4.1.100.Final",
