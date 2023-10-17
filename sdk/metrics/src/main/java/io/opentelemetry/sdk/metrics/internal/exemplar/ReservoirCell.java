@@ -66,8 +66,7 @@ class ReservoirCell {
    * #recordLongMeasurement(long, Attributes, Context)} and {@link #getAndResetLong(Attributes)}
    * must not be used when a cell is recording longs.
    */
-  synchronized void recordDoubleMeasurement(
-      double value, Attributes attributes, Context context) {
+  synchronized void recordDoubleMeasurement(double value, Attributes attributes, Context context) {
     if (isEmpty()) {
       this.doubleValue = value;
       offerMeasurement(attributes, context);
