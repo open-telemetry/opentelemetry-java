@@ -27,7 +27,7 @@ public final class OnEndSpanProcessor implements SpanProcessor {
 
   @Override
   public boolean isEndRequired() {
-    return false;
+    return true;
   }
 
   @Override
