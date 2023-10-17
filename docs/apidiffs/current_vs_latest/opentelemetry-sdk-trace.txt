@@ -1,2 +1,5 @@
 Comparing source compatibility of  against 
-No changes.
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.trace.SpanProcessor  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.trace.SpanProcessor endOnly(java.util.function.Consumer<io.opentelemetry.sdk.trace.ReadableSpan>)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.trace.SpanProcessor startOnly(java.util.function.BiConsumer<io.opentelemetry.context.Context,io.opentelemetry.sdk.trace.ReadWriteSpan>)
