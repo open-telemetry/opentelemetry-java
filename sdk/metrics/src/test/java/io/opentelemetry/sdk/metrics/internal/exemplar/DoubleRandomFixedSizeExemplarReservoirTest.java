@@ -6,10 +6,16 @@
 package io.opentelemetry.sdk.metrics.internal.exemplar;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
@@ -17,6 +23,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.RandomSupplier;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.testing.time.TestClock;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.time.Duration;
 import java.util.Random;
 import org.junit.jupiter.api.Test;
@@ -138,5 +145,19 @@ class DoubleRandomFixedSizeExemplarReservoirTest {
               assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
               assertThat(exemplar.getValue()).isEqualTo(2);
             });
+  }
+
+  @Test
+  public void multiMeasurement_setSpanAttributeOnFirstMeasurement() {
+    SpanBuilder spanBuilder = SdkTracerProvider.builder().build().get("").spanBuilder("");
+    Span span = spy(spanBuilder.startSpan());
+    Context ctx = Context.root().with(span);
+    TestClock clock = TestClock.create();
+    ExemplarReservoir<DoubleExemplarData> reservoir =
+        RandomFixedSizeExemplarReservoir.createDouble(clock, 1, RandomSupplier.platformDefault());
+    reservoir.offerLongMeasurement(1, Attributes.empty(), ctx);
+    verify(span).setAttribute(AttributeKey.booleanKey("otel.exemplar"), true);
+    reservoir.offerLongMeasurement(2, Attributes.empty(), ctx);
+    verify(span, never()).setAttribute(any(), anyBoolean());
   }
 }
