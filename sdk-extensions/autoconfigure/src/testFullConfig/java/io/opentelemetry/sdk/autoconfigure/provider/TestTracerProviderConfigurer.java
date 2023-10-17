@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.autoconfigure.provider;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.trace.OnStartSpanProcessor;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
-import io.opentelemetry.sdk.trace.SpanProcessor;
 
 @SuppressWarnings("deprecation") // Support testing of SdkTracerProviderConfigurer
 public class TestTracerProviderConfigurer
@@ -15,9 +15,8 @@ public class TestTracerProviderConfigurer
   @Override
   public void configure(SdkTracerProviderBuilder tracerProvider, ConfigProperties config) {
     tracerProvider.addSpanProcessor(
-        SpanProcessor.startOnly(
-            (ctx, span) -> {
-              span.setAttribute("configured", config.getBoolean("otel.test.configured"));
-            }));
+        OnStartSpanProcessor.create(
+            (ctx, span) ->
+                span.setAttribute("configured", config.getBoolean("otel.test.configured"))));
   }
 }

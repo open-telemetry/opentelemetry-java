@@ -13,8 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -113,58 +111,5 @@ public interface SpanProcessor extends Closeable {
   @Override
   default void close() {
     shutdown().join(10, TimeUnit.SECONDS);
-  }
-
-  /**
-   * Creates a new SpanProcessor instance that invokes the provided BiConsumer when the span is
-   * started.
-   */
-  static SpanProcessor startOnly(BiConsumer<Context, ReadWriteSpan> onStart) {
-    return new SpanProcessor() {
-      @Override
-      public void onStart(Context parentContext, ReadWriteSpan span) {
-        onStart.accept(parentContext, span);
-      }
-
-      @Override
-      public boolean isStartRequired() {
-        return true;
-      }
-
-      @Override
-      public void onEnd(ReadableSpan span) {
-        /// nop
-      }
-
-      @Override
-      public boolean isEndRequired() {
-        return false;
-      }
-    };
-  }
-
-  /** Creates a new SpanProcessor that invokes the provided Consumer when a span is ended. */
-  static SpanProcessor endOnly(Consumer<ReadableSpan> onEnd) {
-    return new SpanProcessor() {
-      @Override
-      public void onStart(Context parentContext, ReadWriteSpan span) {
-        // nop
-      }
-
-      @Override
-      public boolean isStartRequired() {
-        return false;
-      }
-
-      @Override
-      public void onEnd(ReadableSpan span) {
-        onEnd.accept(span);
-      }
-
-      @Override
-      public boolean isEndRequired() {
-        return true;
-      }
-    };
   }
 }
