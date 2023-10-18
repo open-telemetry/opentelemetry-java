@@ -377,17 +377,13 @@ class ConfigurationReaderTest {
 
   @ParameterizedTest
   @MethodSource("envVarSubstitutionArgs")
-  void envSubstituteAndLoadYaml(
-      String rawYaml, String expectedSubstituteResult, Object expectedYamlResult) {
+  void envSubstituteAndLoadYaml(String rawYaml, Object expectedYamlResult) {
     Map<String, String> environmentVariables = new HashMap<>();
-    environmentVariables.put("VAR_1", "value1");
-    environmentVariables.put("VAR_2", "value2");
-
-    String substitutedYaml =
-        ConfigurationReader.substituteEnvVariables(
-            new ByteArrayInputStream(rawYaml.getBytes(StandardCharsets.UTF_8)),
-            environmentVariables);
-    assertThat(substitutedYaml).isEqualTo(expectedSubstituteResult);
+    environmentVariables.put("STR_1", "value1");
+    environmentVariables.put("STR_2", "value2");
+    environmentVariables.put("BOOL", "true");
+    environmentVariables.put("INT", "1");
+    environmentVariables.put("FLOAT", "1.1");
 
     Object yaml =
         ConfigurationReader.loadYaml(
@@ -400,38 +396,32 @@ class ConfigurationReaderTest {
   private static java.util.stream.Stream<Arguments> envVarSubstitutionArgs() {
     return java.util.stream.Stream.of(
         // Simple cases
-        Arguments.of("key1: ${env:VAR_1}", "key1: value1\n", mapOf(entry("key1", "value1"))),
+        Arguments.of("key1: ${env:STR_1}\n", mapOf(entry("key1", "value1"))),
+        Arguments.of("key1: ${env:BOOL}\n", mapOf(entry("key1", true))),
+        Arguments.of("key1: ${env:INT}\n", mapOf(entry("key1", 1))),
+        Arguments.of("key1: ${env:FLOAT}\n", mapOf(entry("key1", 1.1))),
         Arguments.of(
-            "key1: ${env:VAR_1}\nkey2: value2\n",
-            "key1: value1\nkey2: value2\n",
+            "key1: ${env:STR_1}\n" + "key2: value2\n",
             mapOf(entry("key1", "value1"), entry("key2", "value2"))),
         Arguments.of(
-            "key1: ${env:VAR_1} value1\nkey2: value2\n",
-            "key1: value1 value1\nkey2: value2\n",
+            "key1: ${env:STR_1} value1\n" + "key2: value2\n",
             mapOf(entry("key1", "value1 value1"), entry("key2", "value2"))),
         // Multiple environment variables referenced
-        Arguments.of(
-            "key1: ${env:VAR_1}${env:VAR_2}\nkey2: value2\n",
-            "key1: value1value2\nkey2: value2\n",
-            mapOf(entry("key1", "value1value2"), entry("key2", "value2"))),
-        Arguments.of(
-            "key1: ${env:VAR_1} ${env:VAR_2}\nkey2: value2\n",
-            "key1: value1 value2\nkey2: value2\n",
-            mapOf(entry("key1", "value1 value2"), entry("key2", "value2"))),
-        // VAR_3 is not defined in environment
-        Arguments.of(
-            "key1: ${env:VAR_3}\nkey2: value2\n",
-            "key1: \nkey2: value2\n",
-            mapOf(entry("key1", null), entry("key2", "value2"))),
-        Arguments.of(
-            "key1: ${env:VAR_1} ${env:VAR_3}\nkey2: value2\n",
-            "key1: value1 \nkey2: value2\n",
-            mapOf(entry("key1", "value1"), entry("key2", "value2"))),
+        Arguments.of("key1: ${env:STR_1}${env:STR_2}\n", mapOf(entry("key1", "value1value2"))),
+        Arguments.of("key1: ${env:STR_1} ${env:STR_2}\n", mapOf(entry("key1", "value1 value2"))),
+        // Undefined environment variable
+        Arguments.of("key1: ${env:STR_3}\n", mapOf(entry("key1", null))),
+        Arguments.of("key1: ${env:STR_1} ${env:STR_3}\n", mapOf(entry("key1", "value1"))),
         // Environment variable keys must match pattern: [a-zA-Z_]+[a-zA-Z0-9_]*
+        Arguments.of("key1: ${env:VAR&}\n", mapOf(entry("key1", "${env:VAR&}"))),
+        // Environment variable substitution only takes place in scalar values of maps
+        Arguments.of("${env:STR_1}: value1\n", mapOf(entry("${env:STR_1}", "value1"))),
         Arguments.of(
-            "key1: ${env:VAR&}\nkey2: value2\n",
-            "key1: ${env:VAR&}\nkey2: value2\n",
-            mapOf(entry("key1", "${env:VAR&}"), entry("key2", "value2"))));
+            "key1:\n  ${env:STR_1}: value1\n",
+            mapOf(entry("key1", mapOf(entry("${env:STR_1}", "value1"))))),
+        Arguments.of(
+            "key1:\n - ${env:STR_1}\n",
+            mapOf(entry("key1", Collections.singletonList("${env:STR_1}")))));
   }
 
   private static <K, V> Map.Entry<K, V> entry(K key, @Nullable V value) {
@@ -460,7 +450,7 @@ class ConfigurationReaderTest {
             + "    - batch:\n"
             + "        exporter:\n"
             + "          otlp:\n"
-            + "            endpoint: ${env:UNSET_ENV_VAR}\n";
+            + "            endpoint: \"${env:UNSET_ENV_VAR}\"\n";
     Map<String, String> envVars = new HashMap<>();
     envVars.put("OTEL_EXPORTER_OTLP_ENDPOINT", "http://collector:4317");
     OpenTelemetryConfiguration model =
