@@ -113,9 +113,14 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
 
     @Override
     public void emit(String eventName, Attributes attributes) {
+      emit(clock.now(), eventName, attributes);
+    }
+
+    @Override
+    public void emit(long epochNanos, String eventName, Attributes attributes) {
       delegateLogger
           .logRecordBuilder()
-          .setTimestamp(clock.now(), TimeUnit.NANOSECONDS)
+          .setTimestamp(epochNanos, TimeUnit.NANOSECONDS)
           .setAllAttributes(attributes)
           .setAttribute(EVENT_DOMAIN, eventDomain)
           .setAttribute(EVENT_NAME, eventName)

@@ -18,5 +18,8 @@ class DefaultEventEmitter implements EventEmitter {
   }
 
   @Override
+  public void emit(long epochNanos, String eventName, Attributes attributes) {}
+
+  @Override
   public void emit(String eventName, Attributes attributes) {}
 }
