@@ -19,6 +19,7 @@ class HistogramExemplarReservoir extends FixedSizeExemplarReservoir<DoubleExempl
     super(
         clock,
         boundaries.size() + 1,
+        /* overwriteCellValue= */ false,
         new HistogramCellSelector(boundaries),
         ReservoirCell::getAndResetDouble);
   }

@@ -40,9 +40,11 @@ class ReservoirCell {
   // Cell stores either long or double values, but must not store both
   private long longValue;
   private double doubleValue;
+  private final boolean overwriteValue;
 
-  ReservoirCell(Clock clock) {
+  ReservoirCell(Clock clock, boolean overwriteValue) {
     this.clock = clock;
+    this.overwriteValue = overwriteValue;
   }
 
   /**
@@ -53,7 +55,7 @@ class ReservoirCell {
    * #getAndResetDouble(Attributes)} must not be used when a cell is recording longs.
    */
   synchronized void recordLongMeasurement(long value, Attributes attributes, Context context) {
-    if (isEmpty()) {
+    if (shouldWrite()) {
       this.longValue = value;
       offerMeasurement(attributes, context);
     }
@@ -67,7 +69,7 @@ class ReservoirCell {
    * must not be used when a cell is recording longs.
    */
   synchronized void recordDoubleMeasurement(double value, Attributes attributes, Context context) {
-    if (isEmpty()) {
+    if (shouldWrite()) {
       this.doubleValue = value;
       offerMeasurement(attributes, context);
     }
@@ -130,8 +132,8 @@ class ReservoirCell {
     this.recordTime = 0;
   }
 
-  boolean isEmpty() {
-    return recordTime == 0;
+  boolean shouldWrite() {
+    return overwriteValue || recordTime == 0;
   }
 
   /** Returns filtered attributes for exemplars. */

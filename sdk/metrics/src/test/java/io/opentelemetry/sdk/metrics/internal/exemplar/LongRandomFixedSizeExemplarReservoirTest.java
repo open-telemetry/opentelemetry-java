@@ -6,9 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.exemplar;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
@@ -113,7 +111,7 @@ class LongRandomFixedSizeExemplarReservoirTest {
   }
 
   @Test
-  public void multiMeasurements_preservesFirstSamples() {
+  public void multiMeasurements_preservesLatestSamples() {
     AttributeKey<Long> key = AttributeKey.longKey("K");
     // We cannot mock random in latest jdk, so we create an override.
     Random mockRandom =
@@ -139,16 +137,16 @@ class LongRandomFixedSizeExemplarReservoirTest {
         .satisfiesExactlyInAnyOrder(
             exemplar -> {
               assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
-              assertThat(exemplar.getValue()).isEqualTo(1);
+              assertThat(exemplar.getValue()).isEqualTo(2);
             },
             exemplar -> {
               assertThat(exemplar.getEpochNanos()).isEqualTo(clock.now());
-              assertThat(exemplar.getValue()).isEqualTo(2);
+              assertThat(exemplar.getValue()).isEqualTo(3);
             });
   }
 
   @Test
-  public void multiMeasurement_setSpanAttributeOnFirstMeasurement() {
+  public void multiMeasurement_setSpanAttributeOnBothMeasurements() {
     SpanBuilder spanBuilder = SdkTracerProvider.builder().build().get("").spanBuilder("");
     Span span = spy(spanBuilder.startSpan());
     Context ctx = Context.root().with(span);
@@ -157,7 +155,8 @@ class LongRandomFixedSizeExemplarReservoirTest {
         RandomFixedSizeExemplarReservoir.createLong(clock, 1, RandomSupplier.platformDefault());
     reservoir.offerLongMeasurement(1, Attributes.empty(), ctx);
     verify(span).setAttribute(AttributeKey.booleanKey("otel.exemplar"), true);
+    reset(span);
     reservoir.offerLongMeasurement(2, Attributes.empty(), ctx);
-    verify(span, never()).setAttribute(any(), anyBoolean());
+    verify(span).setAttribute(AttributeKey.booleanKey("otel.exemplar"), true);
   }
 }

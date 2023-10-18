@@ -26,11 +26,12 @@ abstract class FixedSizeExemplarReservoir<T extends ExemplarData> implements Exe
   FixedSizeExemplarReservoir(
       Clock clock,
       int size,
+      boolean overwriteCellValue,
       ReservoirCellSelector reservoirCellSelector,
       BiFunction<ReservoirCell, Attributes, T> mapAndResetCell) {
     this.storage = new ReservoirCell[size];
     for (int i = 0; i < size; ++i) {
-      this.storage[i] = new ReservoirCell(clock);
+      this.storage[i] = new ReservoirCell(clock, overwriteCellValue);
     }
     this.reservoirCellSelector = reservoirCellSelector;
     this.mapAndResetCell = mapAndResetCell;

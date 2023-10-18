@@ -33,7 +33,12 @@ class RandomFixedSizeExemplarReservoir<T extends ExemplarData>
       int size,
       Supplier<Random> randomSupplier,
       BiFunction<ReservoirCell, Attributes, T> mapAndResetCell) {
-    super(clock, size, new RandomCellSelector(randomSupplier), mapAndResetCell);
+    super(
+        clock,
+        size,
+        /* overwriteCellValue= */ true,
+        new RandomCellSelector(randomSupplier),
+        mapAndResetCell);
   }
 
   static RandomFixedSizeExemplarReservoir<LongExemplarData> createLong(
