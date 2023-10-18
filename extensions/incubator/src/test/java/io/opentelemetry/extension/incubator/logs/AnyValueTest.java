@@ -10,6 +10,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import io.opentelemetry.api.internal.OtelEncodingUtils;
+import java.nio.ByteBuffer;
+import java.nio.ReadOnlyBufferException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
@@ -73,7 +75,12 @@ class AnyValueTest {
         .satisfies(
             anyValue -> {
               assertThat(anyValue.getType()).isEqualTo(AnyValueType.BYTES);
-              assertThat(anyValue.getValue()).isEqualTo(new byte[] {'a', 'b'});
+              ByteBuffer value = anyValue.getValue();
+              // AnyValueBytes returns read only view of ByteBuffer
+              assertThatThrownBy(value::array).isInstanceOf(ReadOnlyBufferException.class);
+              byte[] bytes = new byte[value.remaining()];
+              value.get(bytes);
+              assertThat(bytes).isEqualTo(new byte[] {'a', 'b'});
               assertThat(anyValue).hasSameHashCodeAs(AnyValue.of(new byte[] {'a', 'b'}));
             });
   }

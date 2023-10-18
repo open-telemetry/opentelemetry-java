@@ -24,7 +24,6 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.InstrumentationScope;
 import io.opentelemetry.proto.common.v1.KeyValue;
-import io.opentelemetry.proto.common.v1.KeyValueList;
 import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.proto.logs.v1.ScopeLogs;
@@ -154,19 +153,7 @@ class LogsRequestMarshalerTest {
     assertThat(logRecord.getSeverityText()).isBlank();
     assertThat(logRecord.getSeverityNumber().getNumber())
         .isEqualTo(Severity.UNDEFINED_SEVERITY_NUMBER.getSeverityNumber());
-    assertThat(logRecord.getBody())
-        .isEqualTo(
-            AnyValue.newBuilder()
-                .setKvlistValue(
-                    KeyValueList.newBuilder()
-                        .addValues(
-                            KeyValue.newBuilder()
-                                .setKey("key")
-                                .setValue(AnyValue.newBuilder().setStringValue("foo").build())
-                                .build())
-                        .build())
-                .setStringValue("")
-                .build());
+    assertThat(logRecord.getBody()).isEqualTo(AnyValue.newBuilder().setStringValue("").build());
     assertThat(logRecord.getAttributesList()).isEmpty();
     assertThat(logRecord.getDroppedAttributesCount()).isZero();
     assertThat(logRecord.getTimeUnixNano()).isEqualTo(12345);

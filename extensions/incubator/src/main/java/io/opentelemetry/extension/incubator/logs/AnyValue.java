@@ -5,6 +5,7 @@
 
 package io.opentelemetry.extension.incubator.logs;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +53,7 @@ public interface AnyValue<T> {
   }
 
   /** Returns an {@link AnyValue} for the {@code byte[]} value. */
-  static AnyValue<byte[]> of(byte[] value) {
+  static AnyValue<ByteBuffer> of(byte[] value) {
     return AnyValueBytes.create(value);
   }
 
@@ -89,7 +90,8 @@ public interface AnyValue<T> {
    *   <li>{@link AnyValueType#DOUBLE} returns {@code double}
    *   <li>{@link AnyValueType#ARRAY} returns {@link List} of {@link AnyValue}
    *   <li>{@link AnyValueType#KEY_VALUE_LIST} returns {@link List} of {@link KeyAnyValue}
-   *   <li>{@link AnyValueType#BYTES} returns {@code byte[]}
+   *   <li>{@link AnyValueType#BYTES} returns read only {@link ByteBuffer}. See {@link
+   *       ByteBuffer#asReadOnlyBuffer()}.
    * </ul>
    */
   T getValue();

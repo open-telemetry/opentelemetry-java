@@ -51,7 +51,7 @@ final class KeyAnyValueList implements AnyValue<List<KeyAnyValue>> {
   @Override
   public String asString() {
     return value.stream()
-        .map(entry -> entry.getKey() + "=" + entry.getAnyValue().asString())
+        .map(item -> item.getKey() + "=" + item.getAnyValue().asString())
         .collect(joining(", ", "[", "]"));
   }
 

@@ -6,18 +6,19 @@
 package io.opentelemetry.extension.incubator.logs;
 
 import io.opentelemetry.api.internal.OtelEncodingUtils;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Objects;
 
-final class AnyValueBytes implements AnyValue<byte[]> {
+final class AnyValueBytes implements AnyValue<ByteBuffer> {
 
-  private final byte[] value;
+  private final byte[] raw;
 
   private AnyValueBytes(byte[] value) {
-    this.value = value;
+    this.raw = value;
   }
 
-  static AnyValue<byte[]> create(byte[] value) {
+  static AnyValue<ByteBuffer> create(byte[] value) {
     Objects.requireNonNull(value, "value must not be null");
     return new AnyValueBytes(Arrays.copyOf(value, value.length));
   }
@@ -28,16 +29,16 @@ final class AnyValueBytes implements AnyValue<byte[]> {
   }
 
   @Override
-  public byte[] getValue() {
-    return value;
+  public ByteBuffer getValue() {
+    return ByteBuffer.wrap(raw).asReadOnlyBuffer();
   }
 
   @Override
   public String asString() {
     // TODO: base64 would be better, but isn't available in android and java. Can we vendor in a
     // base64 implementation?
-    char[] arr = new char[value.length * 2];
-    OtelEncodingUtils.bytesToBase16(value, arr, value.length);
+    char[] arr = new char[raw.length * 2];
+    OtelEncodingUtils.bytesToBase16(raw, arr, raw.length);
     return new String(arr);
   }
 
@@ -51,13 +52,11 @@ final class AnyValueBytes implements AnyValue<byte[]> {
     if (this == o) {
       return true;
     }
-    return (o instanceof AnyValue)
-        && ((AnyValue<?>) o).getType() == AnyValueType.BYTES
-        && Arrays.equals(this.value, (byte[]) ((AnyValue<?>) o).getValue());
+    return (o instanceof AnyValueBytes) && Arrays.equals(this.raw, ((AnyValueBytes) o).raw);
   }
 
   @Override
   public int hashCode() {
-    return Arrays.hashCode(value);
+    return Arrays.hashCode(raw);
   }
 }
