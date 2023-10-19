@@ -35,7 +35,7 @@ class JaegerRemoteSamplerIntegrationTest {
   private static final String SERVICE_NAME_DEFAULT_STRATEGY = "foobar";
 
   @Container
-  public static GenericContainer<?> jaegerContainer =
+  public static final GenericContainer<?> jaegerContainer =
       new GenericContainer<>("ghcr.io/open-telemetry/opentelemetry-java/jaeger:1.32")
           .withImagePullPolicy(PullPolicy.alwaysPull())
           .withCommand("--sampling.strategies-file=/sampling.json")

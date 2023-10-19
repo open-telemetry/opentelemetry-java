@@ -35,7 +35,10 @@ import org.testcontainers.utility.MountableFile;
 @Testcontainers(disabledWithoutDocker = true)
 class PrometheusIntegrationTest {
 
+  @SuppressWarnings("NonFinalStaticField")
   private static SdkMeterProvider meterProvider;
+
+  @SuppressWarnings("NonFinalStaticField")
   private static GenericContainer<?> prometheus;
 
   @BeforeAll

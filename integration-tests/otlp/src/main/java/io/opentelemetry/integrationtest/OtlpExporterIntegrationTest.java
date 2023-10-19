@@ -124,7 +124,10 @@ abstract class OtlpExporterIntegrationTest {
   @RegisterExtension
   static final SelfSignedCertificateExtension clientTls = new SelfSignedCertificateExtension();
 
+  @SuppressWarnings("NonFinalStaticField")
   private static OtlpGrpcServer grpcServer;
+
+  @SuppressWarnings("NonFinalStaticField")
   private static GenericContainer<?> collector;
 
   @BeforeAll
