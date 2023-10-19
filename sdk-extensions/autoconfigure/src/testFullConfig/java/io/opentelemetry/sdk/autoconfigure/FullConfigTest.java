@@ -39,8 +39,6 @@ import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.metrics.v1.Metric;
-import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
-import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -216,8 +214,8 @@ class FullConfigTest {
     eventEmitter.emit("test-name", Attributes.builder().put("cow", "moo").build());
 
     openTelemetrySdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
-    openTelemetrySdk.getSdkMeterProvider().forceFlush().join(10, TimeUnit.SECONDS);
     openTelemetrySdk.getSdkLoggerProvider().forceFlush().join(10, TimeUnit.SECONDS);
+    openTelemetrySdk.getSdkMeterProvider().forceFlush().join(10, TimeUnit.SECONDS);
 
     await().untilAsserted(() -> assertThat(otlpTraceRequests).hasSize(1));
 
@@ -257,38 +255,61 @@ class FullConfigTest {
         .untilAsserted(
             () -> {
               ExportMetricsServiceRequest metricRequest = otlpMetricsRequests.take();
-              assertThat(metricRequest.getResourceMetrics(0).getResource().getAttributesList())
-                  .contains(
-                      KeyValue.newBuilder()
-                          .setKey("service.name")
-                          .setValue(AnyValue.newBuilder().setStringValue("test").build())
-                          .build(),
-                      KeyValue.newBuilder()
-                          .setKey("cat")
-                          .setValue(AnyValue.newBuilder().setStringValue("meow").build())
-                          .build());
 
-              for (ResourceMetrics resourceMetrics : metricRequest.getResourceMetricsList()) {
-                assertThat(resourceMetrics.getScopeMetricsList())
-                    .anySatisfy(ilm -> assertThat(ilm.getScope().getName()).isEqualTo("test"));
-                for (ScopeMetrics instrumentationLibraryMetrics :
-                    resourceMetrics.getScopeMetricsList()) {
-                  for (Metric metric : instrumentationLibraryMetrics.getMetricsList()) {
-                    // SPI was loaded
-                    // MetricExporterCustomizer filters metrics not named my-metric
-                    assertThat(metric.getName()).isEqualTo("my-metric");
-                    // TestMeterProviderConfigurer configures a view that only passes on attribute
-                    // named allowed
-                    // configured-test
-                    assertThat(getFirstDataPointLabels(metric))
-                        .contains(
-                            KeyValue.newBuilder()
-                                .setKey("allowed")
-                                .setValue(AnyValue.newBuilder().setStringValue("bear").build())
-                                .build());
-                  }
-                }
-              }
+              assertThat(metricRequest.getResourceMetricsList())
+                  .satisfiesExactly(
+                      resourceMetrics -> {
+                        assertThat(resourceMetrics.getResource().getAttributesList())
+                            .contains(
+                                KeyValue.newBuilder()
+                                    .setKey("service.name")
+                                    .setValue(AnyValue.newBuilder().setStringValue("test").build())
+                                    .build(),
+                                KeyValue.newBuilder()
+                                    .setKey("cat")
+                                    .setValue(AnyValue.newBuilder().setStringValue("meow").build())
+                                    .build());
+                        assertThat(resourceMetrics.getScopeMetricsList())
+                            .anySatisfy(
+                                scopeMetrics -> {
+                                  assertThat(scopeMetrics.getScope().getName()).isEqualTo("test");
+                                  assertThat(scopeMetrics.getMetricsList())
+                                      .satisfiesExactly(
+                                          metric -> {
+                                            // SPI was loaded
+                                            assertThat(metric.getName()).isEqualTo("my-metric");
+                                            // TestMeterProviderConfigurer configures a view that
+                                            // only passes on attribute
+                                            // named allowed
+                                            // configured-test
+                                            assertThat(getFirstDataPointLabels(metric))
+                                                .contains(
+                                                    KeyValue.newBuilder()
+                                                        .setKey("allowed")
+                                                        .setValue(
+                                                            AnyValue.newBuilder()
+                                                                .setStringValue("bear")
+                                                                .build())
+                                                        .build());
+                                          });
+                                })
+                            // This verifies that AutoConfigureListener was invoked and the OTLP
+                            // span / log exporters received the autoconfigured OpenTelemetrySdk
+                            // instance
+                            .anySatisfy(
+                                scopeMetrics -> {
+                                  assertThat(scopeMetrics.getScope().getName())
+                                      .isEqualTo("io.opentelemetry.exporters.otlp-grpc");
+                                  assertThat(scopeMetrics.getMetricsList())
+                                      .satisfiesExactlyInAnyOrder(
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo("otlp.exporter.seen"),
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo("otlp.exporter.exported"));
+                                });
+                      });
             });
 
     await().untilAsserted(() -> assertThat(otlpLogsRequests).hasSize(1));

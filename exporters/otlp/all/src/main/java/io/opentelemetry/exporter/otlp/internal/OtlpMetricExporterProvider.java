@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
  * at any time.
  */
 public class OtlpMetricExporterProvider implements ConfigurableMetricExporterProvider {
+
   @Override
   public MetricExporter createExporter(ConfigProperties config) {
     String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_METRICS, config);

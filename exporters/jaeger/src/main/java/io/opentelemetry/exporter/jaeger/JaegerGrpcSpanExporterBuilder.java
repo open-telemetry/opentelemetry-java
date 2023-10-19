@@ -145,7 +145,7 @@ public final class JaegerGrpcSpanExporterBuilder {
    */
   public JaegerGrpcSpanExporterBuilder setMeterProvider(MeterProvider meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
-    delegate.setMeterProvider(meterProvider);
+    delegate.setMeterProvider(() -> meterProvider);
     return this;
   }
 
