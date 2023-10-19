@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.sender.jdk.internal;
 
+import static org.assertj.core.api.Assertions.as;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -18,6 +20,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpConnectTimeoutException;
 import java.time.Duration;
 import java.util.Collections;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -75,5 +78,18 @@ class JdkHttpSenderTest {
         .hasMessage("unknown error");
 
     verify(mockHttpClient, times(1)).send(any(), any());
+  }
+
+  @Test
+  void defaultConnectTimeout() {
+    sender =
+        new JdkHttpSender(
+            "http://localhost", true, "text/plain", 1, Collections::emptyMap, null, null);
+
+    assertThat(sender)
+        .extracting("client", as(InstanceOfAssertFactories.type(HttpClient.class)))
+        .satisfies(
+            httpClient ->
+                assertThat(httpClient.connectTimeout().get()).isEqualTo(Duration.ofSeconds(10)));
   }
 }

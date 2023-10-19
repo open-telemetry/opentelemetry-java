@@ -14,9 +14,9 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
-import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.Map;
@@ -98,7 +98,11 @@ public final class JdkHttpSender implements HttpSender {
   }
 
   private static HttpClient configureClient(@Nullable SSLContext sslContext) {
-    HttpClient.Builder builder = HttpClient.newBuilder();
+    HttpClient.Builder builder =
+        HttpClient.newBuilder()
+            // Aligned with OkHttpClient default connect timeout
+            // TODO (jack-berg): Consider making connect timeout configurable
+            .connectTimeout(Duration.ofSeconds(10));
     if (sslContext != null) {
       builder.sslContext(sslContext);
     }
@@ -217,7 +221,7 @@ public final class JdkHttpSender implements HttpSender {
   }
 
   private static boolean isRetryableException(IOException throwable) {
-    return throwable instanceof HttpConnectTimeoutException;
+    return throwable instanceof HttpTimeoutException;
   }
 
   private static class NoCopyByteArrayOutputStream extends ByteArrayOutputStream {
