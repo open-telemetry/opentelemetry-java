@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.StampedLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,7 +47,8 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   private final MetricDescriptor metricDescriptor;
   private final AggregationTemporality aggregationTemporality;
   private final Aggregator<T, U> aggregator;
-  private final ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles =
+  private final StampedLock sl = new StampedLock();
+  private ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles =
       new ConcurrentHashMap<>();
   private final AttributesProcessor attributesProcessor;
 
@@ -83,8 +85,13 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
   @Override
   public void recordLong(long value, Attributes attributes, Context context) {
-    AggregatorHandle<T, U> handle = getAggregatorHandle(attributes, context);
-    handle.recordLong(value, attributes, context);
+    long stamp = sl.readLock();
+    try {
+      AggregatorHandle<T, U> handle = getAggregatorHandle(attributes, context);
+      handle.recordLong(value, attributes, context);
+    } finally {
+      sl.unlockRead(stamp);
+    }
   }
 
   @Override
@@ -99,8 +106,13 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
               + ". Dropping measurement.");
       return;
     }
-    AggregatorHandle<T, U> handle = getAggregatorHandle(attributes, context);
-    handle.recordDouble(value, attributes, context);
+    long stamp = sl.readLock();
+    try {
+      AggregatorHandle<T, U> handle = getAggregatorHandle(attributes, context);
+      handle.recordDouble(value, attributes, context);
+    } finally {
+      sl.unlockRead(stamp);
+    }
   }
 
   private AggregatorHandle<T, U> getAggregatorHandle(Attributes attributes, Context context) {
@@ -146,13 +158,25 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
             ? registeredReader.getLastCollectEpochNanos()
             : startEpochNanos;
 
+    ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles;
+    if (reset) {
+      long stamp = sl.writeLock();
+      try {
+        aggregatorHandles = this.aggregatorHandles;
+        this.aggregatorHandles = new ConcurrentHashMap<>();
+      } finally {
+        sl.unlockWrite(stamp);
+      }
+    } else {
+      aggregatorHandles = this.aggregatorHandles;
+    }
+
     // Grab aggregated points.
     List<T> points = new ArrayList<>(aggregatorHandles.size());
     aggregatorHandles.forEach(
         (attributes, handle) -> {
           T point = handle.aggregateThenMaybeReset(start, epochNanos, attributes, reset);
           if (reset) {
-            aggregatorHandles.remove(attributes, handle);
             // Return the aggregator to the pool.
             aggregatorHandlePool.offer(handle);
           }
