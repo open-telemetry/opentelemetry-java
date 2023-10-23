@@ -30,7 +30,7 @@ public final class OpenTelemetryTraceComponentImpl extends TraceComponent {
   private final TraceConfig traceConfig = makeTraceConfig();
   private final Tracer tracer;
 
-  /** Public constructor to be used with reflection loading. */
+  @SuppressWarnings("unused") // Loaded via reflection
   public OpenTelemetryTraceComponentImpl() {
     clock = MillisClock.getInstance();
     RandomHandler randomHandler = new ThreadLocalRandomHandler();
@@ -48,7 +48,7 @@ public final class OpenTelemetryTraceComponentImpl extends TraceComponent {
   }
 
   @Override
-  public final Clock getClock() {
+  public Clock getClock() {
     return clock;
   }
 

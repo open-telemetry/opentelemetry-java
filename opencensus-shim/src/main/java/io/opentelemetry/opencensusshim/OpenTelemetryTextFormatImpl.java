@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
-class OpenTelemetryTextFormatImpl extends TextFormat {
+final class OpenTelemetryTextFormatImpl extends TextFormat {
 
   private final TextMapPropagator propagator;
 

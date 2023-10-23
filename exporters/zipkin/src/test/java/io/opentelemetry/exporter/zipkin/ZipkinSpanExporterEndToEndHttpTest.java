@@ -81,7 +81,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
       SEEN_ATTRIBUTES.toBuilder().put(AttributeKey.booleanKey("success"), false).build();
 
   @Container
-  public static GenericContainer<?> zipkinContainer =
+  public static final GenericContainer<?> zipkinContainer =
       new GenericContainer<>("ghcr.io/openzipkin/zipkin:2.23")
           .withExposedPorts(ZIPKIN_API_PORT)
           .waitingFor(Wait.forHttp("/health").forPort(ZIPKIN_API_PORT));

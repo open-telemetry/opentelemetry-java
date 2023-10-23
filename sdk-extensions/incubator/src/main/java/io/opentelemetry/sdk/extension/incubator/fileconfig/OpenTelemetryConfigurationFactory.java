@@ -45,7 +45,7 @@ final class OpenTelemetryConfigurationFactory
     }
 
     builder.setPropagators(
-        PropagatorsFactory.getInstance().create(model.getPropagators(), spiHelper, closeables));
+        PropagatorFactory.getInstance().create(model.getPropagator(), spiHelper, closeables));
 
     Resource resource =
         ResourceFactory.getInstance().create(model.getResource(), spiHelper, closeables);

@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
+import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableDoubleUpDownCounter;
 import io.opentelemetry.context.Context;
@@ -44,9 +45,9 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
     add(increment, Attributes.empty());
   }
 
-  static final class SdkDoubleUpDownCounterBuilder
-      extends AbstractInstrumentBuilder<SdkDoubleUpDownCounterBuilder>
-      implements ExtendedDoubleUpDownCounterBuilder {
+  static final class SdkDoubleUpDownCounterBuilder implements ExtendedDoubleUpDownCounterBuilder {
+
+    private final InstrumentBuilder builder;
 
     SdkDoubleUpDownCounterBuilder(
         MeterProviderSharedState meterProviderSharedState,
@@ -55,44 +56,57 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
         String description,
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
-      super(
-          meterProviderSharedState,
-          sharedState,
-          InstrumentType.UP_DOWN_COUNTER,
-          InstrumentValueType.DOUBLE,
-          name,
-          description,
-          unit,
-          adviceBuilder);
+      this.builder =
+          new InstrumentBuilder(
+                  name,
+                  InstrumentType.UP_DOWN_COUNTER,
+                  InstrumentValueType.DOUBLE,
+                  meterProviderSharedState,
+                  sharedState)
+              .setDescription(description)
+              .setUnit(unit)
+              .setAdviceBuilder(adviceBuilder);
     }
 
     @Override
-    protected SdkDoubleUpDownCounterBuilder getThis() {
+    public DoubleUpDownCounterBuilder setDescription(String description) {
+      builder.setDescription(description);
+      return this;
+    }
+
+    @Override
+    public DoubleUpDownCounterBuilder setUnit(String unit) {
+      builder.setUnit(unit);
       return this;
     }
 
     @Override
     public DoubleUpDownCounter build() {
-      return buildSynchronousInstrument(SdkDoubleUpDownCounter::new);
+      return builder.buildSynchronousInstrument(SdkDoubleUpDownCounter::new);
     }
 
     @Override
     public ObservableDoubleUpDownCounter buildWithCallback(
         Consumer<ObservableDoubleMeasurement> callback) {
-      return registerDoubleAsynchronousInstrument(
+      return builder.buildDoubleAsynchronousInstrument(
           InstrumentType.OBSERVABLE_UP_DOWN_COUNTER, callback);
     }
 
     @Override
     public ObservableDoubleMeasurement buildObserver() {
-      return buildObservableMeasurement(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER);
+      return builder.buildObservableMeasurement(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER);
     }
 
     @Override
     public ExtendedDoubleUpDownCounterBuilder setAttributesAdvice(
         List<AttributeKey<?>> attributes) {
-      adviceBuilder.setAttributes(attributes);
+      builder.setAdviceAttributes(attributes);
       return this;
+    }
+
+    @Override
+    public String toString() {
+      return builder.toStringHelper(getClass().getSimpleName());
     }
   }
 }

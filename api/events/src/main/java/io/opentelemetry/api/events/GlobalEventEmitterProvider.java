@@ -20,7 +20,9 @@ public final class GlobalEventEmitterProvider {
   private static final AtomicReference<EventEmitterProvider> instance =
       new AtomicReference<>(EventEmitterProvider.noop());
 
-  @Nullable private static volatile Throwable setInstanceCaller;
+  @SuppressWarnings("NonFinalStaticField")
+  @Nullable
+  private static volatile Throwable setInstanceCaller;
 
   private GlobalEventEmitterProvider() {}
 

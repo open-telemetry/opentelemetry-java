@@ -55,9 +55,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -99,10 +98,10 @@ class JaegerGrpcSpanExporterTest {
   @RegisterExtension
   static final SelfSignedCertificateExtension clientTls = new SelfSignedCertificateExtension();
 
-  private static JaegerGrpcSpanExporter exporter;
+  private JaegerGrpcSpanExporter exporter;
 
-  @BeforeAll
-  static void setUp() {
+  @BeforeEach
+  void setUp() {
     exporter =
         JaegerGrpcSpanExporter.builder()
             .setEndpoint(server.httpUri().toString())
@@ -110,13 +109,9 @@ class JaegerGrpcSpanExporterTest {
             .build();
   }
 
-  @AfterAll
-  static void tearDown() {
-    exporter.shutdown();
-  }
-
   @AfterEach
-  void reset() {
+  void tearDown() {
+    exporter.shutdown();
     postedRequests.clear();
   }
 
@@ -213,7 +208,7 @@ class JaegerGrpcSpanExporterTest {
     }
   }
 
-  private static void verifyBatch(Model.Batch batch) throws Exception {
+  private void verifyBatch(Model.Batch batch) throws Exception {
     assertThat(batch.getSpansCount()).isEqualTo(1);
     assertThat(TraceId.fromBytes(batch.getSpans(0).getTraceId().toByteArray())).isNotNull();
     assertThat(batch.getProcess().getTagsCount()).isEqualTo(5);

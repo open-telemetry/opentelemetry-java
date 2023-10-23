@@ -33,7 +33,6 @@ import java.util.function.BiFunction;
 public final class ResourceConfiguration {
 
   private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
-  private static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.21.0";
 
   // Visible for testing
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
@@ -79,7 +78,7 @@ public final class ResourceConfiguration {
       resourceAttributes.put(SERVICE_NAME, serviceName);
     }
 
-    return Resource.create(resourceAttributes.build(), SCHEMA_URL);
+    return Resource.create(resourceAttributes.build());
   }
 
   static Resource configureResource(

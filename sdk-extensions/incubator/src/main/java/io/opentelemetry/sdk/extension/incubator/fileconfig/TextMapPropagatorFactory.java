@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -22,18 +21,18 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 
-final class PropagatorsFactory implements Factory<List<String>, ContextPropagators> {
+final class TextMapPropagatorFactory implements Factory<List<String>, TextMapPropagator> {
 
-  private static final PropagatorsFactory INSTANCE = new PropagatorsFactory();
+  private static final TextMapPropagatorFactory INSTANCE = new TextMapPropagatorFactory();
 
-  private PropagatorsFactory() {}
+  private TextMapPropagatorFactory() {}
 
-  static PropagatorsFactory getInstance() {
+  static TextMapPropagatorFactory getInstance() {
     return INSTANCE;
   }
 
   @Override
-  public ContextPropagators create(
+  public TextMapPropagator create(
       @Nullable List<String> model, SpiHelper spiHelper, List<Closeable> closeables) {
     if (model == null || model.isEmpty()) {
       model = Arrays.asList("tracecontext", "baggage");
@@ -44,7 +43,7 @@ final class PropagatorsFactory implements Factory<List<String>, ContextPropagato
         throw new ConfigurationException(
             "propagators contains \"none\" along with other propagators");
       }
-      return ContextPropagators.noop();
+      return TextMapPropagator.noop();
     }
 
     NamedSpiManager<TextMapPropagator> spiPropagatorsManager =
@@ -58,7 +57,7 @@ final class PropagatorsFactory implements Factory<List<String>, ContextPropagato
       propagators.add(getPropagator(propagator, spiPropagatorsManager));
     }
 
-    return ContextPropagators.create(TextMapPropagator.composite(propagators));
+    return TextMapPropagator.composite(propagators);
   }
 
   private static TextMapPropagator getPropagator(
@@ -74,6 +73,6 @@ final class PropagatorsFactory implements Factory<List<String>, ContextPropagato
     if (spiPropagator != null) {
       return spiPropagator;
     }
-    throw new ConfigurationException("Unrecognized value for otel.propagators: " + name);
+    throw new ConfigurationException("Unrecognized propagator: " + name);
   }
 }

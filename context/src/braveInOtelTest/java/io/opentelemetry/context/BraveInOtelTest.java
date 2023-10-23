@@ -27,6 +27,7 @@ class BraveInOtelTest {
   private static final TraceContext TRACE_CONTEXT =
       TraceContext.newBuilder().traceId(1).spanId(1).addExtra("japan").build();
 
+  @SuppressWarnings("NonFinalStaticField")
   private static ExecutorService otherThread;
 
   @BeforeAll
