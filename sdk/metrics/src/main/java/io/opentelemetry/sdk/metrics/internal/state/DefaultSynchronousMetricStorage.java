@@ -26,7 +26,9 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.locks.StampedLock;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,7 +49,9 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   private final MetricDescriptor metricDescriptor;
   private final AggregationTemporality aggregationTemporality;
   private final Aggregator<T, U> aggregator;
-  private final StampedLock sl = new StampedLock();
+  private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+  private final Lock readLock = readWriteLock.readLock();
+  private final Lock writeLock = readWriteLock.writeLock();
   private ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles =
       new ConcurrentHashMap<>();
   private final AttributesProcessor attributesProcessor;
@@ -85,12 +89,12 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
   @Override
   public void recordLong(long value, Attributes attributes, Context context) {
-    long stamp = sl.readLock();
+    readLock.lock();
     try {
       AggregatorHandle<T, U> handle = getAggregatorHandle(attributes, context);
       handle.recordLong(value, attributes, context);
     } finally {
-      sl.unlockRead(stamp);
+      readLock.unlock();
     }
   }
 
@@ -106,12 +110,12 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
               + ". Dropping measurement.");
       return;
     }
-    long stamp = sl.readLock();
+    readLock.lock();
     try {
       AggregatorHandle<T, U> handle = getAggregatorHandle(attributes, context);
       handle.recordDouble(value, attributes, context);
     } finally {
-      sl.unlockRead(stamp);
+      readLock.unlock();
     }
   }
 
@@ -160,12 +164,12 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
     ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles;
     if (reset) {
-      long stamp = sl.writeLock();
+      writeLock.lock();
       try {
         aggregatorHandles = this.aggregatorHandles;
         this.aggregatorHandles = new ConcurrentHashMap<>();
       } finally {
-        sl.unlockWrite(stamp);
+        writeLock.unlock();
       }
     } else {
       aggregatorHandles = this.aggregatorHandles;
