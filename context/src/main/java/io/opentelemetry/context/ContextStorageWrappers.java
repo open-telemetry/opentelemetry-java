@@ -19,6 +19,7 @@ final class ContextStorageWrappers {
 
   private static final Logger log = Logger.getLogger(ContextStorageWrappers.class.getName());
 
+  @SuppressWarnings("NonFinalStaticField")
   private static boolean storageInitialized;
 
   private static final List<Function<? super ContextStorage, ? extends ContextStorage>> wrappers =

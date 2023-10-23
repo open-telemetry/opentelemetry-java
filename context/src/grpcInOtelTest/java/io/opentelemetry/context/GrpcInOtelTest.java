@@ -21,6 +21,7 @@ class GrpcInOtelTest {
   private static final io.grpc.Context.Key<String> FOOD = io.grpc.Context.key("food");
   private static final io.grpc.Context.Key<String> COUNTRY = io.grpc.Context.key("country");
 
+  @SuppressWarnings("NonFinalStaticField")
   private static ExecutorService otherThread;
 
   @BeforeAll

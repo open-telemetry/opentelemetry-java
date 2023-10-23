@@ -53,8 +53,11 @@ public final class GlobalOpenTelemetry {
 
   private static final Object mutex = new Object();
 
-  @Nullable private static volatile ObfuscatedOpenTelemetry globalOpenTelemetry;
+  @SuppressWarnings("NonFinalStaticField")
+  @Nullable
+  private static volatile ObfuscatedOpenTelemetry globalOpenTelemetry;
 
+  @SuppressWarnings("NonFinalStaticField")
   @GuardedBy("mutex")
   @Nullable
   private static Throwable setGlobalCaller;
