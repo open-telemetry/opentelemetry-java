@@ -18,3 +18,8 @@ tasks {
     options.release.set(11)
   }
 }
+
+tasks.test {
+  val testJavaVersion: String? by project
+  enabled = !testJavaVersion.equals("8")
+}
