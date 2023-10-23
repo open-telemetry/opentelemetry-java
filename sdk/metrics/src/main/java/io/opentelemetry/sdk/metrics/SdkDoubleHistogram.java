@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
+import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleHistogramBuilder;
@@ -54,50 +55,61 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
     record(value, Attributes.empty());
   }
 
-  static final class SdkDoubleHistogramBuilder
-      extends AbstractInstrumentBuilder<SdkDoubleHistogramBuilder>
-      implements ExtendedDoubleHistogramBuilder {
+  static final class SdkDoubleHistogramBuilder implements ExtendedDoubleHistogramBuilder {
+
+    private final InstrumentBuilder builder;
 
     SdkDoubleHistogramBuilder(
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         String name) {
-      super(
-          meterProviderSharedState,
-          meterSharedState,
-          InstrumentType.HISTOGRAM,
-          InstrumentValueType.DOUBLE,
-          name,
-          "",
-          DEFAULT_UNIT);
+      builder =
+          new InstrumentBuilder(
+              name,
+              InstrumentType.HISTOGRAM,
+              InstrumentValueType.DOUBLE,
+              meterProviderSharedState,
+              meterSharedState);
     }
 
     @Override
-    protected SdkDoubleHistogramBuilder getThis() {
+    public DoubleHistogramBuilder setDescription(String description) {
+      builder.setDescription(description);
+      return this;
+    }
+
+    @Override
+    public DoubleHistogramBuilder setUnit(String unit) {
+      builder.setUnit(unit);
       return this;
     }
 
     @Override
     public SdkDoubleHistogram build() {
-      return buildSynchronousInstrument(SdkDoubleHistogram::new);
+      return builder.buildSynchronousInstrument(SdkDoubleHistogram::new);
     }
 
     @Override
     public LongHistogramBuilder ofLongs() {
-      return swapBuilder(SdkLongHistogram.SdkLongHistogramBuilder::new);
+      return builder.swapBuilder(SdkLongHistogram.SdkLongHistogramBuilder::new);
     }
 
     @Override
     public ExtendedDoubleHistogramBuilder setExplicitBucketBoundariesAdvice(
         List<Double> bucketBoundaries) {
-      adviceBuilder.setExplicitBucketBoundaries(bucketBoundaries);
+      builder.setExplicitBucketBoundaries(bucketBoundaries);
       return this;
     }
 
     @Override
     public ExtendedDoubleHistogramBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
-      adviceBuilder.setAttributes(attributes);
+      builder.setAdviceAttributes(attributes);
       return this;
+    }
+
+    @Override
+    public String toString() {
+      return builder.toStringHelper(getClass().getSimpleName());
     }
   }
 }

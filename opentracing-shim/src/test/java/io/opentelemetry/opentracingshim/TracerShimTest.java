@@ -45,7 +45,8 @@ class TracerShimTest {
   static final io.opentelemetry.api.baggage.Baggage EMPTY_BAGGAGE =
       io.opentelemetry.api.baggage.Baggage.empty();
 
-  @RegisterExtension static OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+  @RegisterExtension
+  static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
   TracerShim tracerShim;
   TracerProvider provider;

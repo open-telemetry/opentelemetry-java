@@ -56,6 +56,7 @@ import org.testcontainers.utility.DockerImageName;
  * running in process, allowing assertions to be made against the data.
  */
 @Testcontainers(disabledWithoutDocker = true)
+@SuppressWarnings("NonFinalStaticField")
 class CollectorIntegrationTest {
 
   private static final String COLLECTOR_IMAGE =

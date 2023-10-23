@@ -10,7 +10,7 @@ import io.opencensus.trace.propagation.TextFormat;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 
-class OpenTelemetryPropagationComponentImpl extends PropagationComponentImpl {
+final class OpenTelemetryPropagationComponentImpl extends PropagationComponentImpl {
 
   private final TextFormat b3Format =
       new OpenTelemetryTextFormatImpl(B3Propagator.injectingMultiHeaders());

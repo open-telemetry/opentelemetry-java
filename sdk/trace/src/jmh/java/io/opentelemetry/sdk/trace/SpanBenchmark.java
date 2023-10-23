@@ -24,7 +24,9 @@ import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Benchmark)
 public class SpanBenchmark {
+  @SuppressWarnings("NonFinalStaticField")
   private static SdkSpanBuilder sdkSpanBuilder;
+
   private final Resource serviceResource =
       Resource.create(
           Attributes.builder()

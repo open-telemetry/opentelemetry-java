@@ -61,13 +61,13 @@ public class OtlpPipelineStressTest {
   public static final int OTLP_RECEIVER_PORT = 4317;
   public static final int COLLECTOR_PROXY_PORT = 44444;
   public static final int TOXIPROXY_CONTROL_PORT = 8474;
-  public static Network network = Network.newNetwork();
-  public static AtomicLong totalSpansReceivedByCollector = new AtomicLong();
+  public static final Network network = Network.newNetwork();
+  public static final AtomicLong totalSpansReceivedByCollector = new AtomicLong();
 
   private static final Logger logger = LoggerFactory.getLogger(OtlpPipelineStressTest.class);
 
   @Container
-  public static GenericContainer<?> collectorContainer =
+  public static final GenericContainer<?> collectorContainer =
       new GenericContainer<>(
               DockerImageName.parse("ghcr.io/open-telemetry/opentelemetry-java/otel-collector"))
           .withImagePullPolicy(PullPolicy.alwaysPull())
@@ -93,7 +93,7 @@ public class OtlpPipelineStressTest {
           .waitingFor(new LogMessageWaitStrategy().withRegEx(".*Everything is ready.*"));
 
   @Container
-  public static GenericContainer<?> toxiproxyContainer =
+  public static final GenericContainer<?> toxiproxyContainer =
       new GenericContainer<>(
               DockerImageName.parse("ghcr.io/open-telemetry/opentelemetry-java/toxiproxy"))
           .withImagePullPolicy(PullPolicy.alwaysPull())

@@ -28,6 +28,7 @@ class OtelInBraveTest {
       BraveContextStorageProvider.toBraveContext(
           TraceContext.newBuilder().traceId(1).spanId(1).build(), CONTEXT_WITH_ANIMAL);
 
+  @SuppressWarnings("NonFinalStaticField")
   private static ExecutorService otherThread;
 
   @BeforeAll

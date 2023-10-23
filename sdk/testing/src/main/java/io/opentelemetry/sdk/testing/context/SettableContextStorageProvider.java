@@ -34,6 +34,7 @@ public final class SettableContextStorageProvider implements ContextStorageProvi
   private enum SettableContextStorage implements ContextStorage {
     INSTANCE;
 
+    @SuppressWarnings("NonFinalStaticField")
     private static volatile ContextStorage delegate = createStorage();
 
     @Override
