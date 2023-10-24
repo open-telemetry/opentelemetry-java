@@ -6,23 +6,22 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.context.Context;
-import java.util.function.Consumer;
 
 /** A SpanProcessor implementation that is only capable of processing spans when they end. */
 public final class OnEndSpanProcessor implements SpanProcessor {
-  private final Consumer<ReadableSpan> onEnd;
+  private final OnEnd onEnd;
 
-  private OnEndSpanProcessor(Consumer<ReadableSpan> onEnd) {
+  private OnEndSpanProcessor(OnEnd onEnd) {
     this.onEnd = onEnd;
   }
 
-  static SpanProcessor create(Consumer<ReadableSpan> onEnd) {
+  static SpanProcessor create(OnEnd onEnd) {
     return new OnEndSpanProcessor(onEnd);
   }
 
   @Override
   public void onEnd(ReadableSpan span) {
-    onEnd.accept(span);
+    onEnd.apply(span);
   }
 
   @Override
@@ -38,5 +37,10 @@ public final class OnEndSpanProcessor implements SpanProcessor {
   @Override
   public boolean isStartRequired() {
     return false;
+  }
+
+  @FunctionalInterface
+  public interface OnEnd {
+    void apply(ReadableSpan span);
   }
 }

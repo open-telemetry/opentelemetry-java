@@ -6,24 +6,23 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.context.Context;
-import java.util.function.BiConsumer;
 
 /** A SpanProcessor that only handles onStart(). */
 public final class OnStartSpanProcessor implements SpanProcessor {
 
-  private final BiConsumer<Context, ReadWriteSpan> onStart;
+  private final OnStart onStart;
 
-  private OnStartSpanProcessor(BiConsumer<Context, ReadWriteSpan> onStart) {
+  private OnStartSpanProcessor(OnStart onStart) {
     this.onStart = onStart;
   }
 
-  public static SpanProcessor create(BiConsumer<Context, ReadWriteSpan> onStart) {
+  public static SpanProcessor create(OnStart onStart) {
     return new OnStartSpanProcessor(onStart);
   }
 
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {
-    this.onStart.accept(parentContext, span);
+    onStart.apply(parentContext, span);
   }
 
   @Override
@@ -39,5 +38,10 @@ public final class OnStartSpanProcessor implements SpanProcessor {
   @Override
   public boolean isEndRequired() {
     return false;
+  }
+
+  @FunctionalInterface
+  public interface OnStart {
+    void apply(Context context, ReadWriteSpan span);
   }
 }
