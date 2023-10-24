@@ -51,4 +51,10 @@ public interface EventEmitter {
    * @param attributes attributes associated with the event
    */
   void emit(String eventName, Attributes attributes);
+
+  EventBuilder builder();
+
+  EventBuilder builder(String eventName);
+
+  EventBuilder builder(String eventName, Attributes attributes);
 }

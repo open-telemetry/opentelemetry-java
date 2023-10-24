@@ -22,4 +22,42 @@ class DefaultEventEmitter implements EventEmitter {
 
   @Override
   public void emit(String eventName, Attributes attributes) {}
+
+  @Override
+  public EventBuilder builder() {
+    return NoOpEventBuilder.INSTANCE;
+  }
+
+  @Override
+  public EventBuilder builder(String eventName) {
+    return NoOpEventBuilder.INSTANCE;
+  }
+
+  @Override
+  public EventBuilder builder(String eventName, Attributes attributes) {
+    return NoOpEventBuilder.INSTANCE;
+  }
+
+  private static class NoOpEventBuilder implements EventBuilder {
+
+    public static final EventBuilder INSTANCE = new NoOpEventBuilder();
+
+    @Override
+    public EventBuilder setEventName(String eventName) {
+      return this;
+    }
+
+    @Override
+    public EventBuilder setAttributes(Attributes attributes) {
+      return this;
+    }
+
+    @Override
+    public EventBuilder setTimestamp(long epochNanos) {
+      return this;
+    }
+
+    @Override
+    public void emit() {}
+  }
 }

@@ -114,4 +114,23 @@ class SdkEventEmitterProviderTest {
                 .put("event.name", "testing")
                 .build());
   }
+
+  @Test
+  void builder() {
+    long yesterday = System.nanoTime() - TimeUnit.DAYS.toNanos(1);
+    Attributes attributes = Attributes.of(stringKey("foo"), "bar");
+
+    EventEmitter emitter = eventEmitterProvider.eventEmitterBuilder("test-scope").build();
+
+    emitter.builder("testing", attributes).setTimestamp(yesterday).emit();
+    assertThat(seenLog.get().toLogRecordData())
+        .hasResource(RESOURCE)
+        .hasInstrumentationScope(InstrumentationScopeInfo.create("test-scope"))
+        .hasTimestamp(yesterday)
+        .hasAttributes(
+            attributes.toBuilder()
+                .put("event.domain", "unknown")
+                .put("event.name", "testing")
+                .build());
+  }
 }
