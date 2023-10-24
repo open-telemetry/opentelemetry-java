@@ -27,6 +27,7 @@ class DefaultEventEmitterTest {
   void emitWithTimestamp() {
     EventEmitter emitter = DefaultEventEmitter.getInstance();
     Attributes attributes = Attributes.builder().put("key1", "value1").build();
-    assertThatCode(() -> emitter.emit(System.nanoTime(), "event-name", attributes));
+    assertThatCode(() -> emitter.emit(System.nanoTime(), "event-name", attributes))
+        .doesNotThrowAnyException();
   }
 }
