@@ -30,4 +30,36 @@ class DefaultEventEmitterTest {
     assertThatCode(() -> emitter.emit(System.nanoTime(), "event-name", attributes))
         .doesNotThrowAnyException();
   }
+
+  @Test
+  void builder() {
+    Attributes attributes = Attributes.builder().put("key1", "value1").build();
+    EventEmitter emitter = DefaultEventEmitter.getInstance();
+    assertThatCode(
+            () ->
+                emitter
+                    .builder()
+                    .setEventName("myEvent")
+                    .setAttributes(attributes)
+                    .setTimestamp(123456L)
+                    .emit())
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void builderWithName() {
+    Attributes attributes = Attributes.builder().put("key1", "value1").build();
+    EventEmitter emitter = DefaultEventEmitter.getInstance();
+    assertThatCode(
+            () -> emitter.builder("myEvent").setAttributes(attributes).setTimestamp(123456L).emit())
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void builderWithNameAndAttrs() {
+    Attributes attributes = Attributes.builder().put("key1", "value1").build();
+    EventEmitter emitter = DefaultEventEmitter.getInstance();
+    assertThatCode(() -> emitter.builder("myEvent", attributes).setTimestamp(123456L).emit())
+        .doesNotThrowAnyException();
+  }
 }

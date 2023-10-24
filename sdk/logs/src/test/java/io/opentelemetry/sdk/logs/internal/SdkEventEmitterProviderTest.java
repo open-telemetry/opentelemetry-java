@@ -104,15 +104,29 @@ class SdkEventEmitterProviderTest {
 
     emitter.emit(yesterday, "testing", attributes);
 
-    assertThat(seenLog.get().toLogRecordData())
-        .hasResource(RESOURCE)
-        .hasInstrumentationScope(InstrumentationScopeInfo.create("test-scope"))
-        .hasTimestamp(yesterday)
-        .hasAttributes(
-            attributes.toBuilder()
-                .put("event.domain", "unknown")
-                .put("event.name", "testing")
-                .build());
+    verifySeen(yesterday, attributes);
+  }
+
+  @Test
+  void builderWithNameAndAttributes() {
+    long yesterday = System.nanoTime() - TimeUnit.DAYS.toNanos(1);
+    Attributes attributes = Attributes.of(stringKey("foo"), "bar");
+
+    EventEmitter emitter = eventEmitterProvider.eventEmitterBuilder("test-scope").build();
+
+    emitter.builder("testing", attributes).setTimestamp(yesterday).emit();
+    verifySeen(yesterday, attributes);
+  }
+
+  @Test
+  void builderWithName() {
+    long yesterday = System.nanoTime() - TimeUnit.DAYS.toNanos(1);
+    Attributes attributes = Attributes.of(stringKey("foo"), "bar");
+
+    EventEmitter emitter = eventEmitterProvider.eventEmitterBuilder("test-scope").build();
+
+    emitter.builder("testing").setAttributes(attributes).setTimestamp(yesterday).emit();
+    verifySeen(yesterday, attributes);
   }
 
   @Test
@@ -122,11 +136,20 @@ class SdkEventEmitterProviderTest {
 
     EventEmitter emitter = eventEmitterProvider.eventEmitterBuilder("test-scope").build();
 
-    emitter.builder("testing", attributes).setTimestamp(yesterday).emit();
+    emitter
+        .builder()
+        .setEventName("testing")
+        .setAttributes(attributes)
+        .setTimestamp(yesterday)
+        .emit();
+    verifySeen(yesterday, attributes);
+  }
+
+  private void verifySeen(long timestamp, Attributes attributes) {
     assertThat(seenLog.get().toLogRecordData())
         .hasResource(RESOURCE)
         .hasInstrumentationScope(InstrumentationScopeInfo.create("test-scope"))
-        .hasTimestamp(yesterday)
+        .hasTimestamp(timestamp)
         .hasAttributes(
             attributes.toBuilder()
                 .put("event.domain", "unknown")
