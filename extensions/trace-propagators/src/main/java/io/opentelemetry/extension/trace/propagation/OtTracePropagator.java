@@ -117,7 +117,8 @@ public final class OtTracePropagator implements TextMapPropagator {
         if (value == null) {
           continue;
         }
-        String baggageKey = lowercaseKey.replace(OtTracePropagator.PREFIX_BAGGAGE_HEADER, "");
+        String baggageKey =
+            lowercaseKey.substring(OtTracePropagator.PREFIX_BAGGAGE_HEADER.length());
         baggageBuilder.put(baggageKey, value);
       }
       Baggage baggage = baggageBuilder.build();
