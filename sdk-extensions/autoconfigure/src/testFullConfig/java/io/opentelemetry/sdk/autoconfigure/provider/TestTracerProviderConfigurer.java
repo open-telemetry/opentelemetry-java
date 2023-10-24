@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure.provider;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.trace.OnStartSpanProcessor;
+import io.opentelemetry.sdk.extension.incubator.trace.OnStartSpanProcessor;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 
 @SuppressWarnings("deprecation") // Support testing of SdkTracerProviderConfigurer

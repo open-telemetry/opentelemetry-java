@@ -3,9 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.trace;
+package io.opentelemetry.sdk.extension.incubator.trace;
 
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.trace.ReadWriteSpan;
+import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 
 /** A SpanProcessor that only handles onStart(). */
 public final class OnStartSpanProcessor implements SpanProcessor {
