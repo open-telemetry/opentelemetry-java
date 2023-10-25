@@ -19,6 +19,7 @@ import okhttp3.Dispatcher;
  */
 public final class OkHttpUtil {
   // For testing purposes
+  @SuppressWarnings("NonFinalStaticField")
   static boolean propagateContextInDispatcher = false;
 
   /** Returns a {@link Dispatcher} using daemon threads, otherwise matching the OkHttp default. */
