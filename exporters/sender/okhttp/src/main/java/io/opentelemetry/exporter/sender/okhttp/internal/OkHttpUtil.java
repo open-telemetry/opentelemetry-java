@@ -18,6 +18,8 @@ import okhttp3.Dispatcher;
  * at any time.
  */
 public final class OkHttpUtil {
+  // For testing purposes
+  static boolean propagateContextInDispatcher = false;
 
   /** Returns a {@link Dispatcher} using daemon threads, otherwise matching the OkHttp default. */
   public static Dispatcher newDispatcher() {
@@ -28,7 +30,7 @@ public final class OkHttpUtil {
             60,
             TimeUnit.SECONDS,
             new SynchronousQueue<>(),
-            new DaemonThreadFactory("okhttp-dispatch")));
+            new DaemonThreadFactory("okhttp-dispatch", propagateContextInDispatcher)));
   }
 
   private OkHttpUtil() {}
