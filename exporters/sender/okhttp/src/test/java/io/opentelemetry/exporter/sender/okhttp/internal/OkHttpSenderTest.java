@@ -29,19 +29,19 @@ abstract class OkHttpSenderTest<T> {
 
   @Test
   void testSuppressInstrumentation() throws InterruptedException {
-    CountDownLatch lock = new CountDownLatch(1);
+    CountDownLatch latch = new CountDownLatch(1);
     AtomicBoolean suppressInstrumentation = new AtomicBoolean(false);
 
     Runnable onSuccess = Assertions::fail;
     Runnable onFailure =
         () -> {
           suppressInstrumentation.set(InstrumentationUtil.shouldSuppressInstrumentation());
-          lock.countDown();
+          latch.countDown();
         };
 
     send(getSender(), onSuccess, onFailure);
 
-    lock.await();
+    latch.await();
 
     assertTrue(suppressInstrumentation.get());
   }
