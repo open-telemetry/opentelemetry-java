@@ -29,16 +29,6 @@ public class InstrumentationUtil {
   }
 
   /**
-   * Checks if an automatic instrumentation should be suppressed with the provided Context.
-   *
-   * @return TRUE to suppress the automatic instrumentation, FALSE to continue with the
-   *     instrumentation.
-   */
-  public static boolean shouldSuppressInstrumentation(Context context) {
-    return Objects.equals(context.get(SUPPRESS_INSTRUMENTATION_KEY), true);
-  }
-
-  /**
    * Checks if an automatic instrumentation should be suppressed within the current Context.
    *
    * @return TRUE to suppress the automatic instrumentation, FALSE to continue with the
@@ -46,5 +36,15 @@ public class InstrumentationUtil {
    */
   public static boolean shouldSuppressInstrumentation() {
     return shouldSuppressInstrumentation(Context.current());
+  }
+
+  /**
+   * Checks if an automatic instrumentation should be suppressed with the provided Context.
+   *
+   * @return TRUE to suppress the automatic instrumentation, FALSE to continue with the
+   *     instrumentation.
+   */
+  public static boolean shouldSuppressInstrumentation(Context context) {
+    return Objects.equals(context.get(SUPPRESS_INSTRUMENTATION_KEY), true);
   }
 }
