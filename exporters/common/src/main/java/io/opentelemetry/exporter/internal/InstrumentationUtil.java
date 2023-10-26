@@ -38,6 +38,12 @@ public class InstrumentationUtil {
     return Objects.equals(context.get(SUPPRESS_INSTRUMENTATION_KEY), true);
   }
 
+  /**
+   * Checks if an automatic instrumentation should be suppressed within the current Context.
+   *
+   * @return TRUE to suppress the automatic instrumentation, FALSE to continue with the
+   *     instrumentation.
+   */
   public static boolean shouldSuppressInstrumentation() {
     return shouldSuppressInstrumentation(Context.current());
   }
