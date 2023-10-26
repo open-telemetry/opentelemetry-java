@@ -46,11 +46,13 @@ public final class OkHttpHttpSender implements HttpSender {
   private final MediaType mediaType;
 
   /** Create a sender. */
+  @SuppressWarnings("TooManyParameters")
   public OkHttpHttpSender(
       String endpoint,
       boolean compressionEnabled,
       String contentType,
       long timeoutNanos,
+      long connectionTimeoutNanos,
       Supplier<Map<String, String>> headerSupplier,
       @Nullable Authenticator authenticator,
       @Nullable RetryPolicy retryPolicy,
@@ -59,6 +61,7 @@ public final class OkHttpHttpSender implements HttpSender {
     OkHttpClient.Builder builder =
         new OkHttpClient.Builder()
             .dispatcher(OkHttpUtil.newDispatcher())
+            .connectTimeout(Duration.ofNanos(connectionTimeoutNanos))
             .callTimeout(Duration.ofNanos(timeoutNanos));
 
     if (authenticator != null) {

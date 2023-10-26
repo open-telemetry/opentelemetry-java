@@ -41,6 +41,18 @@ public class HttpSpanExporterBuilderWrapper implements TelemetryExporterBuilder<
   }
 
   @Override
+  public TelemetryExporterBuilder<SpanData> setConnectTimeout(long timeout, TimeUnit unit) {
+    builder.setConnectTimeout(timeout, unit);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<SpanData> setConnectTimeout(Duration timeout) {
+    builder.setConnectTimeout(timeout);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<SpanData> setCompression(String compression) {
     builder.setCompression(compression);
     return this;

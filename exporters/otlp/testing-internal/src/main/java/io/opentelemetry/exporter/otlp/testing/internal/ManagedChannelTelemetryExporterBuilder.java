@@ -77,6 +77,18 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   }
 
   @Override
+  public TelemetryExporterBuilder<T> setConnectTimeout(long timeout, TimeUnit unit) {
+    delegate.setConnectTimeout(timeout, unit);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<T> setConnectTimeout(Duration timeout) {
+    delegate.setConnectTimeout(timeout);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<T> setCompression(String compression) {
     delegate.setCompression(compression);
     return this;
