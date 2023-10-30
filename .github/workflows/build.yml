@@ -89,6 +89,8 @@ jobs:
           name: coverage-report
           path: all/build/reports/jacoco/test/html
 
+      - uses: anchore/sbom-action@v0
+
   markdown-link-check:
     # release branches are excluded to avoid unnecessary maintenance
     if: ${{ !startsWith(github.ref_name, 'release/') }}

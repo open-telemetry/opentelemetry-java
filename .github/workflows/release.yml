@@ -31,6 +31,8 @@ jobs:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
 
+      - uses: anchore/sbom-action@v0
+
       - name: Set environment variables
         run: |
           version=$(.github/scripts/get-version.sh)
