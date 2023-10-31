@@ -24,7 +24,7 @@ public final class AnyValueBody implements Body {
 
   @Override
   public Type getType() {
-    return Type.ANY_VALUE;
+    return Type.STRING;
   }
 
   @Override
@@ -32,7 +32,7 @@ public final class AnyValueBody implements Body {
     return value.asString();
   }
 
-  public AnyValue<?> getAnyValue() {
+  public AnyValue<?> asAnyValue() {
     return value;
   }
 

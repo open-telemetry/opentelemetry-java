@@ -11,7 +11,6 @@ import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.extension.incubator.logs.AnyValue;
 import io.opentelemetry.extension.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.extension.incubator.logs.KeyAnyValue;
-import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.logs.internal.AnyValueBody;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
@@ -37,9 +36,10 @@ class AnyValueBodyTest {
         .hasSize(1)
         .satisfiesExactly(
             logRecordData -> {
-              assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
+              // TODO (jack-berg): add assertion when ANY_VALUE is added to Body.Type
+              // assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
               assertThat(logRecordData.getBody().asString()).isEqualTo("1");
-              assertThat(((AnyValueBody) logRecordData.getBody()).getAnyValue())
+              assertThat(((AnyValueBody) logRecordData.getBody()).asAnyValue())
                   .isEqualTo(AnyValue.of(1));
             });
     exporter.reset();
@@ -52,9 +52,10 @@ class AnyValueBodyTest {
         .hasSize(1)
         .satisfiesExactly(
             logRecordData -> {
-              assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
+              // TODO (jack-berg): add assertion when ANY_VALUE is added to Body.Type
+              // assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
               assertThat(logRecordData.getBody().asString()).isEqualTo("68656c6c6f20776f726c64");
-              assertThat(((AnyValueBody) logRecordData.getBody()).getAnyValue())
+              assertThat(((AnyValueBody) logRecordData.getBody()).asAnyValue())
                   .isEqualTo(AnyValue.of("hello world".getBytes(StandardCharsets.UTF_8)));
             });
     exporter.reset();
@@ -94,7 +95,8 @@ class AnyValueBodyTest {
         .hasSize(1)
         .satisfiesExactly(
             logRecordData -> {
-              assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
+              // TODO (jack-berg): add assertion when ANY_VALUE is added to Body.Type
+              // assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
               assertThat(logRecordData.getBody().asString())
                   .isEqualTo(
                       "["
@@ -106,7 +108,7 @@ class AnyValueBodyTest {
                           + "arr_key=[entry1, 2, 3.3], "
                           + "key_value_list_key=[child_str_key1=child_value1, child_str_key2=child_value2]"
                           + "]");
-              assertThat(((AnyValueBody) logRecordData.getBody()).getAnyValue())
+              assertThat(((AnyValueBody) logRecordData.getBody()).asAnyValue())
                   .isEqualTo(
                       AnyValue.of(
                           KeyAnyValue.of("str_key", AnyValue.of("value")),
@@ -138,9 +140,10 @@ class AnyValueBodyTest {
         .hasSize(1)
         .satisfiesExactly(
             logRecordData -> {
-              assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
+              // TODO (jack-berg): add assertion when ANY_VALUE is added to Body.Type
+              // assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
               assertThat(logRecordData.getBody().asString()).isEqualTo("[entry1, entry2, 3]");
-              assertThat(((AnyValueBody) logRecordData.getBody()).getAnyValue())
+              assertThat(((AnyValueBody) logRecordData.getBody()).asAnyValue())
                   .isEqualTo(
                       AnyValue.of(AnyValue.of("entry1"), AnyValue.of("entry2"), AnyValue.of(3)));
             });
