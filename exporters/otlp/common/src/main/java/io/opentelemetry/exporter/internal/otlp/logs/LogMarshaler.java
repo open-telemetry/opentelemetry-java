@@ -41,7 +41,7 @@ final class LogMarshaler extends MarshalerWithSize {
     KeyValueMarshaler[] attributeMarshalers =
         KeyValueMarshaler.createRepeated(logRecordData.getAttributes());
 
-    // For now, map all the bodies to String AnyValue.
+    // TODO(jack-berg): handle AnyValue log body
     StringAnyValueMarshaler anyValueMarshaler =
         new StringAnyValueMarshaler(MarshalerUtil.toBytes(logRecordData.getBody().asString()));
 
