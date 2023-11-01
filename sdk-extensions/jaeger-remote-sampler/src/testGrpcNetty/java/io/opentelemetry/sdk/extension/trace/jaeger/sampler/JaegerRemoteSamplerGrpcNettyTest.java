@@ -148,7 +148,7 @@ class JaegerRemoteSamplerGrpcNettyTest {
   void initialSampler() {
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
-            .setChannel(managedChannel())
+            .setChannel(ManagedChannelBuilder.forTarget("example.com").build())
             .setServiceName(SERVICE_NAME)
             .setInitialSampler(Sampler.alwaysOn())
             .build()) {
