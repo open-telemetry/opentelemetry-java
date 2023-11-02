@@ -268,14 +268,11 @@ final class StrictContextStorage implements ContextStorage, AutoCloseable {
       try {
         while (!Thread.interrupted()) {
           Reference<? extends Scope> reference = remove();
-          if (reference != null) {
-            CallerStackTrace caller = map.remove(reference);
-            if (caller != null && !caller.closed) {
-              logger.log(
-                  Level.SEVERE,
-                  "Scope garbage collected before being closed.",
-                  callerError(caller));
-            }
+          // on openj9 ReferenceQueue.remove can return null
+          CallerStackTrace caller = reference != null ? map.remove(reference) : null;
+          if (caller != null && !caller.closed) {
+            logger.log(
+                Level.SEVERE, "Scope garbage collected before being closed.", callerError(caller));
           }
         }
       } catch (InterruptedException ignored) {
