@@ -52,9 +52,5 @@ public interface EventEmitter {
    */
   void emit(String eventName, Attributes attributes);
 
-  EventBuilder builder();
-
-  EventBuilder builder(String eventName);
-
   EventBuilder builder(String eventName, Attributes attributes);
 }

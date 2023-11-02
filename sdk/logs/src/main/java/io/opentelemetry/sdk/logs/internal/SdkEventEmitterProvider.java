@@ -112,18 +112,8 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
     }
 
     @Override
-    public EventBuilder builder() {
-      return new SdkEventBuilder(clock, delegateLogger, eventDomain);
-    }
-
-    @Override
-    public EventBuilder builder(String eventName) {
-      return builder().setEventName(eventName);
-    }
-
-    @Override
     public EventBuilder builder(String eventName, Attributes attributes) {
-      return builder().setEventName(eventName).setAttributes(attributes);
+      return new SdkEventBuilder(clock, delegateLogger, eventDomain, eventName, attributes);
     }
 
     @Override
@@ -133,10 +123,8 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
 
     @Override
     public void emit(long epochNanos, String eventName, Attributes attributes) {
-      new SdkEventBuilder(clock, delegateLogger, eventDomain)
+      new SdkEventBuilder(clock, delegateLogger, eventDomain, eventName, attributes)
           .setTimestamp(epochNanos)
-          .setAttributes(attributes)
-          .setEventName(eventName)
           .emit();
     }
   }

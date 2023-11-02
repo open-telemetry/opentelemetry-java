@@ -33,10 +33,8 @@ class SdkEventBuilderTest {
     when(logRecordBuilder.setAttribute(any(), any())).thenReturn(logRecordBuilder);
     when(logRecordBuilder.setAllAttributes(any())).thenReturn(logRecordBuilder);
 
-    new SdkEventBuilder(Clock.getDefault(), logger, eventDomain)
-        .setEventName(eventName)
+    new SdkEventBuilder(Clock.getDefault(), logger, eventDomain, eventName, attributes)
         .setTimestamp(123456L)
-        .setAttributes(attributes)
         .emit();
     verify(logRecordBuilder).setAllAttributes(attributes);
     verify(logRecordBuilder).setAttribute(stringKey("event.domain"), eventDomain);

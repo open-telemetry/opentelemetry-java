@@ -15,31 +15,24 @@ import io.opentelemetry.sdk.common.Clock;
 import java.util.concurrent.TimeUnit;
 
 class SdkEventBuilder implements EventBuilder {
-  private static final String DEFAULT_EVENT_NAME = "unknown-event";
   private final Clock clock;
   private final Logger delegateLogger;
   private final String eventDomain;
-
-  private String eventName = DEFAULT_EVENT_NAME;
-  private Attributes attributes = Attributes.empty();
+  private final String eventName;
+  private final Attributes attributes;
   private long epochNanos = Long.MIN_VALUE;
 
-  SdkEventBuilder(Clock clock, Logger delegateLogger, String eventDomain) {
+  SdkEventBuilder(
+      Clock clock,
+      Logger delegateLogger,
+      String eventDomain,
+      String eventName,
+      Attributes attributes) {
     this.clock = clock;
     this.delegateLogger = delegateLogger;
     this.eventDomain = eventDomain;
-  }
-
-  @Override
-  public EventBuilder setEventName(String eventName) {
     this.eventName = eventName;
-    return this;
-  }
-
-  @Override
-  public EventBuilder setAttributes(Attributes attributes) {
     this.attributes = attributes;
-    return this;
   }
 
   @Override

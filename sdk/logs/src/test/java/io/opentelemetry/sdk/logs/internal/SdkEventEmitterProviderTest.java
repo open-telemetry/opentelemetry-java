@@ -125,7 +125,7 @@ class SdkEventEmitterProviderTest {
 
     EventEmitter emitter = eventEmitterProvider.eventEmitterBuilder("test-scope").build();
 
-    emitter.builder("testing").setAttributes(attributes).setTimestamp(yesterday).emit();
+    emitter.builder("testing", attributes).setTimestamp(yesterday).emit();
     verifySeen(yesterday, attributes);
   }
 
@@ -136,12 +136,7 @@ class SdkEventEmitterProviderTest {
 
     EventEmitter emitter = eventEmitterProvider.eventEmitterBuilder("test-scope").build();
 
-    emitter
-        .builder()
-        .setEventName("testing")
-        .setAttributes(attributes)
-        .setTimestamp(yesterday)
-        .emit();
+    emitter.builder("testing", attributes).setTimestamp(yesterday).emit();
     verifySeen(yesterday, attributes);
   }
 
