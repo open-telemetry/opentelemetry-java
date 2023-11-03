@@ -83,7 +83,7 @@ public class ExponentialHistogramDataPointMarshaler extends MarshalerWithSize {
   }
 
   static ExponentialHistogramDataPointMarshaler create(ExponentialHistogramPointData point) {
-    KeyValueMarshaler[] attributes = KeyValueMarshaler.createRepeated(point.getAttributes());
+    KeyValueMarshaler[] attributes = KeyValueMarshaler.createForAttributes(point.getAttributes());
     ExemplarMarshaler[] exemplars = ExemplarMarshaler.createRepeated(point.getExemplars());
 
     ExponentialHistogramBucketsMarshaler positiveBuckets =
