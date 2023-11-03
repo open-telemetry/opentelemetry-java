@@ -10,12 +10,12 @@ import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleLastValueAggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.LongLastValueAggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 
 /**
  * Last-value aggregation configuration.
@@ -23,15 +23,20 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class LastValueAggregation implements Aggregation, AggregatorFactory {
+public final class LastValueAggregation implements AggregationExtension {
 
-  private static final Aggregation INSTANCE = new LastValueAggregation();
+  private static final Aggregation INSTANCE =
+      new LastValueAggregation(ExemplarReservoirFactory.noSamples());
 
   public static Aggregation getInstance() {
     return INSTANCE;
   }
 
-  private LastValueAggregation() {}
+  private LastValueAggregation(ExemplarReservoirFactory reservoirFactory) {
+    this.reservoirFactory = reservoirFactory;
+  }
+
+  private final ExemplarReservoirFactory reservoirFactory;
 
   @Override
   @SuppressWarnings("unchecked")
@@ -41,9 +46,17 @@ public final class LastValueAggregation implements Aggregation, AggregatorFactor
     // For the initial version we do not sample exemplars on gauges.
     switch (instrumentDescriptor.getValueType()) {
       case LONG:
-        return (Aggregator<T, U>) new LongLastValueAggregator(ExemplarReservoir::longNoSamples);
+        return (Aggregator<T, U>)
+            new LongLastValueAggregator(
+                () ->
+                    ExemplarReservoir.filtered(
+                        exemplarFilter, reservoirFactory.createLongExemplarReservoir()));
       case DOUBLE:
-        return (Aggregator<T, U>) new DoubleLastValueAggregator(ExemplarReservoir::doubleNoSamples);
+        return (Aggregator<T, U>)
+            new DoubleLastValueAggregator(
+                () ->
+                    ExemplarReservoir.filtered(
+                        exemplarFilter, reservoirFactory.createDoubleExemplarReservoir()));
     }
     throw new IllegalArgumentException("Invalid instrument value type");
   }
@@ -56,5 +69,11 @@ public final class LastValueAggregation implements Aggregation, AggregatorFactor
   @Override
   public String toString() {
     return "LastValueAggregation";
+  }
+
+  @Override
+  public AggregationExtension setExemplarReservoirFactory(
+      ExemplarReservoirFactory reservoirFactory) {
+    return new LastValueAggregation(reservoirFactory);
   }
 }

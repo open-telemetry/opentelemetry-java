@@ -13,12 +13,12 @@ import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleSumAggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import java.util.function.Supplier;
 
 /**
@@ -27,14 +27,26 @@ import java.util.function.Supplier;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class SumAggregation implements Aggregation, AggregatorFactory {
+public final class SumAggregation implements AggregationExtension {
   private static final SumAggregation INSTANCE = new SumAggregation();
 
   public static Aggregation getInstance() {
     return INSTANCE;
   }
 
-  private SumAggregation() {}
+  private SumAggregation(ExemplarReservoirFactory reservoirFactory) {
+    this.reservoirFactory = reservoirFactory;
+  }
+
+  private SumAggregation() {
+    this(
+        ExemplarReservoirFactory.fixedSize(
+            Clock.getDefault(),
+            Runtime.getRuntime().availableProcessors(),
+            RandomSupplier.platformDefault()));
+  }
+
+  private final ExemplarReservoirFactory reservoirFactory;
 
   @Override
   @SuppressWarnings("unchecked")
@@ -43,27 +55,20 @@ public final class SumAggregation implements Aggregation, AggregatorFactory {
     switch (instrumentDescriptor.getValueType()) {
       case LONG:
         {
-          Supplier<ExemplarReservoir<LongExemplarData>> reservoirFactory =
+          Supplier<ExemplarReservoir<LongExemplarData>> reservoirSupplier =
               () ->
                   ExemplarReservoir.filtered(
-                      exemplarFilter,
-                      ExemplarReservoir.longFixedSizeReservoir(
-                          Clock.getDefault(),
-                          Runtime.getRuntime().availableProcessors(),
-                          RandomSupplier.platformDefault()));
-          return (Aggregator<T, U>) new LongSumAggregator(instrumentDescriptor, reservoirFactory);
+                      exemplarFilter, reservoirFactory.createLongExemplarReservoir());
+          return (Aggregator<T, U>) new LongSumAggregator(instrumentDescriptor, reservoirSupplier);
         }
       case DOUBLE:
         {
-          Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirFactory =
+          Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier =
               () ->
                   ExemplarReservoir.filtered(
-                      exemplarFilter,
-                      ExemplarReservoir.doubleFixedSizeReservoir(
-                          Clock.getDefault(),
-                          Runtime.getRuntime().availableProcessors(),
-                          RandomSupplier.platformDefault()));
-          return (Aggregator<T, U>) new DoubleSumAggregator(instrumentDescriptor, reservoirFactory);
+                      exemplarFilter, reservoirFactory.createDoubleExemplarReservoir());
+          return (Aggregator<T, U>)
+              new DoubleSumAggregator(instrumentDescriptor, reservoirSupplier);
         }
     }
     throw new IllegalArgumentException("Invalid instrument value type");
@@ -86,5 +91,12 @@ public final class SumAggregation implements Aggregation, AggregatorFactory {
   @Override
   public String toString() {
     return "SumAggregation";
+  }
+
+  @Override
+  public AggregationExtension setExemplarReservoirFactory(
+      ExemplarReservoirFactory reservoirFactory) {
+    // We copy-on-write as we don't expect much customization here.
+    return new SumAggregation(reservoirFactory);
   }
 }
