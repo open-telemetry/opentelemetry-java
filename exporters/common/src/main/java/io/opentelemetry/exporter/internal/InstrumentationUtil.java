@@ -15,7 +15,7 @@ import java.util.Objects;
  */
 public final class InstrumentationUtil {
   private static final ContextKey<Boolean> SUPPRESS_INSTRUMENTATION_KEY =
-      ContextKey.named("suppress_instrumentation");
+      ContextKey.named("suppress_internal_exporter_instrumentation");
 
   private InstrumentationUtil() {}
 
