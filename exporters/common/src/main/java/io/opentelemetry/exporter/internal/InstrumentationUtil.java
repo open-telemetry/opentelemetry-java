@@ -28,7 +28,6 @@ public final class InstrumentationUtil {
     Context.current().with(SUPPRESS_INSTRUMENTATION_KEY, true).wrap(runnable).run();
   }
 
-
   /**
    * Checks if an automatic instrumentation should be suppressed with the provided Context.
    *
