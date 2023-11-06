@@ -11,7 +11,7 @@ import io.opentelemetry.exporter.internal.marshal.Serializer;
 import java.util.Collections;
 
 class OkHttpGrpcSenderTest
-    extends OkHttpSenderTest<GrpcSender<OkHttpGrpcSenderTest.DummyMarshaler>> {
+    extends OkHttpSenderTest<OkHttpGrpcSender<OkHttpGrpcSenderTest.DummyMarshaler>> {
 
   @Override
   void send(GrpcSender<DummyMarshaler> sender, Runnable onSuccess, Runnable onFailure) {
