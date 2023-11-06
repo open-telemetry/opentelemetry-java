@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.opentelemetry.context.Context;
 import io.opentelemetry.exporter.internal.InstrumentationUtil;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -15,7 +16,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-abstract class OkHttpSenderTest<T> {
+abstract class AbstractOkHttpSuppressionTest<T> {
 
   @BeforeEach
   void setUp() {
@@ -35,7 +36,8 @@ abstract class OkHttpSenderTest<T> {
     Runnable onSuccess = Assertions::fail;
     Runnable onFailure =
         () -> {
-          suppressInstrumentation.set(InstrumentationUtil.shouldSuppressInstrumentation());
+          suppressInstrumentation.set(
+              InstrumentationUtil.shouldSuppressInstrumentation(Context.current()));
           latch.countDown();
         };
 

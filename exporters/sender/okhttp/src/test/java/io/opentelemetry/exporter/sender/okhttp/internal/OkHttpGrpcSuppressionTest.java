@@ -5,21 +5,21 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
-import io.opentelemetry.exporter.internal.grpc.GrpcSender;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import java.util.Collections;
 
-class OkHttpGrpcSenderTest
-    extends OkHttpSenderTest<OkHttpGrpcSender<OkHttpGrpcSenderTest.DummyMarshaler>> {
+class OkHttpGrpcSuppressionTest
+    extends AbstractOkHttpSuppressionTest<
+        OkHttpGrpcSender<OkHttpGrpcSuppressionTest.DummyMarshaler>> {
 
   @Override
-  void send(GrpcSender<DummyMarshaler> sender, Runnable onSuccess, Runnable onFailure) {
+  void send(OkHttpGrpcSender<DummyMarshaler> sender, Runnable onSuccess, Runnable onFailure) {
     sender.send(new DummyMarshaler(), onSuccess, (grpcResponse, throwable) -> onFailure.run());
   }
 
   @Override
-  GrpcSender<DummyMarshaler> createSender(String endpoint) {
+  OkHttpGrpcSender<DummyMarshaler> createSender(String endpoint) {
     return new OkHttpGrpcSender<>(
         "https://localhost", false, 10L, Collections.emptyMap(), null, null, null);
   }
