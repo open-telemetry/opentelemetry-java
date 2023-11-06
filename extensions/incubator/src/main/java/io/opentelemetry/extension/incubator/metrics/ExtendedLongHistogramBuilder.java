@@ -13,15 +13,6 @@ import java.util.List;
 public interface ExtendedLongHistogramBuilder extends LongHistogramBuilder {
 
   /**
-   * Specify the explicit bucket buckets boundaries advice, which suggests the recommended set of
-   * explicit bucket boundaries for this histogram.
-   */
-  default ExtendedLongHistogramBuilder setExplicitBucketBoundariesAdvice(
-      List<Long> bucketBoundaries) {
-    return this;
-  }
-
-  /**
    * Specify the attribute advice, which suggests the recommended set of attribute keys to be used
    * for this histogram.
    */
