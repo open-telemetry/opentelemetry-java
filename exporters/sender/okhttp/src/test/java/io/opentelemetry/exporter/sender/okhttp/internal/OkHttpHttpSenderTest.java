@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.function.Consumer;
 
-class OkHttpHttpSenderTest extends OkHttpSenderTest<HttpSender> {
+class OkHttpHttpSenderTest extends OkHttpSenderTest<OkHttpHttpSender> {
 
   @Override
   void send(HttpSender sender, Runnable onSuccess, Runnable onFailure) {
