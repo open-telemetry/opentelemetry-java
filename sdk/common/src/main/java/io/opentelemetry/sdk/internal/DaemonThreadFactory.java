@@ -28,7 +28,7 @@ public final class DaemonThreadFactory implements ThreadFactory {
   }
 
   /**
-   * {@link DaemonThreadFactory's constructor}.
+   * {@link DaemonThreadFactory}'s constructor.
    *
    * @param namePrefix Used when setting the new thread's name.
    * @param propagateContextForTesting For tests only. When enabled, the current thread's {@link
