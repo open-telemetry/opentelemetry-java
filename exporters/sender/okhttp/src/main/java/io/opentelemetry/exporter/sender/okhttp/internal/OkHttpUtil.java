@@ -18,6 +18,7 @@ import okhttp3.Dispatcher;
  * at any time.
  */
 public final class OkHttpUtil {
+  @SuppressWarnings("NonFinalStaticField")
   private static boolean propagateContextForTestingInDispatcher = false;
 
   public static void setPropagateContextForTestingInDispatcher(
