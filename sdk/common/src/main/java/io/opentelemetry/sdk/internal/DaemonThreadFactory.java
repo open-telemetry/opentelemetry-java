@@ -21,20 +21,28 @@ public final class DaemonThreadFactory implements ThreadFactory {
   private final String namePrefix;
   private final AtomicInteger counter = new AtomicInteger();
   private final ThreadFactory delegate = Executors.defaultThreadFactory();
-  private final boolean propagateContext;
+  private final boolean propagateContextForTesting;
 
   public DaemonThreadFactory(String namePrefix) {
     this(namePrefix, /* propagateContext= */ false);
   }
 
-  public DaemonThreadFactory(String namePrefix, boolean propagateContext) {
+  /**
+   * @param namePrefix Used when setting the new thread's name.
+   * @param propagateContextForTesting For tests only. When enabled, the current thread's {@link
+   *     Context} will be passed over to the new threads, this is useful for testing scenarios where
+   *     context propagation is available through bytecode instrumentation.
+   */
+  public DaemonThreadFactory(String namePrefix, boolean propagateContextForTesting) {
     this.namePrefix = namePrefix;
-    this.propagateContext = propagateContext;
+    this.propagateContextForTesting = propagateContextForTesting;
   }
 
   @Override
   public Thread newThread(Runnable runnable) {
-    Thread t = delegate.newThread(propagateContext ? Context.current().wrap(runnable) : runnable);
+    Thread t =
+        delegate.newThread(
+            propagateContextForTesting ? Context.current().wrap(runnable) : runnable);
     try {
       t.setDaemon(true);
       t.setName(namePrefix + "-" + counter.incrementAndGet());
