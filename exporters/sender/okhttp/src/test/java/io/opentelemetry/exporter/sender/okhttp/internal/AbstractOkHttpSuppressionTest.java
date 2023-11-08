@@ -20,12 +20,12 @@ abstract class AbstractOkHttpSuppressionTest<T> {
 
   @BeforeEach
   void setUp() {
-    OkHttpUtil.propagateContextInDispatcher = true;
+    OkHttpUtil.setPropagateContextForTestingInDispatcher(true);
   }
 
   @AfterEach
   void tearDown() {
-    OkHttpUtil.propagateContextInDispatcher = false;
+    OkHttpUtil.setPropagateContextForTestingInDispatcher(false);
   }
 
   @Test
