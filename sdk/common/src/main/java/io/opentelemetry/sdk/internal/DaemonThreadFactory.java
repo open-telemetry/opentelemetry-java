@@ -30,8 +30,8 @@ public final class DaemonThreadFactory implements ThreadFactory {
   /**
    * @param namePrefix Used when setting the new thread's name.
    * @param propagateContextForTesting For tests only. When enabled, the current thread's {@link
-   *     Context} will be passed over to the new threads, this is useful for validating scenarios where
-   *     context propagation is available through bytecode instrumentation.
+   *     Context} will be passed over to the new threads, this is useful for validating scenarios
+   *     where context propagation is available through bytecode instrumentation.
    */
   public DaemonThreadFactory(String namePrefix, boolean propagateContextForTesting) {
     this.namePrefix = namePrefix;
