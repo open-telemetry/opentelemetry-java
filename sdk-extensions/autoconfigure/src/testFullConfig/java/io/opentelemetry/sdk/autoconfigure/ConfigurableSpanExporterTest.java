@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
+import io.opentelemetry.exporter.otlp.internal.OtlpSpanExporterProvider;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
@@ -63,6 +64,11 @@ class ConfigurableSpanExporterTest {
         .isSameAs(config);
     assertThat(closeables)
         .hasExactlyElementsOfTypes(TestConfigurableSpanExporterProvider.TestSpanExporter.class);
+    assertThat(spiHelper.getListeners())
+        .satisfiesExactlyInAnyOrder(
+            listener ->
+                assertThat(listener).isInstanceOf(TestConfigurableSpanExporterProvider.class),
+            listener -> assertThat(listener).isInstanceOf(OtlpSpanExporterProvider.class));
   }
 
   @Test
@@ -83,6 +89,7 @@ class ConfigurableSpanExporterTest {
         .hasMessageContaining("testExporter");
     cleanup.addCloseables(closeables);
     assertThat(closeables).isEmpty();
+    assertThat(spiHelper.getListeners()).isEmpty();
   }
 
   @Test

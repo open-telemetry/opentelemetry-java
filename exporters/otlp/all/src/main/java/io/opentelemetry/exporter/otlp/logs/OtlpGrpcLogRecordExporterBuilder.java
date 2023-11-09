@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
@@ -179,7 +180,18 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    */
   public OtlpGrpcLogRecordExporterBuilder setMeterProvider(MeterProvider meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
-    delegate.setMeterProvider(meterProvider);
+    setMeterProvider(() -> meterProvider);
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} supplier used to collect metrics related to export. If not set,
+   * uses {@link GlobalOpenTelemetry#getMeterProvider()}.
+   */
+  public OtlpGrpcLogRecordExporterBuilder setMeterProvider(
+      Supplier<MeterProvider> meterProviderSupplier) {
+    requireNonNull(meterProviderSupplier, "meterProviderSupplier");
+    delegate.setMeterProvider(meterProviderSupplier);
     return this;
   }
 
