@@ -133,7 +133,7 @@ public final class OpenTelemetryExtension
   /**
    * Returns all the exported {@link LogRecordData} so far.
    *
-   * @since 1.33.0
+   * @since 1.32.0
    */
   public List<LogRecordData> getLogRecords() {
     return new ArrayList<>(logRecordExporter.getFinishedLogRecordItems());
@@ -168,7 +168,7 @@ public final class OpenTelemetryExtension
    * Clears the collected exported {@link LogRecordData}. Consider making your test smaller instead
    * of manually clearing state using this method.
    *
-   * @since 1.33.0
+   * @since 1.32.0
    */
   public void clearLogRecords() {
     logRecordExporter.reset();
