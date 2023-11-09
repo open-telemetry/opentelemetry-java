@@ -120,7 +120,6 @@ jobs:
           gh release create --target $GITHUB_REF_NAME \
                             --title "Version $VERSION" \
                             --notes-file /tmp/release-notes.txt \
-                            --discussion-category announcements \
                             v$VERSION
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
