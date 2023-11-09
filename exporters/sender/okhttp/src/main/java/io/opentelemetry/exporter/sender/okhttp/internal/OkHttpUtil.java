@@ -18,6 +18,13 @@ import okhttp3.Dispatcher;
  * at any time.
  */
 public final class OkHttpUtil {
+  @SuppressWarnings("NonFinalStaticField")
+  private static boolean propagateContextForTestingInDispatcher = false;
+
+  public static void setPropagateContextForTestingInDispatcher(
+      boolean propagateContextForTestingInDispatcher) {
+    OkHttpUtil.propagateContextForTestingInDispatcher = propagateContextForTestingInDispatcher;
+  }
 
   /** Returns a {@link Dispatcher} using daemon threads, otherwise matching the OkHttp default. */
   public static Dispatcher newDispatcher() {
@@ -28,7 +35,7 @@ public final class OkHttpUtil {
             60,
             TimeUnit.SECONDS,
             new SynchronousQueue<>(),
-            new DaemonThreadFactory("okhttp-dispatch")));
+            new DaemonThreadFactory("okhttp-dispatch", propagateContextForTestingInDispatcher)));
   }
 
   private OkHttpUtil() {}
