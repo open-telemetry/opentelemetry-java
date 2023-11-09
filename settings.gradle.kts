@@ -64,6 +64,7 @@ include(":sdk-extensions:autoconfigure-spi")
 include(":sdk-extensions:incubator")
 include(":sdk-extensions:jaeger-remote-sampler")
 include(":testing-internal")
+include(":animal-sniffer")
 
 val gradleEnterpriseServer = "https://ge.opentelemetry.io"
 val isCI = System.getenv("CI") != null
