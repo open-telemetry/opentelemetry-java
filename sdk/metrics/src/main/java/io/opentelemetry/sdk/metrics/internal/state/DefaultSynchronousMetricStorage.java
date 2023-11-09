@@ -49,11 +49,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   private final MetricDescriptor metricDescriptor;
   private final AggregationTemporality aggregationTemporality;
   private final Aggregator<T, U> aggregator;
-  private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-  private final Lock readLock = readWriteLock.readLock();
-  private final Lock writeLock = readWriteLock.writeLock();
-  private ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles =
-      new ConcurrentHashMap<>();
+  private volatile AggregatorHolder<T, U> aggregatorHolder = new AggregatorHolder<>();
   private final AttributesProcessor attributesProcessor;
 
   /**
@@ -89,9 +85,11 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
   @Override
   public void recordLong(long value, Attributes attributes, Context context) {
+    Lock readLock = aggregatorHolder.lock.readLock();
     readLock.lock();
     try {
-      AggregatorHandle<T, U> handle = getAggregatorHandle(attributes, context);
+      AggregatorHandle<T, U> handle =
+          getAggregatorHandle(aggregatorHolder.aggregatorHandles, attributes, context);
       handle.recordLong(value, attributes, context);
     } finally {
       readLock.unlock();
@@ -110,16 +108,21 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
               + ". Dropping measurement.");
       return;
     }
+    Lock readLock = aggregatorHolder.lock.readLock();
     readLock.lock();
     try {
-      AggregatorHandle<T, U> handle = getAggregatorHandle(attributes, context);
+      AggregatorHandle<T, U> handle =
+          getAggregatorHandle(aggregatorHolder.aggregatorHandles, attributes, context);
       handle.recordDouble(value, attributes, context);
     } finally {
       readLock.unlock();
     }
   }
 
-  private AggregatorHandle<T, U> getAggregatorHandle(Attributes attributes, Context context) {
+  private AggregatorHandle<T, U> getAggregatorHandle(
+      ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles,
+      Attributes attributes,
+      Context context) {
     Objects.requireNonNull(attributes, "attributes");
     attributes = attributesProcessor.process(attributes, context);
     AggregatorHandle<T, U> handle = aggregatorHandles.get(attributes);
@@ -164,15 +167,17 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
     ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles;
     if (reset) {
+      AggregatorHolder<T, U> holder = this.aggregatorHolder;
+      this.aggregatorHolder = new AggregatorHolder<>();
+      Lock writeLock = holder.lock.writeLock();
       writeLock.lock();
       try {
-        aggregatorHandles = this.aggregatorHandles;
-        this.aggregatorHandles = new ConcurrentHashMap<>();
+        aggregatorHandles = holder.aggregatorHandles;
       } finally {
         writeLock.unlock();
       }
     } else {
-      aggregatorHandles = this.aggregatorHandles;
+      aggregatorHandles = this.aggregatorHolder.aggregatorHandles;
     }
 
     // Grab aggregated points.
@@ -207,5 +212,11 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   @Override
   public MetricDescriptor getMetricDescriptor() {
     return metricDescriptor;
+  }
+
+  private static class AggregatorHolder<T extends PointData, U extends ExemplarData> {
+    private final ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles =
+        new ConcurrentHashMap<>();
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
   }
 }
