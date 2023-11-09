@@ -5,11 +5,27 @@
 
 package io.opentelemetry.api.events;
 
-/** The EventBuilder is used to emit() events. */
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
+
+/** The EventBuilder is used to {@link #emit()} events. */
 public interface EventBuilder {
 
-  /** Sets the timestamp for the event. */
-  EventBuilder setTimestamp(long epochNanos);
+  /**
+   * Set the epoch {@code timestamp} for the event, using the timestamp and unit.
+   *
+   * <p>The {@code timestamp} is the time at which the event occurred. If unset, it will be set to
+   * the current time when {@link #emit()} is called.
+   */
+  EventBuilder setTimestamp(long timestamp, TimeUnit unit);
+
+  /**
+   * Set the epoch {@code timestamp} for the event, using the instant.
+   *
+   * <p>The {@code timestamp} is the time at which the event occurred. If unset, it will be set to
+   * the current time when {@link #emit()} is called.
+   */
+  EventBuilder setTimestamp(Instant instant);
 
   /** Emit an event. */
   void emit();

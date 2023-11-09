@@ -11,10 +11,12 @@ import io.opentelemetry.api.events.EventBuilder;
 import io.opentelemetry.api.events.EventEmitter;
 import io.opentelemetry.api.events.EventEmitterBuilder;
 import io.opentelemetry.api.events.EventEmitterProvider;
+import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerBuilder;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.sdk.common.Clock;
+import java.util.concurrent.TimeUnit;
 
 /**
  * SDK implementation for {@link EventEmitterProvider}.
@@ -113,19 +115,29 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
 
     @Override
     public EventBuilder builder(String eventName, Attributes attributes) {
-      return new SdkEventBuilder(clock, delegateLogger, eventDomain, eventName, attributes);
+      return new SdkEventBuilder(
+          delegateLogger
+              .logRecordBuilder()
+              .setTimestamp(clock.now(), TimeUnit.NANOSECONDS)
+              .setAllAttributes(attributes),
+          eventDomain,
+          eventName);
     }
 
     @Override
     public void emit(String eventName, Attributes attributes) {
-      emit(clock.now(), eventName, attributes);
+      LogRecordBuilder logRecordBuilder =
+          delegateLogger
+              .logRecordBuilder()
+              .setTimestamp(clock.now(), TimeUnit.NANOSECONDS)
+              .setAllAttributes(attributes);
+      addEventNameAndDomain(logRecordBuilder, eventDomain, eventName);
+      logRecordBuilder.emit();
     }
+  }
 
-    @Override
-    public void emit(long epochNanos, String eventName, Attributes attributes) {
-      new SdkEventBuilder(clock, delegateLogger, eventDomain, eventName, attributes)
-          .setTimestamp(epochNanos)
-          .emit();
-    }
+  static void addEventNameAndDomain(
+      LogRecordBuilder logRecordBuilder, String eventDomain, String eventName) {
+    logRecordBuilder.setAttribute(EVENT_DOMAIN, eventDomain).setAttribute(EVENT_NAME, eventName);
   }
 }

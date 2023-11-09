@@ -12,10 +12,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.LogRecordBuilder;
-import io.opentelemetry.api.logs.Logger;
-import io.opentelemetry.sdk.common.Clock;
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class SdkEventBuilderTest {
@@ -24,21 +23,20 @@ class SdkEventBuilderTest {
   void emit() {
     String eventDomain = "mydomain";
     String eventName = "banana";
-    Attributes attributes = Attributes.of(stringKey("foo"), "bar");
 
-    Logger logger = mock(Logger.class);
     LogRecordBuilder logRecordBuilder = mock(LogRecordBuilder.class);
-    when(logger.logRecordBuilder()).thenReturn(logRecordBuilder);
     when(logRecordBuilder.setTimestamp(anyLong(), any())).thenReturn(logRecordBuilder);
     when(logRecordBuilder.setAttribute(any(), any())).thenReturn(logRecordBuilder);
-    when(logRecordBuilder.setAllAttributes(any())).thenReturn(logRecordBuilder);
 
-    new SdkEventBuilder(Clock.getDefault(), logger, eventDomain, eventName, attributes)
-        .setTimestamp(123456L)
+    Instant instant = Instant.now();
+    new SdkEventBuilder(logRecordBuilder, eventDomain, eventName)
+        .setTimestamp(123456L, TimeUnit.NANOSECONDS)
+        .setTimestamp(instant)
         .emit();
-    verify(logRecordBuilder).setAllAttributes(attributes);
     verify(logRecordBuilder).setAttribute(stringKey("event.domain"), eventDomain);
     verify(logRecordBuilder).setAttribute(stringKey("event.name"), eventName);
+    verify(logRecordBuilder).setTimestamp(123456L, TimeUnit.NANOSECONDS);
+    verify(logRecordBuilder).setTimestamp(instant);
     verify(logRecordBuilder).emit();
   }
 }

@@ -35,22 +35,18 @@ public interface EventEmitter {
   /**
    * Emit an event.
    *
-   * @param epochNanos The time at which the event happened, in epoch nanoseconds.
-   * @param eventName the event name, which acts as a classifier for events. Within a particular
-   *     event domain, event name defines a particular class or type of event.
-   * @param attributes attributes associated with the event
-   */
-  @SuppressWarnings("InconsistentOverloads")
-  void emit(long epochNanos, String eventName, Attributes attributes);
-
-  /**
-   * Emit an event.
-   *
    * @param eventName the event name, which acts as a classifier for events. Within a particular
    *     event domain, event name defines a particular class or type of event.
    * @param attributes attributes associated with the event
    */
   void emit(String eventName, Attributes attributes);
 
+  /**
+   * Return a {@link EventBuilder} to emit an event.
+   *
+   * @param eventName the event name, which acts as a classifier for events. Within a particular
+   *     event domain, event name defines a particular class or type of event.
+   * @param attributes attributes associated with the event
+   */
   EventBuilder builder(String eventName, Attributes attributes);
 }

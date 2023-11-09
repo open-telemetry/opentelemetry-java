@@ -96,47 +96,13 @@ class SdkEventEmitterProviderTest {
   }
 
   @Test
-  void emit_withTimestamp() {
-    long yesterday = System.nanoTime() - TimeUnit.DAYS.toNanos(1);
-    Attributes attributes = Attributes.of(stringKey("foo"), "bar");
-
-    EventEmitter emitter = eventEmitterProvider.eventEmitterBuilder("test-scope").build();
-
-    emitter.emit(yesterday, "testing", attributes);
-
-    verifySeen(yesterday, attributes);
-  }
-
-  @Test
-  void builderWithNameAndAttributes() {
-    long yesterday = System.nanoTime() - TimeUnit.DAYS.toNanos(1);
-    Attributes attributes = Attributes.of(stringKey("foo"), "bar");
-
-    EventEmitter emitter = eventEmitterProvider.eventEmitterBuilder("test-scope").build();
-
-    emitter.builder("testing", attributes).setTimestamp(yesterday).emit();
-    verifySeen(yesterday, attributes);
-  }
-
-  @Test
-  void builderWithName() {
-    long yesterday = System.nanoTime() - TimeUnit.DAYS.toNanos(1);
-    Attributes attributes = Attributes.of(stringKey("foo"), "bar");
-
-    EventEmitter emitter = eventEmitterProvider.eventEmitterBuilder("test-scope").build();
-
-    emitter.builder("testing", attributes).setTimestamp(yesterday).emit();
-    verifySeen(yesterday, attributes);
-  }
-
-  @Test
   void builder() {
     long yesterday = System.nanoTime() - TimeUnit.DAYS.toNanos(1);
     Attributes attributes = Attributes.of(stringKey("foo"), "bar");
 
     EventEmitter emitter = eventEmitterProvider.eventEmitterBuilder("test-scope").build();
 
-    emitter.builder("testing", attributes).setTimestamp(yesterday).emit();
+    emitter.builder("testing", attributes).setTimestamp(yesterday, TimeUnit.NANOSECONDS).emit();
     verifySeen(yesterday, attributes);
   }
 
