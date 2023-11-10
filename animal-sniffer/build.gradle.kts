@@ -6,6 +6,9 @@ plugins {
   id("ru.vyarus.animalsniffer")
 }
 
+description = "Compilation utility to generate the Android animal sniffer signature"
+otelJava.moduleName.set("io.opentelemetry.internal.animalsniffer")
+
 val signatureJar = configurations.create("signatureJar") {
   isCanBeConsumed = false
   isCanBeResolved = false
