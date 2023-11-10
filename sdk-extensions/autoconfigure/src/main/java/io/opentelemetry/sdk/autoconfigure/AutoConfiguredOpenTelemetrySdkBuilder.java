@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
@@ -405,6 +406,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
       maybeRegisterShutdownHook(openTelemetrySdk);
       maybeSetAsGlobal(openTelemetrySdk);
+      callAutoConfigureListeners(spiHelper, openTelemetrySdk);
 
       return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
     } catch (RuntimeException e) {
@@ -476,6 +478,18 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         SdkEventEmitterProvider.create(openTelemetrySdk.getSdkLoggerProvider()));
     logger.log(
         Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetrySdk);
+  }
+
+  // Visible for testing
+  void callAutoConfigureListeners(SpiHelper spiHelper, OpenTelemetrySdk openTelemetrySdk) {
+    for (AutoConfigureListener listener : spiHelper.getListeners()) {
+      try {
+        listener.afterAutoConfigure(openTelemetrySdk);
+      } catch (Throwable throwable) {
+        logger.log(
+            Level.WARNING, "Error invoking listener " + listener.getClass().getName(), throwable);
+      }
+    }
   }
 
   @SuppressWarnings("deprecation") // Support deprecated SdkTracerProviderConfigurer

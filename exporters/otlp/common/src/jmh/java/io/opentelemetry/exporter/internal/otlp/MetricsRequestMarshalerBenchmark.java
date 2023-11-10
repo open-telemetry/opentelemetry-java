@@ -18,7 +18,6 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -117,9 +116,9 @@ public class MetricsRequestMarshalerBenchmark {
   }
 
   @Benchmark
-  public ByteArrayOutputStream marshaler() throws IOException {
+  public TestOutputStream marshaler() throws IOException {
     MetricsRequestMarshaler marshaler = MetricsRequestMarshaler.create(METRICS);
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    TestOutputStream bos = new TestOutputStream();
     marshaler.writeBinaryTo(bos);
     return bos;
   }

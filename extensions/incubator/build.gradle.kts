@@ -12,5 +12,7 @@ otelJava.moduleName.set("io.opentelemetry.extension.incubator")
 dependencies {
   api(project(":api:all"))
 
+  annotationProcessor("com.google.auto.value:auto-value")
+
   testImplementation(project(":sdk:testing"))
 }

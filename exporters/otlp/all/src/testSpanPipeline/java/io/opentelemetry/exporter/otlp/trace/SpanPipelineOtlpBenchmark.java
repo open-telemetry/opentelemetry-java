@@ -23,8 +23,8 @@ import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -70,11 +70,11 @@ class SpanPipelineOtlpBenchmark {
         }
       };
 
-  private static SdkTracerProvider tracerProvider;
-  private static Tracer tracer;
+  private SdkTracerProvider tracerProvider;
+  private Tracer tracer;
 
-  @BeforeAll
-  public static void setUp() {
+  @BeforeEach
+  public void setUp() {
     tracerProvider =
         SdkTracerProvider.builder()
             .setResource(RESOURCE)
@@ -89,12 +89,12 @@ class SpanPipelineOtlpBenchmark {
     tracer = tracerProvider.get("benchmark");
   }
 
-  @AfterAll
-  public static void tearDown() {
+  @AfterEach
+  public void tearDown() {
     tracerProvider.close();
   }
 
-  private static void createSpan() {
+  private void createSpan() {
     Span span = tracer.spanBuilder("POST /search").startSpan();
     try (Scope ignored = span.makeCurrent()) {
       span.setAllAttributes(SPAN_ATTRIBUTES);
@@ -109,10 +109,10 @@ class SpanPipelineOtlpBenchmark {
     long endTimeNanos = startTimeNanos + TimeUnit.SECONDS.toNanos(60);
     try {
       while (System.nanoTime() < endTimeNanos) {
-        SpanPipelineOtlpBenchmark.createSpan();
+        createSpan();
       }
     } finally {
-      SpanPipelineOtlpBenchmark.tearDown();
+      tearDown();
     }
   }
 }

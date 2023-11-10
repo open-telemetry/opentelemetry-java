@@ -6,7 +6,6 @@
 package io.opentelemetry.exporter.internal.otlp;
 
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -27,26 +26,26 @@ public class RequestMarshalBenchmarks {
 
   @Benchmark
   @Threads(1)
-  public ByteArrayOutputStream createCustomMarshal(RequestMarshalState state) {
+  public TestOutputStream createCustomMarshal(RequestMarshalState state) {
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
-    return new ByteArrayOutputStream(requestMarshaler.getBinarySerializedSize());
+    return new TestOutputStream(requestMarshaler.getBinarySerializedSize());
   }
 
   @Benchmark
   @Threads(1)
-  public ByteArrayOutputStream marshalCustom(RequestMarshalState state) throws IOException {
+  public TestOutputStream marshalCustom(RequestMarshalState state) throws IOException {
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
-    ByteArrayOutputStream customOutput =
-        new ByteArrayOutputStream(requestMarshaler.getBinarySerializedSize());
+    TestOutputStream customOutput =
+        new TestOutputStream(requestMarshaler.getBinarySerializedSize());
     requestMarshaler.writeBinaryTo(customOutput);
     return customOutput;
   }
 
   @Benchmark
   @Threads(1)
-  public ByteArrayOutputStream marshalJson(RequestMarshalState state) throws IOException {
+  public TestOutputStream marshalJson(RequestMarshalState state) throws IOException {
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
-    ByteArrayOutputStream customOutput = new ByteArrayOutputStream();
+    TestOutputStream customOutput = new TestOutputStream();
     requestMarshaler.writeJsonTo(customOutput);
     return customOutput;
   }

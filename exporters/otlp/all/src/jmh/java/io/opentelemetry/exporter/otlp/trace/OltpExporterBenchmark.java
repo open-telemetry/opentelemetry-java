@@ -44,6 +44,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @Measurement(iterations = 20, time = 1)
 @Fork(1)
 @State(Scope.Benchmark)
+@SuppressWarnings("NonFinalStaticField")
 public class OltpExporterBenchmark {
   private static final Server server =
       Server.builder()

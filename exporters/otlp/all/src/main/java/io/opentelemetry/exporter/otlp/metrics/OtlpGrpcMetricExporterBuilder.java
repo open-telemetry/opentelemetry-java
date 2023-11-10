@@ -53,7 +53,7 @@ public final class OtlpGrpcMetricExporterBuilder {
 
   OtlpGrpcMetricExporterBuilder(GrpcExporterBuilder<MetricsRequestMarshaler> delegate) {
     this.delegate = delegate;
-    delegate.setMeterProvider(MeterProvider.noop());
+    delegate.setMeterProvider(MeterProvider::noop);
     OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
   }
 

@@ -34,6 +34,9 @@ public final class ConfigurationFactory {
    * Parse the {@code inputStream} YAML to {@link OpenTelemetryConfiguration} and interpret the
    * model to create {@link OpenTelemetrySdk} instance corresponding to the configuration.
    *
+   * <p>Before parsing, environment variable substitution is performed as described in {@link
+   * ConfigurationReader.EnvSubstitutionConstructor}.
+   *
    * @param inputStream the configuration YAML
    * @return the {@link OpenTelemetrySdk}
    */
