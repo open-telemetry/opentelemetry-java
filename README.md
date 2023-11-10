@@ -36,6 +36,9 @@ for support or general questions. Feel free to drop us a line.
 We are also present in the [`#otel-java`](https://cloud-native.slack.com/archives/C014L2KCTE3) channel in the [CNCF slack](https://slack.cncf.io/).
 Please join us for more informal discussions.
 
+To report a bug, or request a new feature,
+please [open an issue](https://github.com/open-telemetry/opentelemetry-java/issues/new/choose).
+
 ## Overview
 
 OpenTelemetry is the merging of OpenCensus and OpenTracing into a single project.
