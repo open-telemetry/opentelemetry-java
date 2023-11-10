@@ -26,7 +26,6 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -50,9 +49,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   private final MetricDescriptor metricDescriptor;
   private final AggregationTemporality aggregationTemporality;
   private final Aggregator<T, U> aggregator;
-  private final AtomicInteger collectCount = new AtomicInteger();
-  private final AggregatorHolder<T, U> holder1 = new AggregatorHolder<>();
-  private final AggregatorHolder<T, U> holder2 = new AggregatorHolder<>();
+  private volatile AggregatorHolder<T, U> aggregatorHolder = new AggregatorHolder<>();
   private final AttributesProcessor attributesProcessor;
 
   /**
@@ -88,7 +85,6 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
   @Override
   public void recordLong(long value, Attributes attributes, Context context) {
-    AggregatorHolder<T, U> aggregatorHolder = collectCount.get() % 2 == 0 ? holder1 : holder2;
     Lock readLock = aggregatorHolder.lock.readLock();
     readLock.lock();
     try {
@@ -112,7 +108,6 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
               + ". Dropping measurement.");
       return;
     }
-    AggregatorHolder<T, U> aggregatorHolder = collectCount.get() % 2 == 0 ? holder1 : holder2;
     Lock readLock = aggregatorHolder.lock.readLock();
     readLock.lock();
     try {
@@ -172,7 +167,8 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
     ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles;
     if (reset) {
-      AggregatorHolder<T, U> holder = collectCount.getAndIncrement() % 2 == 0 ? holder1 : holder2;
+      AggregatorHolder<T, U> holder = this.aggregatorHolder;
+      this.aggregatorHolder = new AggregatorHolder<>();
       Lock writeLock = holder.lock.writeLock();
       writeLock.lock();
       try {
@@ -181,7 +177,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
         writeLock.unlock();
       }
     } else {
-      aggregatorHandles = holder1.aggregatorHandles;
+      aggregatorHandles = this.aggregatorHolder.aggregatorHandles;
     }
 
     // Grab aggregated points.
@@ -203,10 +199,6 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
     int toDelete = aggregatorHandlePool.size() - (maxCardinality + 1);
     for (int i = 0; i < toDelete; i++) {
       aggregatorHandlePool.poll();
-    }
-
-    if (reset) {
-      aggregatorHandles.clear();
     }
 
     if (points.isEmpty()) {
