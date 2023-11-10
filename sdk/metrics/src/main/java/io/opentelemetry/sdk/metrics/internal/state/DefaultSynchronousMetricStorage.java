@@ -83,23 +83,13 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
   @Override
   public void recordLong(long value, Attributes attributes, Context context) {
-    // Obtain the AggregatorHolder, re-reading the volatile this.aggregatorHolder until we access
-    // one where recordsInProgress != -1. Collect sets recordsInProgress to -1 as a signal that
-    // AggregatorHolder is stale and is being replaced. Record operations increment recordInProgress
-    // and decrement when complete as a signal to Collect that record operations are active and must
-    // complete before its safe to collect.
-    AggregatorHolder<T, U> aggregatorHolder;
-    do {
-      aggregatorHolder = this.aggregatorHolder;
-    } while (aggregatorHolder.recordsInProgress.updateAndGet(
-            operand -> operand < 0 ? operand : operand + 1)
-        < 0);
+    AggregatorHolder<T, U> aggregatorHolder = getHolderForRecord();
     try {
       AggregatorHandle<T, U> handle =
           getAggregatorHandle(aggregatorHolder.aggregatorHandles, attributes, context);
       handle.recordLong(value, attributes, context);
     } finally {
-      aggregatorHolder.recordsInProgress.decrementAndGet();
+      aggregatorHolder.recordsInProgress.addAndGet(-2);
     }
   }
 
@@ -115,24 +105,36 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
               + ". Dropping measurement.");
       return;
     }
-    // Obtain the AggregatorHolder, re-reading the volatile this.aggregatorHolder until we access
-    // one where recordsInProgress != -1. Collect sets recordsInProgress to -1 as a signal that
-    // AggregatorHolder is stale and is being replaced. Record operations increment recordInProgress
-    // and decrement when complete as a signal to Collect that record operations are active and must
-    // complete before its safe to collect.
-    AggregatorHolder<T, U> aggregatorHolder;
-    do {
-      aggregatorHolder = this.aggregatorHolder;
-    } while (aggregatorHolder.recordsInProgress.updateAndGet(
-            operand -> operand < 0 ? operand : operand + 1)
-        < 0);
+    AggregatorHolder<T, U> aggregatorHolder = getHolderForRecord();
     try {
       AggregatorHandle<T, U> handle =
           getAggregatorHandle(aggregatorHolder.aggregatorHandles, attributes, context);
       handle.recordDouble(value, attributes, context);
     } finally {
-      aggregatorHolder.recordsInProgress.decrementAndGet();
+      aggregatorHolder.recordsInProgress.addAndGet(-2);
     }
+  }
+
+  /**
+   * Obtain the AggregatorHolder for recording measurements, re-reading the volatile
+   * this.aggregatorHolder until we access one where recordsInProgress is even. Collect sets
+   * recordsInProgress to odd as a signal that AggregatorHolder is stale and is being replaced.
+   * Record operations increment recordInProgress by 2. Callers MUST decrement recordsInProgress by
+   * -2 when complete as a signal to Collect that record operations are active and must complete
+   * before its safe to collect.
+   */
+  private AggregatorHolder<T, U> getHolderForRecord() {
+    do {
+      AggregatorHolder<T, U> aggregatorHolder = this.aggregatorHolder;
+      int recordsInProgress = aggregatorHolder.recordsInProgress.addAndGet(2);
+      if (recordsInProgress % 2 == 0) {
+        return aggregatorHolder;
+      } else {
+        // Collect is in progress, decrement recordsInProgress to allow collect to proceed and
+        // re-read aggregatorHolder
+        aggregatorHolder.recordsInProgress.addAndGet(-2);
+      }
+    } while (true);
   }
 
   private AggregatorHandle<T, U> getAggregatorHandle(
@@ -185,11 +187,14 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
     if (reset) {
       AggregatorHolder<T, U> holder = this.aggregatorHolder;
       this.aggregatorHolder = new AggregatorHolder<>();
-      // Set recordsInProgress to -1, which causes record operations to re-read the volatile
-      // this.aggregatorHolder
-      // Use compareAndSet in a loop to confirm we only set recordsInProgress if there aren't any
-      // records operations in progress.
-      while (!holder.recordsInProgress.compareAndSet(0, -1)) {}
+      // Increment recordsInProgress by 1, which produces an odd number acting as a signal that
+      // record operations should re-read the volatile this.aggregatorHolder.
+      // Repeatedly grab recordsInProgress until it is <= 1, which signals all active record
+      // operations are complete.
+      int recordsInProgress = holder.recordsInProgress.addAndGet(1);
+      while (recordsInProgress > 1) {
+        recordsInProgress = holder.recordsInProgress.get();
+      }
       aggregatorHandles = holder.aggregatorHandles;
     } else {
       aggregatorHandles = this.aggregatorHolder.aggregatorHandles;
