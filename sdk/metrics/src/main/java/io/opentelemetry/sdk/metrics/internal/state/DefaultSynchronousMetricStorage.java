@@ -26,6 +26,9 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,8 +49,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   private final MetricDescriptor metricDescriptor;
   private final AggregationTemporality aggregationTemporality;
   private final Aggregator<T, U> aggregator;
-  private final ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles =
-      new ConcurrentHashMap<>();
+  private volatile AggregatorHolder<T, U> aggregatorHolder = new AggregatorHolder<>();
   private final AttributesProcessor attributesProcessor;
 
   /**
@@ -83,8 +85,15 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
   @Override
   public void recordLong(long value, Attributes attributes, Context context) {
-    AggregatorHandle<T, U> handle = getAggregatorHandle(attributes, context);
-    handle.recordLong(value, attributes, context);
+    Lock readLock = aggregatorHolder.lock.readLock();
+    readLock.lock();
+    try {
+      AggregatorHandle<T, U> handle =
+          getAggregatorHandle(aggregatorHolder.aggregatorHandles, attributes, context);
+      handle.recordLong(value, attributes, context);
+    } finally {
+      readLock.unlock();
+    }
   }
 
   @Override
@@ -99,11 +108,21 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
               + ". Dropping measurement.");
       return;
     }
-    AggregatorHandle<T, U> handle = getAggregatorHandle(attributes, context);
-    handle.recordDouble(value, attributes, context);
+    Lock readLock = aggregatorHolder.lock.readLock();
+    readLock.lock();
+    try {
+      AggregatorHandle<T, U> handle =
+          getAggregatorHandle(aggregatorHolder.aggregatorHandles, attributes, context);
+      handle.recordDouble(value, attributes, context);
+    } finally {
+      readLock.unlock();
+    }
   }
 
-  private AggregatorHandle<T, U> getAggregatorHandle(Attributes attributes, Context context) {
+  private AggregatorHandle<T, U> getAggregatorHandle(
+      ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles,
+      Attributes attributes,
+      Context context) {
     Objects.requireNonNull(attributes, "attributes");
     attributes = attributesProcessor.process(attributes, context);
     AggregatorHandle<T, U> handle = aggregatorHandles.get(attributes);
@@ -146,13 +165,27 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
             ? registeredReader.getLastCollectEpochNanos()
             : startEpochNanos;
 
+    ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles;
+    if (reset) {
+      AggregatorHolder<T, U> holder = this.aggregatorHolder;
+      this.aggregatorHolder = new AggregatorHolder<>();
+      Lock writeLock = holder.lock.writeLock();
+      writeLock.lock();
+      try {
+        aggregatorHandles = holder.aggregatorHandles;
+      } finally {
+        writeLock.unlock();
+      }
+    } else {
+      aggregatorHandles = this.aggregatorHolder.aggregatorHandles;
+    }
+
     // Grab aggregated points.
     List<T> points = new ArrayList<>(aggregatorHandles.size());
     aggregatorHandles.forEach(
         (attributes, handle) -> {
           T point = handle.aggregateThenMaybeReset(start, epochNanos, attributes, reset);
           if (reset) {
-            aggregatorHandles.remove(attributes, handle);
             // Return the aggregator to the pool.
             aggregatorHandlePool.offer(handle);
           }
@@ -179,5 +212,11 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   @Override
   public MetricDescriptor getMetricDescriptor() {
     return metricDescriptor;
+  }
+
+  private static class AggregatorHolder<T extends PointData, U extends ExemplarData> {
+    private final ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles =
+        new ConcurrentHashMap<>();
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
   }
 }
