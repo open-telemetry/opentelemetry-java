@@ -6,7 +6,7 @@ plugins {
   id("ru.vyarus.animalsniffer")
 }
 
-description = "Build tool to generate the Android animal sniffer signature"
+description = "Build tool to generate the Animal Sniffer Android signature"
 otelJava.moduleName.set("io.opentelemetry.internal.animalsniffer")
 
 val signatureJar = configurations.create("signatureJar") {
