@@ -51,7 +51,7 @@ artifacts {
 }
 
 // Utility task to show what's in the signature file
-tasks.register( "printSignature", SignatureInfoTask::class.java) {
+tasks.register("printSignature", SignatureInfoTask::class.java) {
   signature = signatureBuilderTask.get().outputFiles
   depth = 1
 }
