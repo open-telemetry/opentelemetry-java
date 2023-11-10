@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -457,5 +458,62 @@ public class SynchronousMetricStorageTest {
                 CARDINALITY_LIMIT),
             (BiConsumer<Double, AtomicDouble>)
                 (value, cumulativeCount) -> cumulativeCount.set(value)));
+  }
+
+  @RepeatedTest(100)
+  void recordAndCollect_concurrentStressTestRepeated() {
+    DefaultSynchronousMetricStorage<?, ?> storage =
+        new DefaultSynchronousMetricStorage<>(
+            RegisteredReader.create(InMemoryMetricReader.createDelta(), ViewRegistry.create()),
+            METRIC_DESCRIPTOR,
+            aggregator,
+            AttributesProcessor.noop(),
+            CARDINALITY_LIMIT);
+    BiConsumer<Double, AtomicDouble> collect =
+        (BiConsumer<Double, AtomicDouble>)
+            (value, cumulativeCount) -> cumulativeCount.addAndGet(value);
+
+    // Define record threads. Each records a value of 1.0, 2000 times
+    List<Thread> threads = new ArrayList<>();
+    CountDownLatch latch = new CountDownLatch(4);
+    for (int i = 0; i < 4; i++) {
+      Thread thread =
+          new Thread(
+              () -> {
+                for (int j = 0; j < 2000; j++) {
+                  storage.recordDouble(1.0, Attributes.empty(), Context.current());
+                  Uninterruptibles.sleepUninterruptibly(Duration.ofMillis(1));
+                }
+                latch.countDown();
+              });
+      threads.add(thread);
+    }
+
+    // Define collect thread. Collect thread collects and aggregates the
+    AtomicDouble cumulativeSum = new AtomicDouble();
+    Thread collectThread =
+        new Thread(
+            () -> {
+              do {
+                Uninterruptibles.sleepUninterruptibly(Duration.ofMillis(1));
+                MetricData metricData =
+                    storage.collect(Resource.empty(), InstrumentationScopeInfo.empty(), 0, 1);
+                if (metricData.isEmpty()) {
+                  continue;
+                }
+                metricData.getDoubleSumData().getPoints().stream()
+                    .findFirst()
+                    .ifPresent(pointData -> collect.accept(pointData.getValue(), cumulativeSum));
+              } while (latch.getCount() != 0);
+            });
+
+    // Start all the threads
+    collectThread.start();
+    threads.forEach(Thread::start);
+
+    // Wait for the collect thread to end, which collects until the record threads are done
+    Uninterruptibles.joinUninterruptibly(collectThread);
+
+    assertThat(cumulativeSum.get()).isEqualTo(8000.0);
   }
 }

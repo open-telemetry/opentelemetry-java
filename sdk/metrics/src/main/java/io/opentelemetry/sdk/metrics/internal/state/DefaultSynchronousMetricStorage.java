@@ -26,9 +26,7 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -85,14 +83,23 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
   @Override
   public void recordLong(long value, Attributes attributes, Context context) {
-    Lock readLock = aggregatorHolder.lock.readLock();
-    readLock.lock();
+    // Obtain the AggregatorHolder, re-reading the volatile this.aggregatorHolder until we access
+    // one where recordsInProgress != -1. Collect sets recordsInProgress to -1 as a signal that
+    // AggregatorHolder is stale and is being replaced. Record operations increment recordInProgress
+    // and decrement when complete as a signal to Collect that record operations are active and must
+    // complete before its safe to collect.
+    AggregatorHolder<T, U> aggregatorHolder;
+    do {
+      aggregatorHolder = this.aggregatorHolder;
+    } while (aggregatorHolder.recordsInProgress.updateAndGet(
+            operand -> operand < 0 ? operand : operand + 1)
+        < 0);
     try {
       AggregatorHandle<T, U> handle =
           getAggregatorHandle(aggregatorHolder.aggregatorHandles, attributes, context);
       handle.recordLong(value, attributes, context);
     } finally {
-      readLock.unlock();
+      aggregatorHolder.recordsInProgress.decrementAndGet();
     }
   }
 
@@ -108,14 +115,23 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
               + ". Dropping measurement.");
       return;
     }
-    Lock readLock = aggregatorHolder.lock.readLock();
-    readLock.lock();
+    // Obtain the AggregatorHolder, re-reading the volatile this.aggregatorHolder until we access
+    // one where recordsInProgress != -1. Collect sets recordsInProgress to -1 as a signal that
+    // AggregatorHolder is stale and is being replaced. Record operations increment recordInProgress
+    // and decrement when complete as a signal to Collect that record operations are active and must
+    // complete before its safe to collect.
+    AggregatorHolder<T, U> aggregatorHolder;
+    do {
+      aggregatorHolder = this.aggregatorHolder;
+    } while (aggregatorHolder.recordsInProgress.updateAndGet(
+            operand -> operand < 0 ? operand : operand + 1)
+        < 0);
     try {
       AggregatorHandle<T, U> handle =
           getAggregatorHandle(aggregatorHolder.aggregatorHandles, attributes, context);
       handle.recordDouble(value, attributes, context);
     } finally {
-      readLock.unlock();
+      aggregatorHolder.recordsInProgress.decrementAndGet();
     }
   }
 
@@ -169,13 +185,12 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
     if (reset) {
       AggregatorHolder<T, U> holder = this.aggregatorHolder;
       this.aggregatorHolder = new AggregatorHolder<>();
-      Lock writeLock = holder.lock.writeLock();
-      writeLock.lock();
-      try {
-        aggregatorHandles = holder.aggregatorHandles;
-      } finally {
-        writeLock.unlock();
-      }
+      // Set recordsInProgress to -1, which causes record operations to re-read the volatile
+      // this.aggregatorHolder
+      // Use compareAndSet in a loop to confirm we only set recordsInProgress if there aren't any
+      // records operations in progress.
+      while (!holder.recordsInProgress.compareAndSet(0, -1)) {}
+      aggregatorHandles = holder.aggregatorHandles;
     } else {
       aggregatorHandles = this.aggregatorHolder.aggregatorHandles;
     }
@@ -217,6 +232,6 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   private static class AggregatorHolder<T extends PointData, U extends ExemplarData> {
     private final ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles =
         new ConcurrentHashMap<>();
-    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final AtomicInteger recordsInProgress = new AtomicInteger(0);
   }
 }
