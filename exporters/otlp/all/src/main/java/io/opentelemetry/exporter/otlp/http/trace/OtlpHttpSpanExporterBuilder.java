@@ -144,6 +144,8 @@ public final class OtlpHttpSpanExporterBuilder {
   /**
    * Sets the {@link MeterProvider} supplier to use to collect metrics related to export. If not
    * set, uses {@link GlobalOpenTelemetry#getMeterProvider()}.
+   *
+   * @since 1.32.0
    */
   public OtlpHttpSpanExporterBuilder setMeterProvider(
       Supplier<MeterProvider> meterProviderSupplier) {
