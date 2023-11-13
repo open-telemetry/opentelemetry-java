@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.32.0 (2023-11-13)
+
 ### API
 
 * Stabilize explicit bucket boundaries advice API
