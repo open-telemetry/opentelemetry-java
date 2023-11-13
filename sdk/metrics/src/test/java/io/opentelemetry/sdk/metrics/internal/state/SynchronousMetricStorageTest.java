@@ -417,12 +417,11 @@ public class SynchronousMetricStorageTest {
                 Uninterruptibles.sleepUninterruptibly(Duration.ofMillis(1));
                 MetricData metricData =
                     storage.collect(Resource.empty(), InstrumentationScopeInfo.empty(), 0, 1);
-                if (metricData.isEmpty()) {
-                  continue;
+                if (!metricData.isEmpty()) {
+                  metricData.getDoubleSumData().getPoints().stream()
+                      .findFirst()
+                      .ifPresent(pointData -> collect.accept(pointData.getValue(), cumulativeSum));
                 }
-                metricData.getDoubleSumData().getPoints().stream()
-                    .findFirst()
-                    .ifPresent(pointData -> collect.accept(pointData.getValue(), cumulativeSum));
                 if (latch.getCount() == 0) {
                   extraCollects++;
                 }
