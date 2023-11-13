@@ -187,6 +187,8 @@ public final class OtlpGrpcLogRecordExporterBuilder {
   /**
    * Sets the {@link MeterProvider} supplier used to collect metrics related to export. If not set,
    * uses {@link GlobalOpenTelemetry#getMeterProvider()}.
+   *
+   * @since 1.32.0
    */
   public OtlpGrpcLogRecordExporterBuilder setMeterProvider(
       Supplier<MeterProvider> meterProviderSupplier) {
