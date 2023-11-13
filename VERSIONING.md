@@ -61,6 +61,21 @@ you do not use classes in the `internal` package (which you MUST NOT do), you ca
 your app will always function and have access to the latest features of OpenTelemetry without needing
 any changes to code.
 
+## Language Version Compatibility
+
+The artifacts published by this codebase are compatible with certain language levels of tooling in
+the Java ecosystem. For example, all artifacts (except where otherwise noted) support Java language
+level 8 or higher, and the many artifacts intended to be used in Android environments adhere to a
+particular [Android API level](https://developer.android.com/tools/releases/build-tools). The
+following table defines the minimum language levels we adhere to, and how each is considered with
+respect to semantic versioning.
+
+| Language | Minimum Version                                                                                                   | Applicability                                           | Semconv Notes                                                                                                                                                                      |
+|----------|-------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Java     | 8+                                                                                                                | All artifacts, unless otherwise noted                   | Changing requires major version bump.                                                                                                                                              |
+| Android  | 21+ (NOTE: [desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring) is required) | Artifacts using `otel.animalsniffer-conventions` plugin | Kept in sync with minimum requirements for [Google Play services](https://developers.google.com/android/guides/setup). Subject to change in minor version.                         |
+| Kotlin   | 1.6+                                                                                                              | Only applies to `opentelemetry-extension-kotlin`        | Kept in sync with [minimum non-deprecated](https://kotlinlang.org/docs/gradle-compiler-options.html#attributes-common-to-jvm-and-js) version. Subject to change in minor versions. |
+
 ## API vs SDK
 
 This codebase is broadly split into two large pieces, the OpenTelemetry API and the OpenTelemetry SDK,
