@@ -60,16 +60,16 @@
 * Stop setting Resource schemaUrl in autoconfigure
   ([#5911](https://github.com/open-telemetry/opentelemetry-java/pull/5911))
 * Add AutoConfigureListener to provide components with autoconfigured SDK
-  ([#5931](https://github.com/open-telemetry/opentelemetry-java/pull/5931))%
+  ([#5931](https://github.com/open-telemetry/opentelemetry-java/pull/5931))
 
 ### OpenCensus  Shim
 
-* Cleanup opencensus shim
+* Clean up OpenCensus shim
   ([#5858](https://github.com/open-telemetry/opentelemetry-java/pull/5858))
 
 ### OpenTracing Shim
 
-* Fix opentracing header name issue
+* Fix OpenTracing header name issue
   ([#5840](https://github.com/open-telemetry/opentelemetry-java/pull/5840))
 
 ## Version 1.31.0 (2023-10-06)
