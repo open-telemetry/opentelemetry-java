@@ -413,16 +413,15 @@ public class SynchronousMetricStorageTest {
               // If we terminate when latch.count() == 0, the last collect may have occurred before
               // the last recorded measurement. To ensure we collect all measurements, we collect
               // one extra time after latch.count() == 0.
-              while (latch.getCount() != 0 && extraCollects <= 1) {
+              while (latch.getCount() != 0 || extraCollects <= 1) {
                 Uninterruptibles.sleepUninterruptibly(Duration.ofMillis(1));
                 MetricData metricData =
                     storage.collect(Resource.empty(), InstrumentationScopeInfo.empty(), 0, 1);
-                if (metricData.isEmpty()) {
-                  continue;
+                if (!metricData.isEmpty()) {
+                  metricData.getDoubleSumData().getPoints().stream()
+                      .findFirst()
+                      .ifPresent(pointData -> collect.accept(pointData.getValue(), cumulativeSum));
                 }
-                metricData.getDoubleSumData().getPoints().stream()
-                    .findFirst()
-                    .ifPresent(pointData -> collect.accept(pointData.getValue(), cumulativeSum));
                 if (latch.getCount() == 0) {
                   extraCollects++;
                 }
