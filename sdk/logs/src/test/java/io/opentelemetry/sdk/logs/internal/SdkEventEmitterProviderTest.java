@@ -5,16 +5,19 @@
 
 package io.opentelemetry.sdk.logs.internal;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.events.EventEmitter;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 
@@ -89,6 +92,29 @@ class SdkEventEmitterProviderTest {
                 .put("key1", "value1")
                 .put("event.domain", "unknown")
                 .put("event.name", "event-name")
+                .build());
+  }
+
+  @Test
+  void builder() {
+    long yesterday = System.nanoTime() - TimeUnit.DAYS.toNanos(1);
+    Attributes attributes = Attributes.of(stringKey("foo"), "bar");
+
+    EventEmitter emitter = eventEmitterProvider.eventEmitterBuilder("test-scope").build();
+
+    emitter.builder("testing", attributes).setTimestamp(yesterday, TimeUnit.NANOSECONDS).emit();
+    verifySeen(yesterday, attributes);
+  }
+
+  private void verifySeen(long timestamp, Attributes attributes) {
+    assertThat(seenLog.get().toLogRecordData())
+        .hasResource(RESOURCE)
+        .hasInstrumentationScope(InstrumentationScopeInfo.create("test-scope"))
+        .hasTimestamp(timestamp)
+        .hasAttributes(
+            attributes.toBuilder()
+                .put("event.domain", "unknown")
+                .put("event.name", "testing")
                 .build());
   }
 }
