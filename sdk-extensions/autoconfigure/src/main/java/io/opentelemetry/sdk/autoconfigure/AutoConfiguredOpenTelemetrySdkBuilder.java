@@ -30,6 +30,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
@@ -71,6 +72,9 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       propagatorCustomizer = (a, unused) -> a;
   private BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
       spanExporterCustomizer = (a, unused) -> a;
+
+  private BiFunction<? super SpanProcessor, ConfigProperties, ? extends SpanProcessor>
+      spanExporterProcessorCustomizer = (a, unused) -> a;
   private BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer =
       (a, unused) -> a;
 
@@ -188,6 +192,27 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     requireNonNull(spanExporterCustomizer, "spanExporterCustomizer");
     this.spanExporterCustomizer =
         mergeCustomizer(this.spanExporterCustomizer, spanExporterCustomizer);
+    return this;
+  }
+
+  /**
+   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link
+   * io.opentelemetry.sdk.trace.SpanProcessor}s responsible for invoking registered {@link
+   * SpanExporter}s. The return value of the {@link BiFunction} will replace the passed-in argument.
+   * In contrast to {@link #addSpanExporterCustomizer(BiFunction)} this allows modifications to
+   * happen before batching occurs. As a result, it is possible to efficiently filter spans, add
+   * artificial spans or delay spans for enhancing them with external, delayed data. The provided
+   * function will be invoked at most once per customized SDK instance.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  @Override
+  public AutoConfigurationCustomizer addSpanExportProcessorCustomizer(
+      BiFunction<? super SpanProcessor, ConfigProperties, ? extends SpanProcessor>
+          spanExporterProcessorCustomizer) {
+    requireNonNull(spanExporterProcessorCustomizer, "spanExporterCustomizer");
+    this.spanExporterProcessorCustomizer =
+        mergeCustomizer(this.spanExporterProcessorCustomizer, spanExporterProcessorCustomizer);
     return this;
   }
 
@@ -372,6 +397,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
             spiHelper,
             meterProvider,
             spanExporterCustomizer,
+            spanExporterProcessorCustomizer,
             samplerCustomizer,
             closeables);
         tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);

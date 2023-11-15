@@ -146,6 +146,7 @@ class ConfigurableSpanExporterTest {
                 Collections.singletonMap("otel.traces.exporter", exporterName)),
             ImmutableMap.of(exporterName, LoggingSpanExporter.create()),
             MeterProvider.noop(),
+            (p, conf) -> p,
             closeables);
     cleanup.addCloseables(closeables);
 
@@ -164,6 +165,7 @@ class ConfigurableSpanExporterTest {
                 Collections.singletonMap("otel.traces.exporter", exporterName)),
             ImmutableMap.of(exporterName, ZipkinSpanExporter.builder().build()),
             MeterProvider.noop(),
+            (p, conf) -> p,
             closeables);
     cleanup.addCloseables(closeables);
 
@@ -185,6 +187,7 @@ class ConfigurableSpanExporterTest {
                 "zipkin",
                 ZipkinSpanExporter.builder().build()),
             MeterProvider.noop(),
+            (p, conf) -> p,
             closeables);
     cleanup.addCloseables(closeables);
 
@@ -227,6 +230,7 @@ class ConfigurableSpanExporterTest {
                 "zipkin",
                 ZipkinSpanExporter.builder().build()),
             MeterProvider.noop(),
+            (p, conf) -> p,
             closeables);
     cleanup.addCloseables(closeables);
 

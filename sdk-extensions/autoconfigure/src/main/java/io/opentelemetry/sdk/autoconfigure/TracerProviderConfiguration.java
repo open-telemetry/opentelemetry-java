@@ -40,6 +40,8 @@ final class TracerProviderConfiguration {
       MeterProvider meterProvider,
       BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
           spanExporterCustomizer,
+      BiFunction<? super SpanProcessor, ConfigProperties, ? extends SpanProcessor>
+          spanExporterProcessorCustomizer,
       BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer,
       List<Closeable> closeables) {
 
@@ -53,7 +55,8 @@ final class TracerProviderConfiguration {
         SpanExporterConfiguration.configureSpanExporters(
             config, spiHelper, spanExporterCustomizer, closeables);
 
-    configureSpanProcessors(config, exportersByName, meterProvider, closeables)
+    configureSpanProcessors(
+            config, exportersByName, meterProvider, spanExporterProcessorCustomizer, closeables)
         .forEach(tracerProviderBuilder::addSpanProcessor);
   }
 
@@ -61,9 +64,14 @@ final class TracerProviderConfiguration {
       ConfigProperties config,
       Map<String, SpanExporter> exportersByName,
       MeterProvider meterProvider,
+      BiFunction<? super SpanProcessor, ConfigProperties, ? extends SpanProcessor>
+          spanExporterProcessorCustomizer,
       List<Closeable> closeables) {
     Map<String, SpanExporter> exportersByNameCopy = new HashMap<>(exportersByName);
     List<SpanProcessor> spanProcessors = new ArrayList<>();
+
+    // TODO: I think we should use a MultiSpanProcessor here to ensure we wrap
+    // both logging and non-logging exporter processors
 
     SpanExporter exporter = exportersByNameCopy.remove("logging");
     if (exporter != null) {
@@ -76,6 +84,7 @@ final class TracerProviderConfiguration {
       SpanExporter compositeSpanExporter = SpanExporter.composite(exportersByNameCopy.values());
       SpanProcessor spanProcessor =
           configureBatchSpanProcessor(config, compositeSpanExporter, meterProvider);
+      spanProcessor = spanExporterProcessorCustomizer.apply(spanProcessor, config);
       closeables.add(spanProcessor);
       spanProcessors.add(spanProcessor);
     }
