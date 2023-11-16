@@ -9,7 +9,7 @@ dependencies {
   jmh("org.openjdk.jmh:jmh-generator-bytecode")
 
   // This enables running JMH benchmark classes within IntelliJ using
-  //
+  // JMH plugins
   jmh("org.openjdk.jmh:jmh-generator-annprocess")
   jmhAnnotationProcessor("org.openjdk.jmh:jmh-generator-annprocess")
 }
