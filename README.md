@@ -66,10 +66,15 @@ We would love to hear from the larger community: please provide feedback proacti
 ## Requirements
 
 Unless otherwise noted, all published artifacts support Java 8 or higher.
+See [language version compatibility](VERSIONING.md#language-version-compatibility) for complete
+details.
 
-**Android Disclaimer:** For compatibility reasons, [library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring) must be enabled.
+**Android Disclaimer:** For compatibility
+reasons, [library desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring)
+must be enabled.
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for additional instructions for building this project for development.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for additional instructions for building this project for
+development.
 
 ### Note about extensions
 
