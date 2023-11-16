@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.internal.http;
 
 import io.opentelemetry.exporter.internal.auth.Authenticator;
+import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -25,7 +26,7 @@ public interface HttpSenderProvider {
   /** Returns a {@link HttpSender} configured with the provided parameters. */
   HttpSender createSender(
       String endpoint,
-      boolean compressionEnabled,
+      @Nullable Compressor compressor,
       String contentType,
       long timeoutNanos,
       Supplier<Map<String, String>> headerSupplier,

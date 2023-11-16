@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.sender.jdk.internal;
 
 import io.opentelemetry.exporter.internal.auth.Authenticator;
+import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.http.HttpSender;
 import io.opentelemetry.exporter.internal.http.HttpSenderProvider;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -26,7 +27,7 @@ public final class JdkHttpSenderProvider implements HttpSenderProvider {
   @Override
   public HttpSender createSender(
       String endpoint,
-      boolean compressionEnabled,
+      @Nullable Compressor compressor,
       String contentType,
       long timeoutNanos,
       Supplier<Map<String, String>> headerSupplier,
@@ -35,12 +36,6 @@ public final class JdkHttpSenderProvider implements HttpSenderProvider {
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager) {
     return new JdkHttpSender(
-        endpoint,
-        compressionEnabled,
-        contentType,
-        timeoutNanos,
-        headerSupplier,
-        retryPolicy,
-        sslContext);
+        endpoint, compressor, contentType, timeoutNanos, headerSupplier, retryPolicy, sslContext);
   }
 }

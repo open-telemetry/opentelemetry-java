@@ -11,6 +11,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
+import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
@@ -18,6 +19,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
@@ -46,7 +48,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private String endpoint;
 
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
-  private boolean compressionEnabled = false;
+  @Nullable private Compressor compressor;
   private boolean exportAsJson = false;
   @Nullable private Map<String, String> headers;
 
@@ -77,8 +79,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public HttpExporterBuilder<T> setCompression(String compressionMethod) {
-    this.compressionEnabled = compressionMethod.equals("gzip");
+  public HttpExporterBuilder<T> setCompression(@Nullable Compressor compressor) {
+    this.compressor = compressor;
     return this;
   }
 
@@ -133,7 +135,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     copy.endpoint = endpoint;
     copy.timeoutNanos = timeoutNanos;
     copy.exportAsJson = exportAsJson;
-    copy.compressionEnabled = compressionEnabled;
+    copy.compressor = compressor;
     if (headers != null) {
       copy.headers = new HashMap<>(headers);
     }
@@ -154,7 +156,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     HttpSender httpSender =
         httpSenderProvider.createSender(
             endpoint,
-            compressionEnabled,
+            compressor,
             exportAsJson ? "application/json" : "application/x-protobuf",
             timeoutNanos,
             headerSupplier,
@@ -176,7 +178,9 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     joiner.add("type=" + type);
     joiner.add("endpoint=" + endpoint);
     joiner.add("timeoutNanos=" + timeoutNanos);
-    joiner.add("compressionEnabled=" + compressionEnabled);
+    joiner.add(
+        "compressorEncoding="
+            + Optional.ofNullable(compressor).map(Compressor::getEncoding).orElse(null));
     joiner.add("exportAsJson=" + exportAsJson);
     if (headers != null) {
       StringJoiner headersJoiner = new StringJoiner(", ", "Headers{", "}");

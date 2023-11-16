@@ -52,7 +52,7 @@ class JdkHttpSenderTest {
             mockHttpClient,
             "http://10.255.255.1", // Connecting to a non-routable IP address to trigger connection
             // timeout
-            false,
+            null,
             "text/plain",
             Duration.ofSeconds(10).toNanos(),
             Collections::emptyMap,
@@ -96,7 +96,7 @@ class JdkHttpSenderTest {
   void defaultConnectTimeout() {
     sender =
         new JdkHttpSender(
-            "http://localhost", true, "text/plain", 1, Collections::emptyMap, null, null);
+            "http://localhost", null, "text/plain", 1, Collections::emptyMap, null, null);
 
     assertThat(sender)
         .extracting("client", as(InstanceOfAssertFactories.type(HttpClient.class)))

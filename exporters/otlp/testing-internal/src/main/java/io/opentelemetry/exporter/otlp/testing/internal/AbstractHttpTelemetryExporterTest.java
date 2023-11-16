@@ -27,8 +27,10 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.exporter.internal.TlsUtil;
+import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.otlp.testing.internal.lz4.Lz4Compressor;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
@@ -63,9 +65,11 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
+import net.jpountz.lz4.LZ4FrameInputStream;
 import okio.Buffer;
 import okio.GzipSource;
 import okio.Okio;
+import okio.Source;
 import org.assertj.core.api.iterable.ThrowingExtractor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -163,8 +167,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   aggReq -> {
                     T request;
                     try {
-                      byte[] requestBody =
-                          maybeGzipInflate(aggReq.headers(), aggReq.content().array());
+                      byte[] requestBody = maybeInflate(aggReq.headers(), aggReq.content().array());
                       request = parse.extractThrows(requestBody);
                     } catch (IOException e) {
                       throw new UncheckedIOException(e);
@@ -181,15 +184,21 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
       return HttpResponse.of(responseFuture);
     }
 
-    private static byte[] maybeGzipInflate(RequestHeaders requestHeaders, byte[] content)
+    private static byte[] maybeInflate(RequestHeaders requestHeaders, byte[] content)
         throws IOException {
-      if (!requestHeaders.contains("content-encoding", "gzip")) {
-        return content;
+      if (requestHeaders.contains("content-encoding", "gzip")) {
+        Buffer buffer = new Buffer();
+        GzipSource gzipSource = new GzipSource(Okio.source(new ByteArrayInputStream(content)));
+        gzipSource.read(buffer, Integer.MAX_VALUE);
+        return buffer.readByteArray();
       }
-      Buffer buffer = new Buffer();
-      GzipSource gzipSource = new GzipSource(Okio.source(new ByteArrayInputStream(content)));
-      gzipSource.read(buffer, Integer.MAX_VALUE);
-      return buffer.readByteArray();
+      if (requestHeaders.contains("content-encoding", "lz4")) {
+        Buffer buffer = new Buffer();
+        Source lz4Source = Okio.source(new LZ4FrameInputStream(new ByteArrayInputStream(content)));
+        lz4Source.read(buffer, Integer.MAX_VALUE);
+        return buffer.readByteArray();
+      }
+      return content;
     }
   }
 
@@ -275,9 +284,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   void compressionWithNone() {
     TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("none").build();
-    assertThat(exporter.unwrap())
-        .extracting("delegate.httpSender.compressionEnabled")
-        .isEqualTo(false);
+    assertThat(exporter.unwrap()).extracting("delegate.httpSender.compressor").isNull();
     try {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
@@ -295,8 +302,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("gzip").build();
     assertThat(exporter.unwrap())
-        .extracting("delegate.httpSender.compressionEnabled")
-        .isEqualTo(true);
+        .extracting("delegate.httpSender.compressor")
+        .isEqualTo(GzipCompressor.getInstance());
     try {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
@@ -304,6 +311,25 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
       assertThat(httpRequests)
           .singleElement()
           .satisfies(req -> assertThat(req.headers().get("content-encoding")).isEqualTo("gzip"));
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void compressionWithSpiCompressor() {
+    TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("lz4").build();
+    assertThat(exporter.unwrap())
+        .extracting("delegate.httpSender.compressor")
+        .isEqualTo(Lz4Compressor.getInstance());
+    try {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(httpRequests)
+          .singleElement()
+          .satisfies(req -> assertThat(req.headers().get("content-encoding")).isEqualTo("lz4"));
     } finally {
       exporter.shutdown();
     }
@@ -612,6 +638,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         .doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().setCompression("gzip")).doesNotThrowAnyException();
+    // SPI compressor available for this test but not packaged with OTLP exporter
+    assertThatCode(() -> exporterBuilder().setCompression("lz4")).doesNotThrowAnyException();
     assertThatCode(() -> exporterBuilder().setCompression("none")).doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().addHeader("foo", "bar").addHeader("baz", "qux"))
@@ -654,7 +682,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThatThrownBy(() -> exporterBuilder().setCompression("foo"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-            "Unsupported compression method. Supported compression methods include: gzip, none.");
+            "Unsupported compressionMethod. Compression method must be \"none\" or one of: [lz4,gzip]");
   }
 
   @Test
@@ -728,7 +756,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
                   + ", "
-                  + "compressionEnabled=false, "
+                  + "compressorEncoding=null, "
                   + "exportAsJson=false, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
                   + "\\}");
@@ -764,7 +792,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(5)
                   + ", "
-                  + "compressionEnabled=true, "
+                  + "compressorEncoding=gzip, "
                   + "exportAsJson=false, "
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
                   + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3\\}"
