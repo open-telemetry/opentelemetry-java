@@ -10,4 +10,5 @@ otelJava.moduleName.set("io.opentelemetry.api.events")
 
 dependencies {
   api(project(":api:all"))
+  api(project(":extensions:incubator"))
 }

@@ -38,10 +38,12 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.logs.v1.SeverityNumber;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -207,11 +209,12 @@ class FullConfigTest {
     logger.logRecordBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
 
     EventEmitter eventEmitter =
-        GlobalEventEmitterProvider.get()
-            .eventEmitterBuilder("test")
-            .setEventDomain("test-domain")
-            .build();
-    eventEmitter.emit("test-name", Attributes.builder().put("cow", "moo").build());
+        GlobalEventEmitterProvider.get().eventEmitterBuilder("test").build();
+    eventEmitter.emit(
+        "namespace.test-name",
+        io.opentelemetry.extension.incubator.logs.AnyValue.of(
+            Collections.singletonMap(
+                "cow", io.opentelemetry.extension.incubator.logs.AnyValue.of("moo"))));
 
     openTelemetrySdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
     openTelemetrySdk.getSdkLoggerProvider().forceFlush().join(10, TimeUnit.SECONDS);
@@ -333,21 +336,20 @@ class FullConfigTest {
               assertThat(logRecord.getSeverityNumberValue())
                   .isEqualTo(Severity.INFO.getSeverityNumber());
             },
-            logRecord ->
-                assertThat(logRecord.getAttributesList())
-                    .containsExactlyInAnyOrder(
-                        KeyValue.newBuilder()
-                            .setKey("event.domain")
-                            .setValue(AnyValue.newBuilder().setStringValue("test-domain").build())
-                            .build(),
-                        KeyValue.newBuilder()
-                            .setKey("event.name")
-                            .setValue(AnyValue.newBuilder().setStringValue("test-name").build())
-                            .build(),
-                        KeyValue.newBuilder()
-                            .setKey("cow")
-                            .setValue(AnyValue.newBuilder().setStringValue("moo").build())
-                            .build()));
+            logRecord -> {
+              // TODO: update after merging
+              // https://github.com/open-telemetry/opentelemetry-java/pull/5938
+              assertThat(logRecord.getBody().getStringValue()).isEqualTo("[cow=moo]");
+              assertThat(logRecord.getSeverityNumber())
+                  .isEqualTo(SeverityNumber.SEVERITY_NUMBER_INFO);
+              assertThat(logRecord.getAttributesList())
+                  .containsExactlyInAnyOrder(
+                      KeyValue.newBuilder()
+                          .setKey("event.name")
+                          .setValue(
+                              AnyValue.newBuilder().setStringValue("namespace.test-name").build())
+                          .build());
+            });
   }
 
   private static List<KeyValue> getFirstDataPointLabels(Metric metric) {

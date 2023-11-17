@@ -528,7 +528,6 @@ abstract class OtlpExporterIntegrationTest {
     EventEmitter eventEmitter =
         SdkEventEmitterProvider.create(loggerProvider)
             .eventEmitterBuilder(OtlpExporterIntegrationTest.class.getName())
-            .setEventDomain("event-domain")
             .build();
 
     SpanContext spanContext =
@@ -548,7 +547,11 @@ abstract class OtlpExporterIntegrationTest {
           .setSeverityText("DEBUG")
           .setContext(Context.current())
           .emit();
-      eventEmitter.emit("event-name", Attributes.builder().put("key", "value").build());
+      eventEmitter.emit(
+          "namespace.event-name",
+          io.opentelemetry.extension.incubator.logs.AnyValue.of(
+              Collections.singletonMap(
+                  "key", io.opentelemetry.extension.incubator.logs.AnyValue.of("value"))));
     }
 
     // Closing triggers flush of processor
@@ -597,20 +600,18 @@ abstract class OtlpExporterIntegrationTest {
 
     // LogRecord via EventEmitter.emit(String, Attributes)
     io.opentelemetry.proto.logs.v1.LogRecord protoLog2 = ilLogs.getLogRecords(1);
-    assertThat(protoLog2.getBody().getStringValue()).isEmpty();
+    assertThat(protoLog2.getBody())
+        .isEqualTo(
+            AnyValue.newBuilder()
+                // TODO: update after merging
+                // https://github.com/open-telemetry/opentelemetry-java/pull/5938
+                .setStringValue("[key=value]")
+                .build());
     assertThat(protoLog2.getAttributesList())
         .containsExactlyInAnyOrder(
             KeyValue.newBuilder()
-                .setKey("event.domain")
-                .setValue(AnyValue.newBuilder().setStringValue("event-domain").build())
-                .build(),
-            KeyValue.newBuilder()
                 .setKey("event.name")
-                .setValue(AnyValue.newBuilder().setStringValue("event-name").build())
-                .build(),
-            KeyValue.newBuilder()
-                .setKey("key")
-                .setValue(AnyValue.newBuilder().setStringValue("value").build())
+                .setValue(AnyValue.newBuilder().setStringValue("namespace.event-name").build())
                 .build());
     assertThat(protoLog2.getSeverityText()).isEmpty();
     assertThat(TraceId.fromBytes(protoLog2.getTraceId().toByteArray()))

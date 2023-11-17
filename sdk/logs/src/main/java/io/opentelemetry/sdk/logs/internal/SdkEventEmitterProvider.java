@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.logs.internal;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.events.EventBuilder;
 import io.opentelemetry.api.events.EventEmitter;
 import io.opentelemetry.api.events.EventEmitterBuilder;
@@ -15,6 +14,10 @@ import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerBuilder;
 import io.opentelemetry.api.logs.LoggerProvider;
+import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.extension.incubator.logs.AnyValue;
+import io.opentelemetry.extension.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.sdk.common.Clock;
 import java.util.concurrent.TimeUnit;
 
@@ -26,10 +29,7 @@ import java.util.concurrent.TimeUnit;
  */
 public final class SdkEventEmitterProvider implements EventEmitterProvider {
 
-  static final AttributeKey<String> EVENT_DOMAIN = AttributeKey.stringKey("event.domain");
   static final AttributeKey<String> EVENT_NAME = AttributeKey.stringKey("event.name");
-
-  static final String DEFAULT_EVENT_DOMAIN = "unknown";
 
   private final LoggerProvider delegateLoggerProvider;
   private final Clock clock;
@@ -54,13 +54,6 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
   }
 
   @Override
-  public EventEmitter get(String instrumentationScopeName) {
-    return eventEmitterBuilder(instrumentationScopeName)
-        .setEventDomain(DEFAULT_EVENT_DOMAIN)
-        .build();
-  }
-
-  @Override
   public EventEmitterBuilder eventEmitterBuilder(String instrumentationScopeName) {
     return new SdkEventEmitterBuilder(
         clock, delegateLoggerProvider.loggerBuilder(instrumentationScopeName));
@@ -70,17 +63,10 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
 
     private final Clock clock;
     private final LoggerBuilder delegateLoggerBuilder;
-    private String eventDomain = DEFAULT_EVENT_DOMAIN;
 
     private SdkEventEmitterBuilder(Clock clock, LoggerBuilder delegateLoggerBuilder) {
       this.clock = clock;
       this.delegateLoggerBuilder = delegateLoggerBuilder;
-    }
-
-    @Override
-    public EventEmitterBuilder setEventDomain(String eventDomain) {
-      this.eventDomain = eventDomain;
-      return this;
     }
 
     @Override
@@ -97,7 +83,7 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
 
     @Override
     public EventEmitter build() {
-      return new SdkEventEmitter(clock, delegateLoggerBuilder.build(), eventDomain);
+      return new SdkEventEmitter(clock, delegateLoggerBuilder.build());
     }
   }
 
@@ -105,39 +91,39 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
 
     private final Clock clock;
     private final Logger delegateLogger;
-    private final String eventDomain;
 
-    private SdkEventEmitter(Clock clock, Logger delegateLogger, String eventDomain) {
+    private SdkEventEmitter(Clock clock, Logger delegateLogger) {
       this.clock = clock;
       this.delegateLogger = delegateLogger;
-      this.eventDomain = eventDomain;
     }
 
     @Override
-    public EventBuilder builder(String eventName, Attributes attributes) {
+    public EventBuilder builder(String eventName) {
       return new SdkEventBuilder(
+          clock,
           delegateLogger
               .logRecordBuilder()
-              .setTimestamp(clock.now(), TimeUnit.NANOSECONDS)
-              .setAllAttributes(attributes),
-          eventDomain,
+              .setSeverity(Severity.INFO)
+              .setContext(Context.current()),
           eventName);
     }
 
     @Override
-    public void emit(String eventName, Attributes attributes) {
+    public void emit(String eventName, AnyValue<?> payload) {
+      long now = clock.now();
       LogRecordBuilder logRecordBuilder =
-          delegateLogger
-              .logRecordBuilder()
-              .setTimestamp(clock.now(), TimeUnit.NANOSECONDS)
-              .setAllAttributes(attributes);
-      addEventNameAndDomain(logRecordBuilder, eventDomain, eventName);
+          ((ExtendedLogRecordBuilder) delegateLogger.logRecordBuilder())
+              .setBody(payload)
+              .setSeverity(Severity.INFO)
+              .setContext(Context.current())
+              .setTimestamp(now, TimeUnit.NANOSECONDS)
+              .setObservedTimestamp(now, TimeUnit.NANOSECONDS);
+      addEventName(logRecordBuilder, eventName);
       logRecordBuilder.emit();
     }
   }
 
-  static void addEventNameAndDomain(
-      LogRecordBuilder logRecordBuilder, String eventDomain, String eventName) {
-    logRecordBuilder.setAttribute(EVENT_DOMAIN, eventDomain).setAttribute(EVENT_NAME, eventName);
+  static void addEventName(LogRecordBuilder logRecordBuilder, String eventName) {
+    logRecordBuilder.setAttribute(EVENT_NAME, eventName);
   }
 }

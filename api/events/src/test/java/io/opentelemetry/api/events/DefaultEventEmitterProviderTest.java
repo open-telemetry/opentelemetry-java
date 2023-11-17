@@ -8,7 +8,7 @@ package io.opentelemetry.api.events;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.extension.incubator.logs.AnyValue;
 import org.junit.jupiter.api.Test;
 
 class DefaultEventEmitterProviderTest {
@@ -23,7 +23,6 @@ class DefaultEventEmitterProviderTest {
             () ->
                 provider
                     .eventEmitterBuilder("scope-name")
-                    .setEventDomain("event-domain")
                     .setInstrumentationVersion("1.0")
                     .setSchemaUrl("http://schema.com")
                     .build())
@@ -34,7 +33,7 @@ class DefaultEventEmitterProviderTest {
                 provider
                     .eventEmitterBuilder("scope-name")
                     .build()
-                    .emit("event-name", Attributes.empty()))
+                    .emit("namespace.event-name", AnyValue.of("")))
         .doesNotThrowAnyException();
   }
 }

@@ -5,18 +5,20 @@
 
 package io.opentelemetry.sdk.logs.internal;
 
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.events.EventEmitter;
+import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.extension.incubator.logs.AnyValue;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
@@ -37,84 +39,55 @@ class SdkEventEmitterProviderTest {
           clock);
 
   @Test
-  void emit_WithDomain() {
+  void emit() {
     when(clock.now()).thenReturn(10L);
+
+    AnyValue<?> payload = AnyValue.of(Collections.singletonMap("key1", AnyValue.of("value1")));
 
     eventEmitterProvider
         .eventEmitterBuilder("test-scope")
-        .setEventDomain("event-domain")
         .build()
-        .emit(
-            "event-name",
-            Attributes.builder()
-                .put("key1", "value1")
-                // should be overridden by the eventName argument passed to emit
-                .put("event.name", "foo")
-                // should be overridden by the eventDomain
-                .put("event.domain", "foo")
-                .build());
+        .emit("namespace.event-name", payload);
 
     assertThat(seenLog.get().toLogRecordData())
         .hasResource(RESOURCE)
         .hasInstrumentationScope(InstrumentationScopeInfo.create("test-scope"))
         .hasTimestamp(10L)
-        .hasAttributes(
-            Attributes.builder()
-                .put("key1", "value1")
-                .put("event.domain", "event-domain")
-                .put("event.name", "event-name")
-                .build());
-  }
-
-  @Test
-  void emit_NoDomain() {
-    when(clock.now()).thenReturn(10L);
-
-    eventEmitterProvider
-        .eventEmitterBuilder("test-scope")
-        .build()
-        .emit(
-            "event-name",
-            Attributes.builder()
-                .put("key1", "value1")
-                // should be overridden by the eventName argument passed to emit
-                .put("event.name", "foo")
-                // should be overridden by the default eventDomain
-                .put("event.domain", "foo")
-                .build());
-
-    assertThat(seenLog.get().toLogRecordData())
-        .hasResource(RESOURCE)
-        .hasInstrumentationScope(InstrumentationScopeInfo.create("test-scope"))
-        .hasTimestamp(10L)
-        .hasAttributes(
-            Attributes.builder()
-                .put("key1", "value1")
-                .put("event.domain", "unknown")
-                .put("event.name", "event-name")
-                .build());
+        .hasObservedTimestamp(10L)
+        .hasSeverity(Severity.INFO)
+        .hasAttributes(Attributes.builder().put("event.name", "namespace.event-name").build());
+    assertThat(((AnyValueBody) seenLog.get().toLogRecordData().getBody()).asAnyValue())
+        .isEqualTo(payload);
   }
 
   @Test
   void builder() {
-    long yesterday = System.nanoTime() - TimeUnit.DAYS.toNanos(1);
-    Attributes attributes = Attributes.of(stringKey("foo"), "bar");
+    when(clock.now()).thenReturn(10L);
 
+    long yesterday = System.nanoTime() - TimeUnit.DAYS.toNanos(1);
     EventEmitter emitter = eventEmitterProvider.eventEmitterBuilder("test-scope").build();
 
-    emitter.builder("testing", attributes).setTimestamp(yesterday, TimeUnit.NANOSECONDS).emit();
-    verifySeen(yesterday, attributes);
-  }
+    AnyValue<?> payload = AnyValue.of(Collections.singletonMap("key1", AnyValue.of("value1")));
+    emitter
+        .builder("namespace.event-name")
+        .setPayload(payload)
+        .setTimestamp(yesterday, TimeUnit.NANOSECONDS)
+        .setSeverity(Severity.DEBUG)
+        .setAttributes(Attributes.builder().put("extra-attribute", "value").build())
+        .emit();
 
-  private void verifySeen(long timestamp, Attributes attributes) {
     assertThat(seenLog.get().toLogRecordData())
         .hasResource(RESOURCE)
         .hasInstrumentationScope(InstrumentationScopeInfo.create("test-scope"))
-        .hasTimestamp(timestamp)
+        .hasTimestamp(yesterday)
+        .hasObservedTimestamp(10L)
+        .hasSeverity(Severity.DEBUG)
         .hasAttributes(
-            attributes.toBuilder()
-                .put("event.domain", "unknown")
-                .put("event.name", "testing")
+            Attributes.builder()
+                .put("event.name", "namespace.event-name")
+                .put("extra-attribute", "value")
                 .build());
+    assertThat(((AnyValueBody) seenLog.get().toLogRecordData().getBody()).asAnyValue())
+        .isEqualTo(payload);
   }
 }
