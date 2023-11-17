@@ -48,8 +48,7 @@ tasks {
   withType(KotlinCompile::class) {
     kotlinOptions {
       jvmTarget = "1.8"
-      // earliest version supported by kotlin 1.9
-      languageVersion = "1.4"
+      languageVersion = "1.6"
     }
   }
 
