@@ -74,9 +74,11 @@ public interface AutoConfigurationCustomizer {
    *
    * <p>Multiple calls will execute the customizers in order.
    */
-  AutoConfigurationCustomizer addBatchSpanProcessorCustomizer(
+  default AutoConfigurationCustomizer addBatchSpanProcessorCustomizer(
       BiFunction<? super SpanProcessor, ConfigProperties, ? extends SpanProcessor>
-          exporterProcessorCustomizer);
+          exporterProcessorCustomizer){
+    return this;
+  }
 
   /**
    * Adds a {@link Supplier} of a map of property names and values to use as defaults for the {@link
