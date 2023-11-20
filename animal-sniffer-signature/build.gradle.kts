@@ -28,7 +28,7 @@ configurations.add(generatedSignature)
 
 dependencies {
   signature("com.toasttab.android:gummy-bears-api-21:0.6.1@signature")
-  signatureJar("com.android.tools:desugar_jdk_libs:2.0.4")
+  signatureJar("com.android.tools:desugar_jdk_libs")
 }
 
 val signatureSimpleName = "android.signature"

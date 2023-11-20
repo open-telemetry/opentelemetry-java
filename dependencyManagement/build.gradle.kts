@@ -77,6 +77,7 @@ val DEPENDENCIES = listOf(
   "org.jctools:jctools-core:4.0.1",
   "org.junit-pioneer:junit-pioneer:1.9.1",
   "org.skyscreamer:jsonassert:1.5.1",
+  "com.android.tools:desugar_jdk_libs:2.0.4",
 )
 
 javaPlatform {
