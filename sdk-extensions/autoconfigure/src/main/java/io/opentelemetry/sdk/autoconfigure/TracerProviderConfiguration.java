@@ -55,8 +55,9 @@ final class TracerProviderConfiguration {
         SpanExporterConfiguration.configureSpanExporters(
             config, spiHelper, spanExporterCustomizer, closeables);
 
-    List<SpanProcessor> processors = configureExportingSpanProcessors(config, exportersByName, meterProvider, closeables);
-    if(!processors.isEmpty()) {
+    List<SpanProcessor> processors =
+        configureExportingSpanProcessors(config, exportersByName, meterProvider, closeables);
+    if (!processors.isEmpty()) {
       SpanProcessor composite = SpanProcessor.composite(processors);
       closeables.add(composite);
       composite = batchSpanProcessorCustomizer.apply(composite, config);

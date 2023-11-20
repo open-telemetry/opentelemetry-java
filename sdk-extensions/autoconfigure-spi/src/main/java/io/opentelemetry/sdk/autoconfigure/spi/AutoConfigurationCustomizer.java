@@ -76,7 +76,7 @@ public interface AutoConfigurationCustomizer {
    */
   default AutoConfigurationCustomizer addBatchSpanProcessorCustomizer(
       BiFunction<? super SpanProcessor, ConfigProperties, ? extends SpanProcessor>
-          exporterProcessorCustomizer){
+          exporterProcessorCustomizer) {
     return this;
   }
 

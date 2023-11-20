@@ -304,9 +304,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
         .extracting("activeSpanProcessor")
         .isSameAs(mockProcessor2);
 
-    Span span = sdkTracerProvider.get("dummy-scope")
-        .spanBuilder("dummy-span")
-        .startSpan();
+    Span span = sdkTracerProvider.get("dummy-scope").spanBuilder("dummy-span").startSpan();
 
     verify(mockProcessor2).onStart(any(), same((ReadWriteSpan) span));
 
