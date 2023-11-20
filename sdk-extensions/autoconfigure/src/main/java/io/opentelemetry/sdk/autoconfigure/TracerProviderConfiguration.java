@@ -58,9 +58,9 @@ final class TracerProviderConfiguration {
     List<SpanProcessor> processors = configureExportingSpanProcessors(config, exportersByName, meterProvider, closeables);
     if(!processors.isEmpty()) {
       SpanProcessor composite = SpanProcessor.composite(processors);
+      closeables.add(composite);
       composite = batchSpanProcessorCustomizer.apply(composite, config);
       tracerProviderBuilder.addSpanProcessor(composite);
-      closeables.add(composite);
     }
   }
 
@@ -75,16 +75,16 @@ final class TracerProviderConfiguration {
     SpanExporter exporter = exportersByNameCopy.remove("logging");
     if (exporter != null) {
       SpanProcessor spanProcessor = SimpleSpanProcessor.create(exporter);
-      spanProcessors.add(spanProcessor);
       closeables.add(spanProcessor);
+      spanProcessors.add(spanProcessor);
     }
 
     if (!exportersByNameCopy.isEmpty()) {
       SpanExporter compositeSpanExporter = SpanExporter.composite(exportersByNameCopy.values());
       SpanProcessor spanProcessor =
           configureBatchSpanProcessor(config, compositeSpanExporter, meterProvider);
-      spanProcessors.add(spanProcessor);
       closeables.add(spanProcessor);
+      spanProcessors.add(spanProcessor);
     }
 
     return spanProcessors;
