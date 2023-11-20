@@ -141,12 +141,11 @@ class ConfigurableSpanExporterTest {
     List<Closeable> closeables = new ArrayList<>();
 
     List<SpanProcessor> spanProcessors =
-        TracerProviderConfiguration.configureSpanProcessors(
+        TracerProviderConfiguration.configureExportingSpanProcessors(
             DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.traces.exporter", exporterName)),
             ImmutableMap.of(exporterName, LoggingSpanExporter.create()),
             MeterProvider.noop(),
-            (p, conf) -> p,
             closeables);
     cleanup.addCloseables(closeables);
 
@@ -160,12 +159,11 @@ class ConfigurableSpanExporterTest {
     List<Closeable> closeables = new ArrayList<>();
 
     List<SpanProcessor> spanProcessors =
-        TracerProviderConfiguration.configureSpanProcessors(
+        TracerProviderConfiguration.configureExportingSpanProcessors(
             DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.traces.exporter", exporterName)),
             ImmutableMap.of(exporterName, ZipkinSpanExporter.builder().build()),
             MeterProvider.noop(),
-            (p, conf) -> p,
             closeables);
     cleanup.addCloseables(closeables);
 
@@ -178,7 +176,7 @@ class ConfigurableSpanExporterTest {
     List<Closeable> closeables = new ArrayList<>();
 
     List<SpanProcessor> spanProcessors =
-        TracerProviderConfiguration.configureSpanProcessors(
+        TracerProviderConfiguration.configureExportingSpanProcessors(
             DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.traces.exporter", "otlp,zipkin")),
             ImmutableMap.of(
@@ -187,7 +185,6 @@ class ConfigurableSpanExporterTest {
                 "zipkin",
                 ZipkinSpanExporter.builder().build()),
             MeterProvider.noop(),
-            (p, conf) -> p,
             closeables);
     cleanup.addCloseables(closeables);
 
@@ -221,7 +218,7 @@ class ConfigurableSpanExporterTest {
     List<Closeable> closeables = new ArrayList<>();
 
     List<SpanProcessor> spanProcessors =
-        TracerProviderConfiguration.configureSpanProcessors(
+        TracerProviderConfiguration.configureExportingSpanProcessors(
             DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.traces.exporter", "logging,zipkin")),
             ImmutableMap.of(
@@ -230,7 +227,6 @@ class ConfigurableSpanExporterTest {
                 "zipkin",
                 ZipkinSpanExporter.builder().build()),
             MeterProvider.noop(),
-            (p, conf) -> p,
             closeables);
     cleanup.addCloseables(closeables);
 

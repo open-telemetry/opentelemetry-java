@@ -74,7 +74,7 @@ public interface AutoConfigurationCustomizer {
    *
    * <p>Multiple calls will execute the customizers in order.
    */
-  AutoConfigurationCustomizer addSpanExportProcessorCustomizer(
+  AutoConfigurationCustomizer addBatchSpanProcessorCustomizer(
       BiFunction<? super SpanProcessor, ConfigProperties, ? extends SpanProcessor>
           exporterProcessorCustomizer);
 

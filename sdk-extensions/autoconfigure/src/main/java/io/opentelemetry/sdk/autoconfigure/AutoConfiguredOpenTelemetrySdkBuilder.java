@@ -74,7 +74,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       spanExporterCustomizer = (a, unused) -> a;
 
   private BiFunction<? super SpanProcessor, ConfigProperties, ? extends SpanProcessor>
-      spanExporterProcessorCustomizer = (a, unused) -> a;
+      batchSpanProcessorCustomizer = (a, unused) -> a;
   private BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer =
       (a, unused) -> a;
 
@@ -207,12 +207,12 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
    * <p>Multiple calls will execute the customizers in order.
    */
   @Override
-  public AutoConfigurationCustomizer addSpanExportProcessorCustomizer(
+  public AutoConfiguredOpenTelemetrySdkBuilder addBatchSpanProcessorCustomizer(
       BiFunction<? super SpanProcessor, ConfigProperties, ? extends SpanProcessor>
-          spanExporterProcessorCustomizer) {
-    requireNonNull(spanExporterProcessorCustomizer, "spanExporterCustomizer");
-    this.spanExporterProcessorCustomizer =
-        mergeCustomizer(this.spanExporterProcessorCustomizer, spanExporterProcessorCustomizer);
+          batchSpanProcessorCustomizer) {
+    requireNonNull(batchSpanProcessorCustomizer, "batchSpanProcessorCustomizer");
+    this.batchSpanProcessorCustomizer =
+        mergeCustomizer(this.batchSpanProcessorCustomizer, batchSpanProcessorCustomizer);
     return this;
   }
 
@@ -397,7 +397,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
             spiHelper,
             meterProvider,
             spanExporterCustomizer,
-            spanExporterProcessorCustomizer,
+            batchSpanProcessorCustomizer,
             samplerCustomizer,
             closeables);
         tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
