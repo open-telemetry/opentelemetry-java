@@ -5,9 +5,9 @@
 
 package io.opentelemetry.extension.incubator.logs;
 
-import io.opentelemetry.api.internal.OtelEncodingUtils;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Objects;
 
 final class AnyValueBytes implements AnyValue<ByteBuffer> {
@@ -35,11 +35,7 @@ final class AnyValueBytes implements AnyValue<ByteBuffer> {
 
   @Override
   public String asString() {
-    // TODO: base64 would be better, but isn't available in android and java. Can we vendor in a
-    // base64 implementation?
-    char[] arr = new char[raw.length * 2];
-    OtelEncodingUtils.bytesToBase16(raw, arr, raw.length);
-    return new String(arr);
+    return Base64.getEncoder().encodeToString(raw);
   }
 
   @Override

@@ -9,11 +9,11 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-import io.opentelemetry.api.internal.OtelEncodingUtils;
 import java.nio.ByteBuffer;
 import java.nio.ReadOnlyBufferException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -208,16 +208,15 @@ class AnyValueTest {
                     AnyValue.of(Collections.singletonMap("grandchild", AnyValue.of("str"))))),
             "[child=[grandchild=str]]"),
         // bytes
-        arguments(
-            AnyValue.of("hello world".getBytes(StandardCharsets.UTF_8)), "68656c6c6f20776f726c64"));
+        arguments(AnyValue.of("hello world".getBytes(StandardCharsets.UTF_8)), "aGVsbG8gd29ybGQ="));
   }
 
   @Test
   void anyValueByteAsString() {
     // TODO: add more test cases
     String str = "hello world";
-    String base16Encoded = AnyValue.of(str.getBytes(StandardCharsets.UTF_8)).asString();
-    byte[] decodedBytes = OtelEncodingUtils.bytesFromBase16(base16Encoded, base16Encoded.length());
+    String base64Encoded = AnyValue.of(str.getBytes(StandardCharsets.UTF_8)).asString();
+    byte[] decodedBytes = Base64.getDecoder().decode(base64Encoded);
     assertThat(new String(decodedBytes, StandardCharsets.UTF_8)).isEqualTo(str);
   }
 }
