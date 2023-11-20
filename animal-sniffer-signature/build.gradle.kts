@@ -26,11 +26,6 @@ configurations.add(signatureJar)
 configurations.add(signatureJarClasspath)
 configurations.add(generatedSignature)
 
-repositories {
-  mavenCentral()
-  google()
-}
-
 dependencies {
   signature("com.toasttab.android:gummy-bears-api-21:0.6.1@signature")
   signatureJar("com.android.tools:desugar_jdk_libs:2.0.4")
