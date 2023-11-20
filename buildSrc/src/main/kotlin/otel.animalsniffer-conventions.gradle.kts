@@ -7,7 +7,7 @@ plugins {
 }
 
 dependencies {
-  signature(project(path = ":animal-sniffer", configuration = "generatedSignature"))
+  signature(project(path = ":animal-sniffer-signature", configuration = "generatedSignature"))
 }
 
 animalsniffer {
