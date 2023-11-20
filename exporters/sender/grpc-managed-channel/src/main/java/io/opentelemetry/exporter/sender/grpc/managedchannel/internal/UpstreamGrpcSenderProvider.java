@@ -6,10 +6,7 @@
 package io.opentelemetry.exporter.sender.grpc.managedchannel.internal;
 
 import io.grpc.Channel;
-import io.grpc.ClientInterceptors;
 import io.grpc.Codec;
-import io.grpc.Metadata;
-import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.exporter.internal.grpc.GrpcSender;
 import io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
@@ -37,35 +34,29 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
       String endpointPath,
       boolean compressionEnabled,
       long timeoutNanos,
-      Map<String, String> headers,
+      Supplier<Map<String, String>> headersSupplier,
       @Nullable Object managedChannel,
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager) {
-    Metadata metadata = new Metadata();
     String authorityOverride = null;
-    for (Map.Entry<String, String> entry : headers.entrySet()) {
-      String name = entry.getKey();
-      String value = entry.getValue();
-      if (name.equals("host")) {
-        authorityOverride = value;
-        continue;
+    Map<String, String> headers = headersSupplier.get();
+    if (headers != null) {
+      for (Map.Entry<String, String> entry : headers.entrySet()) {
+        if (entry.getKey().equals("host")) {
+          authorityOverride = entry.getValue();
+        }
       }
-      metadata.put(Metadata.Key.of(name, Metadata.ASCII_STRING_MARSHALLER), value);
     }
-
-    Channel channel =
-        ClientInterceptors.intercept(
-            (Channel) managedChannel, MetadataUtils.newAttachHeadersInterceptor(metadata));
 
     Codec codec = compressionEnabled ? new Codec.Gzip() : Codec.Identity.NONE;
     MarshalerServiceStub<T, ?, ?> stub =
         stubFactory
             .get()
-            .apply(channel, authorityOverride)
+            .apply((Channel) managedChannel, authorityOverride)
             .withCompression(codec.getMessageEncoding());
 
-    return new UpstreamGrpcSender<>(stub, timeoutNanos);
+    return new UpstreamGrpcSender<>(stub, timeoutNanos, headersSupplier);
   }
 }

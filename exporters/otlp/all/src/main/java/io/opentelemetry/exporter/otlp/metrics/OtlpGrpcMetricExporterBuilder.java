@@ -20,7 +20,9 @@ import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.net.URI;
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
@@ -54,7 +56,7 @@ public final class OtlpGrpcMetricExporterBuilder {
   OtlpGrpcMetricExporterBuilder(GrpcExporterBuilder<MetricsRequestMarshaler> delegate) {
     this.delegate = delegate;
     delegate.setMeterProvider(MeterProvider::noop);
-    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+    OtlpUserAgent.addUserAgentHeader(delegate::addStaticHeader);
   }
 
   OtlpGrpcMetricExporterBuilder() {
@@ -171,7 +173,16 @@ public final class OtlpGrpcMetricExporterBuilder {
    * @return this builder's instance
    */
   public OtlpGrpcMetricExporterBuilder addHeader(String key, String value) {
-    delegate.addHeader(key, value);
+    delegate.addStaticHeader(key, value);
+    return this;
+  }
+
+  /**
+   * Set the supplier of headers to add to requests. Applicable only if {@link
+   * OtlpGrpcMetricExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
+   */
+  public OtlpGrpcMetricExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
+    delegate.setHeadersSupplier(headerSupplier);
     return this;
   }
 

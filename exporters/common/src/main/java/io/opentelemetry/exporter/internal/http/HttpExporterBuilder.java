@@ -48,7 +48,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   private boolean compressionEnabled = false;
   private boolean exportAsJson = false;
-  @Nullable private Map<String, String> headers;
+  private Map<String, String> staticHeaders = new HashMap<>();
+  private Supplier<Map<String, String>> headerSupplier = Collections::emptyMap;
 
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy;
@@ -82,11 +83,16 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public HttpExporterBuilder<T> addHeader(String key, String value) {
-    if (headers == null) {
-      headers = new HashMap<>();
+  public HttpExporterBuilder<T> addStaticHeader(String key, String value) {
+    if (staticHeaders == null) {
+      staticHeaders = new HashMap<>();
     }
-    headers.put(key, value);
+    staticHeaders.put(key, value);
+    return this;
+  }
+
+  public HttpExporterBuilder<T> setHeadersSupplier(Supplier<Map<String, String>> headerSupplier) {
+    this.headerSupplier = headerSupplier;
     return this;
   }
 
@@ -134,9 +140,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     copy.timeoutNanos = timeoutNanos;
     copy.exportAsJson = exportAsJson;
     copy.compressionEnabled = compressionEnabled;
-    if (headers != null) {
-      copy.headers = new HashMap<>(headers);
-    }
+    copy.staticHeaders.putAll(staticHeaders);
+    copy.headerSupplier = headerSupplier;
     copy.tlsConfigHelper = tlsConfigHelper.copy();
     if (retryPolicy != null) {
       copy.retryPolicy = retryPolicy.toBuilder().build();
@@ -147,8 +152,16 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   }
 
   public HttpExporter<T> build() {
-    Map<String, String> headers = this.headers == null ? Collections.emptyMap() : this.headers;
-    Supplier<Map<String, String>> headerSupplier = () -> headers;
+    Supplier<Map<String, String>> headerSupplier =
+        () -> {
+          Map<String, String> result = new HashMap<>();
+          Map<String, String> supplierResult = this.headerSupplier.get();
+          if (supplierResult != null) {
+            result.putAll(supplierResult);
+          }
+          result.putAll(staticHeaders);
+          return result;
+        };
 
     HttpSenderProvider httpSenderProvider = resolveHttpSenderProvider();
     HttpSender httpSender =
@@ -178,11 +191,13 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     joiner.add("timeoutNanos=" + timeoutNanos);
     joiner.add("compressionEnabled=" + compressionEnabled);
     joiner.add("exportAsJson=" + exportAsJson);
+    StringJoiner headersJoiner = new StringJoiner(", ", "Headers{", "}");
+    staticHeaders.forEach((key, value) -> headersJoiner.add(key + "=OBFUSCATED"));
+    Map<String, String> headers = headerSupplier.get();
     if (headers != null) {
-      StringJoiner headersJoiner = new StringJoiner(", ", "Headers{", "}");
       headers.forEach((key, value) -> headersJoiner.add(key + "=OBFUSCATED"));
-      joiner.add("headers=" + headersJoiner);
     }
+    joiner.add("headers=" + headersJoiner);
     if (retryPolicy != null) {
       joiner.add("retryPolicy=" + retryPolicy);
     }

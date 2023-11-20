@@ -15,6 +15,7 @@ import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.net.ssl.SSLContext;
@@ -33,7 +34,7 @@ public final class OtlpHttpSpanExporterBuilder {
 
   OtlpHttpSpanExporterBuilder(HttpExporterBuilder<TraceRequestMarshaler> delegate) {
     this.delegate = delegate;
-    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+    OtlpUserAgent.addUserAgentHeader(delegate::addStaticHeader);
   }
 
   OtlpHttpSpanExporterBuilder() {
@@ -83,9 +84,15 @@ public final class OtlpHttpSpanExporterBuilder {
     return this;
   }
 
-  /** Add header to requests. */
+  /** Add static header to requests. */
   public OtlpHttpSpanExporterBuilder addHeader(String key, String value) {
-    delegate.addHeader(key, value);
+    delegate.addStaticHeader(key, value);
+    return this;
+  }
+
+  /** Set the supplier of headers to add to requests. */
+  public OtlpHttpSpanExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
+    delegate.setHeadersSupplier(headerSupplier);
     return this;
   }
 

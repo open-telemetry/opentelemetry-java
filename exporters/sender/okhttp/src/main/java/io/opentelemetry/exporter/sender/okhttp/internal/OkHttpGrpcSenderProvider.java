@@ -33,7 +33,7 @@ public class OkHttpGrpcSenderProvider implements GrpcSenderProvider {
       String endpointPath,
       boolean compressionEnabled,
       long timeoutNanos,
-      Map<String, String> headers,
+      Supplier<Map<String, String>> headersSupplier,
       @Nullable Object managedChannel,
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
       @Nullable RetryPolicy retryPolicy,
@@ -43,7 +43,7 @@ public class OkHttpGrpcSenderProvider implements GrpcSenderProvider {
         endpoint.resolve(endpointPath).toString(),
         compressionEnabled,
         timeoutNanos,
-        headers,
+        headersSupplier,
         retryPolicy,
         sslContext,
         trustManager);

@@ -16,6 +16,7 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -49,7 +50,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   private long timeoutNanos;
   private URI endpoint;
   private boolean compressionEnabled = false;
-  private final Map<String, String> headers = new HashMap<>();
+  private Map<String, String> staticHeaders = new HashMap<>();
+  private Supplier<Map<String, String>> headerSupplier = Collections::emptyMap;
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy;
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
@@ -113,8 +115,16 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public GrpcExporterBuilder<T> addHeader(String key, String value) {
-    headers.put(key, value);
+  public GrpcExporterBuilder<T> addStaticHeader(String key, String value) {
+    if (staticHeaders == null) {
+      staticHeaders = new HashMap<>();
+    }
+    staticHeaders.put(key, value);
+    return this;
+  }
+
+  public GrpcExporterBuilder<T> setHeadersSupplier(Supplier<Map<String, String>> headerSupplier) {
+    this.headerSupplier = headerSupplier;
     return this;
   }
 
@@ -142,7 +152,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     copy.timeoutNanos = timeoutNanos;
     copy.endpoint = endpoint;
     copy.compressionEnabled = compressionEnabled;
-    copy.headers.putAll(headers);
+    copy.staticHeaders.putAll(staticHeaders);
+    copy.headerSupplier = headerSupplier;
     copy.tlsConfigHelper = tlsConfigHelper.copy();
     if (retryPolicy != null) {
       copy.retryPolicy = retryPolicy.toBuilder().build();
@@ -153,6 +164,17 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   }
 
   public GrpcExporter<T> build() {
+    Supplier<Map<String, String>> headerSupplier =
+        () -> {
+          Map<String, String> result = new HashMap<>();
+          Map<String, String> supplierResult = this.headerSupplier.get();
+          if (supplierResult != null) {
+            result.putAll(supplierResult);
+          }
+          result.putAll(staticHeaders);
+          return result;
+        };
+
     GrpcSenderProvider grpcSenderProvider = resolveGrpcSenderProvider();
     GrpcSender<T> grpcSender =
         grpcSenderProvider.createSender(
@@ -160,7 +182,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
             grpcEndpointPath,
             compressionEnabled,
             timeoutNanos,
-            headers,
+            headerSupplier,
             grpcChannel,
             grpcStubFactory,
             retryPolicy,
@@ -183,7 +205,11 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     joiner.add("timeoutNanos=" + timeoutNanos);
     joiner.add("compressionEnabled=" + compressionEnabled);
     StringJoiner headersJoiner = new StringJoiner(", ", "Headers{", "}");
-    headers.forEach((key, value) -> headersJoiner.add(key + "=OBFUSCATED"));
+    staticHeaders.forEach((key, value) -> headersJoiner.add(key + "=OBFUSCATED"));
+    Map<String, String> headers = headerSupplier.get();
+    if (headers != null) {
+      headers.forEach((key, value) -> headersJoiner.add(key + "=OBFUSCATED"));
+    }
     joiner.add("headers=" + headersJoiner);
     if (retryPolicy != null) {
       joiner.add("retryPolicy=" + retryPolicy);

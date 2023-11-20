@@ -93,7 +93,11 @@ public final class OkHttpHttpSender implements HttpSender {
       Consumer<Response> onResponse,
       Consumer<Throwable> onError) {
     Request.Builder requestBuilder = new Request.Builder().url(url);
-    headerSupplier.get().forEach(requestBuilder::addHeader);
+
+    Map<String, String> headers = headerSupplier.get();
+    if (headers != null) {
+      headers.forEach(requestBuilder::addHeader);
+    }
     RequestBody body = new RawRequestBody(marshaler, contentLength, mediaType);
     if (compressionEnabled) {
       requestBuilder.addHeader("Content-Encoding", "gzip");

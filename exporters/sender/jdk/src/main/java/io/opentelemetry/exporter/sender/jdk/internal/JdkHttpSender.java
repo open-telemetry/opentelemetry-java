@@ -140,7 +140,10 @@ public final class JdkHttpSender implements HttpSender {
     long startTimeNanos = System.nanoTime();
     HttpRequest.Builder requestBuilder =
         HttpRequest.newBuilder().uri(uri).timeout(Duration.ofNanos(timeoutNanos));
-    headerSupplier.get().forEach(requestBuilder::setHeader);
+    Map<String, String> headers = headerSupplier.get();
+    if (headers != null) {
+      headers.forEach(requestBuilder::setHeader);
+    }
     requestBuilder.header("Content-Type", contentType);
 
     NoCopyByteArrayOutputStream os = threadLocalBaos.get();

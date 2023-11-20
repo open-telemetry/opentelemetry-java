@@ -17,6 +17,7 @@ import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.net.ssl.SSLContext;
@@ -43,7 +44,7 @@ public final class OtlpGrpcLogRecordExporterBuilder {
 
   OtlpGrpcLogRecordExporterBuilder(GrpcExporterBuilder<LogsRequestMarshaler> delegate) {
     this.delegate = delegate;
-    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+    OtlpUserAgent.addUserAgentHeader(delegate::addStaticHeader);
   }
 
   OtlpGrpcLogRecordExporterBuilder() {
@@ -159,7 +160,16 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    * @return this builder's instance
    */
   public OtlpGrpcLogRecordExporterBuilder addHeader(String key, String value) {
-    delegate.addHeader(key, value);
+    delegate.addStaticHeader(key, value);
+    return this;
+  }
+
+  /**
+   * Set the supplier of headers to add to requests. Applicable only if {@link
+   * OtlpGrpcLogRecordExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
+   */
+  public OtlpGrpcLogRecordExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
+    delegate.setHeadersSupplier(headerSupplier);
     return this;
   }
 

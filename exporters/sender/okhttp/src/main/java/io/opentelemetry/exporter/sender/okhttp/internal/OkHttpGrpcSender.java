@@ -39,12 +39,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
@@ -65,7 +65,7 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
 
   private final OkHttpClient client;
   private final HttpUrl url;
-  private final Headers headers;
+  private final Supplier<Map<String, String>> headersSupplier;
   private final boolean compressionEnabled;
 
   /** Creates a new {@link OkHttpGrpcSender}. */
@@ -73,7 +73,7 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
       String endpoint,
       boolean compressionEnabled,
       long timeoutNanos,
-      Map<String, String> headers,
+      Supplier<Map<String, String>> headersSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager) {
@@ -94,22 +94,23 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
       clientBuilder.protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1));
     }
     this.client = clientBuilder.build();
-
-    Headers.Builder headersBuilder = new Headers.Builder();
-    headers.forEach(headersBuilder::add);
-    headersBuilder.add("te", "trailers");
-    if (compressionEnabled) {
-      headersBuilder.add("grpc-encoding", "gzip");
-    }
-    this.headers = headersBuilder.build();
+    this.headersSupplier = headersSupplier;
     this.url = HttpUrl.get(endpoint);
     this.compressionEnabled = compressionEnabled;
   }
 
   @Override
   public void send(T request, Runnable onSuccess, BiConsumer<GrpcResponse, Throwable> onError) {
-    Request.Builder requestBuilder = new Request.Builder().url(url).headers(headers);
+    Request.Builder requestBuilder = new Request.Builder().url(url);
 
+    Map<String, String> headers = headersSupplier.get();
+    if (headers != null) {
+      headers.forEach(requestBuilder::addHeader);
+    }
+    requestBuilder.addHeader("te", "trailers");
+    if (compressionEnabled) {
+      requestBuilder.addHeader("grpc-encoding", "gzip");
+    }
     RequestBody requestBody = new GrpcRequestBody(request, compressionEnabled);
     requestBuilder.post(requestBody);
 

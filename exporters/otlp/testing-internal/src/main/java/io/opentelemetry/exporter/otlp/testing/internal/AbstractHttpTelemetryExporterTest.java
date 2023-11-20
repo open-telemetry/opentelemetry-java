@@ -326,15 +326,31 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
   @Test
   void withHeaders() {
+    AtomicInteger count = new AtomicInteger();
     TelemetryExporter<T> exporter =
-        exporterBuilder().setEndpoint(server.httpUri() + path).addHeader("key", "value").build();
+        exporterBuilder()
+            .setEndpoint(server.httpUri() + path)
+            .addHeader("key1", "value1")
+            .setHeaders(() -> Collections.singletonMap("key2", "value" + count.incrementAndGet()))
+            .build();
     try {
+      // Export twice to ensure header supplier gets invoked twice
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      result = exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+
       assertThat(httpRequests)
-          .singleElement()
-          .satisfies(req -> assertThat(req.headers().get("key")).isEqualTo("value"));
+          .satisfiesExactly(
+              req -> {
+                assertThat(req.headers().get("key1")).isEqualTo("value1");
+                assertThat(req.headers().get("key2")).isEqualTo("value" + (count.get() - 1));
+              },
+              req -> {
+                assertThat(req.headers().get("key1")).isEqualTo("value1");
+                assertThat(req.headers().get("key2")).isEqualTo("value" + count.get());
+              });
     } finally {
       exporter.shutdown();
     }

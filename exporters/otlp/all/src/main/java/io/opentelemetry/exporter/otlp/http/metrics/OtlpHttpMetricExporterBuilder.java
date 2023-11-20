@@ -18,7 +18,9 @@ import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
@@ -44,7 +46,7 @@ public final class OtlpHttpMetricExporterBuilder {
   OtlpHttpMetricExporterBuilder(HttpExporterBuilder<MetricsRequestMarshaler> delegate) {
     this.delegate = delegate;
     delegate.setMeterProvider(MeterProvider::noop);
-    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+    OtlpUserAgent.addUserAgentHeader(delegate::addStaticHeader);
   }
 
   OtlpHttpMetricExporterBuilder() {
@@ -94,9 +96,15 @@ public final class OtlpHttpMetricExporterBuilder {
     return this;
   }
 
-  /** Add header to requests. */
+  /** Add static header to requests. */
   public OtlpHttpMetricExporterBuilder addHeader(String key, String value) {
-    delegate.addHeader(key, value);
+    delegate.addStaticHeader(key, value);
+    return this;
+  }
+
+  /** Set the supplier of headers to add to requests. */
+  public OtlpHttpMetricExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
+    delegate.setHeadersSupplier(headerSupplier);
     return this;
   }
 
