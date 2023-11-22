@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.common.export.MemoryMode.IMMUTABLE_DATA;
 import static io.opentelemetry.sdk.common.export.MemoryMode.REUSABLE_DATA;
+import static io.opentelemetry.sdk.metrics.data.AggregationTemporality.DELTA;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -177,7 +178,11 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
               + metricDescriptor.getSourceInstrument().getName()
               + " has exceeded the maximum allowed cardinality ("
               + maxCardinality
-              + ").");
+              + ")."
+              + ((memoryMode == REUSABLE_DATA && aggregationTemporality == DELTA)
+                  ? "REUSABLE_DATA memory mode used, hence expiring unused Attributes might "
+                      + "result in increased memory allocations. See MemoryMode.java for more details."
+                  : ""));
       // Return handle for overflow series, first checking if a handle already exists for it
       attributes = MetricStorage.CARDINALITY_OVERFLOW;
       handle = aggregatorHandles.get(attributes);
@@ -200,9 +205,9 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
       InstrumentationScopeInfo instrumentationScopeInfo,
       long startEpochNanos,
       long epochNanos) {
-    boolean reset = aggregationTemporality == AggregationTemporality.DELTA;
+    boolean reset = aggregationTemporality == DELTA;
     long start =
-        aggregationTemporality == AggregationTemporality.DELTA
+        aggregationTemporality == DELTA
             ? registeredReader.getLastCollectEpochNanos()
             : startEpochNanos;
 
