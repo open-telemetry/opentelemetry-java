@@ -19,6 +19,20 @@ dependencies {
   implementation(project(path = ":sdk:trace-shaded-deps"))
 }
 
+// org.graalvm.buildtools.native pluging requires java 11+ as of version 0.9.26
+// https://github.com/graalvm/native-build-tools/blob/master/docs/src/docs/asciidoc/index.adoc
+tasks {
+  withType<JavaCompile>().configureEach {
+    sourceCompatibility = "11"
+    targetCompatibility = "11"
+    options.release.set(11)
+  }
+  withType<Test>().configureEach {
+    val testJavaVersion: String? by project
+    enabled = !testJavaVersion.equals("8")
+  }
+}
+
 graalvmNative {
   binaries {
     named("test") {
