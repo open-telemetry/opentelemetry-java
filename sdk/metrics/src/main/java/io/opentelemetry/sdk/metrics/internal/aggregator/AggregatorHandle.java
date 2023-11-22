@@ -112,7 +112,12 @@ public abstract class AggregatorHandle<T extends PointData, U extends ExemplarDa
         "This aggregator does not support recording double values.");
   }
 
-  public boolean isValuesRecorded() {
+  /**
+   * Checks whether this handle has values recorded.
+   *
+   * @return True if values has been recorded to it
+   */
+  public boolean hasRecordedValues() {
     return valuesRecorded;
   }
 }

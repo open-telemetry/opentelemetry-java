@@ -9,7 +9,6 @@ import static io.opentelemetry.sdk.common.export.MemoryMode.IMMUTABLE_DATA;
 
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -32,7 +31,7 @@ public final class InMemoryMetricReaderBuilder {
    * <p>Creates a builder with always-cumulative {@link AggregationTemporalitySelector}, default
    * {@link DefaultAggregationSelector} and {@link MemoryMode#IMMUTABLE_DATA} {@link MemoryMode}
    */
-  public InMemoryMetricReaderBuilder() {}
+  InMemoryMetricReaderBuilder() {}
 
   /**
    * Sets the {@link AggregationTemporalitySelector} used by {@link
@@ -69,12 +68,6 @@ public final class InMemoryMetricReaderBuilder {
    */
   public InMemoryMetricReaderBuilder setMemoryMode(MemoryMode memoryMode) {
     this.memoryMode = memoryMode;
-    return this;
-  }
-
-  /** Sets the {@link AggregationTemporalitySelector} to {@link AggregationTemporality#DELTA}. */
-  public InMemoryMetricReaderBuilder setDelta() {
-    setAggregationTemporalitySelector(unused -> AggregationTemporality.DELTA);
     return this;
   }
 

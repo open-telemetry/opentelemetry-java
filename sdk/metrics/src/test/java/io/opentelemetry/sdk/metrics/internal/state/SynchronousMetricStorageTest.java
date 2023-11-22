@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -42,7 +43,6 @@ import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.assertj.DoubleSumAssert;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
-import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReaderBuilder;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -89,12 +89,15 @@ public class SynchronousMetricStorageTest {
   private void initialize(MemoryMode memoryMode) {
     deltaReader =
         RegisteredReader.create(
-            new InMemoryMetricReaderBuilder().setDelta().setMemoryMode(memoryMode).build(),
+            InMemoryMetricReader.builder()
+                .setAggregationTemporalitySelector(unused -> AggregationTemporality.DELTA)
+                .setMemoryMode(memoryMode)
+                .build(),
             ViewRegistry.create());
 
     cumulativeReader =
         RegisteredReader.create(
-            new InMemoryMetricReaderBuilder().setMemoryMode(memoryMode).build(),
+            InMemoryMetricReader.builder().setMemoryMode(memoryMode).build(),
             ViewRegistry.create());
 
     aggregator =
@@ -802,7 +805,10 @@ public class SynchronousMetricStorageTest {
               // Delta
               new DefaultSynchronousMetricStorage<>(
                   RegisteredReader.create(
-                      InMemoryMetricReader.builder().setDelta().setMemoryMode(memoryMode).build(),
+                      InMemoryMetricReader.builder()
+                          .setAggregationTemporalitySelector(unused -> AggregationTemporality.DELTA)
+                          .setMemoryMode(memoryMode)
+                          .build(),
                       ViewRegistry.create()),
                   METRIC_DESCRIPTOR,
                   aggregator,
