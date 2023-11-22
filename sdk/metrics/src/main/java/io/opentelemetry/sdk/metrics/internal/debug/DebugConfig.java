@@ -15,6 +15,8 @@ import io.opentelemetry.api.internal.ConfigUtil;
  */
 public final class DebugConfig {
   private static final String ENABLE_METRICS_DEBUG_PROPERTY = "otel.experimental.sdk.metrics.debug";
+
+  @SuppressWarnings("NonFinalStaticField")
   private static boolean enabled;
 
   private DebugConfig() {}

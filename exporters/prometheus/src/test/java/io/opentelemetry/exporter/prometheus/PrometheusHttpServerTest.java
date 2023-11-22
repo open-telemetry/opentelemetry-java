@@ -58,7 +58,10 @@ import org.junit.jupiter.params.provider.ValueSource;
 class PrometheusHttpServerTest {
   private static final AtomicReference<List<MetricData>> metricData = new AtomicReference<>();
 
+  @SuppressWarnings("NonFinalStaticField")
   static PrometheusHttpServer prometheusServer;
+
+  @SuppressWarnings("NonFinalStaticField")
   static WebClient client;
 
   @RegisterExtension

@@ -25,6 +25,7 @@ import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Benchmark)
 public class ExceptionBenchmark {
+  @SuppressWarnings("NonFinalStaticField")
   private static SpanBuilder spanBuilder;
 
   @Setup(Level.Trial)

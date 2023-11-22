@@ -1,0 +1,7 @@
+Comparing source compatibility of  against 
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.DoubleHistogramBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.DoubleHistogramBuilder setExplicitBucketBoundariesAdvice(java.util.List<java.lang.Double>)
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongHistogramBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.LongHistogramBuilder setExplicitBucketBoundariesAdvice(java.util.List<java.lang.Long>)

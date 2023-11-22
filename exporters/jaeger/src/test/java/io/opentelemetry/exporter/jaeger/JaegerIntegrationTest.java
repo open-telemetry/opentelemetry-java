@@ -41,7 +41,7 @@ class JaegerIntegrationTest {
   private static final String JAEGER_URL = "http://localhost";
 
   @Container
-  public static GenericContainer<?> jaegerContainer =
+  public static final GenericContainer<?> jaegerContainer =
       new GenericContainer<>("ghcr.io/open-telemetry/opentelemetry-java/jaeger:1.32")
           .withImagePullPolicy(PullPolicy.alwaysPull())
           .withExposedPorts(COLLECTOR_PORT, QUERY_PORT, HEALTH_PORT)

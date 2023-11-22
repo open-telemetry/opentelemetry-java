@@ -12,6 +12,7 @@ otelJava.moduleName.set("io.opentelemetry.sdk.logs")
 dependencies {
   api(project(":api:all"))
   api(project(":sdk:common"))
+  implementation(project(":extensions:incubator"))
 
   implementation(project(":api:events"))
 
@@ -20,4 +21,5 @@ dependencies {
   testImplementation(project(":sdk:testing"))
 
   testImplementation("org.awaitility:awaitility")
+  testImplementation("com.google.guava:guava")
 }

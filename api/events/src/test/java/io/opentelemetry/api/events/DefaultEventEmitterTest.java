@@ -8,6 +8,8 @@ package io.opentelemetry.api.events;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.api.common.Attributes;
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class DefaultEventEmitterTest {
@@ -20,6 +22,20 @@ class DefaultEventEmitterTest {
             () ->
                 DefaultEventEmitter.getInstance()
                     .emit("event-name", Attributes.builder().put("key1", "value1").build()))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void builder() {
+    Attributes attributes = Attributes.builder().put("key1", "value1").build();
+    EventEmitter emitter = DefaultEventEmitter.getInstance();
+    assertThatCode(
+            () ->
+                emitter
+                    .builder("myEvent", attributes)
+                    .setTimestamp(123456L, TimeUnit.NANOSECONDS)
+                    .setTimestamp(Instant.now())
+                    .emit())
         .doesNotThrowAnyException();
   }
 }

@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,8 +47,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   private final MetricDescriptor metricDescriptor;
   private final AggregationTemporality aggregationTemporality;
   private final Aggregator<T, U> aggregator;
-  private final ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles =
-      new ConcurrentHashMap<>();
+  private volatile AggregatorHolder<T, U> aggregatorHolder = new AggregatorHolder<>();
   private final AttributesProcessor attributesProcessor;
 
   /**
@@ -83,8 +83,14 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
   @Override
   public void recordLong(long value, Attributes attributes, Context context) {
-    AggregatorHandle<T, U> handle = getAggregatorHandle(attributes, context);
-    handle.recordLong(value, attributes, context);
+    AggregatorHolder<T, U> aggregatorHolder = getHolderForRecord();
+    try {
+      AggregatorHandle<T, U> handle =
+          getAggregatorHandle(aggregatorHolder.aggregatorHandles, attributes, context);
+      handle.recordLong(value, attributes, context);
+    } finally {
+      releaseHolderForRecord(aggregatorHolder);
+    }
   }
 
   @Override
@@ -99,11 +105,50 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
               + ". Dropping measurement.");
       return;
     }
-    AggregatorHandle<T, U> handle = getAggregatorHandle(attributes, context);
-    handle.recordDouble(value, attributes, context);
+    AggregatorHolder<T, U> aggregatorHolder = getHolderForRecord();
+    try {
+      AggregatorHandle<T, U> handle =
+          getAggregatorHandle(aggregatorHolder.aggregatorHandles, attributes, context);
+      handle.recordDouble(value, attributes, context);
+    } finally {
+      releaseHolderForRecord(aggregatorHolder);
+    }
   }
 
-  private AggregatorHandle<T, U> getAggregatorHandle(Attributes attributes, Context context) {
+  /**
+   * Obtain the AggregatorHolder for recording measurements, re-reading the volatile
+   * this.aggregatorHolder until we access one where recordsInProgress is even. Collect sets
+   * recordsInProgress to odd as a signal that AggregatorHolder is stale and is being replaced.
+   * Record operations increment recordInProgress by 2. Callers MUST call {@link
+   * #releaseHolderForRecord(AggregatorHolder)} when record operation completes to signal to that
+   * its safe to proceed with Collect operations.
+   */
+  private AggregatorHolder<T, U> getHolderForRecord() {
+    do {
+      AggregatorHolder<T, U> aggregatorHolder = this.aggregatorHolder;
+      int recordsInProgress = aggregatorHolder.activeRecordingThreads.addAndGet(2);
+      if (recordsInProgress % 2 == 0) {
+        return aggregatorHolder;
+      } else {
+        // Collect is in progress, decrement recordsInProgress to allow collect to proceed and
+        // re-read aggregatorHolder
+        aggregatorHolder.activeRecordingThreads.addAndGet(-2);
+      }
+    } while (true);
+  }
+
+  /**
+   * Called on the {@link AggregatorHolder} obtained from {@link #getHolderForRecord()} to indicate
+   * that recording is complete and it is safe to collect.
+   */
+  private void releaseHolderForRecord(AggregatorHolder<T, U> aggregatorHolder) {
+    aggregatorHolder.activeRecordingThreads.addAndGet(-2);
+  }
+
+  private AggregatorHandle<T, U> getAggregatorHandle(
+      ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles,
+      Attributes attributes,
+      Context context) {
     Objects.requireNonNull(attributes, "attributes");
     attributes = attributesProcessor.process(attributes, context);
     AggregatorHandle<T, U> handle = aggregatorHandles.get(attributes);
@@ -146,13 +191,29 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
             ? registeredReader.getLastCollectEpochNanos()
             : startEpochNanos;
 
+    ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles;
+    if (reset) {
+      AggregatorHolder<T, U> holder = this.aggregatorHolder;
+      this.aggregatorHolder = new AggregatorHolder<>();
+      // Increment recordsInProgress by 1, which produces an odd number acting as a signal that
+      // record operations should re-read the volatile this.aggregatorHolder.
+      // Repeatedly grab recordsInProgress until it is <= 1, which signals all active record
+      // operations are complete.
+      int recordsInProgress = holder.activeRecordingThreads.addAndGet(1);
+      while (recordsInProgress > 1) {
+        recordsInProgress = holder.activeRecordingThreads.get();
+      }
+      aggregatorHandles = holder.aggregatorHandles;
+    } else {
+      aggregatorHandles = this.aggregatorHolder.aggregatorHandles;
+    }
+
     // Grab aggregated points.
     List<T> points = new ArrayList<>(aggregatorHandles.size());
     aggregatorHandles.forEach(
         (attributes, handle) -> {
           T point = handle.aggregateThenMaybeReset(start, epochNanos, attributes, reset);
           if (reset) {
-            aggregatorHandles.remove(attributes, handle);
             // Return the aggregator to the pool.
             aggregatorHandlePool.offer(handle);
           }
@@ -179,5 +240,25 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   @Override
   public MetricDescriptor getMetricDescriptor() {
     return metricDescriptor;
+  }
+
+  private static class AggregatorHolder<T extends PointData, U extends ExemplarData> {
+    private final ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles =
+        new ConcurrentHashMap<>();
+    // Recording threads grab the current interval (AggregatorHolder) and atomically increment
+    // this by 2 before recording against it (and then decrement by two when done).
+    //
+    // The collection thread grabs the current interval (AggregatorHolder) and atomically
+    // increments this by 1 to "lock" this interval (and then waits for any active recording
+    // threads to complete before collecting it).
+    //
+    // Recording threads check the return value of their atomic increment, and if it's odd
+    // that means the collector thread has "locked" this interval for collection.
+    //
+    // But before the collector "locks" the interval it sets up a new current interval
+    // (AggregatorHolder), and so if a recording thread encounters an odd value,
+    // all it needs to do is release the "read lock" it just obtained (decrementing by 2),
+    // and then grab and record against the new current interval (AggregatorHolder).
+    private final AtomicInteger activeRecordingThreads = new AtomicInteger(0);
   }
 }

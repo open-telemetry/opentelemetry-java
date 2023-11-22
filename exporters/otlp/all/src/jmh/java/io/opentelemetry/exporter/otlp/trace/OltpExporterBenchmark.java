@@ -44,6 +44,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @Measurement(iterations = 20, time = 1)
 @Fork(1)
 @State(Scope.Benchmark)
+@SuppressWarnings("NonFinalStaticField")
 public class OltpExporterBenchmark {
   private static final Server server =
       Server.builder()
@@ -94,7 +95,7 @@ public class OltpExporterBenchmark {
                 URI.create("http://localhost:" + server.activeLocalPort())
                     .resolve(OtlpGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH)
                     .toString(),
-                false,
+                /* compressionEnabled= */ false,
                 10,
                 Collections.emptyMap(),
                 null,

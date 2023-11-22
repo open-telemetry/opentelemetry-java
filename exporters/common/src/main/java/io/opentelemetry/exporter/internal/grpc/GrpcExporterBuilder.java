@@ -123,8 +123,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public GrpcExporterBuilder<T> setMeterProvider(MeterProvider meterProvider) {
-    this.meterProviderSupplier = () -> meterProvider;
+  public GrpcExporterBuilder<T> setMeterProvider(Supplier<MeterProvider> meterProviderSupplier) {
+    this.meterProviderSupplier = meterProviderSupplier;
     return this;
   }
 

@@ -38,7 +38,7 @@ public enum TestSdk {
               .get("io.opentelemetry.sdk.metrics");
         }
       }),
-  SDK(
+  SDK_CUMULATIVE(
       new SdkBuilder() {
         @Override
         Meter build() {
@@ -47,6 +47,19 @@ public enum TestSdk {
               .setResource(Resource.empty())
               // Must register reader for real SDK.
               .registerMetricReader(InMemoryMetricReader.create())
+              .build()
+              .get("io.opentelemetry.sdk.metrics");
+        }
+      }),
+  SDK_DELTA(
+      new SdkBuilder() {
+        @Override
+        Meter build() {
+          return SdkMeterProvider.builder()
+              .setClock(Clock.getDefault())
+              .setResource(Resource.empty())
+              // Must register reader for real SDK.
+              .registerMetricReader(InMemoryMetricReader.createDelta())
               .build()
               .get("io.opentelemetry.sdk.metrics");
         }

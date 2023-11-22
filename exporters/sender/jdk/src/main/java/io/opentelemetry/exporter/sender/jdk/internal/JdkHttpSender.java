@@ -31,6 +31,7 @@ import java.util.function.Supplier;
 import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 
 /**
  * {@link HttpSender} which is backed by JDK {@link HttpClient}.
@@ -56,19 +57,16 @@ public final class JdkHttpSender implements HttpSender {
   private final Supplier<Map<String, String>> headerSupplier;
   @Nullable private final RetryPolicy retryPolicy;
 
+  // Visible for testing
   JdkHttpSender(
+      HttpClient client,
       String endpoint,
       boolean compressionEnabled,
       String contentType,
       long timeoutNanos,
       Supplier<Map<String, String>> headerSupplier,
-      @Nullable RetryPolicy retryPolicy,
-      @Nullable SSLContext sslContext) {
-    HttpClient.Builder builder = HttpClient.newBuilder().executor(executorService);
-    if (sslContext != null) {
-      builder.sslContext(sslContext);
-    }
-    this.client = builder.build();
+      @Nullable RetryPolicy retryPolicy) {
+    this.client = client;
     try {
       this.uri = new URI(endpoint);
     } catch (URISyntaxException e) {
@@ -81,6 +79,36 @@ public final class JdkHttpSender implements HttpSender {
     this.retryPolicy = retryPolicy;
   }
 
+  JdkHttpSender(
+      String endpoint,
+      boolean compressionEnabled,
+      String contentType,
+      long timeoutNanos,
+      Supplier<Map<String, String>> headerSupplier,
+      @Nullable RetryPolicy retryPolicy,
+      @Nullable SSLContext sslContext) {
+    this(
+        configureClient(sslContext),
+        endpoint,
+        compressionEnabled,
+        contentType,
+        timeoutNanos,
+        headerSupplier,
+        retryPolicy);
+  }
+
+  private static HttpClient configureClient(@Nullable SSLContext sslContext) {
+    HttpClient.Builder builder =
+        HttpClient.newBuilder()
+            // Aligned with OkHttpClient default connect timeout
+            // TODO (jack-berg): Consider making connect timeout configurable
+            .connectTimeout(Duration.ofSeconds(10));
+    if (sslContext != null) {
+      builder.sslContext(sslContext);
+    }
+    return builder.build();
+  }
+
   @Override
   public void send(
       Consumer<OutputStream> marshaler,
@@ -88,7 +116,15 @@ public final class JdkHttpSender implements HttpSender {
       Consumer<Response> onResponse,
       Consumer<Throwable> onError) {
     CompletableFuture<HttpResponse<byte[]>> unused =
-        CompletableFuture.supplyAsync(() -> sendInternal(marshaler), executorService)
+        CompletableFuture.supplyAsync(
+                () -> {
+                  try {
+                    return sendInternal(marshaler);
+                  } catch (IOException e) {
+                    throw new IllegalStateException(e);
+                  }
+                },
+                executorService)
             .whenComplete(
                 (httpResponse, throwable) -> {
                   if (throwable != null) {
@@ -99,7 +135,8 @@ public final class JdkHttpSender implements HttpSender {
                 });
   }
 
-  private HttpResponse<byte[]> sendInternal(Consumer<OutputStream> marshaler) {
+  // Visible for testing
+  HttpResponse<byte[]> sendInternal(Consumer<OutputStream> marshaler) throws IOException {
     long startTimeNanos = System.nanoTime();
     HttpRequest.Builder requestBuilder =
         HttpRequest.newBuilder().uri(uri).timeout(Duration.ofNanos(timeoutNanos));
@@ -129,44 +166,68 @@ public final class JdkHttpSender implements HttpSender {
 
     long attempt = 0;
     long nextBackoffNanos = retryPolicy.getInitialBackoff().toNanos();
+    HttpResponse<byte[]> httpResponse = null;
+    IOException exception = null;
     do {
-      requestBuilder.timeout(Duration.ofNanos(timeoutNanos - (System.nanoTime() - startTimeNanos)));
-      HttpResponse<byte[]> httpResponse = sendRequest(requestBuilder, byteBufferPool);
-      attempt++;
-      if (attempt >= retryPolicy.getMaxAttempts()
-          || !retryableStatusCodes.contains(httpResponse.statusCode())) {
-        return httpResponse;
+      if (attempt > 0) {
+        // Compute and sleep for backoff
+        long upperBoundNanos = Math.min(nextBackoffNanos, retryPolicy.getMaxBackoff().toNanos());
+        long backoffNanos = ThreadLocalRandom.current().nextLong(upperBoundNanos);
+        nextBackoffNanos = (long) (nextBackoffNanos * retryPolicy.getBackoffMultiplier());
+        try {
+          TimeUnit.NANOSECONDS.sleep(backoffNanos);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          break; // Break out and return response or throw
+        }
+        // If after sleeping we've exceeded timeoutNanos, break out and return response or throw
+        if ((System.nanoTime() - startTimeNanos) >= timeoutNanos) {
+          break;
+        }
       }
 
-      // Compute and sleep for backoff
-      long upperBoundNanos = Math.min(nextBackoffNanos, retryPolicy.getMaxBackoff().toNanos());
-      long backoffNanos = ThreadLocalRandom.current().nextLong(upperBoundNanos);
-      nextBackoffNanos = (long) (nextBackoffNanos * retryPolicy.getBackoffMultiplier());
+      attempt++;
+      requestBuilder.timeout(Duration.ofNanos(timeoutNanos - (System.nanoTime() - startTimeNanos)));
       try {
-        TimeUnit.NANOSECONDS.sleep(backoffNanos);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        throw new IllegalStateException(e);
+        httpResponse = sendRequest(requestBuilder, byteBufferPool);
+      } catch (IOException e) {
+        exception = e;
       }
-      if ((System.nanoTime() - startTimeNanos) >= timeoutNanos) {
+
+      if (httpResponse != null && !retryableStatusCodes.contains(httpResponse.statusCode())) {
         return httpResponse;
       }
-    } while (true);
+      if (exception != null && !isRetryableException(exception)) {
+        throw exception;
+      }
+    } while (attempt < retryPolicy.getMaxAttempts());
+
+    if (httpResponse != null) {
+      return httpResponse;
+    }
+    throw exception;
   }
 
   private HttpResponse<byte[]> sendRequest(
-      HttpRequest.Builder requestBuilder, ByteBufferPool byteBufferPool) {
+      HttpRequest.Builder requestBuilder, ByteBufferPool byteBufferPool) throws IOException {
     try {
       return client.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray());
-    } catch (IOException | InterruptedException e) {
-      if (e instanceof InterruptedException) {
-        Thread.currentThread().interrupt();
-      }
-      // TODO: is throwable retryable?
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
       throw new IllegalStateException(e);
     } finally {
       byteBufferPool.resetPool();
     }
+  }
+
+  private static boolean isRetryableException(IOException throwable) {
+    // Almost all IOExceptions we've encountered are transient retryable, so we opt out of specific
+    // IOExceptions that are unlikely to resolve rather than opting in.
+    // Known retryable IOException messages: "Connection reset", "/{remote ip}:{remote port} GOAWAY
+    // received"
+    // Known retryable HttpTimeoutException messages: "request timed out"
+    // Known retryable HttpConnectTimeoutException messages: "HTTP connect timed out"
+    return !(throwable instanceof SSLException);
   }
 
   private static class NoCopyByteArrayOutputStream extends ByteArrayOutputStream {
