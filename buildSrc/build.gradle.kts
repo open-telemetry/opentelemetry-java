@@ -42,7 +42,7 @@ repositories {
 }
 
 dependencies {
-  implementation(enforcedPlatform("com.squareup.wire:wire-bom:4.9.2"))
+  implementation(enforcedPlatform("com.squareup.wire:wire-bom:4.9.3"))
   implementation("com.google.auto.value:auto-value-annotations:1.10.4")
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:6.22.0")
