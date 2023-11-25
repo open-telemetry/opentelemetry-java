@@ -9,6 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
@@ -33,6 +34,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
+import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -52,8 +54,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 class PrometheusHttpServerTest {
   private static final AtomicReference<List<MetricData>> metricData = new AtomicReference<>();
@@ -65,7 +65,7 @@ class PrometheusHttpServerTest {
   static WebClient client;
 
   @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(PrometheusHttpServer.class);
+  LogCapturer logs = LogCapturer.create().captureForType(Otel2PrometheusConverter.class);
 
   @BeforeAll
   static void beforeAll() {
@@ -108,71 +108,71 @@ class PrometheusHttpServerTest {
         .hasMessage("host must not be empty");
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {"/metrics", "/"})
-  void fetchPrometheus(String endpoint) {
-    AggregatedHttpResponse response = client.get(endpoint).aggregate().join();
+  @Test
+  void fetchPrometheus() {
+    AggregatedHttpResponse response = client.get("/metrics").aggregate().join();
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
         .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
-    assertThat(response.contentUtf8())
-        .isEqualTo(
-            "# TYPE target info\n"
-                + "# HELP target Target metadata\n"
-                + "target_info{kr=\"vr\"} 1\n"
-                + "# TYPE grpc_name_total counter\n"
-                + "# HELP grpc_name_total long_description\n"
-                + "grpc_name_total{otel_scope_name=\"grpc\",otel_scope_version=\"version\",kp=\"vp\"} 5.0 0\n"
-                + "# TYPE http_name_total counter\n"
-                + "# HELP http_name_total double_description\n"
-                + "http_name_total{otel_scope_name=\"http\",otel_scope_version=\"version\",kp=\"vp\"} 3.5 0\n");
+    assertEquals(
+        "# HELP grpc_name_total long_description\n"
+            + "# TYPE grpc_name_total counter\n"
+            + "grpc_name_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
+            + "# HELP http_name_total double_description\n"
+            + "# TYPE http_name_total counter\n"
+            + "http_name_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
+            + "# TYPE target_info gauge\n"
+            + "target_info{kr=\"vr\"} 1\n",
+        response.contentUtf8());
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {"/metrics", "/"})
-  void fetchOpenMetrics(String endpoint) {
+  @Test
+  void fetchOpenMetrics() {
     AggregatedHttpResponse response =
         client
             .execute(
                 RequestHeaders.of(
                     HttpMethod.GET,
-                    endpoint,
+                    "/metrics",
                     HttpHeaderNames.ACCEPT,
                     "application/openmetrics-text"))
             .aggregate()
             .join();
-    assertThat(response.status()).isEqualTo(HttpStatus.OK);
-    assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
-        .isEqualTo("application/openmetrics-text; version=1.0.0; charset=utf-8");
-    assertThat(response.contentUtf8())
-        .isEqualTo(
-            "# TYPE target info\n"
-                + "# HELP target Target metadata\n"
-                + "target_info{kr=\"vr\"} 1\n"
-                + "# TYPE grpc_name counter\n"
-                + "# HELP grpc_name long_description\n"
-                + "grpc_name_total{otel_scope_name=\"grpc\",otel_scope_version=\"version\",kp=\"vp\"} 5.0 0.000\n"
-                + "# TYPE http_name counter\n"
-                + "# HELP http_name double_description\n"
-                + "http_name_total{otel_scope_name=\"http\",otel_scope_version=\"version\",kp=\"vp\"} 3.5 0.000\n"
-                + "# EOF\n");
+    assertEquals(HttpStatus.OK, response.status());
+    assertEquals(
+        "application/openmetrics-text; version=1.0.0; charset=utf-8",
+        response.headers().get(HttpHeaderNames.CONTENT_TYPE));
+    assertEquals(
+        "# TYPE grpc_name counter\n"
+            + "# HELP grpc_name long_description\n"
+            + "grpc_name_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
+            + "# TYPE http_name counter\n"
+            + "# HELP http_name double_description\n"
+            + "http_name_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
+            + "# TYPE target info\n"
+            + "target_info{kr=\"vr\"} 1\n"
+            + "# EOF\n",
+        response.contentUtf8());
   }
 
   @Test
   void fetchFiltered() {
     AggregatedHttpResponse response =
-        client.get("/?name[]=grpc_name_total&name[]=bears_total").aggregate().join();
+        client
+            .get("/?name[]=grpc_name_total&name[]=bears_total&name[]=target_info")
+            .aggregate()
+            .join();
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
         .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
-    assertThat(response.contentUtf8())
-        .isEqualTo(
-            "# TYPE target info\n"
-                + "# HELP target Target metadata\n"
-                + "target_info{kr=\"vr\"} 1\n"
-                + "# TYPE grpc_name_total counter\n"
-                + "# HELP grpc_name_total long_description\n"
-                + "grpc_name_total{otel_scope_name=\"grpc\",otel_scope_version=\"version\",kp=\"vp\"} 5.0 0\n");
+    assertEquals(
+        ""
+            + "# HELP grpc_name_total long_description\n"
+            + "# TYPE grpc_name_total counter\n"
+            + "grpc_name_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
+            + "# TYPE target_info gauge\n"
+            + "target_info{kr=\"vr\"} 1\n",
+        response.contentUtf8());
   }
 
   @Test
@@ -182,24 +182,23 @@ class PrometheusHttpServerTest {
             .decorator(RetryingClient.newDecorator(RetryRule.failsafe()))
             .addHeader(HttpHeaderNames.ACCEPT_ENCODING, "gzip")
             .build();
-    AggregatedHttpResponse response = client.get("/").aggregate().join();
+    AggregatedHttpResponse response = client.get("/metrics").aggregate().join();
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
         .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_ENCODING)).isEqualTo("gzip");
     GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(response.content().array()));
     String content = new String(ByteStreams.toByteArray(gis), StandardCharsets.UTF_8);
-    assertThat(content)
-        .isEqualTo(
-            "# TYPE target info\n"
-                + "# HELP target Target metadata\n"
-                + "target_info{kr=\"vr\"} 1\n"
-                + "# TYPE grpc_name_total counter\n"
-                + "# HELP grpc_name_total long_description\n"
-                + "grpc_name_total{otel_scope_name=\"grpc\",otel_scope_version=\"version\",kp=\"vp\"} 5.0 0\n"
-                + "# TYPE http_name_total counter\n"
-                + "# HELP http_name_total double_description\n"
-                + "http_name_total{otel_scope_name=\"http\",otel_scope_version=\"version\",kp=\"vp\"} 3.5 0\n");
+    assertEquals(
+        "# HELP grpc_name_total long_description\n"
+            + "# TYPE grpc_name_total counter\n"
+            + "grpc_name_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
+            + "# HELP http_name_total double_description\n"
+            + "# TYPE http_name_total counter\n"
+            + "http_name_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
+            + "# TYPE target_info gauge\n"
+            + "target_info{kr=\"vr\"} 1\n",
+        content);
   }
 
   @Test
@@ -216,7 +215,7 @@ class PrometheusHttpServerTest {
     AggregatedHttpResponse response = client.get("/-/healthy").aggregate().join();
 
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
-    assertThat(response.contentUtf8()).isEqualTo("Exporter is Healthy.");
+    assertThat(response.contentUtf8()).isEqualTo("Exporter is healthy.\n");
   }
 
   @Test
@@ -260,28 +259,23 @@ class PrometheusHttpServerTest {
                     Collections.singletonList(
                         ImmutableLongPointData.create(123, 456, Attributes.empty(), 3))))));
 
-    AggregatedHttpResponse response = client.get("/").aggregate().join();
+    AggregatedHttpResponse response = client.get("/metrics").aggregate().join();
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
         .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
-    assertThat(response.contentUtf8())
-        .isEqualTo(
-            "# TYPE target info\n"
-                + "# HELP target Target metadata\n"
-                + "target_info{kr=\"vr\"} 1\n"
-                + "# TYPE foo_unit_total counter\n"
-                + "# HELP foo_unit_total description1\n"
-                + "foo_unit_total{otel_scope_name=\"scope1\"} 1.0 0\n"
-                + "foo_unit_total{otel_scope_name=\"scope2\"} 2.0 0\n");
+    assertEquals(
+        ""
+            + "# TYPE foo_unit_total counter\n"
+            + "foo_unit_total{otel_scope_name=\"scope1\"} 1.0\n"
+            + "foo_unit_total{otel_scope_name=\"scope2\"} 2.0\n"
+            + "# TYPE target_info gauge\n"
+            + "target_info{kr=\"vr\"} 1\n",
+        response.contentUtf8());
 
     // Validate conflict warning message
     assertThat(logs.getEvents()).hasSize(1);
     logs.assertContains(
-        "Metric conflict(s) detected. Multiple metrics with same name but different type: [foo_unit_total]");
-
-    // Make another request and confirm warning is only logged once
-    client.get("/").aggregate().join();
-    assertThat(logs.getEvents()).hasSize(1);
+        "Conflicting metric name foo_unit: Found one metric with type counter and one of type gauge. Dropping the one with type gauge.");
   }
 
   @Test
@@ -293,8 +287,9 @@ class PrometheusHttpServerTest {
   @Test
   void defaultExecutor() {
     assertThat(prometheusServer)
-        .extracting("executor", as(InstanceOfAssertFactories.type(ThreadPoolExecutor.class)))
-        .satisfies(executor -> assertThat(executor.getCorePoolSize()).isEqualTo(5));
+        .extracting("httpServer", as(InstanceOfAssertFactories.type(HTTPServer.class)))
+        .extracting("executorService", as(InstanceOfAssertFactories.type(ThreadPoolExecutor.class)))
+        .satisfies(executor -> assertThat(executor.getCorePoolSize()).isEqualTo(1));
   }
 
   @Test
@@ -311,8 +306,10 @@ class PrometheusHttpServerTest {
             .setExecutor(scheduledExecutor)
             .build()) {
       assertThat(server)
+          .extracting("httpServer", as(InstanceOfAssertFactories.type(HTTPServer.class)))
           .extracting(
-              "executor", as(InstanceOfAssertFactories.type(ScheduledThreadPoolExecutor.class)))
+              "executorService",
+              as(InstanceOfAssertFactories.type(ScheduledThreadPoolExecutor.class)))
           .satisfies(executor -> assertThat(executor).isSameAs(scheduledExecutor));
     }
   }

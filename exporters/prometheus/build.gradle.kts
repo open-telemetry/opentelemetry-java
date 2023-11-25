@@ -12,12 +12,14 @@ dependencies {
   api(project(":sdk:metrics"))
 
   implementation(project(":sdk-extensions:autoconfigure-spi"))
+  implementation("io.prometheus:prometheus-metrics-exporter-httpserver:1.1.0")
 
   compileOnly("com.sun.net.httpserver:http")
   compileOnly("com.google.auto.value:auto-value-annotations")
 
   annotationProcessor("com.google.auto.value:auto-value")
 
+  testImplementation(project(":sdk:testing"))
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
 
   testImplementation("com.google.guava:guava")
