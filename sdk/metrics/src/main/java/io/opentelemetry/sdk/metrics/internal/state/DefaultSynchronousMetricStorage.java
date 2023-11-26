@@ -178,11 +178,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
               + metricDescriptor.getSourceInstrument().getName()
               + " has exceeded the maximum allowed cardinality ("
               + maxCardinality
-              + ")."
-              + ((memoryMode == REUSABLE_DATA && aggregationTemporality == DELTA)
-                  ? "REUSABLE_DATA memory mode used, hence expiring unused Attributes might "
-                      + "result in increased memory allocations. See MemoryMode.java for more details."
-                  : ""));
+              + ").");
       // Return handle for overflow series, first checking if a handle already exists for it
       attributes = MetricStorage.CARDINALITY_OVERFLOW;
       handle = aggregatorHandles.get(attributes);
@@ -268,21 +264,18 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
     // Grab aggregated points.
     aggregatorHandles.forEach(
         (attributes, handle) -> {
-          T point = null;
-          if (reset) {
-            if (memoryMode == IMMUTABLE_DATA) {
-              point = handle.aggregateThenMaybeReset(start, epochNanos, attributes, reset);
-              // Return the aggregator to the pool.
-              aggregatorHandlePool.offer(handle);
-            } else /* REUSABLE_DATA */ {
-              // Handles persists across collect() in REUSABLE_DATA hence we should
-              // filter unused handles
-              if (handle.hasRecordedValues()) {
-                point = handle.aggregateThenMaybeReset(start, epochNanos, attributes, reset);
-              }
-            }
-          } else /* No reset (CUMULATIVE temporality) */ {
-            point = handle.aggregateThenMaybeReset(start, epochNanos, attributes, reset);
+          if (!handle.hasRecordedValues()) {
+            return;
+          }
+          T point = handle.aggregateThenMaybeReset(start, epochNanos, attributes, reset);
+
+          if (reset && memoryMode == IMMUTABLE_DATA) {
+            // Return the aggregator to the pool.
+            // The pool is only used in DELTA temporality (since in CUMULATIVE the handler is
+            // always used as it is the place accumulating the values and never resets)
+            // AND only in IMMUTABLE_DATA memory mode since in REUSABLE_DATA we avoid
+            // using the pool since it allocates memory internally on each put() or remove()
+            aggregatorHandlePool.offer(handle);
           }
 
           if (point != null) {
