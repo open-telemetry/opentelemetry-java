@@ -6,112 +6,197 @@
 package io.opentelemetry.extension.incubator.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatException;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.junit.jupiter.api.Named.named;
 
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
+import com.google.errorprone.annotations.Keep;
+import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
+import io.opentelemetry.sdk.testing.assertj.SpanDataAssert;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
+import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.semconv.SemanticAttributes;
+import java.util.Collections;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-class ExtendedTracerTest {
+public class ExtendedTracerTest {
+
+  interface ThrowingBiConsumer<T, U> {
+    void accept(T t, U u) throws Throwable;
+  }
+
   @RegisterExtension
   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
-  private final Tracer tracer = otelTesting.getOpenTelemetry().getTracer("test");
+  private final ExtendedTracer extendedTracer =
+      new ExtendedTracer(otelTesting.getOpenTelemetry(), "test");
 
   @Test
-  void runRunnable() {
-    ExtendedTracer.create(tracer).run("testSpan", () -> Span.current().setAttribute("one", 1));
-
-    otelTesting
-        .assertTraces()
-        .hasTracesSatisfyingExactly(
-            traceAssert ->
-                traceAssert.hasSpansSatisfyingExactly(
-                    spanDataAssert ->
-                        spanDataAssert
-                            .hasName("testSpan")
-                            .hasAttributes(Attributes.of(AttributeKey.longKey("one"), 1L))));
-  }
-
-  @Test
-  void runRunnable_throws() {
-    assertThatThrownBy(
+  void wrapInSpan() {
+    assertThatIllegalStateException()
+        .isThrownBy(
             () ->
-                ExtendedTracer.create(tracer)
-                    .run(
-                        "throwingRunnable",
-                        () -> {
-                          Span.current().setAttribute("one", 1);
-                          throw new RuntimeException("failed");
-                        }))
-        .isInstanceOf(RuntimeException.class);
-
-    otelTesting
-        .assertTraces()
-        .hasTracesSatisfyingExactly(
-            traceAssert ->
-                traceAssert.hasSpansSatisfyingExactly(
-                    span ->
-                        span.hasName("throwingRunnable")
-                            .hasAttributes(Attributes.of(AttributeKey.longKey("one"), 1L))
-                            .hasEventsSatisfying(
-                                (events) ->
-                                    assertThat(events)
-                                        .singleElement()
-                                        .satisfies(
-                                            eventData ->
-                                                assertThat(eventData.getName())
-                                                    .isEqualTo("exception")))));
-  }
-
-  @Test
-  void callCallable() throws Exception {
-    assertThat(
-            ExtendedTracer.create(tracer)
-                .call(
-                    "spanCallable",
+                extendedTracer.run(
+                    "test",
                     () -> {
-                      Span.current().setAttribute("one", 1);
-                      return "hello";
-                    }))
-        .isEqualTo("hello");
+                      // runs in span
+                      throw new IllegalStateException("ex");
+                    }));
+
+    String result =
+        extendedTracer.call(
+            "another test",
+            () -> {
+              // runs in span
+              return "result";
+            });
+    assertThat(result).isEqualTo("result");
 
     otelTesting
         .assertTraces()
+        .hasSize(2)
         .hasTracesSatisfyingExactly(
-            traceAssert ->
-                traceAssert.hasSpansSatisfyingExactly(
-                    spanDataAssert ->
-                        spanDataAssert
-                            .hasName("spanCallable")
-                            .hasAttributes(Attributes.of(AttributeKey.longKey("one"), 1L))));
+            trace ->
+                trace.hasSpansSatisfyingExactly(
+                    span ->
+                        span.hasName("test")
+                            .hasStatus(StatusData.error())
+                            .hasEventsSatisfyingExactly(
+                                event ->
+                                    event
+                                        .hasName("exception")
+                                        .hasAttributesSatisfyingExactly(
+                                            OpenTelemetryAssertions.equalTo(
+                                                SemanticAttributes.EXCEPTION_TYPE,
+                                                "java.lang.IllegalStateException"),
+                                            OpenTelemetryAssertions.satisfies(
+                                                SemanticAttributes.EXCEPTION_STACKTRACE,
+                                                string ->
+                                                    string.contains(
+                                                        "java.lang.IllegalStateException: ex")),
+                                            OpenTelemetryAssertions.equalTo(
+                                                SemanticAttributes.EXCEPTION_MESSAGE, "ex")))),
+            trace -> trace.hasSpansSatisfyingExactly(a -> a.hasName("another test")));
   }
 
   @Test
-  void callCallable_throws() {
-    assertThatThrownBy(
-            () ->
-                ExtendedTracer.create(tracer)
-                    .call(
-                        "throwingCallable",
-                        () -> {
-                          Span.current().setAttribute("one", 1);
-                          throw new RuntimeException("failed");
-                        }))
-        .isInstanceOf(RuntimeException.class);
+  void propagation() {
+    extendedTracer.run(
+        "parent",
+        () -> {
+          Map<String, String> propagationHeaders = extendedTracer.getTextMapPropagationContext();
+          assertThat(propagationHeaders).hasSize(1).containsKey("traceparent");
+
+          extendedTracer.traceServerSpan(
+              propagationHeaders, extendedTracer.spanBuilder("child"), () -> null);
+        });
 
     otelTesting
         .assertTraces()
+        .hasSize(1)
         .hasTracesSatisfyingExactly(
-            traceAssert ->
-                traceAssert.hasSpansSatisfyingExactly(
-                    spanDataAssert ->
-                        spanDataAssert
-                            .hasName("throwingCallable")
-                            .hasAttributes(Attributes.of(AttributeKey.longKey("one"), 1L))));
+            trace ->
+                trace.hasSpansSatisfyingExactly(
+                    SpanDataAssert::hasNoParent, span -> span.hasParent(trace.getSpan(0))));
+  }
+
+  @Test
+  void callWithBaggage() {
+    String value =
+        extendedTracer.call(
+            "parent",
+            () ->
+                ExtendedTracer.callWithBaggage(
+                    Collections.singletonMap("key", "value"),
+                    () -> Baggage.current().getEntryValue("key")));
+
+    assertThat(value).isEqualTo("value");
+  }
+
+  private static class ExtractAndRunParameter {
+    private final ThrowingBiConsumer<ExtendedTracer, SpanCallback<Void, Throwable>> extractAndRun;
+    private final SpanKind wantKind;
+    private final StatusData wantStatus;
+
+    private ExtractAndRunParameter(
+        ThrowingBiConsumer<ExtendedTracer, SpanCallback<Void, Throwable>> extractAndRun,
+        SpanKind wantKind,
+        StatusData wantStatus) {
+      this.extractAndRun = extractAndRun;
+      this.wantKind = wantKind;
+      this.wantStatus = wantStatus;
+    }
+  }
+
+  @Keep
+  private static Stream<Arguments> extractAndRun() {
+    BiConsumer<Span, Throwable> ignoreException =
+        (span, throwable) -> {
+          // ignore
+        };
+    return Stream.of(
+        Arguments.of(
+            named(
+                "server",
+                new ExtractAndRunParameter(
+                    (t, c) -> t.traceServerSpan(Collections.emptyMap(), t.spanBuilder("span"), c),
+                    SpanKind.SERVER,
+                    StatusData.error()))),
+        Arguments.of(
+            named(
+                "server - ignore exception",
+                new ExtractAndRunParameter(
+                    (t, c) ->
+                        t.traceServerSpan(
+                            Collections.emptyMap(), t.spanBuilder("span"), c, ignoreException),
+                    SpanKind.SERVER,
+                    StatusData.unset()))),
+        Arguments.of(
+            named(
+                "consumer",
+                new ExtractAndRunParameter(
+                    (t, c) -> t.traceConsumerSpan(Collections.emptyMap(), t.spanBuilder("span"), c),
+                    SpanKind.CONSUMER,
+                    StatusData.error()))),
+        Arguments.of(
+            named(
+                "consumer - ignore exception",
+                new ExtractAndRunParameter(
+                    (t, c) ->
+                        t.traceConsumerSpan(
+                            Collections.emptyMap(), t.spanBuilder("span"), c, ignoreException),
+                    SpanKind.CONSUMER,
+                    StatusData.unset()))));
+  }
+
+  @ParameterizedTest
+  @MethodSource
+  void extractAndRun(ExtractAndRunParameter parameter) {
+    assertThatException()
+        .isThrownBy(
+            () ->
+                parameter.extractAndRun.accept(
+                    extendedTracer,
+                    () -> {
+                      throw new RuntimeException("ex");
+                    }));
+
+    otelTesting
+        .assertTraces()
+        .hasSize(1)
+        .hasTracesSatisfyingExactly(
+            trace ->
+                trace.hasSpansSatisfyingExactly(
+                    span -> span.hasKind(parameter.wantKind).hasStatus(parameter.wantStatus)));
   }
 }

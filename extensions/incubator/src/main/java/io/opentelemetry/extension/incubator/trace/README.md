@@ -10,6 +10,7 @@ Here are some examples how the utility methods can help reduce boilerplate code.
 
 Before:
 
+<!-- markdownlint-disable -->
 ```java
 Span span = tracer.spanBuilder("reset_checkout").startSpan();
 String transactionId;
@@ -23,6 +24,7 @@ try (Scope scope = span.makeCurrent()) {
   span.end();
 }
 ```
+<!-- markdownlint-enable -->
 
 After:
 
@@ -58,6 +60,7 @@ openTelemetry
 // add propagationHeaders to request headers and call checkout service
 ```
 
+<!-- markdownlint-disable -->
 ```java
 // in checkout service: get request headers into a Map<String, String> requestHeaders
 Map<String, String> requestHeaders = new HashMap<>();
@@ -103,6 +106,7 @@ try (Scope ignore = newContext.makeCurrent()) {
   }
 }
 ```
+<!-- markdownlint-enable -->
 
 After:
 
@@ -124,8 +128,8 @@ String transactionId = tracing.traceServerSpan(requestHeaders,
 
 Note:
 
-- You can use `traceConsumerSpan` if you want to trace a consumer (e.g. from a message queue)
-  instead of a server.
+- You can use `traceConsumerSpan` if you want to trace a consumer
+  (e.g. from a message queue) instead of a server.
 - Exceptions are re-thrown without modification - see [Exception handling](#exception-handling)
   for more details.
 
@@ -153,16 +157,11 @@ String value = Tracing.callWithBaggage(
 
 ## Exception handling
 
-`Tracing` re-throws exceptions without modification. This means you can catch exceptions around
-`Tracing` calls and handle them as you would without `Tracing`.
+`Tracing` re-throws exceptions without modification. This means you can
+catch exceptions around `Tracing` calls and handle them as you would without `Tracing`.
 
 Note that the `Tracing` methods do not declare any checked exceptions
 (the idea is taken from [@SneakyThrows](https://projectlombok.org/features/SneakyThrows)).
-Declaring a checked exception would force callers to handle it, which would create a lot of
-boilerplate code. Instead, `Tracing` re-throws checked exceptions as unchecked exceptions.
-
-## Component owners
-
-- [Gregor Zeitlinger](https://github.com/zeitlinger), Grafana Labs
-
-Learn more about component owners in [component_owners.yml](../.github/component_owners.yml).
+Declaring a checked exception would force callers to handle it,
+which would create a lot of boilerplate code.
+Instead, `Tracing` re-throws checked exceptions as unchecked exceptions.
