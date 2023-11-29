@@ -36,6 +36,8 @@ class SpanExporterConfigurationTest {
 
     assertThat(SpanExporterConfiguration.configureExporter("jaeger", spiExportersManager))
         .isInstanceOf(io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter.class);
+    assertThat(SpanExporterConfiguration.configureExporter("console", spiExportersManager))
+        .isInstanceOf(LoggingSpanExporter.class);
     assertThat(SpanExporterConfiguration.configureExporter("logging", spiExportersManager))
         .isInstanceOf(LoggingSpanExporter.class);
     assertThat(SpanExporterConfiguration.configureExporter("logging-otlp", spiExportersManager))

@@ -31,6 +31,8 @@ class LogRecordExporterConfigurationTest {
         LogRecordExporterConfiguration.logRecordExporterSpiManager(
             DefaultConfigProperties.createFromMap(Collections.emptyMap()), spiHelper);
 
+    assertThat(LogRecordExporterConfiguration.configureExporter("console", spiExportersManager))
+        .isInstanceOf(SystemOutLogRecordExporter.class);
     assertThat(LogRecordExporterConfiguration.configureExporter("logging", spiExportersManager))
         .isInstanceOf(SystemOutLogRecordExporter.class);
     assertThat(

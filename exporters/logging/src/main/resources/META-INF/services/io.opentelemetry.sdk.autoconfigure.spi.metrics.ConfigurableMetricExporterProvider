@@ -1,1 +1,2 @@
 io.opentelemetry.exporter.logging.internal.LoggingMetricExporterProvider
+io.opentelemetry.exporter.logging.internal.ConsoleMetricExporterProvider

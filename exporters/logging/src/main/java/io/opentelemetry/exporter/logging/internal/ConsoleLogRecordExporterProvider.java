@@ -15,12 +15,8 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
- *
- * @deprecated The name {@code logging} is a deprecated alias for {@code console}, which is provided
- *     via {@link ConsoleLogRecordExporterProvider}.
  */
-@Deprecated
-public final class LoggingLogRecordExporterProvider
+public final class ConsoleLogRecordExporterProvider
     implements ConfigurableLogRecordExporterProvider {
   @Override
   public LogRecordExporter createExporter(ConfigProperties config) {
@@ -29,6 +25,6 @@ public final class LoggingLogRecordExporterProvider
 
   @Override
   public String getName() {
-    return "logging";
+    return "console";
   }
 }
