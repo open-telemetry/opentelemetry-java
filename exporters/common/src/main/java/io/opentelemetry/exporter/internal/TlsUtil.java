@@ -33,7 +33,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 /**
  * Utilities for working with TLS.
@@ -142,9 +141,6 @@ public final class TlsUtil {
     }
   }
 
-  // We catch linkage error to provide a better exception message on Android.
-  // https://github.com/open-telemetry/opentelemetry-java/issues/4533
-  @IgnoreJRERequirement
   // Visible for testing
   static byte[] decodePem(byte[] pem) {
     String pemStr = new String(pem, StandardCharsets.UTF_8).trim();
@@ -157,12 +153,6 @@ public final class TlsUtil {
         pemStr.substring(PEM_KEY_HEADER.length(), pemStr.length() - PEM_KEY_FOOTER.length());
     String content = contentWithNewLines.replaceAll("\\s", "");
 
-    try {
-      return Base64.getDecoder().decode(content);
-    } catch (LinkageError unused) {
-      throw new IllegalArgumentException(
-          "PEM private keys are currently not supported on Android. "
-              + "You may try a key encoded as DER.");
-    }
+    return Base64.getDecoder().decode(content);
   }
 }
