@@ -27,7 +27,7 @@ import java.util.function.Supplier;
 public interface ExemplarReservoir<T extends ExemplarData> {
 
   /**
-   * Wraps a {@link ExemplarReservoir}, casting calls to {@link
+   * Wraps an {@link ExemplarReservoir}, casting calls from {@link
    * ExemplarReservoir#offerLongMeasurement(long, Attributes, Context)} to {@link
    * ExemplarReservoir#offerDoubleMeasurement(double, Attributes, Context)} such that {@link
    * ExemplarReservoir#collectAndReset(Attributes)} only returns {@link DoubleExemplarData}.
