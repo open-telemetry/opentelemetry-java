@@ -2,7 +2,7 @@ plugins {
   `kotlin-dsl`
 
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "6.22.0"
+  id("com.diffplug.spotless") version "6.23.2"
 }
 
 if (!JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
