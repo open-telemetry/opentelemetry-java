@@ -399,6 +399,8 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
   // TODO: add test for addLogRecordExporterCustomizer once OTLP export is enabled by default
 
+  // TODO: add test for addLogRecordProcessorCustomizer once OTLP export is enabled by default
+
   @Test
   void builder_setResultAsGlobalFalse() {
     GlobalOpenTelemetry.set(OpenTelemetry.noop());

@@ -47,6 +47,7 @@ class LoggerProviderConfigurationTest {
         SpiHelper.create(LoggerProviderConfiguration.class.getClassLoader()),
         MeterProvider.noop(),
         (a, unused) -> a,
+        (a, unused) -> a,
         closeables);
     cleanup.addCloseables(closeables);
 

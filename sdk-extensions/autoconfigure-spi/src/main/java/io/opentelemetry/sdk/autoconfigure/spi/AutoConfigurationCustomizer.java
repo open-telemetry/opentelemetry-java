@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure.spi;
 
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
@@ -179,6 +180,22 @@ public interface AutoConfigurationCustomizer {
   default AutoConfigurationCustomizer addLogRecordExporterCustomizer(
       BiFunction<? super LogRecordExporter, ConfigProperties, ? extends LogRecordExporter>
           exporterCustomizer) {
+    return this;
+  }
+
+  /**
+   * Adds a {@link BiFunction} to invoke for all autoconfigured {@link
+   * io.opentelemetry.sdk.logs.LogRecordProcessor}s. The return value of the {@link BiFunction} will
+   * replace the passed-in argument. In contrast to {@link
+   * #addLogRecordExporterCustomizer(BiFunction)} (BiFunction)} this allows modifications to happen
+   * before batching occurs. As a result, it is possible to efficiently filter logs, add artificial
+   * logs or delay logs for enhancing them with external, delayed data.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  default AutoConfigurationCustomizer addLogRecordProcessorCustomizer(
+      BiFunction<? super LogRecordProcessor, ConfigProperties, ? extends LogRecordProcessor>
+          logRecordProcessorCustomizer) {
     return this;
   }
 }
