@@ -1,4 +1,4 @@
-# extended-tracer
+# ExtendedTracer
 
 Utility methods to make it easier to use the OpenTelemetry tracer.
 

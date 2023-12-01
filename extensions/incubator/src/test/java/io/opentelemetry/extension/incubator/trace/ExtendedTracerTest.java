@@ -31,7 +31,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class ExtendedTracerTest {
+class ExtendedTracerTest {
 
   interface ThrowingBiConsumer<T, U> {
     void accept(T t, U u) throws Throwable;
