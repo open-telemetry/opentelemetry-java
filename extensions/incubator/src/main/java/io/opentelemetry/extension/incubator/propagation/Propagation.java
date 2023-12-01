@@ -43,7 +43,7 @@ public final class Propagation {
 
   /**
    * Injects the current context into a string map, which can then be added to HTTP headers or the
-   * metadata of an event.
+   * metadata of a message.
    *
    * @param propagators provide the propagators from {@link OpenTelemetry#getPropagators()}
    */
@@ -64,8 +64,8 @@ public final class Propagation {
   }
 
   /**
-   * Extract the context from a string map, which you get from HTTP headers of the metadata of an
-   * event you're processing.
+   * Extract the context from a string map, which you get from HTTP headers of the metadata of a
+   * message you're processing.
    *
    * @param carrier the string map
    * @param propagators provide the propagators from {@link OpenTelemetry#getPropagators()}

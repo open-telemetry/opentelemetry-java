@@ -128,12 +128,12 @@ class ExtendedTracerTest {
   }
 
   private static class ExtractAndRunParameter {
-    private final ThrowingBiConsumer<ExtendedTracer, SpanCallback<Void, Throwable>> extractAndRun;
+    private final ThrowingBiConsumer<ExtendedTracer, SpanCallable<Void, Throwable>> extractAndRun;
     private final SpanKind wantKind;
     private final StatusData wantStatus;
 
     private ExtractAndRunParameter(
-        ThrowingBiConsumer<ExtendedTracer, SpanCallback<Void, Throwable>> extractAndRun,
+        ThrowingBiConsumer<ExtendedTracer, SpanCallable<Void, Throwable>> extractAndRun,
         SpanKind wantKind,
         StatusData wantStatus) {
       this.extractAndRun = extractAndRun;
