@@ -19,6 +19,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.extension.incubator.propagation.Propagation;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
