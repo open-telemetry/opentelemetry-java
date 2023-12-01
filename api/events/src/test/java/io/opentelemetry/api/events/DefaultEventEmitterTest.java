@@ -27,6 +27,14 @@ class DefaultEventEmitterTest {
                         "namespace.event-name",
                         AnyValue.of(Collections.singletonMap("key1", AnyValue.of("value1")))))
         .doesNotThrowAnyException();
+
+    assertThatCode(
+            () ->
+                DefaultEventEmitter.getInstance()
+                    .emit(
+                        "namespace.event-name",
+                        Collections.singletonMap("key1", AnyValue.of("value1"))))
+        .doesNotThrowAnyException();
   }
 
   @Test
@@ -36,8 +44,8 @@ class DefaultEventEmitterTest {
             () ->
                 emitter
                     .builder("namespace.myEvent")
-                    .setPayload(
-                        AnyValue.of(Collections.singletonMap("key1", AnyValue.of("value1"))))
+                    .setPayload(AnyValue.of("payload"))
+                    .setPayload(Collections.singletonMap("key1", AnyValue.of("value1")))
                     .setTimestamp(123456L, TimeUnit.NANOSECONDS)
                     .setTimestamp(Instant.now())
                     .setContext(Context.current())

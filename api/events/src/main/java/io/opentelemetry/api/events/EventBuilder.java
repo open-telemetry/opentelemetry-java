@@ -10,6 +10,7 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.extension.incubator.logs.AnyValue;
 import java.time.Instant;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /** The EventBuilder is used to {@link #emit()} events. */
@@ -22,6 +23,16 @@ public interface EventBuilder {
    * eventName}.
    */
   EventBuilder setPayload(AnyValue<?> payload);
+
+  /**
+   * Set the {@code payload}.
+   *
+   * <p>The {@code payload} is expected to match the schema of other events with the same {@code
+   * eventName}.
+   */
+  default EventBuilder setPayload(Map<String, AnyValue<?>> payload) {
+    return setPayload(AnyValue.of(payload));
+  }
 
   /**
    * Set the epoch {@code timestamp}, using the timestamp and unit.

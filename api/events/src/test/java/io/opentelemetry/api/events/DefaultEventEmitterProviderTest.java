@@ -33,7 +33,7 @@ class DefaultEventEmitterProviderTest {
                 provider
                     .eventEmitterBuilder("scope-name")
                     .build()
-                    .emit("namespace.event-name", AnyValue.of("")))
+                    .emit("namespace.event-name", AnyValue.of("payload")))
         .doesNotThrowAnyException();
   }
 }

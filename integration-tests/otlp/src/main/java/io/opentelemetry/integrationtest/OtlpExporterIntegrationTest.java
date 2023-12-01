@@ -549,9 +549,8 @@ abstract class OtlpExporterIntegrationTest {
           .emit();
       eventEmitter.emit(
           "namespace.event-name",
-          io.opentelemetry.extension.incubator.logs.AnyValue.of(
-              Collections.singletonMap(
-                  "key", io.opentelemetry.extension.incubator.logs.AnyValue.of("value"))));
+          Collections.singletonMap(
+              "key", io.opentelemetry.extension.incubator.logs.AnyValue.of("value")));
     }
 
     // Closing triggers flush of processor

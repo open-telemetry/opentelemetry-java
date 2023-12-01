@@ -6,6 +6,7 @@
 package io.opentelemetry.api.events;
 
 import io.opentelemetry.extension.incubator.logs.AnyValue;
+import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -41,6 +42,18 @@ public interface EventEmitter {
    *     same {@code eventName}.
    */
   void emit(String eventName, AnyValue<?> payload);
+
+  /**
+   * Emit an event.
+   *
+   * @param eventName the event name, which defines the class or type of event. Events names SHOULD
+   *     include a namespace to avoid collisions with other event names.
+   * @param payload the eventPayload, which is expected to match the schema of other events with the
+   *     same {@code eventName}.
+   */
+  default void emit(String eventName, Map<String, AnyValue<?>> payload) {
+    emit(eventName, AnyValue.of(payload));
+  }
 
   /**
    * Return a {@link EventBuilder} to emit an event.
