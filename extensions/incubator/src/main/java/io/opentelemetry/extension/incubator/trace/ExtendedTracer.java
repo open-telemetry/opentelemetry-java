@@ -18,6 +18,7 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -30,29 +31,19 @@ import java.util.function.BiConsumer;
  */
 public final class ExtendedTracer implements Tracer {
 
-  private final OpenTelemetry openTelemetry;
-
   private final Tracer delegate;
 
-  /**
-   * Creates a new instance of {@link ExtendedTracer}.
-   *
-   * @param openTelemetry the {@link OpenTelemetry} instance
-   * @param instrumentationScopeName the name of the tracer to use
-   */
-  public ExtendedTracer(OpenTelemetry openTelemetry, String instrumentationScopeName) {
-    this(openTelemetry, openTelemetry.getTracer(instrumentationScopeName));
+  private ExtendedTracer(Tracer delegate) {
+    this.delegate = delegate;
   }
 
   /**
    * Creates a new instance of {@link ExtendedTracer}.
    *
-   * @param openTelemetry the {@link OpenTelemetry} instance
    * @param delegate the {@link Tracer} to use
    */
-  public ExtendedTracer(OpenTelemetry openTelemetry, Tracer delegate) {
-    this.openTelemetry = openTelemetry;
-    this.delegate = delegate;
+  public static ExtendedTracer create(Tracer delegate) {
+    return new ExtendedTracer(delegate);
   }
 
   /**
@@ -180,14 +171,6 @@ public final class ExtendedTracer implements Tracer {
   }
 
   /**
-   * Injects the current context into a string map, which can then be added to HTTP headers or the
-   * metadata of an event.
-   */
-  public Map<String, String> getTextMapPropagationContext() {
-    return Propagation.getTextMapPropagationContext(openTelemetry);
-  }
-
-  /**
    * Set baggage items inside the given {@link SpanCallback}.
    *
    * @param baggage the baggage items to set
@@ -219,14 +202,19 @@ public final class ExtendedTracer implements Tracer {
    * @param carrier the string map where to extract the span context from
    * @param spanBuilder the {@link SpanBuilder} to use
    * @param spanCallback the {@link SpanCallback} to call
+   * @param propagators provide the propagators from {@link OpenTelemetry#getPropagators()}
    * @param <T> the type of the result
    * @param <E> the type of the exception
    * @return the result of the {@link SpanCallback}
    */
   public <T, E extends Throwable> T traceServerSpan(
-      Map<String, String> carrier, SpanBuilder spanBuilder, SpanCallback<T, E> spanCallback)
+      Map<String, String> carrier,
+      SpanBuilder spanBuilder,
+      SpanCallback<T, E> spanCallback,
+      ContextPropagators propagators)
       throws E {
-    return extractAndRun(SERVER, carrier, spanBuilder, spanCallback, ExtendedTracer::setSpanError);
+    return extractAndRun(
+        SERVER, carrier, spanBuilder, spanCallback, propagators, ExtendedTracer::setSpanError);
   }
 
   /**
@@ -239,21 +227,23 @@ public final class ExtendedTracer implements Tracer {
    * called, giving you the opportunity to handle the exception and span in a custom way, e.g. not
    * marking the span as error.
    *
+   * @param <T> the type of the result
+   * @param <E> the type of the exception
    * @param carrier the string map where to extract the span context from
    * @param spanBuilder the {@link SpanBuilder} to use
    * @param spanCallback the {@link SpanCallback} to call
+   * @param propagators provide the propagators from {@link OpenTelemetry#getPropagators()}
    * @param handleException the consumer to call when an exception is thrown
-   * @param <T> the type of the result
-   * @param <E> the type of the exception
    * @return the result of the {@link SpanCallback}
    */
   public <T, E extends Throwable> T traceServerSpan(
       Map<String, String> carrier,
       SpanBuilder spanBuilder,
       SpanCallback<T, E> spanCallback,
+      ContextPropagators propagators,
       BiConsumer<Span, Throwable> handleException)
       throws E {
-    return extractAndRun(SERVER, carrier, spanBuilder, spanCallback, handleException);
+    return extractAndRun(SERVER, carrier, spanBuilder, spanCallback, propagators, handleException);
   }
 
   /**
@@ -268,15 +258,19 @@ public final class ExtendedTracer implements Tracer {
    * @param carrier the string map where to extract the span context from
    * @param spanBuilder the {@link SpanBuilder} to use
    * @param spanCallback the {@link SpanCallback} to call
+   * @param propagators provide the propagators from {@link OpenTelemetry#getPropagators()}
    * @param <T> the type of the result
    * @param <E> the type of the exception
    * @return the result of the {@link SpanCallback}
    */
   public <T, E extends Throwable> T traceConsumerSpan(
-      Map<String, String> carrier, SpanBuilder spanBuilder, SpanCallback<T, E> spanCallback)
+      Map<String, String> carrier,
+      SpanBuilder spanBuilder,
+      SpanCallback<T, E> spanCallback,
+      ContextPropagators propagators)
       throws E {
     return extractAndRun(
-        CONSUMER, carrier, spanBuilder, spanCallback, ExtendedTracer::setSpanError);
+        CONSUMER, carrier, spanBuilder, spanCallback, propagators, ExtendedTracer::setSpanError);
   }
 
   /**
@@ -289,21 +283,24 @@ public final class ExtendedTracer implements Tracer {
    * called, giving you the opportunity to handle the exception and span in a custom way, e.g. not
    * marking the span as error.
    *
+   * @param <T> the type of the result
+   * @param <E> the type of the exception
    * @param carrier the string map where to extract the span context from
    * @param spanBuilder the {@link SpanBuilder} to use
    * @param spanCallback the {@link SpanCallback} to call
+   * @param propagators provide the propagators from {@link OpenTelemetry#getPropagators()}
    * @param handleException the consumer to call when an exception is thrown
-   * @param <T> the type of the result
-   * @param <E> the type of the exception
    * @return the result of the {@link SpanCallback}
    */
   public <T, E extends Throwable> T traceConsumerSpan(
       Map<String, String> carrier,
       SpanBuilder spanBuilder,
       SpanCallback<T, E> spanCallback,
+      ContextPropagators propagators,
       BiConsumer<Span, Throwable> handleException)
       throws E {
-    return extractAndRun(CONSUMER, carrier, spanBuilder, spanCallback, handleException);
+    return extractAndRun(
+        CONSUMER, carrier, spanBuilder, spanCallback, propagators, handleException);
   }
 
   private <T, E extends Throwable> T extractAndRun(
@@ -311,10 +308,11 @@ public final class ExtendedTracer implements Tracer {
       Map<String, String> carrier,
       SpanBuilder spanBuilder,
       SpanCallback<T, E> spanCallback,
+      ContextPropagators propagators,
       BiConsumer<Span, Throwable> handleException)
       throws E {
     try (Scope ignore =
-        Propagation.extractTextMapPropagationContext(openTelemetry, carrier).makeCurrent()) {
+        Propagation.extractTextMapPropagationContext(carrier, propagators).makeCurrent()) {
       return call(spanBuilder.setSpanKind(spanKind), spanCallback, handleException);
     }
   }

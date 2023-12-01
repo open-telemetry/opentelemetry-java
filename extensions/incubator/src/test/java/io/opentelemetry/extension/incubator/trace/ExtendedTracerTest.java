@@ -14,6 +14,7 @@ import com.google.errorprone.annotations.Keep;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.assertj.SpanDataAssert;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
@@ -39,7 +40,7 @@ public class ExtendedTracerTest {
   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
   private final ExtendedTracer extendedTracer =
-      new ExtendedTracer(otelTesting.getOpenTelemetry(), "test");
+      ExtendedTracer.create(otelTesting.getOpenTelemetry().getTracer("test"));
 
   @Test
   void wrapInSpan() {
@@ -94,11 +95,13 @@ public class ExtendedTracerTest {
     extendedTracer.run(
         "parent",
         () -> {
-          Map<String, String> propagationHeaders = extendedTracer.getTextMapPropagationContext();
+          ContextPropagators propagators = otelTesting.getOpenTelemetry().getPropagators();
+          Map<String, String> propagationHeaders =
+              Propagation.getTextMapPropagationContext(propagators);
           assertThat(propagationHeaders).hasSize(1).containsKey("traceparent");
 
           extendedTracer.traceServerSpan(
-              propagationHeaders, extendedTracer.spanBuilder("child"), () -> null);
+              propagationHeaders, extendedTracer.spanBuilder("child"), () -> null, propagators);
         });
 
     otelTesting
@@ -149,7 +152,12 @@ public class ExtendedTracerTest {
             named(
                 "server",
                 new ExtractAndRunParameter(
-                    (t, c) -> t.traceServerSpan(Collections.emptyMap(), t.spanBuilder("span"), c),
+                    (t, c) ->
+                        t.traceServerSpan(
+                            Collections.emptyMap(),
+                            t.spanBuilder("span"),
+                            c,
+                            otelTesting.getOpenTelemetry().getPropagators()),
                     SpanKind.SERVER,
                     StatusData.error()))),
         Arguments.of(
@@ -158,14 +166,23 @@ public class ExtendedTracerTest {
                 new ExtractAndRunParameter(
                     (t, c) ->
                         t.traceServerSpan(
-                            Collections.emptyMap(), t.spanBuilder("span"), c, ignoreException),
+                            Collections.emptyMap(),
+                            t.spanBuilder("span"),
+                            c,
+                            otelTesting.getOpenTelemetry().getPropagators(),
+                            ignoreException),
                     SpanKind.SERVER,
                     StatusData.unset()))),
         Arguments.of(
             named(
                 "consumer",
                 new ExtractAndRunParameter(
-                    (t, c) -> t.traceConsumerSpan(Collections.emptyMap(), t.spanBuilder("span"), c),
+                    (t, c) ->
+                        t.traceConsumerSpan(
+                            Collections.emptyMap(),
+                            t.spanBuilder("span"),
+                            c,
+                            otelTesting.getOpenTelemetry().getPropagators()),
                     SpanKind.CONSUMER,
                     StatusData.error()))),
         Arguments.of(
@@ -174,7 +191,11 @@ public class ExtendedTracerTest {
                 new ExtractAndRunParameter(
                     (t, c) ->
                         t.traceConsumerSpan(
-                            Collections.emptyMap(), t.spanBuilder("span"), c, ignoreException),
+                            Collections.emptyMap(),
+                            t.spanBuilder("span"),
+                            c,
+                            otelTesting.getOpenTelemetry().getPropagators(),
+                            ignoreException),
                     SpanKind.CONSUMER,
                     StatusData.unset()))));
   }

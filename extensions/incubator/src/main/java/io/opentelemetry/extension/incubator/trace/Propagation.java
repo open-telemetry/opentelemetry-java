@@ -7,6 +7,7 @@ package io.opentelemetry.extension.incubator.trace;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import java.util.HashMap;
 import java.util.Locale;
@@ -44,12 +45,13 @@ public final class Propagation {
   /**
    * Injects the current context into a string map, which can then be added to HTTP headers or the
    * metadata of an event.
+   *
+   * @param propagators provide the propagators from {@link OpenTelemetry#getPropagators()}
    */
-  public static Map<String, String> getTextMapPropagationContext(OpenTelemetry openTelemetry) {
+  public static Map<String, String> getTextMapPropagationContext(ContextPropagators propagators) {
     Map<String, String> carrier = new HashMap<>();
     //noinspection ConstantConditions
-    openTelemetry
-        .getPropagators()
+    propagators
         .getTextMapPropagator()
         .inject(
             Context.current(),
@@ -68,9 +70,10 @@ public final class Propagation {
    * event you're processing.
    *
    * @param carrier the string map
+   * @param propagators provide the propagators from {@link OpenTelemetry#getPropagators()}
    */
   static Context extractTextMapPropagationContext(
-      OpenTelemetry openTelemetry, Map<String, String> carrier) {
+      Map<String, String> carrier, ContextPropagators propagators) {
     Context current = Context.current();
     //noinspection ConstantConditions
     if (carrier == null) {
@@ -83,9 +86,6 @@ public final class Propagation {
             .collect(
                 Collectors.toMap(
                     entry -> entry.getKey().toLowerCase(Locale.ROOT), Map.Entry::getValue));
-    return openTelemetry
-        .getPropagators()
-        .getTextMapPropagator()
-        .extract(current, normalizedCarrier, TEXT_MAP_GETTER);
+    return propagators.getTextMapPropagator().extract(current, normalizedCarrier, TEXT_MAP_GETTER);
   }
 }
