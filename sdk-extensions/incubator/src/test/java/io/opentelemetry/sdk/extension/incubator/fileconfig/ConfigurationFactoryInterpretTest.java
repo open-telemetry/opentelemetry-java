@@ -28,7 +28,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.event.Level;
 
-class ConfigurationFactoryTest {
+class ConfigurationFactoryInterpretTest {
 
   @RegisterExtension
   static final SelfSignedCertificateExtension serverTls = new SelfSignedCertificateExtension();
@@ -49,7 +49,7 @@ class ConfigurationFactoryTest {
                 ConfigurationFactory.parseAndInterpret(
                     new ByteArrayInputStream("foo".getBytes(StandardCharsets.UTF_8))))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unable to parse inputStream");
+        .hasMessage("Unable to parse configuration");
   }
 
   /**

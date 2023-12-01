@@ -60,7 +60,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class ConfigurationReaderTest {
+class ConfigurationFactoryParseTest {
 
   @Test
   void parse_KitchenSinkExampleFile() throws IOException {
@@ -257,7 +257,7 @@ class ConfigurationReaderTest {
 
     try (FileInputStream configExampleFile =
         new FileInputStream(System.getenv("CONFIG_EXAMPLE_DIR") + "/kitchen-sink.yaml")) {
-      OpenTelemetryConfiguration config = ConfigurationReader.parse(configExampleFile);
+      OpenTelemetryConfiguration config = ConfigurationFactory.parse(configExampleFile);
 
       // General config
       assertThat(config.getFileFormat()).isEqualTo("0.1");
@@ -306,7 +306,7 @@ class ConfigurationReaderTest {
             + "        aggregation:\n"
             + "          drop: {}\n";
     OpenTelemetryConfiguration objectPlaceholderModel =
-        ConfigurationReader.parse(
+        ConfigurationFactory.parse(
             new ByteArrayInputStream(objectPlaceholderString.getBytes(StandardCharsets.UTF_8)));
 
     String noOjbectPlaceholderString =
@@ -324,7 +324,7 @@ class ConfigurationReaderTest {
             + "        aggregation:\n"
             + "          drop:\n";
     OpenTelemetryConfiguration noObjectPlaceholderModel =
-        ConfigurationReader.parse(
+        ConfigurationFactory.parse(
             new ByteArrayInputStream(noOjbectPlaceholderString.getBytes(StandardCharsets.UTF_8)));
 
     SpanExporter exporter =
@@ -358,7 +358,7 @@ class ConfigurationReaderTest {
             + "      ratio:\n"; // Double
 
     OpenTelemetryConfiguration model =
-        ConfigurationReader.parse(new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
+        ConfigurationFactory.parse(new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
 
     assertThat(model.getFileFormat()).isNull();
     assertThat(model.getDisabled()).isNull();
@@ -386,7 +386,7 @@ class ConfigurationReaderTest {
     environmentVariables.put("FLOAT", "1.1");
 
     Object yaml =
-        ConfigurationReader.loadYaml(
+        ConfigurationFactory.loadYaml(
             new ByteArrayInputStream(rawYaml.getBytes(StandardCharsets.UTF_8)),
             environmentVariables);
     assertThat(yaml).isEqualTo(expectedYamlResult);
@@ -454,7 +454,7 @@ class ConfigurationReaderTest {
     Map<String, String> envVars = new HashMap<>();
     envVars.put("OTEL_EXPORTER_OTLP_ENDPOINT", "http://collector:4317");
     OpenTelemetryConfiguration model =
-        ConfigurationReader.parse(
+        ConfigurationFactory.parse(
             new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)), envVars);
     assertThat(model)
         .isEqualTo(
