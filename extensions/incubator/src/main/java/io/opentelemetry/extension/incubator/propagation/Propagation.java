@@ -37,7 +37,6 @@ public final class Propagation {
         @Override
         @Nullable
         public String get(@Nullable Map<String, String> carrier, String key) {
-          //noinspection ConstantConditions
           return carrier == null ? null : carrier.get(key);
         }
       };
@@ -50,7 +49,6 @@ public final class Propagation {
    */
   public static Map<String, String> getTextMapPropagationContext(ContextPropagators propagators) {
     Map<String, String> carrier = new HashMap<>();
-    //noinspection ConstantConditions
     propagators
         .getTextMapPropagator()
         .inject(
@@ -75,7 +73,6 @@ public final class Propagation {
   public static Context extractTextMapPropagationContext(
       Map<String, String> carrier, ContextPropagators propagators) {
     Context current = Context.current();
-    //noinspection ConstantConditions
     if (carrier == null) {
       return current;
     }

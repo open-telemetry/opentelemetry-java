@@ -79,7 +79,6 @@ TextMapGetter<Map<String, String>> TEXT_MAP_GETTER =
       @Override
       @Nullable
       public String get(@Nullable Map<String, String> carrier, String key) {
-        //noinspection ConstantConditions
         return carrier == null ? null : carrier.get(key);
       }
     };
