@@ -9,11 +9,10 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapGetter;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /**
@@ -60,7 +59,7 @@ public final class Propagation {
               }
             });
 
-    return carrier;
+    return Collections.unmodifiableMap(carrier);
   }
 
   /**
@@ -76,13 +75,7 @@ public final class Propagation {
     if (carrier == null) {
       return current;
     }
-    // HTTP headers are case-insensitive. As we're using Map, which is case-sensitive, we need to
-    // normalize all the keys
-    Map<String, String> normalizedCarrier =
-        carrier.entrySet().stream()
-            .collect(
-                Collectors.toMap(
-                    entry -> entry.getKey().toLowerCase(Locale.ROOT), Map.Entry::getValue));
-    return propagators.getTextMapPropagator().extract(current, normalizedCarrier, TEXT_MAP_GETTER);
+    CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap(carrier);
+    return propagators.getTextMapPropagator().extract(current, caseInsensitiveMap, TEXT_MAP_GETTER);
   }
 }
