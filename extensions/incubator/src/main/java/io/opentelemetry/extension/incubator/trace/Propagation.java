@@ -72,7 +72,7 @@ public final class Propagation {
    * @param carrier the string map
    * @param propagators provide the propagators from {@link OpenTelemetry#getPropagators()}
    */
-  static Context extractTextMapPropagationContext(
+  public static Context extractTextMapPropagationContext(
       Map<String, String> carrier, ContextPropagators propagators) {
     Context current = Context.current();
     //noinspection ConstantConditions
