@@ -13,6 +13,6 @@ package io.opentelemetry.extension.incubator.trace;
  * @param <E> Thrown exception type.
  */
 @FunctionalInterface
-public interface SpanCallback<T, E extends Throwable> {
+public interface SpanCallable<T, E extends Throwable> {
   T doInSpan() throws E;
 }
