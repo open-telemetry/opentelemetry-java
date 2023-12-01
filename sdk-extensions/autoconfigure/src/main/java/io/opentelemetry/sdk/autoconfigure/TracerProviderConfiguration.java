@@ -41,7 +41,7 @@ final class TracerProviderConfiguration {
       BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
           spanExporterCustomizer,
       BiFunction<? super SpanProcessor, ConfigProperties, ? extends SpanProcessor>
-          batchSpanProcessorCustomizer,
+          spanProcessorCustomizer,
       BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer,
       List<Closeable> closeables) {
 
@@ -56,16 +56,17 @@ final class TracerProviderConfiguration {
             config, spiHelper, spanExporterCustomizer, closeables);
 
     List<SpanProcessor> processors =
-        configureExportingSpanProcessors(config, exportersByName, meterProvider, closeables);
-    if (!processors.isEmpty()) {
-      SpanProcessor composite = SpanProcessor.composite(processors);
-      closeables.add(composite);
-      composite = batchSpanProcessorCustomizer.apply(composite, config);
-      tracerProviderBuilder.addSpanProcessor(composite);
+        configureSpanProcessors(config, exportersByName, meterProvider, closeables);
+    for (SpanProcessor processor : processors) {
+      SpanProcessor wrapped = spanProcessorCustomizer.apply(processor, config);
+      if (wrapped != processor) {
+        closeables.add(wrapped);
+      }
+      tracerProviderBuilder.addSpanProcessor(wrapped);
     }
   }
 
-  static List<SpanProcessor> configureExportingSpanProcessors(
+  static List<SpanProcessor> configureSpanProcessors(
       ConfigProperties config,
       Map<String, SpanExporter> exportersByName,
       MeterProvider meterProvider,

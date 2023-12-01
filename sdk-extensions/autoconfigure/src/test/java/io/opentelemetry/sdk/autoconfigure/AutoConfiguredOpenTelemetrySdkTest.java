@@ -274,7 +274,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   @Test
-  void builder_addBatchSpanProcessorCustomizer() {
+  void builder_addSpanProcessorCustomizer() {
     SpanProcessor mockProcessor1 = Mockito.mock(SpanProcessor.class);
     SpanProcessor mockProcessor2 = Mockito.mock(SpanProcessor.class);
     doReturn(true).when(mockProcessor2).isStartRequired();
@@ -285,12 +285,12 @@ class AutoConfiguredOpenTelemetrySdkTest {
     SdkTracerProvider sdkTracerProvider =
         builder
             .addSpanExporterCustomizer((prev, config) -> spanExporter1)
-            .addBatchSpanProcessorCustomizer(
+            .addSpanProcessorCustomizer(
                 (previous, config) -> {
                   assertThat(previous).isNotSameAs(mockProcessor2);
                   return mockProcessor1;
                 })
-            .addBatchSpanProcessorCustomizer(
+            .addSpanProcessorCustomizer(
                 (previous, config) -> {
                   assertThat(previous).isSameAs(mockProcessor1);
                   return mockProcessor2;

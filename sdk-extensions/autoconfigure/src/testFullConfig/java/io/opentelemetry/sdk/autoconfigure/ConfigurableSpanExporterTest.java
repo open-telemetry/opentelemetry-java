@@ -141,7 +141,7 @@ class ConfigurableSpanExporterTest {
     List<Closeable> closeables = new ArrayList<>();
 
     List<SpanProcessor> spanProcessors =
-        TracerProviderConfiguration.configureExportingSpanProcessors(
+        TracerProviderConfiguration.configureSpanProcessors(
             DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.traces.exporter", exporterName)),
             ImmutableMap.of(exporterName, LoggingSpanExporter.create()),
@@ -159,7 +159,7 @@ class ConfigurableSpanExporterTest {
     List<Closeable> closeables = new ArrayList<>();
 
     List<SpanProcessor> spanProcessors =
-        TracerProviderConfiguration.configureExportingSpanProcessors(
+        TracerProviderConfiguration.configureSpanProcessors(
             DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.traces.exporter", exporterName)),
             ImmutableMap.of(exporterName, ZipkinSpanExporter.builder().build()),
@@ -176,7 +176,7 @@ class ConfigurableSpanExporterTest {
     List<Closeable> closeables = new ArrayList<>();
 
     List<SpanProcessor> spanProcessors =
-        TracerProviderConfiguration.configureExportingSpanProcessors(
+        TracerProviderConfiguration.configureSpanProcessors(
             DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.traces.exporter", "otlp,zipkin")),
             ImmutableMap.of(
@@ -218,7 +218,7 @@ class ConfigurableSpanExporterTest {
     List<Closeable> closeables = new ArrayList<>();
 
     List<SpanProcessor> spanProcessors =
-        TracerProviderConfiguration.configureExportingSpanProcessors(
+        TracerProviderConfiguration.configureSpanProcessors(
             DefaultConfigProperties.createFromMap(
                 Collections.singletonMap("otel.traces.exporter", "logging,zipkin")),
             ImmutableMap.of(

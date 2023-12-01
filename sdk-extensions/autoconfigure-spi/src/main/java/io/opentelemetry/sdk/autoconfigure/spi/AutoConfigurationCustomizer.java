@@ -64,19 +64,18 @@ public interface AutoConfigurationCustomizer {
           exporterCustomizer);
 
   /**
-   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link
-   * io.opentelemetry.sdk.trace.SpanProcessor}s responsible for invoking registered {@link
-   * SpanExporter}s. The return value of the {@link BiFunction} will replace the passed-in argument.
-   * In contrast to {@link #addSpanExporterCustomizer(BiFunction)} this allows modifications to
-   * happen before batching occurs. As a result, it is possible to efficiently filter spans, add
-   * artificial spans or delay spans for enhancing them with external, delayed data. The provided
-   * function will be invoked at most once per customized SDK instance.
+   * Adds a {@link BiFunction} to invoke for all autoconfigured {@link
+   * io.opentelemetry.sdk.trace.SpanProcessor}. The return value of the {@link BiFunction} will
+   * replace the passed-in argument. In contrast to {@link #addSpanExporterCustomizer(BiFunction)}
+   * this allows modifications to happen before batching occurs. As a result, it is possible to
+   * efficiently filter spans, add artificial spans or delay spans for enhancing them with external,
+   * delayed data.
    *
    * <p>Multiple calls will execute the customizers in order.
    */
-  default AutoConfigurationCustomizer addBatchSpanProcessorCustomizer(
+  default AutoConfigurationCustomizer addSpanProcessorCustomizer(
       BiFunction<? super SpanProcessor, ConfigProperties, ? extends SpanProcessor>
-          exporterProcessorCustomizer) {
+          spanProcessorCustomizer) {
     return this;
   }
 
