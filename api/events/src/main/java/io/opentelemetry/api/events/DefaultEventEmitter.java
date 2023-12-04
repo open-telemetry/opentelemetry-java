@@ -23,6 +23,9 @@ class DefaultEventEmitter implements EventEmitter {
   }
 
   @Override
+  public void emit(String eventName) {}
+
+  @Override
   public void emit(String eventName, AnyValue<?> payload) {}
 
   @Override

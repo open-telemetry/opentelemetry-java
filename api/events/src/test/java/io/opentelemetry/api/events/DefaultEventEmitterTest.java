@@ -20,6 +20,9 @@ class DefaultEventEmitterTest {
 
   @Test
   void emit() {
+    assertThatCode(() -> DefaultEventEmitter.getInstance().emit("namespace.event-name"))
+        .doesNotThrowAnyException();
+
     assertThatCode(
             () ->
                 DefaultEventEmitter.getInstance()

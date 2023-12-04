@@ -38,6 +38,14 @@ public interface EventEmitter {
    *
    * @param eventName the event name, which defines the class or type of event. Events names SHOULD
    *     include a namespace to avoid collisions with other event names.
+   */
+  void emit(String eventName);
+
+  /**
+   * Emit an event.
+   *
+   * @param eventName the event name, which defines the class or type of event. Events names SHOULD
+   *     include a namespace to avoid collisions with other event names.
    * @param payload the eventPayload, which is expected to match the schema of other events with the
    *     same {@code eventName}.
    */
@@ -45,6 +53,9 @@ public interface EventEmitter {
 
   /**
    * Emit an event.
+   *
+   * <p>This is equivalent to calling {@link #emit(String, AnyValue)} with a {@link
+   * AnyValue#of(Map)} payload.
    *
    * @param eventName the event name, which defines the class or type of event. Events names SHOULD
    *     include a namespace to avoid collisions with other event names.

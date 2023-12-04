@@ -20,6 +20,7 @@ import io.opentelemetry.extension.incubator.logs.AnyValue;
 import io.opentelemetry.extension.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.sdk.common.Clock;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 /**
  * SDK implementation for {@link EventEmitterProvider}.
@@ -89,6 +90,8 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
 
   private static class SdkEventEmitter implements EventEmitter {
 
+    private static final Severity DEFAULT_SEVERITY = Severity.INFO;
+
     private final Clock clock;
     private final Logger delegateLogger;
 
@@ -103,21 +106,33 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
           clock,
           delegateLogger
               .logRecordBuilder()
-              .setSeverity(Severity.INFO)
+              .setSeverity(DEFAULT_SEVERITY)
               .setContext(Context.current()),
           eventName);
     }
 
     @Override
+    public void emit(String eventName) {
+      emitInternal(eventName, null);
+    }
+
+    @Override
     public void emit(String eventName, AnyValue<?> payload) {
+      emitInternal(eventName, payload);
+    }
+
+    private void emitInternal(String eventName, @Nullable AnyValue<?> payload) {
       long now = clock.now();
-      LogRecordBuilder logRecordBuilder =
-          ((ExtendedLogRecordBuilder) delegateLogger.logRecordBuilder())
-              .setBody(payload)
-              .setSeverity(Severity.INFO)
-              .setContext(Context.current())
-              .setTimestamp(now, TimeUnit.NANOSECONDS)
-              .setObservedTimestamp(now, TimeUnit.NANOSECONDS);
+      ExtendedLogRecordBuilder logRecordBuilder =
+          ((ExtendedLogRecordBuilder) delegateLogger.logRecordBuilder());
+      if (payload != null) {
+        logRecordBuilder.setBody(payload);
+      }
+      logRecordBuilder
+          .setSeverity(DEFAULT_SEVERITY)
+          .setContext(Context.current())
+          .setTimestamp(now, TimeUnit.NANOSECONDS)
+          .setObservedTimestamp(now, TimeUnit.NANOSECONDS);
       addEventName(logRecordBuilder, eventName);
       logRecordBuilder.emit();
     }

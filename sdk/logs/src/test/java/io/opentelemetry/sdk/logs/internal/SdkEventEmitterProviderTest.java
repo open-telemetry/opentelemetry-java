@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -39,7 +40,23 @@ class SdkEventEmitterProviderTest {
           clock);
 
   @Test
-  void emit() {
+  void emit_NoPayload() {
+    when(clock.now()).thenReturn(10L);
+
+    eventEmitterProvider.eventEmitterBuilder("test-scope").build().emit("namespace.event-name");
+
+    assertThat(seenLog.get().toLogRecordData())
+        .hasResource(RESOURCE)
+        .hasInstrumentationScope(InstrumentationScopeInfo.create("test-scope"))
+        .hasTimestamp(10L)
+        .hasObservedTimestamp(10L)
+        .hasSeverity(Severity.INFO)
+        .hasAttributes(Attributes.builder().put("event.name", "namespace.event-name").build());
+    assertThat(seenLog.get().toLogRecordData().getBody()).isEqualTo(Body.empty());
+  }
+
+  @Test
+  void emit_WithPayload() {
     when(clock.now()).thenReturn(10L);
 
     AnyValue<?> payload = AnyValue.of(Collections.singletonMap("key1", AnyValue.of("value1")));
