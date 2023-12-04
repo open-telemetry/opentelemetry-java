@@ -296,7 +296,10 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         exporterBuilder()
             .setEndpoint(server.httpUri().toString())
             .addHeader("key1", "value1")
-            .setHeaders(() -> Collections.singletonMap("key2", "value" + count.incrementAndGet()))
+            .setHeaders(
+                () ->
+                    Collections.singletonMap(
+                        "key2", Collections.singletonList("value" + count.incrementAndGet())))
             .build();
     try {
       // Export twice to ensure header supplier gets invoked twice

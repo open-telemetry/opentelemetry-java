@@ -13,6 +13,7 @@ import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -34,18 +35,18 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
       String endpointPath,
       boolean compressionEnabled,
       long timeoutNanos,
-      Supplier<Map<String, String>> headersSupplier,
+      Supplier<Map<String, List<String>>> headersSupplier,
       @Nullable Object managedChannel,
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager) {
     String authorityOverride = null;
-    Map<String, String> headers = headersSupplier.get();
+    Map<String, List<String>> headers = headersSupplier.get();
     if (headers != null) {
-      for (Map.Entry<String, String> entry : headers.entrySet()) {
-        if (entry.getKey().equals("host")) {
-          authorityOverride = entry.getValue();
+      for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+        if (entry.getKey().equals("host") && !entry.getValue().isEmpty()) {
+          authorityOverride = entry.getValue().get(0);
         }
       }
     }

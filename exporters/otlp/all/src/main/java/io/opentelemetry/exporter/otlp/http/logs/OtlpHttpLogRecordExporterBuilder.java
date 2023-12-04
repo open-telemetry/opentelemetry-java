@@ -15,6 +15,7 @@ import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -34,7 +35,7 @@ public final class OtlpHttpLogRecordExporterBuilder {
 
   OtlpHttpLogRecordExporterBuilder(HttpExporterBuilder<LogsRequestMarshaler> delegate) {
     this.delegate = delegate;
-    OtlpUserAgent.addUserAgentHeader(delegate::addStaticHeader);
+    OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeaders);
   }
 
   OtlpHttpLogRecordExporterBuilder() {
@@ -84,14 +85,21 @@ public final class OtlpHttpLogRecordExporterBuilder {
     return this;
   }
 
-  /** Add static header to requests. */
+  /**
+   * Add a constant header to requests. If the {@code key} collides with another constant header
+   * name or a one from {@link #setHeaders(Supplier)}, the values from both are included.
+   */
   public OtlpHttpLogRecordExporterBuilder addHeader(String key, String value) {
-    delegate.addStaticHeader(key, value);
+    delegate.addConstantHeaders(key, value);
     return this;
   }
 
-  /** Set the supplier of headers to add to requests. */
-  public OtlpHttpLogRecordExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
+  /**
+   * Set the supplier of headers to add to requests. If a key from the map collides with a constant
+   * from {@link #addHeader(String, String)}, the values from both are included.
+   */
+  public OtlpHttpLogRecordExporterBuilder setHeaders(
+      Supplier<Map<String, List<String>>> headerSupplier) {
     delegate.setHeadersSupplier(headerSupplier);
     return this;
   }

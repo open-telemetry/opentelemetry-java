@@ -17,6 +17,7 @@ import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -40,7 +41,7 @@ public final class OtlpGrpcSpanExporterBuilder {
 
   OtlpGrpcSpanExporterBuilder(GrpcExporterBuilder<TraceRequestMarshaler> delegate) {
     this.delegate = delegate;
-    OtlpUserAgent.addUserAgentHeader(delegate::addStaticHeader);
+    OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeader);
   }
 
   OtlpGrpcSpanExporterBuilder() {
@@ -149,23 +150,27 @@ public final class OtlpGrpcSpanExporterBuilder {
   }
 
   /**
-   * Add header to request. Optional. Applicable only if {@link
-   * OtlpGrpcSpanExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
+   * Add a constant header to requests. If the {@code key} collides with another constant header
+   * name or a one from {@link #setHeaders(Supplier)}, the values from both are included. Applicable
+   * only if {@link OtlpGrpcSpanExporterBuilder#setChannel(ManagedChannel)} is not used to set
+   * channel.
    *
    * @param key header key
    * @param value header value
    * @return this builder's instance
    */
   public OtlpGrpcSpanExporterBuilder addHeader(String key, String value) {
-    delegate.addStaticHeader(key, value);
+    delegate.addConstantHeader(key, value);
     return this;
   }
 
   /**
-   * Set the supplier of headers to add to requests. Applicable only if {@link
-   * OtlpGrpcSpanExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
+   * Set the supplier of headers to add to requests. If a key from the map collides with a constant
+   * from {@link #addHeader(String, String)}, the values from both are included. Applicable only if
+   * {@link OtlpGrpcSpanExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
    */
-  public OtlpGrpcSpanExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
+  public OtlpGrpcSpanExporterBuilder setHeaders(
+      Supplier<Map<String, List<String>>> headerSupplier) {
     delegate.setHeadersSupplier(headerSupplier);
     return this;
   }

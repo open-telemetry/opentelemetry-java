@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -43,7 +44,7 @@ public final class OkHttpHttpSender implements HttpSender {
   private final OkHttpClient client;
   private final HttpUrl url;
   private final boolean compressionEnabled;
-  private final Supplier<Map<String, String>> headerSupplier;
+  private final Supplier<Map<String, List<String>>> headerSupplier;
   private final MediaType mediaType;
 
   /** Create a sender. */
@@ -52,7 +53,7 @@ public final class OkHttpHttpSender implements HttpSender {
       boolean compressionEnabled,
       String contentType,
       long timeoutNanos,
-      Supplier<Map<String, String>> headerSupplier,
+      Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable Authenticator authenticator,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
@@ -94,9 +95,10 @@ public final class OkHttpHttpSender implements HttpSender {
       Consumer<Throwable> onError) {
     Request.Builder requestBuilder = new Request.Builder().url(url);
 
-    Map<String, String> headers = headerSupplier.get();
+    Map<String, List<String>> headers = headerSupplier.get();
     if (headers != null) {
-      headers.forEach(requestBuilder::addHeader);
+      headers.forEach(
+          (key, values) -> values.forEach(value -> requestBuilder.addHeader(key, value)));
     }
     RequestBody body = new RawRequestBody(marshaler, contentLength, mediaType);
     if (compressionEnabled) {

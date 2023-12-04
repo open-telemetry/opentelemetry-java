@@ -10,6 +10,7 @@ import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -56,7 +57,7 @@ public class HttpMetricExporterBuilderWrapper implements TelemetryExporterBuilde
 
   @Override
   public TelemetryExporterBuilder<MetricData> setHeaders(
-      Supplier<Map<String, String>> headerSupplier) {
+      Supplier<Map<String, List<String>>> headerSupplier) {
     builder.setHeaders(headerSupplier);
     return this;
   }

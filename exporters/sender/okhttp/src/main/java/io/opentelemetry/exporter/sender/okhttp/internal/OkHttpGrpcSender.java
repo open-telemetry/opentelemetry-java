@@ -37,6 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -65,7 +66,7 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
 
   private final OkHttpClient client;
   private final HttpUrl url;
-  private final Supplier<Map<String, String>> headersSupplier;
+  private final Supplier<Map<String, List<String>>> headersSupplier;
   private final boolean compressionEnabled;
 
   /** Creates a new {@link OkHttpGrpcSender}. */
@@ -73,7 +74,7 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
       String endpoint,
       boolean compressionEnabled,
       long timeoutNanos,
-      Supplier<Map<String, String>> headersSupplier,
+      Supplier<Map<String, List<String>>> headersSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager) {
@@ -103,9 +104,10 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
   public void send(T request, Runnable onSuccess, BiConsumer<GrpcResponse, Throwable> onError) {
     Request.Builder requestBuilder = new Request.Builder().url(url);
 
-    Map<String, String> headers = headersSupplier.get();
+    Map<String, List<String>> headers = headersSupplier.get();
     if (headers != null) {
-      headers.forEach(requestBuilder::addHeader);
+      headers.forEach(
+          (key, values) -> values.forEach(value -> requestBuilder.addHeader(key, value)));
     }
     requestBuilder.addHeader("te", "trailers");
     if (compressionEnabled) {

@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -91,7 +92,8 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   }
 
   @Override
-  public TelemetryExporterBuilder<T> setHeaders(Supplier<Map<String, String>> headerSupplier) {
+  public TelemetryExporterBuilder<T> setHeaders(
+      Supplier<Map<String, List<String>>> headerSupplier) {
     delegate.setHeaders(headerSupplier);
     return this;
   }

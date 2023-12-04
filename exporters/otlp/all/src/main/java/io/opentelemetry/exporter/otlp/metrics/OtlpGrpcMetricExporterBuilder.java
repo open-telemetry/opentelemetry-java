@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.net.URI;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -56,7 +57,7 @@ public final class OtlpGrpcMetricExporterBuilder {
   OtlpGrpcMetricExporterBuilder(GrpcExporterBuilder<MetricsRequestMarshaler> delegate) {
     this.delegate = delegate;
     delegate.setMeterProvider(MeterProvider::noop);
-    OtlpUserAgent.addUserAgentHeader(delegate::addStaticHeader);
+    OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeader);
   }
 
   OtlpGrpcMetricExporterBuilder() {
@@ -165,23 +166,27 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
-   * Add header to request. Optional. Applicable only if {@link
-   * OtlpGrpcMetricExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
+   * Add a constant header to requests. If the {@code key} collides with another constant header
+   * name or a one from {@link #setHeaders(Supplier)}, the values from both are included. Applicable
+   * only if {@link OtlpGrpcMetricExporterBuilder#setChannel(ManagedChannel)} is not used to set
+   * channel.
    *
    * @param key header key
    * @param value header value
    * @return this builder's instance
    */
   public OtlpGrpcMetricExporterBuilder addHeader(String key, String value) {
-    delegate.addStaticHeader(key, value);
+    delegate.addConstantHeader(key, value);
     return this;
   }
 
   /**
-   * Set the supplier of headers to add to requests. Applicable only if {@link
-   * OtlpGrpcMetricExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
+   * Set the supplier of headers to add to requests. If a key from the map collides with a constant
+   * from {@link #addHeader(String, String)}, the values from both are included. Applicable only if
+   * {@link OtlpGrpcMetricExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
    */
-  public OtlpGrpcMetricExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
+  public OtlpGrpcMetricExporterBuilder setHeaders(
+      Supplier<Map<String, List<String>>> headerSupplier) {
     delegate.setHeadersSupplier(headerSupplier);
     return this;
   }
