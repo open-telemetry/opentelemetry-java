@@ -81,9 +81,6 @@ public interface Span extends ImplicitContextKeyed {
       ApiUsageLogger.log("context is null");
       return getInvalid();
     }
-    if (!spanContext.isValid()) {
-      return getInvalid();
-    }
     return PropagatedSpan.create(spanContext);
   }
 
