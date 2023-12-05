@@ -202,8 +202,8 @@ public final class ExtendedTracer implements Tracer {
    * @param propagators provide the propagators from {@link OpenTelemetry#getPropagators()}
    * @param carrier the string map where to extract the span context from
    * @param spanBuilder the {@link SpanBuilder} to use
-   * @param spanKind the {@link SpanKind} to use - usually {@link SpanKind#SERVER}.
-   *        Use {@link SpanKind#CONSUMER} for messaging systems.
+   * @param spanKind the {@link SpanKind} to use - usually {@link SpanKind#SERVER}. Use {@link
+   *     SpanKind#CONSUMER} for messaging systems.
    * @param spanCallable the {@link SpanCallable} to call
    * @return the result of the {@link SpanCallable}
    */
@@ -214,8 +214,8 @@ public final class ExtendedTracer implements Tracer {
       SpanKind spanKind,
       SpanCallable<T, E> spanCallable)
       throws E {
-    return extractAndRun(
-        spanKind, carrier, spanBuilder, spanCallable, propagators, ExtendedTracer::setSpanError);
+    return extractAndCall(
+        propagators, carrier, spanBuilder, spanKind, spanCallable, ExtendedTracer::setSpanError);
   }
 
   /**
@@ -233,8 +233,8 @@ public final class ExtendedTracer implements Tracer {
    * @param propagators provide the propagators from {@link OpenTelemetry#getPropagators()}
    * @param carrier the string map where to extract the span context from
    * @param spanBuilder the {@link SpanBuilder} to use
-   * @param spanKind the {@link SpanKind} to use - usually {@link SpanKind#SERVER}.
-   *        Use {@link SpanKind#CONSUMER} for messaging systems.
+   * @param spanKind the {@link SpanKind} to use - usually {@link SpanKind#SERVER}. Use {@link
+   *     SpanKind#CONSUMER} for messaging systems.
    * @param spanCallable the {@link SpanCallable} to call
    * @param handleException the consumer to call when an exception is thrown
    * @return the result of the {@link SpanCallable}
@@ -247,20 +247,9 @@ public final class ExtendedTracer implements Tracer {
       SpanCallable<T, E> spanCallable,
       BiConsumer<Span, Throwable> handleException)
       throws E {
-    return extractAndRun(
-        spanKind, carrier, spanBuilder, spanCallable, propagators, handleException);
-  }
-
-  private static <T, E extends Throwable> T extractAndRun(
-      SpanKind spanKind,
-      Map<String, String> carrier,
-      SpanBuilder spanBuilder,
-      SpanCallable<T, E> spanCallable,
-      ContextPropagators propagators,
-      BiConsumer<Span, Throwable> handleException)
-      throws E {
     try (Scope ignore =
-        ExtendedContextPropagators.extractTextMapPropagationContext(carrier, propagators).makeCurrent()) {
+        ExtendedContextPropagators.extractTextMapPropagationContext(carrier, propagators)
+            .makeCurrent()) {
       return call(spanBuilder.setSpanKind(spanKind), spanCallable, handleException);
     }
   }
