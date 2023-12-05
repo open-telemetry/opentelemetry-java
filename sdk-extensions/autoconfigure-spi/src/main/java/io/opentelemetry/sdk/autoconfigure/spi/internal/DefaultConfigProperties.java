@@ -190,8 +190,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
       value = value.substring(1, value.length() - 1);
       listMembers = value.split("\"\\s?,\\s?\"");
     } else if (value.contains(",") && value.contains("\"")) {
-      throw new ConfigurationException(
-          "Invalid list property: " + name + "=" + config.get(name));
+      throw new ConfigurationException("Invalid list property: " + name + "=" + config.get(name));
     } else {
       listMembers = value.split(",");
     }
