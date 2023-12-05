@@ -34,6 +34,9 @@ class ConfigPropertiesTest {
     assertThat(config.getList("test.list")).containsExactly("cat", "dog", "bear");
     assertThat(config.getMap("test.map"))
         .containsExactly(entry("cat", "meow"), entry("dog", "bark"), entry("bear", "growl"));
+    assertThat(config.getMap("test.map.commas"))
+        .containsExactly(
+            entry("cat", "meow,hiss"), entry("dog", "bark,growl"), entry("bear", "growl,roar"));
     assertThat(config.getDuration("test.duration")).isEqualTo(Duration.ofSeconds(1));
   }
 
@@ -49,6 +52,9 @@ class ConfigPropertiesTest {
     assertThat(config.getList("test-list")).containsExactly("cat", "dog", "bear");
     assertThat(config.getMap("test-map"))
         .containsExactly(entry("cat", "meow"), entry("dog", "bark"), entry("bear", "growl"));
+    assertThat(config.getMap("test-map-commas"))
+        .containsExactly(
+            entry("cat", "meow,hiss"), entry("dog", "bark,growl"), entry("bear", "growl,roar"));
     assertThat(config.getDuration("test-duration")).isEqualTo(Duration.ofSeconds(1));
   }
 
@@ -61,6 +67,7 @@ class ConfigPropertiesTest {
     assertThat(config.getDouble("test.double")).isNull();
     assertThat(config.getList("test.list")).isEmpty();
     assertThat(config.getMap("test.map")).isEmpty();
+    assertThat(config.getMap("test.map.commas")).isEmpty();
     assertThat(config.getDuration("test.duration")).isNull();
   }
 
@@ -73,6 +80,7 @@ class ConfigPropertiesTest {
     properties.put("test.double", "");
     properties.put("test.list", "");
     properties.put("test.map", "");
+    properties.put("test.map.commas", "");
     properties.put("test.duration", "");
 
     ConfigProperties config = DefaultConfigProperties.createFromMap(properties);
@@ -82,6 +90,7 @@ class ConfigPropertiesTest {
     assertThat(config.getDouble("test.double")).isNull();
     assertThat(config.getList("test.list")).isEmpty();
     assertThat(config.getMap("test.map")).isEmpty();
+    assertThat(config.getMap("test.map.commas")).isEmpty();
     assertThat(config.getDuration("test.duration")).isNull();
   }
 
@@ -167,6 +176,17 @@ class ConfigPropertiesTest {
                     .getMap("map"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid map property: map=a=1,=b");
+  }
+
+  @Test
+  void invalidList() {
+    DefaultConfigProperties config =
+        DefaultConfigProperties.createFromMap(
+            Collections.singletonMap(
+                "invalid", "\"cat=meow,hiss\",\"dog=bark,growl\", bear=growl"));
+    assertThatThrownBy(() -> config.getList("invalid"))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Invalid list property");
   }
 
   @Test
@@ -277,6 +297,7 @@ class ConfigPropertiesTest {
     properties.put("test.list", "cat,dog,bear");
     properties.put("test.map", "cat=meow,dog=bark,bear=growl,bird=");
     properties.put("test.duration", "1s");
+    properties.put("test.map.commas", "\"cat=meow,hiss\",\"dog=bark,growl\", \"bear=growl,roar\"");
     return properties;
   }
 }
