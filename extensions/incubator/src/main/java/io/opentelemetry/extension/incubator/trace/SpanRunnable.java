@@ -12,5 +12,5 @@ package io.opentelemetry.extension.incubator.trace;
  */
 @FunctionalInterface
 public interface SpanRunnable<E extends Throwable> {
-  void doInSpan() throws E;
+  void runInSpan() throws E;
 }

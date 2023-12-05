@@ -22,9 +22,9 @@ import javax.annotation.Nullable;
  * href="https://github.com/open-telemetry/opentelemetry-java-contrib/blob/main/extended-tracer/README.md">README</a>
  * explains the use cases in more detail.
  */
-public final class Propagation {
+public final class ExtendedContextPropagators {
 
-  private Propagation() {}
+  private ExtendedContextPropagators() {}
 
   private static final TextMapGetter<Map<String, String>> TEXT_MAP_GETTER =
       new TextMapGetter<Map<String, String>>() {

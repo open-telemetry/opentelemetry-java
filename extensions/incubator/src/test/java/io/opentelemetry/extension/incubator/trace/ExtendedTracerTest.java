@@ -15,7 +15,7 @@ import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.extension.incubator.propagation.Propagation;
+import io.opentelemetry.extension.incubator.propagation.ExtendedContextPropagators;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.assertj.SpanDataAssert;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
@@ -98,11 +98,15 @@ class ExtendedTracerTest {
         () -> {
           ContextPropagators propagators = otelTesting.getOpenTelemetry().getPropagators();
           Map<String, String> propagationHeaders =
-              Propagation.getTextMapPropagationContext(propagators);
+              ExtendedContextPropagators.getTextMapPropagationContext(propagators);
           assertThat(propagationHeaders).hasSize(1).containsKey("traceparent");
 
-          extendedTracer.traceServerSpan(
-              propagationHeaders, extendedTracer.spanBuilder("child"), () -> null, propagators);
+          ExtendedTracer.extractAndCall(
+              propagators,
+              propagationHeaders,
+              extendedTracer.spanBuilder("child"),
+              SpanKind.SERVER,
+              () -> null);
         });
 
     otelTesting
@@ -154,11 +158,12 @@ class ExtendedTracerTest {
                 "server",
                 new ExtractAndRunParameter(
                     (t, c) ->
-                        t.traceServerSpan(
+                        ExtendedTracer.extractAndCall(
+                            otelTesting.getOpenTelemetry().getPropagators(),
                             Collections.emptyMap(),
                             t.spanBuilder("span"),
-                            c,
-                            otelTesting.getOpenTelemetry().getPropagators()),
+                            SpanKind.SERVER,
+                            c),
                     SpanKind.SERVER,
                     StatusData.error()))),
         Arguments.of(
@@ -166,38 +171,14 @@ class ExtendedTracerTest {
                 "server - ignore exception",
                 new ExtractAndRunParameter(
                     (t, c) ->
-                        t.traceServerSpan(
+                        ExtendedTracer.extractAndCall(
+                            otelTesting.getOpenTelemetry().getPropagators(),
                             Collections.emptyMap(),
                             t.spanBuilder("span"),
+                            SpanKind.SERVER,
                             c,
-                            otelTesting.getOpenTelemetry().getPropagators(),
                             ignoreException),
                     SpanKind.SERVER,
-                    StatusData.unset()))),
-        Arguments.of(
-            named(
-                "consumer",
-                new ExtractAndRunParameter(
-                    (t, c) ->
-                        t.traceConsumerSpan(
-                            Collections.emptyMap(),
-                            t.spanBuilder("span"),
-                            c,
-                            otelTesting.getOpenTelemetry().getPropagators()),
-                    SpanKind.CONSUMER,
-                    StatusData.error()))),
-        Arguments.of(
-            named(
-                "consumer - ignore exception",
-                new ExtractAndRunParameter(
-                    (t, c) ->
-                        t.traceConsumerSpan(
-                            Collections.emptyMap(),
-                            t.spanBuilder("span"),
-                            c,
-                            otelTesting.getOpenTelemetry().getPropagators(),
-                            ignoreException),
-                    SpanKind.CONSUMER,
                     StatusData.unset()))));
   }
 
