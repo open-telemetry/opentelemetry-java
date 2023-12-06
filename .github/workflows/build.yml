@@ -91,6 +91,10 @@ jobs:
 
       - uses: anchore/sbom-action@v0
 
+      - uses: anchore/sbom-action@v0
+        with:
+          format: cyclonedx-json
+
   markdown-link-check:
     # release branches are excluded to avoid unnecessary maintenance
     if: ${{ !startsWith(github.ref_name, 'release/') }}

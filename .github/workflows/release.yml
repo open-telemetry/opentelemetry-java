@@ -33,6 +33,10 @@ jobs:
 
       - uses: anchore/sbom-action@v0
 
+      - uses: anchore/sbom-action@v0
+        with:
+          format: cyclonedx-json
+
       - name: Set environment variables
         run: |
           version=$(.github/scripts/get-version.sh)
