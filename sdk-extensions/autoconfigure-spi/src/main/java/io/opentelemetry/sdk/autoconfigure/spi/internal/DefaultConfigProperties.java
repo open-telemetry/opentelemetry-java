@@ -181,7 +181,21 @@ public final class DefaultConfigProperties implements ConfigProperties {
     if (value == null) {
       return Collections.emptyList();
     }
-    return filterBlanksAndNulls(value.split(","));
+
+    // Support list members containing commas per RFC9110 5.5 suggestion
+    String[] listMembers;
+    // check if list members are double-quoted
+    if (value.startsWith("\"") && value.endsWith("\"")) {
+      // remove first and last quote and split on '","'
+      value = value.substring(1, value.length() - 1);
+      listMembers = value.split("\"\\s?,\\s?\"");
+    } else if (value.contains(",") && value.contains("\"")) {
+      throw new ConfigurationException("Invalid list property: " + name + "=" + config.get(name));
+    } else {
+      listMembers = value.split(",");
+    }
+
+    return filterBlanksAndNulls(listMembers);
   }
 
   /**
