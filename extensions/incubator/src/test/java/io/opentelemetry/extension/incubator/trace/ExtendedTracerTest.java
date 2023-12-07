@@ -104,7 +104,8 @@ class ExtendedTracerTest {
           extendedTracer
               .spanBuilder("child")
               .setSpanKind(SpanKind.SERVER)
-              .extractAndCall(propagators, propagationHeaders, () -> null);
+              .extractContext(propagators, propagationHeaders)
+              .run(() -> {});
         });
 
     otelTesting
@@ -158,10 +159,10 @@ class ExtendedTracerTest {
                     (t, c) ->
                         t.spanBuilder("span")
                             .setSpanKind(SpanKind.SERVER)
-                            .extractAndCall(
+                            .extractContext(
                                 otelTesting.getOpenTelemetry().getPropagators(),
-                                Collections.emptyMap(),
-                                c),
+                                Collections.emptyMap())
+                            .call(c),
                     SpanKind.SERVER,
                     StatusData.error()))),
         Arguments.of(
@@ -172,10 +173,10 @@ class ExtendedTracerTest {
                         t.spanBuilder("span")
                             .setSpanKind(SpanKind.SERVER)
                             .setExceptionHandler(ignoreException)
-                            .extractAndCall(
+                            .extractContext(
                                 otelTesting.getOpenTelemetry().getPropagators(),
-                                Collections.emptyMap(),
-                                c),
+                                Collections.emptyMap())
+                            .call(c),
                     SpanKind.SERVER,
                     StatusData.unset()))));
   }

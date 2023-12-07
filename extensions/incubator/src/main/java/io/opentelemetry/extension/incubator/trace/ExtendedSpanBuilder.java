@@ -21,11 +21,14 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+import javax.annotation.Nullable;
 
 public class ExtendedSpanBuilder implements SpanBuilder {
   private final SpanBuilder delegate;
 
   private BiConsumer<Span, Throwable> exceptionHandler = ExtendedSpanBuilder::setSpanError;
+
+  @Nullable private Context extractedContext = null;
 
   ExtendedSpanBuilder(SpanBuilder delegate) {
     this.delegate = delegate;
@@ -110,8 +113,7 @@ public class ExtendedSpanBuilder implements SpanBuilder {
   }
 
   /**
-   * Sets the exception handler for {@link #call(SpanCallable)}, {@link #run(SpanRunnable)}, and
-   * {@link #extractAndCall(ContextPropagators, Map, SpanCallable)}.
+   * Sets the exception handler for {@link #call(SpanCallable)} and {@link #run(SpanRunnable)}
    *
    * <p>The exception handler gives you the opportunity to handle the exception in a custom way,
    * e.g. not marking the span as error, which is the default behavior.
@@ -120,6 +122,30 @@ public class ExtendedSpanBuilder implements SpanBuilder {
    */
   public ExtendedSpanBuilder setExceptionHandler(BiConsumer<Span, Throwable> exceptionHandler) {
     this.exceptionHandler = exceptionHandler;
+    return this;
+  }
+
+  /**
+   * Extract a span context from the given carrier and set it as parent of the span for {@link
+   * #call(SpanCallable)} and {@link #run(SpanRunnable)}.
+   *
+   * <p>The span context will be extracted from the <code>carrier</code>, which you usually get from
+   * HTTP headers of the metadata of a message you're processing.
+   *
+   * <p>A typical usage would be: <code>
+   * ExtendedTracer.create(tracer)
+   *     .setSpanKind(SpanKind.SERVER)
+   *     .extractContext(propagators, carrier)
+   *     .run("my-span", () -> { ... });
+   * </code>
+   *
+   * @param propagators provide the propagators from {@link OpenTelemetry#getPropagators()}
+   * @param carrier the string map where to extract the span context from
+   */
+  public ExtendedSpanBuilder extractContext(
+      ContextPropagators propagators, Map<String, String> carrier) {
+    this.extractedContext =
+        ExtendedContextPropagators.extractTextMapPropagationContext(carrier, propagators);
     return this;
   }
 
@@ -142,8 +168,10 @@ public class ExtendedSpanBuilder implements SpanBuilder {
    */
   public <T, E extends Throwable> T call(SpanCallable<T, E> spanCallable) throws E {
     Span span = startSpan();
+
     //noinspection unused
-    try (Scope unused = span.makeCurrent()) {
+    try (Scope unused =
+        extractedContext != null ? extractedContext.makeCurrent() : span.makeCurrent()) {
       return spanCallable.callInSpan();
     } catch (Throwable e) {
       exceptionHandler.accept(span, e);
@@ -170,32 +198,6 @@ public class ExtendedSpanBuilder implements SpanBuilder {
           runnable.runInSpan();
           return null;
         });
-  }
-
-  /**
-   * Run the given {@link SpanCallable} inside a server or consumer span.
-   *
-   * <p>The span context will be extracted from the <code>carrier</code>, which you usually get from
-   * HTTP headers of the metadata of a message you're processing.
-   *
-   * <p>If an exception is thrown by the {@link SpanCallable}, the span will be marked as error, and
-   * the exception will be recorded.
-   *
-   * @param <T> the type of the result
-   * @param <E> the type of the exception
-   * @param propagators provide the propagators from {@link OpenTelemetry#getPropagators()}
-   * @param carrier the string map where to extract the span context from
-   * @param spanCallable the {@link SpanCallable} to call
-   * @return the result of the {@link SpanCallable}
-   */
-  public <T, E extends Throwable> T extractAndCall(
-      ContextPropagators propagators, Map<String, String> carrier, SpanCallable<T, E> spanCallable)
-      throws E {
-    try (Scope ignore =
-        ExtendedContextPropagators.extractTextMapPropagationContext(carrier, propagators)
-            .makeCurrent()) {
-      return call(spanCallable);
-    }
   }
 
   /**
