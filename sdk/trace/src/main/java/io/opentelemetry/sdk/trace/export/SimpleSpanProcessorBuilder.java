@@ -29,8 +29,7 @@ public final class SimpleSpanProcessorBuilder {
   }
 
   /**
-   * Returns a new {@link SimpleSpanProcessor} that converts spans to proto and forwards them to the
-   * given {@code spanExporter}.
+   * Returns a new {@link SimpleSpanProcessor} with the configuration of this builder.
    *
    * @return a new {@link SimpleSpanProcessor}.
    */
