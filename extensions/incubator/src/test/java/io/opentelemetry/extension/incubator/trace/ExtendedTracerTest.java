@@ -97,39 +97,41 @@ class ExtendedTracerTest {
 
   @Test
   void propagation() {
-    extendedTracer.spanBuilder("parent").startAndRun(
-        () -> {
-          ContextPropagators propagators = otelTesting.getOpenTelemetry().getPropagators();
-          Map<String, String> propagationHeaders =
-              ExtendedContextPropagators.getTextMapPropagationContext(propagators);
-          assertThat(propagationHeaders).hasSize(1).containsKey("traceparent");
+    extendedTracer
+        .spanBuilder("parent")
+        .startAndRun(
+            () -> {
+              ContextPropagators propagators = otelTesting.getOpenTelemetry().getPropagators();
+              Map<String, String> propagationHeaders =
+                  ExtendedContextPropagators.getTextMapPropagationContext(propagators);
+              assertThat(propagationHeaders).hasSize(1).containsKey("traceparent");
 
-          // make sure the parent span is not stored in a thread local anymore
-          Span invalid = Span.getInvalid();
-          //noinspection unused
-          try (Scope unused = invalid.makeCurrent()) {
-            extendedTracer
-                .spanBuilder("child")
-                .setSpanKind(SpanKind.SERVER)
-                .setParent(Context.current())
-                .setNoParent()
-                .setParentFrom(propagators, propagationHeaders)
-                .setAttribute(
-                    "key",
-                    "value") // any method can be called here on the span (and we increase the test
-                // coverage)
-                .setAttribute("key2", 0)
-                .setAttribute("key3", 0.0)
-                .setAttribute("key4", false)
-                .setAttribute(SemanticAttributes.CLIENT_PORT, 1234L)
-                .addLink(invalid.getSpanContext())
-                .addLink(invalid.getSpanContext(), Attributes.empty())
-                .setAllAttributes(Attributes.empty())
-                .setStartTimestamp(0, java.util.concurrent.TimeUnit.NANOSECONDS)
-                .setStartTimestamp(Instant.MIN)
-                .startAndRun(() -> {});
-          }
-        });
+              // make sure the parent span is not stored in a thread local anymore
+              Span invalid = Span.getInvalid();
+              //noinspection unused
+              try (Scope unused = invalid.makeCurrent()) {
+                extendedTracer
+                    .spanBuilder("child")
+                    .setSpanKind(SpanKind.SERVER)
+                    .setParent(Context.current())
+                    .setNoParent()
+                    .setParentFrom(propagators, propagationHeaders)
+                    .setAttribute(
+                        "key",
+                        "value") // any method can be called here on the span (and we increase the
+                    // test coverage)
+                    .setAttribute("key2", 0)
+                    .setAttribute("key3", 0.0)
+                    .setAttribute("key4", false)
+                    .setAttribute(SemanticAttributes.CLIENT_PORT, 1234L)
+                    .addLink(invalid.getSpanContext())
+                    .addLink(invalid.getSpanContext(), Attributes.empty())
+                    .setAllAttributes(Attributes.empty())
+                    .setStartTimestamp(0, java.util.concurrent.TimeUnit.NANOSECONDS)
+                    .setStartTimestamp(Instant.MIN)
+                    .startAndRun(() -> {});
+              }
+            });
 
     otelTesting
         .assertTraces()
