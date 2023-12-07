@@ -59,7 +59,12 @@ class SimpleSpanProcessorTest {
           SpanId.getInvalid(),
           TraceFlags.getSampled(),
           TraceState.getDefault());
-  private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT = SpanContext.getInvalid();
+  private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT =
+      SpanContext.create(
+          TraceId.getInvalid(),
+          SpanId.getInvalid(),
+          TraceFlags.getDefault(),
+          TraceState.getDefault());
 
   private SpanProcessor simpleSampledSpansProcessor;
 
@@ -105,7 +110,7 @@ class SimpleSpanProcessorTest {
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     when(readableSpan.toSpanData()).thenReturn(spanData);
     SpanProcessor simpleSpanProcessor =
-        SimpleSpanProcessor.builder(spanExporter).exportUnsampledSpans(true).build();
+        SimpleSpanProcessor.builder(spanExporter).setExportPredicate(span -> true).build();
     simpleSpanProcessor.onEnd(readableSpan);
     verify(spanExporter).export(Collections.singletonList(spanData));
   }
@@ -116,7 +121,7 @@ class SimpleSpanProcessorTest {
     when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
     when(readableSpan.toSpanData()).thenReturn(spanData);
     SpanProcessor simpleSpanProcessor =
-        SimpleSpanProcessor.builder(spanExporter).exportUnsampledSpans(true).build();
+        SimpleSpanProcessor.builder(spanExporter).setExportPredicate(span -> true).build();
     simpleSpanProcessor.onEnd(readableSpan);
     verify(spanExporter).export(Collections.singletonList(spanData));
   }
@@ -166,7 +171,9 @@ class SimpleSpanProcessorTest {
     SdkTracerProvider sdkTracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
-                SimpleSpanProcessor.builder(waitingSpanExporter).exportUnsampledSpans(true).build())
+                SimpleSpanProcessor.builder(waitingSpanExporter)
+                    .setExportPredicate(span -> true)
+                    .build())
             .setSampler(mockSampler)
             .build();
 

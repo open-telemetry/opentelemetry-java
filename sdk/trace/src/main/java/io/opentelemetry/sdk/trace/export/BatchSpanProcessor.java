@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,7 +54,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       AttributeKey.booleanKey("dropped");
   private static final String SPAN_PROCESSOR_TYPE_VALUE = BatchSpanProcessor.class.getSimpleName();
 
-  private final boolean exportUnsampledSpans;
+  private final Predicate<ReadableSpan> exporterPredicate;
   private final Worker worker;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
@@ -70,13 +71,13 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   BatchSpanProcessor(
       SpanExporter spanExporter,
-      boolean exportUnsampledSpans,
+      Predicate<ReadableSpan> exporterPredicate,
       MeterProvider meterProvider,
       long scheduleDelayNanos,
       int maxQueueSize,
       int maxExportBatchSize,
       long exporterTimeoutNanos) {
-    this.exportUnsampledSpans = exportUnsampledSpans;
+    this.exporterPredicate = exporterPredicate;
     this.worker =
         new Worker(
             spanExporter,
@@ -99,7 +100,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    if (span != null && (exportUnsampledSpans || span.getSpanContext().isSampled())) {
+    if (span != null && exporterPredicate.test(span)) {
       worker.addSpan(span);
     }
   }
