@@ -5,12 +5,7 @@
 
 package io.opentelemetry.extension.incubator.trace;
 
-import io.opentelemetry.api.baggage.Baggage;
-import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
-import java.util.Map;
 
 /**
  * Utility class to simplify tracing.
@@ -45,25 +40,5 @@ public final class ExtendedTracer implements Tracer {
   @Override
   public ExtendedSpanBuilder spanBuilder(String spanName) {
     return new ExtendedSpanBuilder(delegate.spanBuilder(spanName));
-  }
-
-  /**
-   * Set baggage items inside the given {@link SpanCallable}.
-   *
-   * @param baggage the baggage items to set
-   * @param spanCallable the {@link SpanCallable} to call
-   * @param <T> the type of the result
-   * @param <E> the type of the exception
-   * @return the result of the {@link SpanCallable}
-   */
-  @SuppressWarnings("NullAway")
-  public static <T, E extends Throwable> T callWithBaggage(
-      Map<String, String> baggage, SpanCallable<T, E> spanCallable) throws E {
-    BaggageBuilder builder = Baggage.current().toBuilder();
-    baggage.forEach(builder::put);
-    Context context = builder.build().storeInContext(Context.current());
-    try (Scope ignore = context.makeCurrent()) {
-      return spanCallable.callInSpan();
-    }
   }
 }

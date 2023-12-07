@@ -13,7 +13,6 @@ import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.junit.jupiter.api.Named.named;
 
 import com.google.errorprone.annotations.Keep;
-import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
@@ -138,20 +137,6 @@ class ExtendedTracerTest {
             trace ->
                 trace.hasSpansSatisfyingExactly(
                     SpanDataAssert::hasNoParent, span -> span.hasParent(trace.getSpan(0))));
-  }
-
-  @Test
-  void callWithBaggage() {
-    String value =
-        extendedTracer
-            .spanBuilder("parent")
-            .startAndCall(
-                () ->
-                    ExtendedTracer.callWithBaggage(
-                        Collections.singletonMap("key", "value"),
-                        () -> Baggage.current().getEntryValue("key")));
-
-    assertThat(value).isEqualTo("value");
   }
 
   private static class ExtractAndRunParameter {
