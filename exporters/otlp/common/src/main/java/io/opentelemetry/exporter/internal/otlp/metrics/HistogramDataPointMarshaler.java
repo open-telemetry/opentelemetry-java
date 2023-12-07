@@ -41,7 +41,7 @@ final class HistogramDataPointMarshaler extends MarshalerWithSize {
 
   static HistogramDataPointMarshaler create(HistogramPointData point) {
     KeyValueMarshaler[] attributeMarshalers =
-        KeyValueMarshaler.createRepeated(point.getAttributes());
+        KeyValueMarshaler.createForAttributes(point.getAttributes());
     ExemplarMarshaler[] exemplarMarshalers = ExemplarMarshaler.createRepeated(point.getExemplars());
 
     return new HistogramDataPointMarshaler(

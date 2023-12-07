@@ -52,7 +52,7 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
         link.getSpanContext().getTraceId(),
         link.getSpanContext().getSpanId(),
         traceStateUtf8,
-        KeyValueMarshaler.createRepeated(link.getAttributes()),
+        KeyValueMarshaler.createForAttributes(link.getAttributes()),
         link.getTotalAttributeCount() - link.getAttributes().size());
   }
 

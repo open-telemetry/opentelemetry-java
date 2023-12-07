@@ -20,7 +20,7 @@ final class SummaryDataPointMarshaler extends MarshalerWithSize {
   private final long count;
   private final double sum;
   private final ValueAtQuantileMarshaler[] quantileValues;
-  private final KeyValueMarshaler[] attributes;
+  private final MarshalerWithSize[] attributes;
 
   static SummaryDataPointMarshaler[] createRepeated(Collection<SummaryPointData> points) {
     SummaryDataPointMarshaler[] marshalers = new SummaryDataPointMarshaler[points.size()];
@@ -34,8 +34,8 @@ final class SummaryDataPointMarshaler extends MarshalerWithSize {
   static SummaryDataPointMarshaler create(SummaryPointData point) {
     ValueAtQuantileMarshaler[] quantileMarshalers =
         ValueAtQuantileMarshaler.createRepeated(point.getValues());
-    KeyValueMarshaler[] attributeMarshalers =
-        KeyValueMarshaler.createRepeated(point.getAttributes());
+    MarshalerWithSize[] attributeMarshalers =
+        KeyValueMarshaler.createForAttributes(point.getAttributes());
 
     return new SummaryDataPointMarshaler(
         point.getStartEpochNanos(),
@@ -52,7 +52,7 @@ final class SummaryDataPointMarshaler extends MarshalerWithSize {
       long count,
       double sum,
       ValueAtQuantileMarshaler[] quantileValues,
-      KeyValueMarshaler[] attributes) {
+      MarshalerWithSize[] attributes) {
     super(calculateSize(startTimeUnixNano, timeUnixNano, count, sum, quantileValues, attributes));
     this.startTimeUnixNano = startTimeUnixNano;
     this.timeUnixNano = timeUnixNano;
@@ -78,7 +78,7 @@ final class SummaryDataPointMarshaler extends MarshalerWithSize {
       long count,
       double sum,
       ValueAtQuantileMarshaler[] quantileValues,
-      KeyValueMarshaler[] attributes) {
+      MarshalerWithSize[] attributes) {
     int size = 0;
     size += MarshalerUtil.sizeFixed64(SummaryDataPoint.START_TIME_UNIX_NANO, startTimeUnixNano);
     size += MarshalerUtil.sizeFixed64(SummaryDataPoint.TIME_UNIX_NANO, timeUnixNano);
