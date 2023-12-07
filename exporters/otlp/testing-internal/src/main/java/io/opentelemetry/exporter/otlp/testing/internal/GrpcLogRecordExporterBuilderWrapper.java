@@ -11,7 +11,6 @@ import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.time.Duration;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -57,7 +56,7 @@ final class GrpcLogRecordExporterBuilderWrapper implements TelemetryExporterBuil
 
   @Override
   public TelemetryExporterBuilder<LogRecordData> setHeaders(
-      Supplier<Map<String, List<String>>> headerSupplier) {
+      Supplier<Map<String, String>> headerSupplier) {
     builder.setHeaders(headerSupplier);
     return this;
   }

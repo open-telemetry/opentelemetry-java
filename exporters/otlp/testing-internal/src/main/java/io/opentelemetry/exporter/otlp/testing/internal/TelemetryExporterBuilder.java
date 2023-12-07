@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -45,7 +44,7 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> addHeader(String key, String value);
 
-  TelemetryExporterBuilder<T> setHeaders(Supplier<Map<String, List<String>>> headerSupplier);
+  TelemetryExporterBuilder<T> setHeaders(Supplier<Map<String, String>> headerSupplier);
 
   TelemetryExporterBuilder<T> setAuthenticator(Authenticator authenticator);
 

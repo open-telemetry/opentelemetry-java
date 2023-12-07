@@ -50,8 +50,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   private boolean compressionEnabled = false;
   private boolean exportAsJson = false;
-  private final Map<String, List<String>> constantHeaders = new HashMap<>();
-  private Supplier<Map<String, List<String>>> headerSupplier = Collections::emptyMap;
+  private final Map<String, String> constantHeaders = new HashMap<>();
+  private Supplier<Map<String, String>> headerSupplier = Collections::emptyMap;
 
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy;
@@ -86,12 +86,11 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   }
 
   public HttpExporterBuilder<T> addConstantHeaders(String key, String value) {
-    constantHeaders.computeIfAbsent(key, unused -> new ArrayList<>()).add(value);
+    constantHeaders.put(key, value);
     return this;
   }
 
-  public HttpExporterBuilder<T> setHeadersSupplier(
-      Supplier<Map<String, List<String>>> headerSupplier) {
+  public HttpExporterBuilder<T> setHeadersSupplier(Supplier<Map<String, String>> headerSupplier) {
     this.headerSupplier = headerSupplier;
     return this;
   }
@@ -155,15 +154,16 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     Supplier<Map<String, List<String>>> headerSupplier =
         () -> {
           Map<String, List<String>> result = new HashMap<>();
-          Map<String, List<String>> supplierResult = this.headerSupplier.get();
+          Map<String, String> supplierResult = this.headerSupplier.get();
           if (supplierResult != null) {
-            result.putAll(supplierResult);
+            supplierResult.forEach(
+                (key, value) -> result.put(key, Collections.singletonList(value)));
           }
           constantHeaders.forEach(
               (key, value) ->
                   result.merge(
                       key,
-                      value,
+                      Collections.singletonList(value),
                       (v1, v2) -> {
                         List<String> merged = new ArrayList<>(v1);
                         merged.addAll(v2);
@@ -202,7 +202,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     joiner.add("exportAsJson=" + exportAsJson);
     StringJoiner headersJoiner = new StringJoiner(", ", "Headers{", "}");
     constantHeaders.forEach((key, value) -> headersJoiner.add(key + "=OBFUSCATED"));
-    Map<String, List<String>> headers = headerSupplier.get();
+    Map<String, String> headers = headerSupplier.get();
     if (headers != null) {
       headers.forEach((key, value) -> headersJoiner.add(key + "=OBFUSCATED"));
     }

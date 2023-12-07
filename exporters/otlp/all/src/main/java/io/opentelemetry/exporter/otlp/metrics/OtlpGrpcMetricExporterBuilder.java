@@ -20,7 +20,6 @@ import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.net.URI;
 import java.time.Duration;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -185,8 +184,7 @@ public final class OtlpGrpcMetricExporterBuilder {
    * from {@link #addHeader(String, String)}, the values from both are included. Applicable only if
    * {@link OtlpGrpcMetricExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
    */
-  public OtlpGrpcMetricExporterBuilder setHeaders(
-      Supplier<Map<String, List<String>>> headerSupplier) {
+  public OtlpGrpcMetricExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
     delegate.setHeadersSupplier(headerSupplier);
     return this;
   }

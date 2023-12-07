@@ -17,7 +17,6 @@ import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -169,8 +168,7 @@ public final class OtlpGrpcSpanExporterBuilder {
    * from {@link #addHeader(String, String)}, the values from both are included. Applicable only if
    * {@link OtlpGrpcSpanExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
    */
-  public OtlpGrpcSpanExporterBuilder setHeaders(
-      Supplier<Map<String, List<String>>> headerSupplier) {
+  public OtlpGrpcSpanExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
     delegate.setHeadersSupplier(headerSupplier);
     return this;
   }

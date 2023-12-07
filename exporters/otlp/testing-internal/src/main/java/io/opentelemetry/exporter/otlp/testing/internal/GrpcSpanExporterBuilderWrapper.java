@@ -11,7 +11,6 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -58,7 +57,7 @@ final class GrpcSpanExporterBuilderWrapper implements TelemetryExporterBuilder<S
 
   @Override
   public TelemetryExporterBuilder<SpanData> setHeaders(
-      Supplier<Map<String, List<String>>> headerSupplier) {
+      Supplier<Map<String, String>> headerSupplier) {
     builder.setHeaders(headerSupplier);
     return this;
   }

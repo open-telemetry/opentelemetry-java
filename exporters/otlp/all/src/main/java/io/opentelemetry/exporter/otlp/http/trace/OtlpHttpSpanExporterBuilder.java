@@ -15,7 +15,6 @@ import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.time.Duration;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -98,8 +97,7 @@ public final class OtlpHttpSpanExporterBuilder {
    * Set the supplier of headers to add to requests. If a key from the map collides with a constant
    * from {@link #addHeader(String, String)}, the values from both are included.
    */
-  public OtlpHttpSpanExporterBuilder setHeaders(
-      Supplier<Map<String, List<String>>> headerSupplier) {
+  public OtlpHttpSpanExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
     delegate.setHeadersSupplier(headerSupplier);
     return this;
   }

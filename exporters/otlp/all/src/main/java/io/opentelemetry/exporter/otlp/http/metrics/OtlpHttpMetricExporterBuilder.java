@@ -18,7 +18,6 @@ import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.time.Duration;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -110,8 +109,7 @@ public final class OtlpHttpMetricExporterBuilder {
    * Set the supplier of headers to add to requests. If a key from the map collides with a constant
    * from {@link #addHeader(String, String)}, the values from both are included.
    */
-  public OtlpHttpMetricExporterBuilder setHeaders(
-      Supplier<Map<String, List<String>>> headerSupplier) {
+  public OtlpHttpMetricExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
     delegate.setHeadersSupplier(headerSupplier);
     return this;
   }
