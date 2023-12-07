@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.autoconfigure;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -33,8 +34,10 @@ import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -391,6 +394,27 @@ class AutoConfiguredOpenTelemetrySdkTest {
     thread.join();
 
     verify(sdk).close();
+  }
+
+  @Test
+  void builder_CallAutoConfigureListeners() {
+    builder = spy(builder);
+
+    assertThatCode(() -> builder.build()).doesNotThrowAnyException();
+
+    verify(builder, times(1)).callAutoConfigureListeners(any(), any());
+  }
+
+  @Test
+  void callAutoConfigureListeners() {
+    AutoConfigureListener listener = mock(AutoConfigureListener.class);
+    SpiHelper spiHelper = mock(SpiHelper.class);
+    when(spiHelper.getListeners()).thenReturn(Collections.singleton(listener));
+    OpenTelemetrySdk sdk = mock(OpenTelemetrySdk.class);
+
+    builder.callAutoConfigureListeners(spiHelper, sdk);
+
+    verify(listener).afterAutoConfigure(sdk);
   }
 
   private static Supplier<Map<String, String>> disableExportPropertySupplier() {

@@ -49,6 +49,10 @@ class ConfigurableMetricExporterTest {
           .isInstanceOf(TestConfigurableMetricExporterProvider.TestMetricExporter.class)
           .extracting("config")
           .isSameAs(config);
+      assertThat(spiHelper.getListeners())
+          .satisfiesExactlyInAnyOrder(
+              listener ->
+                  assertThat(listener).isInstanceOf(TestConfigurableMetricExporterProvider.class));
     }
   }
 
@@ -88,6 +92,7 @@ class ConfigurableMetricExporterTest {
         .hasMessageContaining("otel.metrics.exporter contains none along with other exporters");
     cleanup.addCloseables(closeables);
     assertThat(closeables).isEmpty();
+    assertThat(spiHelper.getListeners()).isEmpty();
   }
 
   @Test

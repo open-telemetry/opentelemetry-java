@@ -14,17 +14,22 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.ProtoEnumInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
+import io.opentelemetry.exporter.internal.otlp.AnyValueMarshaler;
 import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
-import io.opentelemetry.exporter.internal.otlp.StringAnyValueMarshaler;
+import io.opentelemetry.extension.incubator.logs.AnyValue;
 import io.opentelemetry.proto.logs.v1.internal.LogRecord;
 import io.opentelemetry.proto.logs.v1.internal.SeverityNumber;
+import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.internal.AnyValueBody;
 import java.io.IOException;
 import javax.annotation.Nullable;
 
 final class LogMarshaler extends MarshalerWithSize {
   private static final String INVALID_TRACE_ID = TraceId.getInvalid();
   private static final String INVALID_SPAN_ID = SpanId.getInvalid();
+  private static final MarshalerWithSize EMPTY_BODY_MARSHALER =
+      AnyValueMarshaler.create(AnyValue.of(""));
 
   private final long timeUnixNano;
   private final long observedTimeUnixNano;
@@ -39,11 +44,9 @@ final class LogMarshaler extends MarshalerWithSize {
 
   static LogMarshaler create(LogRecordData logRecordData) {
     KeyValueMarshaler[] attributeMarshalers =
-        KeyValueMarshaler.createRepeated(logRecordData.getAttributes());
+        KeyValueMarshaler.createForAttributes(logRecordData.getAttributes());
 
-    // For now, map all the bodies to String AnyValue.
-    StringAnyValueMarshaler anyValueMarshaler =
-        new StringAnyValueMarshaler(MarshalerUtil.toBytes(logRecordData.getBody().asString()));
+    MarshalerWithSize bodyMarshaler = body(logRecordData.getBody());
 
     SpanContext spanContext = logRecordData.getSpanContext();
     return new LogMarshaler(
@@ -51,12 +54,25 @@ final class LogMarshaler extends MarshalerWithSize {
         logRecordData.getObservedTimestampEpochNanos(),
         toProtoSeverityNumber(logRecordData.getSeverity()),
         MarshalerUtil.toBytes(logRecordData.getSeverityText()),
-        anyValueMarshaler,
+        bodyMarshaler,
         attributeMarshalers,
         logRecordData.getTotalAttributeCount() - logRecordData.getAttributes().size(),
         spanContext.getTraceFlags(),
         spanContext.getTraceId().equals(INVALID_TRACE_ID) ? null : spanContext.getTraceId(),
         spanContext.getSpanId().equals(INVALID_SPAN_ID) ? null : spanContext.getSpanId());
+  }
+
+  private static MarshalerWithSize body(Body body) {
+    if (body instanceof AnyValueBody) {
+      return AnyValueMarshaler.create(((AnyValueBody) body).asAnyValue());
+    }
+    switch (body.getType()) {
+      case STRING:
+        return AnyValueMarshaler.create(AnyValue.of(body.asString()));
+      case EMPTY:
+        return EMPTY_BODY_MARSHALER;
+    }
+    throw new IllegalStateException("Unsupported Body type: " + body.getType());
   }
 
   private LogMarshaler(

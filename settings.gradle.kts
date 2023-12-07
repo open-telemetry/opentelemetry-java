@@ -1,11 +1,11 @@
 pluginManagement {
   plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("com.gradle.enterprise") version "3.15.1"
+    id("com.gradle.enterprise") version "3.16"
     id("de.undercouch.download") version "5.5.0"
     id("org.jsonschema2pojo") version "1.2.1"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
-    id("org.graalvm.buildtools.native") version "0.9.25"
+    id("org.graalvm.buildtools.native") version "0.9.28"
   }
 }
 
@@ -16,6 +16,7 @@ plugins {
 dependencyResolutionManagement {
   repositories {
     mavenCentral()
+    google()
     mavenLocal()
   }
 }
@@ -64,6 +65,7 @@ include(":sdk-extensions:autoconfigure-spi")
 include(":sdk-extensions:incubator")
 include(":sdk-extensions:jaeger-remote-sampler")
 include(":testing-internal")
+include(":animal-sniffer-signature")
 
 val gradleEnterpriseServer = "https://ge.opentelemetry.io"
 val isCI = System.getenv("CI") != null

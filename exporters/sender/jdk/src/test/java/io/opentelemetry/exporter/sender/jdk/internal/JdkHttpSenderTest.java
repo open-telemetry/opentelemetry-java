@@ -21,6 +21,7 @@ import java.net.http.HttpConnectTimeoutException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLException;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,8 +72,19 @@ class JdkHttpSenderTest {
   }
 
   @Test
+  void sendInternal_RetryableIoException() throws IOException, InterruptedException {
+    doThrow(new IOException("error!")).when(mockHttpClient).send(any(), any());
+
+    assertThatThrownBy(() -> sender.sendInternal(marshaler -> {}))
+        .isInstanceOf(IOException.class)
+        .hasMessage("error!");
+
+    verify(mockHttpClient, times(2)).send(any(), any());
+  }
+
+  @Test
   void sendInternal_NonRetryableException() throws IOException, InterruptedException {
-    doThrow(new IOException("unknown error")).when(mockHttpClient).send(any(), any());
+    doThrow(new SSLException("unknown error")).when(mockHttpClient).send(any(), any());
 
     assertThatThrownBy(() -> sender.sendInternal(marshaler -> {}))
         .isInstanceOf(IOException.class)

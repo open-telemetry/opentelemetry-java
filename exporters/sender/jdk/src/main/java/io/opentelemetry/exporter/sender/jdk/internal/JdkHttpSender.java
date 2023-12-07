@@ -16,7 +16,6 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.net.http.HttpTimeoutException;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.Map;
@@ -32,6 +31,7 @@ import java.util.function.Supplier;
 import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 
 /**
  * {@link HttpSender} which is backed by JDK {@link HttpClient}.
@@ -220,7 +220,13 @@ public final class JdkHttpSender implements HttpSender {
   }
 
   private static boolean isRetryableException(IOException throwable) {
-    return throwable instanceof HttpTimeoutException;
+    // Almost all IOExceptions we've encountered are transient retryable, so we opt out of specific
+    // IOExceptions that are unlikely to resolve rather than opting in.
+    // Known retryable IOException messages: "Connection reset", "/{remote ip}:{remote port} GOAWAY
+    // received"
+    // Known retryable HttpTimeoutException messages: "request timed out"
+    // Known retryable HttpConnectTimeoutException messages: "HTTP connect timed out"
+    return !(throwable instanceof SSLException);
   }
 
   private static class NoCopyByteArrayOutputStream extends ByteArrayOutputStream {

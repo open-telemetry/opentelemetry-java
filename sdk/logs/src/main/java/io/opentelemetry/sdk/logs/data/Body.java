@@ -22,6 +22,8 @@ public interface Body {
   enum Type {
     EMPTY,
     STRING
+    // TODO (jack-berg): Add ANY_VALUE type when API for setting body to AnyValue is stable
+    // ANY_VALUE
   }
 
   /**

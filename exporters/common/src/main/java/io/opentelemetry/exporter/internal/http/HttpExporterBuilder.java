@@ -114,8 +114,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public HttpExporterBuilder<T> setMeterProvider(MeterProvider meterProvider) {
-    this.meterProviderSupplier = () -> meterProvider;
+  public HttpExporterBuilder<T> setMeterProvider(Supplier<MeterProvider> meterProviderSupplier) {
+    this.meterProviderSupplier = meterProviderSupplier;
     return this;
   }
 

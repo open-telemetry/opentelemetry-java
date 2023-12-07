@@ -51,7 +51,7 @@ public class MetricsBenchmarks {
     }
   }
 
-  @State(Scope.Thread)
+  @State(Scope.Benchmark)
   public static class ThreadState {
 
     @Param TestSdk sdk;
@@ -78,7 +78,7 @@ public class MetricsBenchmarks {
     }
 
     @TearDown
-    public void tearDown(ThreadParams threadParams) {
+    public void tearDown() {
       contextScope.close();
       span.end();
     }
