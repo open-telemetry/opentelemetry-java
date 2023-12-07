@@ -122,7 +122,7 @@ class SimpleSpanProcessorTest {
   }
 
   @Test
-  void tracerSdk_NotSampled_Span() {
+  void tracerSdk_SampledSpan() {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
 
@@ -159,25 +159,41 @@ class SimpleSpanProcessorTest {
   }
 
   @Test
-  void tracerSdk_NotSampled_RecordingEventsSpan() {
-    // TODO(bdrutu): Fix this when Sampler return RECORD_ONLY option.
-    /*
-    tracer.addSpanProcessor(
-        BatchSpanProcessor.builder(waitingSpanExporter)
-            .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
-            .reportOnlySampled(false)
-            .build());
+  void tracerSdk_ExportUnsampledSpans_NotSampledSpan() {
+    WaitingSpanExporter waitingSpanExporter =
+        new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
 
-    io.opentelemetry.trace.Span span =
-        tracer
-            .spanBuilder("FOO")
-            .setSampler(Samplers.neverSample())
-            .startSpanWithSampler();
-    span.end();
+    SdkTracerProvider sdkTracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(
+                SimpleSpanProcessor.builder(waitingSpanExporter).exportUnsampledSpans(true).build())
+            .setSampler(mockSampler)
+            .build();
 
-    List<SpanData> exported = waitingSpanExporter.waitForExport(1);
-    assertThat(exported).containsExactly(((ReadableSpan) span).toSpanData());
-    */
+    when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
+        .thenReturn(SamplingResult.drop());
+
+    try {
+      Tracer tracer = sdkTracerProvider.get(getClass().getName());
+      tracer.spanBuilder(SPAN_NAME).startSpan();
+      tracer.spanBuilder(SPAN_NAME).startSpan();
+
+      when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
+          .thenReturn(SamplingResult.recordOnly());
+      Span span = tracer.spanBuilder(SPAN_NAME).startSpan();
+      span.end();
+
+      // Spans are recorded and exported in the same order as they are ended, we test that a non
+      // sampled span is not exported by creating and ending a sampled span after a non sampled span
+      // and checking that the first exported span is the sampled span (the non sampled did not get
+      // exported).
+      List<SpanData> exported = waitingSpanExporter.waitForExport();
+      // Need to check this because otherwise the variable span1 is unused, other option is to not
+      // have a span1 variable.
+      assertThat(exported).containsExactly(((ReadableSpan) span).toSpanData());
+    } finally {
+      sdkTracerProvider.shutdown();
+    }
   }
 
   @Test
