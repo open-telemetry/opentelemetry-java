@@ -100,25 +100,27 @@ class SimpleSpanProcessorTest {
   }
 
   @Test
-  void onEndSync_OnlySampled_NotSampledSpan() {
+  void onEndSync_ExportUnsampledSpans_NotSampledSpan() {
+    SpanData spanData = TestUtils.makeBasicSpan();
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
-    when(readableSpan.toSpanData())
-        .thenReturn(TestUtils.makeBasicSpan())
-        .thenThrow(new RuntimeException());
-    SpanProcessor simpleSpanProcessor = SimpleSpanProcessor.create(spanExporter);
+    when(readableSpan.toSpanData()).thenReturn(spanData);
+    SpanProcessor simpleSpanProcessor = SimpleSpanProcessor.builder(spanExporter)
+            .exportUnsampledSpans(true)
+            .build();
     simpleSpanProcessor.onEnd(readableSpan);
-    verifyNoInteractions(spanExporter);
+    verify(spanExporter).export(Collections.singletonList(spanData));
   }
 
   @Test
-  void onEndSync_OnlySampled_SampledSpan() {
+  void onEndSync_ExportUnsampledSpans_SampledSpan() {
+    SpanData spanData = TestUtils.makeBasicSpan();
     when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
-    when(readableSpan.toSpanData())
-        .thenReturn(TestUtils.makeBasicSpan())
-        .thenThrow(new RuntimeException());
-    SpanProcessor simpleSpanProcessor = SimpleSpanProcessor.create(spanExporter);
+    when(readableSpan.toSpanData()).thenReturn(spanData);
+    SpanProcessor simpleSpanProcessor = SimpleSpanProcessor.builder(spanExporter)
+        .exportUnsampledSpans(true)
+        .build();
     simpleSpanProcessor.onEnd(readableSpan);
-    verify(spanExporter).export(Collections.singletonList(TestUtils.makeBasicSpan()));
+    verify(spanExporter).export(Collections.singletonList(spanData));
   }
 
   @Test
