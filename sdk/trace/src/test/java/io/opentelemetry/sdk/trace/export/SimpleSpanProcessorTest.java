@@ -104,9 +104,8 @@ class SimpleSpanProcessorTest {
     SpanData spanData = TestUtils.makeBasicSpan();
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     when(readableSpan.toSpanData()).thenReturn(spanData);
-    SpanProcessor simpleSpanProcessor = SimpleSpanProcessor.builder(spanExporter)
-            .exportUnsampledSpans(true)
-            .build();
+    SpanProcessor simpleSpanProcessor =
+        SimpleSpanProcessor.builder(spanExporter).exportUnsampledSpans(true).build();
     simpleSpanProcessor.onEnd(readableSpan);
     verify(spanExporter).export(Collections.singletonList(spanData));
   }
@@ -116,9 +115,8 @@ class SimpleSpanProcessorTest {
     SpanData spanData = TestUtils.makeBasicSpan();
     when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
     when(readableSpan.toSpanData()).thenReturn(spanData);
-    SpanProcessor simpleSpanProcessor = SimpleSpanProcessor.builder(spanExporter)
-        .exportUnsampledSpans(true)
-        .build();
+    SpanProcessor simpleSpanProcessor =
+        SimpleSpanProcessor.builder(spanExporter).exportUnsampledSpans(true).build();
     simpleSpanProcessor.onEnd(readableSpan);
     verify(spanExporter).export(Collections.singletonList(spanData));
   }
