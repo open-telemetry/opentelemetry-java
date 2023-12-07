@@ -101,12 +101,10 @@ class ExtendedTracerTest {
               ExtendedContextPropagators.getTextMapPropagationContext(propagators);
           assertThat(propagationHeaders).hasSize(1).containsKey("traceparent");
 
-          ExtendedTracer.extractAndCall(
-              propagators,
-              propagationHeaders,
-              extendedTracer.spanBuilder("child"),
-              SpanKind.SERVER,
-              () -> null);
+          extendedTracer
+              .spanBuilder("child")
+              .setSpanKind(SpanKind.SERVER)
+              .extractAndCall(propagators, propagationHeaders, () -> null);
         });
 
     otelTesting
@@ -158,12 +156,12 @@ class ExtendedTracerTest {
                 "server",
                 new ExtractAndRunParameter(
                     (t, c) ->
-                        ExtendedTracer.extractAndCall(
-                            otelTesting.getOpenTelemetry().getPropagators(),
-                            Collections.emptyMap(),
-                            t.spanBuilder("span"),
-                            SpanKind.SERVER,
-                            c),
+                        t.spanBuilder("span")
+                            .setSpanKind(SpanKind.SERVER)
+                            .extractAndCall(
+                                otelTesting.getOpenTelemetry().getPropagators(),
+                                Collections.emptyMap(),
+                                c),
                     SpanKind.SERVER,
                     StatusData.error()))),
         Arguments.of(
@@ -171,13 +169,13 @@ class ExtendedTracerTest {
                 "server - ignore exception",
                 new ExtractAndRunParameter(
                     (t, c) ->
-                        ExtendedTracer.extractAndCall(
-                            otelTesting.getOpenTelemetry().getPropagators(),
-                            Collections.emptyMap(),
-                            t.spanBuilder("span"),
-                            SpanKind.SERVER,
-                            c,
-                            ignoreException),
+                        t.spanBuilder("span")
+                            .setSpanKind(SpanKind.SERVER)
+                            .setExceptionHandler(ignoreException)
+                            .extractAndCall(
+                                otelTesting.getOpenTelemetry().getPropagators(),
+                                Collections.emptyMap(),
+                                c),
                     SpanKind.SERVER,
                     StatusData.unset()))));
   }
