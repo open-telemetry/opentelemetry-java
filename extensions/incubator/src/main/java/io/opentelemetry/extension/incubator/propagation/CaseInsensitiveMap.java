@@ -14,7 +14,7 @@ class CaseInsensitiveMap extends HashMap<String, String> {
 
   private static final long serialVersionUID = -4202518750189126871L;
 
-  public CaseInsensitiveMap(Map<String, String> carrier) {
+  CaseInsensitiveMap(Map<String, String> carrier) {
     super(carrier);
   }
 

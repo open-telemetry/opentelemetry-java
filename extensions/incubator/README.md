@@ -32,7 +32,7 @@ After:
 import io.opentelemetry.extension.incubator.trace.ExtendedTracer;
 
 ExtendedTracer extendedTracer = ExtendedTracer.create(tracer);
-String transactionId = extendedTracer.startAndCall("reset_checkout", () -> resetCheckout(cartId));
+String transactionId = extendedTracer.spanBuilder("reset_checkout").startAndCall(() -> resetCheckout(cartId));
 ```
 
 If you want to set attributes on the span, you can use the `startAndCall` method on the span builder:
@@ -80,7 +80,6 @@ Map<String, String> requestHeaders = new HashMap<>();
 String cartId = "cartId";
 
 SpanBuilder spanBuilder = tracer.spanBuilder("checkout_cart");
-String transactionId;
 
 TextMapGetter<Map<String, String>> TEXT_MAP_GETTER =
     new TextMapGetter<Map<String, String>>() {
@@ -105,6 +104,7 @@ Context newContext = openTelemetry
     .getPropagators()
     .getTextMapPropagator()
     .extract(Context.current(), normalizedTransport, TEXT_MAP_GETTER);
+String transactionId;
 try (Scope ignore = newContext.makeCurrent()) {
   Span span = spanBuilder.setSpanKind(SERVER).startSpan();
   try (Scope scope = span.makeCurrent()) {
