@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.view;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.internal.RandomSupplier;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
@@ -19,6 +20,7 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleBase2ExponentialHi
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * Exponential bucket histogram aggregation configuration.
@@ -26,6 +28,7 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
+@ParametersAreNonnullByDefault
 public final class Base2ExponentialHistogramAggregation implements Aggregation, AggregatorFactory {
 
   private static final int DEFAULT_MAX_BUCKETS = 160;
@@ -66,7 +69,9 @@ public final class Base2ExponentialHistogramAggregation implements Aggregation, 
   @Override
   @SuppressWarnings("unchecked")
   public <T extends PointData, U extends ExemplarData> Aggregator<T, U> createAggregator(
-      InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
+      InstrumentDescriptor instrumentDescriptor,
+      ExemplarFilter exemplarFilter,
+      MemoryMode memoryMode) {
     return (Aggregator<T, U>)
         new DoubleBase2ExponentialHistogramAggregator(
             () ->
@@ -77,7 +82,8 @@ public final class Base2ExponentialHistogramAggregation implements Aggregation, 
                         Runtime.getRuntime().availableProcessors(),
                         RandomSupplier.platformDefault())),
             maxBuckets,
-            maxScale);
+            maxScale,
+            memoryMode);
   }
 
   @Override

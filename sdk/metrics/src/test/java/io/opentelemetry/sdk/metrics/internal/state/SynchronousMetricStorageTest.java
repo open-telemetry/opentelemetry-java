@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.state;
 
+import static io.opentelemetry.sdk.common.export.MemoryMode.IMMUTABLE_DATA;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.mockito.Mockito.never;
@@ -103,7 +104,7 @@ public class SynchronousMetricStorageTest {
     aggregator =
         spy(
             ((AggregatorFactory) Aggregation.sum())
-                .createAggregator(DESCRIPTOR, ExemplarFilter.alwaysOff()));
+                .createAggregator(DESCRIPTOR, ExemplarFilter.alwaysOff(), memoryMode));
   }
 
   @ParameterizedTest
@@ -205,7 +206,7 @@ public class SynchronousMetricStorageTest {
 
   @Test
   void recordAndCollect_DeltaResets_ImmutableData() {
-    initialize(MemoryMode.IMMUTABLE_DATA);
+    initialize(IMMUTABLE_DATA);
 
     DefaultSynchronousMetricStorage<?, ?> storage =
         new DefaultSynchronousMetricStorage<>(
@@ -423,7 +424,7 @@ public class SynchronousMetricStorageTest {
 
   @Test
   void recordAndCollect_DeltaAtLimit_ImmutableDataMemoryMode() {
-    initialize(MemoryMode.IMMUTABLE_DATA);
+    initialize(IMMUTABLE_DATA);
 
     DefaultSynchronousMetricStorage<?, ?> storage =
         new DefaultSynchronousMetricStorage<>(
@@ -798,7 +799,7 @@ public class SynchronousMetricStorageTest {
     for (MemoryMode memoryMode : MemoryMode.values()) {
       Aggregator<PointData, ExemplarData> aggregator =
           ((AggregatorFactory) Aggregation.sum())
-              .createAggregator(DESCRIPTOR, ExemplarFilter.alwaysOff());
+              .createAggregator(DESCRIPTOR, ExemplarFilter.alwaysOff(), memoryMode);
 
       argumentsList.add(
           Arguments.of(

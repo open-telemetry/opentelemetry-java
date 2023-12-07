@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.internal.RandomSupplier;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
@@ -20,6 +21,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import java.util.function.Supplier;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * A sum aggregation configuration.
@@ -27,6 +29,7 @@ import java.util.function.Supplier;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
+@ParametersAreNonnullByDefault
 public final class SumAggregation implements Aggregation, AggregatorFactory {
   private static final SumAggregation INSTANCE = new SumAggregation();
 
@@ -39,7 +42,9 @@ public final class SumAggregation implements Aggregation, AggregatorFactory {
   @Override
   @SuppressWarnings("unchecked")
   public <T extends PointData, U extends ExemplarData> Aggregator<T, U> createAggregator(
-      InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
+      InstrumentDescriptor instrumentDescriptor,
+      ExemplarFilter exemplarFilter,
+      MemoryMode memoryMode) {
     switch (instrumentDescriptor.getValueType()) {
       case LONG:
         {

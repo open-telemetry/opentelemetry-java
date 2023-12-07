@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.marshal;
 
+import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import java.io.IOException;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -238,6 +239,26 @@ public abstract class Serializer implements AutoCloseable {
 
     writeStartRepeatedVarint(field, payloadSize);
     for (long value : values) {
+      writeUInt64Value(value);
+    }
+    writeEndRepeatedVarint();
+  }
+
+  /** Serializes a {@code repeated uint64} field. */
+  public void serializeRepeatedUInt64(ProtoFieldInfo field, DynamicPrimitiveLongList values) throws IOException {
+    if (values.isEmpty()) {
+      return;
+    }
+
+    int payloadSize = 0;
+    for (int i = 0; i < values.size(); i++) {
+      long v = values.getLong(i);
+      payloadSize += CodedOutputStream.computeUInt64SizeNoTag(v);
+    }
+
+    writeStartRepeatedVarint(field, payloadSize);
+    for (int i = 0; i < values.size(); i++) {
+      long value = values.getLong(i);
       writeUInt64Value(value);
     }
     writeEndRepeatedVarint();

@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
@@ -17,6 +18,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import java.util.List;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * Explicit bucket histogram aggregation configuration.
@@ -24,6 +26,7 @@ import java.util.List;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
+@ParametersAreNonnullByDefault
 public final class ExplicitBucketHistogramAggregation implements Aggregation, AggregatorFactory {
 
   private static final Aggregation DEFAULT =
@@ -50,7 +53,9 @@ public final class ExplicitBucketHistogramAggregation implements Aggregation, Ag
   @Override
   @SuppressWarnings("unchecked")
   public <T extends PointData, U extends ExemplarData> Aggregator<T, U> createAggregator(
-      InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
+      InstrumentDescriptor instrumentDescriptor,
+      ExemplarFilter exemplarFilter,
+      MemoryMode memoryMode) {
     return (Aggregator<T, U>)
         new DoubleExplicitBucketHistogramAggregator(
             bucketBoundaryArray,

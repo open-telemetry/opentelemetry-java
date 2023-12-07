@@ -110,7 +110,7 @@ public final class ViewBuilder {
    * SdkMeterProviderUtil#setCardinalityLimit(ViewBuilder, int).
    *
    * <p>Read {@link MemoryMode} to understand the memory usage behavior of reaching cardinality
-   * limit.
+   * limit
    *
    * @param cardinalityLimit the maximum number of series for a metric
    */

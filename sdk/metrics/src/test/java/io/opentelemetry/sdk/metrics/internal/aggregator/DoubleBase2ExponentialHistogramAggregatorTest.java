@@ -14,6 +14,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
@@ -21,9 +22,12 @@ import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramPointData;
+import io.opentelemetry.sdk.metrics.internal.data.MutableExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -38,6 +42,7 @@ import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -47,21 +52,27 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class DoubleBase2ExponentialHistogramAggregatorTest {
 
   @Mock ExemplarReservoir<DoubleExemplarData> reservoir;
+  private DoubleBase2ExponentialHistogramAggregator aggregator;
 
   private static final int MAX_SCALE = 20;
-  private static final DoubleBase2ExponentialHistogramAggregator aggregator =
-      new DoubleBase2ExponentialHistogramAggregator(ExemplarReservoir::doubleNoSamples, 160, 20);
   private static final Resource RESOURCE = Resource.getDefault();
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
       InstrumentationScopeInfo.empty();
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
 
+
   private static Stream<DoubleBase2ExponentialHistogramAggregator> provideAggregator() {
-    return Stream.of(
-        aggregator,
-        new DoubleBase2ExponentialHistogramAggregator(
-            ExemplarReservoir::doubleNoSamples, 160, MAX_SCALE));
+    List<DoubleBase2ExponentialHistogramAggregator> parameters = new ArrayList<>();
+    for (MemoryMode memoryMode : MemoryMode.values()) {
+      parameters.add(
+          new DoubleBase2ExponentialHistogramAggregator(
+              ExemplarReservoir::doubleNoSamples, 160, 20, memoryMode));
+      parameters.add(
+          new DoubleBase2ExponentialHistogramAggregator(
+              ExemplarReservoir::doubleNoSamples, 160, MAX_SCALE, memoryMode));
+    }
+    return parameters.stream();
   }
 
   private static int valueToIndex(int scale, double value) {
@@ -69,8 +80,17 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
     return (int) Math.ceil(Math.log(value) * scaleFactor) - 1;
   }
 
-  @Test
-  void createHandle() {
+  private void initialize(MemoryMode memoryMode) {
+    aggregator =
+        new DoubleBase2ExponentialHistogramAggregator(
+            ExemplarReservoir::doubleNoSamples, 160, 20, memoryMode);
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void createHandle(MemoryMode memoryMode) {
+    initialize(memoryMode);
+
     AggregatorHandle<?, ?> handle = aggregator.createHandle();
     assertThat(handle).isInstanceOf(DoubleBase2ExponentialHistogramAggregator.Handle.class);
     ExponentialHistogramPointData point =
@@ -79,16 +99,19 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
                 0, 1, Attributes.empty(), Collections.emptyList(), /* reset= */ true);
     assertThat(point.getPositiveBuckets())
         .isInstanceOf(
-            DoubleBase2ExponentialHistogramAggregator.EmptyExponentialHistogramBuckets.class);
+            EmptyExponentialHistogramBuckets.class);
     assertThat(point.getPositiveBuckets().getScale()).isEqualTo(MAX_SCALE);
     assertThat(point.getNegativeBuckets())
         .isInstanceOf(
-            DoubleBase2ExponentialHistogramAggregator.EmptyExponentialHistogramBuckets.class);
+            EmptyExponentialHistogramBuckets.class);
     assertThat(point.getNegativeBuckets().getScale()).isEqualTo(MAX_SCALE);
   }
 
-  @Test
-  void testRecordings() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void testRecordings(MemoryMode memoryMode) {
+    initialize(memoryMode);
+
     AggregatorHandle<ExponentialHistogramPointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordDouble(0.5);
@@ -130,11 +153,14 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
     assertThat(negativeCounts.get(valueToIndex(expectedScale, 1.0) - negOffset)).isEqualTo(1);
   }
 
-  @Test
-  void testInvalidRecording() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void testInvalidRecording(MemoryMode memoryMode) {
+    initialize(memoryMode);
+
     AggregatorHandle<ExponentialHistogramPointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
-    // Non finite recordings should be ignored
+    // Non-finite recordings should be ignored
     aggregatorHandle.recordDouble(Double.POSITIVE_INFINITY);
     aggregatorHandle.recordDouble(Double.NEGATIVE_INFINITY);
     aggregatorHandle.recordDouble(Double.NaN);
@@ -192,10 +218,12 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
         .isEqualTo(Double.POSITIVE_INFINITY);
   }
 
-  @Test
-  void aggregateThenMaybeReset_WithExemplars() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void aggregateThenMaybeReset_WithExemplars(MemoryMode memoryMode) {
     DoubleBase2ExponentialHistogramAggregator agg =
-        new DoubleBase2ExponentialHistogramAggregator(() -> reservoir, 160, MAX_SCALE);
+        new DoubleBase2ExponentialHistogramAggregator(
+            () -> reservoir, 160, MAX_SCALE, memoryMode);
 
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
@@ -216,30 +244,36 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
     aggregatorHandle.recordDouble(0, attributes, Context.root());
 
     assertThat(
-            Objects.requireNonNull(
-                    aggregatorHandle.aggregateThenMaybeReset(
-                        0, 1, Attributes.empty(), /* reset= */ true))
-                .getExemplars())
+        Objects.requireNonNull(
+                aggregatorHandle.aggregateThenMaybeReset(
+                    0, 1, Attributes.empty(), /* reset= */ true))
+            .getExemplars())
         .isEqualTo(exemplars);
   }
 
-  @Test
-  void aggregateThenMaybeReset() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void aggregateThenMaybeReset(MemoryMode memoryMode) {
+    initialize(memoryMode);
+
     AggregatorHandle<ExponentialHistogramPointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
 
     aggregatorHandle.recordDouble(5.0);
     assertThat(
-            Objects.requireNonNull(
-                    aggregatorHandle.aggregateThenMaybeReset(
-                        0, 1, Attributes.empty(), /* reset= */ true))
-                .getPositiveBuckets()
-                .getBucketCounts())
+        Objects.requireNonNull(
+                aggregatorHandle.aggregateThenMaybeReset(
+                    0, 1, Attributes.empty(), /* reset= */ true))
+            .getPositiveBuckets()
+            .getBucketCounts())
         .isEqualTo(Collections.singletonList(1L));
   }
 
-  @Test
-  void testInsert1M() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void testInsert1M(MemoryMode memoryMode) {
+    initialize(memoryMode);
+
     AggregatorHandle<ExponentialHistogramPointData, DoubleExemplarData> handle =
         aggregator.createHandle();
 
@@ -261,8 +295,11 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
     assertThat(point.getPositiveBuckets().getTotalCount()).isEqualTo(n);
   }
 
-  @Test
-  void testDownScale() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void testDownScale(MemoryMode memoryMode) {
+    initialize(memoryMode);
+
     DoubleBase2ExponentialHistogramAggregator.Handle handle =
         (DoubleBase2ExponentialHistogramAggregator.Handle) aggregator.createHandle();
     // record a measurement to initialize positive buckets
@@ -289,8 +326,9 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
     assertThat(buckets.getTotalCount()).isEqualTo(5);
   }
 
-  @Test
-  void testToMetricData() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void testToMetricData(MemoryMode memoryMode) {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
@@ -310,7 +348,8 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
     Mockito.when(reservoirSupplier.get()).thenReturn(reservoir);
 
     DoubleBase2ExponentialHistogramAggregator cumulativeAggregator =
-        new DoubleBase2ExponentialHistogramAggregator(reservoirSupplier, 160, MAX_SCALE);
+        new DoubleBase2ExponentialHistogramAggregator(
+            reservoirSupplier, 160, MAX_SCALE, memoryMode);
 
     AggregatorHandle<ExponentialHistogramPointData, DoubleExemplarData> aggregatorHandle =
         cumulativeAggregator.createHandle();
@@ -373,8 +412,11 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
         .isEqualTo(AggregationTemporality.DELTA);
   }
 
-  @Test
-  void testMultithreadedUpdates() throws InterruptedException {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void testMultithreadedUpdates(MemoryMode memoryMode) throws InterruptedException {
+    initialize(memoryMode);
+
     AggregatorHandle<ExponentialHistogramPointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     ImmutableList<Double> updates = ImmutableList.of(0D, 0.1D, -0.1D, 1D, -1D, 100D);
@@ -417,27 +459,117 @@ class DoubleBase2ExponentialHistogramAggregatorTest {
     // Verify positive buckets have correct counts
     List<Long> posCounts = point.getPositiveBuckets().getBucketCounts();
     assertThat(
-            posCounts.get(
-                valueToIndex(point.getScale(), 0.1) - point.getPositiveBuckets().getOffset()))
+        posCounts.get(
+            valueToIndex(point.getScale(), 0.1) - point.getPositiveBuckets().getOffset()))
         .isEqualTo(numberOfUpdates);
     assertThat(
-            posCounts.get(
-                valueToIndex(point.getScale(), 1) - point.getPositiveBuckets().getOffset()))
+        posCounts.get(
+            valueToIndex(point.getScale(), 1) - point.getPositiveBuckets().getOffset()))
         .isEqualTo(numberOfUpdates);
     assertThat(
-            posCounts.get(
-                valueToIndex(point.getScale(), 100) - point.getPositiveBuckets().getOffset()))
+        posCounts.get(
+            valueToIndex(point.getScale(), 100) - point.getPositiveBuckets().getOffset()))
         .isEqualTo(numberOfUpdates);
 
     // Verify negative buckets have correct counts
     List<Long> negCounts = point.getNegativeBuckets().getBucketCounts();
     assertThat(
-            negCounts.get(
-                valueToIndex(point.getScale(), 0.1) - point.getPositiveBuckets().getOffset()))
+        negCounts.get(
+            valueToIndex(point.getScale(), 0.1) - point.getPositiveBuckets().getOffset()))
         .isEqualTo(numberOfUpdates);
     assertThat(
-            negCounts.get(
-                valueToIndex(point.getScale(), 1) - point.getPositiveBuckets().getOffset()))
+        negCounts.get(
+            valueToIndex(point.getScale(), 1) - point.getPositiveBuckets().getOffset()))
         .isEqualTo(numberOfUpdates);
+  }
+
+  @Test
+  public void verifyMutableDataUsedInReusableDataMemoryMode() {
+    initialize(MemoryMode.REUSABLE_DATA);
+
+    DoubleBase2ExponentialHistogramAggregator.Handle handle =
+        (DoubleBase2ExponentialHistogramAggregator.Handle) aggregator.createHandle();
+
+    // record a measurement to initialize positive buckets
+    handle.recordDouble(0.5);
+    // record a measurement to initialize negative buckets
+    handle.recordDouble(-13.2);
+
+    ExponentialHistogramPointData point =
+        Objects.requireNonNull(
+            handle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ false));
+
+    assertThat(point).isInstanceOf(MutableExponentialHistogramPointData.class);
+    assertThat(point.getPositiveBuckets()).isInstanceOf(MutableExponentialHistogramBuckets.class);
+    assertThat(point.getNegativeBuckets()).isInstanceOf(MutableExponentialHistogramBuckets.class);
+    assertThat(point.getPositiveBuckets().getBucketCounts()).isNotEmpty();
+    assertThat(point.getNegativeBuckets().getBucketCounts()).isNotEmpty();
+
+    handle.recordDouble(0.6);
+    handle.recordDouble(-16.3);
+
+    ExponentialHistogramPointData secondAggregatePoint =
+        Objects.requireNonNull(
+            handle.aggregateThenMaybeReset(1, 2, Attributes.empty(), /* reset= */ false));
+
+    // Mutable point should be reused across collections.
+    assertThat(secondAggregatePoint).isSameAs(point);
+  }
+
+  @Test
+  public void verifyImmutableDataUsedInImmutableDataMemoryMode() {
+    initialize(MemoryMode.IMMUTABLE_DATA);
+
+    DoubleBase2ExponentialHistogramAggregator.Handle handle =
+        (DoubleBase2ExponentialHistogramAggregator.Handle) aggregator.createHandle();
+
+    // record a measurement to initialize positive buckets
+    handle.recordDouble(0.5);
+    // record a measurement to initialize negative buckets
+    handle.recordDouble(-13.2);
+
+    ExponentialHistogramPointData point =
+        Objects.requireNonNull(
+            handle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ false));
+
+    assertThat(point).isInstanceOf(ImmutableExponentialHistogramPointData.class);
+    assertThat(point.getPositiveBuckets()).isInstanceOf(
+        DoubleBase2ExponentialHistogramBuckets.class);
+    assertThat(point.getNegativeBuckets()).isInstanceOf(
+        DoubleBase2ExponentialHistogramBuckets.class);
+  }
+
+
+  @Test
+  public void reusablePoint_emptyFirstThenRecordAndCheck() {
+    initialize(MemoryMode.REUSABLE_DATA);
+
+    DoubleBase2ExponentialHistogramAggregator.Handle handle =
+        (DoubleBase2ExponentialHistogramAggregator.Handle) aggregator.createHandle();
+
+    // Let's create a point without buckets
+    ExponentialHistogramPointData point =
+        Objects.requireNonNull(
+            handle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ false));
+
+    assertThat(point).isInstanceOf(MutableExponentialHistogramPointData.class);
+    assertThat(point.getPositiveBuckets()).isInstanceOf(
+        EmptyExponentialHistogramBuckets.class);
+    assertThat(point.getNegativeBuckets()).isInstanceOf(
+        EmptyExponentialHistogramBuckets.class);
+
+    // record a measurement to initialize positive buckets
+    handle.recordDouble(0.5);
+    // record a measurement to initialize negative buckets
+    handle.recordDouble(-13.2);
+
+    point = Objects.requireNonNull(
+        handle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ false));
+
+    assertThat(point).isInstanceOf(MutableExponentialHistogramPointData.class);
+    assertThat(point.getPositiveBuckets()).isInstanceOf(MutableExponentialHistogramBuckets.class);
+    assertThat(point.getNegativeBuckets()).isInstanceOf(MutableExponentialHistogramBuckets.class);
+    assertThat(point.getPositiveBuckets().getBucketCounts()).isNotEmpty();
+    assertThat(point.getNegativeBuckets().getBucketCounts()).isNotEmpty();
   }
 }

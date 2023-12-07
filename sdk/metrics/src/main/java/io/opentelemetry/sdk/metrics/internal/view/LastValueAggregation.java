@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
@@ -16,6 +17,7 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.LongLastValueAggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * Last-value aggregation configuration.
@@ -23,6 +25,7 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
+@ParametersAreNonnullByDefault
 public final class LastValueAggregation implements Aggregation, AggregatorFactory {
 
   private static final Aggregation INSTANCE = new LastValueAggregation();
@@ -36,7 +39,9 @@ public final class LastValueAggregation implements Aggregation, AggregatorFactor
   @Override
   @SuppressWarnings("unchecked")
   public <T extends PointData, U extends ExemplarData> Aggregator<T, U> createAggregator(
-      InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
+      InstrumentDescriptor instrumentDescriptor,
+      ExemplarFilter exemplarFilter,
+      MemoryMode memoryMode) {
 
     // For the initial version we do not sample exemplars on gauges.
     switch (instrumentDescriptor.getValueType()) {
