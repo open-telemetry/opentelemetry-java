@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 
-public class ExtendedSpanBuilder implements SpanBuilder {
+public final class ExtendedSpanBuilder implements SpanBuilder {
   private final SpanBuilder delegate;
 
   private BiConsumer<Span, Throwable> exceptionHandler = ExtendedSpanBuilder::setSpanError;
