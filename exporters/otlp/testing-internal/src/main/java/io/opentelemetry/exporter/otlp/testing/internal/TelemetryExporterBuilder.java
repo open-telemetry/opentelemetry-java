@@ -40,6 +40,10 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> setTimeout(Duration timeout);
 
+  TelemetryExporterBuilder<T> setConnectTimeout(long timeout, TimeUnit unit);
+
+  TelemetryExporterBuilder<T> setConnectTimeout(Duration timeout);
+
   TelemetryExporterBuilder<T> setCompression(String compression);
 
   TelemetryExporterBuilder<T> addHeader(String key, String value);

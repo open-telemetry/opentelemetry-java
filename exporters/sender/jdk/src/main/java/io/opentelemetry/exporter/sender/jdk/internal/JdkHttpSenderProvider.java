@@ -30,6 +30,7 @@ public final class JdkHttpSenderProvider implements HttpSenderProvider {
       boolean compressionEnabled,
       String contentType,
       long timeoutNanos,
+      long connectTimeout,
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable Authenticator authenticator,
       @Nullable RetryPolicy retryPolicy,
@@ -40,6 +41,7 @@ public final class JdkHttpSenderProvider implements HttpSenderProvider {
         compressionEnabled,
         contentType,
         timeoutNanos,
+        connectTimeout,
         headerSupplier,
         retryPolicy,
         sslContext);

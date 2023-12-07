@@ -88,7 +88,7 @@ final class SdkLogRecordBuilder implements ExtendedLogRecordBuilder {
 
   @Override
   public SdkLogRecordBuilder setBody(String body) {
-    this.body = Body.string(body);
+    this.body = AnyValueBody.create(AnyValue.of(body));
     return this;
   }
 

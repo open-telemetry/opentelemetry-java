@@ -85,11 +85,12 @@ public final class JdkHttpSender implements HttpSender {
       boolean compressionEnabled,
       String contentType,
       long timeoutNanos,
+      long connectTimeoutNanos,
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext) {
     this(
-        configureClient(sslContext),
+        configureClient(sslContext, connectTimeoutNanos),
         endpoint,
         compressionEnabled,
         contentType,
@@ -98,12 +99,10 @@ public final class JdkHttpSender implements HttpSender {
         retryPolicy);
   }
 
-  private static HttpClient configureClient(@Nullable SSLContext sslContext) {
+  private static HttpClient configureClient(
+      @Nullable SSLContext sslContext, long connectionTimeoutNanos) {
     HttpClient.Builder builder =
-        HttpClient.newBuilder()
-            // Aligned with OkHttpClient default connect timeout
-            // TODO (jack-berg): Consider making connect timeout configurable
-            .connectTimeout(Duration.ofSeconds(10));
+        HttpClient.newBuilder().connectTimeout(Duration.ofNanos(connectionTimeoutNanos));
     if (sslContext != null) {
       builder.sslContext(sslContext);
     }

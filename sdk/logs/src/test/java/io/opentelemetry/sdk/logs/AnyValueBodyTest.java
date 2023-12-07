@@ -54,7 +54,7 @@ class AnyValueBodyTest {
             logRecordData -> {
               // TODO (jack-berg): add assertion when ANY_VALUE is added to Body.Type
               // assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
-              assertThat(logRecordData.getBody().asString()).isEqualTo("68656c6c6f20776f726c64");
+              assertThat(logRecordData.getBody().asString()).isEqualTo("aGVsbG8gd29ybGQ=");
               assertThat(((AnyValueBody) logRecordData.getBody()).asAnyValue())
                   .isEqualTo(AnyValue.of("hello world".getBytes(StandardCharsets.UTF_8)));
             });
@@ -104,7 +104,7 @@ class AnyValueBodyTest {
                           + "bool_key=true, "
                           + "long_key=1, "
                           + "double_key=1.1, "
-                          + "bytes_key=6279746573, "
+                          + "bytes_key=Ynl0ZXM=, "
                           + "arr_key=[entry1, 2, 3.3], "
                           + "key_value_list_key=[child_str_key1=child_value1, child_str_key2=child_value2]"
                           + "]");

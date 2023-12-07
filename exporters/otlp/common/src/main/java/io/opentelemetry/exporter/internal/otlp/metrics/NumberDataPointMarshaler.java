@@ -40,7 +40,7 @@ final class NumberDataPointMarshaler extends MarshalerWithSize {
   static NumberDataPointMarshaler create(PointData point) {
     ExemplarMarshaler[] exemplarMarshalers = ExemplarMarshaler.createRepeated(point.getExemplars());
     KeyValueMarshaler[] attributeMarshalers =
-        KeyValueMarshaler.createRepeated(point.getAttributes());
+        KeyValueMarshaler.createForAttributes(point.getAttributes());
 
     ProtoFieldInfo valueField;
     if (point instanceof LongPointData) {

@@ -24,11 +24,13 @@ import javax.net.ssl.X509TrustManager;
 public interface HttpSenderProvider {
 
   /** Returns a {@link HttpSender} configured with the provided parameters. */
+  @SuppressWarnings("TooManyParameters")
   HttpSender createSender(
       String endpoint,
       boolean compressionEnabled,
       String contentType,
       long timeoutNanos,
+      long connectTimeout,
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable Authenticator authenticator,
       @Nullable RetryPolicy retryPolicy,
