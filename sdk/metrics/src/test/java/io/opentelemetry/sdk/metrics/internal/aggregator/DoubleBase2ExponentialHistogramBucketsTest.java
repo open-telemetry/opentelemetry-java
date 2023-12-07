@@ -9,9 +9,9 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import java.util.Arrays;
 import java.util.Collections;
-import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -126,30 +126,42 @@ class DoubleBase2ExponentialHistogramBucketsTest {
 
   @Test
   public void testDownScaleReusableCountIsOkWhenUsedForSecondTime() {
-    DoubleBase2ExponentialHistogramBuckets immutableDataBasedBuckets = newBuckets(MemoryMode.IMMUTABLE_DATA);
+    DoubleBase2ExponentialHistogramBuckets immutableDataBasedBuckets =
+        newBuckets(MemoryMode.IMMUTABLE_DATA);
     immutableDataBasedBuckets.record(0.5);
     immutableDataBasedBuckets.record(1);
     immutableDataBasedBuckets.record(10);
-    immutableDataBasedBuckets.downscale(2); // scale of zero is easy to reason with without a calculator
+    immutableDataBasedBuckets.downscale(
+        2); // scale of zero is easy to reason with without a calculator
 
-    DoubleBase2ExponentialHistogramBuckets reusableDataBasedBuckets = newBuckets(MemoryMode.REUSABLE_DATA);
+    DoubleBase2ExponentialHistogramBuckets reusableDataBasedBuckets =
+        newBuckets(MemoryMode.REUSABLE_DATA);
     reusableDataBasedBuckets.record(0.5);
     reusableDataBasedBuckets.record(1);
     reusableDataBasedBuckets.record(10);
-    reusableDataBasedBuckets.downscale(2); // scale of zero is easy to reason with without a calculator
+    reusableDataBasedBuckets.downscale(
+        2); // scale of zero is easy to reason with without a calculator
 
     assertThat(immutableDataBasedBuckets.getScale()).isEqualTo(reusableDataBasedBuckets.getScale());
-    assertThat(immutableDataBasedBuckets.getTotalCount()).isEqualTo(reusableDataBasedBuckets.getTotalCount());
-    assertThat(immutableDataBasedBuckets.getBucketCounts()).isEqualTo(reusableDataBasedBuckets.getBucketCounts());
-    assertThat(immutableDataBasedBuckets.getOffset()).isEqualTo(reusableDataBasedBuckets.getOffset());
+    assertThat(immutableDataBasedBuckets.getTotalCount())
+        .isEqualTo(reusableDataBasedBuckets.getTotalCount());
+    assertThat(immutableDataBasedBuckets.getBucketCounts())
+        .isEqualTo(reusableDataBasedBuckets.getBucketCounts());
+    assertThat(immutableDataBasedBuckets.getOffset())
+        .isEqualTo(reusableDataBasedBuckets.getOffset());
 
-    immutableDataBasedBuckets.downscale(3); // scale of zero is easy to reason with without a calculator
-    reusableDataBasedBuckets.downscale(3); // scale of zero is easy to reason with without a calculator
+    immutableDataBasedBuckets.downscale(
+        3); // scale of zero is easy to reason with without a calculator
+    reusableDataBasedBuckets.downscale(
+        3); // scale of zero is easy to reason with without a calculator
 
     assertThat(immutableDataBasedBuckets.getScale()).isEqualTo(reusableDataBasedBuckets.getScale());
-    assertThat(immutableDataBasedBuckets.getTotalCount()).isEqualTo(reusableDataBasedBuckets.getTotalCount());
-    assertThat(immutableDataBasedBuckets.getBucketCounts()).isEqualTo(reusableDataBasedBuckets.getBucketCounts());
-    assertThat(immutableDataBasedBuckets.getOffset()).isEqualTo(reusableDataBasedBuckets.getOffset());
+    assertThat(immutableDataBasedBuckets.getTotalCount())
+        .isEqualTo(reusableDataBasedBuckets.getTotalCount());
+    assertThat(immutableDataBasedBuckets.getBucketCounts())
+        .isEqualTo(reusableDataBasedBuckets.getBucketCounts());
+    assertThat(immutableDataBasedBuckets.getOffset())
+        .isEqualTo(reusableDataBasedBuckets.getOffset());
   }
 
   private static DoubleBase2ExponentialHistogramBuckets newBuckets(MemoryMode memoryMode) {

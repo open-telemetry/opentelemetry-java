@@ -102,7 +102,8 @@ final class DoubleBase2ExponentialHistogramBuckets implements ExponentialHistogr
     return PrimitiveLongList.wrap(countsArr);
   }
 
-  DynamicPrimitiveLongList getBucketCountsUsingReusableList(DynamicPrimitiveLongList reusableLongList) {
+  DynamicPrimitiveLongList getBucketCountsUsingReusableList(
+      DynamicPrimitiveLongList reusableLongList) {
     if (counts.isEmpty()) {
       reusableLongList.resize(0);
       return reusableLongList;

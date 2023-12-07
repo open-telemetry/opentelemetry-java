@@ -515,45 +515,51 @@ class MetricsRequestMarshalerTest {
   @Test
   void exponentialHistogramReusableDataPoints() {
     assertThat(
-        toExponentialHistogramDataPoints(
-            ImmutableList.of(
-                new MutableExponentialHistogramPointData().set(
-                    0,
-                    123.4,
-                    1,
-                    /* hasMin= */ false,
-                    0,
-                    /* hasMax= */ false,
-                    0,
-                    new MutableExponentialHistogramBuckets().set(0, 0, 0, new DynamicPrimitiveLongList()),
-                    new MutableExponentialHistogramBuckets().set(0, 0, 0, new DynamicPrimitiveLongList()),
-                    123,
-                    456,
-                    Attributes.empty(),
-                    Collections.emptyList()),
-                new MutableExponentialHistogramPointData().set(
-                    0,
-                    123.4,
-                    1,
-                    /* hasMin= */ true,
-                    3.3,
-                    /* hasMax= */ true,
-                    80.1,
-                    new MutableExponentialHistogramBuckets().set(0, 1, 1 + 0 + 2, DynamicPrimitiveLongList.of(1L, 0L, 2L)),
-                    new MutableExponentialHistogramBuckets().set(0, 0, 0, new DynamicPrimitiveLongList()),
-                    123,
-                    456,
-                    Attributes.of(stringKey("key"), "value"),
-                    ImmutableList.of(
-                        ImmutableDoubleExemplarData.create(
-                            Attributes.of(stringKey("test"), "value"),
-                            2,
-                            SpanContext.create(
-                                "00000000000000000000000000000001",
-                                "0000000000000002",
-                                TraceFlags.getDefault(),
-                                TraceState.getDefault()),
-                            1.5))))))
+            toExponentialHistogramDataPoints(
+                ImmutableList.of(
+                    new MutableExponentialHistogramPointData()
+                        .set(
+                            0,
+                            123.4,
+                            1,
+                            /* hasMin= */ false,
+                            0,
+                            /* hasMax= */ false,
+                            0,
+                            new MutableExponentialHistogramBuckets()
+                                .set(0, 0, 0, new DynamicPrimitiveLongList()),
+                            new MutableExponentialHistogramBuckets()
+                                .set(0, 0, 0, new DynamicPrimitiveLongList()),
+                            123,
+                            456,
+                            Attributes.empty(),
+                            Collections.emptyList()),
+                    new MutableExponentialHistogramPointData()
+                        .set(
+                            0,
+                            123.4,
+                            1,
+                            /* hasMin= */ true,
+                            3.3,
+                            /* hasMax= */ true,
+                            80.1,
+                            new MutableExponentialHistogramBuckets()
+                                .set(0, 1, 1 + 0 + 2, DynamicPrimitiveLongList.of(1L, 0L, 2L)),
+                            new MutableExponentialHistogramBuckets()
+                                .set(0, 0, 0, new DynamicPrimitiveLongList()),
+                            123,
+                            456,
+                            Attributes.of(stringKey("key"), "value"),
+                            ImmutableList.of(
+                                ImmutableDoubleExemplarData.create(
+                                    Attributes.of(stringKey("test"), "value"),
+                                    2,
+                                    SpanContext.create(
+                                        "00000000000000000000000000000001",
+                                        "0000000000000002",
+                                        TraceFlags.getDefault(),
+                                        TraceState.getDefault()),
+                                    1.5))))))
         .containsExactly(
             ExponentialHistogramDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -603,7 +609,6 @@ class MetricsRequestMarshalerTest {
                         .build())
                 .build());
   }
-
 
   @Test
   void toProtoMetric_monotonic() {

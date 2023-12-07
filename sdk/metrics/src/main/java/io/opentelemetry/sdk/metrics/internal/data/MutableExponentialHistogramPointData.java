@@ -136,20 +136,47 @@ public class MutableExponentialHistogramPointData implements ExponentialHistogra
   @Override
   public String toString() {
     return "MutableExponentialHistogramPointData{"
-        + "startEpochNanos=" + startEpochNanos + ", "
-        + "epochNanos=" + epochNanos + ", "
-        + "attributes=" + attributes + ", "
-        + "scale=" + scale + ", "
-        + "sum=" + sum + ", "
-        + "count=" + count + ", "
-        + "zeroCount=" + zeroCount + ", "
-        + "hasMin=" + hasMin + ", "
-        + "min=" + min + ", "
-        + "hasMax=" + hasMax + ", "
-        + "max=" + max + ", "
-        + "positiveBuckets=" + positiveBuckets + ", "
-        + "negativeBuckets=" + negativeBuckets + ", "
-        + "exemplars=" + exemplars
+        + "startEpochNanos="
+        + startEpochNanos
+        + ", "
+        + "epochNanos="
+        + epochNanos
+        + ", "
+        + "attributes="
+        + attributes
+        + ", "
+        + "scale="
+        + scale
+        + ", "
+        + "sum="
+        + sum
+        + ", "
+        + "count="
+        + count
+        + ", "
+        + "zeroCount="
+        + zeroCount
+        + ", "
+        + "hasMin="
+        + hasMin
+        + ", "
+        + "min="
+        + min
+        + ", "
+        + "hasMax="
+        + hasMax
+        + ", "
+        + "max="
+        + max
+        + ", "
+        + "positiveBuckets="
+        + positiveBuckets
+        + ", "
+        + "negativeBuckets="
+        + negativeBuckets
+        + ", "
+        + "exemplars="
+        + exemplars
         + "}";
   }
 
@@ -180,35 +207,35 @@ public class MutableExponentialHistogramPointData implements ExponentialHistogra
 
   @Override
   public int hashCode() {
-    int h$ = 1;
-    h$ *= 1000003;
-    h$ ^= (int) ((startEpochNanos >>> 32) ^ startEpochNanos);
-    h$ *= 1000003;
-    h$ ^= (int) ((epochNanos >>> 32) ^ epochNanos);
-    h$ *= 1000003;
-    h$ ^= attributes.hashCode();
-    h$ *= 1000003;
-    h$ ^= scale;
-    h$ *= 1000003;
-    h$ ^= (int) ((Double.doubleToLongBits(sum) >>> 32) ^ Double.doubleToLongBits(sum));
-    h$ *= 1000003;
-    h$ ^= (int) ((count >>> 32) ^ count);
-    h$ *= 1000003;
-    h$ ^= (int) ((zeroCount >>> 32) ^ zeroCount);
-    h$ *= 1000003;
-    h$ ^= hasMin ? 1231 : 1237;
-    h$ *= 1000003;
-    h$ ^= (int) ((Double.doubleToLongBits(min) >>> 32) ^ Double.doubleToLongBits(min));
-    h$ *= 1000003;
-    h$ ^= hasMax ? 1231 : 1237;
-    h$ *= 1000003;
-    h$ ^= (int) ((Double.doubleToLongBits(max) >>> 32) ^ Double.doubleToLongBits(max));
-    h$ *= 1000003;
-    h$ ^= positiveBuckets.hashCode();
-    h$ *= 1000003;
-    h$ ^= negativeBuckets.hashCode();
-    h$ *= 1000003;
-    h$ ^= exemplars.hashCode();
-    return h$;
+    int hash = 1;
+    hash *= 1000003;
+    hash ^= (int) ((startEpochNanos >>> 32) ^ startEpochNanos);
+    hash *= 1000003;
+    hash ^= (int) ((epochNanos >>> 32) ^ epochNanos);
+    hash *= 1000003;
+    hash ^= attributes.hashCode();
+    hash *= 1000003;
+    hash ^= scale;
+    hash *= 1000003;
+    hash ^= (int) ((Double.doubleToLongBits(sum) >>> 32) ^ Double.doubleToLongBits(sum));
+    hash *= 1000003;
+    hash ^= (int) ((count >>> 32) ^ count);
+    hash *= 1000003;
+    hash ^= (int) ((zeroCount >>> 32) ^ zeroCount);
+    hash *= 1000003;
+    hash ^= hasMin ? 1231 : 1237;
+    hash *= 1000003;
+    hash ^= (int) ((Double.doubleToLongBits(min) >>> 32) ^ Double.doubleToLongBits(min));
+    hash *= 1000003;
+    hash ^= hasMax ? 1231 : 1237;
+    hash *= 1000003;
+    hash ^= (int) ((Double.doubleToLongBits(max) >>> 32) ^ Double.doubleToLongBits(max));
+    hash *= 1000003;
+    hash ^= positiveBuckets.hashCode();
+    hash *= 1000003;
+    hash ^= negativeBuckets.hashCode();
+    hash *= 1000003;
+    hash ^= exemplars.hashCode();
+    return hash;
   }
 }

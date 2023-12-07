@@ -42,10 +42,7 @@ public class MutableExponentialHistogramBuckets implements ExponentialHistogramB
   }
 
   public MutableExponentialHistogramBuckets set(
-      int scale,
-      int offset,
-      long totalCount,
-      DynamicPrimitiveLongList bucketCounts) {
+      int scale, int offset, long totalCount, DynamicPrimitiveLongList bucketCounts) {
     this.scale = scale;
     this.offset = offset;
     this.totalCount = totalCount;
@@ -57,10 +54,17 @@ public class MutableExponentialHistogramBuckets implements ExponentialHistogramB
   @Override
   public String toString() {
     return "MutableExponentialHistogramBuckets{"
-        + "scale=" + scale + ", "
-        + "offset=" + offset + ", "
-        + "bucketCounts=" + bucketCounts + ", "
-        + "totalCount=" + totalCount
+        + "scale="
+        + scale
+        + ", "
+        + "offset="
+        + offset
+        + ", "
+        + "bucketCounts="
+        + bucketCounts
+        + ", "
+        + "totalCount="
+        + totalCount
         + "}";
   }
 

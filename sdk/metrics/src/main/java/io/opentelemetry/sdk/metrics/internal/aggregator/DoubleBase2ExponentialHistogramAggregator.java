@@ -133,8 +133,10 @@ public final class DoubleBase2ExponentialHistogramAggregator
                 this.min,
                 this.count > 0,
                 this.max,
-                resolveBuckets(this.positiveBuckets, currentScale, reset, /* reusableBuckets= */ null),
-                resolveBuckets(this.negativeBuckets, currentScale, reset, /* reusableBuckets= */ null),
+                resolveBuckets(
+                    this.positiveBuckets, currentScale, reset, /* reusableBuckets= */ null),
+                resolveBuckets(
+                    this.negativeBuckets, currentScale, reset, /* reusableBuckets= */ null),
                 startEpochNanos,
                 epochNanos,
                 attributes,
@@ -185,8 +187,7 @@ public final class DoubleBase2ExponentialHistogramAggregator
       } else {
         MutableExponentialHistogramBuckets mutableExponentialHistogramBuckets;
         if (reusableBuckets instanceof MutableExponentialHistogramBuckets) {
-          mutableExponentialHistogramBuckets =
-              (MutableExponentialHistogramBuckets) reusableBuckets;
+          mutableExponentialHistogramBuckets = (MutableExponentialHistogramBuckets) reusableBuckets;
         } else /* EmptyExponentialHistogramBuckets */ {
           mutableExponentialHistogramBuckets = new MutableExponentialHistogramBuckets();
         }
@@ -270,5 +271,4 @@ public final class DoubleBase2ExponentialHistogramAggregator
       }
     }
   }
-
 }

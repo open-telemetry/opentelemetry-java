@@ -51,11 +51,13 @@ public class ExponentialHistogramBucketsMarshaler extends MarshalerWithSize {
     if (counts instanceof DynamicPrimitiveLongList) {
       size +=
           MarshalerUtil.sizeRepeatedUInt64(
-              ExponentialHistogramDataPoint.Buckets.BUCKET_COUNTS, (DynamicPrimitiveLongList) counts);
+              ExponentialHistogramDataPoint.Buckets.BUCKET_COUNTS,
+              (DynamicPrimitiveLongList) counts);
     } else {
       size +=
           MarshalerUtil.sizeRepeatedUInt64(
-              ExponentialHistogramDataPoint.Buckets.BUCKET_COUNTS, PrimitiveLongList.toArray(counts));
+              ExponentialHistogramDataPoint.Buckets.BUCKET_COUNTS,
+              PrimitiveLongList.toArray(counts));
     }
     return size;
   }

@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.internal;
 
 import java.util.AbstractList;
@@ -5,27 +10,37 @@ import java.util.AbstractList;
 /**
  * A resizable list for storing primitive `long` values.
  *
- * <p>This class implements a dynamically resizable list specifically for primitive long values.
- * The values are stored in a chain of arrays (named sub-array), so it can grow efficiently,
- * by adding more sub-arrays per its defined size. The backing array also helps avoid
- * auto-boxing and helps provide access to values as primitives without boxing.
+ * <p>This class implements a dynamically resizable list specifically for primitive long values. The
+ * values are stored in a chain of arrays (named sub-array), so it can grow efficiently, by adding
+ * more sub-arrays per its defined size. The backing array also helps avoid auto-boxing and helps
+ * provide access to values as primitives without boxing.
  *
- * <p>The list is designed to minimize memory allocations, by: <ol>
- * <li> Adding sub-arrays and not creating new arrays and copying.
- * <li> When the size is changing to a smaller size, arrays are not removed.
+ * <p>The list is designed to minimize memory allocations, by:
+ *
+ * <ol>
+ *   <li>Adding sub-arrays and not creating new arrays and copying.
+ *   <li>When the size is changing to a smaller size, arrays are not removed.
+ * </ol>
  *
  * <p><b>Supported {@code List<Long>} methods:</b>
+ *
  * <ul>
- *   <li>{@link #get(int)} - Retrieves the element at the specified position in this list as a {@code Long} object.
- *   <li>{@link #set(int, Long)} - Replaces the element at the specified position in this list with the specified {@code Long} object.
+ *   <li>{@link #get(int)} - Retrieves the element at the specified position in this list as a
+ *       {@code Long} object.
+ *   <li>{@link #set(int, Long)} - Replaces the element at the specified position in this list with
+ *       the specified {@code Long} object.
  *   <li>{@link #size()} - Returns the number of elements in this list.
  * </ul>
  *
  * <p><b>Additional utility methods:</b>
+ *
  * <ul>
- *   <li>{@link #getLong(int)} - Retrieves the element at the specified position in this list as a primitive long.
- *   <li>{@link #setLong(int, long)} - Replaces the element at the specified position in this list with the specified primitive long element.
- *   <li>{@link #resize(int)} - Resizes the list to the specified size, resetting all elements to zero.
+ *   <li>{@link #getLong(int)} - Retrieves the element at the specified position in this list as a
+ *       primitive long.
+ *   <li>{@link #setLong(int, long)} - Replaces the element at the specified position in this list
+ *       with the specified primitive long element.
+ *   <li>{@link #resize(int)} - Resizes the list to the specified size, resetting all elements to
+ *       zero.
  * </ul>
  *
  * <p>This class is an internal part of the OpenTelemetry SDK and is not intended for public use.

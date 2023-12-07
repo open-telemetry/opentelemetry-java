@@ -1,8 +1,12 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,7 +23,6 @@ public abstract class EmptyExponentialHistogramBuckets implements ExponentialHis
     return ZERO_BUCKETS.computeIfAbsent(
         scale,
         scale1 ->
-            new AutoValue_EmptyExponentialHistogramBuckets(
-                scale1, 0, Collections.emptyList(), 0));
+            new AutoValue_EmptyExponentialHistogramBuckets(scale1, 0, Collections.emptyList(), 0));
   }
 }

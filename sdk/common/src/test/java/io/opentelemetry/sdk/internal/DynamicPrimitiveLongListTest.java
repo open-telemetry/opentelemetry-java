@@ -1,10 +1,14 @@
-package io.opentelemetry.sdk.internal;
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-import org.junit.jupiter.api.Test;
+package io.opentelemetry.sdk.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.junit.jupiter.api.Test;
 
 public class DynamicPrimitiveLongListTest {
 
