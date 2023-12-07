@@ -32,10 +32,10 @@ After:
 import io.opentelemetry.extension.incubator.trace.ExtendedTracer;
 
 ExtendedTracer extendedTracer = ExtendedTracer.create(tracer);
-String transactionId = extendedTracer.call("reset_checkout", () -> resetCheckout(cartId));
+String transactionId = extendedTracer.startAndCall("reset_checkout", () -> resetCheckout(cartId));
 ```
 
-If you want to set attributes on the span, you can use the `call` method on the span builder:
+If you want to set attributes on the span, you can use the `startAndCall` method on the span builder:
 
 ```java
 import io.opentelemetry.extension.incubator.trace.ExtendedTracer;
@@ -43,12 +43,12 @@ import io.opentelemetry.extension.incubator.trace.ExtendedTracer;
 ExtendedTracer extendedTracer = ExtendedTracer.create(tracer);
 String transactionId = extendedTracer.spanBuilder("reset_checkout")
     .setAttribute("foo", "bar")
-    .call(() -> resetCheckout(cartId));
+    .startAndCall(() -> resetCheckout(cartId));
 ```
 
 Note:
 
-- Use `run` instead of `call` if the function returns `void` (both on the tracer and span builder).
+- Use `startAndRun` instead of `startAndCall` if the function returns `void` (both on the tracer and span builder).
 - Exceptions are re-thrown without modification - see [Exception handling](#exception-handling)
   for more details.
 
@@ -141,8 +141,8 @@ String cartId = "cartId";
 ExtendedTracer extendedTracer = ExtendedTracer.create(tracer);
 String transactionId = extendedTracer.spanBuilder("checkout_cart")
     .setSpanKind(SpanKind.SERVER)
-    .extractContext(openTelemetry.getPropagators(), requestHeaders)
-    .call(() -> processCheckout(cartId));
+    .setParentFrom(openTelemetry.getPropagators(), requestHeaders)
+    .startAndCall(() -> processCheckout(cartId));
 ```
 
 Note:
@@ -192,5 +192,5 @@ import io.opentelemetry.extension.incubator.trace.ExtendedTracer;
 ExtendedTracer extendedTracer = ExtendedTracer.create(tracer);
 String transactionId = extendedTracer.spanBuilder("checkout_cart")
     .setExceptionHandler(Span::recordException)
-    .call(() -> processCheckout(cartId));
+    .startAndCall(() -> processCheckout(cartId));
 ```

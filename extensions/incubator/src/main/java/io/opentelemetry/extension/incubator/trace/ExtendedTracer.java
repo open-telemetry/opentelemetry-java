@@ -48,37 +48,6 @@ public final class ExtendedTracer implements Tracer {
   }
 
   /**
-   * Runs the given {@link SpanRunnable} in a new span with the given name and with kind INTERNAL.
-   *
-   * <p>If an exception is thrown by the {@link SpanRunnable}, the span will be marked as error, and
-   * the exception will be recorded.
-   *
-   * @param spanName the name of the span
-   * @param runnable the {@link SpanRunnable} to run
-   * @param <E> the type of the exception
-   */
-  public <E extends Throwable> void run(String spanName, SpanRunnable<E> runnable) throws E {
-    spanBuilder(spanName).run(runnable);
-  }
-
-  /**
-   * Runs the given {@link SpanCallable} inside a new span with the given name.
-   *
-   * <p>If an exception is thrown by the {@link SpanCallable}, the span will be marked as error, and
-   * the exception will be recorded.
-   *
-   * @param spanName the name of the span
-   * @param spanCallable the {@link SpanCallable} to call
-   * @param <T> the type of the result
-   * @param <E> the type of the exception
-   * @return the result of the {@link SpanCallable}
-   */
-  public <T, E extends Throwable> T call(String spanName, SpanCallable<T, E> spanCallable)
-      throws E {
-    return spanBuilder(spanName).call(spanCallable);
-  }
-
-  /**
    * Set baggage items inside the given {@link SpanCallable}.
    *
    * @param baggage the baggage items to set

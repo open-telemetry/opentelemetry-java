@@ -5,6 +5,8 @@
 
 package io.opentelemetry.extension.incubator.trace;
 
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.satisfies;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
@@ -19,7 +21,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.extension.incubator.propagation.ExtendedContextPropagators;
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.assertj.SpanDataAssert;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.StatusData;
@@ -52,25 +53,26 @@ class ExtendedTracerTest {
     assertThatIllegalStateException()
         .isThrownBy(
             () ->
-                extendedTracer.run(
-                    "test",
-                    () -> {
-                      // runs in span
-                      throw new IllegalStateException("ex");
-                    }));
+                extendedTracer
+                    .spanBuilder("test")
+                    .startAndRun(
+                        () -> {
+                          // runs in span
+                          throw new IllegalStateException("ex");
+                        }));
 
     String result =
-        extendedTracer.call(
-            "another test",
-            () -> {
-              // runs in span
-              return "result";
-            });
+        extendedTracer
+            .spanBuilder("another test")
+            .startAndCall(
+                () -> {
+                  // runs in span
+                  return "result";
+                });
     assertThat(result).isEqualTo("result");
 
     otelTesting
         .assertTraces()
-        .hasSize(2)
         .hasTracesSatisfyingExactly(
             trace ->
                 trace.hasSpansSatisfyingExactly(
@@ -82,37 +84,37 @@ class ExtendedTracerTest {
                                     event
                                         .hasName("exception")
                                         .hasAttributesSatisfyingExactly(
-                                            OpenTelemetryAssertions.equalTo(
+                                            equalTo(
                                                 SemanticAttributes.EXCEPTION_TYPE,
                                                 "java.lang.IllegalStateException"),
-                                            OpenTelemetryAssertions.satisfies(
+                                            satisfies(
                                                 SemanticAttributes.EXCEPTION_STACKTRACE,
                                                 string ->
                                                     string.contains(
                                                         "java.lang.IllegalStateException: ex")),
-                                            OpenTelemetryAssertions.equalTo(
-                                                SemanticAttributes.EXCEPTION_MESSAGE, "ex")))),
+                                            equalTo(SemanticAttributes.EXCEPTION_MESSAGE, "ex")))),
             trace -> trace.hasSpansSatisfyingExactly(a -> a.hasName("another test")));
   }
 
   @Test
   void propagation() {
-    extendedTracer.run(
-        "parent",
+    extendedTracer.spanBuilder("parent").startAndRun(
         () -> {
           ContextPropagators propagators = otelTesting.getOpenTelemetry().getPropagators();
           Map<String, String> propagationHeaders =
               ExtendedContextPropagators.getTextMapPropagationContext(propagators);
           assertThat(propagationHeaders).hasSize(1).containsKey("traceparent");
 
-          // make sure the parent span is not stored in a thread local any more
+          // make sure the parent span is not stored in a thread local anymore
           Span invalid = Span.getInvalid();
           //noinspection unused
           try (Scope unused = invalid.makeCurrent()) {
             extendedTracer
                 .spanBuilder("child")
                 .setSpanKind(SpanKind.SERVER)
-                .extractContext(propagators, propagationHeaders)
+                .setParent(Context.current())
+                .setNoParent()
+                .setParentFrom(propagators, propagationHeaders)
                 .setAttribute(
                     "key",
                     "value") // any method can be called here on the span (and we increase the test
@@ -123,20 +125,15 @@ class ExtendedTracerTest {
                 .setAttribute(SemanticAttributes.CLIENT_PORT, 1234L)
                 .addLink(invalid.getSpanContext())
                 .addLink(invalid.getSpanContext(), Attributes.empty())
-                .setParent(
-                    Context.current()) // this has no effect, because extractContext() was called
-                // before
-                .setNoParent() // also no effect
                 .setAllAttributes(Attributes.empty())
                 .setStartTimestamp(0, java.util.concurrent.TimeUnit.NANOSECONDS)
                 .setStartTimestamp(Instant.MIN)
-                .run(() -> {});
+                .startAndRun(() -> {});
           }
         });
 
     otelTesting
         .assertTraces()
-        .hasSize(1)
         .hasTracesSatisfyingExactly(
             trace ->
                 trace.hasSpansSatisfyingExactly(
@@ -146,12 +143,13 @@ class ExtendedTracerTest {
   @Test
   void callWithBaggage() {
     String value =
-        extendedTracer.call(
-            "parent",
-            () ->
-                ExtendedTracer.callWithBaggage(
-                    Collections.singletonMap("key", "value"),
-                    () -> Baggage.current().getEntryValue("key")));
+        extendedTracer
+            .spanBuilder("parent")
+            .startAndCall(
+                () ->
+                    ExtendedTracer.callWithBaggage(
+                        Collections.singletonMap("key", "value"),
+                        () -> Baggage.current().getEntryValue("key")));
 
     assertThat(value).isEqualTo("value");
   }
@@ -185,10 +183,10 @@ class ExtendedTracerTest {
                     (t, c) ->
                         t.spanBuilder("span")
                             .setSpanKind(SpanKind.SERVER)
-                            .extractContext(
+                            .setParentFrom(
                                 otelTesting.getOpenTelemetry().getPropagators(),
                                 Collections.emptyMap())
-                            .call(c),
+                            .startAndCall(c),
                     SpanKind.SERVER,
                     StatusData.error()))),
         Arguments.of(
@@ -198,11 +196,10 @@ class ExtendedTracerTest {
                     (t, c) ->
                         t.spanBuilder("span")
                             .setSpanKind(SpanKind.SERVER)
-                            .setExceptionHandler(ignoreException)
-                            .extractContext(
+                            .setParentFrom(
                                 otelTesting.getOpenTelemetry().getPropagators(),
                                 Collections.emptyMap())
-                            .call(c),
+                            .startAndCall(c, ignoreException),
                     SpanKind.SERVER,
                     StatusData.unset()))));
   }
@@ -221,7 +218,6 @@ class ExtendedTracerTest {
 
     otelTesting
         .assertTraces()
-        .hasSize(1)
         .hasTracesSatisfyingExactly(
             trace ->
                 trace.hasSpansSatisfyingExactly(

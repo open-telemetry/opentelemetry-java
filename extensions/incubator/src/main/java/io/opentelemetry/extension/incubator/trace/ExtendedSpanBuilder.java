@@ -21,14 +21,9 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
-import javax.annotation.Nullable;
 
 public final class ExtendedSpanBuilder implements SpanBuilder {
   private final SpanBuilder delegate;
-
-  private BiConsumer<Span, Throwable> exceptionHandler = ExtendedSpanBuilder::setSpanError;
-
-  @Nullable private Context extractedContext = null;
 
   ExtendedSpanBuilder(SpanBuilder delegate) {
     this.delegate = delegate;
@@ -113,39 +108,25 @@ public final class ExtendedSpanBuilder implements SpanBuilder {
   }
 
   /**
-   * Sets the exception handler for {@link #call(SpanCallable)} and {@link #run(SpanRunnable)}
-   *
-   * <p>The exception handler gives you the opportunity to handle the exception in a custom way,
-   * e.g. not marking the span as error, which is the default behavior.
-   *
-   * @param exceptionHandler the exception handler
-   */
-  public ExtendedSpanBuilder setExceptionHandler(BiConsumer<Span, Throwable> exceptionHandler) {
-    this.exceptionHandler = exceptionHandler;
-    return this;
-  }
-
-  /**
    * Extract a span context from the given carrier and set it as parent of the span for {@link
-   * #call(SpanCallable)} and {@link #run(SpanRunnable)}.
+   * #startAndCall(SpanCallable)} and {@link #startAndRun(SpanRunnable)}.
    *
    * <p>The span context will be extracted from the <code>carrier</code>, which you usually get from
    * HTTP headers of the metadata of a message you're processing.
    *
    * <p>A typical usage would be: <code>
    * ExtendedTracer.create(tracer)
-   *     .setSpanKind(SpanKind.SERVER)
-   *     .extractContext(propagators, carrier)
-   *     .run("my-span", () -> { ... });
+   * .setSpanKind(SpanKind.SERVER)
+   * .setParentFrom(propagators, carrier)
+   * .run("my-span", () -> { ... });
    * </code>
    *
    * @param propagators provide the propagators from {@link OpenTelemetry#getPropagators()}
    * @param carrier the string map where to extract the span context from
    */
-  public ExtendedSpanBuilder extractContext(
+  public ExtendedSpanBuilder setParentFrom(
       ContextPropagators propagators, Map<String, String> carrier) {
-    this.extractedContext =
-        ExtendedContextPropagators.extractTextMapPropagationContext(carrier, propagators);
+    setParent(ExtendedContextPropagators.extractTextMapPropagationContext(carrier, propagators));
     return this;
   }
 
@@ -166,17 +147,33 @@ public final class ExtendedSpanBuilder implements SpanBuilder {
    * @param <E> the type of the exception
    * @return the result of the {@link SpanCallable}
    */
-  public <T, E extends Throwable> T call(SpanCallable<T, E> spanCallable) throws E {
-    if (extractedContext != null) {
-      delegate.setParent(extractedContext);
-    }
+  public <T, E extends Throwable> T startAndCall(SpanCallable<T, E> spanCallable) throws E {
+    return startAndCall(spanCallable, ExtendedSpanBuilder::setSpanError);
+  }
+
+  /**
+   * Runs the given {@link SpanCallable} inside of the span created by the given {@link
+   * SpanBuilder}. The span will be ended at the end of the {@link SpanCallable}.
+   *
+   * <p>If an exception is thrown by the {@link SpanCallable}, the <code>handleException</code>
+   * consumer will be called, giving you the opportunity to handle the exception and span in a
+   * custom way, e.g. not marking the span as error.
+   *
+   * @param spanCallable the {@link SpanCallable} to call
+   * @param handleException the consumer to call when an exception is thrown
+   * @param <T> the type of the result
+   * @param <E> the type of the exception
+   * @return the result of the {@link SpanCallable}
+   */
+  public <T, E extends Throwable> T startAndCall(
+      SpanCallable<T, E> spanCallable, BiConsumer<Span, Throwable> handleException) throws E {
     Span span = startSpan();
 
     //noinspection unused
     try (Scope unused = span.makeCurrent()) {
       return spanCallable.callInSpan();
     } catch (Throwable e) {
-      exceptionHandler.accept(span, e);
+      handleException.accept(span, e);
       throw e;
     } finally {
       span.end();
@@ -194,12 +191,30 @@ public final class ExtendedSpanBuilder implements SpanBuilder {
    * @param <E> the type of the exception
    */
   @SuppressWarnings("NullAway")
-  public <E extends Throwable> void run(SpanRunnable<E> runnable) throws E {
-    call(
+  public <E extends Throwable> void startAndRun(SpanRunnable<E> runnable) throws E {
+    startAndRun(runnable, ExtendedSpanBuilder::setSpanError);
+  }
+
+  /**
+   * Runs the given {@link SpanRunnable} inside of the span created by the given {@link
+   * SpanBuilder}. The span will be ended at the end of the {@link SpanRunnable}.
+   *
+   * <p>If an exception is thrown by the {@link SpanRunnable}, the <code>handleException</code>
+   * consumer will be called, giving you the opportunity to handle the exception and span in a
+   * custom way, e.g. not marking the span as error.
+   *
+   * @param runnable the {@link SpanRunnable} to run
+   * @param <E> the type of the exception
+   */
+  @SuppressWarnings("NullAway")
+  public <E extends Throwable> void startAndRun(
+      SpanRunnable<E> runnable, BiConsumer<Span, Throwable> handleException) throws E {
+    startAndCall(
         () -> {
           runnable.runInSpan();
           return null;
-        });
+        },
+        handleException);
   }
 
   /**
