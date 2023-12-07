@@ -167,11 +167,13 @@ public class ExtendedSpanBuilder implements SpanBuilder {
    * @return the result of the {@link SpanCallable}
    */
   public <T, E extends Throwable> T call(SpanCallable<T, E> spanCallable) throws E {
+    if (extractedContext != null) {
+      delegate.setParent(extractedContext);
+    }
     Span span = startSpan();
 
     //noinspection unused
-    try (Scope unused =
-        extractedContext != null ? extractedContext.makeCurrent() : span.makeCurrent()) {
+    try (Scope unused = span.makeCurrent()) {
       return spanCallable.callInSpan();
     } catch (Throwable e) {
       exceptionHandler.accept(span, e);

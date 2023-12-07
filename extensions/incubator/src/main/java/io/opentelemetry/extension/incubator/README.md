@@ -29,13 +29,26 @@ try (Scope scope = span.makeCurrent()) {
 After:
 
 ```java
-Tracing tracing = new Tracing(openTelemetry, "service");
-String transactionId = tracing.call("reset_checkout", () -> resetCheckout(cartId));
+import io.opentelemetry.extension.incubator.trace.ExtendedTracer;
+
+ExtendedTracer extendedTracer = ExtendedTracer.create(tracer);
+String transactionId = extendedTracer.call("reset_checkout", () -> resetCheckout(cartId));
+```
+
+If you want to set attributes on the span, you can use the `call` method on the span builder:
+
+```java
+import io.opentelemetry.extension.incubator.trace.ExtendedTracer;
+
+ExtendedTracer extendedTracer = ExtendedTracer.create(tracer);
+String transactionId = extendedTracer.spanBuilder("reset_checkout")
+    .setAttribute("foo", "bar")
+    .call(() -> resetCheckout(cartId));
 ```
 
 Note:
 
-- Use `run` instead of `call` if the function returns `void`.
+- Use `run` instead of `call` if the function returns `void` (both on the tracer and span builder).
 - Exceptions are re-thrown without modification - see [Exception handling](#exception-handling)
   for more details.
 
@@ -110,19 +123,26 @@ try (Scope ignore = newContext.makeCurrent()) {
 After:
 
 ```java
-Tracing tracing = new Tracing(openTelemetry, "service");
-Map<String, String> propagationHeaders = tracing.getTextMapPropagationContext();
+import io.opentelemetry.extension.incubator.propagation.ExtendedContextPropagators;
+
+Map<String, String> propagationHeaders =
+    ExtendedContextPropagators.getTextMapPropagationContext(openTelemetry.getPropagators());
 // add propagationHeaders to request headers and call checkout service
 ```
 
 ```java
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.extension.incubator.trace.ExtendedTracer;
+
 // in checkout service: get request headers into a Map<String, String> requestHeaders
 Map<String, String> requestHeaders = new HashMap<>();
 String cartId = "cartId";
 
-Tracing tracing = new Tracing(openTelemetry, "service");
-String transactionId = tracing.traceServerSpan(requestHeaders,
-    tracer.spanBuilder("checkout_cart"), () -> processCheckout(cartId));
+ExtendedTracer extendedTracer = ExtendedTracer.create(tracer);
+String transactionId = extendedTracer.spanBuilder("checkout_cart")
+    .setSpanKind(SpanKind.SERVER)
+    .extractContext(openTelemetry.getPropagators(), requestHeaders)
+    .call(() -> processCheckout(cartId));
 ```
 
 Note:
@@ -148,19 +168,29 @@ try (Scope ignore = context.makeCurrent()) {
 After:
 
 ```java
-Tracing tracing = new Tracing(openTelemetry, "service");
-String value = Tracing.callWithBaggage(
+import io.opentelemetry.extension.incubator.trace.ExtendedTracer;
+
+ExtendedTracer.callWithBaggage(
     Collections.singletonMap("key", "value"),
     () -> Baggage.current().getEntryValue("key"))
 ```
 
 ## Exception handling
 
-`Tracing` re-throws exceptions without modification. This means you can
-catch exceptions around `Tracing` calls and handle them as you would without `Tracing`.
+`ExtendedTracer` re-throws exceptions without modification. This means you can
+catch exceptions around `ExtendedTracer` calls and handle them as you would without `ExtendedTracer`.
 
-Note that the `Tracing` methods do not declare any checked exceptions
-(the idea is taken from [@SneakyThrows](https://projectlombok.org/features/SneakyThrows)).
-Declaring a checked exception would force callers to handle it,
-which would create a lot of boilerplate code.
-Instead, `Tracing` re-throws checked exceptions as unchecked exceptions.
+When an exception is encountered during an `ExtendedTracer` call, the span is marked as error and
+the exception is recorded.
+If you want to customize this behaviour, e.g. to only record the exception, because you are
+aber to recover from the error, you can call `setExceptionHandler` on the span builder:
+
+```java
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.extension.incubator.trace.ExtendedTracer;
+
+ExtendedTracer extendedTracer = ExtendedTracer.create(tracer);
+String transactionId = extendedTracer.spanBuilder("checkout_cart")
+    .setExceptionHandler(Span::recordException)
+    .call(() -> processCheckout(cartId));
+```

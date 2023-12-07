@@ -12,8 +12,11 @@ import static org.junit.jupiter.api.Named.named;
 
 import com.google.errorprone.annotations.Keep;
 import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.extension.incubator.propagation.ExtendedContextPropagators;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
@@ -21,6 +24,7 @@ import io.opentelemetry.sdk.testing.assertj.SpanDataAssert;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.SemanticAttributes;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -101,11 +105,33 @@ class ExtendedTracerTest {
               ExtendedContextPropagators.getTextMapPropagationContext(propagators);
           assertThat(propagationHeaders).hasSize(1).containsKey("traceparent");
 
-          extendedTracer
-              .spanBuilder("child")
-              .setSpanKind(SpanKind.SERVER)
-              .extractContext(propagators, propagationHeaders)
-              .run(() -> {});
+          // make sure the parent span is not stored in a thread local any more
+          Span invalid = Span.getInvalid();
+          //noinspection unused
+          try (Scope unused = invalid.makeCurrent()) {
+            extendedTracer
+                .spanBuilder("child")
+                .setSpanKind(SpanKind.SERVER)
+                .extractContext(propagators, propagationHeaders)
+                .setAttribute(
+                    "key",
+                    "value") // any method can be called here on the span (and we increase the test
+                // coverage)
+                .setAttribute("key2", 0)
+                .setAttribute("key3", 0.0)
+                .setAttribute("key4", false)
+                .setAttribute(SemanticAttributes.CLIENT_PORT, 1234L)
+                .addLink(invalid.getSpanContext())
+                .addLink(invalid.getSpanContext(), Attributes.empty())
+                .setParent(
+                    Context.current()) // this has no effect, because extractContext() was called
+                // before
+                .setNoParent() // also no effect
+                .setAllAttributes(Attributes.empty())
+                .setStartTimestamp(0, java.util.concurrent.TimeUnit.NANOSECONDS)
+                .setStartTimestamp(Instant.MIN)
+                .run(() -> {});
+          }
         });
 
     otelTesting
