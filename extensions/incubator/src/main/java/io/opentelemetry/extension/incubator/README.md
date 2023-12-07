@@ -145,36 +145,6 @@ String transactionId = extendedTracer.spanBuilder("checkout_cart")
     .startAndCall(() -> processCheckout(cartId));
 ```
 
-Note:
-
-- You can use `traceConsumerSpan` if you want to trace a consumer
-  (e.g. from a message queue) instead of a server.
-- Exceptions are re-thrown without modification - see [Exception handling](#exception-handling)
-  for more details.
-
-### Setting baggage entries
-
-Before:
-
-```java
-BaggageBuilder builder = Baggage.current().toBuilder();
-builder.put("key", "value");
-Context context = builder.build().storeInContext(Context.current());
-try (Scope ignore = context.makeCurrent()) {
-  String value = Baggage.current().getEntryValue("key");
-}
-```
-
-After:
-
-```java
-import io.opentelemetry.extension.incubator.trace.ExtendedTracer;
-
-ExtendedTracer.callWithBaggage(
-    Collections.singletonMap("key", "value"),
-    () -> Baggage.current().getEntryValue("key"))
-```
-
 ## Exception handling
 
 `ExtendedTracer` re-throws exceptions without modification. This means you can
@@ -182,8 +152,10 @@ catch exceptions around `ExtendedTracer` calls and handle them as you would with
 
 When an exception is encountered during an `ExtendedTracer` call, the span is marked as error and
 the exception is recorded.
+
 If you want to customize this behaviour, e.g. to only record the exception, because you are
-aber to recover from the error, you can call `setExceptionHandler` on the span builder:
+able to recover from the error, you can call the overloaded method of `startAndCall` or
+`startAndRun` that takes an exception handler:
 
 ```java
 import io.opentelemetry.api.trace.Span;
@@ -191,6 +163,5 @@ import io.opentelemetry.extension.incubator.trace.ExtendedTracer;
 
 ExtendedTracer extendedTracer = ExtendedTracer.create(tracer);
 String transactionId = extendedTracer.spanBuilder("checkout_cart")
-    .setExceptionHandler(Span::recordException)
-    .startAndCall(() -> processCheckout(cartId));
+    .startAndCall(() -> processCheckout(cartId), Span::recordException);
 ```
