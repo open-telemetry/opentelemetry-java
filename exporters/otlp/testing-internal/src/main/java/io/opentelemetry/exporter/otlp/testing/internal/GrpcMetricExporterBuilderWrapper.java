@@ -41,6 +41,16 @@ final class GrpcMetricExporterBuilderWrapper implements TelemetryExporterBuilder
   }
 
   @Override
+  public TelemetryExporterBuilder<MetricData> setConnectTimeout(long timeout, TimeUnit unit) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public TelemetryExporterBuilder<MetricData> setConnectTimeout(Duration timeout) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public TelemetryExporterBuilder<MetricData> setCompression(String compression) {
     builder.setCompression(compression);
     return this;

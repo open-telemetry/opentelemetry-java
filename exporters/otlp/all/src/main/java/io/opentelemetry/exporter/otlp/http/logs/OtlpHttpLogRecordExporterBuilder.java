@@ -61,6 +61,26 @@ public final class OtlpHttpLogRecordExporterBuilder {
   }
 
   /**
+   * Sets the maximum time to wait for new connections to be established. If unset, defaults to
+   * {@value HttpExporterBuilder#DEFAULT_CONNECT_TIMEOUT_SECS}s.
+   */
+  public OtlpHttpLogRecordExporterBuilder setConnectTimeout(long timeout, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(timeout >= 0, "timeout must be non-negative");
+    delegate.setConnectTimeout(timeout, unit);
+    return this;
+  }
+
+  /**
+   * Sets the maximum time to wait for new connections to be established. If unset, defaults to
+   * {@value HttpExporterBuilder#DEFAULT_CONNECT_TIMEOUT_SECS}s.
+   */
+  public OtlpHttpLogRecordExporterBuilder setConnectTimeout(Duration timeout) {
+    requireNonNull(timeout, "timeout");
+    return setConnectTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+  }
+
+  /**
    * Sets the OTLP endpoint to connect to. If unset, defaults to {@value DEFAULT_ENDPOINT}. The
    * endpoint must start with either http:// or https://, and include the full HTTP path.
    */
