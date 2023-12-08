@@ -183,6 +183,8 @@ public final class OtlpGrpcMetricExporterBuilder {
    * Set the supplier of headers to add to requests. If a key from the map collides with a constant
    * from {@link #addHeader(String, String)}, the values from both are included. Applicable only if
    * {@link OtlpGrpcMetricExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
+   *
+   * @since 1.33.0
    */
   public OtlpGrpcMetricExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
     delegate.setHeadersSupplier(headerSupplier);

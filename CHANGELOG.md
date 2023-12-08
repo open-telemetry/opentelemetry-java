@@ -2,6 +2,54 @@
 
 ## Unreleased
 
+### API
+
+* Fix issue where wrapping "invalid" SpanContexts in Span does not preserve SpanContext
+  ([#6044](https://github.com/open-telemetry/opentelemetry-java/pull/6044))
+
+#### Incubator
+
+* Refactor and add to ExtendedTracer, add ExtendedContextPropagators
+  ([#6017](https://github.com/open-telemetry/opentelemetry-java/pull/6017))
+* Base64 encode AnyValue bytes in string representation
+  ([#6003](https://github.com/open-telemetry/opentelemetry-java/pull/6003))
+
+### SDK
+
+#### Exporters
+
+* Add connectTimeout configuration option OtlpHttp{Signal}Exporters
+  ([#5941](https://github.com/open-telemetry/opentelemetry-java/pull/5941))
+* Add ability for Otlp{Protocol}LogRecordExporter to serialize log body any value
+  ([#5938](https://github.com/open-telemetry/opentelemetry-java/pull/5938))
+* Android environments can now handle base64 encoded PEM keys, remove exception handling in
+  TlsUtil#decodePem
+  ([#6034](https://github.com/open-telemetry/opentelemetry-java/pull/6034))
+* Add header supplier configuration option to OTLP exporters
+  ([#6004](https://github.com/open-telemetry/opentelemetry-java/pull/6004))
+
+
+#### Extensions
+
+* Add autoconfigure option for customizing SpanProcessor, LogRecordProcessor
+  ([#5986](https://github.com/open-telemetry/opentelemetry-java/pull/5986))
+* Incubator allows for simpler creation of start-only and end-only SpanProcessors.
+  ([#5923](https://github.com/open-telemetry/opentelemetry-java/pull/5923))
+
+#### Testing
+
+* Add hasAttributesSatisfying overload to AbstractPointAssert
+  ([#6048](https://github.com/open-telemetry/opentelemetry-java/pull/6048))
+
+### Project Tooling
+
+* Building animal sniffer signatures directly from android corelib
+  ([#5973](https://github.com/open-telemetry/opentelemetry-java/pull/5973))
+* Target kotlin 1.6 in kotlin extension
+  ([#5910](https://github.com/open-telemetry/opentelemetry-java/pull/5910))
+* Define language version compatibility requirements
+  ([#5983](https://github.com/open-telemetry/opentelemetry-java/pull/5983))
+
 ## Version 1.32.0 (2023-11-13)
 
 ### API

@@ -112,7 +112,11 @@ public abstract class AbstractPointAssert<
     return myself;
   }
 
-  /** Asserts the point has attributes satisfying the given condition. */
+  /**
+   * Asserts the point has attributes satisfying the given condition.
+   *
+   * @since 1.33.0
+   */
   public final PointAssertT hasAttributesSatisfying(Consumer<Attributes> attributes) {
     isNotNull();
     assertThat(actual.getAttributes()).as("attributes").satisfies(attributes);

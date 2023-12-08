@@ -76,6 +76,8 @@ public final class OtlpHttpMetricExporterBuilder {
   /**
    * Sets the maximum time to wait for new connections to be established. If unset, defaults to
    * {@value HttpExporterBuilder#DEFAULT_CONNECT_TIMEOUT_SECS}s.
+   *
+   * @since 1.33.0
    */
   public OtlpHttpMetricExporterBuilder setConnectTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
@@ -87,6 +89,8 @@ public final class OtlpHttpMetricExporterBuilder {
   /**
    * Sets the maximum time to wait for new connections to be established. If unset, defaults to
    * {@value HttpExporterBuilder#DEFAULT_CONNECT_TIMEOUT_SECS}s.
+   *
+   * @since 1.33.0
    */
   public OtlpHttpMetricExporterBuilder setConnectTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
@@ -128,6 +132,8 @@ public final class OtlpHttpMetricExporterBuilder {
   /**
    * Set the supplier of headers to add to requests. If a key from the map collides with a constant
    * from {@link #addHeader(String, String)}, the values from both are included.
+   *
+   * @since 1.33.0
    */
   public OtlpHttpMetricExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
     delegate.setHeadersSupplier(headerSupplier);

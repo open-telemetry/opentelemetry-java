@@ -73,6 +73,8 @@ public interface AutoConfigurationCustomizer {
    * delayed data.
    *
    * <p>Multiple calls will execute the customizers in order.
+   *
+   * @since 1.33.0
    */
   default AutoConfigurationCustomizer addSpanProcessorCustomizer(
       BiFunction<? super SpanProcessor, ConfigProperties, ? extends SpanProcessor>
@@ -192,6 +194,8 @@ public interface AutoConfigurationCustomizer {
    * logs or delay logs for enhancing them with external, delayed data.
    *
    * <p>Multiple calls will execute the customizers in order.
+   *
+   * @since 1.33.0
    */
   default AutoConfigurationCustomizer addLogRecordProcessorCustomizer(
       BiFunction<? super LogRecordProcessor, ConfigProperties, ? extends LogRecordProcessor>
