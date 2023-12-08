@@ -25,6 +25,9 @@
 * Android environments can now handle base64 encoded PEM keys, remove exception handling in
   TlsUtil#decodePem
   ([#6034](https://github.com/open-telemetry/opentelemetry-java/pull/6034))
+* Add header supplier configuration option to OTLP exporters
+  ([#6004](https://github.com/open-telemetry/opentelemetry-java/pull/6004))
+
 
 #### Extensions
 
