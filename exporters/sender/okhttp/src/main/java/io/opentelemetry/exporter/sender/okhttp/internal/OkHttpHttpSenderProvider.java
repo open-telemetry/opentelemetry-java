@@ -9,6 +9,7 @@ import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.http.HttpSender;
 import io.opentelemetry.exporter.internal.http.HttpSenderProvider;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import javax.net.ssl.SSLContext;
@@ -30,7 +31,7 @@ public final class OkHttpHttpSenderProvider implements HttpSenderProvider {
       String contentType,
       long timeoutNanos,
       long connectTimeout,
-      Supplier<Map<String, String>> headerSupplier,
+      Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable Authenticator authenticator,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,

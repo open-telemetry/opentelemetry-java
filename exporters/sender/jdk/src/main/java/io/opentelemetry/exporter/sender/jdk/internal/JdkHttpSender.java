@@ -18,6 +18,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -54,7 +55,7 @@ public final class JdkHttpSender implements HttpSender {
   private final boolean compressionEnabled;
   private final String contentType;
   private final long timeoutNanos;
-  private final Supplier<Map<String, String>> headerSupplier;
+  private final Supplier<Map<String, List<String>>> headerSupplier;
   @Nullable private final RetryPolicy retryPolicy;
 
   // Visible for testing
@@ -64,7 +65,7 @@ public final class JdkHttpSender implements HttpSender {
       boolean compressionEnabled,
       String contentType,
       long timeoutNanos,
-      Supplier<Map<String, String>> headerSupplier,
+      Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable RetryPolicy retryPolicy) {
     this.client = client;
     try {
@@ -85,7 +86,7 @@ public final class JdkHttpSender implements HttpSender {
       String contentType,
       long timeoutNanos,
       long connectTimeoutNanos,
-      Supplier<Map<String, String>> headerSupplier,
+      Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext) {
     this(
@@ -139,7 +140,10 @@ public final class JdkHttpSender implements HttpSender {
     long startTimeNanos = System.nanoTime();
     HttpRequest.Builder requestBuilder =
         HttpRequest.newBuilder().uri(uri).timeout(Duration.ofNanos(timeoutNanos));
-    headerSupplier.get().forEach(requestBuilder::setHeader);
+    Map<String, List<String>> headers = headerSupplier.get();
+    if (headers != null) {
+      headers.forEach((key, values) -> values.forEach(value -> requestBuilder.header(key, value)));
+    }
     requestBuilder.header("Content-Type", contentType);
 
     NoCopyByteArrayOutputStream os = threadLocalBaos.get();
