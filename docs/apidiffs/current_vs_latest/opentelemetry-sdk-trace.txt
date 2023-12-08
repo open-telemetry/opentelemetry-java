@@ -1,7 +1,7 @@
 Comparing source compatibility of  against 
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder setExportPredicate(java.util.function.Predicate<io.opentelemetry.sdk.trace.ReadableSpan>)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder setExportFilter(java.util.function.Predicate<io.opentelemetry.sdk.trace.ReadableSpan>)
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.trace.export.SimpleSpanProcessor  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.trace.export.SimpleSpanProcessorBuilder builder(io.opentelemetry.sdk.trace.export.SpanExporter)
@@ -9,4 +9,4 @@ Comparing source compatibility of  against
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.export.SimpleSpanProcessor build()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.export.SimpleSpanProcessorBuilder setExportPredicate(java.util.function.Predicate<io.opentelemetry.sdk.trace.ReadableSpan>)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.export.SimpleSpanProcessorBuilder setExportFilter(java.util.function.Predicate<io.opentelemetry.sdk.trace.ReadableSpan>)

@@ -54,7 +54,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       AttributeKey.booleanKey("dropped");
   private static final String SPAN_PROCESSOR_TYPE_VALUE = BatchSpanProcessor.class.getSimpleName();
 
-  private final Predicate<ReadableSpan> exporterPredicate;
+  private final Predicate<ReadableSpan> exportPredicate;
   private final Worker worker;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
@@ -71,13 +71,13 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   BatchSpanProcessor(
       SpanExporter spanExporter,
-      Predicate<ReadableSpan> exporterPredicate,
+      Predicate<ReadableSpan> exportPredicate,
       MeterProvider meterProvider,
       long scheduleDelayNanos,
       int maxQueueSize,
       int maxExportBatchSize,
       long exporterTimeoutNanos) {
-    this.exporterPredicate = exporterPredicate;
+    this.exportPredicate = exportPredicate;
     this.worker =
         new Worker(
             spanExporter,
@@ -100,7 +100,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    if (span != null && exporterPredicate.test(span)) {
+    if (span != null && exportPredicate.test(span)) {
       worker.addSpan(span);
     }
   }

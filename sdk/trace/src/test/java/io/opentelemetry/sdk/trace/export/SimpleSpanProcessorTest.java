@@ -110,7 +110,7 @@ class SimpleSpanProcessorTest {
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     when(readableSpan.toSpanData()).thenReturn(spanData);
     SpanProcessor simpleSpanProcessor =
-        SimpleSpanProcessor.builder(spanExporter).setExportPredicate(span -> true).build();
+        SimpleSpanProcessor.builder(spanExporter).setExportFilter(span -> true).build();
     simpleSpanProcessor.onEnd(readableSpan);
     verify(spanExporter).export(Collections.singletonList(spanData));
   }
@@ -121,7 +121,7 @@ class SimpleSpanProcessorTest {
     when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
     when(readableSpan.toSpanData()).thenReturn(spanData);
     SpanProcessor simpleSpanProcessor =
-        SimpleSpanProcessor.builder(spanExporter).setExportPredicate(span -> true).build();
+        SimpleSpanProcessor.builder(spanExporter).setExportFilter(span -> true).build();
     simpleSpanProcessor.onEnd(readableSpan);
     verify(spanExporter).export(Collections.singletonList(spanData));
   }
@@ -172,7 +172,7 @@ class SimpleSpanProcessorTest {
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 SimpleSpanProcessor.builder(waitingSpanExporter)
-                    .setExportPredicate(span -> true)
+                    .setExportFilter(span -> true)
                     .build())
             .setSampler(mockSampler)
             .build();

@@ -42,7 +42,7 @@ public final class BatchSpanProcessorBuilder {
    * Sets a {@link Predicate Predicate&lt;ReadableSpan&gt;} that filters the {@link ReadableSpan}s
    * that are to be exported. If unset, defaults to exporting sampled spans.
    */
-  public BatchSpanProcessorBuilder setExportPredicate(Predicate<ReadableSpan> exportPredicate) {
+  public BatchSpanProcessorBuilder setExportFilter(Predicate<ReadableSpan> exportPredicate) {
     this.exportPredicate = requireNonNull(exportPredicate, "exportPredicate");
     return this;
   }

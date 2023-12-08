@@ -23,7 +23,7 @@ public final class SimpleSpanProcessorBuilder {
    * Sets a {@link Predicate Predicate&lt;ReadableSpan&gt;} that filters the {@link ReadableSpan}s
    * that are to be exported. If unset, defaults to exporting sampled spans.
    */
-  public SimpleSpanProcessorBuilder setExportPredicate(Predicate<ReadableSpan> exportPredicate) {
+  public SimpleSpanProcessorBuilder setExportFilter(Predicate<ReadableSpan> exportPredicate) {
     this.exportPredicate = requireNonNull(exportPredicate, "exportPredicate");
     return this;
   }
