@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 1.33.0 (2023-12-08)
 
 ### API
 
