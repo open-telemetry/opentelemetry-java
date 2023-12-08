@@ -84,7 +84,9 @@ public class OltpExporterBenchmark {
             "otlp",
             "span",
             new UpstreamGrpcSender<>(
-                MarshalerTraceServiceGrpc.newFutureStub(defaultGrpcChannel, null), 10),
+                MarshalerTraceServiceGrpc.newFutureStub(defaultGrpcChannel, null),
+                10,
+                Collections::emptyMap),
             MeterProvider::noop);
 
     okhttpGrpcSender =
@@ -97,7 +99,7 @@ public class OltpExporterBenchmark {
                     .toString(),
                 /* compressionEnabled= */ false,
                 10,
-                Collections.emptyMap(),
+                Collections::emptyMap,
                 null,
                 null,
                 null),
