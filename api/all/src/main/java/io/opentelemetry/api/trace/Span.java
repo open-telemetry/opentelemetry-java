@@ -74,14 +74,11 @@ public interface Span extends ImplicitContextKeyed {
   /**
    * Returns a non-recording {@link Span} that holds the provided {@link SpanContext} but has no
    * functionality. It will not be exported and all tracing operations are no-op, but it can be used
-   * to propagate a valid {@link SpanContext} downstream.
+   * to propagate a {@link SpanContext} downstream.
    */
   static Span wrap(SpanContext spanContext) {
     if (spanContext == null) {
       ApiUsageLogger.log("context is null");
-      return getInvalid();
-    }
-    if (!spanContext.isValid()) {
       return getInvalid();
     }
     return PropagatedSpan.create(spanContext);
