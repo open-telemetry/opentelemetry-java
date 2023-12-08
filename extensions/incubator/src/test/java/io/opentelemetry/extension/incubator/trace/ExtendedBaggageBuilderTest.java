@@ -11,12 +11,12 @@ import io.opentelemetry.api.baggage.Baggage;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-class ExtendedBaggageTest {
+class ExtendedBaggageBuilderTest {
 
   @Test
   void add() {
     String value =
-        ExtendedBaggage.current()
+        ExtendedBaggageBuilder.current()
             .set("key", "value")
             .call(() -> Baggage.current().getEntryValue("key"));
 
@@ -26,7 +26,7 @@ class ExtendedBaggageTest {
   @Test
   void addMap() {
     String value =
-        ExtendedBaggage.current()
+        ExtendedBaggageBuilder.current()
             .setAll(Collections.singletonMap("key", "value"))
             .call(() -> Baggage.current().getEntryValue("key"));
 

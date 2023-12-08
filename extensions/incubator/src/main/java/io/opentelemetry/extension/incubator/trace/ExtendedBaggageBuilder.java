@@ -11,28 +11,28 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import java.util.Map;
 
-public class ExtendedBaggage {
-  private final BaggageBuilder builder;
+public class ExtendedBaggageBuilder {
+  private final BaggageBuilder delegate;
 
-  private ExtendedBaggage(BaggageBuilder builder) {
-    this.builder = builder;
+  private ExtendedBaggageBuilder(BaggageBuilder delegate) {
+    this.delegate = delegate;
   }
 
-  public static ExtendedBaggage create(BaggageBuilder builder) {
-    return new ExtendedBaggage(builder);
+  public static ExtendedBaggageBuilder create(BaggageBuilder builder) {
+    return new ExtendedBaggageBuilder(builder);
   }
 
-  public static ExtendedBaggage current() {
+  public static ExtendedBaggageBuilder current() {
     return create(Baggage.current().toBuilder());
   }
 
-  public ExtendedBaggage set(String key, String value) {
-    builder.put(key, value);
+  public ExtendedBaggageBuilder set(String key, String value) {
+    delegate.put(key, value);
     return this;
   }
 
-  public ExtendedBaggage setAll(Map<String, String> baggage) {
-    baggage.forEach(builder::put);
+  public ExtendedBaggageBuilder setAll(Map<String, String> baggage) {
+    baggage.forEach(delegate::put);
     return this;
   }
 
@@ -44,14 +44,14 @@ public class ExtendedBaggage {
    * @return the result of the {@link SpanCallable}
    */
   public <T, E extends Throwable> T call(SpanCallable<T, E> spanCallable) throws E {
-    Context context = builder.build().storeInContext(Context.current());
+    Context context = delegate.build().storeInContext(Context.current());
     try (Scope ignore = context.makeCurrent()) {
       return spanCallable.callInSpan();
     }
   }
 
   public <E extends Throwable> void run(SpanRunnable<E> spanRunnable) throws E {
-    Context context = builder.build().storeInContext(Context.current());
+    Context context = delegate.build().storeInContext(Context.current());
     try (Scope ignore = context.makeCurrent()) {
       spanRunnable.runInSpan();
     }
