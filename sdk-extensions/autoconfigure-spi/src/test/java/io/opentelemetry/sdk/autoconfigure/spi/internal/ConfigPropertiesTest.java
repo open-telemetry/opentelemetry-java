@@ -36,7 +36,7 @@ class ConfigPropertiesTest {
         .containsExactly(entry("cat", "meow"), entry("dog", "bark"), entry("bear", "growl"));
     assertThat(config.getMap("test.map.commas"))
         .containsExactly(
-            entry("cat", "meow,hiss"), entry("dog", "bark,growl"), entry("bear", "growl,roar"));
+            entry("cat", "meow,hiss"), entry("dog", "bark,growl"), entry("bear", "roar"));
     assertThat(config.getDuration("test.duration")).isEqualTo(Duration.ofSeconds(1));
   }
 
@@ -54,7 +54,7 @@ class ConfigPropertiesTest {
         .containsExactly(entry("cat", "meow"), entry("dog", "bark"), entry("bear", "growl"));
     assertThat(config.getMap("test-map-commas"))
         .containsExactly(
-            entry("cat", "meow,hiss"), entry("dog", "bark,growl"), entry("bear", "growl,roar"));
+            entry("cat", "meow,hiss"), entry("dog", "bark,growl"), entry("bear", "roar"));
     assertThat(config.getDuration("test-duration")).isEqualTo(Duration.ofSeconds(1));
   }
 
@@ -179,17 +179,6 @@ class ConfigPropertiesTest {
   }
 
   @Test
-  void invalidList() {
-    DefaultConfigProperties config =
-        DefaultConfigProperties.createFromMap(
-            Collections.singletonMap(
-                "invalid", "\"cat=meow,hiss\",\"dog=bark,growl\", bear=growl"));
-    assertThatThrownBy(() -> config.getList("invalid"))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("Invalid list property");
-  }
-
-  @Test
   void invalidDuration() {
     assertThatThrownBy(
             () ->
@@ -297,7 +286,7 @@ class ConfigPropertiesTest {
     properties.put("test.list", "cat,dog,bear");
     properties.put("test.map", "cat=meow,dog=bark,bear=growl,bird=");
     properties.put("test.duration", "1s");
-    properties.put("test.map.commas", "\"cat=meow,hiss\",\"dog=bark,growl\", \"bear=growl,roar\"");
+    properties.put("test.map.commas", "cat=\"meow,hiss\",dog=\"bark,growl\", bear=roar");
     return properties;
   }
 }

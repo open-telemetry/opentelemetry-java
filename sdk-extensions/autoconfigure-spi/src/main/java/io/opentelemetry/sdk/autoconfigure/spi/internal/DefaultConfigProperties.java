@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.time.Duration;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -183,17 +184,31 @@ public final class DefaultConfigProperties implements ConfigProperties {
     }
 
     // Support list members containing commas per RFC9110 5.5 suggestion
-    String[] listMembers;
-    // check if list members are double-quoted
-    if (value.startsWith("\"") && value.endsWith("\"")) {
-      // remove first and last quote and split on '","'
-      value = value.substring(1, value.length() - 1);
-      listMembers = value.split("\"\\s?,\\s?\"");
-    } else if (value.contains(",") && value.contains("\"")) {
-      throw new ConfigurationException("Invalid list property: " + name + "=" + config.get(name));
-    } else {
-      listMembers = value.split(",");
+    List<String> listMembers = new ArrayList<>();
+    StringBuilder curValue = new StringBuilder();
+    boolean openedQuote = false;
+    for (int i = 0; i < value.length(); i++) {
+      char c = value.charAt(i);
+      if (c == '"') {
+        if (openedQuote) {
+          openedQuote = false;
+          listMembers.add(curValue.toString());
+          curValue = new StringBuilder();
+        } else {
+          openedQuote = true;
+        }
+      } else if (c == ',') {
+        if (openedQuote) {
+          curValue.append(c);
+        } else {
+          listMembers.add(curValue.toString());
+          curValue = new StringBuilder();
+        }
+      } else {
+        curValue.append(c);
+      }
     }
+    listMembers.add(curValue.toString());
 
     return filterBlanksAndNulls(listMembers);
   }
@@ -226,8 +241,8 @@ public final class DefaultConfigProperties implements ConfigProperties {
     return getList(ConfigUtil.normalizePropertyKey(name)).stream()
         .map(
             entry -> {
-              String[] split = entry.split("=", 2);
-              if (split.length != 2 || StringUtils.isNullOrEmpty(split[0])) {
+              List<String> split = Arrays.asList(entry.split("=", 2));
+              if (split.size() != 2 || StringUtils.isNullOrEmpty(split.get(0))) {
                 throw new ConfigurationException(
                     "Invalid map property: " + name + "=" + config.get(name));
               }
@@ -260,11 +275,8 @@ public final class DefaultConfigProperties implements ConfigProperties {
         "Invalid value for property " + name + "=" + value + ". Must be a " + type + ".");
   }
 
-  private static List<String> filterBlanksAndNulls(String[] values) {
-    return Arrays.stream(values)
-        .map(String::trim)
-        .filter(s -> !s.isEmpty())
-        .collect(Collectors.toList());
+  private static List<String> filterBlanksAndNulls(List<String> values) {
+    return values.stream().map(String::trim).filter(s -> !s.isEmpty()).collect(Collectors.toList());
   }
 
   /** Returns the TimeUnit associated with a unit string. Defaults to milliseconds. */
