@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.33.0 (2023-12-08)
+
 ### API
 
 * Fix issue where wrapping "invalid" SpanContexts in Span does not preserve SpanContext
