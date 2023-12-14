@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs.export;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.awaitility.Awaitility.await;
@@ -415,6 +416,13 @@ class BatchLogRecordProcessorTest {
     CompletableResultCode result = processor.shutdown();
     result.join(1, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isFalse();
+  }
+
+  @Test
+  void getLogRecordExporter() {
+    assertThat(
+            BatchLogRecordProcessor.builder(mockLogRecordExporter).build().getLogRecordExporter())
+        .isSameAs(mockLogRecordExporter);
   }
 
   @Test
