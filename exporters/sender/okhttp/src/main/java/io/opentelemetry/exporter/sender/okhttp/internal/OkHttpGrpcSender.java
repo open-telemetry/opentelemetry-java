@@ -82,6 +82,7 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
         new OkHttpClient.Builder()
             .dispatcher(OkHttpUtil.newDispatcher())
             .callTimeout(Duration.ofNanos(timeoutNanos));
+    clientBuilder.addInterceptor(new IOeExceptionInterceptor());
     if (retryPolicy != null) {
       clientBuilder.addInterceptor(
           new RetryInterceptor(retryPolicy, OkHttpGrpcSender::isRetryable));

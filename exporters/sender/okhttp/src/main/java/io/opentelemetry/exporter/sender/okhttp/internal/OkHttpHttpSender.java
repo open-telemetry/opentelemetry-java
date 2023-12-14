@@ -77,6 +77,7 @@ public final class OkHttpHttpSender implements HttpSender {
           });
     }
 
+    builder.addInterceptor(new IOeExceptionInterceptor());
     if (retryPolicy != null) {
       builder.addInterceptor(new RetryInterceptor(retryPolicy, OkHttpHttpSender::isRetryable));
     }
