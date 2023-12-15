@@ -419,6 +419,33 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  @SuppressLogger(GrpcExporter.class)
+  void connectTimeout() {
+    // UpstreamGrpcSender doesn't support connectTimeout, so we skip the test
+    assumeThat(exporter.unwrap())
+        .extracting("delegate.grpcSender")
+        .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpGrpcSender"));
+
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            // Connecting to a non-routable IP address to trigger connection error
+            .setEndpoint("http://10.255.255.1")
+            .setConnectTimeout(Duration.ofMillis(1))
+            .build();
+    try {
+      long startTimeMillis = System.currentTimeMillis();
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+      // Assert that the export request fails well before the default connect timeout of 10s
+      assertThat(System.currentTimeMillis() - startTimeMillis)
+          .isLessThan(TimeUnit.SECONDS.toMillis(1));
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
   void deadlineSetPerExport() throws InterruptedException {
     TelemetryExporter<T> exporter =
         exporterBuilder()
@@ -800,6 +827,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
                   + ", "
+                  + "connectTimeoutNanos="
+                  + TimeUnit.SECONDS.toNanos(10)
+                  + ", "
                   + "compressionEnabled=false, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
                   + ".*" // Maybe additional grpcChannel field
@@ -811,6 +841,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     telemetryExporter =
         exporterBuilder()
             .setTimeout(Duration.ofSeconds(5))
+            .setConnectTimeout(Duration.ofSeconds(4))
             .setEndpoint("http://example:4317")
             .setCompression("gzip")
             .addHeader("foo", "bar")
@@ -836,6 +867,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + "endpointPath=.*, "
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(5)
+                  + ", "
+                  + "connectTimeoutNanos="
+                  + TimeUnit.SECONDS.toNanos(4)
                   + ", "
                   + "compressionEnabled=true, "
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "

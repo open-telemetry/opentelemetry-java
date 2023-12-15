@@ -99,6 +99,7 @@ public class OltpExporterBenchmark {
                     .toString(),
                 /* compressionEnabled= */ false,
                 10,
+                10,
                 Collections::emptyMap,
                 null,
                 null,

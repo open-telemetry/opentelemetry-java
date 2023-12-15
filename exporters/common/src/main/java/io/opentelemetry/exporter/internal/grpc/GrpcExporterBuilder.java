@@ -41,6 +41,8 @@ import javax.net.ssl.X509TrustManager;
 @SuppressWarnings("JavadocMethod")
 public class GrpcExporterBuilder<T extends Marshaler> {
 
+  public static final long DEFAULT_CONNECT_TIMEOUT_SECS = 10;
+
   private static final Logger LOGGER = Logger.getLogger(GrpcExporterBuilder.class.getName());
 
   private final String exporterName;
@@ -50,6 +52,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
       grpcStubFactory;
 
   private long timeoutNanos;
+  private long connectTimeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_CONNECT_TIMEOUT_SECS);
   private URI endpoint;
   private boolean compressionEnabled = false;
   private final Map<String, String> constantHeaders = new HashMap<>();
@@ -88,6 +91,11 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
   public GrpcExporterBuilder<T> setTimeout(Duration timeout) {
     return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+  }
+
+  public GrpcExporterBuilder<T> setConnectTimeout(long timeout, TimeUnit unit) {
+    connectTimeoutNanos = unit.toNanos(timeout);
+    return this;
   }
 
   public GrpcExporterBuilder<T> setEndpoint(String endpoint) {
@@ -149,6 +157,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
             grpcEndpointPath);
 
     copy.timeoutNanos = timeoutNanos;
+    copy.connectTimeoutNanos = connectTimeoutNanos;
     copy.endpoint = endpoint;
     copy.compressionEnabled = compressionEnabled;
     copy.constantHeaders.putAll(constantHeaders);
@@ -191,6 +200,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
             grpcEndpointPath,
             compressionEnabled,
             timeoutNanos,
+            connectTimeoutNanos,
             headerSupplier,
             grpcChannel,
             grpcStubFactory,
@@ -212,6 +222,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     joiner.add("endpoint=" + endpoint.toString());
     joiner.add("endpointPath=" + grpcEndpointPath);
     joiner.add("timeoutNanos=" + timeoutNanos);
+    joiner.add("connectTimeoutNanos=" + connectTimeoutNanos);
     joiner.add("compressionEnabled=" + compressionEnabled);
     StringJoiner headersJoiner = new StringJoiner(", ", "Headers{", "}");
     constantHeaders.forEach((key, value) -> headersJoiner.add(key + "=OBFUSCATED"));

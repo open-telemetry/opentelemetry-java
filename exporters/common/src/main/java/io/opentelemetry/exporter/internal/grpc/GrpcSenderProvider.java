@@ -33,6 +33,7 @@ public interface GrpcSenderProvider {
       String endpointPath,
       boolean compressionEnabled,
       long timeoutNanos,
+      long connectTimeoutNanos,
       Supplier<Map<String, List<String>>> headersSupplier,
       @Nullable Object managedChannel,
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
