@@ -54,8 +54,9 @@ public final class PrometheusHttpServer implements MetricReader {
       String host,
       int port,
       @Nullable ExecutorService executor,
-      PrometheusRegistry prometheusRegistry) {
-    this.prometheusMetricReader = new PrometheusMetricReader(/* otelScopeEnabled= */ true);
+      PrometheusRegistry prometheusRegistry,
+      boolean otelScopeEnabled) {
+    this.prometheusMetricReader = new PrometheusMetricReader(otelScopeEnabled);
     this.host = host;
     this.prometheusRegistry = prometheusRegistry;
     prometheusRegistry.register(prometheusMetricReader);

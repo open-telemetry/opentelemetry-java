@@ -65,7 +65,7 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /** Convert OpenTelemetry {@link MetricData} to Prometheus {@link MetricSnapshots}. */
-public class Otel2PrometheusConverter {
+final class Otel2PrometheusConverter {
 
   private static final Logger LOGGER = Logger.getLogger(Otel2PrometheusConverter.class.getName());
   private static final ThrottlingLogger THROTTLING_LOGGER = new ThrottlingLogger(LOGGER);
@@ -74,21 +74,17 @@ public class Otel2PrometheusConverter {
   private static final String OTEL_SCOPE_VERSION = "otel_scope_version";
   private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
 
-  public Otel2PrometheusConverter() {
-    this(true);
-  }
-
   /**
    * Constructor with feature flag parameter.
    *
    * @param otelScopeEnabled enable generation of the OpenTelemetry instrumentation scope info
    *     metric and labels.
    */
-  public Otel2PrometheusConverter(boolean otelScopeEnabled) {
+  Otel2PrometheusConverter(boolean otelScopeEnabled) {
     this.otelScopeEnabled = otelScopeEnabled;
   }
 
-  public MetricSnapshots convert(@Nullable Collection<MetricData> metricDataCollection) {
+  MetricSnapshots convert(@Nullable Collection<MetricData> metricDataCollection) {
     if (metricDataCollection == null || metricDataCollection.isEmpty()) {
       return MetricSnapshots.of();
     }

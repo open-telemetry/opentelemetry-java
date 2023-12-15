@@ -21,6 +21,9 @@ class PrometheusUnitsHelper {
   // https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/c3b2997563106e11d39f66eec629fde25dce2bdd/pkg/translator/prometheus/normalize_name.go#L19-L19
   static {
     // Time
+    initUnit("a", "years", "year");
+    initUnit("mo", "months", "month");
+    initUnit("wk", "weeks", "week");
     initUnit("d", "days", "day");
     initUnit("h", "hours", "hour");
     initUnit("min", "minutes", "minute");
@@ -71,17 +74,24 @@ class PrometheusUnitsHelper {
       // SDK.
       return null;
     }
+    if (otelUnit.contains("{")) {
+      otelUnit = otelUnit.replaceAll("\\{[^}]*}", "").trim();
+      if (otelUnit.isEmpty() || otelUnit.equals("/")) {
+        return null;
+      }
+    }
     if (predefinedUnits.containsKey(otelUnit)) {
       return predefinedUnits.get(otelUnit);
     }
-    if (otelUnit.contains("{")) {
-      return null;
-    }
     if (otelUnit.contains("/")) {
       String[] parts = otelUnit.split("/", 2);
-      String part1 = pluralNames.getOrDefault(parts[0], parts[0]);
-      String part2 = singularNames.getOrDefault(parts[1], parts[1]);
-      return new Unit(part1 + "_per_" + part2);
+      String part1 = pluralNames.getOrDefault(parts[0], parts[0]).trim();
+      String part2 = singularNames.getOrDefault(parts[1], parts[1]).trim();
+      if (part1.isEmpty()) {
+        return new Unit("per_" + part2);
+      } else {
+        return new Unit(part1 + "_per_" + part2);
+      }
     }
     return new Unit(otelUnit);
   }

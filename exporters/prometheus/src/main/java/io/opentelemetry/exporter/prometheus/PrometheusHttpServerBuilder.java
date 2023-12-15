@@ -21,6 +21,7 @@ public final class PrometheusHttpServerBuilder {
   private String host = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
   private PrometheusRegistry prometheusRegistry = PrometheusRegistry.defaultRegistry;
+  private boolean otelScopeEnabled = true;
 
   @Nullable private ExecutorService executor;
 
@@ -53,12 +54,18 @@ public final class PrometheusHttpServerBuilder {
     return this;
   }
 
+  /** Set if the {@code otel_scope_*} attributes are generated. Default is {@code true}. */
+  public PrometheusHttpServerBuilder setOtelScopeEnabled(boolean otelScopeEnabled) {
+    this.otelScopeEnabled = otelScopeEnabled;
+    return this;
+  }
+
   /**
    * Returns a new {@link PrometheusHttpServer} with the configuration of this builder which can be
    * registered with a {@link io.opentelemetry.sdk.metrics.SdkMeterProvider}.
    */
   public PrometheusHttpServer build() {
-    return new PrometheusHttpServer(host, port, executor, prometheusRegistry);
+    return new PrometheusHttpServer(host, port, executor, prometheusRegistry, otelScopeEnabled);
   }
 
   PrometheusHttpServerBuilder() {}

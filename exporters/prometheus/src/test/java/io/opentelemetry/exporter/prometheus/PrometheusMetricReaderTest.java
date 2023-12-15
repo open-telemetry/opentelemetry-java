@@ -827,6 +827,50 @@ public class PrometheusMetricReaderTest {
   }
 
   @Test
+  public void testInstrumentationScope() throws IOException {
+    SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder()
+            .setClock(testClock)
+            .registerMetricReader(this.reader)
+            .setResource(
+                Resource.getDefault().toBuilder().put("telemetry.sdk.version", "1.x.x").build())
+            .build();
+    Meter meter1 = meterProvider.meterBuilder("scopeA").setInstrumentationVersion("1.1").build();
+    Meter meter2 = meterProvider.meterBuilder("scopeB").setInstrumentationVersion("1.2").build();
+    meter1
+        .counterBuilder("processing.time")
+        .setDescription("processing time in seconds")
+        .setUnit("s")
+        .ofDoubles()
+        .build()
+        .add(3.3, Attributes.builder().put("a", "b").build());
+    meter2
+        .counterBuilder("processing.time")
+        .setDescription("processing time in seconds")
+        .setUnit("s")
+        .ofDoubles()
+        .build()
+        .add(3.3, Attributes.builder().put("a", "b").build());
+    String expected =
+        ""
+            + "# TYPE processing_time_seconds counter\n"
+            + "# UNIT processing_time_seconds seconds\n"
+            + "# HELP processing_time_seconds processing time in seconds\n"
+            + "processing_time_seconds_total{a=\"b\",otel_scope_name=\"scopeA\",otel_scope_version=\"1.1\"} 3.3\n"
+            + "processing_time_seconds_created{a=\"b\",otel_scope_name=\"scopeA\",otel_scope_version=\"1.1\"} "
+            + createdTimestamp
+            + "\n"
+            + "processing_time_seconds_total{a=\"b\",otel_scope_name=\"scopeB\",otel_scope_version=\"1.2\"} 3.3\n"
+            + "processing_time_seconds_created{a=\"b\",otel_scope_name=\"scopeB\",otel_scope_version=\"1.2\"} "
+            + createdTimestamp
+            + "\n"
+            + "# TYPE target info\n"
+            + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
+            + "# EOF\n";
+    assertEquals(expected, toOpenMetrics(reader.collect()));
+  }
+
+  @Test
   public void testNameSuffix() throws IOException {
     LongCounter unitAndTotal =
         meter.counterBuilder("request.duration.seconds.total").setUnit("s").build();
