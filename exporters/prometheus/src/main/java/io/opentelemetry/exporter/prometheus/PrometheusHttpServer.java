@@ -66,7 +66,8 @@ public final class PrometheusHttpServer implements MetricReader {
               .hostname(host)
               .port(port)
               .executorService(executor)
-              .defaultHandler(new MetricsHandler())
+              .registry(prometheusRegistry)
+              .defaultHandler(new MetricsHandler(prometheusRegistry))
               .buildAndStart();
     } catch (IOException e) {
       throw new UncheckedIOException("Could not create Prometheus HTTP server", e);

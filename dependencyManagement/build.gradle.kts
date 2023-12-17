@@ -60,7 +60,6 @@ val DEPENDENCIES = listOf(
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit5:1.2.1",
-  "io.prometheus:prometheus-metrics-exporter-httpserver:1.1.0",
   "com.uber.nullaway:nullaway:0.10.18",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
@@ -70,6 +69,7 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.29.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
+  "io.prometheus:prometheus-metrics-exporter-httpserver:1.1.0",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.15.4",
   "org.awaitility:awaitility:4.2.0",

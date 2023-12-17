@@ -20,7 +20,7 @@ public final class PrometheusHttpServerBuilder {
 
   private String host = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
-  private PrometheusRegistry prometheusRegistry = PrometheusRegistry.defaultRegistry;
+  private PrometheusRegistry prometheusRegistry = new PrometheusRegistry();
   private boolean otelScopeEnabled = true;
 
   @Nullable private ExecutorService executor;

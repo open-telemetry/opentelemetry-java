@@ -50,7 +50,6 @@ import io.prometheus.metrics.model.snapshots.SummarySnapshot;
 import io.prometheus.metrics.model.snapshots.SummarySnapshot.SummaryDataPointSnapshot;
 import io.prometheus.metrics.model.snapshots.Unit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -115,6 +114,10 @@ final class Otel2PrometheusConverter {
 
   @Nullable
   private MetricSnapshot convert(MetricData metricData) {
+
+    // Note that AggregationTemporality.DELTA should never happen
+    // because PrometheusMetricReader#getAggregationTemporality returns CUMULATIVE.
+
     MetricMetadata metadata = convertMetadata(metricData);
     InstrumentationScopeInfo scope = metricData.getInstrumentationScopeInfo();
     switch (metricData.getType()) {
@@ -165,87 +168,83 @@ final class Otel2PrometheusConverter {
       MetricMetadata metadata,
       InstrumentationScopeInfo scope,
       Collection<LongPointData> dataPoints) {
-    GaugeDataPointSnapshot[] data = new GaugeDataPointSnapshot[dataPoints.size()];
-    int i = 0;
+    List<GaugeDataPointSnapshot> data = new ArrayList<>(dataPoints.size());
     for (LongPointData longData : dataPoints) {
-      data[i++] =
+      data.add(
           new GaugeDataPointSnapshot(
               (double) longData.getValue(),
               convertAttributes(scope, longData.getAttributes()),
-              convertLongExemplar(longData.getExemplars()));
+              convertLongExemplar(longData.getExemplars())));
     }
-    return new GaugeSnapshot(metadata, Arrays.asList(data));
+    return new GaugeSnapshot(metadata, data);
   }
 
   private CounterSnapshot convertLongCounter(
       MetricMetadata metadata,
       InstrumentationScopeInfo scope,
       Collection<LongPointData> dataPoints) {
-    CounterDataPointSnapshot[] data = new CounterDataPointSnapshot[dataPoints.size()];
-    int i = 0;
+    List<CounterDataPointSnapshot> data =
+        new ArrayList<CounterDataPointSnapshot>(dataPoints.size());
     for (LongPointData longData : dataPoints) {
-      data[i++] =
+      data.add(
           new CounterDataPointSnapshot(
               (double) longData.getValue(),
               convertAttributes(scope, longData.getAttributes()),
               convertLongExemplar(longData.getExemplars()),
-              longData.getStartEpochNanos() / NANOS_PER_MILLISECOND);
+              longData.getStartEpochNanos() / NANOS_PER_MILLISECOND));
     }
-    return new CounterSnapshot(metadata, Arrays.asList(data));
+    return new CounterSnapshot(metadata, data);
   }
 
   private GaugeSnapshot convertDoubleGauge(
       MetricMetadata metadata,
       InstrumentationScopeInfo scope,
       Collection<DoublePointData> dataPoints) {
-    GaugeDataPointSnapshot[] data = new GaugeDataPointSnapshot[dataPoints.size()];
-    int i = 0;
+    List<GaugeDataPointSnapshot> data = new ArrayList<>(dataPoints.size());
     for (DoublePointData doubleData : dataPoints) {
-      data[i++] =
+      data.add(
           new GaugeDataPointSnapshot(
               doubleData.getValue(),
               convertAttributes(scope, doubleData.getAttributes()),
-              convertDoubleExemplar(doubleData.getExemplars()));
+              convertDoubleExemplar(doubleData.getExemplars())));
     }
-    return new GaugeSnapshot(metadata, Arrays.asList(data));
+    return new GaugeSnapshot(metadata, data);
   }
 
   private CounterSnapshot convertDoubleCounter(
       MetricMetadata metadata,
       InstrumentationScopeInfo scope,
       Collection<DoublePointData> dataPoints) {
-    CounterDataPointSnapshot[] data = new CounterDataPointSnapshot[dataPoints.size()];
-    int i = 0;
+    List<CounterDataPointSnapshot> data = new ArrayList<>(dataPoints.size());
     for (DoublePointData doubleData : dataPoints) {
-      data[i++] =
+      data.add(
           new CounterDataPointSnapshot(
               doubleData.getValue(),
               convertAttributes(scope, doubleData.getAttributes()),
               convertDoubleExemplar(doubleData.getExemplars()),
-              doubleData.getStartEpochNanos() / NANOS_PER_MILLISECOND);
+              doubleData.getStartEpochNanos() / NANOS_PER_MILLISECOND));
     }
-    return new CounterSnapshot(metadata, Arrays.asList(data));
+    return new CounterSnapshot(metadata, data);
   }
 
   private HistogramSnapshot convertHistogram(
       MetricMetadata metadata,
       InstrumentationScopeInfo scope,
       Collection<HistogramPointData> dataPoints) {
-    HistogramDataPointSnapshot[] data = new HistogramDataPointSnapshot[dataPoints.size()];
-    int i = 0;
+    List<HistogramDataPointSnapshot> data = new ArrayList<>(dataPoints.size());
     for (HistogramPointData histogramData : dataPoints) {
       List<Double> boundaries = new ArrayList<>(histogramData.getBoundaries().size() + 1);
       boundaries.addAll(histogramData.getBoundaries());
       boundaries.add(Double.POSITIVE_INFINITY);
-      data[i++] =
+      data.add(
           new HistogramDataPointSnapshot(
               ClassicHistogramBuckets.of(boundaries, histogramData.getCounts()),
               histogramData.getSum(),
               convertAttributes(scope, histogramData.getAttributes()),
               convertDoubleExemplars(histogramData.getExemplars()),
-              histogramData.getStartEpochNanos() / NANOS_PER_MILLISECOND);
+              histogramData.getStartEpochNanos() / NANOS_PER_MILLISECOND));
     }
-    return new HistogramSnapshot(metadata, Arrays.asList(data));
+    return new HistogramSnapshot(metadata, data);
   }
 
   @Nullable
@@ -253,17 +252,22 @@ final class Otel2PrometheusConverter {
       MetricMetadata metadata,
       InstrumentationScopeInfo scope,
       Collection<ExponentialHistogramPointData> dataPoints) {
-    HistogramDataPointSnapshot[] data = new HistogramDataPointSnapshot[dataPoints.size()];
-    int i = 0;
+    List<HistogramDataPointSnapshot> data = new ArrayList<>(dataPoints.size());
     for (ExponentialHistogramPointData histogramData : dataPoints) {
       int scale = histogramData.getScale();
       if (scale < -4) {
-        // Scale < -4 is not supported in Prometheus. Histograms with scale < -4 are dropped.
+        THROTTLING_LOGGER.log(
+            Level.WARNING,
+            "Dropping histogram "
+                + metadata.getName()
+                + " with attributes "
+                + histogramData.getAttributes()
+                + " because it has scale < -4 which is unsupported in Prometheus");
         return null;
       }
       // Scale > 8 are not supported in Prometheus. Histograms with scale > 8 are scaled down to 8.
       int scaleDown = scale > 8 ? scale - 8 : 0;
-      data[i++] =
+      data.add(
           new HistogramDataPointSnapshot(
               scale - scaleDown,
               histogramData.getZeroCount(),
@@ -273,13 +277,12 @@ final class Otel2PrometheusConverter {
               histogramData.getSum(),
               convertAttributes(scope, histogramData.getAttributes()),
               convertDoubleExemplars(histogramData.getExemplars()),
-              histogramData.getStartEpochNanos() / NANOS_PER_MILLISECOND);
+              histogramData.getStartEpochNanos() / NANOS_PER_MILLISECOND));
     }
-    return new HistogramSnapshot(metadata, Arrays.asList(data));
+    return new HistogramSnapshot(metadata, data);
   }
 
-  @SuppressWarnings("MethodCanBeStatic")
-  private NativeHistogramBuckets convertExponentialHistogramBuckets(
+  private static NativeHistogramBuckets convertExponentialHistogramBuckets(
       ExponentialHistogramBuckets buckets, int scaleDown) {
     if (buckets.getBucketCounts().isEmpty()) {
       return NativeHistogramBuckets.EMPTY;
@@ -308,33 +311,31 @@ final class Otel2PrometheusConverter {
       MetricMetadata metadata,
       InstrumentationScopeInfo scope,
       Collection<SummaryPointData> dataPoints) {
-    SummaryDataPointSnapshot[] data = new SummaryDataPointSnapshot[dataPoints.size()];
-    int i = 0;
+    List<SummaryDataPointSnapshot> data = new ArrayList<>(dataPoints.size());
     for (SummaryPointData summaryData : dataPoints) {
-      data[i++] =
+      data.add(
           new SummaryDataPointSnapshot(
               summaryData.getCount(),
               summaryData.getSum(),
               convertQuantiles(summaryData.getValues()),
               convertAttributes(scope, summaryData.getAttributes()),
               Exemplars.EMPTY, // Exemplars for Summaries not implemented yet.
-              summaryData.getStartEpochNanos() / NANOS_PER_MILLISECOND);
+              summaryData.getStartEpochNanos() / NANOS_PER_MILLISECOND));
     }
-    return new SummarySnapshot(metadata, Arrays.asList(data));
+    return new SummarySnapshot(metadata, data);
   }
 
-  @SuppressWarnings("MethodCanBeStatic")
-  private Quantiles convertQuantiles(List<ValueAtQuantile> values) {
-    Quantile[] result = new Quantile[values.size()];
-    for (int i = 0; i < result.length; i++) {
-      result[i] = new Quantile(values.get(i).getQuantile(), values.get(i).getValue());
+  private static Quantiles convertQuantiles(List<ValueAtQuantile> values) {
+    List<Quantile> result = new ArrayList<>(values.size());
+    for (ValueAtQuantile value : values) {
+      result.add(new Quantile(value.getQuantile(), value.getValue()));
     }
     return Quantiles.of(result);
   }
 
   @Nullable
   private Exemplar convertLongExemplar(List<LongExemplarData> exemplars) {
-    if (exemplars.size() == 0) {
+    if (exemplars.isEmpty()) {
       return null;
     } else {
       LongExemplarData exemplar = exemplars.get(0);
@@ -342,9 +343,10 @@ final class Otel2PrometheusConverter {
     }
   }
 
+  /** Converts the first exemplar in the list if available, else returns {#code null}. */
   @Nullable
   private Exemplar convertDoubleExemplar(List<DoubleExemplarData> exemplars) {
-    if (exemplars.size() == 0) {
+    if (exemplars.isEmpty()) {
       return null;
     } else {
       DoubleExemplarData exemplar = exemplars.get(0);
@@ -352,11 +354,11 @@ final class Otel2PrometheusConverter {
     }
   }
 
+  /** Converts the first exemplar in the list if available, else returns {#code null}. */
   private Exemplars convertDoubleExemplars(List<DoubleExemplarData> exemplars) {
-    Exemplar[] result = new Exemplar[exemplars.size()];
-    for (int i = 0; i < result.length; i++) {
-      DoubleExemplarData exemplar = exemplars.get(i);
-      result[i] = convertExemplar(exemplar.getValue(), exemplar);
+    List<Exemplar> result = new ArrayList<>(exemplars.size());
+    for (DoubleExemplarData exemplar : exemplars) {
+      result.add(convertExemplar(exemplar.getValue(), exemplar));
     }
     return Exemplars.of(result);
   }
@@ -398,6 +400,14 @@ final class Otel2PrometheusConverter {
     return new InfoSnapshot(new MetricMetadata("otel_scope"), prometheusScopeInfos);
   }
 
+  /**
+   * Convert OpenTelemetry attributes to Prometheus labels.
+   *
+   * @param scope will be converted to {@code otel_scope_*} labels if {@code otelScopeEnabled} is
+   *     {@code true}.
+   * @param attributes the attributes to be converted.
+   * @param additionalAttributes optional list of key/value pairs, may be empty.
+   */
   private Labels convertAttributes(
       @Nullable InstrumentationScopeInfo scope,
       Attributes attributes,
@@ -434,8 +444,7 @@ final class Otel2PrometheusConverter {
     return Labels.of(names, values);
   }
 
-  @SuppressWarnings("MethodCanBeStatic")
-  private MetricMetadata convertMetadata(MetricData metricData) {
+  private static MetricMetadata convertMetadata(MetricData metricData) {
     String name = sanitizeMetricName(metricData.getName());
     String help = metricData.getDescription();
     Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
@@ -445,7 +454,8 @@ final class Otel2PrometheusConverter {
     return new MetricMetadata(name, help, unit);
   }
 
-  private void putOrMerge(Map<String, MetricSnapshot> snapshotsByName, MetricSnapshot snapshot) {
+  private static void putOrMerge(
+      Map<String, MetricSnapshot> snapshotsByName, MetricSnapshot snapshot) {
     String name = snapshot.getMetadata().getName();
     if (snapshotsByName.containsKey(name)) {
       MetricSnapshot merged = merge(snapshotsByName.get(name), snapshot);
@@ -464,7 +474,7 @@ final class Otel2PrometheusConverter {
    * type. If the type differs, we log a message and drop one of them.
    */
   @Nullable
-  private MetricSnapshot merge(MetricSnapshot a, MetricSnapshot b) {
+  private static MetricSnapshot merge(MetricSnapshot a, MetricSnapshot b) {
     MetricMetadata metadata = mergeMetadata(a.getMetadata(), b.getMetadata());
     if (metadata == null) {
       return null;
@@ -512,8 +522,7 @@ final class Otel2PrometheusConverter {
   }
 
   @Nullable
-  @SuppressWarnings("MethodCanBeStatic")
-  private MetricMetadata mergeMetadata(MetricMetadata a, MetricMetadata b) {
+  private static MetricMetadata mergeMetadata(MetricMetadata a, MetricMetadata b) {
     String name = a.getPrometheusName();
     if (a.getName().equals(b.getName())) {
       name = a.getName();
@@ -535,8 +544,7 @@ final class Otel2PrometheusConverter {
     return new MetricMetadata(name, help, unit);
   }
 
-  @SuppressWarnings("MethodCanBeStatic")
-  private String typeString(MetricSnapshot snapshot) {
+  private static String typeString(MetricSnapshot snapshot) {
     // Simple helper for a log message.
     return snapshot.getClass().getSimpleName().replace("Snapshot", "").toLowerCase(Locale.ENGLISH);
   }

@@ -5,7 +5,8 @@
 
 package io.opentelemetry.exporter.prometheus;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static java.util.stream.Collectors.joining;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
@@ -33,17 +34,18 @@ import io.prometheus.metrics.model.snapshots.MetricSnapshots;
 import io.prometheus.metrics.model.snapshots.NativeHistogramBuckets;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class PrometheusMetricReaderTest {
+class PrometheusMetricReaderTest {
 
   private final TestClock testClock = TestClock.create();
   private String createdTimestamp;
@@ -52,7 +54,7 @@ public class PrometheusMetricReaderTest {
   private Tracer tracer;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     this.testClock.setTime(Instant.ofEpochMilli((System.currentTimeMillis() / 100) * 100));
     this.createdTimestamp = convertTimestamp(testClock.now());
     this.reader = new PrometheusMetricReader(true);
@@ -75,7 +77,7 @@ public class PrometheusMetricReaderTest {
   }
 
   @Test
-  public void testLongCounterComplete() throws IOException {
+  void longCounterComplete() throws IOException {
     LongCounter counter =
         meter
             .counterBuilder("requests.size")
@@ -98,7 +100,7 @@ public class PrometheusMetricReaderTest {
   }
 
   @Test
-  public void testDoubleCounterComplete() throws IOException {
+  void doubleCounterComplete() throws IOException {
     DoubleCounter counter =
         meter
             .counterBuilder("requests.size")
@@ -151,14 +153,14 @@ public class PrometheusMetricReaderTest {
   }
 
   @Test
-  public void testLongCounterMinimal() throws IOException {
+  void longCounterMinimal() throws IOException {
     LongCounter counter = meter.counterBuilder("requests").build();
     counter.add(2);
     assertCounterMinimal(reader.collect());
   }
 
   @Test
-  public void testDoubleCounterMinimal() throws IOException {
+  void doubleCounterMinimal() throws IOException {
     DoubleCounter counter = meter.counterBuilder("requests").ofDoubles().build();
     counter.add(2.0);
     assertCounterMinimal(reader.collect());
@@ -175,11 +177,11 @@ public class PrometheusMetricReaderTest {
             + "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
             + "# EOF\n";
-    assertEquals(expected, toOpenMetrics(snapshots));
+    assertThat(toOpenMetrics(snapshots)).isEqualTo(expected);
   }
 
   @Test
-  public void testLongUpDownCounterComplete() throws IOException {
+  void longUpDownCounterComplete() throws IOException {
     LongUpDownCounter counter =
         meter
             .upDownCounterBuilder("queue.size")
@@ -202,7 +204,7 @@ public class PrometheusMetricReaderTest {
   }
 
   @Test
-  public void testDoubleUpDownCounterComplete() throws IOException {
+  void doubleUpDownCounterComplete() throws IOException {
     DoubleUpDownCounter counter =
         meter
             .upDownCounterBuilder("queue.size")
@@ -225,7 +227,7 @@ public class PrometheusMetricReaderTest {
     assertUpDownCounterComplete(reader.collect(), span1, span2);
   }
 
-  private void assertUpDownCounterComplete(MetricSnapshots snapshots, Span span1, Span span2)
+  private static void assertUpDownCounterComplete(MetricSnapshots snapshots, Span span1, Span span2)
       throws IOException {
     String expected =
         ""
@@ -249,20 +251,20 @@ public class PrometheusMetricReaderTest {
   }
 
   @Test
-  public void testLongUpDownCounterMinimal() throws IOException {
+  void longUpDownCounterMinimal() throws IOException {
     LongUpDownCounter counter = meter.upDownCounterBuilder("users.active").build();
     counter.add(27);
     assertUpDownCounterMinimal(reader.collect());
   }
 
   @Test
-  public void testDoubleUpDownCounterMinimal() throws IOException {
+  void doubleUpDownCounterMinimal() throws IOException {
     DoubleUpDownCounter counter = meter.upDownCounterBuilder("users.active").ofDoubles().build();
     counter.add(27.0);
     assertUpDownCounterMinimal(reader.collect());
   }
 
-  private void assertUpDownCounterMinimal(MetricSnapshots snapshots) throws IOException {
+  private static void assertUpDownCounterMinimal(MetricSnapshots snapshots) throws IOException {
     String expected =
         ""
             + "# TYPE target info\n"
@@ -270,11 +272,11 @@ public class PrometheusMetricReaderTest {
             + "# TYPE users_active gauge\n"
             + "users_active{otel_scope_name=\"test\"} 27.0\n"
             + "# EOF\n";
-    assertEquals(expected, toOpenMetrics(snapshots));
+    assertThat(toOpenMetrics(snapshots)).isEqualTo(expected);
   }
 
   @Test
-  public void testLongGaugeComplete() throws IOException {
+  void longGaugeComplete() throws IOException {
     meter
         .gaugeBuilder("temperature")
         .setUnit("Cel")
@@ -289,7 +291,7 @@ public class PrometheusMetricReaderTest {
   }
 
   @Test
-  public void testDoubleGaugeComplete() throws IOException {
+  void doubleGaugeComplete() throws IOException {
     meter
         .gaugeBuilder("temperature")
         .setUnit("Cel")
@@ -302,7 +304,7 @@ public class PrometheusMetricReaderTest {
     assertGaugeComplete(reader.collect());
   }
 
-  private void assertGaugeComplete(MetricSnapshots snapshots) throws IOException {
+  private static void assertGaugeComplete(MetricSnapshots snapshots) throws IOException {
     String expected =
         ""
             + "# TYPE target info\n"
@@ -313,22 +315,22 @@ public class PrometheusMetricReaderTest {
             + "temperature_celsius{location=\"inside\",otel_scope_name=\"test\"} 23.0\n"
             + "temperature_celsius{location=\"outside\",otel_scope_name=\"test\"} 17.0\n"
             + "# EOF\n";
-    assertEquals(expected, toOpenMetrics(snapshots));
+    assertThat(toOpenMetrics(snapshots)).isEqualTo(expected);
   }
 
   @Test
-  public void testLongGaugeMinimal() throws IOException {
+  void longGaugeMinimal() throws IOException {
     meter.gaugeBuilder("my_gauge").ofLongs().buildWithCallback(m -> m.record(2));
     assertGaugeMinimal(reader.collect());
   }
 
   @Test
-  public void testDoubleGaugeMinimal() throws IOException {
+  void doubleGaugeMinimal() throws IOException {
     meter.gaugeBuilder("my_gauge").buildWithCallback(m -> m.record(2.0));
     assertGaugeMinimal(reader.collect());
   }
 
-  private void assertGaugeMinimal(MetricSnapshots snapshots) throws IOException {
+  private static void assertGaugeMinimal(MetricSnapshots snapshots) throws IOException {
     String expected =
         ""
             + "# TYPE my_gauge gauge\n"
@@ -336,11 +338,11 @@ public class PrometheusMetricReaderTest {
             + "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
             + "# EOF\n";
-    assertEquals(expected, toOpenMetrics(snapshots));
+    assertThat(toOpenMetrics(snapshots)).isEqualTo(expected);
   }
 
   @Test
-  public void testLongHistogramComplete() throws IOException {
+  void longHistogramComplete() throws IOException {
     LongHistogram histogram =
         meter
             .histogramBuilder("request.size")
@@ -370,7 +372,7 @@ public class PrometheusMetricReaderTest {
   }
 
   @Test
-  public void testDoubleHistogramComplete() throws IOException {
+  void doubleHistogramComplete() throws IOException {
     DoubleHistogram histogram =
         meter
             .histogramBuilder("request.size")
@@ -466,7 +468,7 @@ public class PrometheusMetricReaderTest {
   }
 
   @Test
-  public void testLongHistogramMinimal() throws IOException {
+  void longHistogramMinimal() throws IOException {
     LongHistogram histogram = meter.histogramBuilder("request.size").ofLongs().build();
     histogram.record(173);
     histogram.record(173);
@@ -475,7 +477,7 @@ public class PrometheusMetricReaderTest {
   }
 
   @Test
-  public void testDoubleHistogramMinimal() throws IOException {
+  void doubleHistogramMinimal() throws IOException {
     DoubleHistogram histogram = meter.histogramBuilder("request.size").build();
     histogram.record(173.0);
     histogram.record(173.0);
@@ -511,12 +513,12 @@ public class PrometheusMetricReaderTest {
             + "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
             + "# EOF\n";
-    assertEquals(expected, toOpenMetrics(snapshots));
+    assertThat(toOpenMetrics(snapshots)).isEqualTo(expected);
   }
 
   @Test
   @Disabled("disabled until #6010 is fixed")
-  public void testExponentialLongHistogramComplete() throws IOException {
+  void exponentialLongHistogramComplete() throws IOException {
     LongHistogram histogram =
         meter
             .histogramBuilder("my.exponential.histogram")
@@ -541,7 +543,7 @@ public class PrometheusMetricReaderTest {
   }
 
   @Test
-  public void testExponentialDoubleHistogramComplete() throws IOException {
+  void exponentialDoubleHistogramComplete() throws IOException {
     DoubleHistogram histogram =
         meter
             .histogramBuilder("my.exponential.histogram")
@@ -564,8 +566,8 @@ public class PrometheusMetricReaderTest {
     assertExponentialHistogramComplete(reader.collect(), span1, span2);
   }
 
-  private void assertExponentialHistogramComplete(MetricSnapshots snapshots, Span span1, Span span2)
-      throws IOException {
+  private static void assertExponentialHistogramComplete(
+      MetricSnapshots snapshots, Span span1, Span span2) {
     String expected =
         ""
             + "name: \"my_exponential_histogram_bytes\"\n"
@@ -688,20 +690,20 @@ public class PrometheusMetricReaderTest {
   }
 
   @Test
-  public void testExponentialLongHistogramMinimal() throws IOException {
+  void exponentialLongHistogramMinimal() throws IOException {
     LongHistogram histogram = meter.histogramBuilder("my.exponential.histogram").ofLongs().build();
     histogram.record(1, Attributes.builder().put("animal", "bear").build());
     assertExponentialHistogramMinimal(reader.collect());
   }
 
   @Test
-  public void testExponentialDoubleHistogramMinimal() throws IOException {
+  void exponentialDoubleHistogramMinimal() throws IOException {
     DoubleHistogram histogram = meter.histogramBuilder("my.exponential.histogram").build();
     histogram.record(1.0, Attributes.builder().put("animal", "bear").build());
     assertExponentialHistogramMinimal(reader.collect());
   }
 
-  private void assertExponentialHistogramMinimal(MetricSnapshots snapshots) throws IOException {
+  private static void assertExponentialHistogramMinimal(MetricSnapshots snapshots) {
     String expected =
         ""
             + "name: \"my_exponential_histogram\"\n"
@@ -756,7 +758,7 @@ public class PrometheusMetricReaderTest {
   }
 
   @Test
-  public void testExponentialHistogramBucketConversion() {
+  void exponentialHistogramBucketConversion() {
     Random random = new Random();
     for (int i = 0; i < 100_000; i++) {
       int otelScale = random.nextInt(24) - 4;
@@ -783,21 +785,20 @@ public class PrometheusMetricReaderTest {
       MetricSnapshots snapshots = reader.collect();
       HistogramSnapshot snapshot = (HistogramSnapshot) snapshots.get(0);
       HistogramDataPointSnapshot dataPoint = snapshot.getDataPoints().get(0);
-      Assertions.assertEquals(prometheusScale, dataPoint.getNativeSchema());
+      assertThat(dataPoint.getNativeSchema()).isEqualTo(prometheusScale);
       NativeHistogramBuckets buckets = dataPoint.getNativeBucketsForPositiveValues();
-      Assertions.assertEquals(1, buckets.size());
+      assertThat(buckets.size()).isEqualTo(1);
       int index = buckets.getBucketIndex(0);
       double base = Math.pow(2, Math.pow(2, -prometheusScale));
       double lowerBound = Math.pow(base, index - 1);
       double upperBound = Math.pow(base, index);
-      Assertions.assertTrue(lowerBound < observation);
-      Assertions.assertTrue(upperBound >= observation);
+      assertThat(lowerBound).isLessThan(observation);
+      assertThat(upperBound).isGreaterThanOrEqualTo(observation);
     }
   }
 
   @Test
-  @SuppressWarnings("SystemOut")
-  public void testExponentialLongHistogramScaleDown() throws IOException {
+  void exponentialLongHistogramScaleDown() throws IOException {
     // The following histogram will have the default scale, which is 20.
     DoubleHistogram histogram = meter.histogramBuilder("my.exponential.histogram").build();
     double base = Math.pow(2, Math.pow(2, -20));
@@ -811,23 +812,23 @@ public class PrometheusMetricReaderTest {
     MetricSnapshots snapshots = reader.collect();
     HistogramSnapshot snapshot = (HistogramSnapshot) snapshots.get(0);
     HistogramDataPointSnapshot dataPoint = snapshot.getDataPoints().get(0);
-    Assertions.assertEquals(8, dataPoint.getNativeSchema()); // scaled down from 20 to 8.
+    assertThat(dataPoint.getNativeSchema()).isEqualTo(8); // scaled down from 20 to 8.
     NativeHistogramBuckets buckets = dataPoint.getNativeBucketsForPositiveValues();
-    Assertions.assertEquals(3, buckets.size());
+    assertThat(buckets.size()).isEqualTo(3);
     // In bucket 0 we have exactly one observation: the value 1.0
-    Assertions.assertEquals(0, buckets.getBucketIndex(0));
-    Assertions.assertEquals(1, buckets.getCount(0));
+    assertThat(buckets.getBucketIndex(0)).isEqualTo(0);
+    assertThat(buckets.getCount(0)).isEqualTo(1);
     // In bucket 1 we have 4095 observations
-    Assertions.assertEquals(1, buckets.getBucketIndex(1));
-    Assertions.assertEquals(4095, buckets.getCount(1));
+    assertThat(buckets.getBucketIndex(1)).isEqualTo(1);
+    assertThat(buckets.getCount(1)).isEqualTo(4095);
     // In bucket 2 we have 10 observations (despite the empty buckets all observations fall into the
     // same bucket at scale 8)
-    Assertions.assertEquals(2, buckets.getBucketIndex(2));
-    Assertions.assertEquals(10, buckets.getCount(2));
+    assertThat(buckets.getBucketIndex(2)).isEqualTo(2);
+    assertThat(buckets.getCount(2)).isEqualTo(10);
   }
 
   @Test
-  public void testInstrumentationScope() throws IOException {
+  void instrumentationScope() throws IOException {
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder()
             .setClock(testClock)
@@ -867,11 +868,11 @@ public class PrometheusMetricReaderTest {
             + "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
             + "# EOF\n";
-    assertEquals(expected, toOpenMetrics(reader.collect()));
+    assertThat(toOpenMetrics(reader.collect())).isEqualTo(expected);
   }
 
   @Test
-  public void testNameSuffix() throws IOException {
+  void nameSuffix() throws IOException {
     LongCounter unitAndTotal =
         meter.counterBuilder("request.duration.seconds.total").setUnit("s").build();
     unitAndTotal.add(1);
@@ -910,11 +911,11 @@ public class PrometheusMetricReaderTest {
             + "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
             + "# EOF\n";
-    assertEquals(expected, toOpenMetrics(reader.collect()));
+    assertThat(toOpenMetrics(reader.collect())).isEqualTo(expected);
   }
 
   @Test
-  public void testNameSuffixUnit() throws IOException {
+  void nameSuffixUnit() throws IOException {
     LongCounter counter = meter.counterBuilder("request.duration.seconds").setUnit("s").build();
     counter.add(1);
     String expected =
@@ -928,11 +929,11 @@ public class PrometheusMetricReaderTest {
             + "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
             + "# EOF\n";
-    assertEquals(expected, toOpenMetrics(reader.collect()));
+    assertThat(toOpenMetrics(reader.collect())).isEqualTo(expected);
   }
 
   @Test
-  public void testIllegalCharacters() throws IOException {
+  void illegalCharacters() throws IOException {
     LongCounter counter = meter.counterBuilder("prod/request.count").build();
     counter.add(1, Attributes.builder().put("user-count", 30).build());
     String expected =
@@ -945,11 +946,11 @@ public class PrometheusMetricReaderTest {
             + "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
             + "# EOF\n";
-    assertEquals(expected, toOpenMetrics(reader.collect()));
+    assertThat(toOpenMetrics(reader.collect())).isEqualTo(expected);
   }
 
   @Test
-  public void testCreatedTimestamp() throws IOException {
+  void createdTimestamp() throws IOException {
 
     LongCounter counter = meter.counterBuilder("requests").build();
     testClock.advance(Duration.ofMillis(1));
@@ -980,12 +981,11 @@ public class PrometheusMetricReaderTest {
             + "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
             + "# EOF\n";
-
-    assertEquals(expected, toOpenMetrics(reader.collect()));
+    assertThat(toOpenMetrics(reader.collect())).isEqualTo(expected);
   }
 
   @Test
-  public void testOtelScopeComplete() throws IOException {
+  void otelScopeComplete() throws IOException {
     // There is currently no API for adding scope attributes.
     // However, we can at least test the otel_scope_version attribute.
     Meter meter =
@@ -1010,11 +1010,11 @@ public class PrometheusMetricReaderTest {
             + createdTimestamp
             + "\n"
             + "# EOF\n";
-    assertEquals(expected, toOpenMetrics(reader.collect()));
+    assertThat(toOpenMetrics(reader.collect())).isEqualTo(expected);
   }
 
   @Test
-  public void testOtelScopeDisabled() throws IOException {
+  void otelScopeDisabled() throws IOException {
     PrometheusMetricReader reader = new PrometheusMetricReader(false);
     Meter meter =
         SdkMeterProvider.builder()
@@ -1038,43 +1038,37 @@ public class PrometheusMetricReaderTest {
             + createdTimestamp
             + "\n"
             + "# EOF\n";
-    assertEquals(expected, toOpenMetrics(reader.collect()));
+    assertThat(toOpenMetrics(reader.collect())).isEqualTo(expected);
   }
 
   /**
-   * Unfortunately there is no easy way to use {@link TestClock} for Exemplar timestamps. The
-   * following is like {@code assertEquals()}, but {@code <timestamp>} matches arbitrary timestamps.
+   * Unfortunately there is no easy way to use {@link TestClock} for Exemplar timestamps. Test if
+   * {@code expected} equals {@code actual} but {@code <timestamp>} matches arbitrary timestamps.
    */
-  @SuppressWarnings("MethodCanBeStatic")
-  private void assertMatches(String expected, String actual) {
+  private static void assertMatches(String expected, String actual) {
     String[] parts = expected.split(Pattern.quote("<timestamp>"));
-    StringBuilder regex = new StringBuilder();
-    for (int i = 0; i < parts.length; i++) {
-      regex.append(Pattern.quote(parts[i]));
-      if (i <= parts.length - 2) {
-        regex.append("[0-9]+(\\.[0-9]+)?");
-      }
-    }
-    Assertions.assertTrue(
-        Pattern.matches(regex.toString(), actual), "Expected: " + expected + "\nActual: " + actual);
+    String timestampRegex = "[0-9]+(\\.[0-9]+)?";
+
+    String regex = Arrays.stream(parts).map(Pattern::quote).collect(joining(timestampRegex));
+
+    assertThat(actual)
+        .as("Expected: " + expected + "\nActual: " + actual)
+        .matches(Pattern.compile(regex));
   }
 
-  @SuppressWarnings({"MethodCanBeStatic", "DefaultCharset"})
-  private String toOpenMetrics(MetricSnapshots snapshots) throws IOException {
+  private static String toOpenMetrics(MetricSnapshots snapshots) throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     OpenMetricsTextFormatWriter writer = new OpenMetricsTextFormatWriter(true, true);
     writer.write(out, snapshots);
-    return out.toString();
+    return out.toString(StandardCharsets.UTF_8.name());
   }
 
-  @SuppressWarnings({"MethodCanBeStatic", "DefaultCharset"})
-  private String toPrometheusProtobuf(MetricSnapshots snapshots) throws IOException {
+  private static String toPrometheusProtobuf(MetricSnapshots snapshots) {
     PrometheusProtobufWriter writer = new PrometheusProtobufWriter();
     return writer.toDebugString(snapshots);
   }
 
-  @SuppressWarnings("MethodCanBeStatic")
-  private String convertTimestamp(long nanoTime) {
+  private static String convertTimestamp(long nanoTime) {
     String millis = Long.toString(TimeUnit.NANOSECONDS.toMillis(nanoTime));
     return millis.substring(0, millis.length() - 3) + "." + millis.substring(millis.length() - 3);
   }

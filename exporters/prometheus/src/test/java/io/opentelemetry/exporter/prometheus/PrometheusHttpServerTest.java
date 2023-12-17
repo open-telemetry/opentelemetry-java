@@ -9,7 +9,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
@@ -114,16 +113,16 @@ class PrometheusHttpServerTest {
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
         .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
-    assertEquals(
-        "# HELP grpc_name_total long_description\n"
-            + "# TYPE grpc_name_total counter\n"
-            + "grpc_name_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
-            + "# HELP http_name_total double_description\n"
-            + "# TYPE http_name_total counter\n"
-            + "http_name_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
-            + "# TYPE target_info gauge\n"
-            + "target_info{kr=\"vr\"} 1\n",
-        response.contentUtf8());
+    assertThat(response.contentUtf8())
+        .isEqualTo(
+            "# HELP grpc_name_total long_description\n"
+                + "# TYPE grpc_name_total counter\n"
+                + "grpc_name_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
+                + "# HELP http_name_total double_description\n"
+                + "# TYPE http_name_total counter\n"
+                + "http_name_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
+                + "# TYPE target_info gauge\n"
+                + "target_info{kr=\"vr\"} 1\n");
   }
 
   @Test
@@ -138,21 +137,20 @@ class PrometheusHttpServerTest {
                     "application/openmetrics-text"))
             .aggregate()
             .join();
-    assertEquals(HttpStatus.OK, response.status());
-    assertEquals(
-        "application/openmetrics-text; version=1.0.0; charset=utf-8",
-        response.headers().get(HttpHeaderNames.CONTENT_TYPE));
-    assertEquals(
-        "# TYPE grpc_name counter\n"
-            + "# HELP grpc_name long_description\n"
-            + "grpc_name_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
-            + "# TYPE http_name counter\n"
-            + "# HELP http_name double_description\n"
-            + "http_name_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
-            + "# TYPE target info\n"
-            + "target_info{kr=\"vr\"} 1\n"
-            + "# EOF\n",
-        response.contentUtf8());
+    assertThat(response.status()).isEqualTo(HttpStatus.OK);
+    assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
+        .isEqualTo("application/openmetrics-text; version=1.0.0; charset=utf-8");
+    assertThat(response.contentUtf8())
+        .isEqualTo(
+            "# TYPE grpc_name counter\n"
+                + "# HELP grpc_name long_description\n"
+                + "grpc_name_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
+                + "# TYPE http_name counter\n"
+                + "# HELP http_name double_description\n"
+                + "http_name_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
+                + "# TYPE target info\n"
+                + "target_info{kr=\"vr\"} 1\n"
+                + "# EOF\n");
   }
 
   @Test
@@ -165,14 +163,14 @@ class PrometheusHttpServerTest {
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
         .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
-    assertEquals(
-        ""
-            + "# HELP grpc_name_total long_description\n"
-            + "# TYPE grpc_name_total counter\n"
-            + "grpc_name_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
-            + "# TYPE target_info gauge\n"
-            + "target_info{kr=\"vr\"} 1\n",
-        response.contentUtf8());
+    assertThat(response.contentUtf8())
+        .isEqualTo(
+            ""
+                + "# HELP grpc_name_total long_description\n"
+                + "# TYPE grpc_name_total counter\n"
+                + "grpc_name_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
+                + "# TYPE target_info gauge\n"
+                + "target_info{kr=\"vr\"} 1\n");
   }
 
   @Test
@@ -189,16 +187,16 @@ class PrometheusHttpServerTest {
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_ENCODING)).isEqualTo("gzip");
     GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(response.content().array()));
     String content = new String(ByteStreams.toByteArray(gis), StandardCharsets.UTF_8);
-    assertEquals(
-        "# HELP grpc_name_total long_description\n"
-            + "# TYPE grpc_name_total counter\n"
-            + "grpc_name_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
-            + "# HELP http_name_total double_description\n"
-            + "# TYPE http_name_total counter\n"
-            + "http_name_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
-            + "# TYPE target_info gauge\n"
-            + "target_info{kr=\"vr\"} 1\n",
-        content);
+    assertThat(content)
+        .isEqualTo(
+            "# HELP grpc_name_total long_description\n"
+                + "# TYPE grpc_name_total counter\n"
+                + "grpc_name_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
+                + "# HELP http_name_total double_description\n"
+                + "# TYPE http_name_total counter\n"
+                + "http_name_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
+                + "# TYPE target_info gauge\n"
+                + "target_info{kr=\"vr\"} 1\n");
   }
 
   @Test
@@ -263,14 +261,13 @@ class PrometheusHttpServerTest {
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
         .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
-    assertEquals(
-        ""
-            + "# TYPE foo_unit_total counter\n"
-            + "foo_unit_total{otel_scope_name=\"scope1\"} 1.0\n"
-            + "foo_unit_total{otel_scope_name=\"scope2\"} 2.0\n"
-            + "# TYPE target_info gauge\n"
-            + "target_info{kr=\"vr\"} 1\n",
-        response.contentUtf8());
+    assertThat(response.contentUtf8())
+        .isEqualTo(
+            "# TYPE foo_unit_total counter\n"
+                + "foo_unit_total{otel_scope_name=\"scope1\"} 1.0\n"
+                + "foo_unit_total{otel_scope_name=\"scope2\"} 2.0\n"
+                + "# TYPE target_info gauge\n"
+                + "target_info{kr=\"vr\"} 1\n");
 
     // Validate conflict warning message
     assertThat(logs.getEvents()).hasSize(1);
