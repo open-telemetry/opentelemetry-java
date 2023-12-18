@@ -8,12 +8,19 @@ package io.opentelemetry.opencensusshim;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.context.Context;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -80,64 +87,33 @@ class DelegatingSpanTest {
   static Stream<Arguments> delegateMethodsProvider() {
     return Stream.of(
         Arguments.of("end", new Class<?>[] {}, times(1)),
-        Arguments.of(
-            "end", new Class<?>[] {long.class, java.util.concurrent.TimeUnit.class}, times(1)),
-        Arguments.of("end", new Class<?>[] {java.time.Instant.class}, times(1)),
+        Arguments.of("end", new Class<?>[] {long.class, TimeUnit.class}, times(1)),
+        Arguments.of("end", new Class<?>[] {Instant.class}, times(1)),
         Arguments.of("setAttribute", new Class<?>[] {String.class, String.class}, times(1)),
-        Arguments.of(
-            "setAttribute",
-            new Class<?>[] {io.opentelemetry.api.common.AttributeKey.class, int.class},
-            times(1)),
-        Arguments.of(
-            "setAttribute",
-            new Class<?>[] {io.opentelemetry.api.common.AttributeKey.class, Object.class},
-            times(1)),
+        Arguments.of("setAttribute", new Class<?>[] {AttributeKey.class, int.class}, times(1)),
+        Arguments.of("setAttribute", new Class<?>[] {AttributeKey.class, Object.class}, times(1)),
         Arguments.of("setAttribute", new Class<?>[] {String.class, long.class}, times(1)),
         Arguments.of("setAttribute", new Class<?>[] {String.class, double.class}, times(1)),
         Arguments.of("setAttribute", new Class<?>[] {String.class, boolean.class}, times(1)),
         Arguments.of(
-            "recordException",
-            new Class<?>[] {Throwable.class, io.opentelemetry.api.common.Attributes.class},
-            times(1)),
+            "recordException", new Class<?>[] {Throwable.class, Attributes.class}, times(1)),
         Arguments.of("recordException", new Class<?>[] {Throwable.class}, times(1)),
-        Arguments.of(
-            "setAllAttributes",
-            new Class<?>[] {io.opentelemetry.api.common.Attributes.class},
-            times(1)),
+        Arguments.of("setAllAttributes", new Class<?>[] {Attributes.class}, times(1)),
         Arguments.of("updateName", new Class<?>[] {String.class}, times(1)),
+        Arguments.of("storeInContext", new Class<?>[] {Context.class}, times(1)),
+        Arguments.of("addEvent", new Class<?>[] {String.class, Instant.class}, times(1)),
         Arguments.of(
-            "storeInContext", new Class<?>[] {io.opentelemetry.context.Context.class}, times(1)),
-        Arguments.of("addEvent", new Class<?>[] {String.class, java.time.Instant.class}, times(1)),
+            "addEvent", new Class<?>[] {String.class, long.class, TimeUnit.class}, times(1)),
         Arguments.of(
-            "addEvent",
-            new Class<?>[] {String.class, long.class, java.util.concurrent.TimeUnit.class},
-            times(1)),
-        Arguments.of(
-            "addEvent",
-            new Class<?>[] {
-              String.class, io.opentelemetry.api.common.Attributes.class, java.time.Instant.class
-            },
-            times(1)),
+            "addEvent", new Class<?>[] {String.class, Attributes.class, Instant.class}, times(1)),
         Arguments.of("addEvent", new Class<?>[] {String.class}, times(1)),
         Arguments.of(
             "addEvent",
-            new Class<?>[] {
-              String.class,
-              io.opentelemetry.api.common.Attributes.class,
-              long.class,
-              java.util.concurrent.TimeUnit.class
-            },
+            new Class<?>[] {String.class, Attributes.class, long.class, TimeUnit.class},
             times(1)),
-        Arguments.of(
-            "addEvent",
-            new Class<?>[] {String.class, io.opentelemetry.api.common.Attributes.class},
-            times(1)),
-        Arguments.of(
-            "setStatus",
-            new Class<?>[] {io.opentelemetry.api.trace.StatusCode.class, String.class},
-            times(1)),
-        Arguments.of(
-            "setStatus", new Class<?>[] {io.opentelemetry.api.trace.StatusCode.class}, times(1)),
+        Arguments.of("addEvent", new Class<?>[] {String.class, Attributes.class}, times(1)),
+        Arguments.of("setStatus", new Class<?>[] {StatusCode.class, String.class}, times(1)),
+        Arguments.of("setStatus", new Class<?>[] {StatusCode.class}, times(1)),
         //
         // special cases
         //
@@ -145,7 +121,10 @@ class DelegatingSpanTest {
         // `true`
         Arguments.of("isRecording", new Class<?>[] {}, times(0)),
         // called twice: once in constructor, then once during delegation
-        Arguments.of("getSpanContext", new Class<?>[] {}, times(2)));
+        Arguments.of("getSpanContext", new Class<?>[] {}, times(2)),
+        // addLink is never called
+        Arguments.of("addLink", new Class<?>[] {SpanContext.class}, times(0)),
+        Arguments.of("addLink", new Class<?>[] {SpanContext.class, Attributes.class}, times(0)));
   }
 
   // gets default values for all cases, as mockito can't mock wrappers or primitives, including

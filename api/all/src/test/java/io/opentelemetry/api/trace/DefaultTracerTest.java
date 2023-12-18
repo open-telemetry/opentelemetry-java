@@ -6,7 +6,9 @@
 package io.opentelemetry.api.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import org.junit.jupiter.api.Test;
 
@@ -77,5 +79,15 @@ class DefaultTracerTest {
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).setNoParent().startSpan();
     assertThat(span.getSpanContext()).isEqualTo(SpanContext.getInvalid());
+  }
+
+  @Test
+  void addLink() {
+    Span span = Span.fromContext(Context.root());
+    assertThatCode(() -> span.addLink(null)).doesNotThrowAnyException();
+    assertThatCode(() -> span.addLink(SpanContext.getInvalid())).doesNotThrowAnyException();
+    assertThatCode(() -> span.addLink(null, null)).doesNotThrowAnyException();
+    assertThatCode(() -> span.addLink(SpanContext.getInvalid(), Attributes.empty()))
+        .doesNotThrowAnyException();
   }
 }
