@@ -9,10 +9,10 @@ import io.opentelemetry.exporter.internal.InstrumentationUtil;
 import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.http.HttpSender;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +44,7 @@ public final class OkHttpHttpSender implements HttpSender {
   private final OkHttpClient client;
   private final HttpUrl url;
   private final boolean compressionEnabled;
+  private final boolean exportAsJson;
   private final Supplier<Map<String, List<String>>> headerSupplier;
   private final MediaType mediaType;
 
@@ -52,6 +53,7 @@ public final class OkHttpHttpSender implements HttpSender {
   public OkHttpHttpSender(
       String endpoint,
       boolean compressionEnabled,
+      boolean exportAsJson,
       String contentType,
       long timeoutNanos,
       long connectionTimeoutNanos,
@@ -86,13 +88,14 @@ public final class OkHttpHttpSender implements HttpSender {
     this.client = builder.build();
     this.url = HttpUrl.get(endpoint);
     this.compressionEnabled = compressionEnabled;
+    this.exportAsJson = exportAsJson;
     this.mediaType = MediaType.parse(contentType);
     this.headerSupplier = headerSupplier;
   }
 
   @Override
   public void send(
-      Consumer<OutputStream> marshaler,
+      Marshaler marshaler,
       int contentLength,
       Consumer<Response> onResponse,
       Consumer<Throwable> onError) {
@@ -103,7 +106,7 @@ public final class OkHttpHttpSender implements HttpSender {
       headers.forEach(
           (key, values) -> values.forEach(value -> requestBuilder.addHeader(key, value)));
     }
-    RequestBody body = new RawRequestBody(marshaler, contentLength, mediaType);
+    RequestBody body = new RawRequestBody(marshaler, exportAsJson, contentLength, mediaType);
     if (compressionEnabled) {
       requestBuilder.addHeader("Content-Encoding", "gzip");
       requestBuilder.post(new GzipRequestBody(body));
@@ -161,13 +164,15 @@ public final class OkHttpHttpSender implements HttpSender {
 
   private static class RawRequestBody extends RequestBody {
 
-    private final Consumer<OutputStream> marshaler;
+    private final Marshaler marshaler;
+    private final boolean exportAsJson;
     private final int contentLength;
     private final MediaType mediaType;
 
     private RawRequestBody(
-        Consumer<OutputStream> marshaler, int contentLength, MediaType mediaType) {
+        Marshaler marshaler, boolean exportAsJson, int contentLength, MediaType mediaType) {
       this.marshaler = marshaler;
+      this.exportAsJson = exportAsJson;
       this.contentLength = contentLength;
       this.mediaType = mediaType;
     }
@@ -183,8 +188,12 @@ public final class OkHttpHttpSender implements HttpSender {
     }
 
     @Override
-    public void writeTo(BufferedSink bufferedSink) {
-      marshaler.accept(bufferedSink.outputStream());
+    public void writeTo(BufferedSink bufferedSink) throws IOException {
+      if (exportAsJson) {
+        marshaler.writeJsonTo(bufferedSink.outputStream());
+      } else {
+        marshaler.writeBinaryTo(bufferedSink.outputStream());
+      }
     }
   }
 

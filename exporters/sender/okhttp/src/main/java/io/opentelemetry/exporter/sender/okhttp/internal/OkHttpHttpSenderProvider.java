@@ -28,6 +28,7 @@ public final class OkHttpHttpSenderProvider implements HttpSenderProvider {
   public HttpSender createSender(
       String endpoint,
       boolean compressionEnabled,
+      boolean exportAsJson,
       String contentType,
       long timeoutNanos,
       long connectTimeout,
@@ -39,6 +40,7 @@ public final class OkHttpHttpSenderProvider implements HttpSenderProvider {
     return new OkHttpHttpSender(
         endpoint,
         compressionEnabled,
+        exportAsJson,
         contentType,
         timeoutNanos,
         connectTimeout,

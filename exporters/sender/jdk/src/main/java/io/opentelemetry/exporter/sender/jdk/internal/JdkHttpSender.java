@@ -6,11 +6,13 @@
 package io.opentelemetry.exporter.sender.jdk.internal;
 
 import io.opentelemetry.exporter.internal.http.HttpSender;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -53,6 +55,7 @@ public final class JdkHttpSender implements HttpSender {
   private final HttpClient client;
   private final URI uri;
   private final boolean compressionEnabled;
+  private final boolean exportAsJson;
   private final String contentType;
   private final long timeoutNanos;
   private final Supplier<Map<String, List<String>>> headerSupplier;
@@ -63,6 +66,7 @@ public final class JdkHttpSender implements HttpSender {
       HttpClient client,
       String endpoint,
       boolean compressionEnabled,
+      boolean exportAsJson,
       String contentType,
       long timeoutNanos,
       Supplier<Map<String, List<String>>> headerSupplier,
@@ -74,6 +78,7 @@ public final class JdkHttpSender implements HttpSender {
       throw new IllegalArgumentException(e);
     }
     this.compressionEnabled = compressionEnabled;
+    this.exportAsJson = exportAsJson;
     this.contentType = contentType;
     this.timeoutNanos = timeoutNanos;
     this.headerSupplier = headerSupplier;
@@ -83,6 +88,7 @@ public final class JdkHttpSender implements HttpSender {
   JdkHttpSender(
       String endpoint,
       boolean compressionEnabled,
+      boolean exportAsJson,
       String contentType,
       long timeoutNanos,
       long connectTimeoutNanos,
@@ -93,6 +99,7 @@ public final class JdkHttpSender implements HttpSender {
         configureClient(sslContext, connectTimeoutNanos),
         endpoint,
         compressionEnabled,
+        exportAsJson,
         contentType,
         timeoutNanos,
         headerSupplier,
@@ -111,7 +118,7 @@ public final class JdkHttpSender implements HttpSender {
 
   @Override
   public void send(
-      Consumer<OutputStream> marshaler,
+      Marshaler marshaler,
       int contentLength,
       Consumer<Response> onResponse,
       Consumer<Throwable> onError) {
@@ -121,7 +128,7 @@ public final class JdkHttpSender implements HttpSender {
                   try {
                     return sendInternal(marshaler);
                   } catch (IOException e) {
-                    throw new IllegalStateException(e);
+                    throw new UncheckedIOException(e);
                   }
                 },
                 executorService)
@@ -136,7 +143,7 @@ public final class JdkHttpSender implements HttpSender {
   }
 
   // Visible for testing
-  HttpResponse<byte[]> sendInternal(Consumer<OutputStream> marshaler) throws IOException {
+  HttpResponse<byte[]> sendInternal(Marshaler marshaler) throws IOException {
     long startTimeNanos = System.nanoTime();
     HttpRequest.Builder requestBuilder =
         HttpRequest.newBuilder().uri(uri).timeout(Duration.ofNanos(timeoutNanos));
@@ -151,12 +158,10 @@ public final class JdkHttpSender implements HttpSender {
     if (compressionEnabled) {
       requestBuilder.header("Content-Encoding", "gzip");
       try (GZIPOutputStream gzos = new GZIPOutputStream(os)) {
-        marshaler.accept(gzos);
-      } catch (IOException e) {
-        throw new IllegalStateException(e);
+        write(marshaler, gzos);
       }
     } else {
-      marshaler.accept(os);
+      write(marshaler, os);
     }
 
     ByteBufferPool byteBufferPool = threadLocalByteBufPool.get();
@@ -209,6 +214,14 @@ public final class JdkHttpSender implements HttpSender {
       return httpResponse;
     }
     throw exception;
+  }
+
+  private void write(Marshaler marshaler, OutputStream os) throws IOException {
+    if (exportAsJson) {
+      marshaler.writeJsonTo(os);
+    } else {
+      marshaler.writeBinaryTo(os);
+    }
   }
 
   private HttpResponse<byte[]> sendRequest(

@@ -28,6 +28,7 @@ public interface HttpSenderProvider {
   HttpSender createSender(
       String endpoint,
       boolean compressionEnabled,
+      boolean exportAsJson,
       String contentType,
       long timeoutNanos,
       long connectTimeout,
