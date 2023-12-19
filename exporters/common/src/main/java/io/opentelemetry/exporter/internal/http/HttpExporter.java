@@ -77,7 +77,14 @@ public final class HttpExporter<T extends Marshaler> {
           try {
             body = httpResponse.responseBody();
           } catch (IOException ex) {
-            throw new IllegalStateException(ex);
+            logger.log(
+                Level.WARNING,
+                "Failed to export "
+                    + type
+                    + "s. Server responded with exception message "
+                    + ex.getMessage());
+            result.fail();
+            return;
           }
 
           String status = extractErrorStatus(httpResponse.statusMessage(), body);
