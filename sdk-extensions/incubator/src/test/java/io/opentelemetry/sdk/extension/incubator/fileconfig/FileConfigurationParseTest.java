@@ -6,7 +6,9 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Aggregation;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOff;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOn;
@@ -60,7 +62,17 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class ConfigurationReaderTest {
+class FileConfigurationParseTest {
+
+  @Test
+  void parse_BadInputStream() {
+    assertThatThrownBy(
+            () ->
+                FileConfiguration.parseAndCreate(
+                    new ByteArrayInputStream("foo".getBytes(StandardCharsets.UTF_8))))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Unable to parse configuration input stream");
+  }
 
   @Test
   void parse_KitchenSinkExampleFile() throws IOException {
@@ -257,7 +269,7 @@ class ConfigurationReaderTest {
 
     try (FileInputStream configExampleFile =
         new FileInputStream(System.getenv("CONFIG_EXAMPLE_DIR") + "/kitchen-sink.yaml")) {
-      OpenTelemetryConfiguration config = ConfigurationReader.parse(configExampleFile);
+      OpenTelemetryConfiguration config = FileConfiguration.parse(configExampleFile);
 
       // General config
       assertThat(config.getFileFormat()).isEqualTo("0.1");
@@ -306,7 +318,7 @@ class ConfigurationReaderTest {
             + "        aggregation:\n"
             + "          drop: {}\n";
     OpenTelemetryConfiguration objectPlaceholderModel =
-        ConfigurationReader.parse(
+        FileConfiguration.parse(
             new ByteArrayInputStream(objectPlaceholderString.getBytes(StandardCharsets.UTF_8)));
 
     String noOjbectPlaceholderString =
@@ -324,7 +336,7 @@ class ConfigurationReaderTest {
             + "        aggregation:\n"
             + "          drop:\n";
     OpenTelemetryConfiguration noObjectPlaceholderModel =
-        ConfigurationReader.parse(
+        FileConfiguration.parse(
             new ByteArrayInputStream(noOjbectPlaceholderString.getBytes(StandardCharsets.UTF_8)));
 
     SpanExporter exporter =
@@ -358,7 +370,7 @@ class ConfigurationReaderTest {
             + "      ratio:\n"; // Double
 
     OpenTelemetryConfiguration model =
-        ConfigurationReader.parse(new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
+        FileConfiguration.parse(new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
 
     assertThat(model.getFileFormat()).isNull();
     assertThat(model.getDisabled()).isNull();
@@ -386,7 +398,7 @@ class ConfigurationReaderTest {
     environmentVariables.put("FLOAT", "1.1");
 
     Object yaml =
-        ConfigurationReader.loadYaml(
+        FileConfiguration.loadYaml(
             new ByteArrayInputStream(rawYaml.getBytes(StandardCharsets.UTF_8)),
             environmentVariables);
     assertThat(yaml).isEqualTo(expectedYamlResult);
@@ -396,32 +408,31 @@ class ConfigurationReaderTest {
   private static java.util.stream.Stream<Arguments> envVarSubstitutionArgs() {
     return java.util.stream.Stream.of(
         // Simple cases
-        Arguments.of("key1: ${env:STR_1}\n", mapOf(entry("key1", "value1"))),
-        Arguments.of("key1: ${env:BOOL}\n", mapOf(entry("key1", true))),
-        Arguments.of("key1: ${env:INT}\n", mapOf(entry("key1", 1))),
-        Arguments.of("key1: ${env:FLOAT}\n", mapOf(entry("key1", 1.1))),
+        Arguments.of("key1: ${STR_1}\n", mapOf(entry("key1", "value1"))),
+        Arguments.of("key1: ${BOOL}\n", mapOf(entry("key1", true))),
+        Arguments.of("key1: ${INT}\n", mapOf(entry("key1", 1))),
+        Arguments.of("key1: ${FLOAT}\n", mapOf(entry("key1", 1.1))),
         Arguments.of(
-            "key1: ${env:STR_1}\n" + "key2: value2\n",
+            "key1: ${STR_1}\n" + "key2: value2\n",
             mapOf(entry("key1", "value1"), entry("key2", "value2"))),
         Arguments.of(
-            "key1: ${env:STR_1} value1\n" + "key2: value2\n",
+            "key1: ${STR_1} value1\n" + "key2: value2\n",
             mapOf(entry("key1", "value1 value1"), entry("key2", "value2"))),
         // Multiple environment variables referenced
-        Arguments.of("key1: ${env:STR_1}${env:STR_2}\n", mapOf(entry("key1", "value1value2"))),
-        Arguments.of("key1: ${env:STR_1} ${env:STR_2}\n", mapOf(entry("key1", "value1 value2"))),
+        Arguments.of("key1: ${STR_1}${STR_2}\n", mapOf(entry("key1", "value1value2"))),
+        Arguments.of("key1: ${STR_1} ${STR_2}\n", mapOf(entry("key1", "value1 value2"))),
         // Undefined environment variable
-        Arguments.of("key1: ${env:STR_3}\n", mapOf(entry("key1", null))),
-        Arguments.of("key1: ${env:STR_1} ${env:STR_3}\n", mapOf(entry("key1", "value1"))),
+        Arguments.of("key1: ${STR_3}\n", mapOf(entry("key1", null))),
+        Arguments.of("key1: ${STR_1} ${STR_3}\n", mapOf(entry("key1", "value1"))),
         // Environment variable keys must match pattern: [a-zA-Z_]+[a-zA-Z0-9_]*
-        Arguments.of("key1: ${env:VAR&}\n", mapOf(entry("key1", "${env:VAR&}"))),
+        Arguments.of("key1: ${VAR&}\n", mapOf(entry("key1", "${VAR&}"))),
         // Environment variable substitution only takes place in scalar values of maps
-        Arguments.of("${env:STR_1}: value1\n", mapOf(entry("${env:STR_1}", "value1"))),
+        Arguments.of("${STR_1}: value1\n", mapOf(entry("${STR_1}", "value1"))),
         Arguments.of(
-            "key1:\n  ${env:STR_1}: value1\n",
-            mapOf(entry("key1", mapOf(entry("${env:STR_1}", "value1"))))),
+            "key1:\n  ${STR_1}: value1\n",
+            mapOf(entry("key1", mapOf(entry("${STR_1}", "value1"))))),
         Arguments.of(
-            "key1:\n - ${env:STR_1}\n",
-            mapOf(entry("key1", Collections.singletonList("${env:STR_1}")))));
+            "key1:\n - ${STR_1}\n", mapOf(entry("key1", Collections.singletonList("${STR_1}")))));
   }
 
   private static <K, V> Map.Entry<K, V> entry(K key, @Nullable V value) {
@@ -446,15 +457,15 @@ class ConfigurationReaderTest {
             + "    - batch:\n"
             + "        exporter:\n"
             + "          otlp:\n"
-            + "            endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}\n"
+            + "            endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT}\n"
             + "    - batch:\n"
             + "        exporter:\n"
             + "          otlp:\n"
-            + "            endpoint: \"${env:UNSET_ENV_VAR}\"\n";
+            + "            endpoint: \"${UNSET_ENV_VAR}\"\n";
     Map<String, String> envVars = new HashMap<>();
     envVars.put("OTEL_EXPORTER_OTLP_ENDPOINT", "http://collector:4317");
     OpenTelemetryConfiguration model =
-        ConfigurationReader.parse(
+        FileConfiguration.parse(
             new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)), envVars);
     assertThat(model)
         .isEqualTo(

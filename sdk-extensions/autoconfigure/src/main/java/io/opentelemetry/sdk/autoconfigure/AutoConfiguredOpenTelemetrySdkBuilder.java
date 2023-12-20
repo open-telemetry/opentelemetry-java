@@ -491,10 +491,9 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     }
     try {
       Class<?> configurationFactory =
-          Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.ConfigurationFactory");
-      Method parseAndInterpret =
-          configurationFactory.getMethod("parseAndInterpret", InputStream.class);
-      OpenTelemetrySdk sdk = (OpenTelemetrySdk) parseAndInterpret.invoke(null, fis);
+          Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfiguration");
+      Method parseAndCreate = configurationFactory.getMethod("parseAndCreate", InputStream.class);
+      OpenTelemetrySdk sdk = (OpenTelemetrySdk) parseAndCreate.invoke(null, fis);
       // Note: can't access file configuration resource without reflection so setting a dummy
       // resource
       return AutoConfiguredOpenTelemetrySdk.create(sdk, Resource.getDefault(), config);
