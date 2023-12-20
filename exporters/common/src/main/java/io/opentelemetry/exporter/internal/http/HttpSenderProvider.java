@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.internal.http;
 
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -23,12 +24,14 @@ import javax.net.ssl.X509TrustManager;
 public interface HttpSenderProvider {
 
   /** Returns a {@link HttpSender} configured with the provided parameters. */
+  @SuppressWarnings("TooManyParameters")
   HttpSender createSender(
       String endpoint,
       boolean compressionEnabled,
       String contentType,
       long timeoutNanos,
-      Supplier<Map<String, String>> headerSupplier,
+      long connectTimeout,
+      Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable Authenticator authenticator,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,

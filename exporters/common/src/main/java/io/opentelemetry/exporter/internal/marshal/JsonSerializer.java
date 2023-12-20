@@ -109,7 +109,7 @@ final class JsonSerializer extends Serializer {
   }
 
   @Override
-  protected void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
+  public void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
     generator.writeBinaryField(field.getJsonName(), value);
   }
 

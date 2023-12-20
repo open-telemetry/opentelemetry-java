@@ -1,0 +1,5 @@
+Comparing source compatibility of  against 
+***  MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.testing.assertj.AbstractPointAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	GENERIC TEMPLATES: === PointAssertT:io.opentelemetry.sdk.testing.assertj.AbstractPointAssert<PointAssertT,PointT><PointAssertT,PointT>, === PointT:io.opentelemetry.sdk.metrics.data.PointData
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.AbstractPointAssert hasAttributesSatisfying(java.util.function.Consumer<io.opentelemetry.api.common.Attributes>)

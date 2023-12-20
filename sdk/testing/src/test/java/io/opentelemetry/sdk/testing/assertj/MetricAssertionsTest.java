@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
@@ -60,9 +61,9 @@ class MetricAssertionsTest {
   private static final InstrumentationScopeInfo INSTRUMENTATION_SCOPE_INFO =
       InstrumentationScopeInfo.builder("opentelemetry").setVersion("1.0").build();
 
-  private static final AttributeKey<String> DOG = AttributeKey.stringKey("dog");
-  private static final AttributeKey<String> BEAR = AttributeKey.stringKey("bear");
-  private static final AttributeKey<String> CAT = AttributeKey.stringKey("cat");
+  private static final AttributeKey<String> DOG = stringKey("dog");
+  private static final AttributeKey<String> BEAR = stringKey("bear");
+  private static final AttributeKey<String> CAT = stringKey("cat");
   private static final AttributeKey<Boolean> WARM = AttributeKey.booleanKey("warm");
   private static final AttributeKey<Long> TEMPERATURE = AttributeKey.longKey("temperature");
   private static final AttributeKey<Double> LENGTH = AttributeKey.doubleKey("length");
@@ -317,7 +318,7 @@ class MetricAssertionsTest {
                         attributes ->
                             assertThat(attributes)
                                 .hasSize(2)
-                                .containsEntry(AttributeKey.stringKey("dog"), "bark")
+                                .containsEntry(stringKey("dog"), "bark")
                                 .hasEntrySatisfying(DOG, value -> assertThat(value).hasSize(4))
                                 .hasEntrySatisfying(
                                     AttributeKey.booleanKey("dog is cute"),
@@ -454,7 +455,19 @@ class MetricAssertionsTest {
                                 equalTo(CONDITIONS, Arrays.asList(false, true)),
                                 equalTo(SCORES, Arrays.asList(0L, 1L)),
                                 equalTo(COINS, Arrays.asList(0.01, 0.05, 0.1)),
-                                satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))));
+                                satisfies(LENGTH, val -> val.isCloseTo(1, offset(0.3))))
+                            .hasAttributesSatisfying(
+                                attributes ->
+                                    assertThat(attributes)
+                                        .hasSize(8)
+                                        .containsEntry(stringKey("bear"), "mya")
+                                        .containsEntry("warm", true)
+                                        .containsEntry("temperature", 30L)
+                                        .containsEntry("colors", "red", "blue")
+                                        .containsEntry("conditions", false, true)
+                                        .containsEntry("scores", 0L, 1L)
+                                        .containsEntry("coins", 0.01, 0.05, 0.1)
+                                        .containsEntry("length", 1.2))));
   }
 
   @Test
@@ -500,7 +513,7 @@ class MetricAssertionsTest {
                             resource.hasAttributesSatisfying(
                                 attributes ->
                                     assertThat(attributes)
-                                        .containsEntry(AttributeKey.stringKey("dog"), "meow"))))
+                                        .containsEntry(stringKey("dog"), "meow"))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
@@ -773,6 +786,29 @@ class MetricAssertionsTest {
                                         satisfies(SCORES, val -> val.containsExactly(0L, 1L)),
                                         satisfies(
                                             COINS, val -> val.containsExactly(0.01, 0.05, 0.1))))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_GAUGE_METRIC)
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point -> point.hasAttributes(Attributes.empty()),
+                                point ->
+                                    point.hasAttributesSatisfying(
+                                        attributes ->
+                                            assertThat(attributes)
+                                                .hasSize(8)
+                                                .containsEntry(
+                                                    stringKey("bear"),
+                                                    "WRONG BEAR NAME") // Failed here
+                                                .containsEntry("warm", true)
+                                                .containsEntry("temperature", 30L)
+                                                .containsEntry("colors", "red", "blue")
+                                                .containsEntry("conditions", false, true)
+                                                .containsEntry("scores", 0L, 1L)
+                                                .containsEntry("coins", 0.01, 0.05, 0.1)
+                                                .containsEntry("length", 1.2)))))
         .isInstanceOf(AssertionError.class);
   }
 

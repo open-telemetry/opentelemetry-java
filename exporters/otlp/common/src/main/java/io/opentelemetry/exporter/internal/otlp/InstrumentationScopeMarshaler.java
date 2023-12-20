@@ -37,7 +37,8 @@ public final class InstrumentationScopeMarshaler extends MarshalerWithSize {
       // a few times until the cache gets filled which is fine.
       byte[] name = MarshalerUtil.toBytes(scopeInfo.getName());
       byte[] version = MarshalerUtil.toBytes(scopeInfo.getVersion());
-      KeyValueMarshaler[] attributes = KeyValueMarshaler.createRepeated(scopeInfo.getAttributes());
+      KeyValueMarshaler[] attributes =
+          KeyValueMarshaler.createForAttributes(scopeInfo.getAttributes());
 
       RealInstrumentationScopeMarshaler realMarshaler =
           new RealInstrumentationScopeMarshaler(name, version, attributes);

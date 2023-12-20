@@ -178,7 +178,7 @@ public abstract class Serializer implements AutoCloseable {
     writeBytes(field, value);
   }
 
-  protected abstract void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException;
+  public abstract void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException;
 
   protected abstract void writeStartMessage(ProtoFieldInfo field, int protoMessageSize)
       throws IOException;

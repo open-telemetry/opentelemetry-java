@@ -326,15 +326,31 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
   @Test
   void withHeaders() {
+    AtomicInteger count = new AtomicInteger();
     TelemetryExporter<T> exporter =
-        exporterBuilder().setEndpoint(server.httpUri() + path).addHeader("key", "value").build();
+        exporterBuilder()
+            .setEndpoint(server.httpUri() + path)
+            .addHeader("key1", "value1")
+            .setHeaders(() -> Collections.singletonMap("key2", "value" + count.incrementAndGet()))
+            .build();
     try {
+      // Export twice to ensure header supplier gets invoked twice
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      result = exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+
       assertThat(httpRequests)
-          .singleElement()
-          .satisfies(req -> assertThat(req.headers().get("key")).isEqualTo("value"));
+          .satisfiesExactly(
+              req -> {
+                assertThat(req.headers().get("key1")).isEqualTo("value1");
+                assertThat(req.headers().get("key2")).isEqualTo("value" + (count.get() - 1));
+              },
+              req -> {
+                assertThat(req.headers().get("key1")).isEqualTo("value1");
+                assertThat(req.headers().get("key2")).isEqualTo("value" + count.get());
+              });
     } finally {
       exporter.shutdown();
     }
@@ -461,6 +477,28 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
       return Stream.of(
           arguments(named("PEM", Files.readAllBytes(clientCertificate.privateKeyFile().toPath()))),
           arguments(named("DER", clientCertificate.privateKey().getEncoded())));
+    }
+  }
+
+  @Test
+  @SuppressLogger(HttpExporter.class)
+  void connectTimeout() {
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            // Connecting to a non-routable IP address to trigger connection error
+            .setEndpoint("http://10.255.255.1")
+            .setConnectTimeout(Duration.ofMillis(1))
+            .build();
+    try {
+      long startTimeMillis = System.currentTimeMillis();
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+      // Assert that the export request fails well before the default connect timeout of 10s
+      assertThat(System.currentTimeMillis() - startTimeMillis)
+          .isLessThan(TimeUnit.SECONDS.toMillis(1));
+    } finally {
+      exporter.shutdown();
     }
   }
 
@@ -602,6 +640,15 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThatCode(() -> exporterBuilder().setTimeout(Duration.ofMillis(10)))
         .doesNotThrowAnyException();
 
+    assertThatCode(() -> exporterBuilder().setConnectTimeout(0, TimeUnit.MILLISECONDS))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> exporterBuilder().setConnectTimeout(Duration.ofMillis(0)))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> exporterBuilder().setConnectTimeout(10, TimeUnit.MILLISECONDS))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> exporterBuilder().setConnectTimeout(Duration.ofMillis(10)))
+        .doesNotThrowAnyException();
+
     assertThatCode(() -> exporterBuilder().setEndpoint("http://localhost:4318"))
         .doesNotThrowAnyException();
     assertThatCode(() -> exporterBuilder().setEndpoint("http://localhost/"))
@@ -632,6 +679,16 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         .isInstanceOf(NullPointerException.class)
         .hasMessage("unit");
     assertThatThrownBy(() -> exporterBuilder().setTimeout(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("timeout");
+
+    assertThatThrownBy(() -> exporterBuilder().setConnectTimeout(-1, TimeUnit.MILLISECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("timeout must be non-negative");
+    assertThatThrownBy(() -> exporterBuilder().setConnectTimeout(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
+    assertThatThrownBy(() -> exporterBuilder().setConnectTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
 
@@ -666,6 +723,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     TelemetryExporter<T> exporter =
         exporterBuilder()
             .setTimeout(Duration.ofSeconds(5))
+            .setConnectTimeout(Duration.ofSeconds(4))
             .setEndpoint("http://localhost:4318")
             .setCompression("gzip")
             .addHeader("foo", "bar")
@@ -728,6 +786,9 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
                   + ", "
+                  + "connectTimeoutNanos="
+                  + TimeUnit.SECONDS.toNanos(10)
+                  + ", "
                   + "compressionEnabled=false, "
                   + "exportAsJson=false, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
@@ -739,6 +800,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     telemetryExporter =
         exporterBuilder()
             .setTimeout(Duration.ofSeconds(5))
+            .setConnectTimeout(Duration.ofSeconds(4))
             .setEndpoint("http://example:4318/v1/logs")
             .setCompression("gzip")
             .addHeader("foo", "bar")
@@ -763,6 +825,9 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + "endpoint=http://example:4318/v1/[a-zA-Z]*, "
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(5)
+                  + ", "
+                  + "connectTimeoutNanos="
+                  + TimeUnit.SECONDS.toNanos(4)
                   + ", "
                   + "compressionEnabled=true, "
                   + "exportAsJson=false, "

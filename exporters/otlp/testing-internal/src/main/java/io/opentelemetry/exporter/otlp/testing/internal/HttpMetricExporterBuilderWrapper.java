@@ -10,7 +10,9 @@ import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
@@ -41,6 +43,18 @@ public class HttpMetricExporterBuilderWrapper implements TelemetryExporterBuilde
   }
 
   @Override
+  public TelemetryExporterBuilder<MetricData> setConnectTimeout(long timeout, TimeUnit unit) {
+    builder.setConnectTimeout(timeout, unit);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<MetricData> setConnectTimeout(Duration timeout) {
+    builder.setConnectTimeout(timeout);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<MetricData> setCompression(String compression) {
     builder.setCompression(compression);
     return this;
@@ -49,6 +63,13 @@ public class HttpMetricExporterBuilderWrapper implements TelemetryExporterBuilde
   @Override
   public TelemetryExporterBuilder<MetricData> addHeader(String key, String value) {
     builder.addHeader(key, value);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<MetricData> setHeaders(
+      Supplier<Map<String, String>> headerSupplier) {
+    builder.setHeaders(headerSupplier);
     return this;
   }
 
