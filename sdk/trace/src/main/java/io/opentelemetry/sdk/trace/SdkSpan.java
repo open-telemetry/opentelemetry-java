@@ -440,6 +440,13 @@ final class SdkSpan implements ReadWriteSpan {
     if (attributes == null) {
       attributes = Attributes.empty();
     }
+    LinkData link =
+        LinkData.create(
+            spanContext,
+            AttributeUtil.applyAttributesLimit(
+                attributes,
+                spanLimits.getMaxNumberOfAttributesPerLink(),
+                spanLimits.getMaxAttributeValueLength()));
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling addLink() on an ended Span.");
@@ -449,13 +456,7 @@ final class SdkSpan implements ReadWriteSpan {
         links = new ArrayList<>(spanLimits.getMaxNumberOfLinks());
       }
       if (links.size() < spanLimits.getMaxNumberOfLinks()) {
-        links.add(
-            LinkData.create(
-                spanContext,
-                AttributeUtil.applyAttributesLimit(
-                    attributes,
-                    spanLimits.getMaxNumberOfAttributesPerLink(),
-                    spanLimits.getMaxAttributeValueLength())));
+        links.add(link);
       }
       totalRecordedLinks++;
     }
