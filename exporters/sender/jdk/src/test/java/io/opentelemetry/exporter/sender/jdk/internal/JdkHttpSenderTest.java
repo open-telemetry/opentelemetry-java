@@ -28,8 +28,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpConnectTimeoutException;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLException;
 import org.assertj.core.api.Assertions;
@@ -78,17 +76,10 @@ class JdkHttpSenderTest {
                 .build());
   }
 
-  @SuppressWarnings("SystemOut")
   @Test
   void exportAsJson() {
     HttpExporter<Marshaler> exporter =
         new HttpExporterBuilder<>("jdk", "test", server.httpUri().toASCIIString())
-            .setAuthenticator(
-                () -> {
-                  Map<String, String> headers = new HashMap<>();
-                  headers.put("Authorization", "auth");
-                  return headers;
-                })
             .exportAsJson()
             .build();
 
@@ -96,7 +87,6 @@ class JdkHttpSenderTest {
 
     CompletableResultCode result = exporter.export(new NoOpMarshaler(), 0);
     result.join(1, TimeUnit.MINUTES);
-    exporter.shutdown().join(1, TimeUnit.MINUTES);
     Assertions.assertThat(result.isSuccess()).isTrue();
   }
 

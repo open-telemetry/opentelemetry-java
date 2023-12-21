@@ -73,11 +73,11 @@ public final class HttpExporter<T extends Marshaler> {
 
           exporterMetrics.addFailed(numItems);
 
-          byte[] body;
+          byte[] body = null;
           try {
             body = httpResponse.responseBody();
           } catch (IOException ex) {
-            logger.log(Level.FIND, "Unable to obtain response body", ex);
+            logger.log(Level.FINE, "Unable to obtain response body", ex);
           }
 
           String status = extractErrorStatus(httpResponse.statusMessage(), body);
