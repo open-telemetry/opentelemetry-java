@@ -62,8 +62,8 @@ class AggregationFactoryTest {
         Arguments.of(
             new Aggregation()
                 .withBase2ExponentialBucketHistogram(
-                    new Base2ExponentialBucketHistogram().withMaxSize(1).withMaxScale(2)),
-            io.opentelemetry.sdk.metrics.Aggregation.base2ExponentialBucketHistogram(1, 2)),
+                    new Base2ExponentialBucketHistogram().withMaxSize(2).withMaxScale(2)),
+            io.opentelemetry.sdk.metrics.Aggregation.base2ExponentialBucketHistogram(2, 2)),
         Arguments.of(
             new Aggregation()
                 .withExplicitBucketHistogram(new ExplicitBucketHistogram().withBoundaries(null)),
