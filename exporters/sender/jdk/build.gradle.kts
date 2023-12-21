@@ -11,6 +11,7 @@ dependencies {
   implementation(project(":sdk:common"))
 
   compileOnly("com.fasterxml.jackson.core:jackson-core")
+  testImplementation("com.linecorp.armeria:armeria-junit5")
 }
 
 tasks {
