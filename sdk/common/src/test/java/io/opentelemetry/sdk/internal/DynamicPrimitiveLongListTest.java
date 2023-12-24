@@ -13,11 +13,28 @@ import org.junit.jupiter.api.Test;
 public class DynamicPrimitiveLongListTest {
 
   @Test
+  public void subArrayCapacityMustBePositive() {
+    assertThatThrownBy(() -> {
+          int subArrayCapacity = 0;
+          new DynamicPrimitiveLongList(subArrayCapacity);
+        }
+    ).isInstanceOf(IllegalArgumentException.class);
+
+    assertThatThrownBy(() -> {
+          int subArrayCapacity = -2;
+          new DynamicPrimitiveLongList(subArrayCapacity);
+        }
+    ).isInstanceOf(IllegalArgumentException.class);
+
+  }
+
+  @Test
   public void newListIsEmpty() {
     DynamicPrimitiveLongList list = new DynamicPrimitiveLongList();
     assertThat(list).isEmpty();
     assertThatThrownBy(() -> list.getLong(0)).isInstanceOf(IndexOutOfBoundsException.class);
   }
+
 
   @Test
   public void resizeListAndSetElement() {
@@ -58,6 +75,12 @@ public class DynamicPrimitiveLongListTest {
   }
 
   @Test
+  public void resizeToNegativeNumber() {
+    assertThatThrownBy( () -> DynamicPrimitiveLongList.of(0, 10, 20).resize(-2))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
   public void resizeAndFillThenResizeLargerAndCheck() {
     DynamicPrimitiveLongList list = new DynamicPrimitiveLongList();
     list.resize(6);
@@ -85,5 +108,14 @@ public class DynamicPrimitiveLongListTest {
 
     list = DynamicPrimitiveLongList.of();
     assertThat(list).isEmpty();
+  }
+
+  @Test
+  public void set() {
+    DynamicPrimitiveLongList list = DynamicPrimitiveLongList.of(0, 10, 20);
+    assertThat(list.get(1)).isEqualTo(10L);
+
+    list.set(1, 100L);
+    assertThat(list.get(1)).isEqualTo(100L);
   }
 }

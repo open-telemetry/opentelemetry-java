@@ -125,6 +125,22 @@ class DoubleBase2ExponentialHistogramBucketsTest {
   }
 
   @Test
+  public void testGetBucketCountsWithReusableListWithEmptyCounts() {
+    // Can only effectively test recording of one value here due to downscaling required.
+    // More complex recording/downscaling operations are tested in the aggregator.
+    DoubleBase2ExponentialHistogramBuckets b = newBuckets(MemoryMode.REUSABLE_DATA);
+    assertThat(b.getBucketCounts()).isEmpty();
+
+    DynamicPrimitiveLongList reusableLongList = new DynamicPrimitiveLongList();
+    DynamicPrimitiveLongList bucketCounts = b.getBucketCountsUsingReusableList(reusableLongList);
+    assertThat(bucketCounts).isEmpty();
+
+    // Should fill reusableLongList and return it
+    assertThat(reusableLongList).isSameAs(bucketCounts);
+  }
+
+
+  @Test
   public void testDownScaleReusableCountIsOkWhenUsedForSecondTime() {
     DoubleBase2ExponentialHistogramBuckets immutableDataBasedBuckets =
         newBuckets(MemoryMode.IMMUTABLE_DATA);

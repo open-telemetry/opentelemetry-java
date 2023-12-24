@@ -118,9 +118,11 @@ public class DynamicPrimitiveLongList extends AbstractList<Long> {
   }
 
   private void ensureCapacity(int minCapacity) {
+    // A faster way to do ceil(minCapacity/subArrayCapacity)
     int requiredArrays = (minCapacity + subarrayCapacity - 1) / subarrayCapacity;
+
     if (requiredArrays > arrayCount) {
-      arrays = java.util.Arrays.copyOf(arrays, requiredArrays);
+      arrays = java.util.Arrays.copyOf(arrays, /* newLength= */ requiredArrays);
       for (int i = arrayCount; i < requiredArrays; i++) {
         arrays[i] = new long[subarrayCapacity];
       }
