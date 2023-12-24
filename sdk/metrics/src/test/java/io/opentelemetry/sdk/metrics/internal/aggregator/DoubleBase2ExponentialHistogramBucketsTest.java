@@ -139,7 +139,6 @@ class DoubleBase2ExponentialHistogramBucketsTest {
     assertThat(reusableLongList).isSameAs(bucketCounts);
   }
 
-
   @Test
   public void testDownScaleReusableCountIsOkWhenUsedForSecondTime() {
     DoubleBase2ExponentialHistogramBuckets immutableDataBasedBuckets =

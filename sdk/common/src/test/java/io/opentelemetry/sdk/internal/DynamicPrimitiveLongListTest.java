@@ -14,18 +14,19 @@ public class DynamicPrimitiveLongListTest {
 
   @Test
   public void subArrayCapacityMustBePositive() {
-    assertThatThrownBy(() -> {
-          int subArrayCapacity = 0;
-          new DynamicPrimitiveLongList(subArrayCapacity);
-        }
-    ).isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(
+            () -> {
+              int subArrayCapacity = 0;
+              new DynamicPrimitiveLongList(subArrayCapacity);
+            })
+        .isInstanceOf(IllegalArgumentException.class);
 
-    assertThatThrownBy(() -> {
-          int subArrayCapacity = -2;
-          new DynamicPrimitiveLongList(subArrayCapacity);
-        }
-    ).isInstanceOf(IllegalArgumentException.class);
-
+    assertThatThrownBy(
+            () -> {
+              int subArrayCapacity = -2;
+              new DynamicPrimitiveLongList(subArrayCapacity);
+            })
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
@@ -34,7 +35,6 @@ public class DynamicPrimitiveLongListTest {
     assertThat(list).isEmpty();
     assertThatThrownBy(() -> list.getLong(0)).isInstanceOf(IndexOutOfBoundsException.class);
   }
-
 
   @Test
   public void resizeListAndSetElement() {
@@ -76,7 +76,7 @@ public class DynamicPrimitiveLongListTest {
 
   @Test
   public void resizeToNegativeNumber() {
-    assertThatThrownBy( () -> DynamicPrimitiveLongList.of(0, 10, 20).resize(-2))
+    assertThatThrownBy(() -> DynamicPrimitiveLongList.of(0, 10, 20).resize(-2))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
