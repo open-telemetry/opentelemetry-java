@@ -53,7 +53,7 @@ class JdkHttpSenderTest {
             mockHttpClient,
             "http://10.255.255.1", // Connecting to a non-routable IP address to trigger connection
             // timeout
-            false,
+            null,
             "text/plain",
             Duration.ofSeconds(10).toNanos(),
             Collections::emptyMap,
@@ -98,7 +98,7 @@ class JdkHttpSenderTest {
     sender =
         new JdkHttpSender(
             "http://localhost",
-            true,
+            null,
             "text/plain",
             1,
             TimeUnit.SECONDS.toNanos(10),

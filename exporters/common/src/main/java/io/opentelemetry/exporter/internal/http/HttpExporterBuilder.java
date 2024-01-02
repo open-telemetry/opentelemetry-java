@@ -11,6 +11,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
+import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
@@ -19,6 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
@@ -48,8 +50,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private String endpoint;
 
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
+  @Nullable private Compressor compressor;
   private long connectTimeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_CONNECT_TIMEOUT_SECS);
-  private boolean compressionEnabled = false;
   private boolean exportAsJson = false;
   private final Map<String, String> constantHeaders = new HashMap<>();
   private Supplier<Map<String, String>> headerSupplier = Collections::emptyMap;
@@ -82,8 +84,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public HttpExporterBuilder<T> setCompression(String compressionMethod) {
-    this.compressionEnabled = compressionMethod.equals("gzip");
+  public HttpExporterBuilder<T> setCompression(@Nullable Compressor compressor) {
+    this.compressor = compressor;
     return this;
   }
 
@@ -141,7 +143,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     copy.timeoutNanos = timeoutNanos;
     copy.connectTimeoutNanos = connectTimeoutNanos;
     copy.exportAsJson = exportAsJson;
-    copy.compressionEnabled = compressionEnabled;
+    copy.compressor = compressor;
     copy.constantHeaders.putAll(constantHeaders);
     copy.headerSupplier = headerSupplier;
     copy.tlsConfigHelper = tlsConfigHelper.copy();
@@ -179,7 +181,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     HttpSender httpSender =
         httpSenderProvider.createSender(
             endpoint,
-            compressionEnabled,
+            compressor,
             exportAsJson ? "application/json" : "application/x-protobuf",
             timeoutNanos,
             connectTimeoutNanos,
@@ -202,8 +204,10 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     joiner.add("type=" + type);
     joiner.add("endpoint=" + endpoint);
     joiner.add("timeoutNanos=" + timeoutNanos);
+    joiner.add(
+        "compressorEncoding="
+            + Optional.ofNullable(compressor).map(Compressor::getEncoding).orElse(null));
     joiner.add("connectTimeoutNanos=" + connectTimeoutNanos);
-    joiner.add("compressionEnabled=" + compressionEnabled);
     joiner.add("exportAsJson=" + exportAsJson);
     StringJoiner headersJoiner = new StringJoiner(", ", "Headers{", "}");
     constantHeaders.forEach((key, value) -> headersJoiner.add(key + "=OBFUSCATED"));

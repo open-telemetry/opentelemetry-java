@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.sender.jdk.internal;
 
+import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.http.HttpSender;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -29,7 +30,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -52,7 +52,7 @@ public final class JdkHttpSender implements HttpSender {
   private final ExecutorService executorService = Executors.newFixedThreadPool(5);
   private final HttpClient client;
   private final URI uri;
-  private final boolean compressionEnabled;
+  @Nullable private final Compressor compressor;
   private final String contentType;
   private final long timeoutNanos;
   private final Supplier<Map<String, List<String>>> headerSupplier;
@@ -62,7 +62,7 @@ public final class JdkHttpSender implements HttpSender {
   JdkHttpSender(
       HttpClient client,
       String endpoint,
-      boolean compressionEnabled,
+      @Nullable Compressor compressor,
       String contentType,
       long timeoutNanos,
       Supplier<Map<String, List<String>>> headerSupplier,
@@ -73,7 +73,7 @@ public final class JdkHttpSender implements HttpSender {
     } catch (URISyntaxException e) {
       throw new IllegalArgumentException(e);
     }
-    this.compressionEnabled = compressionEnabled;
+    this.compressor = compressor;
     this.contentType = contentType;
     this.timeoutNanos = timeoutNanos;
     this.headerSupplier = headerSupplier;
@@ -82,7 +82,7 @@ public final class JdkHttpSender implements HttpSender {
 
   JdkHttpSender(
       String endpoint,
-      boolean compressionEnabled,
+      @Nullable Compressor compressor,
       String contentType,
       long timeoutNanos,
       long connectTimeoutNanos,
@@ -92,7 +92,7 @@ public final class JdkHttpSender implements HttpSender {
     this(
         configureClient(sslContext, connectTimeoutNanos),
         endpoint,
-        compressionEnabled,
+        compressor,
         contentType,
         timeoutNanos,
         headerSupplier,
@@ -148,10 +148,10 @@ public final class JdkHttpSender implements HttpSender {
 
     NoCopyByteArrayOutputStream os = threadLocalBaos.get();
     os.reset();
-    if (compressionEnabled) {
-      requestBuilder.header("Content-Encoding", "gzip");
-      try (GZIPOutputStream gzos = new GZIPOutputStream(os)) {
-        marshaler.accept(gzos);
+    if (compressor != null) {
+      requestBuilder.header("Content-Encoding", compressor.getEncoding());
+      try (OutputStream compressed = compressor.compress(os)) {
+        marshaler.accept(compressed);
       } catch (IOException e) {
         throw new IllegalStateException(e);
       }
