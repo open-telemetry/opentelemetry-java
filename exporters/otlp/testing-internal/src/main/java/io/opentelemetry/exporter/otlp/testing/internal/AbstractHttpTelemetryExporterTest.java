@@ -30,7 +30,7 @@ import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.otlp.testing.internal.lz4.Lz4Compressor;
+import io.opentelemetry.exporter.otlp.testing.internal.compressor.Base64Compressor;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
@@ -51,6 +51,7 @@ import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -65,7 +66,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
-import net.jpountz.lz4.LZ4FrameInputStream;
 import okio.Buffer;
 import okio.GzipSource;
 import okio.Okio;
@@ -192,10 +192,11 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         gzipSource.read(buffer, Integer.MAX_VALUE);
         return buffer.readByteArray();
       }
-      if (requestHeaders.contains("content-encoding", "lz4")) {
+      if (requestHeaders.contains("content-encoding", "base64")) {
         Buffer buffer = new Buffer();
-        Source lz4Source = Okio.source(new LZ4FrameInputStream(new ByteArrayInputStream(content)));
-        lz4Source.read(buffer, Integer.MAX_VALUE);
+        Source base64Source =
+            Okio.source(Base64.getDecoder().wrap(new ByteArrayInputStream(content)));
+        base64Source.read(buffer, Integer.MAX_VALUE);
         return buffer.readByteArray();
       }
       return content;
@@ -319,17 +320,17 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @Test
   void compressionWithSpiCompressor() {
     TelemetryExporter<T> exporter =
-        exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("lz4").build();
+        exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("base64").build();
     assertThat(exporter.unwrap())
         .extracting("delegate.httpSender.compressor")
-        .isEqualTo(Lz4Compressor.getInstance());
+        .isEqualTo(Base64Compressor.getInstance());
     try {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
       assertThat(httpRequests)
           .singleElement()
-          .satisfies(req -> assertThat(req.headers().get("content-encoding")).isEqualTo("lz4"));
+          .satisfies(req -> assertThat(req.headers().get("content-encoding")).isEqualTo("base64"));
     } finally {
       exporter.shutdown();
     }
@@ -686,7 +687,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
     assertThatCode(() -> exporterBuilder().setCompression("gzip")).doesNotThrowAnyException();
     // SPI compressor available for this test but not packaged with OTLP exporter
-    assertThatCode(() -> exporterBuilder().setCompression("lz4")).doesNotThrowAnyException();
+    assertThatCode(() -> exporterBuilder().setCompression("base64")).doesNotThrowAnyException();
     assertThatCode(() -> exporterBuilder().setCompression("none")).doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().addHeader("foo", "bar").addHeader("baz", "qux"))
@@ -739,7 +740,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThatThrownBy(() -> exporterBuilder().setCompression("foo"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-            "Unsupported compressionMethod. Compression method must be \"none\" or one of: [lz4,gzip]");
+            "Unsupported compressionMethod. Compression method must be \"none\" or one of: [base64,gzip]");
   }
 
   @Test
