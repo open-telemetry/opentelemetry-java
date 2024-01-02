@@ -24,8 +24,10 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.exporter.internal.TlsUtil;
+import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.otlp.testing.internal.compressor.Base64Compressor;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
@@ -251,9 +253,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       assumeThat(exporter.unwrap())
           .extracting("delegate.grpcSender")
           .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpGrpcSender"));
-      assertThat(exporter.unwrap())
-          .extracting("delegate.grpcSender.compressionEnabled")
-          .isEqualTo(false);
+      assertThat(exporter.unwrap()).extracting("delegate.grpcSender.compressor").isNull();
     } finally {
       exporter.shutdown();
     }
@@ -269,8 +269,25 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           .extracting("delegate.grpcSender")
           .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpGrpcSender"));
       assertThat(exporter.unwrap())
-          .extracting("delegate.grpcSender.compressionEnabled")
-          .isEqualTo(true);
+          .extracting("delegate.grpcSender.compressor")
+          .isEqualTo(GzipCompressor.getInstance());
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void compressionWithSpiCompressor() {
+    TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpUri().toString()).setCompression("base64").build();
+    try {
+      // UpstreamGrpcSender doesn't support compression, so we skip the assertion
+      assumeThat(exporter.unwrap())
+          .extracting("delegate.grpcSender")
+          .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpGrpcSender"));
+      assertThat(exporter.unwrap())
+          .extracting("delegate.grpcSender.compressor")
+          .isEqualTo(Base64Compressor.getInstance());
     } finally {
       exporter.shutdown();
     }
@@ -682,6 +699,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         .doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().setCompression("gzip")).doesNotThrowAnyException();
+    // SPI compressor available for this test but not packaged with OTLP exporter
+    assertThatCode(() -> exporterBuilder().setCompression("base64")).doesNotThrowAnyException();
     assertThatCode(() -> exporterBuilder().setCompression("none")).doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().addHeader("foo", "bar").addHeader("baz", "qux"))
@@ -724,7 +743,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThatThrownBy(() -> exporterBuilder().setCompression("foo"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-            "Unsupported compression method. Supported compression methods include: gzip, none.");
+            "Unsupported compressionMethod. Compression method must be \"none\" or one of: [base64,gzip]");
   }
 
   @Test
@@ -800,7 +819,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
                   + ", "
-                  + "compressionEnabled=false, "
+                  + "compressorEncoding=null, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
                   + ".*" // Maybe additional grpcChannel field
                   + "\\}");
@@ -837,7 +856,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(5)
                   + ", "
-                  + "compressionEnabled=true, "
+                  + "compressorEncoding=gzip, "
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
                   + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3\\}"
                   + ".*" // Maybe additional grpcChannel field

@@ -12,6 +12,7 @@ import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
+import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
@@ -21,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
@@ -51,7 +53,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
   private long timeoutNanos;
   private URI endpoint;
-  private boolean compressionEnabled = false;
+  @Nullable private Compressor compressor;
   private final Map<String, String> constantHeaders = new HashMap<>();
   private Supplier<Map<String, String>> headerSupplier = Collections::emptyMap;
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
@@ -95,8 +97,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public GrpcExporterBuilder<T> setCompression(String compressionMethod) {
-    this.compressionEnabled = compressionMethod.equals("gzip");
+  public GrpcExporterBuilder<T> setCompression(@Nullable Compressor compressor) {
+    this.compressor = compressor;
     return this;
   }
 
@@ -150,7 +152,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
     copy.timeoutNanos = timeoutNanos;
     copy.endpoint = endpoint;
-    copy.compressionEnabled = compressionEnabled;
+    copy.compressor = compressor;
     copy.constantHeaders.putAll(constantHeaders);
     copy.headerSupplier = headerSupplier;
     copy.tlsConfigHelper = tlsConfigHelper.copy();
@@ -189,7 +191,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
         grpcSenderProvider.createSender(
             endpoint,
             grpcEndpointPath,
-            compressionEnabled,
+            compressor,
             timeoutNanos,
             headerSupplier,
             grpcChannel,
@@ -212,7 +214,9 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     joiner.add("endpoint=" + endpoint.toString());
     joiner.add("endpointPath=" + grpcEndpointPath);
     joiner.add("timeoutNanos=" + timeoutNanos);
-    joiner.add("compressionEnabled=" + compressionEnabled);
+    joiner.add(
+        "compressorEncoding="
+            + Optional.ofNullable(compressor).map(Compressor::getEncoding).orElse(null));
     StringJoiner headersJoiner = new StringJoiner(", ", "Headers{", "}");
     constantHeaders.forEach((key, value) -> headersJoiner.add(key + "=OBFUSCATED"));
     Map<String, String> headers = headerSupplier.get();

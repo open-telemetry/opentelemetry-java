@@ -7,10 +7,14 @@ package io.opentelemetry.exporter.otlp.trace;
 
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.joining;
 
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.internal.compression.Compressor;
+import io.opentelemetry.exporter.internal.compression.CompressorProvider;
+import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
@@ -18,6 +22,7 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.net.ssl.SSLContext;
@@ -105,15 +110,22 @@ public final class OtlpGrpcSpanExporterBuilder {
   }
 
   /**
-   * Sets the method used to compress payloads. If unset, compression is disabled. Currently
-   * supported compression methods include "gzip" and "none".
+   * Sets the method used to compress payloads. If unset, compression is disabled. Compression
+   * method "gzip" and "none" are supported out of the box. Support for additional compression
+   * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
    */
   public OtlpGrpcSpanExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
+    if (compressionMethod.equals("none")) {
+      delegate.setCompression(null);
+      return this;
+    }
+    Set<String> supportedCompressionMethods = CompressorUtil.supportedCompressors();
     checkArgument(
-        compressionMethod.equals("gzip") || compressionMethod.equals("none"),
-        "Unsupported compression method. Supported compression methods include: gzip, none.");
-    delegate.setCompression(compressionMethod);
+        supportedCompressionMethods.contains(compressionMethod),
+        "Unsupported compressionMethod. Compression method must be \"none\" or one of: "
+            + supportedCompressionMethods.stream().collect(joining(",", "[", "]")));
+    delegate.setCompression(CompressorUtil.resolveCompressor(compressionMethod));
     return this;
   }
 

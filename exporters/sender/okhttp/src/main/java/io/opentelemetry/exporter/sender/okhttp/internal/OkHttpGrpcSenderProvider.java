@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.grpc.Channel;
+import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcSender;
 import io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
@@ -32,7 +33,7 @@ public class OkHttpGrpcSenderProvider implements GrpcSenderProvider {
   public <T extends Marshaler> GrpcSender<T> createSender(
       URI endpoint,
       String endpointPath,
-      boolean compressionEnabled,
+      @Nullable Compressor compressor,
       long timeoutNanos,
       Supplier<Map<String, List<String>>> headersSupplier,
       @Nullable Object managedChannel,
@@ -42,7 +43,7 @@ public class OkHttpGrpcSenderProvider implements GrpcSenderProvider {
       @Nullable X509TrustManager trustManager) {
     return new OkHttpGrpcSender<>(
         endpoint.resolve(endpointPath).toString(),
-        compressionEnabled,
+        compressor,
         timeoutNanos,
         headersSupplier,
         retryPolicy,
