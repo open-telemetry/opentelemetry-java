@@ -26,7 +26,7 @@ class FileConfigurationTest {
   @RegisterExtension
   static final LogCapturer logCapturer =
       LogCapturer.create()
-          .captureForLogger(AutoConfiguredOpenTelemetrySdkBuilder.class.getName(), Level.INFO);
+          .captureForLogger(AutoConfiguredOpenTelemetrySdkBuilder.class.getName(), Level.TRACE);
 
   @Test
   void configFile(@TempDir Path tempDir) throws IOException {

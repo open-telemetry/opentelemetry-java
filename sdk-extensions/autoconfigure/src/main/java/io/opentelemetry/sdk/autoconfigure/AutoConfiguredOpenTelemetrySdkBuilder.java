@@ -483,7 +483,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     if (configurationFile == null || configurationFile.isEmpty()) {
       return null;
     }
-    logger.debug("Autoconfiguring from configuration file: " + configurationFile);
+    logger.fine("Autoconfiguring from configuration file: " + configurationFile);
     FileInputStream fis;
     try {
       fis = new FileInputStream(configurationFile);

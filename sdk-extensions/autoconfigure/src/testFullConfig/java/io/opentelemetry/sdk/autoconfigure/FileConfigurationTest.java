@@ -51,7 +51,7 @@ class FileConfigurationTest {
   @RegisterExtension
   static final LogCapturer logCapturer =
       LogCapturer.create()
-          .captureForLogger(AutoConfiguredOpenTelemetrySdkBuilder.class.getName(), Level.INFO);
+          .captureForLogger(AutoConfiguredOpenTelemetrySdkBuilder.class.getName(), Level.TRACE);
 
   @TempDir private Path tempDir;
   private Path configFilePath;
