@@ -17,6 +17,7 @@ import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.time.Duration;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -36,7 +37,7 @@ public final class OtlpHttpLogRecordExporterBuilder {
 
   OtlpHttpLogRecordExporterBuilder(HttpExporterBuilder<LogsRequestMarshaler> delegate) {
     this.delegate = delegate;
-    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+    OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeaders);
   }
 
   OtlpHttpLogRecordExporterBuilder() {
@@ -61,6 +62,30 @@ public final class OtlpHttpLogRecordExporterBuilder {
   public OtlpHttpLogRecordExporterBuilder setTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
     return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+  }
+
+  /**
+   * Sets the maximum time to wait for new connections to be established. If unset, defaults to
+   * {@value HttpExporterBuilder#DEFAULT_CONNECT_TIMEOUT_SECS}s.
+   *
+   * @since 1.33.0
+   */
+  public OtlpHttpLogRecordExporterBuilder setConnectTimeout(long timeout, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(timeout >= 0, "timeout must be non-negative");
+    delegate.setConnectTimeout(timeout, unit);
+    return this;
+  }
+
+  /**
+   * Sets the maximum time to wait for new connections to be established. If unset, defaults to
+   * {@value HttpExporterBuilder#DEFAULT_CONNECT_TIMEOUT_SECS}s.
+   *
+   * @since 1.33.0
+   */
+  public OtlpHttpLogRecordExporterBuilder setConnectTimeout(Duration timeout) {
+    requireNonNull(timeout, "timeout");
+    return setConnectTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
   }
 
   /**
@@ -92,9 +117,23 @@ public final class OtlpHttpLogRecordExporterBuilder {
     return this;
   }
 
-  /** Add header to requests. */
+  /**
+   * Add a constant header to requests. If the {@code key} collides with another constant header
+   * name or a one from {@link #setHeaders(Supplier)}, the values from both are included.
+   */
   public OtlpHttpLogRecordExporterBuilder addHeader(String key, String value) {
-    delegate.addHeader(key, value);
+    delegate.addConstantHeaders(key, value);
+    return this;
+  }
+
+  /**
+   * Set the supplier of headers to add to requests. If a key from the map collides with a constant
+   * from {@link #addHeader(String, String)}, the values from both are included.
+   *
+   * @since 1.33.0
+   */
+  public OtlpHttpLogRecordExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
+    delegate.setHeadersSupplier(headerSupplier);
     return this;
   }
 

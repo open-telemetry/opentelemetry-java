@@ -15,9 +15,10 @@ import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
-import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
@@ -39,6 +40,7 @@ import javax.net.ssl.X509TrustManager;
 @SuppressWarnings("checkstyle:JavadocMethod")
 public final class HttpExporterBuilder<T extends Marshaler> {
   public static final long DEFAULT_TIMEOUT_SECS = 10;
+  public static final long DEFAULT_CONNECT_TIMEOUT_SECS = 10;
 
   private static final Logger LOGGER = Logger.getLogger(HttpExporterBuilder.class.getName());
 
@@ -49,8 +51,10 @@ public final class HttpExporterBuilder<T extends Marshaler> {
 
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   @Nullable private Compressor compressor;
+  private long connectTimeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_CONNECT_TIMEOUT_SECS);
   private boolean exportAsJson = false;
-  @Nullable private Map<String, String> headers;
+  private final Map<String, String> constantHeaders = new HashMap<>();
+  private Supplier<Map<String, String>> headerSupplier = Collections::emptyMap;
 
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy;
@@ -69,8 +73,9 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public HttpExporterBuilder<T> setTimeout(Duration timeout) {
-    return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+  public HttpExporterBuilder<T> setConnectTimeout(long timeout, TimeUnit unit) {
+    connectTimeoutNanos = unit.toNanos(timeout);
+    return this;
   }
 
   public HttpExporterBuilder<T> setEndpoint(String endpoint) {
@@ -84,11 +89,13 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public HttpExporterBuilder<T> addHeader(String key, String value) {
-    if (headers == null) {
-      headers = new HashMap<>();
-    }
-    headers.put(key, value);
+  public HttpExporterBuilder<T> addConstantHeaders(String key, String value) {
+    constantHeaders.put(key, value);
+    return this;
+  }
+
+  public HttpExporterBuilder<T> setHeadersSupplier(Supplier<Map<String, String>> headerSupplier) {
+    this.headerSupplier = headerSupplier;
     return this;
   }
 
@@ -134,11 +141,11 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     HttpExporterBuilder<T> copy = new HttpExporterBuilder<>(exporterName, type, endpoint);
     copy.endpoint = endpoint;
     copy.timeoutNanos = timeoutNanos;
+    copy.connectTimeoutNanos = connectTimeoutNanos;
     copy.exportAsJson = exportAsJson;
     copy.compressor = compressor;
-    if (headers != null) {
-      copy.headers = new HashMap<>(headers);
-    }
+    copy.constantHeaders.putAll(constantHeaders);
+    copy.headerSupplier = headerSupplier;
     copy.tlsConfigHelper = tlsConfigHelper.copy();
     if (retryPolicy != null) {
       copy.retryPolicy = retryPolicy.toBuilder().build();
@@ -149,8 +156,26 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   }
 
   public HttpExporter<T> build() {
-    Map<String, String> headers = this.headers == null ? Collections.emptyMap() : this.headers;
-    Supplier<Map<String, String>> headerSupplier = () -> headers;
+    Supplier<Map<String, List<String>>> headerSupplier =
+        () -> {
+          Map<String, List<String>> result = new HashMap<>();
+          Map<String, String> supplierResult = this.headerSupplier.get();
+          if (supplierResult != null) {
+            supplierResult.forEach(
+                (key, value) -> result.put(key, Collections.singletonList(value)));
+          }
+          constantHeaders.forEach(
+              (key, value) ->
+                  result.merge(
+                      key,
+                      Collections.singletonList(value),
+                      (v1, v2) -> {
+                        List<String> merged = new ArrayList<>(v1);
+                        merged.addAll(v2);
+                        return merged;
+                      }));
+          return result;
+        };
 
     HttpSenderProvider httpSenderProvider = resolveHttpSenderProvider();
     HttpSender httpSender =
@@ -159,6 +184,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
             compressor,
             exportAsJson ? "application/json" : "application/x-protobuf",
             timeoutNanos,
+            connectTimeoutNanos,
             headerSupplier,
             authenticator,
             retryPolicy,
@@ -181,12 +207,15 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     joiner.add(
         "compressorEncoding="
             + Optional.ofNullable(compressor).map(Compressor::getEncoding).orElse(null));
+    joiner.add("connectTimeoutNanos=" + connectTimeoutNanos);
     joiner.add("exportAsJson=" + exportAsJson);
+    StringJoiner headersJoiner = new StringJoiner(", ", "Headers{", "}");
+    constantHeaders.forEach((key, value) -> headersJoiner.add(key + "=OBFUSCATED"));
+    Map<String, String> headers = headerSupplier.get();
     if (headers != null) {
-      StringJoiner headersJoiner = new StringJoiner(", ", "Headers{", "}");
       headers.forEach((key, value) -> headersJoiner.add(key + "=OBFUSCATED"));
-      joiner.add("headers=" + headersJoiner);
     }
+    joiner.add("headers=" + headersJoiner);
     if (retryPolicy != null) {
       joiner.add("retryPolicy=" + retryPolicy);
     }

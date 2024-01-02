@@ -48,6 +48,7 @@ tasks {
   withType(KotlinCompile::class) {
     kotlinOptions {
       jvmTarget = "1.8"
+      languageVersion = "1.6"
     }
   }
 

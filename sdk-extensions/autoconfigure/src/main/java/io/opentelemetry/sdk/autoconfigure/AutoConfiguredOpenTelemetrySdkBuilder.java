@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
@@ -30,6 +31,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
@@ -71,6 +73,9 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       propagatorCustomizer = (a, unused) -> a;
   private BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
       spanExporterCustomizer = (a, unused) -> a;
+
+  private BiFunction<? super SpanProcessor, ConfigProperties, ? extends SpanProcessor>
+      spanProcessorCustomizer = (a, unused) -> a;
   private BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer =
       (a, unused) -> a;
 
@@ -83,6 +88,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       loggerProviderCustomizer = (a, unused) -> a;
   private BiFunction<? super LogRecordExporter, ConfigProperties, ? extends LogRecordExporter>
       logRecordExporterCustomizer = (a, unused) -> a;
+  private BiFunction<? super LogRecordProcessor, ConfigProperties, ? extends LogRecordProcessor>
+      logRecordProcessorCustomizer = (a, unused) -> a;
 
   private BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer =
       (a, unused) -> a;
@@ -192,6 +199,26 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   /**
+   * Adds a {@link BiFunction} to invoke for all autoconfigured {@link
+   * io.opentelemetry.sdk.trace.SpanProcessor}. The return value of the {@link BiFunction} will
+   * replace the passed-in argument. In contrast to {@link #addSpanExporterCustomizer(BiFunction)}
+   * this allows modifications to happen before batching occurs. As a result, it is possible to
+   * efficiently filter spans, add artificial spans or delay spans for enhancing them with external,
+   * delayed data.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  @Override
+  public AutoConfiguredOpenTelemetrySdkBuilder addSpanProcessorCustomizer(
+      BiFunction<? super SpanProcessor, ConfigProperties, ? extends SpanProcessor>
+          spanProcessorCustomizer) {
+    requireNonNull(spanProcessorCustomizer, "spanProcessorCustomizer");
+    this.spanProcessorCustomizer =
+        mergeCustomizer(this.spanProcessorCustomizer, spanProcessorCustomizer);
+    return this;
+  }
+
+  /**
    * Adds a {@link Supplier} of a map of property names and values to use as defaults for the {@link
    * ConfigProperties} used during auto-configuration. The order of precedence of properties is
    * system properties > environment variables > the suppliers registered with this method.
@@ -290,6 +317,26 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   /**
+   * Adds a {@link BiFunction} to invoke for all autoconfigured {@link
+   * io.opentelemetry.sdk.logs.LogRecordProcessor}s. The return value of the {@link BiFunction} will
+   * replace the passed-in argument. In contrast to {@link
+   * #addLogRecordExporterCustomizer(BiFunction)} (BiFunction)} this allows modifications to happen
+   * before batching occurs. As a result, it is possible to efficiently filter logs, add artificial
+   * logs or delay logs for enhancing them with external, delayed data.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  @Override
+  public AutoConfigurationCustomizer addLogRecordProcessorCustomizer(
+      BiFunction<? super LogRecordProcessor, ConfigProperties, ? extends LogRecordProcessor>
+          logRecordProcessorCustomizer) {
+    requireNonNull(logRecordProcessorCustomizer, "logRecordProcessorCustomizer");
+    this.logRecordProcessorCustomizer =
+        mergeCustomizer(this.logRecordProcessorCustomizer, logRecordProcessorCustomizer);
+    return this;
+  }
+
+  /**
    * Disable the registration of a shutdown hook to shut down the SDK when appropriate. By default,
    * the shutdown hook is registered.
    *
@@ -372,6 +419,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
             spiHelper,
             meterProvider,
             spanExporterCustomizer,
+            spanProcessorCustomizer,
             samplerCustomizer,
             closeables);
         tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
@@ -386,6 +434,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
             spiHelper,
             meterProvider,
             logRecordExporterCustomizer,
+            logRecordProcessorCustomizer,
             closeables);
         loggerProviderBuilder = loggerProviderCustomizer.apply(loggerProviderBuilder, config);
         SdkLoggerProvider loggerProvider = loggerProviderBuilder.build();

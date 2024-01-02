@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -18,6 +19,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -49,8 +51,11 @@ import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.IdGenerator;
+import io.opentelemetry.sdk.trace.ReadWriteSpan;
+import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -269,6 +274,48 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   @Test
+  void builder_addSpanProcessorCustomizer() {
+    SpanProcessor mockProcessor1 = Mockito.mock(SpanProcessor.class);
+    SpanProcessor mockProcessor2 = Mockito.mock(SpanProcessor.class);
+    doReturn(true).when(mockProcessor2).isStartRequired();
+    doReturn(true).when(mockProcessor2).isEndRequired();
+    Mockito.lenient().doReturn(CompletableResultCode.ofSuccess()).when(mockProcessor2).shutdown();
+    Mockito.lenient().when(spanExporter1.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    SdkTracerProvider sdkTracerProvider =
+        builder
+            .addSpanExporterCustomizer((prev, config) -> spanExporter1)
+            .addSpanProcessorCustomizer(
+                (previous, config) -> {
+                  assertThat(previous).isNotSameAs(mockProcessor2);
+                  return mockProcessor1;
+                })
+            .addSpanProcessorCustomizer(
+                (previous, config) -> {
+                  assertThat(previous).isSameAs(mockProcessor1);
+                  return mockProcessor2;
+                })
+            .build()
+            .getOpenTelemetrySdk()
+            .getSdkTracerProvider();
+
+    assertThat(sdkTracerProvider)
+        .extracting("sharedState")
+        .extracting("activeSpanProcessor")
+        .isSameAs(mockProcessor2);
+
+    Span span = sdkTracerProvider.get("dummy-scope").spanBuilder("dummy-span").startSpan();
+
+    verify(mockProcessor2).onStart(any(), same((ReadWriteSpan) span));
+
+    span.end();
+    verify(mockProcessor2).onEnd(same((ReadableSpan) span));
+
+    verifyNoInteractions(mockProcessor1);
+    verifyNoInteractions(spanExporter1);
+  }
+
+  @Test
   void builder_addPropertiesSupplier() {
     AutoConfiguredOpenTelemetrySdk autoConfigured =
         builder
@@ -351,6 +398,8 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   // TODO: add test for addLogRecordExporterCustomizer once OTLP export is enabled by default
+
+  // TODO: add test for addLogRecordProcessorCustomizer once OTLP export is enabled by default
 
   @Test
   void builder_setResultAsGlobalFalse() {

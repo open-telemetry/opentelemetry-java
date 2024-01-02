@@ -20,6 +20,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpConnectTimeoutException;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLException;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
@@ -93,10 +94,17 @@ class JdkHttpSenderTest {
   }
 
   @Test
-  void defaultConnectTimeout() {
+  void connectTimeout() {
     sender =
         new JdkHttpSender(
-            "http://localhost", null, "text/plain", 1, Collections::emptyMap, null, null);
+            "http://localhost",
+            null,
+            "text/plain",
+            1,
+            TimeUnit.SECONDS.toNanos(10),
+            Collections::emptyMap,
+            null,
+            null);
 
     assertThat(sender)
         .extracting("client", as(InstanceOfAssertFactories.type(HttpClient.class)))

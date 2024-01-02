@@ -10,6 +10,7 @@ import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.http.HttpSender;
 import io.opentelemetry.exporter.internal.http.HttpSenderProvider;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -30,12 +31,20 @@ public final class JdkHttpSenderProvider implements HttpSenderProvider {
       @Nullable Compressor compressor,
       String contentType,
       long timeoutNanos,
-      Supplier<Map<String, String>> headerSupplier,
+      long connectTimeout,
+      Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable Authenticator authenticator,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager) {
     return new JdkHttpSender(
-        endpoint, compressor, contentType, timeoutNanos, headerSupplier, retryPolicy, sslContext);
+        endpoint,
+        compressor,
+        contentType,
+        timeoutNanos,
+        connectTimeout,
+        headerSupplier,
+        retryPolicy,
+        sslContext);
   }
 }
