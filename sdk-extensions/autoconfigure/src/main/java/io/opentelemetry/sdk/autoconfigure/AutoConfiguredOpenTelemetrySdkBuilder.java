@@ -479,10 +479,11 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
   @Nullable
   private static AutoConfiguredOpenTelemetrySdk maybeConfigureFromFile(ConfigProperties config) {
-    String configurationFile = config.getString("OTEL_CONFIG_FILE");
+    String configurationFile = config.getString("otel.config.file");
     if (configurationFile == null || configurationFile.isEmpty()) {
       return null;
     }
+    logger.info("Autoconfiguring from configuration file: " + configurationFile);
     FileInputStream fis;
     try {
       fis = new FileInputStream(configurationFile);
