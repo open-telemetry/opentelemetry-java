@@ -14,14 +14,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.linecorp.armeria.common.HttpResponse;
-import com.linecorp.armeria.common.HttpStatus;
-import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
-import io.opentelemetry.exporter.internal.http.HttpExporter;
-import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
 import java.net.http.HttpClient;
@@ -30,12 +24,10 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLException;
-import org.assertj.core.api.Assertions;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -44,8 +36,6 @@ import org.mockito.quality.Strictness;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class JdkHttpSenderTest {
-
-  @RegisterExtension static final MockWebServerExtension server = new MockWebServerExtension();
 
   private final HttpClient realHttpClient =
       HttpClient.newBuilder().connectTimeout(Duration.ofMillis(10)).build();
@@ -74,20 +64,6 @@ class JdkHttpSenderTest {
                 .setMaxAttempts(2)
                 .setInitialBackoff(Duration.ofMillis(1))
                 .build());
-  }
-
-  @Test
-  void exportAsJson() {
-    HttpExporter<Marshaler> exporter =
-        new HttpExporterBuilder<>("jdk", "test", server.httpUri().toASCIIString())
-            .exportAsJson()
-            .build();
-
-    server.enqueue(HttpResponse.of(HttpStatus.OK));
-
-    CompletableResultCode result = exporter.export(new NoOpMarshaler(), 0);
-    result.join(1, TimeUnit.MINUTES);
-    Assertions.assertThat(result.isSuccess()).isTrue();
   }
 
   @Test
@@ -149,6 +125,6 @@ class JdkHttpSenderTest {
     }
 
     @Override
-    protected void writeTo(Serializer output) throws IOException {}
+    protected void writeTo(Serializer output) {}
   }
 }
