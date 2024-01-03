@@ -22,7 +22,9 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
@@ -158,16 +160,19 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
 
   @Override
   public TelemetryExporter<T> build() {
-    requireNonNull(channelBuilder, "channel");
+    AtomicReference<Runnable> shutdownCallbackRef = new AtomicReference<>(() -> {});
+    if (channelBuilder != null) {
+      try {
+        setSslContext(channelBuilder, tlsConfigHelper);
+      } catch (SSLException e) {
+        throw new IllegalStateException(e);
+      }
 
-    try {
-      setSslContext(channelBuilder, tlsConfigHelper);
-    } catch (SSLException e) {
-      throw new IllegalStateException(e);
+      ManagedChannel channel = channelBuilder.build();
+      delegate.setChannel(channel);
+      shutdownCallbackRef.set(channel::shutdownNow);
     }
 
-    ManagedChannel channel = channelBuilder.build();
-    delegate.setChannel(channel);
     TelemetryExporter<T> delegateExporter = delegate.build();
     return new TelemetryExporter<T>() {
       @Override
@@ -182,7 +187,7 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
 
       @Override
       public CompletableResultCode shutdown() {
-        channel.shutdownNow();
+        Optional.ofNullable(shutdownCallbackRef.get()).ifPresent(Runnable::run);
         return delegateExporter.shutdown();
       }
     };
