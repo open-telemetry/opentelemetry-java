@@ -22,9 +22,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
@@ -160,7 +158,7 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
 
   @Override
   public TelemetryExporter<T> build() {
-    AtomicReference<Runnable> shutdownCallbackRef = new AtomicReference<>(() -> {});
+    Runnable callbackRef;
     if (channelBuilder != null) {
       try {
         setSslContext(channelBuilder, tlsConfigHelper);
@@ -170,7 +168,9 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
 
       ManagedChannel channel = channelBuilder.build();
       delegate.setChannel(channel);
-      shutdownCallbackRef.set(channel::shutdownNow);
+      callbackRef = channel::shutdownNow;
+    } else {
+      callbackRef = () -> {};
     }
 
     TelemetryExporter<T> delegateExporter = delegate.build();
@@ -187,7 +187,7 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
 
       @Override
       public CompletableResultCode shutdown() {
-        Optional.ofNullable(shutdownCallbackRef.get()).ifPresent(Runnable::run);
+        callbackRef.run();
         return delegateExporter.shutdown();
       }
     };
