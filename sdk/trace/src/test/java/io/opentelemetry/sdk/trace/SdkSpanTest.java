@@ -16,6 +16,10 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -60,9 +64,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class SdkSpanTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final String SPAN_NEW_NAME = "NewName";
@@ -97,6 +104,8 @@ class SdkSpanTest {
     }
     expectedAttributes = builder.build();
     testClock = TestClock.create(Instant.ofEpochSecond(0, START_EPOCH_NANOS));
+    when(spanProcessor.isStartRequired()).thenReturn(true);
+    when(spanProcessor.isEndRequired()).thenReturn(true);
   }
 
   @Test
@@ -1038,6 +1047,39 @@ class SdkSpanTest {
     assertThat(data.getAttributes().isEmpty()).isTrue();
     assertThat(data.getStatus()).isEqualTo(StatusData.unset());
     assertThat(data.getName()).isEqualTo(SPAN_NAME);
+  }
+
+  @Test
+  void onStartOnEndNotRequired() {
+    when(spanProcessor.isStartRequired()).thenReturn(false);
+    when(spanProcessor.isEndRequired()).thenReturn(false);
+
+    SpanLimits spanLimits = SpanLimits.getDefault();
+    SdkSpan span =
+        SdkSpan.startSpan(
+            spanContext,
+            SPAN_NAME,
+            instrumentationScopeInfo,
+            SpanKind.INTERNAL,
+            parentSpanId != null
+                ? Span.wrap(
+                    SpanContext.create(
+                        traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault()))
+                : Span.getInvalid(),
+            Context.root(),
+            spanLimits,
+            spanProcessor,
+            testClock,
+            resource,
+            AttributesMap.create(
+                spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength()),
+            Collections.emptyList(),
+            1,
+            0);
+    verify(spanProcessor, never()).onStart(any(), any());
+
+    span.end();
+    verify(spanProcessor, never()).onEnd(any());
   }
 
   private SdkSpan createTestSpanWithAttributes(Map<AttributeKey, Object> attributes) {
