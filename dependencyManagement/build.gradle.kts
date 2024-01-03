@@ -69,6 +69,7 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.29.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
+  "io.prometheus:prometheus-metrics-exporter-httpserver:1.1.0",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.15.5",
   "org.awaitility:awaitility:4.2.0",
