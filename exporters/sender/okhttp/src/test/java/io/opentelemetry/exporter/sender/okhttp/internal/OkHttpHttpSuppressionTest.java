@@ -37,7 +37,7 @@ class OkHttpHttpSuppressionTest extends AbstractOkHttpSuppressionTest<OkHttpHttp
   OkHttpHttpSender createSender(String endpoint) {
     return new OkHttpHttpSender(
         endpoint,
-        false,
+        null,
         false,
         "text/plain",
         10L,

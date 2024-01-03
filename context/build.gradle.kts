@@ -16,6 +16,16 @@ dependencies {
   testImplementation("com.google.guava:guava")
 }
 
+dependencyCheck {
+  skipConfigurations.add("braveInOtelTestAnnotationProcessor")
+  skipConfigurations.add("grpcInOtelTestAnnotationProcessor")
+  skipConfigurations.add("otelAsBraveTestAnnotationProcessor")
+  skipConfigurations.add("otelInBraveTestAnnotationProcessor")
+  skipConfigurations.add("otelInGrpcTestAnnotationProcessor")
+  skipConfigurations.add("storageWrappersTestAnnotationProcessor")
+  skipConfigurations.add("strictContextEnabledTestAnnotationProcessor")
+}
+
 testing {
   suites {
     register<JvmTestSuite>("grpcInOtelTest") {
