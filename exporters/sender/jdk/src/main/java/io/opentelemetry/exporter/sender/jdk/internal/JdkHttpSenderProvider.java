@@ -29,6 +29,7 @@ public final class JdkHttpSenderProvider implements HttpSenderProvider {
   public HttpSender createSender(
       String endpoint,
       @Nullable Compressor compressor,
+      boolean exportAsJson,
       String contentType,
       long timeoutNanos,
       long connectTimeout,
@@ -40,6 +41,7 @@ public final class JdkHttpSenderProvider implements HttpSenderProvider {
     return new JdkHttpSender(
         endpoint,
         compressor,
+        exportAsJson,
         contentType,
         timeoutNanos,
         connectTimeout,
