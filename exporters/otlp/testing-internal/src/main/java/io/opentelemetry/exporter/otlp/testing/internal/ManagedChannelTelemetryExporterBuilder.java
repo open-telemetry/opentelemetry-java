@@ -158,7 +158,7 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
 
   @Override
   public TelemetryExporter<T> build() {
-    Runnable callbackRef;
+    Runnable shutdownCallback;
     if (channelBuilder != null) {
       try {
         setSslContext(channelBuilder, tlsConfigHelper);
@@ -168,9 +168,9 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
 
       ManagedChannel channel = channelBuilder.build();
       delegate.setChannel(channel);
-      callbackRef = channel::shutdownNow;
+      shutdownCallback = channel::shutdownNow;
     } else {
-      callbackRef = () -> {};
+      shutdownCallback = () -> {};
     }
 
     TelemetryExporter<T> delegateExporter = delegate.build();
@@ -187,7 +187,7 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
 
       @Override
       public CompletableResultCode shutdown() {
-        callbackRef.run();
+        shutdownCallback.run();
         return delegateExporter.shutdown();
       }
     };
