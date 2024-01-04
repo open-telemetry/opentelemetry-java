@@ -25,7 +25,7 @@ public final class BatchSpanProcessorBuilder {
   static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
 
   private final SpanExporter spanExporter;
-  private boolean exportUnsampledSpans;
+  private boolean exportUnsampledSpans = false;
   private long scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_SCHEDULE_DELAY_MILLIS);
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
@@ -39,6 +39,8 @@ public final class BatchSpanProcessorBuilder {
   /**
    * Sets whether unsampled spans should be exported. If unset, defaults to exporting only sampled
    * spans.
+   *
+   * @since 1.34.0
    */
   public BatchSpanProcessorBuilder setExportUnsampledSpans(boolean exportUnsampledSpans) {
     this.exportUnsampledSpans = exportUnsampledSpans;
