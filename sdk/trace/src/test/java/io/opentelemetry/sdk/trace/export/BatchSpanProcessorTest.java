@@ -601,6 +601,7 @@ class BatchSpanProcessorTest {
         .hasToString(
             "BatchSpanProcessor{"
                 + "spanExporter=mockSpanExporter, "
+                + "exportUnsampledSpans=false, "
                 + "scheduleDelayNanos=5000000000, "
                 + "maxExportBatchSize=512, "
                 + "exporterTimeoutNanos=30000000000}");

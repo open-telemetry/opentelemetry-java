@@ -137,6 +137,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
     return "BatchSpanProcessor{"
         + "spanExporter="
         + worker.spanExporter
+        + ", exportUnsampledSpans="
+        + exportUnsampledSpans
         + ", scheduleDelayNanos="
         + worker.scheduleDelayNanos
         + ", maxExportBatchSize="

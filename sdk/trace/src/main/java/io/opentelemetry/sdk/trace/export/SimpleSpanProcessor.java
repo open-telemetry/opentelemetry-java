@@ -132,6 +132,11 @@ public final class SimpleSpanProcessor implements SpanProcessor {
 
   @Override
   public String toString() {
-    return "SimpleSpanProcessor{" + "spanExporter=" + spanExporter + '}';
+    return "SimpleSpanProcessor{"
+        + "spanExporter="
+        + spanExporter
+        + ", exportUnsampledSpans="
+        + exportUnsampledSpans
+        + '}';
   }
 }
