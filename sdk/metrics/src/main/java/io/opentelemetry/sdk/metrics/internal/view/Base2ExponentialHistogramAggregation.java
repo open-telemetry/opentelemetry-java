@@ -58,7 +58,7 @@ public final class Base2ExponentialHistogramAggregation implements Aggregation, 
    * @return the aggregation
    */
   public static Aggregation create(int maxBuckets, int maxScale) {
-    checkArgument(maxBuckets >= 1, "maxBuckets must be > 0");
+    checkArgument(maxBuckets >= 2, "maxBuckets must be >= 2");
     checkArgument(maxScale <= 20 && maxScale >= -10, "maxScale must be -10 <= x <= 20");
     return new Base2ExponentialHistogramAggregation(maxBuckets, maxScale);
   }
