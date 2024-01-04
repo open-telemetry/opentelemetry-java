@@ -9,10 +9,8 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.sdk.trace.ReadableSpan;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 
 /** Builder class for {@link BatchSpanProcessor}. */
 public final class BatchSpanProcessorBuilder {
@@ -27,7 +25,7 @@ public final class BatchSpanProcessorBuilder {
   static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
 
   private final SpanExporter spanExporter;
-  private Predicate<ReadableSpan> exportPredicate = span -> span.getSpanContext().isSampled();
+  private boolean exportUnsampledSpans;
   private long scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_SCHEDULE_DELAY_MILLIS);
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
@@ -39,11 +37,11 @@ public final class BatchSpanProcessorBuilder {
   }
 
   /**
-   * Sets a {@link Predicate Predicate&lt;ReadableSpan&gt;} that filters the {@link ReadableSpan}s
-   * that are to be exported. If unset, defaults to exporting sampled spans.
+   * Sets whether unsampled spans should be exported. If unset, defaults to exporting only sampled
+   * spans.
    */
-  public BatchSpanProcessorBuilder setExportFilter(Predicate<ReadableSpan> exportPredicate) {
-    this.exportPredicate = requireNonNull(exportPredicate, "exportPredicate");
+  public BatchSpanProcessorBuilder setExportUnsampledSpans(boolean exportUnsampledSpans) {
+    this.exportUnsampledSpans = exportUnsampledSpans;
     return this;
   }
 
@@ -158,7 +156,7 @@ public final class BatchSpanProcessorBuilder {
   public BatchSpanProcessor build() {
     return new BatchSpanProcessor(
         spanExporter,
-        exportPredicate,
+        exportUnsampledSpans,
         meterProvider,
         scheduleDelayNanos,
         maxQueueSize,

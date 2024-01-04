@@ -528,7 +528,7 @@ class BatchSpanProcessorTest {
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 BatchSpanProcessor.builder(waitingSpanExporter)
-                    .setExportFilter(span -> true)
+                    .setExportUnsampledSpans(true)
                     .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
                     .build())
             .setSampler(mockSampler)

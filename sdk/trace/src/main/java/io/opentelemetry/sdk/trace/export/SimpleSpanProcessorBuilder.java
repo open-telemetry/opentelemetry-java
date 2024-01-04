@@ -7,24 +7,21 @@ package io.opentelemetry.sdk.trace.export;
 
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.sdk.trace.ReadableSpan;
-import java.util.function.Predicate;
-
 /** Builder class for {@link SimpleSpanProcessor}. */
 public final class SimpleSpanProcessorBuilder {
   private final SpanExporter spanExporter;
-  private Predicate<ReadableSpan> exportPredicate = span -> span.getSpanContext().isSampled();
+  private boolean exportUnsampledSpans;
 
   SimpleSpanProcessorBuilder(SpanExporter spanExporter) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
   }
 
   /**
-   * Sets a {@link Predicate Predicate&lt;ReadableSpan&gt;} that filters the {@link ReadableSpan}s
-   * that are to be exported. If unset, defaults to exporting sampled spans.
+   * Sets whether unsampled spans should be exported. If unset, defaults to exporting only sampled
+   * spans.
    */
-  public SimpleSpanProcessorBuilder setExportFilter(Predicate<ReadableSpan> exportPredicate) {
-    this.exportPredicate = requireNonNull(exportPredicate, "exportPredicate");
+  public SimpleSpanProcessorBuilder setExportUnsampledSpans(boolean exportUnsampledSpans) {
+    this.exportUnsampledSpans = exportUnsampledSpans;
     return this;
   }
 
@@ -34,6 +31,6 @@ public final class SimpleSpanProcessorBuilder {
    * @return a new {@link SimpleSpanProcessor}.
    */
   public SimpleSpanProcessor build() {
-    return new SimpleSpanProcessor(spanExporter, exportPredicate);
+    return new SimpleSpanProcessor(spanExporter, exportUnsampledSpans);
   }
 }

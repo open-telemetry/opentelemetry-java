@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +36,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
   private static final Logger logger = Logger.getLogger(SimpleSpanProcessor.class.getName());
 
   private final SpanExporter spanExporter;
-  private final Predicate<ReadableSpan> exportPredicate;
+  private final boolean exportUnsampledSpans;
   private final Set<CompletableResultCode> pendingExports =
       Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
@@ -62,9 +61,9 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     return new SimpleSpanProcessorBuilder(exporter);
   }
 
-  SimpleSpanProcessor(SpanExporter spanExporter, Predicate<ReadableSpan> exportPredicate) {
+  SimpleSpanProcessor(SpanExporter spanExporter, boolean exportUnsampledSpans) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
-    this.exportPredicate = exportPredicate;
+    this.exportUnsampledSpans = exportUnsampledSpans;
   }
 
   @Override
@@ -79,7 +78,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    if (span != null && exportPredicate.test(span)) {
+    if (span != null && (exportUnsampledSpans || span.getSpanContext().isSampled())) {
       try {
         List<SpanData> spans = Collections.singletonList(span.toSpanData());
         CompletableResultCode result = spanExporter.export(spans);
