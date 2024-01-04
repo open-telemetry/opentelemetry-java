@@ -14,11 +14,11 @@ import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleBase2ExponentialHistogramAggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 
 /**
  * Exponential bucket histogram aggregation configuration.
@@ -26,20 +26,28 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class Base2ExponentialHistogramAggregation implements Aggregation, AggregatorFactory {
+public final class Base2ExponentialHistogramAggregation implements AggregationExtension {
 
   private static final int DEFAULT_MAX_BUCKETS = 160;
   private static final int DEFAULT_MAX_SCALE = 20;
-
+  private static final ExemplarReservoirFactory DEFAULT_RESERVOIR =
+      ExemplarReservoirFactory.fixedSize(
+          Clock.getDefault(),
+          Runtime.getRuntime().availableProcessors(),
+          RandomSupplier.platformDefault());
   private static final Aggregation DEFAULT =
-      new Base2ExponentialHistogramAggregation(DEFAULT_MAX_BUCKETS, DEFAULT_MAX_SCALE);
+      new Base2ExponentialHistogramAggregation(
+          DEFAULT_MAX_BUCKETS, DEFAULT_MAX_SCALE, DEFAULT_RESERVOIR);
 
   private final int maxBuckets;
   private final int maxScale;
+  private final ExemplarReservoirFactory reservoirFactory;
 
-  private Base2ExponentialHistogramAggregation(int maxBuckets, int maxScale) {
+  private Base2ExponentialHistogramAggregation(
+      int maxBuckets, int maxScale, ExemplarReservoirFactory reservoirFactory) {
     this.maxBuckets = maxBuckets;
     this.maxScale = maxScale;
+    this.reservoirFactory = reservoirFactory;
   }
 
   public static Aggregation getDefault() {
@@ -60,7 +68,7 @@ public final class Base2ExponentialHistogramAggregation implements Aggregation, 
   public static Aggregation create(int maxBuckets, int maxScale) {
     checkArgument(maxBuckets >= 1, "maxBuckets must be > 0");
     checkArgument(maxScale <= 20 && maxScale >= -10, "maxScale must be -10 <= x <= 20");
-    return new Base2ExponentialHistogramAggregation(maxBuckets, maxScale);
+    return new Base2ExponentialHistogramAggregation(maxBuckets, maxScale, DEFAULT_RESERVOIR);
   }
 
   @Override
@@ -71,11 +79,7 @@ public final class Base2ExponentialHistogramAggregation implements Aggregation, 
         new DoubleBase2ExponentialHistogramAggregator(
             () ->
                 ExemplarReservoir.filtered(
-                    exemplarFilter,
-                    ExemplarReservoir.doubleFixedSizeReservoir(
-                        Clock.getDefault(),
-                        Runtime.getRuntime().availableProcessors(),
-                        RandomSupplier.platformDefault())),
+                    exemplarFilter, reservoirFactory.createDoubleExemplarReservoir()),
             maxBuckets,
             maxScale);
   }
@@ -98,5 +102,12 @@ public final class Base2ExponentialHistogramAggregation implements Aggregation, 
         + ",maxScale="
         + maxScale
         + "}";
+  }
+
+  @Override
+  public AggregationExtension setExemplarReservoirFactory(
+      ExemplarReservoirFactory reservoirFactory) {
+    return new Base2ExponentialHistogramAggregation(
+        this.maxBuckets, this.maxScale, reservoirFactory);
   }
 }

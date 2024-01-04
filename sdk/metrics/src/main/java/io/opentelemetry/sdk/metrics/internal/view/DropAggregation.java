@@ -9,9 +9,9 @@ import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 
 /**
  * Configuration representing no aggregation.
@@ -19,7 +19,7 @@ import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class DropAggregation implements Aggregation, AggregatorFactory {
+public final class DropAggregation implements AggregationExtension {
 
   private static final Aggregation INSTANCE = new DropAggregation();
 
@@ -44,5 +44,11 @@ public final class DropAggregation implements Aggregation, AggregatorFactory {
   @Override
   public String toString() {
     return "DropAggregation";
+  }
+
+  @Override
+  public AggregationExtension setExemplarReservoirFactory(
+      ExemplarReservoirFactory reservoirFactory) {
+    throw new UnsupportedOperationException("DropAggregation does not allow exemplars");
   }
 }

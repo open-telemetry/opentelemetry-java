@@ -10,11 +10,12 @@ import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoirFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * Aggregation that selects the specified default based on instrument.
@@ -22,9 +23,9 @@ import java.util.logging.Logger;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class DefaultAggregation implements Aggregation, AggregatorFactory {
+public final class DefaultAggregation implements AggregationExtension {
 
-  private static final Aggregation INSTANCE = new DefaultAggregation();
+  private static final Aggregation INSTANCE = new DefaultAggregation(null);
 
   public static Aggregation getInstance() {
     return INSTANCE;
@@ -33,44 +34,60 @@ public final class DefaultAggregation implements Aggregation, AggregatorFactory 
   private static final ThrottlingLogger logger =
       new ThrottlingLogger(Logger.getLogger(DefaultAggregation.class.getName()));
 
-  private DefaultAggregation() {}
+  @Nullable private final ExemplarReservoirFactory reservoirFactory;
 
-  private static Aggregation resolve(InstrumentDescriptor instrument, boolean withAdvice) {
+  private DefaultAggregation(@Nullable ExemplarReservoirFactory reservoirFactory) {
+    this.reservoirFactory = reservoirFactory;
+  }
+
+  private static AggregationExtension resolve(InstrumentDescriptor instrument, boolean withAdvice) {
     switch (instrument.getType()) {
       case COUNTER:
       case UP_DOWN_COUNTER:
       case OBSERVABLE_COUNTER:
       case OBSERVABLE_UP_DOWN_COUNTER:
-        return SumAggregation.getInstance();
+        return (AggregationExtension) SumAggregation.getInstance();
       case HISTOGRAM:
         if (withAdvice && instrument.getAdvice().getExplicitBucketBoundaries() != null) {
-          return ExplicitBucketHistogramAggregation.create(
-              instrument.getAdvice().getExplicitBucketBoundaries());
+          return (AggregationExtension)
+              ExplicitBucketHistogramAggregation.create(
+                  instrument.getAdvice().getExplicitBucketBoundaries());
         }
-        return ExplicitBucketHistogramAggregation.getDefault();
+        return (AggregationExtension) ExplicitBucketHistogramAggregation.getDefault();
       case OBSERVABLE_GAUGE:
-        return LastValueAggregation.getInstance();
+        return (AggregationExtension) LastValueAggregation.getInstance();
     }
     logger.log(Level.WARNING, "Unable to find default aggregation for instrument: " + instrument);
-    return DropAggregation.getInstance();
+    return (AggregationExtension) DropAggregation.getInstance();
   }
 
   @Override
   public <T extends PointData, U extends ExemplarData> Aggregator<T, U> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
-    return ((AggregatorFactory) resolve(instrumentDescriptor, /* withAdvice= */ true))
+    if (this.reservoirFactory != null) {
+      return resolve(instrumentDescriptor, /* withAdvice= */ true)
+          .setExemplarReservoirFactory(this.reservoirFactory)
+          .createAggregator(instrumentDescriptor, exemplarFilter);
+    }
+    return resolve(instrumentDescriptor, /* withAdvice= */ true)
         .createAggregator(instrumentDescriptor, exemplarFilter);
   }
 
   @Override
   public boolean isCompatibleWithInstrument(InstrumentDescriptor instrumentDescriptor) {
     // This should always return true
-    return ((AggregatorFactory) resolve(instrumentDescriptor, /* withAdvice= */ false))
+    return resolve(instrumentDescriptor, /* withAdvice= */ false)
         .isCompatibleWithInstrument(instrumentDescriptor);
   }
 
   @Override
   public String toString() {
     return "DefaultAggregation";
+  }
+
+  @Override
+  public AggregationExtension setExemplarReservoirFactory(
+      ExemplarReservoirFactory reservoirFactory) {
+    return new DefaultAggregation(reservoirFactory);
   }
 }
