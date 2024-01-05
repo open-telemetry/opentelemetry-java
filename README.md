@@ -48,7 +48,7 @@ This project contains the following top level components:
 * [OpenTelemetry API](api/):
   * [stable apis](api/all) including `Tracer`, `Span`, `SpanContext`, `Meter`, and `Baggage`.
   * [context api](context/) The OpenTelemetry Context implementation.
-  * [experimental apis](api/all) including `Events`.
+  * [experimental apis](api/events) including `Events`.
 * [extensions](extensions/) define additional API extensions not part of the core API, including propagators and experimental extension APIs.
 * [sdk](sdk/) defines the implementation of the OpenTelemetry API.
 * [exporters](exporters/) trace, metric, and log exporters for the SDK.
