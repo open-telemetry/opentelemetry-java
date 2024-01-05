@@ -4,6 +4,13 @@
 
 ## Version 1.34.0 (2024-01-05)
 
+**NOTE:** This is the LAST release for `opentelemetry-exporter-jaeger`
+and `opentelemetry-exporter-jaeger-thift`. Jaeger
+has [native support for OTLP](https://opentelemetry.io/blog/2022/jaeger-native-otlp/), and users
+should export to jaeger
+using [OTLP](https://opentelemetry.io/docs/instrumentation/java/exporters/#otlp-dependencies)
+instead.
+
 ### API
 
 * Ability to access version.properties API file with GraalVM native
