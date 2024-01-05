@@ -18,14 +18,14 @@ val DEPENDENCY_BOMS = listOf(
   "io.netty:netty-bom:4.1.104.Final",
   "io.zipkin.brave:brave-bom:5.17.0",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.17.1",
-  "org.assertj:assertj-bom:3.25.0",
+  "org.assertj:assertj-bom:3.25.1",
   "org.junit:junit-bom:5.10.1",
   "org.testcontainers:testcontainers-bom:1.19.3",
   "org.snakeyaml:snakeyaml-engine:2.7"
 )
 
 val autoValueVersion = "1.10.4"
-val errorProneVersion = "2.24.0"
+val errorProneVersion = "2.24.1"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
@@ -69,6 +69,7 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.29.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
+  "io.prometheus:prometheus-metrics-exporter-httpserver:1.1.0",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.15.5",
   "org.awaitility:awaitility:4.2.0",

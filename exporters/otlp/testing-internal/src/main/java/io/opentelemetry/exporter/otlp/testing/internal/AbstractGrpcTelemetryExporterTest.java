@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -23,9 +24,11 @@ import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.testing.internal.compressor.Base64Compressor;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
@@ -63,6 +66,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.assertj.core.api.iterable.ThrowingExtractor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -215,6 +219,23 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     grpcErrors.clear();
     attempts.set(0);
     httpRequests.clear();
+  }
+
+  @Test
+  void minimalChannel() {
+    // Test that UpstreamGrpcSender uses minimal fallback managed channel, so skip for
+    // OkHttpGrpcSender
+    assumeThat(exporter.unwrap())
+        .extracting("delegate.grpcSender")
+        .matches(sender -> sender.getClass().getSimpleName().equals("UpstreamGrpcSender"));
+    // When no channel is explicitly set, should fall back to a minimally configured managed channel
+    TelemetryExporter<?> exporter = exporterBuilder().build();
+    assertThat(exporter.shutdown().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    assertThat(exporter.unwrap())
+        .extracting(
+            "delegate.grpcSender.stub",
+            as(InstanceOfAssertFactories.type(MarshalerServiceStub.class)))
+        .satisfies(stub -> assertThat(((ManagedChannel) stub.getChannel()).isShutdown()).isTrue());
   }
 
   @Test

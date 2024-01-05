@@ -85,6 +85,7 @@ public class OltpExporterBenchmark {
             "span",
             new UpstreamGrpcSender<>(
                 MarshalerTraceServiceGrpc.newFutureStub(defaultGrpcChannel, null),
+                /* shutdownChannel= */ false,
                 10,
                 Collections::emptyMap),
             MeterProvider::noop);

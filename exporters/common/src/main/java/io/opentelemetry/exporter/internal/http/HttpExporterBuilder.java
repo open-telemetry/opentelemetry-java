@@ -182,6 +182,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
         httpSenderProvider.createSender(
             endpoint,
             compressor,
+            exportAsJson,
             exportAsJson ? "application/json" : "application/x-protobuf",
             timeoutNanos,
             connectTimeoutNanos,

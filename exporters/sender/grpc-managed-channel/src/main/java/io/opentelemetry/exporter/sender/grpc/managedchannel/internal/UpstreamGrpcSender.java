@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.sender.grpc.managedchannel.internal;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
+import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.stub.MetadataUtils;
@@ -32,16 +33,19 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public final class UpstreamGrpcSender<T extends Marshaler> implements GrpcSender<T> {
 
   private final MarshalerServiceStub<T, ?, ?> stub;
+  private final boolean shutdownChannel;
   private final long timeoutNanos;
   private final Supplier<Map<String, List<String>>> headersSupplier;
 
   /** Creates a new {@link UpstreamGrpcSender}. */
   public UpstreamGrpcSender(
       MarshalerServiceStub<T, ?, ?> stub,
+      boolean shutdownChannel,
       long timeoutNanos,
       Supplier<Map<String, List<String>>> headersSupplier) {
-    this.timeoutNanos = timeoutNanos;
     this.stub = stub;
+    this.shutdownChannel = shutdownChannel;
+    this.timeoutNanos = timeoutNanos;
     this.headersSupplier = headersSupplier;
   }
 
@@ -82,6 +86,10 @@ public final class UpstreamGrpcSender<T extends Marshaler> implements GrpcSender
 
   @Override
   public CompletableResultCode shutdown() {
+    if (shutdownChannel) {
+      ManagedChannel channel = (ManagedChannel) stub.getChannel();
+      channel.shutdownNow();
+    }
     return CompletableResultCode.ofSuccess();
   }
 }
