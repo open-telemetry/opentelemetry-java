@@ -56,6 +56,11 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     return builder(exporter).build();
   }
 
+  /**
+   * Returns a new Builder for {@link SimpleSpanProcessor}.
+   *
+   * @since 1.34.0
+   */
   public static SimpleSpanProcessorBuilder builder(SpanExporter exporter) {
     requireNonNull(exporter, "exporter");
     return new SimpleSpanProcessorBuilder(exporter);

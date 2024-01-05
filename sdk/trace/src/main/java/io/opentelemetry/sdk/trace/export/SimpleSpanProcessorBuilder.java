@@ -7,10 +7,14 @@ package io.opentelemetry.sdk.trace.export;
 
 import static java.util.Objects.requireNonNull;
 
-/** Builder class for {@link SimpleSpanProcessor}. */
+/**
+ * Builder class for {@link SimpleSpanProcessor}.
+ *
+ * @since 1.34.0
+ */
 public final class SimpleSpanProcessorBuilder {
   private final SpanExporter spanExporter;
-  private boolean exportUnsampledSpans;
+  private boolean exportUnsampledSpans = false;
 
   SimpleSpanProcessorBuilder(SpanExporter spanExporter) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
