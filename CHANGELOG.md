@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.34.0 (2024-01-05)
+
 ### API
 
 * Ability to access version.properties API file with GraalVM native
