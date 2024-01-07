@@ -24,8 +24,6 @@ dependencies {
 
   testImplementation(project(":exporters:otlp:testing-internal"))
   testImplementation("com.linecorp.armeria:armeria-junit5")
-  testImplementation("com.google.api.grpc:proto-google-common-protos")
-  testImplementation("com.squareup.okhttp3:okhttp-tls")
   testImplementation("io.grpc:grpc-stub")
 
   jmhImplementation(project(":sdk:testing"))
@@ -41,6 +39,45 @@ val testJavaVersion: String? by project
 
 testing {
   suites {
+    listOf(
+      "LATEST",
+      "4.11.0"
+    ).forEach {
+      register<JvmTestSuite>("testOkHttpVersion$it") {
+        sources {
+          java {
+            setSrcDirs(listOf("src/testDefaultSender/java"))
+          }
+        }
+        dependencies {
+          implementation(project(":exporters:sender:okhttp"))
+          implementation(project(":exporters:otlp:testing-internal"))
+
+          implementation(platform("com.squareup.okhttp3:okhttp-bom")) {
+            // Only impose dependency constraint if not testing the LATEST version, which is defined in /dependencyManagement/build.gradle.kts
+            if (!it.equals("LATEST")) {
+              version {
+                strictly(it)
+              }
+            }
+          }
+
+          implementation("com.squareup.okhttp3:okhttp")
+          implementation("io.grpc:grpc-stub")
+        }
+
+        targets {
+          all {
+            testTask {
+              // Only enable test suite for non-LATEST in GitHub CI (CI=true)
+              enabled = it.equals("LATEST") || "true".equals(System.getenv("CI"))
+              systemProperty("expected.okhttp.version", it)
+            }
+          }
+        }
+      }
+    }
+
     register<JvmTestSuite>("testGrpcNetty") {
       dependencies {
         implementation(project(":exporters:sender:grpc-managed-channel"))

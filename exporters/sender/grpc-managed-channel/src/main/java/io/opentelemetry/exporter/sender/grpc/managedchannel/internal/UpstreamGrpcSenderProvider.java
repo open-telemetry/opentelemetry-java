@@ -7,6 +7,8 @@ package io.opentelemetry.exporter.sender.grpc.managedchannel.internal;
 
 import io.grpc.Channel;
 import io.grpc.Codec;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.exporter.internal.grpc.GrpcSender;
 import io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
@@ -41,6 +43,13 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager) {
+    boolean shutdownChannel = false;
+    if (managedChannel == null) {
+      // Shutdown the channel as part of the exporter shutdown sequence if
+      shutdownChannel = true;
+      managedChannel = minimalFallbackManagedChannel(endpoint);
+    }
+
     String authorityOverride = null;
     Map<String, List<String>> headers = headersSupplier.get();
     if (headers != null) {
@@ -58,6 +67,27 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
             .apply((Channel) managedChannel, authorityOverride)
             .withCompression(codec.getMessageEncoding());
 
-    return new UpstreamGrpcSender<>(stub, timeoutNanos, headersSupplier);
+    return new UpstreamGrpcSender<>(stub, shutdownChannel, timeoutNanos, headersSupplier);
+  }
+
+  /**
+   * If {@link ManagedChannel} is not explicitly set, provide a minimally configured fallback
+   * channel to avoid failing initialization.
+   *
+   * <p>This is required to accommodate autoconfigure with {@code
+   * opentelemetry-exporter-sender-grpc-managed-channel} which will always fail to initialize
+   * without a fallback channel since there isn't an opportunity to explicitly set the channel.
+   *
+   * <p>This only incorporates the target address, port, and whether to use plain text. All
+   * additional settings are intentionally ignored and must be configured with an explicitly set
+   * {@link ManagedChannel}.
+   */
+  private static ManagedChannel minimalFallbackManagedChannel(URI endpoint) {
+    ManagedChannelBuilder<?> channelBuilder =
+        ManagedChannelBuilder.forAddress(endpoint.getHost(), endpoint.getPort());
+    if (!endpoint.getScheme().equals("https")) {
+      channelBuilder.usePlaintext();
+    }
+    return channelBuilder.build();
   }
 }

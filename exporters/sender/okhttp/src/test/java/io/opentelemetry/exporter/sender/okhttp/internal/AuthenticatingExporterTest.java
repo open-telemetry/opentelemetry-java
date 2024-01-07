@@ -76,6 +76,7 @@ class AuthenticatingExporterTest {
                   server.enqueue(HttpResponse.of(HttpStatus.UNAUTHORIZED));
                   return Collections.emptyMap();
                 })
+            .exportAsJson()
             .build();
     server.enqueue(HttpResponse.of(HttpStatus.UNAUTHORIZED));
     assertThat(exporter.export(marshaler, 0).join(1, TimeUnit.MINUTES).isSuccess()).isFalse();

@@ -2,6 +2,57 @@
 
 ## Unreleased
 
+## Version 1.34.0 (2024-01-05)
+
+**NOTE:** This is the LAST release for `opentelemetry-exporter-jaeger`
+and `opentelemetry-exporter-jaeger-thift`. Jaeger
+has [native support for OTLP](https://opentelemetry.io/blog/2022/jaeger-native-otlp/), and users
+should export to jaeger
+using [OTLP](https://opentelemetry.io/docs/instrumentation/java/exporters/#otlp-dependencies)
+instead.
+
+### API
+
+* Ability to access version.properties API file with GraalVM native
+  ([#6095](https://github.com/open-telemetry/opentelemetry-java/pull/6095))
+
+### SDK
+
+#### Traces
+
+* Only call SpanProcessor onStart / onEnd if required
+  ([#6112](https://github.com/open-telemetry/opentelemetry-java/pull/6112))
+* Add option to export unsampled spans from span processors
+  ([#6057](https://github.com/open-telemetry/opentelemetry-java/pull/6057))
+
+#### Metrics
+
+* Memory Mode: Adding first part support for synchronous instruments - storage
+  ([#5998](https://github.com/open-telemetry/opentelemetry-java/pull/5998))
+* Base2ExponentialHistogramAggregation maxBuckets must be >= 2
+  ([#6093](https://github.com/open-telemetry/opentelemetry-java/pull/6093))
+* Convert histogram measurements to double before passing recording exemplar reservoir
+  ([#6024](https://github.com/open-telemetry/opentelemetry-java/pull/6024))
+
+#### Exporters
+
+* Add compressor SPI to support additional compression algos
+  ([#5990](https://github.com/open-telemetry/opentelemetry-java/pull/5990))
+* Test OTLP exporters with different OkHttp versions
+  ([#6045](https://github.com/open-telemetry/opentelemetry-java/pull/6045))
+* Refactor prometheus exporter to use `io.prometheus:prometheus-metrics-exporter-httpserver`, add
+  exponential Histogram support
+  ([#6015](https://github.com/open-telemetry/opentelemetry-java/pull/6015))
+* UpstreamGrpcSenderProvider uses minimal fallback managed channel when none is specified
+  ([#6110](https://github.com/open-telemetry/opentelemetry-java/pull/6110))
+* OTLP exporters propagate serialization IOException instead of rethrowing as runtime
+  ([#6082](https://github.com/open-telemetry/opentelemetry-java/pull/6082))
+
+#### Extensions
+
+* Autoconfigure reads normalized otel.config.file property
+  ([#6105](https://github.com/open-telemetry/opentelemetry-java/pull/6105))
+
 ## Version 1.33.0 (2023-12-08)
 
 ### API
