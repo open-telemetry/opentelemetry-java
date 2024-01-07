@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
@@ -194,12 +195,15 @@ public final class DoubleBase2ExponentialHistogramAggregator
           mutableExponentialHistogramBuckets = new MutableExponentialHistogramBuckets();
         }
 
+        DynamicPrimitiveLongList reusableBucketCountsList =
+            mutableExponentialHistogramBuckets.getReusableBucketCountsList();
+        buckets.getBucketCountsIntoReusableList(reusableBucketCountsList);
+
         mutableExponentialHistogramBuckets.set(
             buckets.getScale(),
             buckets.getOffset(),
             buckets.getTotalCount(),
-            buckets.getBucketCountsUsingReusableList(
-                mutableExponentialHistogramBuckets.getReusableBucketCountsList()));
+            reusableBucketCountsList);
 
         copy = mutableExponentialHistogramBuckets;
       }

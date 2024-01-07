@@ -102,24 +102,28 @@ final class DoubleBase2ExponentialHistogramBuckets implements ExponentialHistogr
     return PrimitiveLongList.wrap(countsArr);
   }
 
-  DynamicPrimitiveLongList getBucketCountsUsingReusableList(
-      DynamicPrimitiveLongList reusableLongList) {
+  /**
+   * Fills the given reusable list with the bucket counts
+   *
+   * <p>NOTE: This is the same as {@link #getBucketCounts()} but instead of returning a List with
+   * the values is fill the values into {@code reusableLongList}
+   *
+   * @param reusableLongList The list to fill with the bucket counts
+   */
+  void getBucketCountsIntoReusableList(DynamicPrimitiveLongList reusableLongList) {
     if (counts.isEmpty()) {
-      reusableLongList.resize(0);
-      return reusableLongList;
+      reusableLongList.resizeAndClear(0);
     }
 
     int length = counts.getIndexEnd() - counts.getIndexStart() + 1;
 
     if (reusableLongList.size() != length) {
-      reusableLongList.resize(length);
+      reusableLongList.resizeAndClear(length);
     }
 
     for (int i = 0; i < length; i++) {
       reusableLongList.setLong(i, counts.get(i + counts.getIndexStart()));
     }
-
-    return reusableLongList;
   }
 
   @Override

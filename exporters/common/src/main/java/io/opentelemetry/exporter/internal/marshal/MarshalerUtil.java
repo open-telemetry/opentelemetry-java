@@ -134,6 +134,10 @@ public final class MarshalerUtil {
    *
    * <p>Packed repeated fields contain the tag, an integer representing the incoming payload size,
    * and an actual payload of repeated varints.
+   * <p>NOTE: This method has the same logic as
+   * {@link #sizeRepeatedUInt64(ProtoFieldInfo, long[])} )} but instead of using
+   * a primitive array it uses {@link DynamicPrimitiveLongList} to avoid boxing/unboxing
+   * </p>
    */
   public static int sizeRepeatedUInt64(ProtoFieldInfo field, DynamicPrimitiveLongList values) {
     if (values.isEmpty()) {

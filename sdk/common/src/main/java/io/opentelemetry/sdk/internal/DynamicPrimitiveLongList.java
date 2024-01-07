@@ -39,7 +39,7 @@ import java.util.AbstractList;
  *       primitive long.
  *   <li>{@link #setLong(int, long)} - Replaces the element at the specified position in this list
  *       with the specified primitive long element.
- *   <li>{@link #resize(int)} - Resizes the list to the specified size, resetting all elements to
+ *   <li>{@link #resizeAndClear(int)} - Resizes the list to the specified size, resetting all elements to
  *       zero.
  * </ul>
  *
@@ -58,7 +58,7 @@ public class DynamicPrimitiveLongList extends AbstractList<Long> {
 
   public static DynamicPrimitiveLongList of(long... values) {
     DynamicPrimitiveLongList list = new DynamicPrimitiveLongList();
-    list.resize(values.length);
+    list.resizeAndClear(values.length);
     for (int i = 0; i < values.length; i++) {
       list.setLong(i, values[i]);
     }
@@ -106,7 +106,7 @@ public class DynamicPrimitiveLongList extends AbstractList<Long> {
     return size;
   }
 
-  public void resize(int newSize) {
+  public void resizeAndClear(int newSize) {
     if (newSize < 0) {
       throw new IllegalArgumentException("New size must be non-negative");
     }

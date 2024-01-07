@@ -244,7 +244,13 @@ public abstract class Serializer implements AutoCloseable {
     writeEndRepeatedVarint();
   }
 
-  /** Serializes a {@code repeated uint64} field. */
+  /**
+   * Serializes a {@code repeated uint64} field.
+   * <p>
+   *   NOTE: This is the same as {@link #serializeRepeatedUInt64(ProtoFieldInfo, long[])} but instead
+   *   of taking a primitive array it takes a {@link DynamicPrimitiveLongList} as input.
+   * </p>
+   */
   public void serializeRepeatedUInt64(ProtoFieldInfo field, DynamicPrimitiveLongList values)
       throws IOException {
     if (values.isEmpty()) {

@@ -10,10 +10,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
-public class DynamicPrimitiveLongListTest {
+class DynamicPrimitiveLongListTest {
 
   @Test
-  public void subArrayCapacityMustBePositive() {
+  void subArrayCapacityMustBePositive() {
     assertThatThrownBy(
             () -> {
               int subArrayCapacity = 0;
@@ -30,16 +30,16 @@ public class DynamicPrimitiveLongListTest {
   }
 
   @Test
-  public void newListIsEmpty() {
+  void newListIsEmpty() {
     DynamicPrimitiveLongList list = new DynamicPrimitiveLongList();
     assertThat(list).isEmpty();
     assertThatThrownBy(() -> list.getLong(0)).isInstanceOf(IndexOutOfBoundsException.class);
   }
 
   @Test
-  public void resizeListAndSetElement() {
+  void resizeListAndSetElement() {
     DynamicPrimitiveLongList list = new DynamicPrimitiveLongList();
-    list.resize(5);
+    list.resizeAndClear(5);
     list.setLong(3, 10L);
 
     for (int i = 0; i < 5; i++) {
@@ -52,15 +52,15 @@ public class DynamicPrimitiveLongListTest {
   }
 
   @Test
-  public void resizeAndFillThenResizeSmallerAndCheck() {
+  void resizeAndFillThenResizeSmallerAndCheck() {
     DynamicPrimitiveLongList list = new DynamicPrimitiveLongList();
-    list.resize(6);
+    list.resizeAndClear(6);
 
     for (int i = 0; i < 6; i++) {
       list.setLong(i, i + 1);
     }
 
-    list.resize(3);
+    list.resizeAndClear(3);
 
     for (int i = 0; i < 3; i++) {
       assertThat(list.getLong(i)).isEqualTo(0L);
@@ -75,21 +75,21 @@ public class DynamicPrimitiveLongListTest {
   }
 
   @Test
-  public void resizeToNegativeNumber() {
-    assertThatThrownBy(() -> DynamicPrimitiveLongList.of(0, 10, 20).resize(-2))
+  void resizeToNegativeNumber() {
+    assertThatThrownBy(() -> DynamicPrimitiveLongList.of(0, 10, 20).resizeAndClear(-2))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void resizeAndFillThenResizeLargerAndCheck() {
+  void resizeAndFillThenResizeLargerAndCheck() {
     DynamicPrimitiveLongList list = new DynamicPrimitiveLongList();
-    list.resize(6);
+    list.resizeAndClear(6);
 
     for (int i = 0; i < 6; i++) {
       list.setLong(i, i + 1);
     }
 
-    list.resize(8);
+    list.resizeAndClear(8);
 
     for (int i = 0; i < 8; i++) {
       assertThat(list.getLong(i)).isEqualTo(0L);
@@ -99,7 +99,7 @@ public class DynamicPrimitiveLongListTest {
   }
 
   @Test
-  public void of() {
+  void of() {
     DynamicPrimitiveLongList list = DynamicPrimitiveLongList.of(1, 4, 5, 6);
     assertThat(list.getLong(0)).isEqualTo(1);
     assertThat(list.getLong(1)).isEqualTo(4);
@@ -111,7 +111,7 @@ public class DynamicPrimitiveLongListTest {
   }
 
   @Test
-  public void set() {
+  void set() {
     DynamicPrimitiveLongList list = DynamicPrimitiveLongList.of(0, 10, 20);
     assertThat(list.get(1)).isEqualTo(10L);
 

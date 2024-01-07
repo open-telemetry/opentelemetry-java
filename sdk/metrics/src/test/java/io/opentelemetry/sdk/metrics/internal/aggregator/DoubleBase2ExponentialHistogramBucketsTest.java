@@ -116,12 +116,9 @@ class DoubleBase2ExponentialHistogramBucketsTest {
     b.record(1);
     assertThat(b.getBucketCounts()).isEqualTo(Collections.singletonList(3L));
 
-    DynamicPrimitiveLongList reusableLongList = new DynamicPrimitiveLongList();
-    DynamicPrimitiveLongList bucketCounts = b.getBucketCountsUsingReusableList(reusableLongList);
+    DynamicPrimitiveLongList bucketCounts = new DynamicPrimitiveLongList();
+    b.getBucketCountsIntoReusableList(bucketCounts);
     assertThat(bucketCounts).isEqualTo(Collections.singletonList(3L));
-
-    // Should fill reusableLongList and return it
-    assertThat(reusableLongList).isSameAs(bucketCounts);
   }
 
   @Test
@@ -131,12 +128,9 @@ class DoubleBase2ExponentialHistogramBucketsTest {
     DoubleBase2ExponentialHistogramBuckets b = newBuckets(MemoryMode.REUSABLE_DATA);
     assertThat(b.getBucketCounts()).isEmpty();
 
-    DynamicPrimitiveLongList reusableLongList = new DynamicPrimitiveLongList();
-    DynamicPrimitiveLongList bucketCounts = b.getBucketCountsUsingReusableList(reusableLongList);
+    DynamicPrimitiveLongList bucketCounts = new DynamicPrimitiveLongList();
+    b.getBucketCountsIntoReusableList(bucketCounts);
     assertThat(bucketCounts).isEmpty();
-
-    // Should fill reusableLongList and return it
-    assertThat(reusableLongList).isSameAs(bucketCounts);
   }
 
   @Test
