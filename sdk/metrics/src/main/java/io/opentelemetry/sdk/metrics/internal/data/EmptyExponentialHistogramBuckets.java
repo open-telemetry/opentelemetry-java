@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.internal.aggregator;
+package io.opentelemetry.sdk.metrics.internal.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;

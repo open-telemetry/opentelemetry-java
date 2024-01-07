@@ -16,7 +16,6 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * Aggregation that selects the specified default based on instrument.
@@ -24,7 +23,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-@ParametersAreNonnullByDefault
 public final class DefaultAggregation implements Aggregation, AggregatorFactory {
 
   private static final Aggregation INSTANCE = new DefaultAggregation();

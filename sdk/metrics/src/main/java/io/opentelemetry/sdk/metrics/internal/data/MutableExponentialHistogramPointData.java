@@ -9,11 +9,18 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
-import io.opentelemetry.sdk.metrics.internal.aggregator.EmptyExponentialHistogramBuckets;
 import java.util.Collections;
 import java.util.List;
 
-public class MutableExponentialHistogramPointData implements ExponentialHistogramPointData {
+/**
+ * A mutable {@link ExponentialHistogramPointData}
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ *
+ * <p>This class is not thread-safe.
+ */
+public final class MutableExponentialHistogramPointData implements ExponentialHistogramPointData {
 
   private long startEpochNanos;
   private long epochNanos;

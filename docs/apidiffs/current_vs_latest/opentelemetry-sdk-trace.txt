@@ -1,2 +1,12 @@
 Comparing source compatibility of  against 
-No changes.
+***! MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder setExportUnsampledSpans(boolean)
+***! MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.trace.export.SimpleSpanProcessor  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---! REMOVED METHOD: PUBLIC(-) STATIC(-) io.opentelemetry.sdk.trace.export.SimpleSpanProcessorBuilder builder(io.opentelemetry.sdk.trace.export.SpanExporter)
+---! REMOVED CLASS: PUBLIC(-) FINAL(-) io.opentelemetry.sdk.trace.export.SimpleSpanProcessorBuilder  (not serializable)
+	---  CLASS FILE FORMAT VERSION: n.a. <- 52.0
+	---! REMOVED SUPERCLASS: java.lang.Object
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.trace.export.SimpleSpanProcessor build()
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.trace.export.SimpleSpanProcessorBuilder setExportUnsampledSpans(boolean)

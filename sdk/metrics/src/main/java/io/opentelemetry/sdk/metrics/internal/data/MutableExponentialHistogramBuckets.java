@@ -3,14 +3,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.internal.aggregator;
+package io.opentelemetry.sdk.metrics.internal.data;
 
 import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import java.util.List;
 import java.util.Objects;
 
-public class MutableExponentialHistogramBuckets implements ExponentialHistogramBuckets {
+/**
+ * A mutable {@link ExponentialHistogramBuckets}
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ *
+ * <p>This class is not thread-safe.
+ */
+public final class MutableExponentialHistogramBuckets implements ExponentialHistogramBuckets {
 
   private int scale;
   private int offset;

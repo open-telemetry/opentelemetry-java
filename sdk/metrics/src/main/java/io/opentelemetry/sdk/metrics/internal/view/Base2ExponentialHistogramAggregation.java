@@ -20,7 +20,6 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleBase2ExponentialHi
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
-import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * Exponential bucket histogram aggregation configuration.
@@ -28,7 +27,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-@ParametersAreNonnullByDefault
 public final class Base2ExponentialHistogramAggregation implements Aggregation, AggregatorFactory {
 
   private static final int DEFAULT_MAX_BUCKETS = 160;
