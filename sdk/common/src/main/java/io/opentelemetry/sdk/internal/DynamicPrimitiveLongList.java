@@ -39,8 +39,8 @@ import java.util.AbstractList;
  *       primitive long.
  *   <li>{@link #setLong(int, long)} - Replaces the element at the specified position in this list
  *       with the specified primitive long element.
- *   <li>{@link #resizeAndClear(int)} - Resizes the list to the specified size, resetting all elements to
- *       zero.
+ *   <li>{@link #resizeAndClear(int)} - Resizes the list to the specified size, resetting all
+ *       elements to zero.
  * </ul>
  *
  * <p>This class is an internal part of the OpenTelemetry SDK and is not intended for public use.
