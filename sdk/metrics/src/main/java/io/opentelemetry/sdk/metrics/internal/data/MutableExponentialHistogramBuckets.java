@@ -23,7 +23,7 @@ public final class MutableExponentialHistogramBuckets implements ExponentialHist
   private int scale;
   private int offset;
   private long totalCount;
-  private DynamicPrimitiveLongList bucketCounts = new DynamicPrimitiveLongList();
+  private DynamicPrimitiveLongList bucketCounts = DynamicPrimitiveLongList.empty();
 
   @Override
   public int getScale() {

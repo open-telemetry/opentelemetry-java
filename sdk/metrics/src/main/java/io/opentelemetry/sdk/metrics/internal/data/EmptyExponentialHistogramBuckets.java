@@ -11,6 +11,12 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * An empty {@link ExponentialHistogramBuckets}
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @AutoValue
 public abstract class EmptyExponentialHistogramBuckets implements ExponentialHistogramBuckets {
 

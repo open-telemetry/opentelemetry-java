@@ -111,6 +111,17 @@ class DynamicPrimitiveLongListTest {
   }
 
   @Test
+  void empty() {
+    DynamicPrimitiveLongList list = DynamicPrimitiveLongList.empty();
+    assertThat(list).isEmpty();
+
+    // I can still add elements
+    list.resizeAndClear(1);
+    list.set(0, 10L);
+    assertThat(list.getLong(0)).isEqualTo(10L);
+  }
+
+  @Test
   void set() {
     DynamicPrimitiveLongList list = DynamicPrimitiveLongList.of(0, 10, 20);
     assertThat(list.get(1)).isEqualTo(10L);

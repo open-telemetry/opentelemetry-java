@@ -65,11 +65,15 @@ public class DynamicPrimitiveLongList extends AbstractList<Long> {
     return list;
   }
 
-  public DynamicPrimitiveLongList() {
+  public static DynamicPrimitiveLongList empty() {
+    return new DynamicPrimitiveLongList();
+  }
+
+  DynamicPrimitiveLongList() {
     this(DEFAULT_SUBARRAY_CAPACITY);
   }
 
-  public DynamicPrimitiveLongList(int subarrayCapacity) {
+  DynamicPrimitiveLongList(int subarrayCapacity) {
     if (subarrayCapacity <= 0) {
       throw new IllegalArgumentException("Subarray capacity must be positive");
     }

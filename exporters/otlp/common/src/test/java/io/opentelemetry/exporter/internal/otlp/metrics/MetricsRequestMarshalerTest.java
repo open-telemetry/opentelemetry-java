@@ -527,9 +527,9 @@ class MetricsRequestMarshalerTest {
                             /* hasMax= */ false,
                             0,
                             new MutableExponentialHistogramBuckets()
-                                .set(0, 0, 0, new DynamicPrimitiveLongList()),
+                                .set(0, 0, 0, DynamicPrimitiveLongList.empty()),
                             new MutableExponentialHistogramBuckets()
-                                .set(0, 0, 0, new DynamicPrimitiveLongList()),
+                                .set(0, 0, 0, DynamicPrimitiveLongList.empty()),
                             123,
                             456,
                             Attributes.empty(),
@@ -546,7 +546,7 @@ class MetricsRequestMarshalerTest {
                             new MutableExponentialHistogramBuckets()
                                 .set(0, 1, 1 + 0 + 2, DynamicPrimitiveLongList.of(1L, 0L, 2L)),
                             new MutableExponentialHistogramBuckets()
-                                .set(0, 0, 0, new DynamicPrimitiveLongList()),
+                                .set(0, 0, 0, DynamicPrimitiveLongList.empty()),
                             123,
                             456,
                             Attributes.of(stringKey("key"), "value"),
