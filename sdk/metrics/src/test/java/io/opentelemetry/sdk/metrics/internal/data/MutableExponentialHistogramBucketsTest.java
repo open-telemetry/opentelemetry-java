@@ -1,9 +1,14 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.metrics.internal.data;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class MutableExponentialHistogramBucketsTest {
 
@@ -16,7 +21,7 @@ class MutableExponentialHistogramBucketsTest {
     assertThat(buckets.getBucketCounts()).isEmpty();
     assertThat(buckets.getReusableBucketCountsList()).isEmpty();
 
-    DynamicPrimitiveLongList bucketCounts = DynamicPrimitiveLongList.of(1,2,3);
+    DynamicPrimitiveLongList bucketCounts = DynamicPrimitiveLongList.of(1, 2, 3);
     buckets.set(1, 2, 3, bucketCounts);
 
     assertThat(buckets.getScale()).isEqualTo(1);
@@ -26,10 +31,12 @@ class MutableExponentialHistogramBucketsTest {
     assertThat(buckets.getReusableBucketCountsList()).containsExactly(1L, 2L, 3L);
 
     MutableExponentialHistogramBuckets sameBuckets = new MutableExponentialHistogramBuckets();
-    sameBuckets.set(1, 2, 3, DynamicPrimitiveLongList.of(1,2,3));
+    sameBuckets.set(1, 2, 3, DynamicPrimitiveLongList.of(1, 2, 3));
     assertThat(sameBuckets).isEqualTo(buckets);
     assertThat(sameBuckets.hashCode()).isEqualTo(buckets.hashCode());
 
-    assertThat(buckets.toString()).isEqualTo("MutableExponentialHistogramBuckets{scale=1, offset=2, bucketCounts=[1, 2, 3], totalCount=3}");
+    assertThat(buckets.toString())
+        .isEqualTo(
+            "MutableExponentialHistogramBuckets{scale=1, offset=2, bucketCounts=[1, 2, 3], totalCount=3}");
   }
 }

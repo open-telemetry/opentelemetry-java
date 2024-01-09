@@ -1,13 +1,17 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.metrics.internal.data;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
-import org.junit.jupiter.api.Test;
-
 import java.util.Collections;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class MutableExponentialHistogramPointDataTest {
 
@@ -21,26 +25,28 @@ class MutableExponentialHistogramPointDataTest {
     assertThat(pointData.getExemplars()).isEmpty();
 
     MutableExponentialHistogramBuckets positiveBuckets = new MutableExponentialHistogramBuckets();
-    positiveBuckets.set(/* scale= */1, /* offset= */2, /* totalCount= */3,
-        DynamicPrimitiveLongList.of(1, 2, 3));
+    positiveBuckets.set(
+        /* scale= */ 1, /* offset= */ 2, /* totalCount= */ 3, DynamicPrimitiveLongList.of(1, 2, 3));
     MutableExponentialHistogramBuckets negativeBuckets = new MutableExponentialHistogramBuckets();
     negativeBuckets.set(10, 20, 30, DynamicPrimitiveLongList.of(50, 60, 70));
 
     pointData.set(
-        /* scale= */1,
-        /* sum= */2,
-        /* zeroCount= */10,
-        /* hasMin= */true,
-        /* min= */100,
-        /* hasMax= */true,
-        /* max= */1000, positiveBuckets, negativeBuckets,
-        /* startEpochNanos= */10,
-        /* epochNanos= */20,
+        /* scale= */ 1,
+        /* sum= */ 2,
+        /* zeroCount= */ 10,
+        /* hasMin= */ true,
+        /* min= */ 100,
+        /* hasMax= */ true,
+        /* max= */ 1000,
+        positiveBuckets,
+        negativeBuckets,
+        /* startEpochNanos= */ 10,
+        /* epochNanos= */ 20,
         Attributes.of(AttributeKey.stringKey("foo"), "bar"),
         Collections.emptyList());
 
     assertThat(pointData.getSum()).isEqualTo(2);
-    assertThat(pointData.getCount()).isEqualTo(10+30+3);
+    assertThat(pointData.getCount()).isEqualTo(10 + 30 + 3);
     assertThat(pointData.getAttributes().get(AttributeKey.stringKey("foo"))).isEqualTo("bar");
     assertThat(pointData.getAttributes().size()).isEqualTo(1);
     assertThat(pointData.getScale()).isEqualTo(1);
@@ -57,28 +63,29 @@ class MutableExponentialHistogramPointDataTest {
     assertThat(pointData.getEpochNanos()).isEqualTo(20);
     assertThat(pointData.getExemplars()).isEmpty();
 
-    assertThat(pointData.toString()).isEqualTo(
-        "MutableExponentialHistogramPointData{startEpochNanos=10, epochNanos=20, "
-            + "attributes={foo=\"bar\"}, scale=1, sum=2.0, count=43, zeroCount=10, hasMin=true, "
-            + "min=100.0, hasMax=true, max=1000.0, "
-            + "positiveBuckets=MutableExponentialHistogramBuckets{scale=1, offset=2, "
-            + "bucketCounts=[1, 2, 3], totalCount=3}, "
-            + "negativeBuckets=MutableExponentialHistogramBuckets{scale=10, offset=20, "
-            + "bucketCounts=[50, 60, 70], totalCount=30}, exemplars=[]}"
-    );
-
+    assertThat(pointData.toString())
+        .isEqualTo(
+            "MutableExponentialHistogramPointData{startEpochNanos=10, epochNanos=20, "
+                + "attributes={foo=\"bar\"}, scale=1, sum=2.0, count=43, zeroCount=10, hasMin=true, "
+                + "min=100.0, hasMax=true, max=1000.0, "
+                + "positiveBuckets=MutableExponentialHistogramBuckets{scale=1, offset=2, "
+                + "bucketCounts=[1, 2, 3], totalCount=3}, "
+                + "negativeBuckets=MutableExponentialHistogramBuckets{scale=10, offset=20, "
+                + "bucketCounts=[50, 60, 70], totalCount=30}, exemplars=[]}");
 
     MutableExponentialHistogramPointData samePointData = new MutableExponentialHistogramPointData();
     samePointData.set(
-        /* scale= */1,
-        /* sum= */2,
-        /* zeroCount= */10,
-        /* hasMin= */true,
-        /* min= */100,
-        /* hasMax= */true,
-        /* max= */1000, positiveBuckets, negativeBuckets,
-        /* startEpochNanos= */10,
-        /* epochNanos= */20,
+        /* scale= */ 1,
+        /* sum= */ 2,
+        /* zeroCount= */ 10,
+        /* hasMin= */ true,
+        /* min= */ 100,
+        /* hasMax= */ true,
+        /* max= */ 1000,
+        positiveBuckets,
+        negativeBuckets,
+        /* startEpochNanos= */ 10,
+        /* epochNanos= */ 20,
         Attributes.of(AttributeKey.stringKey("foo"), "bar"),
         Collections.emptyList());
     assertThat(samePointData).isEqualTo(pointData);
