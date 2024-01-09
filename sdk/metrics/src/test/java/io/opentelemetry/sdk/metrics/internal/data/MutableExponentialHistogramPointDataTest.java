@@ -89,5 +89,26 @@ class MutableExponentialHistogramPointDataTest {
         Attributes.of(AttributeKey.stringKey("foo"), "bar"),
         Collections.emptyList());
     assertThat(samePointData).isEqualTo(pointData);
+    assertThat(samePointData.hashCode()).isEqualTo(pointData.hashCode());
+
+    MutableExponentialHistogramPointData differentPointData =
+        new MutableExponentialHistogramPointData();
+    differentPointData.set(
+        /* scale= */ 1,
+        /* sum= */ 2,
+        /* zeroCount= */ 10000000,
+        /* hasMin= */ true,
+        /* min= */ 100,
+        /* hasMax= */ true,
+        /* max= */ 1000,
+        positiveBuckets,
+        negativeBuckets,
+        /* startEpochNanos= */ 10,
+        /* epochNanos= */ 20,
+        Attributes.of(AttributeKey.stringKey("foo"), "bar"),
+        Collections.emptyList());
+
+    assertThat(differentPointData).isNotEqualTo(pointData);
+    assertThat(differentPointData.hashCode()).isNotEqualTo(pointData.hashCode());
   }
 }

@@ -30,13 +30,17 @@ class MutableExponentialHistogramBucketsTest {
     assertThat(buckets.getBucketCounts()).containsExactly(1L, 2L, 3L);
     assertThat(buckets.getReusableBucketCountsList()).containsExactly(1L, 2L, 3L);
 
+    assertThat(buckets.toString())
+        .isEqualTo(
+            "MutableExponentialHistogramBuckets{scale=1, offset=2, bucketCounts=[1, 2, 3], totalCount=3}");
+
     MutableExponentialHistogramBuckets sameBuckets = new MutableExponentialHistogramBuckets();
     sameBuckets.set(1, 2, 3, DynamicPrimitiveLongList.of(1, 2, 3));
     assertThat(sameBuckets).isEqualTo(buckets);
     assertThat(sameBuckets.hashCode()).isEqualTo(buckets.hashCode());
 
-    assertThat(buckets.toString())
-        .isEqualTo(
-            "MutableExponentialHistogramBuckets{scale=1, offset=2, bucketCounts=[1, 2, 3], totalCount=3}");
+    sameBuckets.set(1, 2, 3, DynamicPrimitiveLongList.of(1, 20, 3));
+    assertThat(sameBuckets).isNotEqualTo(buckets);
+    assertThat(sameBuckets.hashCode()).isNotEqualTo(buckets.hashCode());
   }
 }
