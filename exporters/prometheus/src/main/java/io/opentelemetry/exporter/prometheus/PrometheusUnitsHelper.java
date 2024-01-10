@@ -69,9 +69,7 @@ class PrometheusUnitsHelper {
 
   @Nullable
   static Unit convertUnit(String otelUnit) {
-    if (otelUnit.isEmpty() || otelUnit.equals("1")) {
-      // The spec says "1" should be translated to "ratio", but this is not implemented in the Java
-      // SDK.
+    if (otelUnit.isEmpty()) {
       return null;
     }
     if (otelUnit.contains("{")) {
