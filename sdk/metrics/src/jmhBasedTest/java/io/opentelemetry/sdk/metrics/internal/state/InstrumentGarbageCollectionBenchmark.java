@@ -7,13 +7,15 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.export.MemoryMode;
-import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.state.TestInstrumentType.InstrumentTester;
+import io.opentelemetry.sdk.metrics.internal.state.TestInstrumentType.TestInstrumentsState;
+import java.lang.reflect.InvocationTargetException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Random;
@@ -33,8 +35,8 @@ import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
 /**
- * Run this through {@link AsynchronousMetricStorageGarbageCollectionBenchmarkTest}, as it runs it
- * embedded with the GC profiler which what this test designed for (No need for command line run)
+ * Run this through {@link InstrumentGarbageCollectionBenchmarkTest}, as it runs it embedded with
+ * the GC profiler which what this test designed for (No need for command line run)
  *
  * <p>This test creates 10 asynchronous counters (any asynchronous instrument will do as the code
  * path is almost the same for all async instrument types), and 1000 attribute sets. Each time the
@@ -51,37 +53,46 @@ import org.openjdk.jmh.annotations.Warmup;
  */
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
-@Measurement(iterations = 20, batchSize = 100)
+@Measurement(iterations = 10, batchSize = 10)
 @Warmup(iterations = 10, batchSize = 10)
 @Fork(1)
-public class AsynchronousMetricStorageGarbageCollectionBenchmark {
+public class InstrumentGarbageCollectionBenchmark {
 
   @State(value = Scope.Benchmark)
-  @SuppressWarnings("SystemOut")
   public static class ThreadState {
     private final int cardinality;
-    private final int countersCount;
+    private final int instrumentCount;
+    @Param public TestInstrumentType testInstrumentType;
     @Param public AggregationTemporality aggregationTemporality;
     @Param public MemoryMode memoryMode;
     SdkMeterProvider sdkMeterProvider;
     private final Random random = new Random();
     List<Attributes> attributesList;
+    private TestInstrumentsState testInstrumentsState;
+    private InstrumentTester instrumentTester;
 
     /** Creates a ThreadState. */
     @SuppressWarnings("unused")
     public ThreadState() {
       cardinality = 1000;
-      countersCount = 10;
+      instrumentCount = 10;
     }
 
     @SuppressWarnings("SpellCheckingInspection")
     @Setup
-    public void setup() {
+    public void setup()
+        throws NoSuchMethodException,
+            InvocationTargetException,
+            InstantiationException,
+            IllegalAccessException {
+      instrumentTester =
+          testInstrumentType.instrumentTesterClass.getDeclaredConstructor().newInstance();
       PeriodicMetricReader metricReader =
           PeriodicMetricReader.builder(
                   // Configure an exporter that configures the temporality and aggregation
                   // for the test case, but otherwise drops the data on export
-                  new NoopMetricExporter(aggregationTemporality, Aggregation.sum(), memoryMode))
+                  new NoopMetricExporter(
+                      aggregationTemporality, instrumentTester.testedAggregation(), memoryMode))
               // Effectively disable periodic reading so reading is only done on #flush()
               .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
               .build();
@@ -95,18 +106,9 @@ public class AsynchronousMetricStorageGarbageCollectionBenchmark {
       SdkMeterProviderUtil.setExemplarFilter(builder, ExemplarFilter.alwaysOff());
 
       sdkMeterProvider = builder.build();
-      for (int i = 0; i < countersCount; i++) {
-        sdkMeterProvider
-            .get("meter")
-            .counterBuilder("counter" + i)
-            .buildWithCallback(
-                observableLongMeasurement -> {
-                  for (int j = 0; j < attributesList.size(); j++) {
-                    Attributes attributes = attributesList.get(j);
-                    observableLongMeasurement.record(random.nextInt(10_000), attributes);
-                  }
-                });
-      }
+      testInstrumentsState =
+          instrumentTester.buildInstruments(
+              instrumentCount, sdkMeterProvider, attributesList, random);
     }
 
     @TearDown
@@ -123,6 +125,8 @@ public class AsynchronousMetricStorageGarbageCollectionBenchmark {
   @Benchmark
   @Threads(value = 1)
   public void recordAndCollect(ThreadState threadState) {
+    threadState.instrumentTester.recordValuesInInstruments(
+        threadState.testInstrumentsState, threadState.attributesList, threadState.random);
     threadState.sdkMeterProvider.forceFlush().join(10, TimeUnit.SECONDS);
   }
 }
