@@ -1,0 +1,10 @@
+[
+  {
+    "name":"io.opentelemetry.sdk.common.export.AutoValue_RetryPolicy",
+    "queryAllDeclaredMethods":true
+  },
+  {
+    "name":"io.opentelemetry.sdk.common.export.RetryPolicy",
+    "queryAllDeclaredMethods":true
+  }
+]
