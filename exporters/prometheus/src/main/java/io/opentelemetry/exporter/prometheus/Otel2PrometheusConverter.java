@@ -451,6 +451,10 @@ final class Otel2PrometheusConverter {
       // Need to re-sanitize metric name since unit may contain illegal characters
       name = sanitizeMetricName(name + "_" + unit);
     }
+    // Repeated __ are not allowed according to spec, although this is allowed in prometheus
+    while (name.contains("__")) {
+      name = name.replace("__", "_");
+    }
 
     return new MetricMetadata(name, help, unit);
   }

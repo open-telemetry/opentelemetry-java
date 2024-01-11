@@ -66,131 +66,98 @@ class Otel2PrometheusConverterTest {
   }
 
   private static Stream<Arguments> metricMetadataArgs() {
-    // TODO (jack-berg): delete "Previously metricName was .." comments before merging, update
-    // comments to reflect new logic
     return Stream.of(
-        // special case for gauge
-        // Previously metricName was "sample_ratio"
+        // the unity unit "1" is translated to "ratio"
         Arguments.of(
             createSampleMetricData("sample", "1", MetricDataType.LONG_GAUGE),
             "sample_ratio gauge",
             "sample_ratio description",
             "sample_ratio"),
-        // special case for gauge with drop - metric unit should match "1" to be converted to
-        // "ratio"
-        // Previously metricName was "sample"
-        Arguments.of(
-            createSampleMetricData("sample", "1{dropped}", MetricDataType.LONG_GAUGE),
-            "sample_ratio gauge",
-            "sample_ratio description",
-            "sample_ratio"),
-        // Gauge without "1" as unit
-        // Previously metricName was "sample_unit"
+        // unit is appended to metric name
         Arguments.of(
             createSampleMetricData("sample", "unit", MetricDataType.LONG_GAUGE),
             "sample_unit gauge",
             "sample_unit description",
             "sample_unit"),
-        // special case with counter
-        // Previously metricName was "sample_unit_total"
+        // units in curly braces are dropped
+        Arguments.of(
+            createSampleMetricData("sample", "1{dropped}", MetricDataType.LONG_GAUGE),
+            "sample_ratio gauge",
+            "sample_ratio description",
+            "sample_ratio"),
+        // monotonic sums always include _total suffix
         Arguments.of(
             createSampleMetricData("sample", "unit", MetricDataType.LONG_SUM),
             "sample_unit_total counter",
             "sample_unit_total description",
             "sample_unit_total"),
-        // special case unit "1", but not gauge - "1" is dropped
-        // Previously metricName was "sample_total"
         Arguments.of(
             createSampleMetricData("sample", "1", MetricDataType.LONG_SUM),
             "sample_ratio_total counter",
             "sample_ratio_total description",
             "sample_ratio_total"),
         // units expressed as numbers other than 1 are retained
-        // Previously metricName was "sample_2_total"
         Arguments.of(
             createSampleMetricData("sample", "2", MetricDataType.LONG_SUM),
             "sample_2_total counter",
             "sample_2_total description",
             "sample_2_total"),
-        // metric name with unsupported characters
-        // Previously metricName was "s_ple_percent_per_minute"
-        Arguments.of(
-            createSampleMetricData("s%%ple", "%/min", MetricDataType.SUMMARY),
-            "s__ple_percent_per_minute summary",
-            "s__ple_percent_per_minute description",
-            "s__ple_percent_per_minute_count"),
-        // metric name with dropped portions
-        // Previously metricName was "s_ple_percent_per_minute"
-        Arguments.of(
-            createSampleMetricData("s%%ple", "%/min", MetricDataType.SUMMARY),
-            "s__ple_percent_per_minute summary",
-            "s__ple_percent_per_minute description",
-            "s__ple_percent_per_minute_count"),
-        // metric unit as a number other than 1 is not treated specially
-        // Previously metricName was "metric_name_2"
         Arguments.of(
             createSampleMetricData("metric_name", "2", MetricDataType.SUMMARY),
             "metric_name_2 summary",
             "metric_name_2 description",
             "metric_name_2_count"),
+        // unsupported characters are translated to "_", repeated "_" are dropped
+        Arguments.of(
+            createSampleMetricData("s%%ple", "%/min", MetricDataType.SUMMARY),
+            "s_ple_percent_per_minute summary",
+            "s_ple_percent_per_minute description",
+            "s_ple_percent_per_minute_count"),
         // metric unit is not appended if the name already contains the unit
-        // Previously metricName was "metric_name_total"
         Arguments.of(
             createSampleMetricData("metric_name_total", "total", MetricDataType.LONG_SUM),
             "metric_name_total counter",
             "metric_name_total description",
             "metric_name_total"),
-        // metric unit is not appended if the name already contains the unit - special case for
-        // total with non-counter type
-        // Previously metricName was "metric_name_total"
+        // total suffix is stripped because total is a reserved suffixed for monotonic sums
         Arguments.of(
             createSampleMetricData("metric_name_total", "total", MetricDataType.SUMMARY),
             "metric_name summary",
             "metric_name description",
             "metric_name_count"),
-        // metric unit not appended if present in metric name - special case for ratio
-        // Previously metricName was "metric_name_ratio"
+        // if metric name ends with unit the unit is omitted
         Arguments.of(
             createSampleMetricData("metric_name_ratio", "1", MetricDataType.LONG_GAUGE),
             "metric_name_ratio gauge",
             "metric_name_ratio description",
             "metric_name_ratio"),
-        // metric unit not appended if present in metric name - special case for ratio - unit not
-        // gauge
-        // Previously metricName was "metric_name_ratio"
         Arguments.of(
             createSampleMetricData("metric_name_ratio", "1", MetricDataType.SUMMARY),
             "metric_name_ratio summary",
             "metric_name_ratio description",
             "metric_name_ratio_count"),
-        // metric unit is not appended if the name already contains the unit - unit can be anywhere
-        // Previously metricName was "metric_hertz"
         Arguments.of(
             createSampleMetricData("metric_hertz", "hertz", MetricDataType.LONG_GAUGE),
             "metric_hertz gauge",
             "metric_hertz description",
             "metric_hertz"),
-        // metric unit is not appended if the name already contains the unit - applies to every unit
-        // Previously metricName was "metric_hertz_total"
         Arguments.of(
             createSampleMetricData("metric_hertz", "hertz", MetricDataType.LONG_SUM),
             "metric_hertz_total counter",
             "metric_hertz_total description",
             "metric_hertz_total"),
-        // metric unit is not appended if the name already contains the unit - order matters
-        // Previously metricName was "metric_total_hertz_hertz_total_total"
+        // if metric name ends with unit the unit is omitted - order matters
         Arguments.of(
             createSampleMetricData("metric_total_hertz", "hertz_total", MetricDataType.LONG_SUM),
             "metric_total_hertz_hertz_total counter",
             "metric_total_hertz_hertz_total description",
             "metric_total_hertz_hertz_total"),
         // metric name cannot start with a number
-        // Previously metricName was "_metric_name_bytes"
         Arguments.of(
             createSampleMetricData("2_metric_name", "By", MetricDataType.SUMMARY),
-            "__metric_name_bytes summary",
-            "__metric_name_bytes description",
-            "__metric_name_bytes_count"));
+            "_metric_name_bytes summary",
+            "_metric_name_bytes description",
+            "_metric_name_bytes_count"));
   }
 
   static MetricData createSampleMetricData(
