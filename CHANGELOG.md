@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 1.34.1 (2024-01-11)
 
 * Fix prometheus exporter regressions
   ([#6138](https://github.com/open-telemetry/opentelemetry-java/pull/6138))
