@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## Version 1.34.1 (2024-01-11)
+
+* Fix prometheus exporter regressions
+  ([#6138](https://github.com/open-telemetry/opentelemetry-java/pull/6138))
+* Fix native image regression
+  ([#6134](https://github.com/open-telemetry/opentelemetry-java/pull/6134))
+
 ## Version 1.34.0 (2024-01-05)
 
 **NOTE:** This is the LAST release for `opentelemetry-exporter-jaeger`
