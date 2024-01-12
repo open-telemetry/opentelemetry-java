@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.internal.marshal;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -121,6 +122,31 @@ public final class MarshalerUtil {
 
     int payloadSize = 0;
     for (long v : values) {
+      payloadSize += CodedOutputStream.computeUInt64SizeNoTag(v);
+    }
+
+    // tag size + payload indicator size + actual payload size
+    return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(payloadSize) + payloadSize;
+  }
+
+  /**
+   * Returns the size of a repeated uint64 field.
+   *
+   * <p>Packed repeated fields contain the tag, an integer representing the incoming payload size,
+   * and an actual payload of repeated varints.
+   *
+   * <p>NOTE: This method has the same logic as {@link #sizeRepeatedUInt64(ProtoFieldInfo, long[])}
+   * )} but instead of using a primitive array it uses {@link DynamicPrimitiveLongList} to avoid
+   * boxing/unboxing
+   */
+  public static int sizeRepeatedUInt64(ProtoFieldInfo field, DynamicPrimitiveLongList values) {
+    if (values.isEmpty()) {
+      return 0;
+    }
+
+    int payloadSize = 0;
+    for (int i = 0; i < values.size(); i++) {
+      long v = values.getLong(i);
       payloadSize += CodedOutputStream.computeUInt64SizeNoTag(v);
     }
 

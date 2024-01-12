@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
@@ -56,7 +57,8 @@ class Base2ExponentialHistogramAggregationTest {
                     InstrumentType.HISTOGRAM,
                     InstrumentValueType.DOUBLE,
                     Advice.empty()),
-                ExemplarFilter.alwaysOff());
+                ExemplarFilter.alwaysOff(),
+                MemoryMode.IMMUTABLE_DATA);
     AggregatorHandle<ExponentialHistogramPointData, ExemplarData> handle =
         aggregator.createHandle();
     // Record max range
