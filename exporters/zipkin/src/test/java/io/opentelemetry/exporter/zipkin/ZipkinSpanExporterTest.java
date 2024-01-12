@@ -29,11 +29,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import zipkin2.Call;
-import zipkin2.Callback;
 import zipkin2.Span;
-import zipkin2.codec.SpanBytesEncoder;
+import zipkin2.reporter.BytesEncoder;
+import zipkin2.reporter.Call;
+import zipkin2.reporter.Callback;
+import zipkin2.reporter.Encoding;
 import zipkin2.reporter.Sender;
+import zipkin2.reporter.SpanBytesEncoder;
 
 @ExtendWith(MockitoExtension.class)
 class ZipkinSpanExporterTest {
@@ -144,7 +146,8 @@ class ZipkinSpanExporterTest {
   }
 
   @Test
-  @SuppressWarnings("PreferJavaTimeOverload")
+  @SuppressWarnings({"PreferJavaTimeOverload", "deprecation"})
+  // we have to use the deprecated setEncoder overload to test it
   void invalidConfig() {
     assertThatThrownBy(() -> ZipkinSpanExporter.builder().setReadTimeout(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
@@ -170,9 +173,33 @@ class ZipkinSpanExporterTest {
         .isInstanceOf(NullPointerException.class)
         .hasMessage("sender");
 
-    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setEncoder(null))
+    assertThatThrownBy(
+            () -> ZipkinSpanExporter.builder().setEncoder((zipkin2.codec.BytesEncoder<Span>) null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("encoder");
+
+    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setEncoder((BytesEncoder<Span>) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("encoder");
+  }
+
+  @Test
+  void encoderProtobuf() {
+    @SuppressWarnings("deprecation") // we have to use the deprecated setEncoderto test it
+    ZipkinSpanExporter exporter =
+        ZipkinSpanExporter.builder().setEncoder(zipkin2.codec.SpanBytesEncoder.PROTO3).build();
+    try {
+      assertThat(exporter).extracting("encoder.encoding").isEqualTo(Encoding.PROTO3);
+    } finally {
+      exporter.shutdown();
+    }
+
+    exporter = ZipkinSpanExporter.builder().setEncoder(SpanBytesEncoder.PROTO3).build();
+    try {
+      assertThat(exporter).extracting("encoder").isEqualTo(SpanBytesEncoder.PROTO3);
+    } finally {
+      exporter.shutdown();
+    }
   }
 
   @Test

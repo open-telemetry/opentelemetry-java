@@ -44,9 +44,9 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import zipkin2.Endpoint;
 import zipkin2.Span;
-import zipkin2.codec.Encoding;
 import zipkin2.codec.SpanBytesDecoder;
-import zipkin2.codec.SpanBytesEncoder;
+import zipkin2.reporter.Encoding;
+import zipkin2.reporter.SpanBytesEncoder;
 import zipkin2.reporter.okhttp3.OkHttpSender;
 
 @Testcontainers(disabledWithoutDocker = true)
@@ -82,7 +82,7 @@ class ZipkinSpanExporterEndToEndHttpTest {
 
   @Container
   public static final GenericContainer<?> zipkinContainer =
-      new GenericContainer<>("ghcr.io/openzipkin/zipkin:2.23")
+      new GenericContainer<>("ghcr.io/openzipkin/zipkin:2.27")
           .withExposedPorts(ZIPKIN_API_PORT)
           .waitingFor(Wait.forHttp("/health").forPort(ZIPKIN_API_PORT));
 
