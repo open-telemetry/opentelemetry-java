@@ -183,8 +183,7 @@ final class Otel2PrometheusConverter {
       MetricMetadata metadata,
       InstrumentationScopeInfo scope,
       Collection<LongPointData> dataPoints) {
-    List<CounterDataPointSnapshot> data =
-        new ArrayList<CounterDataPointSnapshot>(dataPoints.size());
+    List<CounterDataPointSnapshot> data = new ArrayList<>(dataPoints.size());
     for (LongPointData longData : dataPoints) {
       data.add(
           new CounterDataPointSnapshot(
@@ -449,8 +448,14 @@ final class Otel2PrometheusConverter {
     String help = metricData.getDescription();
     Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
     if (unit != null && !name.endsWith(unit.toString())) {
-      name += "_" + unit;
+      // Need to re-sanitize metric name since unit may contain illegal characters
+      name = sanitizeMetricName(name + "_" + unit);
     }
+    // Repeated __ are not allowed according to spec, although this is allowed in prometheus
+    while (name.contains("__")) {
+      name = name.replace("__", "_");
+    }
+
     return new MetricMetadata(name, help, unit);
   }
 
@@ -538,7 +543,8 @@ final class Otel2PrometheusConverter {
           "Conflicting metrics: Multiple metrics with name "
               + name
               + " but different units found. Dropping the one with unit "
-              + b.getUnit());
+              + b.getUnit()
+              + ".");
       return null;
     }
     return new MetricMetadata(name, help, unit);

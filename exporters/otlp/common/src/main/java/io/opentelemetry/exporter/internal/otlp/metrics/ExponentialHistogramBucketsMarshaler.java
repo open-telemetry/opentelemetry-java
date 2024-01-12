@@ -9,6 +9,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.metrics.v1.internal.ExponentialHistogramDataPoint;
+import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import io.opentelemetry.sdk.internal.PrimitiveLongList;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import java.io.IOException;
@@ -35,16 +36,29 @@ public class ExponentialHistogramBucketsMarshaler extends MarshalerWithSize {
   @Override
   protected void writeTo(Serializer output) throws IOException {
     output.serializeSInt32(ExponentialHistogramDataPoint.Buckets.OFFSET, offset);
-    output.serializeRepeatedUInt64(
-        ExponentialHistogramDataPoint.Buckets.BUCKET_COUNTS, PrimitiveLongList.toArray(counts));
+    if (counts instanceof DynamicPrimitiveLongList) {
+      output.serializeRepeatedUInt64(
+          ExponentialHistogramDataPoint.Buckets.BUCKET_COUNTS, (DynamicPrimitiveLongList) counts);
+    } else {
+      output.serializeRepeatedUInt64(
+          ExponentialHistogramDataPoint.Buckets.BUCKET_COUNTS, PrimitiveLongList.toArray(counts));
+    }
   }
 
   private static int calculateSize(int offset, List<Long> counts) {
     int size = 0;
     size += MarshalerUtil.sizeSInt32(ExponentialHistogramDataPoint.Buckets.OFFSET, offset);
-    size +=
-        MarshalerUtil.sizeRepeatedUInt64(
-            ExponentialHistogramDataPoint.Buckets.BUCKET_COUNTS, PrimitiveLongList.toArray(counts));
+    if (counts instanceof DynamicPrimitiveLongList) {
+      size +=
+          MarshalerUtil.sizeRepeatedUInt64(
+              ExponentialHistogramDataPoint.Buckets.BUCKET_COUNTS,
+              (DynamicPrimitiveLongList) counts);
+    } else {
+      size +=
+          MarshalerUtil.sizeRepeatedUInt64(
+              ExponentialHistogramDataPoint.Buckets.BUCKET_COUNTS,
+              PrimitiveLongList.toArray(counts));
+    }
     return size;
   }
 }

@@ -14,3 +14,5 @@ otelBom.addFallback("opentelemetry-extension-annotations", "1.18.0")
 otelBom.addFallback("opentelemetry-sdk-extension-resources", "1.19.0")
 otelBom.addFallback("opentelemetry-sdk-extension-aws", "1.19.0")
 otelBom.addFallback("opentelemetry-extension-aws", "1.20.1")
+// NOTE: opentelemetry-exporter-jaeger and opentelemetry-exporter-jaeger-thift are omitted because
+// they contain dependencies on internal classes, which may have breaking API changes preventing compilation.

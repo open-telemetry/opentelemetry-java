@@ -19,10 +19,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import zipkin2.Callback;
 import zipkin2.Span;
-import zipkin2.codec.BytesEncoder;
-import zipkin2.codec.Encoding;
+import zipkin2.reporter.BytesEncoder;
+import zipkin2.reporter.Callback;
+import zipkin2.reporter.Encoding;
 import zipkin2.reporter.Sender;
 
 /**
