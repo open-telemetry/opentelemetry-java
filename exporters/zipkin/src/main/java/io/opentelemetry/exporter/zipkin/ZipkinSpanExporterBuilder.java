@@ -17,9 +17,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import zipkin2.Span;
-import zipkin2.codec.BytesEncoder;
-import zipkin2.codec.SpanBytesEncoder;
+import zipkin2.reporter.BytesEncoder;
 import zipkin2.reporter.Sender;
+import zipkin2.reporter.SpanBytesEncoder;
 import zipkin2.reporter.okhttp3.OkHttpSender;
 
 /** Builder class for {@link ZipkinSpanExporter}. */
@@ -47,6 +47,21 @@ public final class ZipkinSpanExporterBuilder {
     requireNonNull(sender, "sender");
     this.sender = sender;
     return this;
+  }
+
+  /**
+   * Sets the {@link zipkin2.codec.BytesEncoder}, which controls the format used by the {@link
+   * Sender}. Defaults to the {@link zipkin2.codec.SpanBytesEncoder#JSON_V2}.
+   *
+   * @param encoder the {@code BytesEncoder} to use.
+   * @return this.
+   * @see zipkin2.codec.SpanBytesEncoder
+   * @deprecated Use {@link #setEncoder(BytesEncoder)} instead.
+   */
+  @Deprecated
+  public ZipkinSpanExporterBuilder setEncoder(zipkin2.codec.BytesEncoder<Span> encoder) {
+    requireNonNull(encoder, "encoder");
+    return setEncoder(new BytesEncoderAdapter(encoder));
   }
 
   /**

@@ -49,7 +49,6 @@ testing {
       dependencies {
         implementation(project(":api:events"))
         implementation(project(":extensions:trace-propagators"))
-        implementation(project(":exporters:jaeger"))
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:logging-otlp"))
         implementation(project(":exporters:otlp:all"))
