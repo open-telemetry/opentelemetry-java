@@ -9,12 +9,10 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.internal.state.TestInstrumentType;
-import java.util.List;
-import java.util.Random;
-
 import io.opentelemetry.sdk.metrics.internal.state.TestInstrumentType.InstrumentTester;
 import io.opentelemetry.sdk.metrics.internal.state.TestInstrumentType.TestInstrumentsState;
+import java.util.List;
+import java.util.Random;
 import org.assertj.core.util.Lists;
 
 public class ExplicitBucketHistogramTester implements InstrumentTester {
@@ -43,6 +41,7 @@ public class ExplicitBucketHistogramTester implements InstrumentTester {
     return state;
   }
 
+  @SuppressWarnings("ForLoopReplaceableByForEach") // This is for GC sensitivity testing: no streams
   @Override
   public void recordValuesInInstruments(
       TestInstrumentsState testInstrumentsState,

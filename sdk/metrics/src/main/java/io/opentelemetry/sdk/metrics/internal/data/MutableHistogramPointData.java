@@ -11,7 +11,6 @@ import static io.opentelemetry.sdk.metrics.internal.data.HistogramPointDataValid
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +42,7 @@ public final class MutableHistogramPointData implements HistogramPointData {
     this.counts.resizeAndClear(buckets);
   }
 
-  @SuppressWarnings("TooManyParameters")
+  @SuppressWarnings({"TooManyParameters", "ForLoopReplaceableByForEach"})
   public MutableHistogramPointData set(
       long startEpochNanos,
       long epochNanos,
