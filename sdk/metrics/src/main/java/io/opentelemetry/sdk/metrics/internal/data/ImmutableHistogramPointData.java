@@ -5,6 +5,9 @@
 
 package io.opentelemetry.sdk.metrics.internal.data;
 
+import static io.opentelemetry.sdk.metrics.internal.data.HistogramPointDataValidations.isStrictlyIncreasing;
+import static io.opentelemetry.sdk.metrics.internal.data.HistogramPointDataValidations.validateBoundaryEdgesAreNotInfinite;
+
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.internal.PrimitiveLongList;
@@ -88,10 +91,7 @@ public abstract class ImmutableHistogramPointData implements HistogramPointData 
     if (!isStrictlyIncreasing(boundaries)) {
       throw new IllegalArgumentException("invalid boundaries: " + boundaries);
     }
-    if (!boundaries.isEmpty()
-        && (boundaries.get(0).isInfinite() || boundaries.get(boundaries.size() - 1).isInfinite())) {
-      throw new IllegalArgumentException("invalid boundaries: contains explicit +/-Inf");
-    }
+    validateBoundaryEdgesAreNotInfinite(boundaries);
 
     long totalCount = 0;
     for (long c : PrimitiveLongList.toArray(counts)) {
@@ -113,13 +113,4 @@ public abstract class ImmutableHistogramPointData implements HistogramPointData 
   }
 
   ImmutableHistogramPointData() {}
-
-  private static boolean isStrictlyIncreasing(List<Double> xs) {
-    for (int i = 0; i < xs.size() - 1; i++) {
-      if (xs.get(i).compareTo(xs.get(i + 1)) >= 0) {
-        return false;
-      }
-    }
-    return true;
-  }
 }

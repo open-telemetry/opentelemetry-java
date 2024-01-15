@@ -9,13 +9,15 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.internal.state.tester.AsyncCounterTester;
+import io.opentelemetry.sdk.metrics.internal.state.tester.ExplicitBucketHistogramTester;
 import io.opentelemetry.sdk.metrics.internal.state.tester.ExponentialHistogramTester;
 import java.util.List;
 import java.util.Random;
 
 public enum TestInstrumentType {
   ASYNC_COUNTER(AsyncCounterTester.class),
-  EXPONENTIAL_HISTOGRAM(ExponentialHistogramTester.class);
+  EXPONENTIAL_HISTOGRAM(ExponentialHistogramTester.class),
+  EXPLICIT_BUCKET(ExplicitBucketHistogramTester.class);
 
   final Class<? extends InstrumentTester> instrumentTesterClass;
 
