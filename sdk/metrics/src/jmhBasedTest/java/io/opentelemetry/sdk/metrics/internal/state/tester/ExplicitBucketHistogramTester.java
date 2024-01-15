@@ -44,9 +44,7 @@ public class ExplicitBucketHistogramTester implements InstrumentTester {
   @SuppressWarnings("ForLoopReplaceableByForEach") // This is for GC sensitivity testing: no streams
   @Override
   public void recordValuesInInstruments(
-      TestInstrumentsState testInstrumentsState,
-      List<Attributes> attributesList,
-      Random random) {
+      TestInstrumentsState testInstrumentsState, List<Attributes> attributesList, Random random) {
 
     ExplicitHistogramState state = (ExplicitHistogramState) testInstrumentsState;
 

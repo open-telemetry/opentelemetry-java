@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.internal.data;
 
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
-
 import java.util.List;
 
 /**
