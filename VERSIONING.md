@@ -53,8 +53,7 @@ new artifact which requires adding the new artifact to dependency declarations.
 On rare occasions we may deprecate an entire stable artifact, with the intent of stopping functional
 changes or enhancements. In these situations we may stop publishing additional `MINOR` or `MAJOR`
 versions of the artifact. However, if necessary, we'll publish security fixes via `PATCH` releases.
-Despite stopping publishing, new versions of the BOM will continue to reference the last published
-version of the artifact, and the API of the last published version will remain stable.
+The API of the last published version will remain stable.
 
 As a user, if you always depend on the latest version of the BOM for a given `MAJOR` version, and
 you do not use classes in the `internal` package (which you MUST NOT do), you can be assured that

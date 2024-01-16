@@ -45,19 +45,6 @@ dependencies {
     }
   }
 
-  // For testing BOM references to artifacts that were previously published
-  testImplementation(platform(project(":bom")))
-  // The io.grpc.grpc-* dependencies are transitive dependencies of opentelemetry-exporter-jaeger-proto
-  // which must be provided by the user
-  testImplementation("io.opentelemetry:opentelemetry-exporter-jaeger-proto")
-  testImplementation("io.grpc:grpc-api")
-  testImplementation("io.grpc:grpc-protobuf")
-  testImplementation("io.grpc:grpc-stub")
-  testImplementation("io.opentelemetry:opentelemetry-extension-annotations")
-  testImplementation("io.opentelemetry:opentelemetry-extension-aws")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-extension-resources")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-extension-aws")
-
   testImplementation("com.tngtech.archunit:archunit-junit5")
 }
 
