@@ -14,9 +14,11 @@ import edu.berkeley.cs.jqf.fuzz.random.NoGuidance;
 import io.opentelemetry.api.internal.PercentEscaper;
 import java.net.URLDecoder;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledInNativeImage;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
 
+@DisabledInNativeImage // To investigate, may be related to JQF
 class PercentEscaperFuzzTest {
   @RunWith(JQF.class)
   public static class TestCases {
