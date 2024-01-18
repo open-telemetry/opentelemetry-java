@@ -219,7 +219,7 @@ class OtlpSpanExporterProviderTest {
     config.put("otel.exporter.otlp.certificate", certificatePath);
     config.put("otel.exporter.otlp.client.key", clientKeyPath);
     config.put("otel.exporter.otlp.client.certificate", clientCertificatePath);
-    config.put("otel.exporter.otlp.headers", "header-key=header-value");
+    config.put("otel.exporter.otlp.headers", "header-key=header%20value");
     config.put("otel.exporter.otlp.compression", "gzip");
     config.put("otel.exporter.otlp.timeout", "15s");
     config.put("otel.experimental.exporter.otlp.retry.enabled", "true");
@@ -229,7 +229,7 @@ class OtlpSpanExporterProviderTest {
       assertThat(exporter).isInstanceOf(OtlpHttpSpanExporter.class);
       verify(httpBuilder, times(1)).build();
       verify(httpBuilder).setEndpoint("https://localhost:443/v1/traces");
-      verify(httpBuilder).addHeader("header-key", "header-value");
+      verify(httpBuilder).addHeader("header-key", "header value");
       verify(httpBuilder).setCompression("gzip");
       verify(httpBuilder).setTimeout(Duration.ofSeconds(15));
       verify(httpBuilder).setTrustedCertificates(serverTls.certificate().getEncoded());
