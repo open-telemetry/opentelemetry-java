@@ -60,6 +60,7 @@ dependencies {
   implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.23")
   implementation("org.owasp:dependency-check-gradle:9.0.9")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:1.7.1")
+  implementation("org.spdx:spdx-gradle-plugin:0.5.0")
 }
 
 // We can't apply conventions to this build so include important ones such as the Java compilation

@@ -31,6 +31,12 @@ jobs:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
 
+      - uses: actions/upload-artifact@v4
+        name: Save gradle generated SBOM's to build
+        with:
+          name: Gradle SPDX SBOMs
+          path: "**/build/spdx/*.spdx.json"
+
       - uses: anchore/sbom-action@v0
 
       - uses: anchore/sbom-action@v0

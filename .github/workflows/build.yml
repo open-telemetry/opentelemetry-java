@@ -95,6 +95,12 @@ jobs:
         with:
           format: cyclonedx-json
 
+      - uses: actions/upload-artifact@v4
+        name: Save gradle generated SBOM's to build
+        with:
+          name: Gradle SPDX SBOMs ${{ matrix.os }}-${{ matrix.test-java-version }}
+          path: "**/build/spdx/*.spdx.json"
+
   markdown-link-check:
     # release branches are excluded to avoid unnecessary maintenance
     if: ${{ !startsWith(github.ref_name, 'release/') }}

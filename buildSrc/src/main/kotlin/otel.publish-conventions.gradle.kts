@@ -3,6 +3,7 @@ plugins {
   signing
 
   id("otel.japicmp-conventions")
+  id("org.spdx.sbom")
 }
 
 publishing {
@@ -61,5 +62,19 @@ if (System.getenv("CI") != null) {
   signing {
     useInMemoryPgpKeys(System.getenv("GPG_PRIVATE_KEY"), System.getenv("GPG_PASSWORD"))
     sign(publishing.publications["mavenPublication"])
+  }
+}
+
+if (!project.name.startsWith("bom")) {
+  spdxSbom {
+    targets {
+      // create a target with name based on the project path,
+      // this is used for the task name (spdxSbomFor<PATH>)
+      // and output file (<PATH>.spdx.json)
+      create(project.path.substring(1).replace(":", "-"))
+    }
+  }
+  tasks.named("assemble") {
+    dependsOn("spdxSbom")
   }
 }
