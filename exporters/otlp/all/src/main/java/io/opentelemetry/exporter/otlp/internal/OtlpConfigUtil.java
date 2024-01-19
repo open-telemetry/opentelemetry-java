@@ -97,7 +97,7 @@ public final class OtlpConfigUtil {
       try {
         // headers are encoded as URL - see
         // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md#specifying-headers-via-environment-variables
-        addHeader.accept(key, URLDecoder.decode(value, "UTF-8"));
+        addHeader.accept(key, URLDecoder.decode(value, StandardCharsets.UTF_8.displayName()));
       } catch (UnsupportedEncodingException e) {
         throw new ConfigurationException("cannot decode header value: " + value, e);
       }
