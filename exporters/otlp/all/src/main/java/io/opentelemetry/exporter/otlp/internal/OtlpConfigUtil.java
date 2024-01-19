@@ -19,10 +19,10 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Locale;
 import java.util.Map;
@@ -98,7 +98,7 @@ public final class OtlpConfigUtil {
         // headers are encoded as URL - see
         // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md#specifying-headers-via-environment-variables
         addHeader.accept(key, URLDecoder.decode(value, StandardCharsets.UTF_8.displayName()));
-      } catch (UnsupportedEncodingException e) {
+      } catch (Exception e) {
         throw new ConfigurationException("Cannot decode header value: " + value, e);
       }
     }

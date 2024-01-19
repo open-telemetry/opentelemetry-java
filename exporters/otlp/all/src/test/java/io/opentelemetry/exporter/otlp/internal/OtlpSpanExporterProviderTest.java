@@ -29,6 +29,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -273,5 +274,17 @@ class OtlpSpanExporterProviderTest {
           .setClientTls(clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded());
     }
     Mockito.verifyNoInteractions(grpcBuilder);
+  }
+
+  @Test
+  void createExporter_decodingError() {
+    Assertions.assertThatThrownBy(
+            () -> {
+              provider.createExporter(
+                  DefaultConfigProperties.createFromMap(
+                      Collections.singletonMap("otel.exporter.otlp.headers", "header-key=%-1")));
+            })
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Cannot decode header value: %-1");
   }
 }
