@@ -39,7 +39,6 @@ final class SpanMarshaler extends MarshalerWithSize {
   private final SpanStatusMarshaler spanStatusMarshaler;
   private final int flags;
 
-
   // Because SpanMarshaler is always part of a repeated field, it cannot return "null".
   static SpanMarshaler create(SpanData spanData) {
     KeyValueMarshaler[] attributeMarshalers =
