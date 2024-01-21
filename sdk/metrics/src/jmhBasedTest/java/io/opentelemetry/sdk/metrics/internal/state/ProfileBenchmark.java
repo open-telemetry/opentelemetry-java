@@ -14,8 +14,8 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
  * <p>Steps:
  *
  * <ol>
- *   <li>Follow download instructions for async-profiler, located at
- *       <a href="https://github.com/async-profiler/async-profiler">this location</a>
+ *   <li>Follow download instructions for async-profiler, located at <a
+ *       href="https://github.com/async-profiler/async-profiler">this location</a>
  *   <li>Assuming you have extracted it at /tmp/async-profiler-2.9-macos, add the following to your
  *       JVM arguments of your run configuration:
  *       <pre>
