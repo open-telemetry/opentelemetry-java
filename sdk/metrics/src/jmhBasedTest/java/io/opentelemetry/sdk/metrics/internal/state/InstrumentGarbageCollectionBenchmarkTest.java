@@ -107,6 +107,11 @@ public class InstrumentGarbageCollectionBenchmarkTest {
 
                 assertThat(immutableDataAllocRate).isNotNull().isNotZero();
                 assertThat(reusableDataAllocRate).isNotNull().isNotZero();
+
+                // If this test suddenly fails for you this means you have changed the code in a way
+                // that allocates more memory than before. You can find out where, by running
+                // ProfileBenchmark class and looking at the flame graph. Make sure to
+                // set the parameters according to where it failed for.
                 assertThat(100 - (reusableDataAllocRate / immutableDataAllocRate) * 100)
                     .describedAs(
                         "Aggregation temporality = %s, testInstrumentType = %s",
