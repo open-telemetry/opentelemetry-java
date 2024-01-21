@@ -15,7 +15,6 @@ import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.state.TestInstrumentType.InstrumentTester;
 import io.opentelemetry.sdk.metrics.internal.state.TestInstrumentType.TestInstrumentsState;
-import java.lang.reflect.InvocationTargetException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Random;
@@ -80,13 +79,8 @@ public class InstrumentGarbageCollectionBenchmark {
 
     @SuppressWarnings("SpellCheckingInspection")
     @Setup
-    public void setup()
-        throws NoSuchMethodException,
-            InvocationTargetException,
-            InstantiationException,
-            IllegalAccessException {
-      instrumentTester =
-          testInstrumentType.instrumentTesterClass.getDeclaredConstructor().newInstance();
+    public void setup() {
+      instrumentTester = testInstrumentType.createInstrumentTester();
       PeriodicMetricReader metricReader =
           PeriodicMetricReader.builder(
                   // Configure an exporter that configures the temporality and aggregation

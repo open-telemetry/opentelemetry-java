@@ -14,14 +14,22 @@ import java.util.List;
 import java.util.Random;
 
 public enum TestInstrumentType {
-  ASYNC_COUNTER(AsyncCounterTester.class),
-  EXPONENTIAL_HISTOGRAM(ExponentialHistogramTester.class);
+  ASYNC_COUNTER() {
+    @Override
+    InstrumentTester createInstrumentTester() {
+      return new AsyncCounterTester();
+    }
+  },
+  EXPONENTIAL_HISTOGRAM() {
+    @Override
+    InstrumentTester createInstrumentTester() {
+      return new ExponentialHistogramTester();
+    }
+  };
 
-  final Class<? extends InstrumentTester> instrumentTesterClass;
+  abstract InstrumentTester createInstrumentTester();
 
-  TestInstrumentType(Class<? extends InstrumentTester> instrumentTesterClass) {
-    this.instrumentTesterClass = instrumentTesterClass;
-  }
+  TestInstrumentType() {}
 
   public interface InstrumentTester {
     Aggregation testedAggregation();
