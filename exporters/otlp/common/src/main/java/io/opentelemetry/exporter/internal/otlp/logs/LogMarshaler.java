@@ -219,8 +219,4 @@ final class LogMarshaler extends MarshalerWithSize {
     return SeverityNumber.SEVERITY_NUMBER_UNSPECIFIED;
   }
 
-  /** Vendored {@link Byte#toUnsignedInt(byte)} to support Android. */
-  private static int toUnsignedInt(byte x) {
-    return ((int) x) & 0xff;
-  }
 }

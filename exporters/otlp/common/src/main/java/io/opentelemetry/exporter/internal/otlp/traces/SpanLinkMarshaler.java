@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.internal.otlp.traces;
 
 import static io.opentelemetry.api.trace.propagation.internal.W3CTraceContextEncoding.encodeTraceState;
 
+import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
@@ -26,6 +27,7 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
   private final byte[] traceStateUtf8;
   private final KeyValueMarshaler[] attributeMarshalers;
   private final int droppedAttributesCount;
+  private final TraceFlags traceFlags;
 
   static SpanLinkMarshaler[] createRepeated(List<LinkData> links) {
     if (links.isEmpty()) {
@@ -51,6 +53,7 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
     return new SpanLinkMarshaler(
         link.getSpanContext().getTraceId(),
         link.getSpanContext().getSpanId(),
+        link.getSpanContext().getTraceFlags(),
         traceStateUtf8,
         KeyValueMarshaler.createForAttributes(link.getAttributes()),
         link.getTotalAttributeCount() - link.getAttributes().size());
@@ -59,14 +62,17 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
   private SpanLinkMarshaler(
       String traceId,
       String spanId,
+      TraceFlags traceFlags,
       byte[] traceStateUtf8,
       KeyValueMarshaler[] attributeMarshalers,
       int droppedAttributesCount) {
     super(
         calculateSize(
-            traceId, spanId, traceStateUtf8, attributeMarshalers, droppedAttributesCount));
+            traceId, spanId, traceFlags,
+            traceStateUtf8, attributeMarshalers, droppedAttributesCount));
     this.traceId = traceId;
     this.spanId = spanId;
+    this.traceFlags = traceFlags;
     this.traceStateUtf8 = traceStateUtf8;
     this.attributeMarshalers = attributeMarshalers;
     this.droppedAttributesCount = droppedAttributesCount;
@@ -76,6 +82,7 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
   public void writeTo(Serializer output) throws IOException {
     output.serializeTraceId(Span.Link.TRACE_ID, traceId);
     output.serializeSpanId(Span.Link.SPAN_ID, spanId);
+    output.serializeFixed32(Span.Link.FLAGS, toUnsignedInt(traceFlags.asByte()));
     output.serializeString(Span.Link.TRACE_STATE, traceStateUtf8);
     output.serializeRepeatedMessage(Span.Link.ATTRIBUTES, attributeMarshalers);
     output.serializeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
@@ -84,12 +91,14 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
   private static int calculateSize(
       String traceId,
       String spanId,
+      TraceFlags flags,
       byte[] traceStateUtf8,
       KeyValueMarshaler[] attributeMarshalers,
       int droppedAttributesCount) {
     int size = 0;
     size += MarshalerUtil.sizeTraceId(Span.Link.TRACE_ID, traceId);
     size += MarshalerUtil.sizeSpanId(Span.Link.SPAN_ID, spanId);
+    size += MarshalerUtil.sizeFixed32(Span.Link.FLAGS, toUnsignedInt(flags.asByte()));
     size += MarshalerUtil.sizeBytes(Span.Link.TRACE_STATE, traceStateUtf8);
     size += MarshalerUtil.sizeRepeatedMessage(Span.Link.ATTRIBUTES, attributeMarshalers);
     size += MarshalerUtil.sizeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
