@@ -218,5 +218,4 @@ final class LogMarshaler extends MarshalerWithSize {
     // NB: Should not be possible with aligned versions.
     return SeverityNumber.SEVERITY_NUMBER_UNSPECIFIED;
   }
-
 }

@@ -68,8 +68,12 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
       int droppedAttributesCount) {
     super(
         calculateSize(
-            traceId, spanId, traceFlags,
-            traceStateUtf8, attributeMarshalers, droppedAttributesCount));
+            traceId,
+            spanId,
+            traceFlags,
+            traceStateUtf8,
+            attributeMarshalers,
+            droppedAttributesCount));
     this.traceId = traceId;
     this.spanId = spanId;
     this.traceFlags = traceFlags;
