@@ -82,10 +82,10 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
   public void writeTo(Serializer output) throws IOException {
     output.serializeTraceId(Span.Link.TRACE_ID, traceId);
     output.serializeSpanId(Span.Link.SPAN_ID, spanId);
-    output.serializeFixed32(Span.Link.FLAGS, toUnsignedInt(traceFlags.asByte()));
     output.serializeString(Span.Link.TRACE_STATE, traceStateUtf8);
     output.serializeRepeatedMessage(Span.Link.ATTRIBUTES, attributeMarshalers);
     output.serializeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
+    output.serializeFixed32(Span.Link.FLAGS, toUnsignedInt(traceFlags.asByte()));
   }
 
   private static int calculateSize(
@@ -98,10 +98,10 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
     int size = 0;
     size += MarshalerUtil.sizeTraceId(Span.Link.TRACE_ID, traceId);
     size += MarshalerUtil.sizeSpanId(Span.Link.SPAN_ID, spanId);
-    size += MarshalerUtil.sizeFixed32(Span.Link.FLAGS, toUnsignedInt(flags.asByte()));
     size += MarshalerUtil.sizeBytes(Span.Link.TRACE_STATE, traceStateUtf8);
     size += MarshalerUtil.sizeRepeatedMessage(Span.Link.ATTRIBUTES, attributeMarshalers);
     size += MarshalerUtil.sizeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
+    size += MarshalerUtil.sizeFixed32(Span.Link.FLAGS, toUnsignedInt(flags.asByte()));
     return size;
   }
 }
