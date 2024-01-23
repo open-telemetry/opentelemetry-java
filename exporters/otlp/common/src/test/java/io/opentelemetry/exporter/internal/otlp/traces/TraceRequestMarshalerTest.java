@@ -225,6 +225,7 @@ class TraceRequestMarshalerTest {
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
+                .setFlags(SPAN_CONTEXT.getTraceFlags().asByte())
                 .setTraceState(encodeTraceState(SPAN_CONTEXT.getTraceState()))
                 .build());
     assertThat(span.getDroppedLinksCount()).isEqualTo(1); // 2 - 1
@@ -314,6 +315,7 @@ class TraceRequestMarshalerTest {
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
+                .setFlags(SPAN_CONTEXT.getTraceFlags().asByte())
                 .setTraceState(TRACE_STATE_VALUE)
                 .build());
   }
@@ -330,6 +332,7 @@ class TraceRequestMarshalerTest {
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
+                .setFlags(SPAN_CONTEXT.getTraceFlags().asByte())
                 .setTraceState(TRACE_STATE_VALUE)
                 .addAttributes(
                     KeyValue.newBuilder()
