@@ -41,9 +41,12 @@ import static io.opentelemetry.exporter.internal.marshal.WireFormat.FIXED64_SIZE
 import static io.opentelemetry.exporter.internal.marshal.WireFormat.MAX_VARINT32_SIZE;
 import static io.opentelemetry.exporter.internal.marshal.WireFormat.MAX_VARINT_SIZE;
 
+import com.google.common.base.Utf8;
 import io.opentelemetry.api.internal.ConfigUtil;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Protobuf wire encoder.
@@ -180,6 +183,8 @@ public abstract class CodedOutputStream {
   final void writeEnumNoTag(final int value) throws IOException {
     writeInt32NoTag(value);
   }
+
+  abstract void writeByteArrayNoTag(final ByteBuffer value) throws IOException;
 
   /** Write a {@code bytes} field to the stream. */
   final void writeByteArrayNoTag(final byte[] value) throws IOException {
@@ -323,6 +328,22 @@ public abstract class CodedOutputStream {
   static int computeEnumSizeNoTag(final int value) {
     return computeInt32SizeNoTag(value);
   }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a {@code string} field
+   */
+  public static int computeStringSizeNoTag(final String value) {
+    int length;
+    try {
+      length = Utf8.encodedLength(value);
+    } catch (IllegalArgumentException e) {
+      final byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+      length = bytes.length;
+    }
+
+    return computeLengthDelimitedFieldSize(length);
+  }
+
 
   /** Compute the number of bytes that would be needed to encode a {@code bytes} field. */
   public static int computeByteArraySizeNoTag(final byte[] value) {
@@ -479,6 +500,15 @@ public abstract class CodedOutputStream {
       this.out = out;
       position = 0;
       totalBytesWritten = 0;
+    }
+
+    @Override
+    void writeByteArrayNoTag(final ByteBuffer value) throws IOException {
+      // what happens if the value is an empty string?
+      writeUInt32NoTag(value.remaining());
+      while (value.hasRemaining()) {
+        write(value.get());
+      }
     }
 
     @Override

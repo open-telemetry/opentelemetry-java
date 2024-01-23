@@ -14,6 +14,7 @@ import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -45,6 +46,8 @@ public final class OtlpHttpMetricExporterBuilder {
 
   private DefaultAggregationSelector defaultAggregationSelector =
       DefaultAggregationSelector.getDefault();
+
+  private MemoryMode memoryMode = MemoryMode.IMMUTABLE_DATA;
 
   OtlpHttpMetricExporterBuilder(HttpExporterBuilder<MetricsRequestMarshaler> delegate) {
     this.delegate = delegate;
@@ -222,6 +225,15 @@ public final class OtlpHttpMetricExporterBuilder {
     return this;
   }
 
+  // TODO Asaf: Go over this properly
+  /**
+   * Sets the {@link MemoryMode} to use for this exporter's associated reader.
+   */
+  public OtlpHttpMetricExporterBuilder setMemoryMode(MemoryMode memoryMode) {
+    this.memoryMode = memoryMode;
+    return this;
+  }
+
   OtlpHttpMetricExporterBuilder exportAsJson() {
     delegate.exportAsJson();
     return this;
@@ -234,6 +246,10 @@ public final class OtlpHttpMetricExporterBuilder {
    */
   public OtlpHttpMetricExporter build() {
     return new OtlpHttpMetricExporter(
-        delegate, delegate.build(), aggregationTemporalitySelector, defaultAggregationSelector);
+        delegate,
+        delegate.build(),
+        aggregationTemporalitySelector,
+        defaultAggregationSelector,
+        memoryMode);
   }
 }

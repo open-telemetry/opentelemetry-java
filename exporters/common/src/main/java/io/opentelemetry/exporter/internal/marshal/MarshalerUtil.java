@@ -265,6 +265,14 @@ public final class MarshalerUtil {
     return field.getTagSize() + CodedOutputStream.computeFixed32SizeNoTag(message);
   }
 
+  /** Returns the size of a string field, encoded using UTF-8 encoding */
+  public static int sizeStringUtf8(ProtoFieldInfo field, String message) {
+    if (message == null || message.isEmpty()) {
+      return 0;
+    }
+    return field.getTagSize() + CodedOutputStream.computeStringSizeNoTag(message);
+  }
+
   /** Returns the size of a bytes field. */
   public static int sizeBytes(ProtoFieldInfo field, byte[] message) {
     if (message.length == 0) {

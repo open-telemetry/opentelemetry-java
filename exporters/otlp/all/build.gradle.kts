@@ -12,6 +12,7 @@ otelJava.moduleName.set("io.opentelemetry.exporter.otlp")
 base.archivesName.set("opentelemetry-exporter-otlp")
 
 dependencies {
+  api(project(":sdk:common"))
   api(project(":sdk:trace"))
   api(project(":sdk:metrics"))
   api(project(":sdk:logs"))

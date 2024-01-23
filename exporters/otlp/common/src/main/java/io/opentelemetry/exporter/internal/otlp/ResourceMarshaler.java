@@ -13,6 +13,7 @@ import io.opentelemetry.proto.resource.v1.internal.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.List;
 
 /**
  * A Marshaler of {@link io.opentelemetry.sdk.resources.Resource}.
@@ -37,7 +38,7 @@ public final class ResourceMarshaler extends MarshalerWithSize {
 
       RealResourceMarshaler realMarshaler =
           new RealResourceMarshaler(
-              KeyValueMarshaler.createForAttributes(resource.getAttributes()));
+              ImmutableKeyValueMarshaler.createForAttributes(resource.getAttributes()));
 
       ByteArrayOutputStream binaryBos =
           new ByteArrayOutputStream(realMarshaler.getBinarySerializedSize());
@@ -69,9 +70,9 @@ public final class ResourceMarshaler extends MarshalerWithSize {
   }
 
   private static final class RealResourceMarshaler extends MarshalerWithSize {
-    private final KeyValueMarshaler[] attributes;
+    private final List<KeyValueMarshaler> attributes;
 
-    private RealResourceMarshaler(KeyValueMarshaler[] attributes) {
+    private RealResourceMarshaler(List<KeyValueMarshaler> attributes) {
       super(calculateSize(attributes));
       this.attributes = attributes;
     }
@@ -81,7 +82,7 @@ public final class ResourceMarshaler extends MarshalerWithSize {
       output.serializeRepeatedMessage(Resource.ATTRIBUTES, attributes);
     }
 
-    private static int calculateSize(KeyValueMarshaler[] attributeMarshalers) {
+    private static int calculateSize(List<KeyValueMarshaler> attributeMarshalers) {
       return MarshalerUtil.sizeRepeatedMessage(Resource.ATTRIBUTES, attributeMarshalers);
     }
   }

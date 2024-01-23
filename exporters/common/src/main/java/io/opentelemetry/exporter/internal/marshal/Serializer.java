@@ -160,12 +160,26 @@ public abstract class Serializer implements AutoCloseable {
    * Serializes a protobuf {@code string} field. {@code utf8Bytes} is the UTF8 encoded bytes of the
    * string to serialize.
    */
+  public void serializeString(ProtoFieldInfo field, String string) throws IOException {
+    if (string.length() == 0) {
+      return;
+    }
+    writeString(field, string);
+  }
+
+  /**
+   * Serializes a protobuf {@code string} field. {@code utf8Bytes} is the UTF8 encoded bytes of the
+   * string to serialize.
+   */
   public void serializeString(ProtoFieldInfo field, byte[] utf8Bytes) throws IOException {
     if (utf8Bytes.length == 0) {
       return;
     }
     writeString(field, utf8Bytes);
   }
+
+  /** Writes a protobuf {@code string} field, even if it matches the default value. */
+  public abstract void writeString(ProtoFieldInfo field, String string) throws IOException;
 
   /** Writes a protobuf {@code string} field, even if it matches the default value. */
   public abstract void writeString(ProtoFieldInfo field, byte[] utf8Bytes) throws IOException;

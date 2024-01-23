@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.List;
 
 /**
  * A Marshaler of {@link InstrumentationScopeInfo}.
@@ -37,8 +38,8 @@ public final class InstrumentationScopeMarshaler extends MarshalerWithSize {
       // a few times until the cache gets filled which is fine.
       byte[] name = MarshalerUtil.toBytes(scopeInfo.getName());
       byte[] version = MarshalerUtil.toBytes(scopeInfo.getVersion());
-      KeyValueMarshaler[] attributes =
-          KeyValueMarshaler.createForAttributes(scopeInfo.getAttributes());
+      List<KeyValueMarshaler> attributes =
+          ImmutableKeyValueMarshaler.createForAttributes(scopeInfo.getAttributes());
 
       RealInstrumentationScopeMarshaler realMarshaler =
           new RealInstrumentationScopeMarshaler(name, version, attributes);
@@ -73,12 +74,14 @@ public final class InstrumentationScopeMarshaler extends MarshalerWithSize {
   }
 
   private static final class RealInstrumentationScopeMarshaler extends MarshalerWithSize {
-
     private final byte[] name;
     private final byte[] version;
-    private final KeyValueMarshaler[] attributes;
+    private final List<KeyValueMarshaler> attributes;
 
-    RealInstrumentationScopeMarshaler(byte[] name, byte[] version, KeyValueMarshaler[] attributes) {
+    RealInstrumentationScopeMarshaler(
+        byte[] name,
+        byte[] version,
+        List<KeyValueMarshaler> attributes) {
       super(computeSize(name, version, attributes));
       this.name = name;
       this.version = version;
@@ -92,7 +95,10 @@ public final class InstrumentationScopeMarshaler extends MarshalerWithSize {
       output.serializeRepeatedMessage(InstrumentationScope.ATTRIBUTES, attributes);
     }
 
-    private static int computeSize(byte[] name, byte[] version, KeyValueMarshaler[] attributes) {
+    private static int computeSize(
+        byte[] name,
+        byte[] version,
+        List<KeyValueMarshaler> attributes) {
       return MarshalerUtil.sizeBytes(InstrumentationScope.NAME, name)
           + MarshalerUtil.sizeBytes(InstrumentationScope.VERSION, version)
           + MarshalerUtil.sizeRepeatedMessage(InstrumentationScope.ATTRIBUTES, attributes);

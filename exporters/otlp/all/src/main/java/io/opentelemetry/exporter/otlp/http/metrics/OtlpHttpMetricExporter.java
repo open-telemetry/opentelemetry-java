@@ -7,8 +7,12 @@ package io.opentelemetry.exporter.otlp.http.metrics;
 
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
+import io.opentelemetry.exporter.internal.otlp.MarshallerObjectPools;
+import io.opentelemetry.exporter.internal.otlp.metrics.ImmutableMetricsRequestMarshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
+import io.opentelemetry.exporter.internal.otlp.metrics.MutableMetricsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -17,7 +21,11 @@ import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
+import java.util.Objects;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
+
+import static java.util.Objects.*;
 
 /**
  * Exports metrics using OTLP via HTTP, using OpenTelemetry's protobuf model.
@@ -31,16 +39,26 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
   private final HttpExporter<MetricsRequestMarshaler> delegate;
   private final AggregationTemporalitySelector aggregationTemporalitySelector;
   private final DefaultAggregationSelector defaultAggregationSelector;
+  private final MemoryMode memoryMode;
+
+  // Only filled when MemoryMode.REUSABLE_DATA is used.
+  @Nullable
+  private MarshallerObjectPools marshallerObjectPools;
 
   OtlpHttpMetricExporter(
       HttpExporterBuilder<MetricsRequestMarshaler> builder,
       HttpExporter<MetricsRequestMarshaler> delegate,
       AggregationTemporalitySelector aggregationTemporalitySelector,
-      DefaultAggregationSelector defaultAggregationSelector) {
+      DefaultAggregationSelector defaultAggregationSelector,
+      MemoryMode memoryMode) {
     this.builder = builder;
     this.delegate = delegate;
     this.aggregationTemporalitySelector = aggregationTemporalitySelector;
     this.defaultAggregationSelector = defaultAggregationSelector;
+    this.memoryMode = memoryMode;
+    if (memoryMode == MemoryMode.REUSABLE_DATA) {
+      marshallerObjectPools = new MarshallerObjectPools();
+    }
   }
 
   /**
@@ -93,7 +111,13 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
    */
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
-    MetricsRequestMarshaler exportRequest = MetricsRequestMarshaler.create(metrics);
+    MetricsRequestMarshaler exportRequest;
+    if (getMemoryMode() == MemoryMode.REUSABLE_DATA) {
+      exportRequest = MutableMetricsRequestMarshaler.create(
+          metrics, requireNonNull(marshallerObjectPools));
+    } else /* IMMUTABLE_DATA */ {
+      exportRequest = ImmutableMetricsRequestMarshaler.create(metrics);
+    }
     return delegate.export(exportRequest, metrics.size());
   }
 

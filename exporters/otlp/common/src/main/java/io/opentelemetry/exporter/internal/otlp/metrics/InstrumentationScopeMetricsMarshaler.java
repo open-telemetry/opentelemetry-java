@@ -14,35 +14,28 @@ import io.opentelemetry.proto.metrics.v1.internal.ScopeMetrics;
 import java.io.IOException;
 import java.util.List;
 
-final class InstrumentationScopeMetricsMarshaler extends MarshalerWithSize {
-  private final InstrumentationScopeMarshaler instrumentationScope;
-  private final List<Marshaler> metricMarshalers;
-  private final byte[] schemaUrlUtf8;
+public abstract class InstrumentationScopeMetricsMarshaler extends Marshaler {
 
-  InstrumentationScopeMetricsMarshaler(
-      InstrumentationScopeMarshaler instrumentationScope,
-      byte[] schemaUrlUtf8,
-      List<Marshaler> metricMarshalers) {
-    super(calculateSize(instrumentationScope, schemaUrlUtf8, metricMarshalers));
-    this.instrumentationScope = instrumentationScope;
-    this.schemaUrlUtf8 = schemaUrlUtf8;
-    this.metricMarshalers = metricMarshalers;
-  }
+  abstract protected InstrumentationScopeMarshaler getInstrumentationScope();
+
+  abstract protected String getSchemaUrl();
+
+  abstract protected List<Marshaler> getMetricMarshalers();
 
   @Override
   public void writeTo(Serializer output) throws IOException {
-    output.serializeMessage(ScopeMetrics.SCOPE, instrumentationScope);
-    output.serializeRepeatedMessage(ScopeMetrics.METRICS, metricMarshalers);
-    output.serializeString(ScopeMetrics.SCHEMA_URL, schemaUrlUtf8);
+    output.serializeMessage(ScopeMetrics.SCOPE, getInstrumentationScope());
+    output.serializeRepeatedMessage(ScopeMetrics.METRICS, getMetricMarshalers());
+    output.serializeString(ScopeMetrics.SCHEMA_URL, getSchemaUrl());
   }
 
-  private static int calculateSize(
+  protected static int calculateSize(
       InstrumentationScopeMarshaler instrumentationScope,
-      byte[] schemaUrlUtf8,
+      String schemaUrl,
       List<Marshaler> metricMarshalers) {
     int size = 0;
     size += MarshalerUtil.sizeMessage(ScopeMetrics.SCOPE, instrumentationScope);
-    size += MarshalerUtil.sizeBytes(ScopeMetrics.SCHEMA_URL, schemaUrlUtf8);
+    size += MarshalerUtil.sizeStringUtf8(ScopeMetrics.SCHEMA_URL, schemaUrl);
     size += MarshalerUtil.sizeRepeatedMessage(ScopeMetrics.METRICS, metricMarshalers);
     return size;
   }

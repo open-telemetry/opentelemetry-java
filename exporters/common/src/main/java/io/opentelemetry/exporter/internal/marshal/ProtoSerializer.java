@@ -10,6 +10,7 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,7 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   // reusing buffers for the thread is almost free. Even with multiple threads, it should still be
   // worth it and is common practice in serialization libraries such as Jackson.
   private static final ThreadLocal<Map<String, byte[]>> THREAD_LOCAL_ID_CACHE = new ThreadLocal<>();
-
+  private static final ThreadLocal<ByteBuffer> THREAD_LOCAL_STRING_BYTE_BUFFER = new ThreadLocal<>();
   private final CodedOutputStream output;
   private final Map<String, byte[]> idCache;
 
@@ -115,6 +116,25 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   @Override
   protected void writeDoubleValue(double value) throws IOException {
     output.writeDoubleNoTag(value);
+  }
+
+  @Override
+  public void writeString(ProtoFieldInfo field, String string) throws IOException {
+    output.writeUInt32NoTag(field.getTag());
+    ByteBuffer byteBuffer = THREAD_LOCAL_STRING_BYTE_BUFFER.get();
+    if (byteBuffer == null) {
+      byteBuffer = ByteBuffer.allocateDirect(string.length() * 4);
+      THREAD_LOCAL_STRING_BYTE_BUFFER.set(byteBuffer);
+    } else {
+      byteBuffer.clear();
+      if (byteBuffer.capacity() < string.length() * 4) {
+        byteBuffer = ByteBuffer.allocateDirect(string.length() * 4);
+        THREAD_LOCAL_STRING_BYTE_BUFFER.set(byteBuffer);
+      }
+    }
+    Utf8.encodeUtf8(string, byteBuffer);
+    byteBuffer.flip(); // Make it readable for CodedOutputStream
+    output.writeByteArrayNoTag(byteBuffer);
   }
 
   @Override
