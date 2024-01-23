@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.internal.otlp.traces;
 import static io.opentelemetry.api.trace.propagation.internal.W3CTraceContextEncoding.encodeTraceState;
 
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
@@ -37,7 +38,7 @@ final class SpanMarshaler extends MarshalerWithSize {
   private final SpanLinkMarshaler[] spanLinkMarshalers;
   private final int droppedLinksCount;
   private final SpanStatusMarshaler spanStatusMarshaler;
-  private final int flags;
+  private final TraceFlags flags;
 
   // Because SpanMarshaler is always part of a repeated field, it cannot return "null".
   static SpanMarshaler create(SpanData spanData) {
@@ -58,8 +59,6 @@ final class SpanMarshaler extends MarshalerWithSize {
             ? EMPTY_BYTES
             : encodeTraceState(traceState).getBytes(StandardCharsets.UTF_8);
 
-    int flags = spanData.getSpanContext().getTraceFlags().asByte();
-
     return new SpanMarshaler(
         spanData.getSpanContext().getTraceId(),
         spanData.getSpanContext().getSpanId(),
@@ -76,7 +75,7 @@ final class SpanMarshaler extends MarshalerWithSize {
         spanLinkMarshalers,
         spanData.getTotalRecordedLinks() - spanData.getLinks().size(),
         SpanStatusMarshaler.create(spanData.getStatus()),
-        flags);
+        spanData.getSpanContext().getTraceFlags());
   }
 
   private SpanMarshaler(
@@ -95,7 +94,7 @@ final class SpanMarshaler extends MarshalerWithSize {
       SpanLinkMarshaler[] spanLinkMarshalers,
       int droppedLinksCount,
       SpanStatusMarshaler spanStatusMarshaler,
-      int flags) {
+      TraceFlags flags) {
     super(
         calculateSize(
             traceId,
@@ -155,7 +154,7 @@ final class SpanMarshaler extends MarshalerWithSize {
     output.serializeUInt32(Span.DROPPED_LINKS_COUNT, droppedLinksCount);
 
     output.serializeMessage(Span.STATUS, spanStatusMarshaler);
-    output.serializeFixed32(Span.FLAGS, flags);
+    output.serializeFixed32(Span.FLAGS, toUnsignedInt(flags.asByte()));
   }
 
   private static int calculateSize(
@@ -174,7 +173,7 @@ final class SpanMarshaler extends MarshalerWithSize {
       SpanLinkMarshaler[] spanLinkMarshalers,
       int droppedLinksCount,
       SpanStatusMarshaler spanStatusMarshaler,
-      int flags) {
+      TraceFlags flags) {
     int size = 0;
     size += MarshalerUtil.sizeTraceId(Span.TRACE_ID, traceId);
     size += MarshalerUtil.sizeSpanId(Span.SPAN_ID, spanId);
@@ -197,7 +196,7 @@ final class SpanMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeUInt32(Span.DROPPED_LINKS_COUNT, droppedLinksCount);
 
     size += MarshalerUtil.sizeMessage(Span.STATUS, spanStatusMarshaler);
-    size += MarshalerUtil.sizeFixed32(Span.FLAGS, flags);
+    size += MarshalerUtil.sizeFixed32(Span.FLAGS, toUnsignedInt(flags.asByte()));
     return size;
   }
 
