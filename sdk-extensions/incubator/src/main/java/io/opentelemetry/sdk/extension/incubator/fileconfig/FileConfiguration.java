@@ -8,9 +8,17 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,10 +28,17 @@ import org.snakeyaml.engine.v2.constructor.StandardConstructor;
 import org.snakeyaml.engine.v2.nodes.MappingNode;
 import org.yaml.snakeyaml.Yaml;
 
-final class ConfigurationReader {
+/**
+ * Configure {@link OpenTelemetrySdk} from YAML configuration files conforming to the schema in <a
+ * href="https://github.com/open-telemetry/opentelemetry-configuration">open-telemetry/opentelemetry-configuration</a>.
+ *
+ * @see #parseAndCreate(InputStream)
+ */
+public final class FileConfiguration {
 
+  private static final Logger logger = Logger.getLogger(FileConfiguration.class.getName());
   private static final Pattern ENV_VARIABLE_REFERENCE =
-      Pattern.compile("\\$\\{env:([a-zA-Z_]+[a-zA-Z0-9_]*)}");
+      Pattern.compile("\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)}");
 
   private static final ObjectMapper MAPPER;
 
@@ -40,16 +55,67 @@ final class ConfigurationReader {
     MAPPER.configOverride(Boolean.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
   }
 
-  private ConfigurationReader() {}
+  private FileConfiguration() {}
+
+  /**
+   * Combines {@link #parse(InputStream)} and {@link #create(OpenTelemetryConfiguration)}.
+   *
+   * @throws ConfigurationException if unable to parse or interpret
+   */
+  public static OpenTelemetrySdk parseAndCreate(InputStream inputStream) {
+    OpenTelemetryConfiguration configurationModel = parse(inputStream);
+    return create(configurationModel);
+  }
+
+  /**
+   * Interpret the {@code configurationModel} to create {@link OpenTelemetrySdk} instance
+   * corresponding to the configuration.
+   *
+   * @param configurationModel the configuration model
+   * @return the {@link OpenTelemetrySdk}
+   * @throws ConfigurationException if unable to interpret
+   */
+  public static OpenTelemetrySdk create(OpenTelemetryConfiguration configurationModel) {
+    List<Closeable> closeables = new ArrayList<>();
+    try {
+      return OpenTelemetryConfigurationFactory.getInstance()
+          .create(
+              configurationModel,
+              SpiHelper.create(FileConfiguration.class.getClassLoader()),
+              closeables);
+    } catch (RuntimeException e) {
+      logger.info(
+          "Error encountered interpreting configuration model. Closing partially configured components.");
+      for (Closeable closeable : closeables) {
+        try {
+          logger.fine("Closing " + closeable.getClass().getName());
+          closeable.close();
+        } catch (IOException ex) {
+          logger.warning(
+              "Error closing " + closeable.getClass().getName() + ": " + ex.getMessage());
+        }
+      }
+      if (e instanceof ConfigurationException) {
+        throw e;
+      }
+      throw new ConfigurationException("Unexpected configuration error", e);
+    }
+  }
 
   /**
    * Parse the {@code configuration} YAML and return the {@link OpenTelemetryConfiguration}.
    *
    * <p>Before parsing, environment variable substitution is performed as described in {@link
    * EnvSubstitutionConstructor}.
+   *
+   * @throws ConfigurationException if unable to parse
    */
-  static OpenTelemetryConfiguration parse(InputStream configuration) {
-    return parse(configuration, System.getenv());
+  public static OpenTelemetryConfiguration parse(InputStream configuration) {
+    try {
+      return parse(configuration, System.getenv());
+    } catch (RuntimeException e) {
+      throw new ConfigurationException("Unable to parse configuration input stream", e);
+    }
   }
 
   // Visible for testing
@@ -59,6 +125,7 @@ final class ConfigurationReader {
     return MAPPER.convertValue(yamlObj, OpenTelemetryConfiguration.class);
   }
 
+  // Visible for testing
   static Object loadYaml(InputStream inputStream, Map<String, String> environmentVariables) {
     LoadSettings settings = LoadSettings.builder().build();
     Load yaml = new Load(settings, new EnvSubstitutionConstructor(settings, environmentVariables));
@@ -68,15 +135,15 @@ final class ConfigurationReader {
   /**
    * {@link StandardConstructor} which substitutes environment variables.
    *
-   * <p>Environment variables follow the syntax {@code ${env:VARIABLE}}, where {@code VARIABLE} is
-   * an environment variable matching the regular expression {@code [a-zA-Z_]+[a-zA-Z0-9_]*}.
+   * <p>Environment variables follow the syntax {@code ${VARIABLE}}, where {@code VARIABLE} is an
+   * environment variable matching the regular expression {@code [a-zA-Z_]+[a-zA-Z0-9_]*}.
    *
    * <p>Environment variable substitution only takes place on scalar values of maps. References to
    * environment variables in keys or sets are ignored.
    *
    * <p>If a referenced environment variable is not defined, it is replaced with {@code ""}.
    */
-  static final class EnvSubstitutionConstructor extends StandardConstructor {
+  private static final class EnvSubstitutionConstructor extends StandardConstructor {
 
     // Yaml is not thread safe but this instance is always used on the same thread
     private final Yaml yaml = new Yaml();

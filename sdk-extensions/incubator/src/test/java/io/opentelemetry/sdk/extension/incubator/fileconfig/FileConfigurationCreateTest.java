@@ -28,7 +28,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.event.Level;
 
-class ConfigurationFactoryTest {
+class FileConfigurationCreateTest {
 
   @RegisterExtension
   static final SelfSignedCertificateExtension serverTls = new SelfSignedCertificateExtension();
@@ -40,25 +40,15 @@ class ConfigurationFactoryTest {
 
   @RegisterExtension
   LogCapturer logCapturer =
-      LogCapturer.create().captureForLogger(ConfigurationFactory.class.getName(), Level.TRACE);
-
-  @Test
-  void parseAndInterpret_BadInputStream() {
-    assertThatThrownBy(
-            () ->
-                ConfigurationFactory.parseAndInterpret(
-                    new ByteArrayInputStream("foo".getBytes(StandardCharsets.UTF_8))))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unable to parse inputStream");
-  }
+      LogCapturer.create().captureForLogger(FileConfiguration.class.getName(), Level.TRACE);
 
   /**
    * Verify each example in <a
    * href="https://github.com/open-telemetry/opentelemetry-configuration/tree/main/examples">open-telemetry/opentelemetry-configuration/examples</a>
-   * can pass {@link ConfigurationFactory#parseAndInterpret(InputStream)}.
+   * can pass {@link FileConfiguration#parseAndCreate(InputStream)}.
    */
   @Test
-  void parseAndInterpret_Examples(@TempDir Path tempDir)
+  void parseAndCreate_Examples(@TempDir Path tempDir)
       throws IOException, CertificateEncodingException {
     // Write certificates to temp files
     String certificatePath =
@@ -101,14 +91,14 @@ class ConfigurationFactoryTest {
           new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
 
       // Verify that file can be parsed and interpreted without error
-      assertThatCode(() -> cleanup.addCloseable(ConfigurationFactory.parseAndInterpret(is)))
+      assertThatCode(() -> cleanup.addCloseable(FileConfiguration.parseAndCreate(is)))
           .as("Example file: " + example.getName())
           .doesNotThrowAnyException();
     }
   }
 
   @Test
-  void parseAndInterpret_Exception_CleansUpPartials() {
+  void parseAndCreate_Exception_CleansUpPartials() {
     // Trigger an exception after some components have been configured by adding a valid batch
     // exporter with OTLP exporter, following by invalid batch exporter which references invalid
     // exporter "foo".
@@ -125,12 +115,12 @@ class ConfigurationFactoryTest {
 
     assertThatThrownBy(
             () ->
-                ConfigurationFactory.parseAndInterpret(
+                FileConfiguration.parseAndCreate(
                     new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Unrecognized log record exporter(s): [foo]");
     logCapturer.assertContains(
-        "Error encountered interpreting configuration. Closing partially configured components.");
+        "Error encountered interpreting configuration model. Closing partially configured components.");
     logCapturer.assertContains(
         "Closing io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter");
     logCapturer.assertContains("Closing io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor");
