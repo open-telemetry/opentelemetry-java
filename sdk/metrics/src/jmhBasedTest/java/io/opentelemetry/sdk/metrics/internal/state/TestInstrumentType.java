@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.internal.state.tester.AsyncCounterTester;
+import io.opentelemetry.sdk.metrics.internal.state.tester.ExplicitBucketHistogramTester;
 import io.opentelemetry.sdk.metrics.internal.state.tester.ExponentialHistogramTester;
 import java.util.List;
 import java.util.Random;
@@ -24,6 +25,12 @@ public enum TestInstrumentType {
     @Override
     InstrumentTester createInstrumentTester() {
       return new ExponentialHistogramTester();
+    }
+  },
+  EXPLICIT_BUCKET() {
+    @Override
+    InstrumentTester createInstrumentTester() {
+      return new ExplicitBucketHistogramTester();
     }
   };
 

@@ -37,7 +37,7 @@ public class ProfileBenchmark {
     // Parameters
     AggregationTemporality aggregationTemporality = AggregationTemporality.DELTA;
     MemoryMode memoryMode = MemoryMode.REUSABLE_DATA;
-    TestInstrumentType testInstrumentType = TestInstrumentType.EXPONENTIAL_HISTOGRAM;
+    TestInstrumentType testInstrumentType = TestInstrumentType.EXPLICIT_BUCKET;
 
     InstrumentGarbageCollectionBenchmark.ThreadState benchmarkSetup =
         new InstrumentGarbageCollectionBenchmark.ThreadState();
