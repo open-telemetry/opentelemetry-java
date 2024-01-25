@@ -9,15 +9,16 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import io.opentelemetry.sdk.metrics.internal.state.TestInstrumentType.InstrumentTester;
 import io.opentelemetry.sdk.metrics.internal.state.TestInstrumentType.TestInstrumentsState;
 import java.util.List;
 import java.util.Random;
-import org.assertj.core.util.Lists;
 
 public class ExplicitBucketHistogramTester implements InstrumentTester {
 
   static class ExplicitHistogramState implements TestInstrumentsState {
+    public double maxBucketValue;
     DoubleHistogram doubleHistogram;
   }
 
@@ -25,8 +26,7 @@ public class ExplicitBucketHistogramTester implements InstrumentTester {
 
   @Override
   public Aggregation testedAggregation() {
-    return Aggregation.explicitBucketHistogram(
-        Lists.newArrayList(1.0, 5.0, 10.0, 20.0, 50.0, 100.0, 500.0, 1000.0));
+    return Aggregation.explicitBucketHistogram();
   }
 
   @Override
@@ -38,6 +38,9 @@ public class ExplicitBucketHistogramTester implements InstrumentTester {
     ExplicitHistogramState state = new ExplicitHistogramState();
     state.doubleHistogram =
         sdkMeterProvider.get("meter").histogramBuilder("test.explicit.histogram").build();
+    state.maxBucketValue =
+        ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES.get(
+            ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES.size() - 1);
     return state;
   }
 
@@ -51,7 +54,8 @@ public class ExplicitBucketHistogramTester implements InstrumentTester {
     for (int j = 0; j < attributesList.size(); j++) {
       Attributes attributes = attributesList.get(j);
       for (int i = 0; i < measurementsPerAttributeSet; i++) {
-        state.doubleHistogram.record(random.nextInt(2_000), attributes);
+        state.doubleHistogram.record(
+            random.nextInt(Double.valueOf(state.maxBucketValue * 1.1).intValue()), attributes);
       }
     }
   }

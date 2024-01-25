@@ -18,16 +18,15 @@ final class HistogramPointDataValidations {
 
   private HistogramPointDataValidations() {}
 
-  static boolean isStrictlyIncreasing(List<Double> xs) {
+  static void validateIsStrictlyIncreasing(List<Double> xs) {
     for (int i = 0; i < xs.size() - 1; i++) {
       if (xs.get(i).compareTo(xs.get(i + 1)) >= 0) {
-        return false;
+        throw new IllegalArgumentException("invalid boundaries: " + xs);
       }
     }
-    return true;
   }
 
-  static void validateBoundaryEdgesAreNotInfinite(List<Double> boundaries) {
+  static void validateFiniteBoundaries(List<Double> boundaries) {
     if (!boundaries.isEmpty()
         && (boundaries.get(0).isInfinite() || boundaries.get(boundaries.size() - 1).isInfinite())) {
       throw new IllegalArgumentException("invalid boundaries: contains explicit +/-Inf");
