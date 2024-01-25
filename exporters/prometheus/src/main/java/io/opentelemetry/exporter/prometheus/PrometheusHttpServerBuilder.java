@@ -10,6 +10,8 @@ import static java.util.Objects.requireNonNull;
 
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.annotation.Nullable;
 
 /** A builder for {@link PrometheusHttpServer}. */
@@ -22,6 +24,8 @@ public final class PrometheusHttpServerBuilder {
   private int port = DEFAULT_PORT;
   private PrometheusRegistry prometheusRegistry = new PrometheusRegistry();
   private boolean otelScopeEnabled = true;
+  private boolean addResourceAttributesAsLabels = false;
+  private Pattern allowedResourceAttributesRegexp = Pattern.compile(".*");;
 
   @Nullable private ExecutorService executor;
 
@@ -61,11 +65,47 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /**
+   * If set to true, resource attributes will be added as labels on each exported metric.
+   * Default is {@code false}.
+   * <p>
+   *   You can limit the attributes that are added as labels by setting a regular expression
+   *   in {@link #setAllowedResourceAttributesRegexp(String)}.
+   * </p>
+   */
+  public void setAddResourceAttributesAsLabels(boolean addResourceAttributesAsLabels) {
+    this.addResourceAttributesAsLabels = addResourceAttributesAsLabels;
+  }
+
+  /**
+   * Sets a regular expression to limit the resource attributes that are added as labels.
+   * <p>
+   *   If not set, all resource attributes will be added as labels on each exported metric,
+   *   unless {@link #setAddResourceAttributesAsLabels(boolean)} is set to false.
+   *   If set, only resource attributes that match the regular expression will be added as labels.
+   * </p>
+   *
+   * @param resourceAttributesRegexp a regular expression matching {@link java.util.regex.Pattern}
+   *                                 rules
+   * @throws PatternSyntaxException if the {@code resourceAttributesRegexp}'s syntax is not valid
+   */
+  public void setAllowedResourceAttributesRegexp(String resourceAttributesRegexp)
+      throws PatternSyntaxException {
+    this.allowedResourceAttributesRegexp = Pattern.compile(resourceAttributesRegexp);
+  }
+
+  /**
    * Returns a new {@link PrometheusHttpServer} with the configuration of this builder which can be
    * registered with a {@link io.opentelemetry.sdk.metrics.SdkMeterProvider}.
    */
   public PrometheusHttpServer build() {
-    return new PrometheusHttpServer(host, port, executor, prometheusRegistry, otelScopeEnabled);
+    return new PrometheusHttpServer(
+        host,
+        port,
+        executor,
+        prometheusRegistry,
+        otelScopeEnabled,
+        addResourceAttributesAsLabels,
+        allowedResourceAttributesRegexp);
   }
 
   PrometheusHttpServerBuilder() {}

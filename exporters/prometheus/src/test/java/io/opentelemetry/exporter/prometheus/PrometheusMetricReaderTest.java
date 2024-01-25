@@ -53,11 +53,12 @@ class PrometheusMetricReaderTest {
   private Meter meter;
   private Tracer tracer;
 
+  @SuppressWarnings("resource")
   @BeforeEach
   void setUp() {
     this.testClock.setTime(Instant.ofEpochMilli((System.currentTimeMillis() / 100) * 100));
     this.createdTimestamp = convertTimestamp(testClock.now());
-    this.reader = new PrometheusMetricReader(true);
+    this.reader = new PrometheusMetricReader(true, addResourceAttributesAsLabels, allowedResourceAttributesRegexp);
     this.meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
@@ -763,7 +764,7 @@ class PrometheusMetricReaderTest {
     for (int i = 0; i < 100_000; i++) {
       int otelScale = random.nextInt(24) - 4;
       int prometheusScale = Math.min(otelScale, 8);
-      PrometheusMetricReader reader = new PrometheusMetricReader(true);
+      PrometheusMetricReader reader = new PrometheusMetricReader(true, addResourceAttributesAsLabels, allowedResourceAttributesRegexp);
       Meter meter =
           SdkMeterProvider.builder()
               .registerMetricReader(reader)
@@ -1015,7 +1016,7 @@ class PrometheusMetricReaderTest {
 
   @Test
   void otelScopeDisabled() throws IOException {
-    PrometheusMetricReader reader = new PrometheusMetricReader(false);
+    PrometheusMetricReader reader = new PrometheusMetricReader(false, addResourceAttributesAsLabels, allowedResourceAttributesRegexp);
     Meter meter =
         SdkMeterProvider.builder()
             .setClock(testClock)

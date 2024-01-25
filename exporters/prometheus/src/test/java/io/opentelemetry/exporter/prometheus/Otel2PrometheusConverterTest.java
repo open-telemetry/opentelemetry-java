@@ -41,7 +41,10 @@ class Otel2PrometheusConverterTest {
       Pattern.compile(
           "# HELP (?<help>.*)\n# TYPE (?<type>.*)\n(?<metricName>.*)\\{otel_scope_name=\"scope\"}(.|\\n)*");
 
-  private final Otel2PrometheusConverter converter = new Otel2PrometheusConverter(true);
+  private final Otel2PrometheusConverter converter = new Otel2PrometheusConverter(
+      true,
+      /* addResourceAttributesAsLabels= */ false,
+      /* allowedResourceAttributesRegexp= */ Pattern.compile(".*"));
 
   @ParameterizedTest
   @MethodSource("metricMetadataArgs")
@@ -65,6 +68,7 @@ class Otel2PrometheusConverterTest {
     assertThat(matcher.group("metricName")).isEqualTo(expectedMetricName);
   }
 
+  void resourceAttributesAddition()
   private static Stream<Arguments> metricMetadataArgs() {
     return Stream.of(
         // the unity unit "1" is translated to "ratio"
