@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import zipkin2.Span;
 import zipkin2.reporter.BytesEncoder;
-import zipkin2.reporter.Sender;
+import zipkin2.reporter.BytesMessageSender;
 import zipkin2.reporter.SpanBytesEncoder;
 import zipkin2.reporter.okhttp3.OkHttpSender;
 
@@ -26,7 +26,7 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
 public final class ZipkinSpanExporterBuilder {
   private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
   private Supplier<InetAddress> localIpAddressSupplier = LocalInetAddressSupplier.getInstance();
-  @Nullable private Sender sender;
+  @Nullable private BytesMessageSender sender;
   private String endpoint = ZipkinSpanExporter.DEFAULT_ENDPOINT;
   // compression is enabled by default, because this is the default of OkHttpSender,
   // which is created when no custom sender is set (see OkHttpSender.Builder)
@@ -38,12 +38,27 @@ public final class ZipkinSpanExporterBuilder {
    * Sets the Zipkin sender. Implements the client side of the span transport. An {@link
    * OkHttpSender} is a good default.
    *
-   * <p>The {@link Sender#close()} method will be called when the exporter is shut down.
+   * <p>The {@link BytesMessageSender#close()} method will be called when the exporter is shut down.
+   *
+   * @param sender the Zipkin sender implementation.
+   * @return this.
+   * @deprecated Use {@link #setSender(BytesMessageSender)} insteead.
+   */
+  @Deprecated
+  public ZipkinSpanExporterBuilder setSender(zipkin2.reporter.Sender sender) {
+    return setSender((BytesMessageSender) sender);
+  }
+
+  /**
+   * Sets the Zipkin sender. Implements the client side of the span transport. An {@link
+   * OkHttpSender} is a good default.
+   *
+   * <p>The {@link BytesMessageSender#close()} method will be called when the exporter is shut down.
    *
    * @param sender the Zipkin sender implementation.
    * @return this.
    */
-  public ZipkinSpanExporterBuilder setSender(Sender sender) {
+  public ZipkinSpanExporterBuilder setSender(BytesMessageSender sender) {
     requireNonNull(sender, "sender");
     this.sender = sender;
     return this;
@@ -51,7 +66,7 @@ public final class ZipkinSpanExporterBuilder {
 
   /**
    * Sets the {@link zipkin2.codec.BytesEncoder}, which controls the format used by the {@link
-   * Sender}. Defaults to the {@link zipkin2.codec.SpanBytesEncoder#JSON_V2}.
+   * BytesMessageSender}. Defaults to the {@link zipkin2.codec.SpanBytesEncoder#JSON_V2}.
    *
    * @param encoder the {@code BytesEncoder} to use.
    * @return this.
@@ -65,8 +80,8 @@ public final class ZipkinSpanExporterBuilder {
   }
 
   /**
-   * Sets the {@link BytesEncoder}, which controls the format used by the {@link Sender}. Defaults
-   * to the {@link SpanBytesEncoder#JSON_V2}.
+   * Sets the {@link BytesEncoder}, which controls the format used by the {@link
+   * BytesMessageSender}. Defaults to the {@link SpanBytesEncoder#JSON_V2}.
    *
    * @param encoder the {@code BytesEncoder} to use.
    * @return this.
@@ -114,7 +129,7 @@ public final class ZipkinSpanExporterBuilder {
    * supported compression methods include "gzip" and "none".
    *
    * <p>The compression method is ignored when a custom Zipkin sender is set via {@link
-   * #setSender(Sender)}.
+   * #setSender(BytesMessageSender)}.
    *
    * @param compressionMethod The compression method, ex. "gzip".
    * @return this.
@@ -189,7 +204,7 @@ public final class ZipkinSpanExporterBuilder {
    * @return a {@code ZipkinSpanExporter}.
    */
   public ZipkinSpanExporter build() {
-    Sender sender = this.sender;
+    BytesMessageSender sender = this.sender;
     if (sender == null) {
       sender =
           OkHttpSender.newBuilder()

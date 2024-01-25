@@ -4,3 +4,6 @@ Comparing source compatibility of  against
 	===  UNCHANGED METHOD: PUBLIC io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder setEncoder(zipkin2.codec.BytesEncoder<zipkin2.Span><zipkin2.Span>)
 		+++  NEW ANNOTATION: java.lang.Deprecated
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder setEncoder(zipkin2.reporter.BytesEncoder<zipkin2.Span>)
+	===  UNCHANGED METHOD: PUBLIC io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder setSender(zipkin2.reporter.Sender)
+		+++  NEW ANNOTATION: java.lang.Deprecated
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder setSender(zipkin2.reporter.BytesMessageSender)

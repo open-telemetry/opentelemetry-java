@@ -2,6 +2,26 @@
 
 This artifact contains experimental code related to the trace and metric SDKs.
 
+## File Configuration
+
+Allows for YAML based file configuration of `OpenTelemetrySdk` as defined in the [specification](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/file-configuration.md).
+
+Usage:
+
+```shell
+File yamlConfigFile = new File("/path/to/config.yaml");
+OpenTelemetrySdk openTelemetrySdk;
+try (FileInputStream yamlConfigFileInputStream = new FileInputStream("/path/to/config.yaml")) {
+  openTelemetrySdk = FileConfiguration.parseAndCreate(yamlConfigFileInputStream);
+}
+// ...proceed with application after successful initialization of OpenTelemetrySdk
+```
+
+Notes:
+* Environment variable substitution is supported as [defined in the spec](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/file-configuration.md#environment-variable-substitution)
+* Currently, there is no support for the SPIs defined in [opentelemetry-sdk-extension-autoconfigure-spi](../autoconfigure-spi). Only built in samplers, processors, exporters, etc can be configured.
+* You can use file configuration with [autoconfigure](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure#file-configuration) to specify a configuration file via environment variable, e.g. `OTEL_CONFIG_FILE=/path/to/config.yaml`.
+
 ## View File Configuration
 
 Adds support for file based YAML configuration of Metric SDK Views.
