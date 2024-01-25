@@ -147,7 +147,8 @@ class TraceRequestMarshalerTest {
 
     assertThat(protoSpan.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(protoSpan.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
-    assertThat(protoSpan.getFlags()).isEqualTo(((int)SPAN_CONTEXT.getTraceFlags().asByte()) & 0x00ff);
+    assertThat(protoSpan.getFlags())
+        .isEqualTo(((int) SPAN_CONTEXT.getTraceFlags().asByte()) & 0x00ff);
     assertThat(protoSpan.getTraceState()).isEqualTo(TRACE_STATE_VALUE);
     assertThat(protoSpan.getParentSpanId().toByteArray()).isEqualTo(new byte[] {});
     assertThat(protoSpan.getName()).isEqualTo("GET /api/endpoint");
@@ -230,7 +231,8 @@ class TraceRequestMarshalerTest {
                 .setTraceState(encodeTraceState(SPAN_CONTEXT.getTraceState()))
                 .build());
     assertThat(protoSpan.getDroppedLinksCount()).isEqualTo(1); // 2 - 1
-    assertThat(protoSpan.getStatus()).isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).build());
+    assertThat(protoSpan.getStatus())
+        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).build());
   }
 
   @Test
