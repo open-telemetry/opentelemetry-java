@@ -89,7 +89,7 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
     output.serializeString(Span.Link.TRACE_STATE, traceStateUtf8);
     output.serializeRepeatedMessage(Span.Link.ATTRIBUTES, attributeMarshalers);
     output.serializeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
-    output.serializeFixed32(Span.Link.FLAGS, toUnsignedInt(traceFlags.asByte()));
+    output.serializeByteAsFixed32(Span.Link.FLAGS, traceFlags.asByte());
   }
 
   private static int calculateSize(
@@ -105,7 +105,7 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeBytes(Span.Link.TRACE_STATE, traceStateUtf8);
     size += MarshalerUtil.sizeRepeatedMessage(Span.Link.ATTRIBUTES, attributeMarshalers);
     size += MarshalerUtil.sizeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
-    size += MarshalerUtil.sizeFixed32(Span.Link.FLAGS, toUnsignedInt(flags.asByte()));
+    size += MarshalerUtil.sizeByteAsFixed32(Span.Link.FLAGS, flags.asByte());
     return size;
   }
 }

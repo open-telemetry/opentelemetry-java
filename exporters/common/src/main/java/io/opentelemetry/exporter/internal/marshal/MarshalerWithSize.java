@@ -18,11 +18,6 @@ public abstract class MarshalerWithSize extends Marshaler {
     this.size = size;
   }
 
-  /** Vendored {@link Byte#toUnsignedInt(byte)} to support Android. */
-  protected static int toUnsignedInt(byte x) {
-    return ((int) x) & 0xff;
-  }
-
   @Override
   public final int getBinarySerializedSize() {
     return size;
