@@ -17,10 +17,10 @@ val DEPENDENCY_BOMS = listOf(
   "io.grpc:grpc-bom:1.61.0",
   "io.netty:netty-bom:4.1.106.Final",
   "io.zipkin.brave:brave-bom:6.0.0",
-  "io.zipkin.reporter2:zipkin-reporter-bom:3.1.1",
-  "org.assertj:assertj-bom:3.25.1",
+  "io.zipkin.reporter2:zipkin-reporter-bom:3.2.1",
+  "org.assertj:assertj-bom:3.25.2",
   "org.junit:junit-bom:5.10.1",
-  "org.testcontainers:testcontainers-bom:1.19.3",
+  "org.testcontainers:testcontainers-bom:1.19.4",
   "org.snakeyaml:snakeyaml-engine:2.7"
 )
 
@@ -55,7 +55,7 @@ val DEPENDENCIES = listOf(
   "io.prometheus:simpleclient_httpserver:${prometheusClientVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.30.0",
+  "com.google.api.grpc:proto-google-common-protos:2.32.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",

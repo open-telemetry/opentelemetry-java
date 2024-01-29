@@ -62,7 +62,8 @@ public final class ExplicitBucketHistogramAggregation implements Aggregation, Ag
                     exemplarFilter,
                     ExemplarReservoir.longToDouble(
                         ExemplarReservoir.histogramBucketReservoir(
-                            Clock.getDefault(), bucketBoundaries))));
+                            Clock.getDefault(), bucketBoundaries))),
+            memoryMode);
   }
 
   @Override

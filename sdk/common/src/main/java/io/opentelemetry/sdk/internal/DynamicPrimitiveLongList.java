@@ -65,6 +65,10 @@ public class DynamicPrimitiveLongList extends AbstractList<Long> {
     return list;
   }
 
+  public static DynamicPrimitiveLongList ofSubArrayCapacity(int subarrayCapacity) {
+    return new DynamicPrimitiveLongList(subarrayCapacity);
+  }
+
   public static DynamicPrimitiveLongList empty() {
     return new DynamicPrimitiveLongList();
   }

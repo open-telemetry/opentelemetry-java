@@ -9,8 +9,7 @@ import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.spanBuilder;
 import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.zipkinSpanBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,18 +30,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import zipkin2.Span;
 import zipkin2.reporter.BytesEncoder;
-import zipkin2.reporter.Call;
-import zipkin2.reporter.Callback;
+import zipkin2.reporter.BytesMessageSender;
 import zipkin2.reporter.Encoding;
-import zipkin2.reporter.Sender;
 import zipkin2.reporter.SpanBytesEncoder;
 
 @ExtendWith(MockitoExtension.class)
 class ZipkinSpanExporterTest {
 
-  @Mock private Sender mockSender;
+  @Mock private BytesMessageSender mockSender;
   @Mock private SpanBytesEncoder mockEncoder;
-  @Mock private Call<Void> mockZipkinCall;
   @Mock private OtelToZipkinSpanTransformer mockTransformer;
   @Mock private InetAddress localIp;
 
@@ -50,7 +46,7 @@ class ZipkinSpanExporterTest {
   LogCapturer logs = LogCapturer.create().captureForType(ZipkinSpanExporter.class);
 
   @Test
-  void testExport() {
+  void testExport() throws IOException {
     TestSpanData testSpanData = spanBuilder().build();
 
     ZipkinSpanExporter zipkinSpanExporter =
@@ -68,25 +64,18 @@ class ZipkinSpanExporterTest {
             .build();
     when(mockTransformer.generateSpan(testSpanData)).thenReturn(zipkinSpan);
     when(mockEncoder.encode(zipkinSpan)).thenReturn(someBytes);
-    when(mockSender.sendSpans(Collections.singletonList(someBytes))).thenReturn(mockZipkinCall);
-    doAnswer(
-            invocation -> {
-              Callback<Void> callback = invocation.getArgument(0);
-              callback.onSuccess(null);
-              return null;
-            })
-        .when(mockZipkinCall)
-        .enqueue(any());
 
     CompletableResultCode resultCode =
         zipkinSpanExporter.export(Collections.singleton(testSpanData));
 
     assertThat(resultCode.isSuccess()).isTrue();
+
+    verify(mockSender).send(Collections.singletonList(someBytes));
   }
 
   @Test
   @SuppressLogger(ZipkinSpanExporter.class)
-  void testExport_failed() {
+  void testExport_failed() throws IOException {
     TestSpanData testSpanData = spanBuilder().build();
 
     ZipkinSpanExporter zipkinSpanExporter =
@@ -104,20 +93,14 @@ class ZipkinSpanExporterTest {
             .build();
     when(mockTransformer.generateSpan(testSpanData)).thenReturn(zipkinSpan);
     when(mockEncoder.encode(zipkinSpan)).thenReturn(someBytes);
-    when(mockSender.sendSpans(Collections.singletonList(someBytes))).thenReturn(mockZipkinCall);
-    doAnswer(
-            invocation -> {
-              Callback<Void> callback = invocation.getArgument(0);
-              callback.onError(new IOException());
-              return null;
-            })
-        .when(mockZipkinCall)
-        .enqueue(any());
+    doThrow(new IOException()).when(mockSender).send(Collections.singletonList(someBytes));
 
     CompletableResultCode resultCode =
         zipkinSpanExporter.export(Collections.singleton(testSpanData));
 
     assertThat(resultCode.isSuccess()).isFalse();
+
+    verify(mockSender).send(Collections.singletonList(someBytes));
   }
 
   @Test
