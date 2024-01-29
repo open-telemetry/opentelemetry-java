@@ -31,6 +31,19 @@ public class PrometheusMetricReaderProvider implements ConfigurableMetricReaderP
     if (host != null) {
       prometheusBuilder.setHost(host);
     }
+
+    Boolean addResourceAttributesAsLabels =
+        config.getBoolean("otel.exporter.prometheus.add-resource-attributes-as-labels");
+    if (addResourceAttributesAsLabels != null) {
+      prometheusBuilder.setAddResourceAttributesAsLabels(addResourceAttributesAsLabels);
+    }
+
+    String resourceAttributesRegexp =
+        config.getString("otel.exporter.prometheus.add-resource-attributes-regexp");
+    if (resourceAttributesRegexp != null) {
+      prometheusBuilder.setAllowedResourceAttributesRegexp(resourceAttributesRegexp);
+    }
+
     return prometheusBuilder.build();
   }
 

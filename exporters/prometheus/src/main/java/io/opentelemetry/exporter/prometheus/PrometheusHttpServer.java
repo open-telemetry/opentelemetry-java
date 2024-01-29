@@ -59,8 +59,9 @@ public final class PrometheusHttpServer implements MetricReader {
       boolean otelScopeEnabled,
       boolean addResourceAttributesAsLabels,
       Pattern allowedResourceAttributesRegexp) {
-    this.prometheusMetricReader = new PrometheusMetricReader(
-        otelScopeEnabled, addResourceAttributesAsLabels, allowedResourceAttributesRegexp);
+    this.prometheusMetricReader =
+        new PrometheusMetricReader(
+            otelScopeEnabled, addResourceAttributesAsLabels, allowedResourceAttributesRegexp);
     this.host = host;
     this.prometheusRegistry = prometheusRegistry;
     prometheusRegistry.register(prometheusMetricReader);

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,6 +58,21 @@ class PrometheusMetricReaderProviderTest {
                 assertThat(server.getAddress().getHostName()).isEqualTo("0:0:0:0:0:0:0:0");
                 assertThat(server.getAddress().getPort()).isEqualTo(9464);
               });
+      assertThat(metricReader)
+          .extracting(
+              "prometheusMetricReader.converter.addResourceAttributesAsLabels",
+              as(InstanceOfAssertFactories.type(Boolean.class)))
+          .satisfies(
+              addResourceAttributesAsLabels ->
+                  assertThat(addResourceAttributesAsLabels).isEqualTo(false));
+
+      assertThat(metricReader)
+          .extracting(
+              "prometheusMetricReader.converter.allowedResourceAttributesRegexp",
+              as(InstanceOfAssertFactories.type(Pattern.class)))
+          .satisfies(
+              allowedResourceAttributesRegexp ->
+                  assertThat(allowedResourceAttributesRegexp.pattern()).isEqualTo(".*"));
     }
   }
 
@@ -73,9 +89,12 @@ class PrometheusMetricReaderProviderTest {
     Map<String, String> config = new HashMap<>();
     config.put("otel.exporter.prometheus.host", "localhost");
     config.put("otel.exporter.prometheus.port", String.valueOf(port));
+    config.put("otel.exporter.prometheus.add-resource-attributes-as-labels", "true");
+    config.put("otel.exporter.prometheus.add-resource-attributes-regexp", "foo.*");
 
     when(configProperties.getInt(any())).thenReturn(null);
     when(configProperties.getString(any())).thenReturn(null);
+    when(configProperties.getBoolean(any())).thenReturn(null);
 
     try (MetricReader metricReader =
         provider.createMetricReader(DefaultConfigProperties.createFromMap(config))) {
@@ -87,6 +106,20 @@ class PrometheusMetricReaderProviderTest {
                 assertThat(server.getAddress().getHostName()).isEqualTo("localhost");
                 assertThat(server.getAddress().getPort()).isEqualTo(port);
               });
+      assertThat(metricReader)
+          .extracting(
+              "prometheusMetricReader.converter.addResourceAttributesAsLabels",
+              as(InstanceOfAssertFactories.type(Boolean.class)))
+          .satisfies(
+              addResourceAttributesAsLabels ->
+                  assertThat(addResourceAttributesAsLabels).isEqualTo(true));
+      assertThat(metricReader)
+          .extracting(
+              "prometheusMetricReader.converter.allowedResourceAttributesRegexp",
+              as(InstanceOfAssertFactories.type(Pattern.class)))
+          .satisfies(
+              allowedResourceAttributesRegexp ->
+                  assertThat(allowedResourceAttributesRegexp.pattern()).isEqualTo("foo.*"));
     }
   }
 }

@@ -45,6 +45,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("resource")
 class PrometheusMetricReaderTest {
 
   private final TestClock testClock = TestClock.create();
@@ -58,7 +59,11 @@ class PrometheusMetricReaderTest {
   void setUp() {
     this.testClock.setTime(Instant.ofEpochMilli((System.currentTimeMillis() / 100) * 100));
     this.createdTimestamp = convertTimestamp(testClock.now());
-    this.reader = new PrometheusMetricReader(true, addResourceAttributesAsLabels, allowedResourceAttributesRegexp);
+    this.reader =
+        new PrometheusMetricReader(
+            true,
+            /* addResourceAttributesAsLabels= */ false,
+            /* allowedResourceAttributesRegexp= */ Pattern.compile(".*"));
     this.meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
@@ -86,13 +91,13 @@ class PrometheusMetricReaderTest {
             .setUnit("By")
             .build();
     Span span1 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span1.makeCurrent()) {
+    try (Scope ignored = span1.makeCurrent()) {
       counter.add(3, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     Span span2 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span2.makeCurrent()) {
+    try (Scope ignored = span2.makeCurrent()) {
       counter.add(2, Attributes.builder().put("animal", "mouse").build());
     } finally {
       span2.end();
@@ -110,13 +115,13 @@ class PrometheusMetricReaderTest {
             .ofDoubles()
             .build();
     Span span1 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span1.makeCurrent()) {
+    try (Scope ignored = span1.makeCurrent()) {
       counter.add(3.0, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     Span span2 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span2.makeCurrent()) {
+    try (Scope ignored = span2.makeCurrent()) {
       counter.add(2.0, Attributes.builder().put("animal", "mouse").build());
     } finally {
       span2.end();
@@ -127,8 +132,7 @@ class PrometheusMetricReaderTest {
   private void assertCounterComplete(MetricSnapshots snapshots, Span span1, Span span2)
       throws IOException {
     String expected =
-        ""
-            + "# TYPE requests_size_bytes counter\n"
+        "# TYPE requests_size_bytes counter\n"
             + "# UNIT requests_size_bytes bytes\n"
             + "# HELP requests_size_bytes some help text\n"
             + "requests_size_bytes_total{animal=\"bear\",otel_scope_name=\"test\"} 3.0 # {span_id=\""
@@ -169,8 +173,7 @@ class PrometheusMetricReaderTest {
 
   private void assertCounterMinimal(MetricSnapshots snapshots) throws IOException {
     String expected =
-        ""
-            + "# TYPE requests counter\n"
+        "# TYPE requests counter\n"
             + "requests_total{otel_scope_name=\"test\"} 2.0\n"
             + "requests_created{otel_scope_name=\"test\"} "
             + createdTimestamp
@@ -190,13 +193,13 @@ class PrometheusMetricReaderTest {
             .setUnit("By")
             .build();
     Span span1 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span1.makeCurrent()) {
+    try (Scope ignored = span1.makeCurrent()) {
       counter.add(3, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     Span span2 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span2.makeCurrent()) {
+    try (Scope ignored = span2.makeCurrent()) {
       counter.add(2, Attributes.builder().put("animal", "mouse").build());
     } finally {
       span2.end();
@@ -214,13 +217,13 @@ class PrometheusMetricReaderTest {
             .ofDoubles()
             .build();
     Span span1 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span1.makeCurrent()) {
+    try (Scope ignored = span1.makeCurrent()) {
       counter.add(3.0, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     Span span2 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span2.makeCurrent()) {
+    try (Scope ignored = span2.makeCurrent()) {
       counter.add(2.0, Attributes.builder().put("animal", "mouse").build());
     } finally {
       span2.end();
@@ -231,8 +234,7 @@ class PrometheusMetricReaderTest {
   private static void assertUpDownCounterComplete(MetricSnapshots snapshots, Span span1, Span span2)
       throws IOException {
     String expected =
-        ""
-            + "# TYPE queue_size_bytes gauge\n"
+        "# TYPE queue_size_bytes gauge\n"
             + "# UNIT queue_size_bytes bytes\n"
             + "# HELP queue_size_bytes some help text\n"
             + "queue_size_bytes{animal=\"bear\",otel_scope_name=\"test\"} 3.0 # {span_id=\""
@@ -267,8 +269,7 @@ class PrometheusMetricReaderTest {
 
   private static void assertUpDownCounterMinimal(MetricSnapshots snapshots) throws IOException {
     String expected =
-        ""
-            + "# TYPE target info\n"
+        "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
             + "# TYPE users_active gauge\n"
             + "users_active{otel_scope_name=\"test\"} 27.0\n"
@@ -307,8 +308,7 @@ class PrometheusMetricReaderTest {
 
   private static void assertGaugeComplete(MetricSnapshots snapshots) throws IOException {
     String expected =
-        ""
-            + "# TYPE target info\n"
+        "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
             + "# TYPE temperature_celsius gauge\n"
             + "# UNIT temperature_celsius celsius\n"
@@ -333,8 +333,7 @@ class PrometheusMetricReaderTest {
 
   private static void assertGaugeMinimal(MetricSnapshots snapshots) throws IOException {
     String expected =
-        ""
-            + "# TYPE my_gauge gauge\n"
+        "# TYPE my_gauge gauge\n"
             + "my_gauge{otel_scope_name=\"test\"} 2.0\n"
             + "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
@@ -352,19 +351,19 @@ class PrometheusMetricReaderTest {
             .ofLongs()
             .build();
     Span span1 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span1.makeCurrent()) {
+    try (Scope ignored = span1.makeCurrent()) {
       histogram.record(173, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     Span span2 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span2.makeCurrent()) {
+    try (Scope ignored = span2.makeCurrent()) {
       histogram.record(400, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     Span span3 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span3.makeCurrent()) {
+    try (Scope ignored = span3.makeCurrent()) {
       histogram.record(204, Attributes.builder().put("animal", "mouse").build());
     } finally {
       span3.end();
@@ -381,19 +380,19 @@ class PrometheusMetricReaderTest {
             .setUnit("By")
             .build();
     Span span1 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span1.makeCurrent()) {
+    try (Scope ignored = span1.makeCurrent()) {
       histogram.record(173.0, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     Span span2 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span2.makeCurrent()) {
+    try (Scope ignored = span2.makeCurrent()) {
       histogram.record(400.0, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     Span span3 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span3.makeCurrent()) {
+    try (Scope ignored = span3.makeCurrent()) {
       histogram.record(204.0, Attributes.builder().put("animal", "mouse").build());
     } finally {
       span3.end();
@@ -404,8 +403,7 @@ class PrometheusMetricReaderTest {
   private void assertHistogramComplete(
       MetricSnapshots snapshots, Span span1, Span span2, Span span3) throws IOException {
     String expected =
-        ""
-            + "# TYPE request_size_bytes histogram\n"
+        "# TYPE request_size_bytes histogram\n"
             + "# UNIT request_size_bytes bytes\n"
             + "# HELP request_size_bytes some help text\n"
             + "request_size_bytes_bucket{animal=\"bear\",otel_scope_name=\"test\",le=\"0.0\"} 0\n"
@@ -488,8 +486,7 @@ class PrometheusMetricReaderTest {
 
   private void assertHistogramMinimal(MetricSnapshots snapshots) throws IOException {
     String expected =
-        ""
-            + "# TYPE request_size histogram\n"
+        "# TYPE request_size histogram\n"
             + "request_size_bucket{otel_scope_name=\"test\",le=\"0.0\"} 0\n"
             + "request_size_bucket{otel_scope_name=\"test\",le=\"5.0\"} 0\n"
             + "request_size_bucket{otel_scope_name=\"test\",le=\"10.0\"} 0\n"
@@ -519,7 +516,7 @@ class PrometheusMetricReaderTest {
 
   @Test
   @Disabled("disabled until #6010 is fixed")
-  void exponentialLongHistogramComplete() throws IOException {
+  void exponentialLongHistogramComplete() {
     LongHistogram histogram =
         meter
             .histogramBuilder("my.exponential.histogram")
@@ -528,14 +525,14 @@ class PrometheusMetricReaderTest {
             .ofLongs()
             .build();
     Span span1 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span1.makeCurrent()) {
+    try (Scope ignored = span1.makeCurrent()) {
       histogram.record(7, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     histogram.record(0, Attributes.builder().put("animal", "bear").build());
     Span span2 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span2.makeCurrent()) {
+    try (Scope ignored = span2.makeCurrent()) {
       histogram.record(3, Attributes.builder().put("animal", "mouse").build());
     } finally {
       span2.end();
@@ -544,7 +541,7 @@ class PrometheusMetricReaderTest {
   }
 
   @Test
-  void exponentialDoubleHistogramComplete() throws IOException {
+  void exponentialDoubleHistogramComplete() {
     DoubleHistogram histogram =
         meter
             .histogramBuilder("my.exponential.histogram")
@@ -552,14 +549,14 @@ class PrometheusMetricReaderTest {
             .setUnit("By")
             .build();
     Span span1 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span1.makeCurrent()) {
+    try (Scope ignored = span1.makeCurrent()) {
       histogram.record(7.0, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     histogram.record(0.0, Attributes.builder().put("animal", "bear").build());
     Span span2 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span2.makeCurrent()) {
+    try (Scope ignored = span2.makeCurrent()) {
       histogram.record(3.0, Attributes.builder().put("animal", "mouse").build());
     } finally {
       span2.end();
@@ -570,8 +567,7 @@ class PrometheusMetricReaderTest {
   private static void assertExponentialHistogramComplete(
       MetricSnapshots snapshots, Span span1, Span span2) {
     String expected =
-        ""
-            + "name: \"my_exponential_histogram_bytes\"\n"
+        "name: \"my_exponential_histogram_bytes\"\n"
             + "help: \"some help text\"\n"
             + "type: HISTOGRAM\n"
             + "metric {\n"
@@ -691,14 +687,14 @@ class PrometheusMetricReaderTest {
   }
 
   @Test
-  void exponentialLongHistogramMinimal() throws IOException {
+  void exponentialLongHistogramMinimal() {
     LongHistogram histogram = meter.histogramBuilder("my.exponential.histogram").ofLongs().build();
     histogram.record(1, Attributes.builder().put("animal", "bear").build());
     assertExponentialHistogramMinimal(reader.collect());
   }
 
   @Test
-  void exponentialDoubleHistogramMinimal() throws IOException {
+  void exponentialDoubleHistogramMinimal() {
     DoubleHistogram histogram = meter.histogramBuilder("my.exponential.histogram").build();
     histogram.record(1.0, Attributes.builder().put("animal", "bear").build());
     assertExponentialHistogramMinimal(reader.collect());
@@ -706,8 +702,7 @@ class PrometheusMetricReaderTest {
 
   private static void assertExponentialHistogramMinimal(MetricSnapshots snapshots) {
     String expected =
-        ""
-            + "name: \"my_exponential_histogram\"\n"
+        "name: \"my_exponential_histogram\"\n"
             + "help: \"\"\n"
             + "type: HISTOGRAM\n"
             + "metric {\n"
@@ -764,7 +759,11 @@ class PrometheusMetricReaderTest {
     for (int i = 0; i < 100_000; i++) {
       int otelScale = random.nextInt(24) - 4;
       int prometheusScale = Math.min(otelScale, 8);
-      PrometheusMetricReader reader = new PrometheusMetricReader(true, addResourceAttributesAsLabels, allowedResourceAttributesRegexp);
+      PrometheusMetricReader reader =
+          new PrometheusMetricReader(
+              true,
+              /* addResourceAttributesAsLabels= */ false,
+              /* allowedResourceAttributesRegexp= */ Pattern.compile(".*"));
       Meter meter =
           SdkMeterProvider.builder()
               .registerMetricReader(reader)
@@ -799,7 +798,7 @@ class PrometheusMetricReaderTest {
   }
 
   @Test
-  void exponentialLongHistogramScaleDown() throws IOException {
+  void exponentialLongHistogramScaleDown() {
     // The following histogram will have the default scale, which is 20.
     DoubleHistogram histogram = meter.histogramBuilder("my.exponential.histogram").build();
     double base = Math.pow(2, Math.pow(2, -20));
@@ -854,8 +853,7 @@ class PrometheusMetricReaderTest {
         .build()
         .add(3.3, Attributes.builder().put("a", "b").build());
     String expected =
-        ""
-            + "# TYPE processing_time_seconds counter\n"
+        "# TYPE processing_time_seconds counter\n"
             + "# UNIT processing_time_seconds seconds\n"
             + "# HELP processing_time_seconds processing time in seconds\n"
             + "processing_time_seconds_total{a=\"b\",otel_scope_name=\"scopeA\",otel_scope_version=\"1.1\"} 3.3\n"
@@ -884,8 +882,7 @@ class PrometheusMetricReaderTest {
     LongCounter noSuffix = meter.counterBuilder("queue.time").setUnit("s").build();
     noSuffix.add(4);
     String expected =
-        ""
-            + "# TYPE processing_duration_seconds counter\n"
+        "# TYPE processing_duration_seconds counter\n"
             + "# UNIT processing_duration_seconds seconds\n"
             + "processing_duration_seconds_total{otel_scope_name=\"test\"} 3.0\n"
             + "processing_duration_seconds_created{otel_scope_name=\"test\"} "
@@ -920,8 +917,7 @@ class PrometheusMetricReaderTest {
     LongCounter counter = meter.counterBuilder("request.duration.seconds").setUnit("s").build();
     counter.add(1);
     String expected =
-        ""
-            + "# TYPE request_duration_seconds counter\n"
+        "# TYPE request_duration_seconds counter\n"
             + "# UNIT request_duration_seconds seconds\n"
             + "request_duration_seconds_total{otel_scope_name=\"test\"} 1.0\n"
             + "request_duration_seconds_created{otel_scope_name=\"test\"} "
@@ -938,8 +934,7 @@ class PrometheusMetricReaderTest {
     LongCounter counter = meter.counterBuilder("prod/request.count").build();
     counter.add(1, Attributes.builder().put("user-count", 30).build());
     String expected =
-        ""
-            + "# TYPE prod_request_count counter\n"
+        "# TYPE prod_request_count counter\n"
             + "prod_request_count_total{otel_scope_name=\"test\",user_count=\"30\"} 1.0\n"
             + "prod_request_count_created{otel_scope_name=\"test\",user_count=\"30\"} "
             + createdTimestamp
@@ -969,8 +964,7 @@ class PrometheusMetricReaderTest {
     // So we expect the _created timestamp to be the start time of the application,
     // not the timestamp when the counter or an individual data point was created.
     String expected =
-        ""
-            + "# TYPE requests counter\n"
+        "# TYPE requests counter\n"
             + "requests_total{animal=\"bear\",otel_scope_name=\"test\"} 3.0\n"
             + "requests_created{animal=\"bear\",otel_scope_name=\"test\"} "
             + createdTimestamp
@@ -1002,8 +996,7 @@ class PrometheusMetricReaderTest {
     LongCounter counter = meter.counterBuilder("test.count").build();
     counter.add(1);
     String expected =
-        ""
-            + "# TYPE target info\n"
+        "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
             + "# TYPE test_count counter\n"
             + "test_count_total{otel_scope_name=\"test-scope\",otel_scope_version=\"a.b.c\"} 1.0\n"
@@ -1016,7 +1009,11 @@ class PrometheusMetricReaderTest {
 
   @Test
   void otelScopeDisabled() throws IOException {
-    PrometheusMetricReader reader = new PrometheusMetricReader(false, addResourceAttributesAsLabels, allowedResourceAttributesRegexp);
+    PrometheusMetricReader reader =
+        new PrometheusMetricReader(
+            false,
+            /* addResourceAttributesAsLabels= */ false,
+            /* allowedResourceAttributesRegexp= */ Pattern.compile(".*"));
     Meter meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
@@ -1030,12 +1027,51 @@ class PrometheusMetricReaderTest {
     LongCounter counter = meter.counterBuilder("test.count").build();
     counter.add(1);
     String expected =
-        ""
-            + "# TYPE target info\n"
+        "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
             + "# TYPE test_count counter\n"
             + "test_count_total 1.0\n"
             + "test_count_created "
+            + createdTimestamp
+            + "\n"
+            + "# EOF\n";
+    assertThat(toOpenMetrics(reader.collect())).isEqualTo(expected);
+  }
+
+  @SuppressWarnings("resource")
+  @Test
+  void addResourceAttributesWorks() throws IOException {
+    PrometheusMetricReader reader =
+        new PrometheusMetricReader(
+            true,
+
+            // Note this is set to true
+            /* addResourceAttributesAsLabels= */ true,
+
+            /* allowedResourceAttributesRegexp= */ Pattern.compile(".*"));
+    Meter meter =
+        SdkMeterProvider.builder()
+            .setClock(testClock)
+            .registerMetricReader(reader)
+            .setResource(
+                Resource.getDefault().toBuilder()
+                    .put("cluster", "my.cluster")
+                    .put("telemetry.sdk.version", "1.x.x")
+                    .build())
+            .build()
+            .meterBuilder("test-scope")
+            .setInstrumentationVersion("a.b.c")
+            .build();
+    LongCounter counter = meter.counterBuilder("test.count").build();
+    counter.add(1);
+    String expected =
+        "# TYPE target info\n"
+            + "target_info{cluster=\"my.cluster\",service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
+            + "# TYPE test_count counter\n"
+
+            // In both those metrics we expect the "cluster" label to exist
+            + "test_count_total{cluster=\"my.cluster\",otel_scope_name=\"test-scope\",otel_scope_version=\"a.b.c\"} 1.0\n"
+            + "test_count_created{cluster=\"my.cluster\",otel_scope_name=\"test-scope\",otel_scope_version=\"a.b.c\"} "
             + createdTimestamp
             + "\n"
             + "# EOF\n";

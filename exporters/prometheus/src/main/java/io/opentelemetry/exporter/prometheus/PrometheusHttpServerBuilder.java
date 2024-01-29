@@ -25,8 +25,7 @@ public final class PrometheusHttpServerBuilder {
   private PrometheusRegistry prometheusRegistry = new PrometheusRegistry();
   private boolean otelScopeEnabled = true;
   private boolean addResourceAttributesAsLabels = false;
-  private Pattern allowedResourceAttributesRegexp = Pattern.compile(".*");;
-
+  private Pattern allowedResourceAttributesRegexp = Pattern.compile(".*");
   @Nullable private ExecutorService executor;
 
   /** Sets the host to bind to. If unset, defaults to {@value #DEFAULT_HOST}. */
@@ -65,32 +64,33 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /**
-   * If set to true, resource attributes will be added as labels on each exported metric.
-   * Default is {@code false}.
-   * <p>
-   *   You can limit the attributes that are added as labels by setting a regular expression
-   *   in {@link #setAllowedResourceAttributesRegexp(String)}.
-   * </p>
+   * If set to true, resource attributes will be added as labels on each exported metric. Default is
+   * {@code false}.
+   *
+   * <p>You can limit the attributes that are added as labels by setting a regular expression in
+   * {@link #setAllowedResourceAttributesRegexp(String)}.
    */
-  public void setAddResourceAttributesAsLabels(boolean addResourceAttributesAsLabels) {
+  public PrometheusHttpServerBuilder setAddResourceAttributesAsLabels(
+      boolean addResourceAttributesAsLabels) {
     this.addResourceAttributesAsLabels = addResourceAttributesAsLabels;
+    return this;
   }
 
   /**
    * Sets a regular expression to limit the resource attributes that are added as labels.
-   * <p>
-   *   If not set, all resource attributes will be added as labels on each exported metric,
-   *   unless {@link #setAddResourceAttributesAsLabels(boolean)} is set to false.
-   *   If set, only resource attributes that match the regular expression will be added as labels.
-   * </p>
+   *
+   * <p>If not set, all resource attributes will be added as labels on each exported metric, unless
+   * {@link #setAddResourceAttributesAsLabels(boolean)} is set to false. If set, only resource
+   * attributes that match the regular expression will be added as labels.
    *
    * @param resourceAttributesRegexp a regular expression matching {@link java.util.regex.Pattern}
-   *                                 rules
+   *     rules
    * @throws PatternSyntaxException if the {@code resourceAttributesRegexp}'s syntax is not valid
    */
-  public void setAllowedResourceAttributesRegexp(String resourceAttributesRegexp)
-      throws PatternSyntaxException {
+  public PrometheusHttpServerBuilder setAllowedResourceAttributesRegexp(
+      String resourceAttributesRegexp) {
     this.allowedResourceAttributesRegexp = Pattern.compile(resourceAttributesRegexp);
+    return this;
   }
 
   /**

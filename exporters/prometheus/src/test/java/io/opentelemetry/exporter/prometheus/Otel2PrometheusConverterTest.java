@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
@@ -12,6 +13,10 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramData;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
@@ -26,11 +31,15 @@ import io.prometheus.metrics.model.snapshots.MetricSnapshots;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -41,10 +50,11 @@ class Otel2PrometheusConverterTest {
       Pattern.compile(
           "# HELP (?<help>.*)\n# TYPE (?<type>.*)\n(?<metricName>.*)\\{otel_scope_name=\"scope\"}(.|\\n)*");
 
-  private final Otel2PrometheusConverter converter = new Otel2PrometheusConverter(
-      true,
-      /* addResourceAttributesAsLabels= */ false,
-      /* allowedResourceAttributesRegexp= */ Pattern.compile(".*"));
+  private final Otel2PrometheusConverter converter =
+      new Otel2PrometheusConverter(
+          true,
+          /* addResourceAttributesAsLabels= */ false,
+          /* allowedResourceAttributesRegexp= */ Pattern.compile(".*"));
 
   @ParameterizedTest
   @MethodSource("metricMetadataArgs")
@@ -68,7 +78,124 @@ class Otel2PrometheusConverterTest {
     assertThat(matcher.group("metricName")).isEqualTo(expectedMetricName);
   }
 
-  void resourceAttributesAddition()
+  @ParameterizedTest
+  @MethodSource("resourceAttributesAdditionArgs")
+  void resourceAttributesAddition(
+      MetricData metricData,
+      boolean addResourceAttributesAsLabels,
+      Pattern allowedResourceAttributesRegexp,
+      String metricName,
+      String expectedMetricLabels)
+      throws IOException {
+
+    Otel2PrometheusConverter converter =
+        new Otel2PrometheusConverter(
+            true, addResourceAttributesAsLabels, allowedResourceAttributesRegexp);
+
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+    ExpositionFormats.init().getPrometheusTextFormatWriter().write(out, snapshots);
+    String expositionFormat = new String(out.toByteArray(), StandardCharsets.UTF_8);
+
+    // extract the only metric line
+    List<String> metricLines =
+        Arrays.stream(expositionFormat.split("\n"))
+            .filter(line -> line.startsWith(metricName))
+            .collect(Collectors.toList());
+    assertThat(metricLines).hasSize(1);
+    String metricLine = metricLines.get(0);
+
+    String metricLabels =
+        metricLine.substring(metricLine.indexOf("{") + 1, metricLine.indexOf("}"));
+    assertThat(metricLabels).isEqualTo(expectedMetricLabels);
+  }
+
+  private static Stream<Arguments> resourceAttributesAdditionArgs() {
+    List<Arguments> arguments = new ArrayList<>();
+
+    // Check that resource attributes are added as labels, according to allowed pattern
+    for (MetricDataType metricDataType : MetricDataType.values()) {
+      arguments.add(
+          Arguments.of(
+              createSampleMetricData(
+                  "my.metric",
+                  "units",
+                  metricDataType,
+                  Attributes.of(stringKey("foo1"), "bar1", stringKey("foo2"), "bar2"),
+                  Resource.create(
+                      Attributes.of(
+                          stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
+              /* addResourceAttributesAsLabels= */ true,
+              /* allowedResourceAttributesRegexp= */ Pattern.compile("clu.*"),
+              metricDataType == MetricDataType.SUMMARY
+                      || metricDataType == MetricDataType.HISTOGRAM
+                      || metricDataType == MetricDataType.EXPONENTIAL_HISTOGRAM
+                  ? "my_metric_units_count"
+                  : "my_metric_units",
+
+              // "cluster" attribute is added (due to reg expr specified) and only it
+              "cluster=\"mycluster\",foo1=\"bar1\",foo2=\"bar2\",otel_scope_name=\"scope\""));
+    }
+
+    // Resource attributes which also exists in the metric labels are not added twice
+    arguments.add(
+        Arguments.of(
+            createSampleMetricData(
+                "my.metric",
+                "units",
+                MetricDataType.LONG_SUM,
+                Attributes.of(stringKey("cluster"), "mycluster2", stringKey("foo2"), "bar2"),
+                Resource.create(
+                    Attributes.of(
+                        stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
+            /* addResourceAttributesAsLabels= */ true,
+            /* allowedResourceAttributesRegexp= */ Pattern.compile("clu.*"),
+            "my_metric_units",
+
+            // "cluster" attribute is present only once and the value is taken
+            // from the metric attributes and not the resource attributes
+            "cluster=\"mycluster2\",foo2=\"bar2\",otel_scope_name=\"scope\""));
+
+    // Empty attributes
+    arguments.add(
+        Arguments.of(
+            createSampleMetricData(
+                "my.metric",
+                "units",
+                MetricDataType.LONG_SUM,
+                Attributes.empty(),
+                Resource.create(
+                    Attributes.of(
+                        stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
+            /* addResourceAttributesAsLabels= */ true,
+            /* allowedResourceAttributesRegexp= */ Pattern.compile("clu.*"),
+            "my_metric_units",
+            "cluster=\"mycluster\",otel_scope_name=\"scope\""));
+
+    // Hard coded attributes will never be copied
+    arguments.add(
+        Arguments.of(
+            createSampleMetricData(
+                "my.metric",
+                "units",
+                MetricDataType.LONG_SUM,
+                Attributes.of(stringKey("foo"), "bar"),
+                Resource.create(
+                    Attributes.of(
+                        stringKey("service.name"), "my.service",
+                        stringKey("service.namespace"), "my.namespace",
+                        stringKey("service.instance.id"), "my.instance.id",
+                        stringKey("telemetry.sdk.version"), "1.2.0",
+                        stringKey("telemetry.sdk.name"), "opentelemetry",
+                        stringKey("telemetry.sdk.language"), "java"))),
+            /* addResourceAttributesAsLabels= */ true,
+            /* allowedResourceAttributesRegexp= */ Pattern.compile(".*"),
+            "my_metric_units",
+            "foo=\"bar\",otel_scope_name=\"scope\""));
+
+    return arguments.stream();
+  }
+
   private static Stream<Arguments> metricMetadataArgs() {
     return Stream.of(
         // the unity unit "1" is translated to "ratio"
@@ -166,10 +293,22 @@ class Otel2PrometheusConverterTest {
 
   static MetricData createSampleMetricData(
       String metricName, String metricUnit, MetricDataType metricDataType) {
+    return createSampleMetricData(metricName, metricUnit, metricDataType, null, null);
+  }
+
+  static MetricData createSampleMetricData(
+      String metricName,
+      String metricUnit,
+      MetricDataType metricDataType,
+      @Nullable Attributes attributes,
+      @Nullable Resource resource) {
+    Attributes attributesToUse = attributes == null ? Attributes.empty() : attributes;
+    Resource resourceToUse = resource == null ? Resource.getDefault() : resource;
+
     switch (metricDataType) {
       case SUMMARY:
         return ImmutableMetricData.createDoubleSummary(
-            Resource.getDefault(),
+            resourceToUse,
             InstrumentationScopeInfo.create("scope"),
             metricName,
             "description",
@@ -177,10 +316,10 @@ class Otel2PrometheusConverterTest {
             ImmutableSummaryData.create(
                 Collections.singletonList(
                     ImmutableSummaryPointData.create(
-                        0, 1, Attributes.empty(), 1, 1, Collections.emptyList()))));
+                        0, 1, attributesToUse, 1, 1, Collections.emptyList()))));
       case LONG_SUM:
         return ImmutableMetricData.createLongSum(
-            Resource.getDefault(),
+            resourceToUse,
             InstrumentationScopeInfo.create("scope"),
             metricName,
             "description",
@@ -189,20 +328,42 @@ class Otel2PrometheusConverterTest {
                 true,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(
-                    ImmutableLongPointData.create(0, 1, Attributes.empty(), 1L))));
+                    ImmutableLongPointData.create(0, 1, attributesToUse, 1L))));
+      case DOUBLE_SUM:
+        return ImmutableMetricData.createDoubleSum(
+            resourceToUse,
+            InstrumentationScopeInfo.create("scope"),
+            metricName,
+            "description",
+            metricUnit,
+            ImmutableSumData.create(
+                true,
+                AggregationTemporality.CUMULATIVE,
+                Collections.singletonList(
+                    ImmutableDoublePointData.create(0, 1, attributesToUse, 1.0))));
       case LONG_GAUGE:
         return ImmutableMetricData.createLongGauge(
-            Resource.getDefault(),
+            resourceToUse,
             InstrumentationScopeInfo.create("scope"),
             metricName,
             "description",
             metricUnit,
             ImmutableGaugeData.create(
                 Collections.singletonList(
-                    ImmutableLongPointData.create(0, 1, Attributes.empty(), 1L))));
+                    ImmutableLongPointData.create(0, 1, attributesToUse, 1L))));
+      case DOUBLE_GAUGE:
+        return ImmutableMetricData.createDoubleGauge(
+            resourceToUse,
+            InstrumentationScopeInfo.create("scope"),
+            metricName,
+            "description",
+            metricUnit,
+            ImmutableGaugeData.create(
+                Collections.singletonList(
+                    ImmutableDoublePointData.create(0, 1, attributesToUse, 1.0f))));
       case HISTOGRAM:
         return ImmutableMetricData.createDoubleHistogram(
-            Resource.getDefault(),
+            resourceToUse,
             InstrumentationScopeInfo.create("scope"),
             metricName,
             "description",
@@ -213,7 +374,7 @@ class Otel2PrometheusConverterTest {
                     ImmutableHistogramPointData.create(
                         0,
                         1,
-                        Attributes.empty(),
+                        attributesToUse,
                         1,
                         false,
                         -1,
@@ -221,8 +382,34 @@ class Otel2PrometheusConverterTest {
                         -1,
                         Collections.singletonList(1.0),
                         Arrays.asList(0L, 1L)))));
-      default:
-        throw new IllegalArgumentException("Unsupported metric data type: " + metricDataType);
+      case EXPONENTIAL_HISTOGRAM:
+        return ImmutableMetricData.createExponentialHistogram(
+            resourceToUse,
+            InstrumentationScopeInfo.create("scope"),
+            metricName,
+            "description",
+            metricUnit,
+            ImmutableExponentialHistogramData.create(
+                AggregationTemporality.CUMULATIVE,
+                Collections.singletonList(
+                    ImmutableExponentialHistogramPointData.create(
+                        0,
+                        1,
+                        5,
+                        false,
+                        1,
+                        false,
+                        1,
+                        ImmutableExponentialHistogramBuckets.create(
+                            2, 5, Arrays.asList(1L, 2L, 3L, 4L, 5L)),
+                        ImmutableExponentialHistogramBuckets.create(
+                            2, 5, Arrays.asList(1L, 2L, 3L, 4L, 5L)),
+                        0,
+                        10,
+                        attributesToUse,
+                        Collections.emptyList()))));
     }
+
+    throw new IllegalArgumentException("Unsupported metric data type: " + metricDataType);
   }
 }

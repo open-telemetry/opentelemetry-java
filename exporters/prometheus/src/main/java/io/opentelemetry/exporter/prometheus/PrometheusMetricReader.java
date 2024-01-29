@@ -32,8 +32,9 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
       boolean otelScopeEnabled,
       boolean addResourceAttributesAsLabels,
       Pattern allowedResourceAttributesRegexp) {
-    this.converter = new Otel2PrometheusConverter(
-        otelScopeEnabled, addResourceAttributesAsLabels, allowedResourceAttributesRegexp);
+    this.converter =
+        new Otel2PrometheusConverter(
+            otelScopeEnabled, addResourceAttributesAsLabels, allowedResourceAttributesRegexp);
   }
 
   @Override
