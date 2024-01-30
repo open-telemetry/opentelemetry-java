@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.otlp.logs;
 
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.joining;
 
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
@@ -22,7 +21,6 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.net.ssl.SSLContext;
@@ -120,16 +118,8 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    */
   public OtlpGrpcLogRecordExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
-    if (compressionMethod.equals("none")) {
-      delegate.setCompression(null);
-      return this;
-    }
-    Set<String> supportedCompressionMethods = CompressorUtil.supportedCompressors();
-    checkArgument(
-        supportedCompressionMethods.contains(compressionMethod),
-        "Unsupported compressionMethod. Compression method must be \"none\" or one of: "
-            + supportedCompressionMethods.stream().collect(joining(",", "[", "]")));
-    delegate.setCompression(CompressorUtil.resolveCompressor(compressionMethod));
+    Compressor compressor = CompressorUtil.validateAndResolveCompressor(compressionMethod);
+    delegate.setCompression(compressor);
     return this;
   }
 

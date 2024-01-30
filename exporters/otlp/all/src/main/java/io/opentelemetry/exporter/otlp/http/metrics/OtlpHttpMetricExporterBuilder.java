@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.otlp.http.metrics;
 
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.compression.Compressor;
@@ -23,7 +22,6 @@ import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.time.Duration;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.net.ssl.SSLContext;
@@ -119,16 +117,8 @@ public final class OtlpHttpMetricExporterBuilder {
    */
   public OtlpHttpMetricExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
-    if (compressionMethod.equals("none")) {
-      delegate.setCompression(null);
-      return this;
-    }
-    Set<String> supportedCompressionMethods = CompressorUtil.supportedCompressors();
-    checkArgument(
-        supportedCompressionMethods.contains(compressionMethod),
-        "Unsupported compressionMethod. Compression method must be \"none\" or one of: "
-            + supportedCompressionMethods.stream().collect(joining(",", "[", "]")));
-    delegate.setCompression(CompressorUtil.resolveCompressor(compressionMethod));
+    Compressor compressor = CompressorUtil.validateAndResolveCompressor(compressionMethod);
+    delegate.setCompression(compressor);
     return this;
   }
 
