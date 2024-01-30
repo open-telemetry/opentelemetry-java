@@ -45,7 +45,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("resource")
+@SuppressWarnings({"resource", "ConcatenationWithEmptyString"})
 class PrometheusMetricReaderTest {
 
   private final TestClock testClock = TestClock.create();
@@ -132,7 +132,8 @@ class PrometheusMetricReaderTest {
   private void assertCounterComplete(MetricSnapshots snapshots, Span span1, Span span2)
       throws IOException {
     String expected =
-        "# TYPE requests_size_bytes counter\n"
+        ""
+            + "# TYPE requests_size_bytes counter\n"
             + "# UNIT requests_size_bytes bytes\n"
             + "# HELP requests_size_bytes some help text\n"
             + "requests_size_bytes_total{animal=\"bear\",otel_scope_name=\"test\"} 3.0 # {span_id=\""
@@ -173,7 +174,8 @@ class PrometheusMetricReaderTest {
 
   private void assertCounterMinimal(MetricSnapshots snapshots) throws IOException {
     String expected =
-        "# TYPE requests counter\n"
+        ""
+            + "# TYPE requests counter\n"
             + "requests_total{otel_scope_name=\"test\"} 2.0\n"
             + "requests_created{otel_scope_name=\"test\"} "
             + createdTimestamp
@@ -234,7 +236,8 @@ class PrometheusMetricReaderTest {
   private static void assertUpDownCounterComplete(MetricSnapshots snapshots, Span span1, Span span2)
       throws IOException {
     String expected =
-        "# TYPE queue_size_bytes gauge\n"
+        ""
+            + "# TYPE queue_size_bytes gauge\n"
             + "# UNIT queue_size_bytes bytes\n"
             + "# HELP queue_size_bytes some help text\n"
             + "queue_size_bytes{animal=\"bear\",otel_scope_name=\"test\"} 3.0 # {span_id=\""
@@ -269,7 +272,8 @@ class PrometheusMetricReaderTest {
 
   private static void assertUpDownCounterMinimal(MetricSnapshots snapshots) throws IOException {
     String expected =
-        "# TYPE target info\n"
+        ""
+            + "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
             + "# TYPE users_active gauge\n"
             + "users_active{otel_scope_name=\"test\"} 27.0\n"
@@ -308,7 +312,8 @@ class PrometheusMetricReaderTest {
 
   private static void assertGaugeComplete(MetricSnapshots snapshots) throws IOException {
     String expected =
-        "# TYPE target info\n"
+        ""
+            + "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
             + "# TYPE temperature_celsius gauge\n"
             + "# UNIT temperature_celsius celsius\n"
@@ -333,7 +338,8 @@ class PrometheusMetricReaderTest {
 
   private static void assertGaugeMinimal(MetricSnapshots snapshots) throws IOException {
     String expected =
-        "# TYPE my_gauge gauge\n"
+        ""
+            + "# TYPE my_gauge gauge\n"
             + "my_gauge{otel_scope_name=\"test\"} 2.0\n"
             + "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
@@ -403,7 +409,8 @@ class PrometheusMetricReaderTest {
   private void assertHistogramComplete(
       MetricSnapshots snapshots, Span span1, Span span2, Span span3) throws IOException {
     String expected =
-        "# TYPE request_size_bytes histogram\n"
+        ""
+            + "# TYPE request_size_bytes histogram\n"
             + "# UNIT request_size_bytes bytes\n"
             + "# HELP request_size_bytes some help text\n"
             + "request_size_bytes_bucket{animal=\"bear\",otel_scope_name=\"test\",le=\"0.0\"} 0\n"
@@ -486,7 +493,8 @@ class PrometheusMetricReaderTest {
 
   private void assertHistogramMinimal(MetricSnapshots snapshots) throws IOException {
     String expected =
-        "# TYPE request_size histogram\n"
+        ""
+            + "# TYPE request_size histogram\n"
             + "request_size_bucket{otel_scope_name=\"test\",le=\"0.0\"} 0\n"
             + "request_size_bucket{otel_scope_name=\"test\",le=\"5.0\"} 0\n"
             + "request_size_bucket{otel_scope_name=\"test\",le=\"10.0\"} 0\n"
@@ -567,7 +575,8 @@ class PrometheusMetricReaderTest {
   private static void assertExponentialHistogramComplete(
       MetricSnapshots snapshots, Span span1, Span span2) {
     String expected =
-        "name: \"my_exponential_histogram_bytes\"\n"
+        ""
+            + "name: \"my_exponential_histogram_bytes\"\n"
             + "help: \"some help text\"\n"
             + "type: HISTOGRAM\n"
             + "metric {\n"
@@ -702,7 +711,8 @@ class PrometheusMetricReaderTest {
 
   private static void assertExponentialHistogramMinimal(MetricSnapshots snapshots) {
     String expected =
-        "name: \"my_exponential_histogram\"\n"
+        ""
+            + "name: \"my_exponential_histogram\"\n"
             + "help: \"\"\n"
             + "type: HISTOGRAM\n"
             + "metric {\n"
@@ -853,7 +863,8 @@ class PrometheusMetricReaderTest {
         .build()
         .add(3.3, Attributes.builder().put("a", "b").build());
     String expected =
-        "# TYPE processing_time_seconds counter\n"
+        ""
+            + "# TYPE processing_time_seconds counter\n"
             + "# UNIT processing_time_seconds seconds\n"
             + "# HELP processing_time_seconds processing time in seconds\n"
             + "processing_time_seconds_total{a=\"b\",otel_scope_name=\"scopeA\",otel_scope_version=\"1.1\"} 3.3\n"
@@ -882,7 +893,8 @@ class PrometheusMetricReaderTest {
     LongCounter noSuffix = meter.counterBuilder("queue.time").setUnit("s").build();
     noSuffix.add(4);
     String expected =
-        "# TYPE processing_duration_seconds counter\n"
+        ""
+            + "# TYPE processing_duration_seconds counter\n"
             + "# UNIT processing_duration_seconds seconds\n"
             + "processing_duration_seconds_total{otel_scope_name=\"test\"} 3.0\n"
             + "processing_duration_seconds_created{otel_scope_name=\"test\"} "
@@ -917,7 +929,8 @@ class PrometheusMetricReaderTest {
     LongCounter counter = meter.counterBuilder("request.duration.seconds").setUnit("s").build();
     counter.add(1);
     String expected =
-        "# TYPE request_duration_seconds counter\n"
+        ""
+            + "# TYPE request_duration_seconds counter\n"
             + "# UNIT request_duration_seconds seconds\n"
             + "request_duration_seconds_total{otel_scope_name=\"test\"} 1.0\n"
             + "request_duration_seconds_created{otel_scope_name=\"test\"} "
@@ -934,7 +947,8 @@ class PrometheusMetricReaderTest {
     LongCounter counter = meter.counterBuilder("prod/request.count").build();
     counter.add(1, Attributes.builder().put("user-count", 30).build());
     String expected =
-        "# TYPE prod_request_count counter\n"
+        ""
+            + "# TYPE prod_request_count counter\n"
             + "prod_request_count_total{otel_scope_name=\"test\",user_count=\"30\"} 1.0\n"
             + "prod_request_count_created{otel_scope_name=\"test\",user_count=\"30\"} "
             + createdTimestamp
@@ -964,7 +978,8 @@ class PrometheusMetricReaderTest {
     // So we expect the _created timestamp to be the start time of the application,
     // not the timestamp when the counter or an individual data point was created.
     String expected =
-        "# TYPE requests counter\n"
+        ""
+            + "# TYPE requests counter\n"
             + "requests_total{animal=\"bear\",otel_scope_name=\"test\"} 3.0\n"
             + "requests_created{animal=\"bear\",otel_scope_name=\"test\"} "
             + createdTimestamp
@@ -996,7 +1011,8 @@ class PrometheusMetricReaderTest {
     LongCounter counter = meter.counterBuilder("test.count").build();
     counter.add(1);
     String expected =
-        "# TYPE target info\n"
+        ""
+            + "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
             + "# TYPE test_count counter\n"
             + "test_count_total{otel_scope_name=\"test-scope\",otel_scope_version=\"a.b.c\"} 1.0\n"
@@ -1027,7 +1043,8 @@ class PrometheusMetricReaderTest {
     LongCounter counter = meter.counterBuilder("test.count").build();
     counter.add(1);
     String expected =
-        "# TYPE target info\n"
+        ""
+            + "# TYPE target info\n"
             + "target_info{service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
             + "# TYPE test_count counter\n"
             + "test_count_total 1.0\n"
@@ -1065,7 +1082,8 @@ class PrometheusMetricReaderTest {
     LongCounter counter = meter.counterBuilder("test.count").build();
     counter.add(1);
     String expected =
-        "# TYPE target info\n"
+        ""
+            + "# TYPE target info\n"
             + "target_info{cluster=\"my.cluster\",service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
             + "# TYPE test_count counter\n"
 

@@ -113,8 +113,8 @@ class Otel2PrometheusConverterTest {
   private static Stream<Arguments> resourceAttributesAdditionArgs() {
     List<Arguments> arguments = new ArrayList<>();
 
-    // Check that resource attributes are added as labels, according to allowed pattern
     for (MetricDataType metricDataType : MetricDataType.values()) {
+      // Check that resource attributes are added as labels, according to allowed pattern
       arguments.add(
           Arguments.of(
               createSampleMetricData(
