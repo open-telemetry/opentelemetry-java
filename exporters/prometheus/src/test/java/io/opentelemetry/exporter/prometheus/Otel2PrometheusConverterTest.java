@@ -172,27 +172,6 @@ class Otel2PrometheusConverterTest {
             "my_metric_units",
             "cluster=\"mycluster\",otel_scope_name=\"scope\""));
 
-    // Hard coded attributes will never be copied
-    arguments.add(
-        Arguments.of(
-            createSampleMetricData(
-                "my.metric",
-                "units",
-                MetricDataType.LONG_SUM,
-                Attributes.of(stringKey("foo"), "bar"),
-                Resource.create(
-                    Attributes.of(
-                        stringKey("service.name"), "my.service",
-                        stringKey("service.namespace"), "my.namespace",
-                        stringKey("service.instance.id"), "my.instance.id",
-                        stringKey("telemetry.sdk.version"), "1.2.0",
-                        stringKey("telemetry.sdk.name"), "opentelemetry",
-                        stringKey("telemetry.sdk.language"), "java"))),
-            /* addResourceAttributesAsLabels= */ true,
-            /* allowedResourceAttributesRegexp= */ Pattern.compile(".*"),
-            "my_metric_units",
-            "foo=\"bar\",otel_scope_name=\"scope\""));
-
     return arguments.stream();
   }
 

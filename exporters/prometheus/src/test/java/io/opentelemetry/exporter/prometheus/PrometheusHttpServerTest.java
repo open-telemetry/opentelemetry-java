@@ -324,7 +324,6 @@ class PrometheusHttpServerTest {
         PrometheusHttpServer.builder()
             .setHost("localhost")
             .setPort(0)
-            .setAddResourceAttributesAsLabels(true)
             .setAllowedResourceAttributesRegexp(".*")
             .build()) {
       testPrometheusServer.register(

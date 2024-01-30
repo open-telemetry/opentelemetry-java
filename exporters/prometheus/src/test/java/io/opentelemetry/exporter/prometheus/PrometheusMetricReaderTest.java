@@ -1048,7 +1048,7 @@ class PrometheusMetricReaderTest {
             // Note this is set to true
             /* addResourceAttributesAsLabels= */ true,
 
-            /* allowedResourceAttributesRegexp= */ Pattern.compile(".*"));
+            /* allowedResourceAttributesRegexp= */ Pattern.compile("cluster"));
     Meter meter =
         SdkMeterProvider.builder()
             .setClock(testClock)

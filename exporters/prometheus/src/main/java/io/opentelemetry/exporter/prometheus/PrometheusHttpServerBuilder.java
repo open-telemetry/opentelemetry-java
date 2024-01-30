@@ -64,24 +64,10 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /**
-   * If set to true, resource attributes will be added as labels on each exported metric. Default is
-   * {@code false}.
+   * Set if the resource attributes should be added as labels on each exported metric.
    *
-   * <p>You can limit the attributes that are added as labels by setting a regular expression in
-   * {@link #setAllowedResourceAttributesRegexp(String)}.
-   */
-  public PrometheusHttpServerBuilder setAddResourceAttributesAsLabels(
-      boolean addResourceAttributesAsLabels) {
-    this.addResourceAttributesAsLabels = addResourceAttributesAsLabels;
-    return this;
-  }
-
-  /**
-   * Sets a regular expression to limit the resource attributes that are added as labels.
-   *
-   * <p>If not set, all resource attributes will be added as labels on each exported metric, unless
-   * {@link #setAddResourceAttributesAsLabels(boolean)} is set to false. If set, only resource
-   * attributes that match the regular expression will be added as labels.
+   * <p>If set, resource attributes will be added as labels on each exported metric if their key
+   * matches the regular expression {@code resourceAttributesRegexp}.
    *
    * @param resourceAttributesRegexp a regular expression matching {@link java.util.regex.Pattern}
    *     rules
@@ -90,6 +76,7 @@ public final class PrometheusHttpServerBuilder {
   public PrometheusHttpServerBuilder setAllowedResourceAttributesRegexp(
       String resourceAttributesRegexp) {
     this.allowedResourceAttributesRegexp = Pattern.compile(resourceAttributesRegexp);
+    this.addResourceAttributesAsLabels = true;
     return this;
   }
 

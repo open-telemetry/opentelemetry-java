@@ -89,12 +89,10 @@ class PrometheusMetricReaderProviderTest {
     Map<String, String> config = new HashMap<>();
     config.put("otel.exporter.prometheus.host", "localhost");
     config.put("otel.exporter.prometheus.port", String.valueOf(port));
-    config.put("otel.exporter.prometheus.add-resource-attributes-as-labels", "true");
-    config.put("otel.exporter.prometheus.add-resource-attributes-regexp", "foo.*");
+    config.put("otel.exporter.prometheus.resource.attributes.add.regexp", "foo.*");
 
     when(configProperties.getInt(any())).thenReturn(null);
     when(configProperties.getString(any())).thenReturn(null);
-    when(configProperties.getBoolean(any())).thenReturn(null);
 
     try (MetricReader metricReader =
         provider.createMetricReader(DefaultConfigProperties.createFromMap(config))) {

@@ -512,18 +512,6 @@ final class Otel2PrometheusConverter {
     }
 
     return attributes.asMap().keySet().stream()
-        .filter(
-            o -> {
-              String key = o.getKey();
-              // Filter out the following attributes
-              // because they are already added as (different) labels by the PrometheusMetricReader.
-              return (!key.equals("service.name")
-                  && !key.equals("service.namespace")
-                  && !key.equals("service.instance.id")
-                  && !key.equals("telemetry.sdk.language")
-                  && !key.equals("telemetry.sdk.name")
-                  && !key.equals("telemetry.sdk.version"));
-            })
         .filter(o -> allowedResourceAttributesRegexp.matcher(o.getKey()).matches())
         .collect(Collectors.toList());
   }
