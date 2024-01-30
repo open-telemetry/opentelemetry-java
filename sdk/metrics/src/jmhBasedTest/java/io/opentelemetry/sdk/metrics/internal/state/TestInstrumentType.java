@@ -9,8 +9,10 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.internal.state.tester.AsyncCounterTester;
+import io.opentelemetry.sdk.metrics.internal.state.tester.DoubleSumTester;
 import io.opentelemetry.sdk.metrics.internal.state.tester.ExplicitBucketHistogramTester;
 import io.opentelemetry.sdk.metrics.internal.state.tester.ExponentialHistogramTester;
+import io.opentelemetry.sdk.metrics.internal.state.tester.LongSumTester;
 import java.util.List;
 import java.util.Random;
 
@@ -32,11 +34,36 @@ public enum TestInstrumentType {
     InstrumentTester createInstrumentTester() {
       return new ExplicitBucketHistogramTester();
     }
+  },
+  LONG_SUM(/* dataAllocRateReductionPercentage= */ 97.3f) {
+    @Override
+    InstrumentTester createInstrumentTester() {
+      return new LongSumTester();
+    }
+  },
+  DOUBLE_SUM(/* dataAllocRateReductionPercentage= */ 97.3f) {
+    @Override
+    InstrumentTester createInstrumentTester() {
+      return new DoubleSumTester();
+    }
   };
 
-  abstract InstrumentTester createInstrumentTester();
+  private final float dataAllocRateReductionPercentage;
 
-  TestInstrumentType() {}
+  TestInstrumentType() {
+    this.dataAllocRateReductionPercentage = 99.8f; // default
+  }
+
+  // Some instruments have different reduction percentage.
+  TestInstrumentType(float dataAllocRateReductionPercentage) {
+    this.dataAllocRateReductionPercentage = dataAllocRateReductionPercentage;
+  }
+
+  float getDataAllocRateReductionPercentage() {
+    return dataAllocRateReductionPercentage;
+  }
+
+  abstract InstrumentTester createInstrumentTester();
 
   public interface InstrumentTester {
     Aggregation testedAggregation();
