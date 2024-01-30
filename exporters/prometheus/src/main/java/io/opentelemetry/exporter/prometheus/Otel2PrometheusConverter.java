@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -80,6 +81,10 @@ final class Otel2PrometheusConverter {
   private final boolean addResourceAttributesAsLabels;
   private final Pattern allowedResourceAttributesRegexp;
 
+  // Used only if addResourceAttributesAsLabels is true.
+  @SuppressWarnings("rawtypes")
+  private final Map<Attributes, List<AttributeKey>> resourceAttributesToAllowedKeys;
+
   /**
    * Constructor with feature flag parameter.
    *
@@ -98,6 +103,8 @@ final class Otel2PrometheusConverter {
     this.otelScopeEnabled = otelScopeEnabled;
     this.addResourceAttributesAsLabels = addResourceAttributesAsLabels;
     this.allowedResourceAttributesRegexp = allowedResourceAttributesRegexp;
+    this.resourceAttributesToAllowedKeys =
+        addResourceAttributesAsLabels ? new ConcurrentHashMap<>() : Collections.emptyMap();
   }
 
   MetricSnapshots convert(@Nullable Collection<MetricData> metricDataCollection) {
@@ -424,7 +431,10 @@ final class Otel2PrometheusConverter {
     } else {
       return new Exemplar(
           value,
-          convertAttributes(null, null, exemplar.getFilteredAttributes()),
+          convertAttributes(
+              null, // resource attributes are only copied for point's attributes
+              null, // scope attributes are only needed for point's attributes
+              exemplar.getFilteredAttributes()),
           exemplar.getEpochNanos() / NANOS_PER_MILLISECOND);
     }
   }
@@ -433,14 +443,22 @@ final class Otel2PrometheusConverter {
     return new InfoSnapshot(
         new MetricMetadata("target"),
         Collections.singletonList(
-            new InfoDataPointSnapshot(convertAttributes(null, null, resource.getAttributes()))));
+            new InfoDataPointSnapshot(
+                convertAttributes(
+                    null, // resource attributes are only copied for point's attributes
+                    null, // scope attributes are only needed for point's attributes
+                    resource.getAttributes()))));
   }
 
   private InfoSnapshot makeScopeInfo(Set<InstrumentationScopeInfo> scopes) {
     List<InfoDataPointSnapshot> prometheusScopeInfos = new ArrayList<>(scopes.size());
     for (InstrumentationScopeInfo scope : scopes) {
       prometheusScopeInfos.add(
-          new InfoDataPointSnapshot(convertAttributes(null, scope, scope.getAttributes())));
+          new InfoDataPointSnapshot(
+              convertAttributes(
+                  null, // resource attributes are only copied for point's attributes
+                  scope,
+                  scope.getAttributes())));
     }
     return new InfoSnapshot(new MetricMetadata("otel_scope"), prometheusScopeInfos);
   }
@@ -511,9 +529,12 @@ final class Otel2PrometheusConverter {
       return Collections.emptyList();
     }
 
-    return attributes.asMap().keySet().stream()
-        .filter(o -> allowedResourceAttributesRegexp.matcher(o.getKey()).matches())
-        .collect(Collectors.toList());
+    return resourceAttributesToAllowedKeys.computeIfAbsent(
+        attributes,
+        resourceAttributes ->
+            resourceAttributes.asMap().keySet().stream()
+                .filter(o -> allowedResourceAttributesRegexp.matcher(o.getKey()).matches())
+                .collect(Collectors.toList()));
   }
 
   private static MetricMetadata convertMetadata(MetricData metricData) {
