@@ -23,6 +23,11 @@ tasks {
   }
 }
 
+// Skip OWASP dependencyCheck task on test module
+dependencyCheck {
+  skip = true
+}
+
 val testTasks = mutableListOf<Task>()
 
 dependencies {
@@ -39,19 +44,6 @@ dependencies {
       }
     }
   }
-
-  // For testing BOM references to artifacts that were previously published
-  testImplementation(platform(project(":bom")))
-  // The io.grpc.grpc-* dependencies are transitive dependencies of opentelemetry-exporter-jaeger-proto
-  // which must be provided by the user
-  testImplementation("io.opentelemetry:opentelemetry-exporter-jaeger-proto")
-  testImplementation("io.grpc:grpc-api")
-  testImplementation("io.grpc:grpc-protobuf")
-  testImplementation("io.grpc:grpc-stub")
-  testImplementation("io.opentelemetry:opentelemetry-extension-annotations")
-  testImplementation("io.opentelemetry:opentelemetry-extension-aws")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-extension-resources")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-extension-aws")
 
   testImplementation("com.tngtech.archunit:archunit-junit5")
 }
@@ -93,9 +85,6 @@ tasks.named<JacocoReport>("jacocoTestReport") {
         // Exclude mrjar (jacoco complains), shaded, and generated code
         !it.absolutePath.contains("META-INF/versions/") &&
           !it.absolutePath.contains("/internal/shaded/") &&
-          !it.absolutePath.contains("io/opentelemetry/proto/") &&
-          !it.absolutePath.contains("io/opentelemetry/exporter/jaeger/proto/") &&
-          !it.absolutePath.contains("io/opentelemetry/exporter/jaeger/internal/protobuf/") &&
           !it.absolutePath.contains("io/opentelemetry/sdk/extension/trace/jaeger/proto/") &&
           !it.absolutePath.contains("AutoValue_")
       },

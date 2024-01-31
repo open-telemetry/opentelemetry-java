@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -25,6 +26,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 
 /**
  * Sum aggregator that keeps values as {@code double}s.
@@ -35,24 +37,28 @@ import java.util.function.Supplier;
 public final class DoubleSumAggregator
     extends AbstractSumAggregator<DoublePointData, DoubleExemplarData> {
   private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
+  private final MemoryMode memoryMode;
 
   /**
    * Constructs a sum aggregator.
    *
    * @param instrumentDescriptor The instrument being recorded, used to compute monotonicity.
    * @param reservoirSupplier Supplier of exemplar reservoirs per-stream.
+   * @param memoryMode The memory mode to use.
    */
   public DoubleSumAggregator(
       InstrumentDescriptor instrumentDescriptor,
-      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier) {
+      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier,
+      MemoryMode memoryMode) {
     super(instrumentDescriptor);
 
     this.reservoirSupplier = reservoirSupplier;
+    this.memoryMode = memoryMode;
   }
 
   @Override
   public AggregatorHandle<DoublePointData, DoubleExemplarData> createHandle() {
-    return new Handle(reservoirSupplier.get());
+    return new Handle(reservoirSupplier.get(), memoryMode);
   }
 
   @Override
@@ -124,8 +130,12 @@ public final class DoubleSumAggregator
   static final class Handle extends AggregatorHandle<DoublePointData, DoubleExemplarData> {
     private final DoubleAdder current = AdderUtil.createDoubleAdder();
 
-    Handle(ExemplarReservoir<DoubleExemplarData> exemplarReservoir) {
+    // Only used if memoryMode == MemoryMode.REUSABLE_DATA
+    @Nullable private final MutableDoublePointData reusablePoint;
+
+    Handle(ExemplarReservoir<DoubleExemplarData> exemplarReservoir, MemoryMode memoryMode) {
       super(exemplarReservoir);
+      reusablePoint = memoryMode == MemoryMode.REUSABLE_DATA ? new MutableDoublePointData() : null;
     }
 
     @Override
@@ -136,8 +146,13 @@ public final class DoubleSumAggregator
         List<DoubleExemplarData> exemplars,
         boolean reset) {
       double value = reset ? this.current.sumThenReset() : this.current.sum();
-      return ImmutableDoublePointData.create(
-          startEpochNanos, epochNanos, attributes, value, exemplars);
+      if (reusablePoint != null) {
+        reusablePoint.set(startEpochNanos, epochNanos, attributes, value, exemplars);
+        return reusablePoint;
+      } else {
+        return ImmutableDoublePointData.create(
+            startEpochNanos, epochNanos, attributes, value, exemplars);
+      }
     }
 
     @Override

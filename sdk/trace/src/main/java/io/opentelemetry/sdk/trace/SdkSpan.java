@@ -199,7 +199,9 @@ final class SdkSpan implements ReadWriteSpan {
             startEpochNanos);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
-    spanProcessor.onStart(parentContext, span);
+    if (spanProcessor.isStartRequired()) {
+      spanProcessor.onStart(parentContext, span);
+    }
     return span;
   }
 
@@ -485,7 +487,9 @@ final class SdkSpan implements ReadWriteSpan {
       this.endEpochNanos = endEpochNanos;
       hasEnded = true;
     }
-    spanProcessor.onEnd(this);
+    if (spanProcessor.isEndRequired()) {
+      spanProcessor.onEnd(this);
+    }
   }
 
   @Override

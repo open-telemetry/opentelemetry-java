@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.exemplar;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
@@ -24,6 +25,19 @@ import java.util.function.Supplier;
  * at any time.
  */
 public interface ExemplarReservoir<T extends ExemplarData> {
+
+  /**
+   * Wraps an {@link ExemplarReservoir}, casting calls from {@link
+   * ExemplarReservoir#offerLongMeasurement(long, Attributes, Context)} to {@link
+   * ExemplarReservoir#offerDoubleMeasurement(double, Attributes, Context)} such that {@link
+   * ExemplarReservoir#collectAndReset(Attributes)} only returns {@link DoubleExemplarData}.
+   *
+   * <p>This is used for {@link Aggregation#explicitBucketHistogram()} and {@link
+   * Aggregation#base2ExponentialBucketHistogram()} which only support double measurements.
+   */
+  static <T extends ExemplarData> ExemplarReservoir<T> longToDouble(ExemplarReservoir<T> delegate) {
+    return new LongToDoubleExemplarReservoir<>(delegate);
+  }
 
   /** Wraps a {@link ExemplarReservoir} with a measurement pre-filter. */
   static <T extends ExemplarData> ExemplarReservoir<T> filtered(

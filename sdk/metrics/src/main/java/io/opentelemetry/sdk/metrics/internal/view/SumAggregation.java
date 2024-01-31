@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.internal.RandomSupplier;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
@@ -39,7 +40,9 @@ public final class SumAggregation implements Aggregation, AggregatorFactory {
   @Override
   @SuppressWarnings("unchecked")
   public <T extends PointData, U extends ExemplarData> Aggregator<T, U> createAggregator(
-      InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
+      InstrumentDescriptor instrumentDescriptor,
+      ExemplarFilter exemplarFilter,
+      MemoryMode memoryMode) {
     switch (instrumentDescriptor.getValueType()) {
       case LONG:
         {
@@ -51,7 +54,8 @@ public final class SumAggregation implements Aggregation, AggregatorFactory {
                           Clock.getDefault(),
                           Runtime.getRuntime().availableProcessors(),
                           RandomSupplier.platformDefault()));
-          return (Aggregator<T, U>) new LongSumAggregator(instrumentDescriptor, reservoirFactory);
+          return (Aggregator<T, U>)
+              new LongSumAggregator(instrumentDescriptor, reservoirFactory, memoryMode);
         }
       case DOUBLE:
         {
@@ -63,7 +67,8 @@ public final class SumAggregation implements Aggregation, AggregatorFactory {
                           Clock.getDefault(),
                           Runtime.getRuntime().availableProcessors(),
                           RandomSupplier.platformDefault()));
-          return (Aggregator<T, U>) new DoubleSumAggregator(instrumentDescriptor, reservoirFactory);
+          return (Aggregator<T, U>)
+              new DoubleSumAggregator(instrumentDescriptor, reservoirFactory, memoryMode);
         }
     }
     throw new IllegalArgumentException("Invalid instrument value type");

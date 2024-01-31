@@ -61,11 +61,4 @@ afterEvaluate {
       }
     }
   }
-  otelBom.additionalDependencies.forEach { dependency ->
-    dependencies {
-      constraints {
-        api(dependency)
-      }
-    }
-  }
 }

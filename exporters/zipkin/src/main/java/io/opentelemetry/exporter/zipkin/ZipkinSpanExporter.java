@@ -19,11 +19,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import zipkin2.Callback;
 import zipkin2.Span;
-import zipkin2.codec.BytesEncoder;
-import zipkin2.codec.Encoding;
-import zipkin2.reporter.Sender;
+import zipkin2.reporter.BytesEncoder;
+import zipkin2.reporter.BytesMessageSender;
+import zipkin2.reporter.Encoding;
 
 /**
  * This class was based on the <a
@@ -40,7 +39,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   private final AtomicBoolean isShutdown = new AtomicBoolean();
   private final ZipkinSpanExporterBuilder builder;
   private final BytesEncoder<Span> encoder;
-  private final Sender sender;
+  private final BytesMessageSender sender;
   private final ExporterMetrics exporterMetrics;
 
   private final OtelToZipkinSpanTransformer transformer;
@@ -48,7 +47,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   ZipkinSpanExporter(
       ZipkinSpanExporterBuilder builder,
       BytesEncoder<Span> encoder,
-      Sender sender,
+      BytesMessageSender sender,
       Supplier<MeterProvider> meterProviderSupplier,
       OtelToZipkinSpanTransformer transformer) {
     this.builder = builder;
@@ -76,25 +75,15 @@ public final class ZipkinSpanExporter implements SpanExporter {
       encodedSpans.add(encoder.encode(zipkinSpan));
     }
 
-    CompletableResultCode result = new CompletableResultCode();
-    sender
-        .sendSpans(encodedSpans)
-        .enqueue(
-            new Callback<Void>() {
-              @Override
-              public void onSuccess(Void value) {
-                exporterMetrics.addSuccess(numItems);
-                result.succeed();
-              }
-
-              @Override
-              public void onError(Throwable t) {
-                exporterMetrics.addFailed(numItems);
-                logger.log(Level.WARNING, "Failed to export spans", t);
-                result.fail();
-              }
-            });
-    return result;
+    try {
+      sender.send(encodedSpans);
+      exporterMetrics.addSuccess(numItems);
+      return CompletableResultCode.ofSuccess();
+    } catch (IOException | RuntimeException t) {
+      exporterMetrics.addFailed(numItems);
+      logger.log(Level.WARNING, "Failed to export spans", t);
+      return CompletableResultCode.ofFailure();
+    }
   }
 
   @Override

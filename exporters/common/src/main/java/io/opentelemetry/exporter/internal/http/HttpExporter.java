@@ -12,9 +12,7 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,7 +35,6 @@ public final class HttpExporter<T extends Marshaler> {
   private final String type;
   private final HttpSender httpSender;
   private final ExporterMetrics exporterMetrics;
-  private final boolean exportAsJson;
 
   public HttpExporter(
       String exporterName,
@@ -51,7 +48,6 @@ public final class HttpExporter<T extends Marshaler> {
         exportAsJson
             ? ExporterMetrics.createHttpJson(exporterName, type, meterProviderSupplier)
             : ExporterMetrics.createHttpProtobuf(exporterName, type, meterProviderSupplier);
-    this.exportAsJson = exportAsJson;
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {
@@ -63,21 +59,8 @@ public final class HttpExporter<T extends Marshaler> {
 
     CompletableResultCode result = new CompletableResultCode();
 
-    Consumer<OutputStream> marshaler =
-        os -> {
-          try {
-            if (exportAsJson) {
-              exportRequest.writeJsonTo(os);
-            } else {
-              exportRequest.writeBinaryTo(os);
-            }
-          } catch (IOException e) {
-            throw new IllegalStateException(e);
-          }
-        };
-
     httpSender.send(
-        marshaler,
+        exportRequest,
         exportRequest.getBinarySerializedSize(),
         httpResponse -> {
           int statusCode = httpResponse.statusCode();
@@ -90,11 +73,11 @@ public final class HttpExporter<T extends Marshaler> {
 
           exporterMetrics.addFailed(numItems);
 
-          byte[] body;
+          byte[] body = null;
           try {
             body = httpResponse.responseBody();
           } catch (IOException ex) {
-            throw new IllegalStateException(ex);
+            logger.log(Level.FINE, "Unable to obtain response body", ex);
           }
 
           String status = extractErrorStatus(httpResponse.statusMessage(), body);
