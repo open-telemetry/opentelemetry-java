@@ -25,6 +25,7 @@ package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.opentelemetry.exporter.internal.InstrumentationUtil;
 import io.opentelemetry.exporter.internal.RetryUtil;
+import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcResponse;
 import io.opentelemetry.exporter.internal.grpc.GrpcSender;
@@ -67,12 +68,12 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
   private final OkHttpClient client;
   private final HttpUrl url;
   private final Supplier<Map<String, List<String>>> headersSupplier;
-  private final boolean compressionEnabled;
+  @Nullable private final Compressor compressor;
 
   /** Creates a new {@link OkHttpGrpcSender}. */
   public OkHttpGrpcSender(
       String endpoint,
-      boolean compressionEnabled,
+      @Nullable Compressor compressor,
       long timeoutNanos,
       Supplier<Map<String, List<String>>> headersSupplier,
       @Nullable RetryPolicy retryPolicy,
@@ -97,7 +98,7 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
     this.client = clientBuilder.build();
     this.headersSupplier = headersSupplier;
     this.url = HttpUrl.get(endpoint);
-    this.compressionEnabled = compressionEnabled;
+    this.compressor = compressor;
   }
 
   @Override
@@ -110,10 +111,10 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
           (key, values) -> values.forEach(value -> requestBuilder.addHeader(key, value)));
     }
     requestBuilder.addHeader("te", "trailers");
-    if (compressionEnabled) {
-      requestBuilder.addHeader("grpc-encoding", "gzip");
+    if (compressor != null) {
+      requestBuilder.addHeader("grpc-encoding", compressor.getEncoding());
     }
-    RequestBody requestBody = new GrpcRequestBody(request, compressionEnabled);
+    RequestBody requestBody = new GrpcRequestBody(request, compressor);
     requestBuilder.post(requestBody);
 
     InstrumentationUtil.suppressInstrumentation(
