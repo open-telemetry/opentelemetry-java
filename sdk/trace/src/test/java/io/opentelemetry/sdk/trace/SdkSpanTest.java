@@ -15,6 +15,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -32,6 +33,7 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.extension.incubator.trace.ExtendedSpan;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
@@ -819,10 +821,10 @@ class SdkSpanTest {
             null,
             null);
     try {
-      Span span1 = createTestSpan(SpanKind.INTERNAL);
-      Span span2 = createTestSpan(SpanKind.INTERNAL);
-      Span span3 = createTestSpan(SpanKind.INTERNAL);
-      Span span4 = createTestSpan(SpanKind.INTERNAL);
+      ExtendedSpan span1 = createTestSpan(SpanKind.INTERNAL);
+      ExtendedSpan span2 = createTestSpan(SpanKind.INTERNAL);
+      ExtendedSpan span3 = createTestSpan(SpanKind.INTERNAL);
+      ExtendedSpan span4 = createTestSpan(SpanKind.INTERNAL);
 
       span.addLink(span1.getSpanContext());
 
@@ -883,6 +885,16 @@ class SdkSpanTest {
     } finally {
       span.end();
     }
+  }
+
+  @Test
+  void addLink_InvalidArgs() {
+    ExtendedSpan span = createTestSpan(SpanKind.INTERNAL);
+    assertThatCode(() -> span.addLink(null)).doesNotThrowAnyException();
+    assertThatCode(() -> span.addLink(SpanContext.getInvalid())).doesNotThrowAnyException();
+    assertThatCode(() -> span.addLink(null, null)).doesNotThrowAnyException();
+    assertThatCode(() -> span.addLink(SpanContext.getInvalid(), Attributes.empty()))
+        .doesNotThrowAnyException();
   }
 
   @Test

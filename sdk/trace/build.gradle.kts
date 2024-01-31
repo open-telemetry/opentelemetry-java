@@ -22,6 +22,8 @@ dependencies {
   api(project(":api:all"))
   api(project(":sdk:common"))
 
+  implementation(project(":extensions:incubator"))
+
   compileOnly(project(":sdk:trace-shaded-deps"))
 
   annotationProcessor("com.google.auto.value:auto-value")
