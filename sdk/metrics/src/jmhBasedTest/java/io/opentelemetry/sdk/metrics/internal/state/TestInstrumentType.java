@@ -15,47 +15,29 @@ import io.opentelemetry.sdk.metrics.internal.state.tester.ExponentialHistogramTe
 import io.opentelemetry.sdk.metrics.internal.state.tester.LongSumTester;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Supplier;
 
+@SuppressWarnings("ImmutableEnumChecker")
 public enum TestInstrumentType {
-  ASYNC_COUNTER() {
-    @Override
-    InstrumentTester createInstrumentTester() {
-      return new AsyncCounterTester();
-    }
-  },
-  EXPONENTIAL_HISTOGRAM() {
-    @Override
-    InstrumentTester createInstrumentTester() {
-      return new ExponentialHistogramTester();
-    }
-  },
-  EXPLICIT_BUCKET() {
-    @Override
-    InstrumentTester createInstrumentTester() {
-      return new ExplicitBucketHistogramTester();
-    }
-  },
-  LONG_SUM(/* dataAllocRateReductionPercentage= */ 97.3f) {
-    @Override
-    InstrumentTester createInstrumentTester() {
-      return new LongSumTester();
-    }
-  },
-  DOUBLE_SUM(/* dataAllocRateReductionPercentage= */ 97.3f) {
-    @Override
-    InstrumentTester createInstrumentTester() {
-      return new DoubleSumTester();
-    }
-  };
+  ASYNC_COUNTER(AsyncCounterTester::new),
+  EXPONENTIAL_HISTOGRAM(ExponentialHistogramTester::new),
+  EXPLICIT_BUCKET(ExplicitBucketHistogramTester::new),
+  LONG_SUM(LongSumTester::new, /* dataAllocRateReductionPercentage= */ 97.3f),
+  DOUBLE_SUM(DoubleSumTester::new, /* dataAllocRateReductionPercentage= */ 97.3f);
 
+  private final Supplier<? extends InstrumentTester> instrumentTesterInitializer;
   private final float dataAllocRateReductionPercentage;
 
-  TestInstrumentType() {
+  TestInstrumentType(Supplier<? extends InstrumentTester> instrumentTesterInitializer) {
     this.dataAllocRateReductionPercentage = 99.8f; // default
+    this.instrumentTesterInitializer = instrumentTesterInitializer;
   }
 
   // Some instruments have different reduction percentage.
-  TestInstrumentType(float dataAllocRateReductionPercentage) {
+  TestInstrumentType(
+      Supplier<? extends InstrumentTester> instrumentTesterInitializer,
+      float dataAllocRateReductionPercentage) {
+    this.instrumentTesterInitializer = instrumentTesterInitializer;
     this.dataAllocRateReductionPercentage = dataAllocRateReductionPercentage;
   }
 
@@ -63,7 +45,9 @@ public enum TestInstrumentType {
     return dataAllocRateReductionPercentage;
   }
 
-  abstract InstrumentTester createInstrumentTester();
+  InstrumentTester createInstrumentTester() {
+    return instrumentTesterInitializer.get();
+  }
 
   public interface InstrumentTester {
     Aggregation testedAggregation();

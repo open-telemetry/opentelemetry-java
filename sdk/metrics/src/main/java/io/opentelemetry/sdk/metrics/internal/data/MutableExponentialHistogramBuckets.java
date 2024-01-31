@@ -81,12 +81,12 @@ public final class MutableExponentialHistogramBuckets implements ExponentialHist
     if (o == this) {
       return true;
     }
-    if (o instanceof MutableExponentialHistogramBuckets) {
-      MutableExponentialHistogramBuckets that = (MutableExponentialHistogramBuckets) o;
+    if (o instanceof ExponentialHistogramBuckets) {
+      ExponentialHistogramBuckets that = (ExponentialHistogramBuckets) o;
       return this.scale == that.getScale()
           && this.offset == that.getOffset()
           && this.totalCount == that.getTotalCount()
-          && Objects.equals(this.bucketCounts, that.bucketCounts);
+          && Objects.equals(this.bucketCounts, that.getBucketCounts());
     }
     return false;
   }
