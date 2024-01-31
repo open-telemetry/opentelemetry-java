@@ -334,7 +334,6 @@ The [Prometheus](https://github.com/prometheus/docs/blob/master/content/docs/ins
 | otel.metrics.exporter=prometheus                        | OTEL_METRICS_EXPORTER=prometheus                        | Select the Prometheus exporter                                                                                                       |
 | otel.exporter.prometheus.port                           | OTEL_EXPORTER_PROMETHEUS_PORT                           | The local port used to bind the prometheus metric server. Default is `9464`.                                                         |
 | otel.exporter.prometheus.host                           | OTEL_EXPORTER_PROMETHEUS_HOST                           | The local address used to bind the prometheus metric server. Default is `0.0.0.0`.                                                   |
-| otel.exporter.prometheus.resource.attributes.add.regexp | OTEL_EXPORTER_PROMETHEUS_RESOURCE_ATTRIBUTES_ADD_REGEXP | If set, resource attributes whose key matches the given regular expression will be added to each data point label. Default is unset. |
 
 Note that this is a pull exporter - it opens up a server on the local process listening on the specified host and port, which
 a Prometheus server scrapes from.

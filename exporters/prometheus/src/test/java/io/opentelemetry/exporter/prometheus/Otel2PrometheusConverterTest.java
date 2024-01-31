@@ -152,7 +152,7 @@ class Otel2PrometheusConverterTest {
                     Attributes.of(
                         stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
             /* addResourceAttributesAsLabels= */ true,
-            /* allowedResourceAttributesRegexp= */ Predicates.startsWith("clu"),
+            /* allowedResourceAttributesFilter= */ Predicates.startsWith("clu"),
             "my_metric_units",
 
             // "cluster" attribute is present only once and the value is taken
@@ -171,7 +171,7 @@ class Otel2PrometheusConverterTest {
                     Attributes.of(
                         stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
             /* addResourceAttributesAsLabels= */ true,
-            /* allowedResourceAttributesRegexp= */ Predicates.startsWith("clu"),
+            /* allowedResourceAttributesFilter= */ Predicates.startsWith("clu"),
             "my_metric_units",
             "cluster=\"mycluster\",otel_scope_name=\"scope\""));
 
