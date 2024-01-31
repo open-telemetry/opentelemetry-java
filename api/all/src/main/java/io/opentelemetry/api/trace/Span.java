@@ -360,7 +360,7 @@ public interface Span extends ImplicitContextKeyed {
   Span updateName(String name);
 
   /**
-   * Adds a link to the newly created {@code Span}.
+   * Adds a link to this {@code Span}.
    *
    * <p>Links are used to link {@link Span}s in different traces. Used (for example) in batching
    * operations, where a single batch handler processes multiple requests from different traces or
@@ -380,7 +380,7 @@ public interface Span extends ImplicitContextKeyed {
   }
 
   /**
-   * Adds a link to the newly created {@code Span}.
+   * Adds a link to this {@code Span}.
    *
    * <p>Links are used to link {@link Span}s in different traces. Used (for example) in batching
    * operations, where a single batch handler processes multiple requests from different traces or
