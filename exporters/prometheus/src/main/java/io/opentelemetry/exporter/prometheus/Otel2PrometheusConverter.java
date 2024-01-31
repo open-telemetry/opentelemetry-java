@@ -76,13 +76,17 @@ final class Otel2PrometheusConverter {
   private static final String OTEL_SCOPE_NAME = "otel_scope_name";
   private static final String OTEL_SCOPE_VERSION = "otel_scope_version";
   private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
+  static final int MAX_CACHE_SIZE = 10;
 
   private final boolean otelScopeEnabled;
   private final boolean addResourceAttributesAsLabels;
   private final Predicate<String> allowedResourceAttributesFilter;
 
-  // Used only if addResourceAttributesAsLabels is true.
-  private final Map<Attributes, List<AttributeKey<?>>> resourceAttributesToAllowedKeys;
+  /**
+   * Used only if addResourceAttributesAsLabels is true. Once the cache reaches {@link
+   * #MAX_CACHE_SIZE}, it is cleared to protect against unbounded conversion over time.
+   */
+  private final Map<Attributes, List<AttributeKey<?>>> resourceAttributesToAllowedKeysCache;
 
   /**
    * Constructor with feature flag parameter.
@@ -102,7 +106,7 @@ final class Otel2PrometheusConverter {
     this.otelScopeEnabled = otelScopeEnabled;
     this.addResourceAttributesAsLabels = addResourceAttributesAsLabels;
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
-    this.resourceAttributesToAllowedKeys =
+    this.resourceAttributesToAllowedKeysCache =
         addResourceAttributesAsLabels ? new ConcurrentHashMap<>() : Collections.emptyMap();
   }
 
@@ -512,12 +516,18 @@ final class Otel2PrometheusConverter {
     if (resource == null) {
       return Collections.emptyList();
     }
-    return resourceAttributesToAllowedKeys.computeIfAbsent(
-        resource.getAttributes(),
-        resourceAttributes ->
-            resourceAttributes.asMap().keySet().stream()
-                .filter(o -> allowedResourceAttributesFilter.test(o.getKey()))
-                .collect(Collectors.toList()));
+    List<AttributeKey<?>> allowedAttributeKeys =
+        resourceAttributesToAllowedKeysCache.computeIfAbsent(
+            resource.getAttributes(),
+            resourceAttributes ->
+                resourceAttributes.asMap().keySet().stream()
+                    .filter(o -> allowedResourceAttributesFilter.test(o.getKey()))
+                    .collect(Collectors.toList()));
+
+    if (resourceAttributesToAllowedKeysCache.size() > MAX_CACHE_SIZE) {
+      resourceAttributesToAllowedKeysCache.clear();
+    }
+    return allowedAttributeKeys;
   }
 
   private static MetricMetadata convertMetadata(MetricData metricData) {

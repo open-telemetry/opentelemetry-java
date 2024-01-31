@@ -35,12 +35,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -272,6 +274,12 @@ class Otel2PrometheusConverterTest {
   }
 
   static MetricData createSampleMetricData(
+      String metricName, Resource resource, Attributes attributes) {
+    return createSampleMetricData(
+        metricName, "unit", MetricDataType.LONG_SUM, attributes, resource);
+  }
+
+  static MetricData createSampleMetricData(
       String metricName, String metricUnit, MetricDataType metricDataType) {
     return createSampleMetricData(metricName, metricUnit, metricDataType, null, null);
   }
@@ -391,5 +399,65 @@ class Otel2PrometheusConverterTest {
     }
 
     throw new IllegalArgumentException("Unsupported metric data type: " + metricDataType);
+  }
+
+  @Test
+  void validateCacheIsBounded() {
+    AtomicInteger predicateCalledCount = new AtomicInteger();
+    Predicate<String> countPredicate =
+        s -> {
+          predicateCalledCount.addAndGet(1);
+          return true;
+        };
+
+    Otel2PrometheusConverter otel2PrometheusConverter =
+        new Otel2PrometheusConverter(
+            true,
+            /* addResourceAttributesAsLabels= */ true,
+            /* allowedResourceAttributesFilter= */ countPredicate);
+
+    // Create 20 different metric data objects with 2 different resource attributes;
+    Resource resource1 = Resource.builder().put("cluster", "cluster1").build();
+    Resource resource2 = Resource.builder().put("cluster", "cluster2").build();
+
+    List<MetricData> metricDataList = new ArrayList<>();
+    for (int i = 0; i < 10; i++) {
+      Attributes attributes = Attributes.of(stringKey("foo" + i), "bar" + i);
+      metricDataList.add(createSampleMetricData("metric1", resource1, attributes));
+      metricDataList.add(createSampleMetricData("metric2", resource2, attributes));
+    }
+
+    otel2PrometheusConverter.convert(metricDataList);
+
+    // The predicate should be called only once for each resource attribute, and we have
+    // 2 unique resources, each with 1 attribute, so 2.
+    assertThat(predicateCalledCount.get()).isEqualTo(2);
+
+    metricDataList.clear();
+
+    // Create 20 different metric data objects with 20 different resource attributes;
+    // This should cause the cache to be full, and then subsequently cleared
+    for (int i = 0; i < Otel2PrometheusConverter.MAX_CACHE_SIZE; i++) {
+      Attributes attributes = Attributes.of(stringKey("foo" + i), "bar" + i);
+      Resource resource = Resource.builder().put("cluster", "different-cluster" + i).build();
+      metricDataList.add(createSampleMetricData("metric1", resource, attributes));
+      metricDataList.add(createSampleMetricData("metric2", resource, attributes));
+    }
+    otel2PrometheusConverter.convert(metricDataList);
+
+    // Now lets put metrics with the same resource attributes as before
+    metricDataList.clear();
+    predicateCalledCount.set(0);
+    for (int i = 0; i < 10; i++) {
+      Attributes attributes = Attributes.of(stringKey("foo" + i), "bar" + i);
+      metricDataList.add(createSampleMetricData("metric1", resource1, attributes));
+      metricDataList.add(createSampleMetricData("metric2", resource2, attributes));
+    }
+    otel2PrometheusConverter.convert(metricDataList);
+
+    // If the cache was unbounded, the predicate should be 0, since it's all in the cache,
+    // but if the cache was cleared, it used the predicate for each resource, since it as if
+    // it never saw those resources before.
+    assertThat(predicateCalledCount.get()).isEqualTo(2);
   }
 }
