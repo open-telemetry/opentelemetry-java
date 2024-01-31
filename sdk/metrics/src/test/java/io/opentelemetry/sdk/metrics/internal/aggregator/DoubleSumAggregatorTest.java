@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -15,6 +14,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -33,6 +33,8 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -48,24 +50,33 @@ class DoubleSumAggregatorTest {
   private static final MetricDescriptor metricDescriptor =
       MetricDescriptor.create("name", "description", "unit");
 
-  private static final DoubleSumAggregator aggregator =
-      new DoubleSumAggregator(
-          InstrumentDescriptor.create(
-              "instrument_name",
-              "instrument_description",
-              "instrument_unit",
-              InstrumentType.COUNTER,
-              InstrumentValueType.DOUBLE,
-              Advice.empty()),
-          ExemplarReservoir::doubleNoSamples);
+  private DoubleSumAggregator aggregator;
 
-  @Test
-  void createHandle() {
+  private void init(MemoryMode memoryMode) {
+    aggregator =
+        new DoubleSumAggregator(
+            InstrumentDescriptor.create(
+                "instrument_name",
+                "instrument_description",
+                "instrument_unit",
+                InstrumentType.COUNTER,
+                InstrumentValueType.DOUBLE,
+                Advice.empty()),
+            ExemplarReservoir::doubleNoSamples,
+            memoryMode);
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void createHandle(MemoryMode memoryMode) {
+    init(memoryMode);
     assertThat(aggregator.createHandle()).isInstanceOf(DoubleSumAggregator.Handle.class);
   }
 
-  @Test
-  void multipleRecords() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void multipleRecords(MemoryMode memoryMode) {
+    init(memoryMode);
     AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordDouble(12.1);
@@ -80,8 +91,10 @@ class DoubleSumAggregatorTest {
         .isEqualTo(12.1 * 5);
   }
 
-  @Test
-  void multipleRecords_WithNegatives() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void multipleRecords_WithNegatives(MemoryMode memoryMode) {
+    init(memoryMode);
     AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordDouble(12);
@@ -97,8 +110,10 @@ class DoubleSumAggregatorTest {
         .isEqualTo(14);
   }
 
-  @Test
-  void aggregateThenMaybeReset() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void aggregateThenMaybeReset(MemoryMode memoryMode) {
+    init(memoryMode);
     AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
 
@@ -119,8 +134,9 @@ class DoubleSumAggregatorTest {
         .isEqualTo(-13);
   }
 
-  @Test
-  void aggregateThenMaybeReset_WithExemplars() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void aggregateThenMaybeReset_WithExemplars(MemoryMode memoryMode) {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
@@ -143,7 +159,8 @@ class DoubleSumAggregatorTest {
                 InstrumentType.COUNTER,
                 InstrumentValueType.DOUBLE,
                 Advice.empty()),
-            () -> reservoir);
+            () -> reservoir,
+            memoryMode);
     AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordDouble(0, attributes, Context.root());
@@ -152,8 +169,9 @@ class DoubleSumAggregatorTest {
         .isEqualTo(ImmutableDoublePointData.create(0, 1, Attributes.empty(), 0, exemplars));
   }
 
-  @Test
-  void mergeAndDiff() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void mergeAndDiff(MemoryMode memoryMode) {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
@@ -177,7 +195,8 @@ class DoubleSumAggregatorTest {
                     instrumentType,
                     InstrumentValueType.LONG,
                     Advice.empty()),
-                ExemplarReservoir::doubleNoSamples);
+                ExemplarReservoir::doubleNoSamples,
+                memoryMode);
 
         DoublePointData diffed =
             aggregator.diff(
@@ -193,8 +212,10 @@ class DoubleSumAggregatorTest {
     }
   }
 
-  @Test
-  void diffInPlace() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void diffInPlace(MemoryMode memoryMode) {
+    init(memoryMode);
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
@@ -235,8 +256,10 @@ class DoubleSumAggregatorTest {
     assertThat(previous.getExemplars()).isEqualTo(exemplars);
   }
 
-  @Test
-  void copyPoint() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void copyPoint(MemoryMode memoryMode) {
+    init(memoryMode);
     MutableDoublePointData pointData = (MutableDoublePointData) aggregator.createReusablePoint();
 
     Attributes attributes = Attributes.of(AttributeKey.longKey("test"), 100L);
@@ -278,8 +301,10 @@ class DoubleSumAggregatorTest {
     assertThat(toPointData.getExemplars()).isEqualTo(pointData.getExemplars());
   }
 
-  @Test
-  void toMetricData() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void toMetricData(MemoryMode memoryMode) {
+    init(memoryMode);
     AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordDouble(10);
@@ -310,8 +335,10 @@ class DoubleSumAggregatorTest {
                                 .hasValue(10)));
   }
 
-  @Test
-  void toMetricDataWithExemplars() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void toMetricDataWithExemplars(MemoryMode memoryMode) {
+    init(memoryMode);
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
@@ -334,5 +361,23 @@ class DoubleSumAggregatorTest {
                 AggregationTemporality.CUMULATIVE))
         .hasDoubleSumSatisfying(
             sum -> sum.hasPointsSatisfying(point -> point.hasValue(1).hasExemplars(exemplar)));
+  }
+
+  @Test
+  void sameObjectReturnedOnReusableDataMemoryMode() {
+    init(MemoryMode.REUSABLE_DATA);
+    AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
+        aggregator.createHandle();
+    aggregatorHandle.recordDouble(1.0);
+
+    DoublePointData firstCollection =
+        aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ false);
+
+    aggregatorHandle.recordDouble(1.0);
+    DoublePointData secondCollection =
+        aggregatorHandle.aggregateThenMaybeReset(0, 1, Attributes.empty(), /* reset= */ false);
+
+    // Should be same object since we are in REUSABLE_DATA mode.
+    assertThat(firstCollection).isSameAs(secondCollection);
   }
 }

@@ -54,7 +54,8 @@ public final class SumAggregation implements Aggregation, AggregatorFactory {
                           Clock.getDefault(),
                           Runtime.getRuntime().availableProcessors(),
                           RandomSupplier.platformDefault()));
-          return (Aggregator<T, U>) new LongSumAggregator(instrumentDescriptor, reservoirFactory);
+          return (Aggregator<T, U>)
+              new LongSumAggregator(instrumentDescriptor, reservoirFactory, memoryMode);
         }
       case DOUBLE:
         {
@@ -66,7 +67,8 @@ public final class SumAggregation implements Aggregation, AggregatorFactory {
                           Clock.getDefault(),
                           Runtime.getRuntime().availableProcessors(),
                           RandomSupplier.platformDefault()));
-          return (Aggregator<T, U>) new DoubleSumAggregator(instrumentDescriptor, reservoirFactory);
+          return (Aggregator<T, U>)
+              new DoubleSumAggregator(instrumentDescriptor, reservoirFactory, memoryMode);
         }
     }
     throw new IllegalArgumentException("Invalid instrument value type");
