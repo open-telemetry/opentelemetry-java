@@ -10,8 +10,7 @@ import static java.util.Objects.requireNonNull;
 
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.util.concurrent.ExecutorService;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 /** A builder for {@link PrometheusHttpServer}. */
@@ -25,7 +24,7 @@ public final class PrometheusHttpServerBuilder {
   private PrometheusRegistry prometheusRegistry = new PrometheusRegistry();
   private boolean otelScopeEnabled = true;
   private boolean addResourceAttributesAsLabels = false;
-  private Pattern allowedResourceAttributesRegexp = Pattern.compile(".*");
+  private Predicate<String> allowedResourceAttributesFilter = attributeKey -> true;
   @Nullable private ExecutorService executor;
 
   /** Sets the host to bind to. If unset, defaults to {@value #DEFAULT_HOST}. */
@@ -67,15 +66,15 @@ public final class PrometheusHttpServerBuilder {
    * Set if the resource attributes should be added as labels on each exported metric.
    *
    * <p>If set, resource attributes will be added as labels on each exported metric if their key
-   * matches the regular expression {@code resourceAttributesRegexp}.
+   * tests positive (true) when passed through {@code resourceAttributesFilter}.
    *
-   * @param resourceAttributesRegexp a regular expression matching {@link java.util.regex.Pattern}
-   *     rules
-   * @throws PatternSyntaxException if the {@code resourceAttributesRegexp}'s syntax is not valid
+   * @param resourceAttributesFilter a predicate that returns true if the resource attribute should
+   *     be added as a label on each exported metric. The predicates input is the resource attribute
+   *     key.
    */
-  public PrometheusHttpServerBuilder setAllowedResourceAttributesRegexp(
-      String resourceAttributesRegexp) {
-    this.allowedResourceAttributesRegexp = Pattern.compile(resourceAttributesRegexp);
+  public PrometheusHttpServerBuilder setAllowedResourceAttributesFilter(
+      Predicate<String> resourceAttributesFilter) {
+    this.allowedResourceAttributesFilter = requireNonNull(resourceAttributesFilter);
     this.addResourceAttributesAsLabels = true;
     return this;
   }
@@ -92,7 +91,7 @@ public final class PrometheusHttpServerBuilder {
         prometheusRegistry,
         otelScopeEnabled,
         addResourceAttributesAsLabels,
-        allowedResourceAttributesRegexp);
+        allowedResourceAttributesFilter);
   }
 
   PrometheusHttpServerBuilder() {}

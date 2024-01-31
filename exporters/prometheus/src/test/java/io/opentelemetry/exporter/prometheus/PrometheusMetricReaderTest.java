@@ -63,7 +63,7 @@ class PrometheusMetricReaderTest {
         new PrometheusMetricReader(
             true,
             /* addResourceAttributesAsLabels= */ false,
-            /* allowedResourceAttributesRegexp= */ Pattern.compile(".*"));
+            /* allowedResourceAttributesFilter= */ Predicates.ALLOW_ALL);
     this.meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
@@ -773,7 +773,7 @@ class PrometheusMetricReaderTest {
           new PrometheusMetricReader(
               true,
               /* addResourceAttributesAsLabels= */ false,
-              /* allowedResourceAttributesRegexp= */ Pattern.compile(".*"));
+              /* allowedResourceAttributesFilter= */ Predicates.ALLOW_ALL);
       Meter meter =
           SdkMeterProvider.builder()
               .registerMetricReader(reader)
@@ -1029,7 +1029,7 @@ class PrometheusMetricReaderTest {
         new PrometheusMetricReader(
             false,
             /* addResourceAttributesAsLabels= */ false,
-            /* allowedResourceAttributesRegexp= */ Pattern.compile(".*"));
+            /* allowedResourceAttributesFilter= */ Predicates.ALLOW_ALL);
     Meter meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
@@ -1065,7 +1065,7 @@ class PrometheusMetricReaderTest {
             // Note this is set to true
             /* addResourceAttributesAsLabels= */ true,
 
-            /* allowedResourceAttributesRegexp= */ Pattern.compile("cluster"));
+            /* allowedResourceAttributesFilter= */ Predicates.is("cluster"));
     Meter meter =
         SdkMeterProvider.builder()
             .setClock(testClock)

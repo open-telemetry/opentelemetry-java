@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.prometheus.metrics.model.registry.MultiCollector;
 import io.prometheus.metrics.model.snapshots.MetricSnapshots;
-import java.util.regex.Pattern;
+import java.util.function.Predicate;
 
 /**
  * This is the bridge between Prometheus and OpenTelemetry.
@@ -27,14 +27,14 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
   private volatile CollectionRegistration collectionRegistration = CollectionRegistration.noop();
   private final Otel2PrometheusConverter converter;
 
-  /** See {@link Otel2PrometheusConverter#Otel2PrometheusConverter(boolean, boolean, Pattern)}. */
+  /** See {@link Otel2PrometheusConverter#Otel2PrometheusConverter(boolean, boolean, Predicate)}. */
   public PrometheusMetricReader(
       boolean otelScopeEnabled,
       boolean addResourceAttributesAsLabels,
-      Pattern allowedResourceAttributesRegexp) {
+      Predicate<String> allowedResourceAttributesFilter) {
     this.converter =
         new Otel2PrometheusConverter(
-            otelScopeEnabled, addResourceAttributesAsLabels, allowedResourceAttributesRegexp);
+            otelScopeEnabled, addResourceAttributesAsLabels, allowedResourceAttributesFilter);
   }
 
   @Override

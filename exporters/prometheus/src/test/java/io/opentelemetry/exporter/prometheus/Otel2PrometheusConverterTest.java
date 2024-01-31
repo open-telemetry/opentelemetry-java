@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -54,7 +55,7 @@ class Otel2PrometheusConverterTest {
       new Otel2PrometheusConverter(
           true,
           /* addResourceAttributesAsLabels= */ false,
-          /* allowedResourceAttributesRegexp= */ Pattern.compile(".*"));
+          /* allowedResourceAttributesFilter= */ Predicates.ALLOW_ALL);
 
   @ParameterizedTest
   @MethodSource("metricMetadataArgs")
@@ -83,14 +84,14 @@ class Otel2PrometheusConverterTest {
   void resourceAttributesAddition(
       MetricData metricData,
       boolean addResourceAttributesAsLabels,
-      Pattern allowedResourceAttributesRegexp,
+      Predicate<String> allowedResourceAttributesFilter,
       String metricName,
       String expectedMetricLabels)
       throws IOException {
 
     Otel2PrometheusConverter converter =
         new Otel2PrometheusConverter(
-            true, addResourceAttributesAsLabels, allowedResourceAttributesRegexp);
+            true, addResourceAttributesAsLabels, allowedResourceAttributesFilter);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
@@ -126,7 +127,7 @@ class Otel2PrometheusConverterTest {
                       Attributes.of(
                           stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
               /* addResourceAttributesAsLabels= */ true,
-              /* allowedResourceAttributesRegexp= */ Pattern.compile("clu.*"),
+              /* allowedResourceAttributesFilter= */ Predicates.startsWith("clu"),
               metricDataType == MetricDataType.SUMMARY
                       || metricDataType == MetricDataType.HISTOGRAM
                       || metricDataType == MetricDataType.EXPONENTIAL_HISTOGRAM
@@ -149,7 +150,7 @@ class Otel2PrometheusConverterTest {
                     Attributes.of(
                         stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
             /* addResourceAttributesAsLabels= */ true,
-            /* allowedResourceAttributesRegexp= */ Pattern.compile("clu.*"),
+            /* allowedResourceAttributesRegexp= */ Predicates.startsWith("clu"),
             "my_metric_units",
 
             // "cluster" attribute is present only once and the value is taken
@@ -168,7 +169,7 @@ class Otel2PrometheusConverterTest {
                     Attributes.of(
                         stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
             /* addResourceAttributesAsLabels= */ true,
-            /* allowedResourceAttributesRegexp= */ Pattern.compile("clu.*"),
+            /* allowedResourceAttributesRegexp= */ Predicates.startsWith("clu"),
             "my_metric_units",
             "cluster=\"mycluster\",otel_scope_name=\"scope\""));
 

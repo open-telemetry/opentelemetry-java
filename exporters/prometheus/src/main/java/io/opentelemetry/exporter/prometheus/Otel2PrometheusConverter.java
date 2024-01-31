@@ -62,9 +62,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -79,11 +79,10 @@ final class Otel2PrometheusConverter {
 
   private final boolean otelScopeEnabled;
   private final boolean addResourceAttributesAsLabels;
-  private final Pattern allowedResourceAttributesRegexp;
+  private final Predicate<String> allowedResourceAttributesFilter;
 
   // Used only if addResourceAttributesAsLabels is true.
-  @SuppressWarnings("rawtypes")
-  private final Map<Attributes, List<AttributeKey>> resourceAttributesToAllowedKeys;
+  private final Map<Attributes, List<AttributeKey<?>>> resourceAttributesToAllowedKeys;
 
   /**
    * Constructor with feature flag parameter.
@@ -92,17 +91,17 @@ final class Otel2PrometheusConverter {
    *     metric and labels.
    * @param addResourceAttributesAsLabels if {@code true}, resource attributes will be added as
    *     labels on each exported metric.
-   * @param allowedResourceAttributesRegexp if not {@code null}, only resource attributes with keys
-   *     matching this regexp will be added as labels on each exported metric, unless {@code
+   * @param allowedResourceAttributesFilter if not {@code null}, only resource attributes with keys
+   *     matching this predicate will be added as labels on each exported metric, unless {@code
    *     addResourceAttributesAsLabels} is {@code false}.
    */
   Otel2PrometheusConverter(
       boolean otelScopeEnabled,
       boolean addResourceAttributesAsLabels,
-      Pattern allowedResourceAttributesRegexp) {
+      Predicate<String> allowedResourceAttributesFilter) {
     this.otelScopeEnabled = otelScopeEnabled;
     this.addResourceAttributesAsLabels = addResourceAttributesAsLabels;
-    this.allowedResourceAttributesRegexp = allowedResourceAttributesRegexp;
+    this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.resourceAttributesToAllowedKeys =
         addResourceAttributesAsLabels ? new ConcurrentHashMap<>() : Collections.emptyMap();
   }
@@ -147,26 +146,20 @@ final class Otel2PrometheusConverter {
     switch (metricData.getType()) {
       case LONG_GAUGE:
         return convertLongGauge(
-            metadata,
-            scope,
-            metricData.getLongGaugeData().getPoints(),
-            metricData.getResource().getAttributes());
+            metadata, scope, metricData.getLongGaugeData().getPoints(), metricData.getResource());
       case DOUBLE_GAUGE:
         return convertDoubleGauge(
-            metadata,
-            scope,
-            metricData.getDoubleGaugeData().getPoints(),
-            metricData.getResource().getAttributes());
+            metadata, scope, metricData.getDoubleGaugeData().getPoints(), metricData.getResource());
       case LONG_SUM:
         SumData<LongPointData> longSumData = metricData.getLongSumData();
         if (longSumData.getAggregationTemporality() == AggregationTemporality.DELTA) {
           return null;
         } else if (longSumData.isMonotonic()) {
           return convertLongCounter(
-              metadata, scope, longSumData.getPoints(), metricData.getResource().getAttributes());
+              metadata, scope, longSumData.getPoints(), metricData.getResource());
         } else {
           return convertLongGauge(
-              metadata, scope, longSumData.getPoints(), metricData.getResource().getAttributes());
+              metadata, scope, longSumData.getPoints(), metricData.getResource());
         }
       case DOUBLE_SUM:
         SumData<DoublePointData> doubleSumData = metricData.getDoubleSumData();
@@ -174,10 +167,10 @@ final class Otel2PrometheusConverter {
           return null;
         } else if (doubleSumData.isMonotonic()) {
           return convertDoubleCounter(
-              metadata, scope, doubleSumData.getPoints(), metricData.getResource().getAttributes());
+              metadata, scope, doubleSumData.getPoints(), metricData.getResource());
         } else {
           return convertDoubleGauge(
-              metadata, scope, doubleSumData.getPoints(), metricData.getResource().getAttributes());
+              metadata, scope, doubleSumData.getPoints(), metricData.getResource());
         }
       case HISTOGRAM:
         HistogramData histogramData = metricData.getHistogramData();
@@ -185,7 +178,7 @@ final class Otel2PrometheusConverter {
           return null;
         } else {
           return convertHistogram(
-              metadata, scope, histogramData.getPoints(), metricData.getResource().getAttributes());
+              metadata, scope, histogramData.getPoints(), metricData.getResource());
         }
       case EXPONENTIAL_HISTOGRAM:
         ExponentialHistogramData exponentialHistogramData =
@@ -194,17 +187,11 @@ final class Otel2PrometheusConverter {
           return null;
         } else {
           return convertExponentialHistogram(
-              metadata,
-              scope,
-              exponentialHistogramData.getPoints(),
-              metricData.getResource().getAttributes());
+              metadata, scope, exponentialHistogramData.getPoints(), metricData.getResource());
         }
       case SUMMARY:
         return convertSummary(
-            metadata,
-            scope,
-            metricData.getSummaryData().getPoints(),
-            metricData.getResource().getAttributes());
+            metadata, scope, metricData.getSummaryData().getPoints(), metricData.getResource());
     }
     return null;
   }
@@ -213,13 +200,13 @@ final class Otel2PrometheusConverter {
       MetricMetadata metadata,
       InstrumentationScopeInfo scope,
       Collection<LongPointData> dataPoints,
-      Attributes resourceAttributes) {
+      Resource resource) {
     List<GaugeDataPointSnapshot> data = new ArrayList<>(dataPoints.size());
     for (LongPointData longData : dataPoints) {
       data.add(
           new GaugeDataPointSnapshot(
               (double) longData.getValue(),
-              convertAttributes(resourceAttributes, scope, longData.getAttributes()),
+              convertAttributes(resource, scope, longData.getAttributes()),
               convertLongExemplar(longData.getExemplars())));
     }
     return new GaugeSnapshot(metadata, data);
@@ -229,13 +216,13 @@ final class Otel2PrometheusConverter {
       MetricMetadata metadata,
       InstrumentationScopeInfo scope,
       Collection<LongPointData> dataPoints,
-      Attributes resourceAttributes) {
+      Resource resource) {
     List<CounterDataPointSnapshot> data = new ArrayList<>(dataPoints.size());
     for (LongPointData longData : dataPoints) {
       data.add(
           new CounterDataPointSnapshot(
               (double) longData.getValue(),
-              convertAttributes(resourceAttributes, scope, longData.getAttributes()),
+              convertAttributes(resource, scope, longData.getAttributes()),
               convertLongExemplar(longData.getExemplars()),
               longData.getStartEpochNanos() / NANOS_PER_MILLISECOND));
     }
@@ -246,13 +233,13 @@ final class Otel2PrometheusConverter {
       MetricMetadata metadata,
       InstrumentationScopeInfo scope,
       Collection<DoublePointData> dataPoints,
-      Attributes resourceAttributes) {
+      Resource resource) {
     List<GaugeDataPointSnapshot> data = new ArrayList<>(dataPoints.size());
     for (DoublePointData doubleData : dataPoints) {
       data.add(
           new GaugeDataPointSnapshot(
               doubleData.getValue(),
-              convertAttributes(resourceAttributes, scope, doubleData.getAttributes()),
+              convertAttributes(resource, scope, doubleData.getAttributes()),
               convertDoubleExemplar(doubleData.getExemplars())));
     }
     return new GaugeSnapshot(metadata, data);
@@ -262,13 +249,13 @@ final class Otel2PrometheusConverter {
       MetricMetadata metadata,
       InstrumentationScopeInfo scope,
       Collection<DoublePointData> dataPoints,
-      Attributes resourceAttributes) {
+      Resource resource) {
     List<CounterDataPointSnapshot> data = new ArrayList<>(dataPoints.size());
     for (DoublePointData doubleData : dataPoints) {
       data.add(
           new CounterDataPointSnapshot(
               doubleData.getValue(),
-              convertAttributes(resourceAttributes, scope, doubleData.getAttributes()),
+              convertAttributes(resource, scope, doubleData.getAttributes()),
               convertDoubleExemplar(doubleData.getExemplars()),
               doubleData.getStartEpochNanos() / NANOS_PER_MILLISECOND));
     }
@@ -279,7 +266,7 @@ final class Otel2PrometheusConverter {
       MetricMetadata metadata,
       InstrumentationScopeInfo scope,
       Collection<HistogramPointData> dataPoints,
-      Attributes resourceAttributes) {
+      Resource resource) {
     List<HistogramDataPointSnapshot> data = new ArrayList<>(dataPoints.size());
     for (HistogramPointData histogramData : dataPoints) {
       List<Double> boundaries = new ArrayList<>(histogramData.getBoundaries().size() + 1);
@@ -289,7 +276,7 @@ final class Otel2PrometheusConverter {
           new HistogramDataPointSnapshot(
               ClassicHistogramBuckets.of(boundaries, histogramData.getCounts()),
               histogramData.getSum(),
-              convertAttributes(resourceAttributes, scope, histogramData.getAttributes()),
+              convertAttributes(resource, scope, histogramData.getAttributes()),
               convertDoubleExemplars(histogramData.getExemplars()),
               histogramData.getStartEpochNanos() / NANOS_PER_MILLISECOND));
     }
@@ -301,7 +288,7 @@ final class Otel2PrometheusConverter {
       MetricMetadata metadata,
       InstrumentationScopeInfo scope,
       Collection<ExponentialHistogramPointData> dataPoints,
-      Attributes resourceAttributes) {
+      Resource resource) {
     List<HistogramDataPointSnapshot> data = new ArrayList<>(dataPoints.size());
     for (ExponentialHistogramPointData histogramData : dataPoints) {
       int scale = histogramData.getScale();
@@ -325,7 +312,7 @@ final class Otel2PrometheusConverter {
               convertExponentialHistogramBuckets(histogramData.getPositiveBuckets(), scaleDown),
               convertExponentialHistogramBuckets(histogramData.getNegativeBuckets(), scaleDown),
               histogramData.getSum(),
-              convertAttributes(resourceAttributes, scope, histogramData.getAttributes()),
+              convertAttributes(resource, scope, histogramData.getAttributes()),
               convertDoubleExemplars(histogramData.getExemplars()),
               histogramData.getStartEpochNanos() / NANOS_PER_MILLISECOND));
     }
@@ -361,7 +348,7 @@ final class Otel2PrometheusConverter {
       MetricMetadata metadata,
       InstrumentationScopeInfo scope,
       Collection<SummaryPointData> dataPoints,
-      Attributes resourceAttributes) {
+      Resource resource) {
     List<SummaryDataPointSnapshot> data = new ArrayList<>(dataPoints.size());
     for (SummaryPointData summaryData : dataPoints) {
       data.add(
@@ -369,7 +356,7 @@ final class Otel2PrometheusConverter {
               summaryData.getCount(),
               summaryData.getSum(),
               convertQuantiles(summaryData.getValues()),
-              convertAttributes(resourceAttributes, scope, summaryData.getAttributes()),
+              convertAttributes(resource, scope, summaryData.getAttributes()),
               Exemplars.EMPTY, // Exemplars for Summaries not implemented yet.
               summaryData.getStartEpochNanos() / NANOS_PER_MILLISECOND));
     }
@@ -466,7 +453,7 @@ final class Otel2PrometheusConverter {
   /**
    * Convert OpenTelemetry attributes to Prometheus labels.
    *
-   * @param resourceAttributes optional resource attributes to be converted.
+   * @param resource optional resource (attributes) to be converted.
    * @param scope will be converted to {@code otel_scope_*} labels if {@code otelScopeEnabled} is
    *     {@code true}.
    * @param attributes the attributes to be converted.
@@ -474,66 +461,62 @@ final class Otel2PrometheusConverter {
    */
   @SuppressWarnings({"rawtypes", "unchecked"})
   private Labels convertAttributes(
-      @Nullable Attributes resourceAttributes,
+      @Nullable Resource resource,
       @Nullable InstrumentationScopeInfo scope,
       Attributes attributes,
       String... additionalAttributes) {
 
-    List<AttributeKey> allowedAttributeKeys =
+    List<AttributeKey<?>> allowedAttributeKeys =
         addResourceAttributesAsLabels
-            ? filterAllowedResourceAttributeKeys(resourceAttributes)
+            ? filterAllowedResourceAttributeKeys(resource)
             : Collections.emptyList();
 
-    ArrayList<String> names = new ArrayList<>();
-    ArrayList<String> values = new ArrayList<>();
+    Map<String, String> labelNameToValue = new HashMap<>();
     attributes.forEach(
-        (key, value) -> {
-          names.add(sanitizeLabelName(key.getKey()));
-          values.add(value.toString());
-        });
+        (key, value) -> labelNameToValue.put(sanitizeLabelName(key.getKey()), value.toString()));
 
     for (int i = 0; i < additionalAttributes.length; i += 2) {
-      names.add(requireNonNull(additionalAttributes[i]));
-      values.add(requireNonNull(additionalAttributes[i + 1]));
+      labelNameToValue.putIfAbsent(
+          requireNonNull(additionalAttributes[i]), additionalAttributes[i + 1]);
     }
 
     if (otelScopeEnabled && scope != null) {
-      names.add(OTEL_SCOPE_NAME);
-      values.add(scope.getName());
+      labelNameToValue.putIfAbsent(OTEL_SCOPE_NAME, scope.getName());
       if (scope.getVersion() != null) {
-        names.add(OTEL_SCOPE_VERSION);
-        values.add(scope.getVersion());
+        labelNameToValue.putIfAbsent(OTEL_SCOPE_VERSION, scope.getVersion());
       }
     }
 
-    if (resourceAttributes != null) {
+    if (resource != null) {
+      Attributes resourceAttributes = resource.getAttributes();
       for (AttributeKey attributeKey : allowedAttributeKeys) {
-        // Don't write the same attribute twice.
-        if (names.stream().anyMatch(name -> name.equals(attributeKey.getKey()))) {
-          continue;
-        }
         Object attributeValue = resourceAttributes.get(attributeKey);
         if (attributeValue != null) {
-          names.add(sanitizeLabelName(attributeKey.getKey()));
-          values.add(attributeValue.toString());
+          labelNameToValue.putIfAbsent(
+              sanitizeLabelName(attributeKey.getKey()), attributeValue.toString());
         }
       }
     }
 
+    ArrayList<String> names = new ArrayList<>();
+    ArrayList<String> values = new ArrayList<>();
+    labelNameToValue.forEach(
+        (key, value) -> {
+          names.add(key);
+          values.add(value);
+        });
     return Labels.of(names, values);
   }
 
-  @SuppressWarnings("rawtypes")
-  private List<AttributeKey> filterAllowedResourceAttributeKeys(@Nullable Attributes attributes) {
-    if (attributes == null) {
+  private List<AttributeKey<?>> filterAllowedResourceAttributeKeys(@Nullable Resource resource) {
+    if (resource == null) {
       return Collections.emptyList();
     }
-
     return resourceAttributesToAllowedKeys.computeIfAbsent(
-        attributes,
+        resource.getAttributes(),
         resourceAttributes ->
             resourceAttributes.asMap().keySet().stream()
-                .filter(o -> allowedResourceAttributesRegexp.matcher(o.getKey()).matches())
+                .filter(o -> allowedResourceAttributesFilter.test(o.getKey()))
                 .collect(Collectors.toList()));
   }
 
