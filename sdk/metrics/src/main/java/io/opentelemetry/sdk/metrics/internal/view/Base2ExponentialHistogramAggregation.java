@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.view;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.internal.RandomSupplier;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
@@ -58,7 +59,7 @@ public final class Base2ExponentialHistogramAggregation implements Aggregation, 
    * @return the aggregation
    */
   public static Aggregation create(int maxBuckets, int maxScale) {
-    checkArgument(maxBuckets >= 1, "maxBuckets must be > 0");
+    checkArgument(maxBuckets >= 2, "maxBuckets must be >= 2");
     checkArgument(maxScale <= 20 && maxScale >= -10, "maxScale must be -10 <= x <= 20");
     return new Base2ExponentialHistogramAggregation(maxBuckets, maxScale);
   }
@@ -66,18 +67,22 @@ public final class Base2ExponentialHistogramAggregation implements Aggregation, 
   @Override
   @SuppressWarnings("unchecked")
   public <T extends PointData, U extends ExemplarData> Aggregator<T, U> createAggregator(
-      InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
+      InstrumentDescriptor instrumentDescriptor,
+      ExemplarFilter exemplarFilter,
+      MemoryMode memoryMode) {
     return (Aggregator<T, U>)
         new DoubleBase2ExponentialHistogramAggregator(
             () ->
                 ExemplarReservoir.filtered(
                     exemplarFilter,
-                    ExemplarReservoir.doubleFixedSizeReservoir(
-                        Clock.getDefault(),
-                        Runtime.getRuntime().availableProcessors(),
-                        RandomSupplier.platformDefault())),
+                    ExemplarReservoir.longToDouble(
+                        ExemplarReservoir.doubleFixedSizeReservoir(
+                            Clock.getDefault(),
+                            Runtime.getRuntime().availableProcessors(),
+                            RandomSupplier.platformDefault()))),
             maxBuckets,
-            maxScale);
+            maxScale,
+            memoryMode);
   }
 
   @Override

@@ -5,208 +5,92 @@
 
 package io.opentelemetry.exporter.prometheus;
 
-import static io.opentelemetry.exporter.prometheus.NameSanitizer.SANITIZE_CONSECUTIVE_UNDERSCORES;
+import io.prometheus.metrics.model.snapshots.Unit;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.Nullable;
 
-import io.opentelemetry.api.internal.StringUtils;
-import java.util.regex.Pattern;
+/** Convert OpenTelemetry unit names to Prometheus units. */
+class PrometheusUnitsHelper {
 
-/**
- * A utility class that contains helper function(s) to aid conversion from OTLP to Prometheus units.
- *
- * @see <a
- *     href="https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md#units-and-base-units">OpenMetrics
- *     specification for units</a>
- * @see <a href="https://prometheus.io/docs/practices/naming/#base-units">Prometheus best practices
- *     for units</a>
- */
-final class PrometheusUnitsHelper {
+  private static final Map<String, String> pluralNames = new ConcurrentHashMap<>();
+  private static final Map<String, String> singularNames = new ConcurrentHashMap<>();
+  private static final Map<String, Unit> predefinedUnits = new ConcurrentHashMap<>();
 
-  private static final Pattern INVALID_CHARACTERS_PATTERN = Pattern.compile("[^a-zA-Z0-9]");
-  private static final Pattern CHARACTERS_BETWEEN_BRACES_PATTERN = Pattern.compile("\\{(.*?)}");
-  private static final Pattern SANITIZE_LEADING_UNDERSCORES = Pattern.compile("^_+");
-  private static final Pattern SANITIZE_TRAILING_UNDERSCORES = Pattern.compile("_+$");
-
-  private PrometheusUnitsHelper() {
-    // Prevent object creation for utility classes
+  // See
+  // https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/c3b2997563106e11d39f66eec629fde25dce2bdd/pkg/translator/prometheus/normalize_name.go#L19-L19
+  static {
+    // Time
+    initUnit("a", "years", "year");
+    initUnit("mo", "months", "month");
+    initUnit("wk", "weeks", "week");
+    initUnit("d", "days", "day");
+    initUnit("h", "hours", "hour");
+    initUnit("min", "minutes", "minute");
+    initUnit("s", "seconds", "second");
+    initUnit("ms", "milliseconds", "millisecond");
+    initUnit("us", "microseconds", "microsecond");
+    initUnit("ns", "nanoseconds", "nanosecond");
+    // Bytes
+    initUnit("By", "bytes", "byte");
+    initUnit("KiBy", "kibibytes", "kibibyte");
+    initUnit("MiBy", "mebibytes", "mebibyte");
+    initUnit("GiBy", "gibibytes", "gibibyte");
+    initUnit("TiBy", "tibibytes", "tibibyte");
+    initUnit("KBy", "kilobytes", "kilobyte");
+    initUnit("MBy", "megabytes", "megabyte");
+    initUnit("GBy", "gigabytes", "gigabyte");
+    initUnit("TBy", "terabytes", "terabyte");
+    // SI
+    initUnit("m", "meters", "meter");
+    initUnit("V", "volts", "volt");
+    initUnit("A", "amperes", "ampere");
+    initUnit("J", "joules", "joule");
+    initUnit("W", "watts", "watt");
+    initUnit("g", "grams", "gram");
+    // Misc
+    initUnit("Cel", "celsius");
+    initUnit("Hz", "hertz");
+    initUnit("%", "percent");
+    initUnit("1", "ratio");
   }
 
-  /**
-   * A utility function that returns the equivalent Prometheus name for the provided OTLP metric
-   * unit.
-   *
-   * @param rawMetricUnitName The raw metric unit for which Prometheus metric unit needs to be
-   *     computed.
-   * @return the computed Prometheus metric unit equivalent of the OTLP metric un
-   */
-  static String getEquivalentPrometheusUnit(String rawMetricUnitName) {
-    if (StringUtils.isNullOrEmpty(rawMetricUnitName)) {
-      return rawMetricUnitName;
+  private PrometheusUnitsHelper() {}
+
+  private static void initUnit(String otelName, String pluralName) {
+    pluralNames.put(otelName, pluralName);
+    predefinedUnits.put(otelName, new Unit(pluralName));
+  }
+
+  private static void initUnit(String otelName, String pluralName, String singularName) {
+    initUnit(otelName, pluralName);
+    singularNames.put(otelName, singularName);
+  }
+
+  @Nullable
+  static Unit convertUnit(String otelUnit) {
+    if (otelUnit.isEmpty()) {
+      return null;
     }
-    // Drop units specified between curly braces
-    String convertedMetricUnitName = removeUnitPortionInBraces(rawMetricUnitName);
-    // Handling for the "per" unit(s), e.g. foo/bar -> foo_per_bar
-    convertedMetricUnitName = convertRateExpressedToPrometheusUnit(convertedMetricUnitName);
-    // Converting abbreviated unit names to full names
-    return cleanUpString(getPrometheusUnit(convertedMetricUnitName));
-  }
-
-  /**
-   * This method is used to convert the units expressed as a rate via '/' symbol in their name to
-   * their expanded text equivalent. For instance, km/h => km_per_hour. The method operates on the
-   * input by splitting it in 2 parts - before and after '/' symbol and will attempt to expand any
-   * known unit abbreviation in both parts. Unknown abbreviations & unsupported characters will
-   * remain unchanged in the final output of this function.
-   *
-   * @param rateExpressedUnit The rate unit input that needs to be converted to its text equivalent.
-   * @return The text equivalent of unit expressed as rate. If the input does not contain '/', the
-   *     function returns it as-is.
-   */
-  private static String convertRateExpressedToPrometheusUnit(String rateExpressedUnit) {
-    if (!rateExpressedUnit.contains("/")) {
-      return rateExpressedUnit;
+    if (otelUnit.contains("{")) {
+      otelUnit = otelUnit.replaceAll("\\{[^}]*}", "").trim();
+      if (otelUnit.isEmpty() || otelUnit.equals("/")) {
+        return null;
+      }
     }
-    String[] rateEntities = rateExpressedUnit.split("/", 2);
-    // Only convert rate expressed units if it's a valid expression
-    if (rateEntities[1].equals("")) {
-      return rateExpressedUnit;
+    if (predefinedUnits.containsKey(otelUnit)) {
+      return predefinedUnits.get(otelUnit);
     }
-    return getPrometheusUnit(rateEntities[0]) + "_per_" + getPrometheusPerUnit(rateEntities[1]);
-  }
-
-  /**
-   * This method drops all characters enclosed within '{}' (including the curly braces) by replacing
-   * them with an empty string. Note that this method will not produce the intended effect if there
-   * are nested curly braces within the outer enclosure of '{}'.
-   *
-   * <p>For instance, {packet{s}s} => s}.
-   *
-   * @param unit The input unit from which text within curly braces needs to be removed.
-   * @return The resulting unit after removing the text within '{}'.
-   */
-  private static String removeUnitPortionInBraces(String unit) {
-    return CHARACTERS_BETWEEN_BRACES_PATTERN.matcher(unit).replaceAll("");
-  }
-
-  /**
-   * Replaces all characters that are not a letter or a digit with '_' to make the resulting string
-   * Prometheus compliant. This method also removes leading and trailing underscores - this is done
-   * to keep the resulting unit similar to what is produced from the collector's implementation.
-   *
-   * @param string The string input that needs to be made Prometheus compliant.
-   * @return the cleaned-up Prometheus compliant string.
-   */
-  private static String cleanUpString(String string) {
-    return SANITIZE_LEADING_UNDERSCORES
-        .matcher(
-            SANITIZE_TRAILING_UNDERSCORES
-                .matcher(
-                    SANITIZE_CONSECUTIVE_UNDERSCORES
-                        .matcher(INVALID_CHARACTERS_PATTERN.matcher(string).replaceAll("_"))
-                        .replaceAll("_"))
-                .replaceAll(""))
-        .replaceAll("");
-  }
-
-  /**
-   * This method retrieves the expanded Prometheus unit name for known abbreviations. OTLP metrics
-   * use the c/s notation as specified at <a href="https://ucum.org/ucum.html">UCUM</a>. The list of
-   * mappings is adopted from <a
-   * href="https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/9a9d4778bbbf242dba233db28e2fbcfda3416959/pkg/translator/prometheus/normalize_name.go#L30">OpenTelemetry
-   * Collector Contrib</a>.
-   *
-   * @param unitAbbreviation The unit that name that needs to be expanded/converted to Prometheus
-   *     units.
-   * @return The expanded/converted unit name if known, otherwise returns the input unit name as-is.
-   */
-  private static String getPrometheusUnit(String unitAbbreviation) {
-    switch (unitAbbreviation) {
-        // Time
-      case "d":
-        return "days";
-      case "h":
-        return "hours";
-      case "min":
-        return "minutes";
-      case "s":
-        return "seconds";
-      case "ms":
-        return "milliseconds";
-      case "us":
-        return "microseconds";
-      case "ns":
-        return "nanoseconds";
-        // Bytes
-      case "By":
-        return "bytes";
-      case "KiBy":
-        return "kibibytes";
-      case "MiBy":
-        return "mebibytes";
-      case "GiBy":
-        return "gibibytes";
-      case "TiBy":
-        return "tibibytes";
-      case "KBy":
-        return "kilobytes";
-      case "MBy":
-        return "megabytes";
-      case "GBy":
-        return "gigabytes";
-      case "TBy":
-        return "terabytes";
-        // SI
-      case "m":
-        return "meters";
-      case "V":
-        return "volts";
-      case "A":
-        return "amperes";
-      case "J":
-        return "joules";
-      case "W":
-        return "watts";
-      case "g":
-        return "grams";
-        // Misc
-      case "Cel":
-        return "celsius";
-      case "Hz":
-        return "hertz";
-      case "1":
-        return "";
-      case "%":
-        return "percent";
-      default:
-        return unitAbbreviation;
+    if (otelUnit.contains("/")) {
+      String[] parts = otelUnit.split("/", 2);
+      String part1 = pluralNames.getOrDefault(parts[0], parts[0]).trim();
+      String part2 = singularNames.getOrDefault(parts[1], parts[1]).trim();
+      if (part1.isEmpty()) {
+        return new Unit("per_" + part2);
+      } else {
+        return new Unit(part1 + "_per_" + part2);
+      }
     }
-  }
-
-  /**
-   * This method retrieves the expanded Prometheus unit name to be used with "per" units for known
-   * units. For example: s => per second (singular)
-   *
-   * @param perUnitAbbreviation The unit abbreviation used in a 'per' unit.
-   * @return The expanded unit equivalent to be used in 'per' unit if the input is a known unit,
-   *     otherwise returns the input as-is.
-   */
-  private static String getPrometheusPerUnit(String perUnitAbbreviation) {
-    switch (perUnitAbbreviation) {
-      case "s":
-        return "second";
-      case "m":
-        return "minute";
-      case "h":
-        return "hour";
-      case "d":
-        return "day";
-      case "w":
-        return "week";
-      case "mo":
-        return "month";
-      case "y":
-        return "year";
-      default:
-        return perUnitAbbreviation;
-    }
+    return new Unit(otelUnit);
   }
 }

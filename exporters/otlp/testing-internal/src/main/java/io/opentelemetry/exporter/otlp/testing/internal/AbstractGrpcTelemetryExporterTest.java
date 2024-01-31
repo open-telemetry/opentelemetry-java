@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -23,9 +24,13 @@ import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.internal.TlsUtil;
+import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.otlp.testing.internal.compressor.Base64Compressor;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
@@ -61,6 +66,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.assertj.core.api.iterable.ThrowingExtractor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -216,6 +222,23 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  void minimalChannel() {
+    // Test that UpstreamGrpcSender uses minimal fallback managed channel, so skip for
+    // OkHttpGrpcSender
+    assumeThat(exporter.unwrap())
+        .extracting("delegate.grpcSender")
+        .matches(sender -> sender.getClass().getSimpleName().equals("UpstreamGrpcSender"));
+    // When no channel is explicitly set, should fall back to a minimally configured managed channel
+    TelemetryExporter<?> exporter = exporterBuilder().build();
+    assertThat(exporter.shutdown().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    assertThat(exporter.unwrap())
+        .extracting(
+            "delegate.grpcSender.stub",
+            as(InstanceOfAssertFactories.type(MarshalerServiceStub.class)))
+        .satisfies(stub -> assertThat(((ManagedChannel) stub.getChannel()).isShutdown()).isTrue());
+  }
+
+  @Test
   void export() {
     List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
     assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
@@ -251,9 +274,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       assumeThat(exporter.unwrap())
           .extracting("delegate.grpcSender")
           .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpGrpcSender"));
-      assertThat(exporter.unwrap())
-          .extracting("delegate.grpcSender.compressionEnabled")
-          .isEqualTo(false);
+      assertThat(exporter.unwrap()).extracting("delegate.grpcSender.compressor").isNull();
     } finally {
       exporter.shutdown();
     }
@@ -269,8 +290,25 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           .extracting("delegate.grpcSender")
           .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpGrpcSender"));
       assertThat(exporter.unwrap())
-          .extracting("delegate.grpcSender.compressionEnabled")
-          .isEqualTo(true);
+          .extracting("delegate.grpcSender.compressor")
+          .isEqualTo(GzipCompressor.getInstance());
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void compressionWithSpiCompressor() {
+    TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpUri().toString()).setCompression("base64").build();
+    try {
+      // UpstreamGrpcSender doesn't support compression, so we skip the assertion
+      assumeThat(exporter.unwrap())
+          .extracting("delegate.grpcSender")
+          .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpGrpcSender"));
+      assertThat(exporter.unwrap())
+          .extracting("delegate.grpcSender.compressor")
+          .isEqualTo(Base64Compressor.getInstance());
     } finally {
       exporter.shutdown();
     }
@@ -709,6 +747,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         .doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().setCompression("gzip")).doesNotThrowAnyException();
+    // SPI compressor available for this test but not packaged with OTLP exporter
+    assertThatCode(() -> exporterBuilder().setCompression("base64")).doesNotThrowAnyException();
     assertThatCode(() -> exporterBuilder().setCompression("none")).doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().addHeader("foo", "bar").addHeader("baz", "qux"))
@@ -751,7 +791,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThatThrownBy(() -> exporterBuilder().setCompression("foo"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-            "Unsupported compression method. Supported compression methods include: gzip, none.");
+            "Unsupported compressionMethod. Compression method must be \"none\" or one of: [base64,gzip]");
   }
 
   @Test
@@ -830,7 +870,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + "connectTimeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
                   + ", "
-                  + "compressionEnabled=false, "
+                  + "compressorEncoding=null, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
                   + ".*" // Maybe additional grpcChannel field
                   + "\\}");
@@ -871,7 +911,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + "connectTimeoutNanos="
                   + TimeUnit.SECONDS.toNanos(4)
                   + ", "
-                  + "compressionEnabled=true, "
+                  + "compressorEncoding=gzip, "
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
                   + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3\\}"
                   + ".*" // Maybe additional grpcChannel field

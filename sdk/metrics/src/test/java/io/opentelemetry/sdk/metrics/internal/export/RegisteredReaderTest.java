@@ -24,7 +24,6 @@ class RegisteredReaderTest {
     RegisteredReader registeredReader1 = RegisteredReader.create(reader, ViewRegistry.create());
     RegisteredReader registeredReader2 = RegisteredReader.create(reader, ViewRegistry.create());
 
-    assertThat(registeredReader1).isEqualTo(registeredReader1);
     assertThat(registeredReader1).isNotEqualTo(registeredReader2);
 
     assertThat(registeredReader1.hashCode()).isEqualTo(registeredReader1.hashCode());

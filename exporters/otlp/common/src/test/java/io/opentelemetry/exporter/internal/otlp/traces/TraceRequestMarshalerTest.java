@@ -112,7 +112,7 @@ class TraceRequestMarshalerTest {
 
   @Test
   void toProtoSpan() {
-    Span span =
+    Span protoSpan =
         parse(
             Span.getDefaultInstance(),
             SpanMarshaler.create(
@@ -145,15 +145,17 @@ class TraceRequestMarshalerTest {
                     .setStatus(StatusData.ok())
                     .build()));
 
-    assertThat(span.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
-    assertThat(span.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
-    assertThat(span.getTraceState()).isEqualTo(TRACE_STATE_VALUE);
-    assertThat(span.getParentSpanId().toByteArray()).isEqualTo(new byte[] {});
-    assertThat(span.getName()).isEqualTo("GET /api/endpoint");
-    assertThat(span.getKind()).isEqualTo(SPAN_KIND_SERVER);
-    assertThat(span.getStartTimeUnixNano()).isEqualTo(12345);
-    assertThat(span.getEndTimeUnixNano()).isEqualTo(12349);
-    assertThat(span.getAttributesList())
+    assertThat(protoSpan.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
+    assertThat(protoSpan.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
+    assertThat(protoSpan.getFlags())
+        .isEqualTo(((int) SPAN_CONTEXT.getTraceFlags().asByte()) & 0x00ff);
+    assertThat(protoSpan.getTraceState()).isEqualTo(TRACE_STATE_VALUE);
+    assertThat(protoSpan.getParentSpanId().toByteArray()).isEqualTo(new byte[] {});
+    assertThat(protoSpan.getName()).isEqualTo("GET /api/endpoint");
+    assertThat(protoSpan.getKind()).isEqualTo(SPAN_KIND_SERVER);
+    assertThat(protoSpan.getStartTimeUnixNano()).isEqualTo(12345);
+    assertThat(protoSpan.getEndTimeUnixNano()).isEqualTo(12349);
+    assertThat(protoSpan.getAttributesList())
         .containsOnly(
             KeyValue.newBuilder()
                 .setKey("key")
@@ -215,20 +217,22 @@ class TraceRequestMarshalerTest {
                                 .build())
                         .build())
                 .build());
-    assertThat(span.getDroppedAttributesCount()).isEqualTo(1);
-    assertThat(span.getEventsList())
+    assertThat(protoSpan.getDroppedAttributesCount()).isEqualTo(1);
+    assertThat(protoSpan.getEventsList())
         .containsExactly(
             Span.Event.newBuilder().setTimeUnixNano(12347).setName("my_event").build());
-    assertThat(span.getDroppedEventsCount()).isEqualTo(2); // 3 - 1
-    assertThat(span.getLinksList())
+    assertThat(protoSpan.getDroppedEventsCount()).isEqualTo(2); // 3 - 1
+    assertThat(protoSpan.getLinksList())
         .containsExactly(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
+                .setFlags(SPAN_CONTEXT.getTraceFlags().asByte())
                 .setTraceState(encodeTraceState(SPAN_CONTEXT.getTraceState()))
                 .build());
-    assertThat(span.getDroppedLinksCount()).isEqualTo(1); // 2 - 1
-    assertThat(span.getStatus()).isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).build());
+    assertThat(protoSpan.getDroppedLinksCount()).isEqualTo(1); // 2 - 1
+    assertThat(protoSpan.getStatus())
+        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).build());
   }
 
   @Test
@@ -314,6 +318,7 @@ class TraceRequestMarshalerTest {
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
+                .setFlags(SPAN_CONTEXT.getTraceFlags().asByte())
                 .setTraceState(TRACE_STATE_VALUE)
                 .build());
   }
@@ -330,6 +335,7 @@ class TraceRequestMarshalerTest {
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
+                .setFlags(SPAN_CONTEXT.getTraceFlags().asByte())
                 .setTraceState(TRACE_STATE_VALUE)
                 .addAttributes(
                     KeyValue.newBuilder()

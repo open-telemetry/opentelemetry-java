@@ -44,7 +44,7 @@ class MetricReaderFactoryTest {
 
   @RegisterExtension
   LogCapturer logCapturer =
-      LogCapturer.create().captureForLogger(ConfigurationFactory.class.getName());
+      LogCapturer.create().captureForLogger(FileConfiguration.class.getName());
 
   private SpiHelper spiHelper = SpiHelper.create(MetricReaderFactoryTest.class.getClassLoader());
 
