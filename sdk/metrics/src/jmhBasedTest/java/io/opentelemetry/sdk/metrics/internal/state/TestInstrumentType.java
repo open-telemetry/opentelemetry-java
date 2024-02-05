@@ -9,9 +9,11 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.internal.state.tester.AsyncCounterTester;
+import io.opentelemetry.sdk.metrics.internal.state.tester.DoubleLastValueTester;
 import io.opentelemetry.sdk.metrics.internal.state.tester.DoubleSumTester;
 import io.opentelemetry.sdk.metrics.internal.state.tester.ExplicitBucketHistogramTester;
 import io.opentelemetry.sdk.metrics.internal.state.tester.ExponentialHistogramTester;
+import io.opentelemetry.sdk.metrics.internal.state.tester.LongLastValueTester;
 import io.opentelemetry.sdk.metrics.internal.state.tester.LongSumTester;
 import java.util.List;
 import java.util.Random;
@@ -23,7 +25,9 @@ public enum TestInstrumentType {
   EXPONENTIAL_HISTOGRAM(ExponentialHistogramTester::new),
   EXPLICIT_BUCKET(ExplicitBucketHistogramTester::new),
   LONG_SUM(LongSumTester::new, /* dataAllocRateReductionPercentage= */ 97.3f),
-  DOUBLE_SUM(DoubleSumTester::new, /* dataAllocRateReductionPercentage= */ 97.3f);
+  DOUBLE_SUM(DoubleSumTester::new, /* dataAllocRateReductionPercentage= */ 97.3f),
+  LONG_LAST_VALUE(LongLastValueTester::new, /* dataAllocRateReductionPercentage= */ 97.3f),
+  DOUBLE_LAST_VALUE(DoubleLastValueTester::new, /* dataAllocRateReductionPercentage= */ 97.3f);
 
   private final Supplier<? extends InstrumentTester> instrumentTesterInitializer;
   private final float dataAllocRateReductionPercentage;

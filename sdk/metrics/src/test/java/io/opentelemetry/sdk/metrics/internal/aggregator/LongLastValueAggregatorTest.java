@@ -13,6 +13,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -28,6 +29,8 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 /** Unit tests for {@link LongLastValueAggregator}. */
 class LongLastValueAggregatorTest {
@@ -36,16 +39,23 @@ class LongLastValueAggregatorTest {
       InstrumentationScopeInfo.empty();
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
-  private static final LongLastValueAggregator aggregator =
-      new LongLastValueAggregator(ExemplarReservoir::longNoSamples);
+  private LongLastValueAggregator aggregator;
 
-  @Test
-  void createHandle() {
+  private void init(MemoryMode memoryMode) {
+    aggregator = new LongLastValueAggregator(ExemplarReservoir::longNoSamples, memoryMode);
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void createHandle(MemoryMode memoryMode) {
+    init(memoryMode);
     assertThat(aggregator.createHandle()).isInstanceOf(LongLastValueAggregator.Handle.class);
   }
 
-  @Test
-  void multipleRecords() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void multipleRecords(MemoryMode memoryMode) {
+    init(memoryMode);
     AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(12);
     assertThat(
@@ -62,8 +72,10 @@ class LongLastValueAggregatorTest {
         .isEqualTo(14L);
   }
 
-  @Test
-  void aggregateThenMaybeReset() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void aggregateThenMaybeReset(MemoryMode memoryMode) {
+    init(memoryMode);
     AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
 
     aggregatorHandle.recordLong(13);
@@ -81,8 +93,11 @@ class LongLastValueAggregatorTest {
         .isEqualTo(12L);
   }
 
-  @Test
-  void diffInPlace() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void diffInPlace(MemoryMode memoryMode) {
+    init(memoryMode);
+
     Attributes attributes = Attributes.builder().put("test", "value").build();
     LongExemplarData exemplar =
         ImmutableLongExemplarData.create(
@@ -123,8 +138,11 @@ class LongLastValueAggregatorTest {
     assertThat(previous.getExemplars()).isEqualTo(exemplars);
   }
 
-  @Test
-  void copyPoint() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void copyPoint(MemoryMode memoryMode) {
+    init(memoryMode);
+
     MutableLongPointData pointData = (MutableLongPointData) aggregator.createReusablePoint();
 
     Attributes attributes = Attributes.of(AttributeKey.longKey("test"), 100L);
@@ -166,8 +184,11 @@ class LongLastValueAggregatorTest {
     assertThat(toPointData.getExemplars()).isEqualTo(pointData.getExemplars());
   }
 
-  @Test
-  void toMetricData() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void toMetricData(MemoryMode memoryMode) {
+    init(memoryMode);
+
     AggregatorHandle<LongPointData, LongExemplarData> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(10);
 
@@ -191,5 +212,25 @@ class LongLastValueAggregatorTest {
                 ImmutableGaugeData.create(
                     Collections.singletonList(
                         ImmutableLongPointData.create(2, 100, Attributes.empty(), 10)))));
+  }
+
+  @Test
+  void testReusablePointOnCollect() {
+    init(MemoryMode.REUSABLE_DATA);
+    AggregatorHandle<LongPointData, LongExemplarData> handle = aggregator.createHandle();
+    handle.recordLong(1);
+    LongPointData pointData =
+        handle.aggregateThenMaybeReset(0, 10, Attributes.empty(), /* reset= */ false);
+
+    handle.recordLong(1);
+    LongPointData pointData2 =
+        handle.aggregateThenMaybeReset(0, 10, Attributes.empty(), /* reset= */ false);
+
+    assertThat(pointData).isSameAs(pointData2);
+
+    LongPointData pointDataWithReset =
+        handle.aggregateThenMaybeReset(0, 10, Attributes.empty(), /* reset= */ true);
+
+    assertThat(pointData).isSameAs(pointDataWithReset);
   }
 }
