@@ -54,20 +54,17 @@ class Otel2PrometheusConverterTest {
           "# HELP (?<help>.*)\n# TYPE (?<type>.*)\n(?<metricName>.*)\\{otel_scope_name=\"scope\"}(.|\\n)*");
 
   private final Otel2PrometheusConverter converter =
-      new Otel2PrometheusConverter(
-          true,
-          /* addResourceAttributesAsLabels= */ false,
-          /* allowedResourceAttributesFilter= */ Predicates.ALLOW_ALL);
+      new Otel2PrometheusConverter(true, /* allowedResourceAttributesFilter= */ null);
 
   @ParameterizedTest
   @MethodSource("metricMetadataArgs")
   void metricMetadata(
       MetricData metricData, String expectedType, String expectedHelp, String expectedMetricName)
       throws IOException {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
     MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
-    ExpositionFormats.init().getPrometheusTextFormatWriter().write(baos, snapshots);
-    String expositionFormat = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+    ExpositionFormats.init().getPrometheusTextFormatWriter().write(out, snapshots);
+    String expositionFormat = new String(out.toByteArray(), StandardCharsets.UTF_8);
 
     // Uncomment to debug exposition format output
     // System.out.println(expositionFormat);
@@ -85,15 +82,13 @@ class Otel2PrometheusConverterTest {
   @MethodSource("resourceAttributesAdditionArgs")
   void resourceAttributesAddition(
       MetricData metricData,
-      boolean addResourceAttributesAsLabels,
-      Predicate<String> allowedResourceAttributesFilter,
+      @Nullable Predicate<String> allowedResourceAttributesFilter,
       String metricName,
       String expectedMetricLabels)
       throws IOException {
 
     Otel2PrometheusConverter converter =
-        new Otel2PrometheusConverter(
-            true, addResourceAttributesAsLabels, allowedResourceAttributesFilter);
+        new Otel2PrometheusConverter(true, allowedResourceAttributesFilter);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
@@ -128,7 +123,6 @@ class Otel2PrometheusConverterTest {
                   Resource.create(
                       Attributes.of(
                           stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
-              /* addResourceAttributesAsLabels= */ true,
               /* allowedResourceAttributesFilter= */ Predicates.startsWith("clu"),
               metricDataType == MetricDataType.SUMMARY
                       || metricDataType == MetricDataType.HISTOGRAM
@@ -151,7 +145,6 @@ class Otel2PrometheusConverterTest {
                 Resource.create(
                     Attributes.of(
                         stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
-            /* addResourceAttributesAsLabels= */ true,
             /* allowedResourceAttributesFilter= */ Predicates.startsWith("clu"),
             "my_metric_units",
 
@@ -170,7 +163,6 @@ class Otel2PrometheusConverterTest {
                 Resource.create(
                     Attributes.of(
                         stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
-            /* addResourceAttributesAsLabels= */ true,
             /* allowedResourceAttributesFilter= */ Predicates.startsWith("clu"),
             "my_metric_units",
             "cluster=\"mycluster\",otel_scope_name=\"scope\""));
@@ -411,10 +403,7 @@ class Otel2PrometheusConverterTest {
         };
 
     Otel2PrometheusConverter otel2PrometheusConverter =
-        new Otel2PrometheusConverter(
-            true,
-            /* addResourceAttributesAsLabels= */ true,
-            /* allowedResourceAttributesFilter= */ countPredicate);
+        new Otel2PrometheusConverter(true, /* allowedResourceAttributesFilter= */ countPredicate);
 
     // Create 20 different metric data objects with 2 different resource attributes;
     Resource resource1 = Resource.builder().put("cluster", "cluster1").build();

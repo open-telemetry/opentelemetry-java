@@ -23,8 +23,7 @@ public final class PrometheusHttpServerBuilder {
   private int port = DEFAULT_PORT;
   private PrometheusRegistry prometheusRegistry = new PrometheusRegistry();
   private boolean otelScopeEnabled = true;
-  private boolean addResourceAttributesAsLabels = false;
-  private Predicate<String> allowedResourceAttributesFilter = attributeKey -> true;
+  @Nullable private Predicate<String> allowedResourceAttributesFilter;
   @Nullable private ExecutorService executor;
 
   /** Sets the host to bind to. If unset, defaults to {@value #DEFAULT_HOST}. */
@@ -75,7 +74,6 @@ public final class PrometheusHttpServerBuilder {
   public PrometheusHttpServerBuilder setAllowedResourceAttributesFilter(
       Predicate<String> resourceAttributesFilter) {
     this.allowedResourceAttributesFilter = requireNonNull(resourceAttributesFilter);
-    this.addResourceAttributesAsLabels = true;
     return this;
   }
 
@@ -90,7 +88,6 @@ public final class PrometheusHttpServerBuilder {
         executor,
         prometheusRegistry,
         otelScopeEnabled,
-        addResourceAttributesAsLabels,
         allowedResourceAttributesFilter);
   }
 

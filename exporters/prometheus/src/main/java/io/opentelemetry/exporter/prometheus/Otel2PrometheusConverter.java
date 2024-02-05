@@ -79,8 +79,7 @@ final class Otel2PrometheusConverter {
   static final int MAX_CACHE_SIZE = 10;
 
   private final boolean otelScopeEnabled;
-  private final boolean addResourceAttributesAsLabels;
-  private final Predicate<String> allowedResourceAttributesFilter;
+  @Nullable private final Predicate<String> allowedResourceAttributesFilter;
 
   /**
    * Used only if addResourceAttributesAsLabels is true. Once the cache reaches {@link
@@ -93,21 +92,17 @@ final class Otel2PrometheusConverter {
    *
    * @param otelScopeEnabled enable generation of the OpenTelemetry instrumentation scope info
    *     metric and labels.
-   * @param addResourceAttributesAsLabels if {@code true}, resource attributes will be added as
-   *     labels on each exported metric.
-   * @param allowedResourceAttributesFilter if not {@code null}, only resource attributes with keys
-   *     matching this predicate will be added as labels on each exported metric, unless {@code
-   *     addResourceAttributesAsLabels} is {@code false}.
+   * @param allowedResourceAttributesFilter if not {@code null}, resource attributes with keys
+   *     matching this predicate will be added as labels on each exported metric
    */
   Otel2PrometheusConverter(
-      boolean otelScopeEnabled,
-      boolean addResourceAttributesAsLabels,
-      Predicate<String> allowedResourceAttributesFilter) {
+      boolean otelScopeEnabled, @Nullable Predicate<String> allowedResourceAttributesFilter) {
     this.otelScopeEnabled = otelScopeEnabled;
-    this.addResourceAttributesAsLabels = addResourceAttributesAsLabels;
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.resourceAttributesToAllowedKeysCache =
-        addResourceAttributesAsLabels ? new ConcurrentHashMap<>() : Collections.emptyMap();
+        allowedResourceAttributesFilter != null
+            ? new ConcurrentHashMap<>()
+            : Collections.emptyMap();
   }
 
   MetricSnapshots convert(@Nullable Collection<MetricData> metricDataCollection) {
@@ -471,7 +466,7 @@ final class Otel2PrometheusConverter {
       String... additionalAttributes) {
 
     List<AttributeKey<?>> allowedAttributeKeys =
-        addResourceAttributesAsLabels
+        allowedResourceAttributesFilter != null
             ? filterAllowedResourceAttributeKeys(resource)
             : Collections.emptyList();
 
@@ -502,20 +497,25 @@ final class Otel2PrometheusConverter {
       }
     }
 
-    ArrayList<String> names = new ArrayList<>();
-    ArrayList<String> values = new ArrayList<>();
-    labelNameToValue.forEach(
-        (key, value) -> {
-          names.add(key);
-          values.add(value);
-        });
+    String[] names = new String[labelNameToValue.size()];
+    String[] values = new String[labelNameToValue.size()];
+    int i = 0;
+    for (Map.Entry<String, String> entry : labelNameToValue.entrySet()) {
+      names[i] = entry.getKey();
+      values[i] = entry.getValue();
+      i += 1;
+    }
     return Labels.of(names, values);
   }
 
   private List<AttributeKey<?>> filterAllowedResourceAttributeKeys(@Nullable Resource resource) {
+    requireNonNull(
+        allowedResourceAttributesFilter,
+        "This method should only be called when allowedResourceAttributesFilter is not null.");
     if (resource == null) {
       return Collections.emptyList();
     }
+
     List<AttributeKey<?>> allowedAttributeKeys =
         resourceAttributesToAllowedKeysCache.computeIfAbsent(
             resource.getAttributes(),
