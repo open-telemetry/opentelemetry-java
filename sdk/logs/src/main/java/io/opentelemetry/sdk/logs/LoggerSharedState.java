@@ -7,7 +7,10 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.ScopeSelector;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.LinkedHashMap;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -21,17 +24,20 @@ final class LoggerSharedState {
   private final Supplier<LogLimits> logLimitsSupplier;
   private final LogRecordProcessor logRecordProcessor;
   private final Clock clock;
+  private final LinkedHashMap<ScopeSelector, LoggerConfig> loggerConfigMap;
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
   LoggerSharedState(
       Resource resource,
       Supplier<LogLimits> logLimitsSupplier,
       LogRecordProcessor logRecordProcessor,
-      Clock clock) {
+      Clock clock,
+      LinkedHashMap<ScopeSelector, LoggerConfig> loggerConfigMap) {
     this.resource = resource;
     this.logLimitsSupplier = logLimitsSupplier;
     this.logRecordProcessor = logRecordProcessor;
     this.clock = clock;
+    this.loggerConfigMap = loggerConfigMap;
   }
 
   Resource getResource() {
@@ -48,6 +54,15 @@ final class LoggerSharedState {
 
   Clock getClock() {
     return clock;
+  }
+
+  LoggerConfig getLoggerConfig(InstrumentationScopeInfo instrumentationScopeInfo) {
+    for (ScopeSelector scopeSelector : loggerConfigMap.keySet()) {
+      if (scopeSelector.matchesScope(instrumentationScopeInfo)) {
+        return loggerConfigMap.get(scopeSelector);
+      }
+    }
+    return LoggerConfig.defaultConfig();
   }
 
   boolean hasBeenShutdown() {

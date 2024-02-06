@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.ScopeSelector;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
@@ -16,6 +17,7 @@ import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -40,6 +42,7 @@ public final class SdkMeterProviderBuilder {
   private final List<MetricProducer> metricProducers = new ArrayList<>();
   private final List<RegisteredView> registeredViews = new ArrayList<>();
   private ExemplarFilter exemplarFilter = DEFAULT_EXEMPLAR_FILTER;
+  private final LinkedHashMap<ScopeSelector, MeterConfig> meterConfigMap = new LinkedHashMap<>();
 
   SdkMeterProviderBuilder() {}
 
@@ -150,9 +153,21 @@ public final class SdkMeterProviderBuilder {
     return this;
   }
 
+  public SdkMeterProviderBuilder addScopeConfig(
+      ScopeSelector scopeSelector, MeterConfig meterConfig) {
+    meterConfigMap.put(scopeSelector, meterConfig);
+    return this;
+  }
+
   /** Returns an {@link SdkMeterProvider} built with the configuration of this builder. */
   public SdkMeterProvider build() {
     return new SdkMeterProvider(
-        registeredViews, metricReaders, metricProducers, clock, resource, exemplarFilter);
+        registeredViews,
+        metricReaders,
+        metricProducers,
+        clock,
+        resource,
+        exemplarFilter,
+        meterConfigMap);
   }
 }

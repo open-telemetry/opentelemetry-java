@@ -1,2 +1,17 @@
 Comparing source compatibility of  against 
-No changes.
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.ScopeSelector  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.ScopeSelectorBuilder builder()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getScopeName()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getScopeVersion()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) boolean matchesScope(io.opentelemetry.sdk.common.InstrumentationScopeInfo)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.ScopeSelector named(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) java.lang.String toString()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.common.ScopeSelectorBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.ScopeSelector build()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.ScopeSelectorBuilder setScopeName(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.ScopeSelectorBuilder setScopeVersion(java.lang.String)

@@ -11,9 +11,11 @@ import io.opentelemetry.api.logs.LoggerBuilder;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.ScopeSelector;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -48,10 +50,12 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
       Resource resource,
       Supplier<LogLimits> logLimitsSupplier,
       List<LogRecordProcessor> processors,
-      Clock clock) {
+      Clock clock,
+      LinkedHashMap<ScopeSelector, LoggerConfig> loggerConfigMap) {
     LogRecordProcessor logRecordProcessor = LogRecordProcessor.composite(processors);
     this.sharedState =
-        new LoggerSharedState(resource, logLimitsSupplier, logRecordProcessor, clock);
+        new LoggerSharedState(
+            resource, logLimitsSupplier, logRecordProcessor, clock, loggerConfigMap);
     this.loggerComponentRegistry =
         new ComponentRegistry<>(
             instrumentationScopeInfo -> new SdkLogger(sharedState, instrumentationScopeInfo));

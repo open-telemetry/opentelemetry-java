@@ -55,6 +55,7 @@ final class SdkMeter implements Meter {
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState;
+  private final MeterConfig meterConfig;
 
   SdkMeter(
       MeterProviderSharedState meterProviderSharedState,
@@ -63,6 +64,7 @@ final class SdkMeter implements Meter {
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.meterProviderSharedState = meterProviderSharedState;
     this.meterSharedState = MeterSharedState.create(instrumentationScopeInfo, registeredReaders);
+    this.meterConfig = meterProviderSharedState.getMeterConfig(instrumentationScopeInfo);
   }
 
   // Visible for testing
@@ -82,7 +84,7 @@ final class SdkMeter implements Meter {
 
   @Override
   public LongCounterBuilder counterBuilder(String name) {
-    return !checkValidInstrumentName(name)
+    return !meterConfig.isEnabled() || !checkValidInstrumentName(name)
         ? NOOP_METER.counterBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkLongCounter.SdkLongCounterBuilder(
             meterProviderSharedState, meterSharedState, name);
@@ -90,7 +92,7 @@ final class SdkMeter implements Meter {
 
   @Override
   public LongUpDownCounterBuilder upDownCounterBuilder(String name) {
-    return !checkValidInstrumentName(name)
+    return !meterConfig.isEnabled() || !checkValidInstrumentName(name)
         ? NOOP_METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkLongUpDownCounter.SdkLongUpDownCounterBuilder(
             meterProviderSharedState, meterSharedState, name);
@@ -98,7 +100,7 @@ final class SdkMeter implements Meter {
 
   @Override
   public DoubleHistogramBuilder histogramBuilder(String name) {
-    return !checkValidInstrumentName(name)
+    return !meterConfig.isEnabled() || !checkValidInstrumentName(name)
         ? NOOP_METER.histogramBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkDoubleHistogram.SdkDoubleHistogramBuilder(
             meterProviderSharedState, meterSharedState, name);
@@ -106,7 +108,7 @@ final class SdkMeter implements Meter {
 
   @Override
   public DoubleGaugeBuilder gaugeBuilder(String name) {
-    return !checkValidInstrumentName(name)
+    return !meterConfig.isEnabled() || !checkValidInstrumentName(name)
         ? NOOP_METER.gaugeBuilder(NOOP_INSTRUMENT_NAME)
         : new SdkDoubleGauge.SdkDoubleGaugeBuilder(
             meterProviderSharedState, meterSharedState, name);

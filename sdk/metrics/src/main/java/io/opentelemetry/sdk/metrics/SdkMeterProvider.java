@@ -11,6 +11,7 @@ import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.ScopeSelector;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -62,7 +64,8 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       List<MetricProducer> metricProducers,
       Clock clock,
       Resource resource,
-      ExemplarFilter exemplarFilter) {
+      ExemplarFilter exemplarFilter,
+      LinkedHashMap<ScopeSelector, MeterConfig> meterConfigMap) {
     long startEpochNanos = clock.now();
     this.registeredViews = registeredViews;
     this.registeredReaders =
@@ -75,7 +78,8 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
             .collect(toList());
     this.metricProducers = metricProducers;
     this.sharedState =
-        MeterProviderSharedState.create(clock, resource, exemplarFilter, startEpochNanos);
+        MeterProviderSharedState.create(
+            clock, resource, exemplarFilter, startEpochNanos, meterConfigMap);
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo ->

@@ -7,14 +7,18 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.ScopeSelector;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 // Represents the shared state/config between all Tracers created by the same TracerProvider.
 final class TracerSharedState {
+
   private final Object lock = new Object();
   private final Clock clock;
   private final IdGenerator idGenerator;
@@ -25,16 +29,19 @@ final class TracerSharedState {
   private final Supplier<SpanLimits> spanLimitsSupplier;
   private final Sampler sampler;
   private final SpanProcessor activeSpanProcessor;
+  private final LinkedHashMap<ScopeSelector, TracerConfig> tracerConfigMap;
 
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
+  @SuppressWarnings("NonApiType")
   TracerSharedState(
       Clock clock,
       IdGenerator idGenerator,
       Resource resource,
       Supplier<SpanLimits> spanLimitsSupplier,
       Sampler sampler,
-      List<SpanProcessor> spanProcessors) {
+      List<SpanProcessor> spanProcessors,
+      LinkedHashMap<ScopeSelector, TracerConfig> tracerConfigMap) {
     this.clock = clock;
     this.idGenerator = idGenerator;
     this.idGeneratorSafeToSkipIdValidation = idGenerator instanceof RandomIdGenerator;
@@ -42,6 +49,7 @@ final class TracerSharedState {
     this.spanLimitsSupplier = spanLimitsSupplier;
     this.sampler = sampler;
     activeSpanProcessor = SpanProcessor.composite(spanProcessors);
+    this.tracerConfigMap = tracerConfigMap;
   }
 
   Clock getClock() {
@@ -77,6 +85,15 @@ final class TracerSharedState {
    */
   SpanProcessor getActiveSpanProcessor() {
     return activeSpanProcessor;
+  }
+
+  TracerConfig getTracerConfig(InstrumentationScopeInfo instrumentationScopeInfo) {
+    for (ScopeSelector scopeSelector : tracerConfigMap.keySet()) {
+      if (scopeSelector.matchesScope(instrumentationScopeInfo)) {
+        return tracerConfigMap.get(scopeSelector);
+      }
+    }
+    return TracerConfig.defaultConfig();
   }
 
   /**

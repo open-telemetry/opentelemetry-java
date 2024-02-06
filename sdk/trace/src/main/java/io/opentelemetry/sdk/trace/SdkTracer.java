@@ -13,17 +13,23 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 /** {@link SdkTracer} is SDK implementation of {@link Tracer}. */
 final class SdkTracer implements Tracer {
   static final String FALLBACK_SPAN_NAME = "<unspecified span name>";
+  private static final Tracer NOOP_TRACER = TracerProvider.noop().get("noop");
 
   private final TracerSharedState sharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
+  private final TracerConfig tracerConfig;
 
   SdkTracer(TracerSharedState sharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
     this.sharedState = sharedState;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
+    this.tracerConfig = sharedState.getTracerConfig(instrumentationScopeInfo);
   }
 
   @Override
   public SpanBuilder spanBuilder(String spanName) {
+    if (!tracerConfig.isEnabled()) {
+      return NOOP_TRACER.spanBuilder(spanName);
+    }
     if (spanName == null || spanName.trim().isEmpty()) {
       spanName = FALLBACK_SPAN_NAME;
     }
