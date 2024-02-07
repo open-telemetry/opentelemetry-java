@@ -112,14 +112,19 @@ public final class JdkHttpSender implements HttpSender {
   }
 
   private static HttpClient configureClient(
-      @Nullable SSLContext sslContext, long connectionTimeoutNanos, @Nullable String proxyHost, @Nullable Integer proxyPort) {
+      @Nullable SSLContext sslContext,
+      long connectionTimeoutNanos,
+      @Nullable String proxyHost,
+      @Nullable Integer proxyPort) {
     HttpClient.Builder builder =
         HttpClient.newBuilder().connectTimeout(Duration.ofNanos(connectionTimeoutNanos));
     if (sslContext != null) {
       builder.sslContext(sslContext);
     }
     if (proxyHost != null) {
-      builder.proxy(ProxySelector.of(new InetSocketAddress(proxyHost, Optional.ofNullable(proxyPort).orElse(8080))));
+      builder.proxy(
+          ProxySelector.of(
+              new InetSocketAddress(proxyHost, Optional.ofNullable(proxyPort).orElse(8080))));
     }
     return builder.build();
   }

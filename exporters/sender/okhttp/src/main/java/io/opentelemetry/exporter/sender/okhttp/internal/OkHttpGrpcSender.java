@@ -102,7 +102,8 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
       clientBuilder.protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1));
     }
     if (proxyHost != null) {
-      SocketAddress proxyAddress = new InetSocketAddress(proxyHost, Optional.ofNullable(proxyPort).orElse(8080));
+      SocketAddress proxyAddress =
+          new InetSocketAddress(proxyHost, Optional.ofNullable(proxyPort).orElse(8080));
       Proxy proxy = new Proxy(Proxy.Type.HTTP, proxyAddress);
       clientBuilder.proxy(proxy);
     }

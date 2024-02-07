@@ -172,9 +172,7 @@ public final class OtlpHttpSpanExporterBuilder {
     return this;
   }
 
-  /**
-   * Sets the proxy to be used.
-   */
+  /** Sets the proxy to be used. */
   public OtlpHttpSpanExporterBuilder setProxy(String proxyHost, int proxyPort) {
     requireNonNull(proxyHost, "proxyHost");
     delegate.setProxy(proxyHost, proxyPort);

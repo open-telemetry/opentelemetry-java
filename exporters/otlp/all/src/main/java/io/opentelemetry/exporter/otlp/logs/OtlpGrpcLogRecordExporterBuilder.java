@@ -191,9 +191,7 @@ public final class OtlpGrpcLogRecordExporterBuilder {
     return this;
   }
 
-  /**
-   * Sets the proxy to be used.
-   */
+  /** Sets the proxy to be used. */
   public OtlpGrpcLogRecordExporterBuilder setProxy(String proxyHost, Integer proxyPort) {
     requireNonNull(proxyHost, "proxyHost");
     requireNonNull(proxyPort, "proxyPort");

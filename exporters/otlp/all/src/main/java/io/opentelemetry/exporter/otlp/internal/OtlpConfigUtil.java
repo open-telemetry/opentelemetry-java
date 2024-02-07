@@ -64,7 +64,7 @@ public final class OtlpConfigUtil {
       Consumer<byte[]> setTrustedCertificates,
       BiConsumer<byte[], byte[]> setClientTls,
       Consumer<RetryPolicy> setRetryPolicy,
-      BiConsumer<String,Integer> setProxy) {
+      BiConsumer<String, Integer> setProxy) {
     String protocol = getOtlpProtocol(dataType, config);
     boolean isHttpProtobuf = protocol.equals(PROTOCOL_HTTP_PROTOBUF);
     URL endpoint =

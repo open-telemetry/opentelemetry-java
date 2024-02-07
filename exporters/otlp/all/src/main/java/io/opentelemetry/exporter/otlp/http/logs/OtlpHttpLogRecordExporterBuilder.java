@@ -171,9 +171,7 @@ public final class OtlpHttpLogRecordExporterBuilder {
     return this;
   }
 
-  /**
-   * Sets the proxy to be used.
-   */
+  /** Sets the proxy to be used. */
   public OtlpHttpLogRecordExporterBuilder setProxy(String proxyHost, int proxyPort) {
     requireNonNull(proxyHost, "proxyHost");
     delegate.setProxy(proxyHost, proxyPort);

@@ -235,9 +235,7 @@ public final class OtlpGrpcMetricExporterBuilder {
     return this;
   }
 
-  /**
-   * Sets the proxy to be used.
-   */
+  /** Sets the proxy to be used. */
   public OtlpGrpcMetricExporterBuilder setProxy(String proxyHost, Integer proxyPort) {
     requireNonNull(proxyHost, "proxyHost");
     requireNonNull(proxyPort, "proxyPort");

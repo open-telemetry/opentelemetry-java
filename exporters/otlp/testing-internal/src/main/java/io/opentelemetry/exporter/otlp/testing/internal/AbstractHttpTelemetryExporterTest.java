@@ -819,6 +819,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + "connectTimeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
                   + ", "
+                  + "proxyHost=null, "
+                  + "proxyPort=null, "
                   + "exportAsJson=false, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
                   + "\\}");

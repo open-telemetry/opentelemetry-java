@@ -188,9 +188,7 @@ public final class OtlpGrpcSpanExporterBuilder {
     return this;
   }
 
-  /**
-   * Sets the proxy to be used.
-   */
+  /** Sets the proxy to be used. */
   public OtlpGrpcSpanExporterBuilder setProxy(String proxyHost, Integer proxyPort) {
     requireNonNull(proxyHost, "proxyHost");
     requireNonNull(proxyPort, "proxyPort");

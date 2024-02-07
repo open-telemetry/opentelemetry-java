@@ -169,6 +169,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     }
     copy.meterProviderSupplier = meterProviderSupplier;
     copy.grpcChannel = grpcChannel;
+    copy.proxyHost = proxyHost;
+    copy.proxyPort = proxyPort;
     return copy;
   }
 

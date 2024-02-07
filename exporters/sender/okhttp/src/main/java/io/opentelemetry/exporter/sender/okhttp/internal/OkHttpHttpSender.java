@@ -75,7 +75,8 @@ public final class OkHttpHttpSender implements HttpSender {
             .callTimeout(Duration.ofNanos(timeoutNanos));
 
     if (proxyHost != null) {
-      SocketAddress proxyAddress = new InetSocketAddress(proxyHost, Optional.ofNullable(proxyPort).orElse(8080));
+      SocketAddress proxyAddress =
+          new InetSocketAddress(proxyHost, Optional.ofNullable(proxyPort).orElse(8080));
       Proxy proxy = new Proxy(Proxy.Type.HTTP, proxyAddress);
       builder.proxy(proxy);
     }
