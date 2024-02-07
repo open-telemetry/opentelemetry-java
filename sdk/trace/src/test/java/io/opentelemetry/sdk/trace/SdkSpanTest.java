@@ -1178,6 +1178,16 @@ class SdkSpanTest {
     verify(spanProcessor, never()).onEnd(any());
   }
 
+  @Test
+  void cannotOverrideStatusCodeOK() {
+    SdkSpan span = createTestRootSpan();
+    span.setStatus(StatusCode.OK);
+    span.setStatus(StatusCode.ERROR);
+    assertThat(span.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.OK);
+    span.setStatus(StatusCode.UNSET);
+    assertThat(span.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.OK);
+  }
+
   private SdkSpan createTestSpanWithAttributes(Map<AttributeKey, Object> attributes) {
     SpanLimits spanLimits = SpanLimits.getDefault();
     AttributesMap attributesMap =
