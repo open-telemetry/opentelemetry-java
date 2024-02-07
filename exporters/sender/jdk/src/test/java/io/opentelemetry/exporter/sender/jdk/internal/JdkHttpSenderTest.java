@@ -108,6 +108,8 @@ class JdkHttpSenderTest {
             TimeUnit.SECONDS.toNanos(10),
             Collections::emptyMap,
             null,
+            null,
+            null,
             null);
 
     assertThat(sender)

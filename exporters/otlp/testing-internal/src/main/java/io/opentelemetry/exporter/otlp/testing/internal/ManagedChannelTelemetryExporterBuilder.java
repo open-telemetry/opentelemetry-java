@@ -152,6 +152,12 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   }
 
   @Override
+  public TelemetryExporterBuilder<T> setProxy(String proxyHost, int proxyPort) {
+    delegate.setProxy(proxyHost, proxyPort);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<T> setChannel(Object channel) {
     throw new UnsupportedOperationException();
   }

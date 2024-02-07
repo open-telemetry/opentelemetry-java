@@ -104,6 +104,12 @@ final class GrpcSpanExporterBuilderWrapper implements TelemetryExporterBuilder<S
   }
 
   @Override
+  public TelemetryExporterBuilder<SpanData> setProxy(String proxyHost, int proxyPort) {
+    builder.setProxy(proxyHost, proxyPort);
+    return this;
+  }
+
+  @Override
   @SuppressWarnings("deprecation") // testing deprecated functionality
   public TelemetryExporterBuilder<SpanData> setChannel(Object channel) {
     builder.setChannel((ManagedChannel) channel);

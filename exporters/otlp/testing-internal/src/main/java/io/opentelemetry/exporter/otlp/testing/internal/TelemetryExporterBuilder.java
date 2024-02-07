@@ -60,6 +60,8 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy);
 
+  TelemetryExporterBuilder<T> setProxy(String proxyHost, int proxyPort);
+
   TelemetryExporterBuilder<T> setChannel(Object channel);
 
   TelemetryExporter<T> build();

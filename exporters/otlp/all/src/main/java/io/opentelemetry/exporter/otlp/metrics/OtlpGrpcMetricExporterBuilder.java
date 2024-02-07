@@ -236,6 +236,16 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
+   * Sets the proxy to be used.
+   */
+  public OtlpGrpcMetricExporterBuilder setProxy(String proxyHost, Integer proxyPort) {
+    requireNonNull(proxyHost, "proxyHost");
+    requireNonNull(proxyPort, "proxyPort");
+    delegate.setProxy(proxyHost, proxyPort);
+    return this;
+  }
+
+  /**
    * Constructs a new instance of the exporter based on the builder's values.
    *
    * @return a new exporter's instance

@@ -106,6 +106,12 @@ public class HttpMetricExporterBuilderWrapper implements TelemetryExporterBuilde
   }
 
   @Override
+  public TelemetryExporterBuilder<MetricData> setProxy(String proxyHost, int proxyPort) {
+    builder.setProxy(proxyHost, proxyPort);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<MetricData> setChannel(Object channel) {
     throw new UnsupportedOperationException("Not implemented");
   }

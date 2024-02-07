@@ -35,6 +35,8 @@ public interface GrpcSenderProvider {
       @Nullable Compressor compressor,
       long timeoutNanos,
       Supplier<Map<String, List<String>>> headersSupplier,
+      @Nullable String proxyHost,
+      @Nullable Integer proxyPort,
       @Nullable Object managedChannel,
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
       @Nullable RetryPolicy retryPolicy,

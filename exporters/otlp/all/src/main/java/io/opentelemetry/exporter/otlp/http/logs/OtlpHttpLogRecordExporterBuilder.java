@@ -172,6 +172,15 @@ public final class OtlpHttpLogRecordExporterBuilder {
   }
 
   /**
+   * Sets the proxy to be used.
+   */
+  public OtlpHttpLogRecordExporterBuilder setProxy(String proxyHost, int proxyPort) {
+    requireNonNull(proxyHost, "proxyHost");
+    delegate.setProxy(proxyHost, proxyPort);
+    return this;
+  }
+
+  /**
    * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
    * {@link GlobalOpenTelemetry#getMeterProvider()}.
    */

@@ -192,6 +192,16 @@ public final class OtlpGrpcLogRecordExporterBuilder {
   }
 
   /**
+   * Sets the proxy to be used.
+   */
+  public OtlpGrpcLogRecordExporterBuilder setProxy(String proxyHost, Integer proxyPort) {
+    requireNonNull(proxyHost, "proxyHost");
+    requireNonNull(proxyPort, "proxyPort");
+    delegate.setProxy(proxyHost, proxyPort);
+    return this;
+  }
+
+  /**
    * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
    * {@link GlobalOpenTelemetry#getMeterProvider()}.
    */

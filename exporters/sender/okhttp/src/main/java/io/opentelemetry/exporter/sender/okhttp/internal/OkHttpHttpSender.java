@@ -14,9 +14,13 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.SocketAddress;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -58,6 +62,8 @@ public final class OkHttpHttpSender implements HttpSender {
       long timeoutNanos,
       long connectionTimeoutNanos,
       Supplier<Map<String, List<String>>> headerSupplier,
+      @Nullable String proxyHost,
+      @Nullable Integer proxyPort,
       @Nullable Authenticator authenticator,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
@@ -67,6 +73,12 @@ public final class OkHttpHttpSender implements HttpSender {
             .dispatcher(OkHttpUtil.newDispatcher())
             .connectTimeout(Duration.ofNanos(connectionTimeoutNanos))
             .callTimeout(Duration.ofNanos(timeoutNanos));
+
+    if (proxyHost != null) {
+      SocketAddress proxyAddress = new InetSocketAddress(proxyHost, Optional.ofNullable(proxyPort).orElse(8080));
+      Proxy proxy = new Proxy(Proxy.Type.HTTP, proxyAddress);
+      builder.proxy(proxy);
+    }
 
     if (authenticator != null) {
       Authenticator finalAuthenticator = authenticator;

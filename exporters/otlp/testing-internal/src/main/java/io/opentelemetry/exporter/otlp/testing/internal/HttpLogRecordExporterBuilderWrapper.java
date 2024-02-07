@@ -107,6 +107,12 @@ public class HttpLogRecordExporterBuilderWrapper
   }
 
   @Override
+  public TelemetryExporterBuilder<LogRecordData> setProxy(String proxyHost, int proxyPort) {
+    builder.setProxy(proxyHost, proxyPort);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<LogRecordData> setChannel(Object channel) {
     throw new UnsupportedOperationException("Not implemented");
   }

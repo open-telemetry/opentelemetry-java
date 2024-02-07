@@ -52,6 +52,10 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   @Nullable private Compressor compressor;
   private long connectTimeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_CONNECT_TIMEOUT_SECS);
+  @Nullable
+  private String proxyHost;
+  @Nullable
+  private Integer proxyPort;
   private boolean exportAsJson = false;
   private final Map<String, String> constantHeaders = new HashMap<>();
   private Supplier<Map<String, String>> headerSupplier = Collections::emptyMap;
@@ -131,6 +135,12 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  public HttpExporterBuilder<T> setProxy(String host, int port) {
+    this.proxyHost = host;
+    this.proxyPort = port;
+    return this;
+  }
+
   public HttpExporterBuilder<T> exportAsJson() {
     this.exportAsJson = true;
     return this;
@@ -187,6 +197,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
             timeoutNanos,
             connectTimeoutNanos,
             headerSupplier,
+            proxyHost,
+            proxyPort,
             authenticator,
             retryPolicy,
             tlsConfigHelper.getSslContext(),

@@ -215,6 +215,15 @@ public final class OtlpHttpMetricExporterBuilder {
     return this;
   }
 
+  /**
+   * Sets the proxy to be used.
+   */
+  public OtlpHttpMetricExporterBuilder setProxy(String proxyHost, int proxyPort) {
+    requireNonNull(proxyHost, "proxyHost");
+    delegate.setProxy(proxyHost, proxyPort);
+    return this;
+  }
+
   OtlpHttpMetricExporterBuilder exportAsJson() {
     delegate.exportAsJson();
     return this;

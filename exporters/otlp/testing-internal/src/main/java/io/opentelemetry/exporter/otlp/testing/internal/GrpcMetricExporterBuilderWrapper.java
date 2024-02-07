@@ -103,6 +103,12 @@ final class GrpcMetricExporterBuilderWrapper implements TelemetryExporterBuilder
   }
 
   @Override
+  public TelemetryExporterBuilder<MetricData> setProxy(String proxyHost, int proxyPort) {
+    builder.setProxy(proxyHost, proxyPort);
+    return this;
+  }
+
+  @Override
   @SuppressWarnings("deprecation") // testing deprecated functionality
   public TelemetryExporterBuilder<MetricData> setChannel(Object channel) {
     builder.setChannel((ManagedChannel) channel);

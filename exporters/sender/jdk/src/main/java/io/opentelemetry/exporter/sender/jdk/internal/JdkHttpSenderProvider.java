@@ -34,6 +34,8 @@ public final class JdkHttpSenderProvider implements HttpSenderProvider {
       long timeoutNanos,
       long connectTimeout,
       Supplier<Map<String, List<String>>> headerSupplier,
+      @Nullable String proxyHost,
+      @Nullable Integer proxyPort,
       @Nullable Authenticator authenticator,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
@@ -47,6 +49,8 @@ public final class JdkHttpSenderProvider implements HttpSenderProvider {
         connectTimeout,
         headerSupplier,
         retryPolicy,
+        proxyHost,
+        proxyPort,
         sslContext);
   }
 }

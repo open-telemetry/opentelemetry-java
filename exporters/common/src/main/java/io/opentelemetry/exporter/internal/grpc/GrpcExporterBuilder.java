@@ -52,6 +52,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
       grpcStubFactory;
 
   private long timeoutNanos;
+  @Nullable private String proxyHost;
+  @Nullable private Integer proxyPort;
   private URI endpoint;
   @Nullable private Compressor compressor;
   private final Map<String, String> constantHeaders = new HashMap<>();
@@ -90,6 +92,12 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
   public GrpcExporterBuilder<T> setTimeout(Duration timeout) {
     return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+  }
+
+  public GrpcExporterBuilder<T> setProxy(String proxyHost, Integer proxyPort) {
+    this.proxyHost = proxyHost;
+    this.proxyPort = proxyPort;
+    return this;
   }
 
   public GrpcExporterBuilder<T> setEndpoint(String endpoint) {
@@ -194,6 +202,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
             compressor,
             timeoutNanos,
             headerSupplier,
+            proxyHost,
+            proxyPort,
             grpcChannel,
             grpcStubFactory,
             retryPolicy,
@@ -214,6 +224,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     joiner.add("endpoint=" + endpoint.toString());
     joiner.add("endpointPath=" + grpcEndpointPath);
     joiner.add("timeoutNanos=" + timeoutNanos);
+    joiner.add("proxyHost=" + proxyHost);
+    joiner.add("proxyPort=" + proxyPort);
     joiner.add(
         "compressorEncoding="
             + Optional.ofNullable(compressor).map(Compressor::getEncoding).orElse(null));

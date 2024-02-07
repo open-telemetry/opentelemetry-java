@@ -106,6 +106,12 @@ public class HttpSpanExporterBuilderWrapper implements TelemetryExporterBuilder<
   }
 
   @Override
+  public TelemetryExporterBuilder<SpanData> setProxy(String proxyHost, int proxyPort) {
+    builder.setProxy(proxyHost, proxyPort);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<SpanData> setChannel(Object channel) {
     throw new UnsupportedOperationException("Not implemented");
   }

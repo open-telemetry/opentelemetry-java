@@ -53,6 +53,7 @@ public final class OtlpConfigUtil {
   }
 
   /** Invoke the setters with the OTLP configuration for the {@code dataType}. */
+  @SuppressWarnings("TooManyParameters")
   public static void configureOtlpExporterBuilder(
       String dataType,
       ConfigProperties config,
@@ -62,7 +63,8 @@ public final class OtlpConfigUtil {
       Consumer<Duration> setTimeout,
       Consumer<byte[]> setTrustedCertificates,
       BiConsumer<byte[], byte[]> setClientTls,
-      Consumer<RetryPolicy> setRetryPolicy) {
+      Consumer<RetryPolicy> setRetryPolicy,
+      BiConsumer<String,Integer> setProxy) {
     String protocol = getOtlpProtocol(dataType, config);
     boolean isHttpProtobuf = protocol.equals(PROTOCOL_HTTP_PROTOBUF);
     URL endpoint =
@@ -151,6 +153,12 @@ public final class OtlpConfigUtil {
         config.getBoolean("otel.experimental.exporter.otlp.retry.enabled", false);
     if (retryEnabled) {
       setRetryPolicy.accept(RetryPolicy.getDefault());
+    }
+
+    String proxyHost = config.getString("otel.exporter.otlp." + dataType + ".proxy.host");
+    Integer proxyPort = config.getInt("otel.exporter.otlp." + dataType + ".proxy.port");
+    if (proxyHost != null && proxyPort != null) {
+      setProxy.accept(proxyHost, proxyPort);
     }
   }
 
