@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1707334191351,
+  "lastUpdate": 1707334413291,
   "repoUrl": "https://github.com/open-telemetry/opentelemetry-java",
   "entries": {
     "Benchmark": [
@@ -15317,6 +15317,72 @@ window.BENCHMARK_DATA = {
           {
             "name": "io.opentelemetry.sdk.trace.export.MultiSpanExporterBenchmark.export ( {\"exporterCount\":\"3\",\"spanCount\":\"1000\"} )",
             "value": 8598.734594060574,
+            "unit": "ops/ms",
+            "extra": "iterations: 10\nforks: 1\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "29139614+renovate[bot]@users.noreply.github.com",
+            "name": "renovate[bot]",
+            "username": "renovate[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "001fa1cd38622de76bc6636ed9fa096d5b8b65ba",
+          "message": "Update slf4j monorepo to v2.0.12 (#6199)\n\nCo-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
+          "timestamp": "2024-02-07T13:05:55-06:00",
+          "tree_id": "186baf8f7a95dc4d09fae665a7705604d6f6b479",
+          "url": "https://github.com/open-telemetry/opentelemetry-java/commit/001fa1cd38622de76bc6636ed9fa096d5b8b65ba"
+        },
+        "date": 1707334412432,
+        "tool": "jmh",
+        "benches": [
+          {
+            "name": "io.opentelemetry.sdk.trace.FillSpanBenchmark.setFourAttributes",
+            "value": 7246.4620020345765,
+            "unit": "ops/ms",
+            "extra": "iterations: 20\nforks: 3\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.trace.SpanBenchmark.simpleSpanStartAddEventEnd_01Thread",
+            "value": 8342.14654547379,
+            "unit": "ops/ms",
+            "extra": "iterations: 10\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.trace.SpanBenchmark.simpleSpanStartAddEventEnd_02Threads",
+            "value": 12071.377770088115,
+            "unit": "ops/ms",
+            "extra": "iterations: 10\nforks: 1\nthreads: 2"
+          },
+          {
+            "name": "io.opentelemetry.sdk.trace.SpanBenchmark.simpleSpanStartAddEventEnd_05Threads",
+            "value": 18420.229770725895,
+            "unit": "ops/ms",
+            "extra": "iterations: 10\nforks: 1\nthreads: 5"
+          },
+          {
+            "name": "io.opentelemetry.sdk.trace.SpanBenchmark.simpleSpanStartAddEventEnd_10Threads",
+            "value": 16390.627573858794,
+            "unit": "ops/ms",
+            "extra": "iterations: 10\nforks: 1\nthreads: 10"
+          },
+          {
+            "name": "io.opentelemetry.sdk.trace.export.MultiSpanExporterBenchmark.export ( {\"exporterCount\":\"1\",\"spanCount\":\"1000\"} )",
+            "value": 1689892.8183040838,
+            "unit": "ops/ms",
+            "extra": "iterations: 10\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "io.opentelemetry.sdk.trace.export.MultiSpanExporterBenchmark.export ( {\"exporterCount\":\"3\",\"spanCount\":\"1000\"} )",
+            "value": 8628.563788016505,
             "unit": "ops/ms",
             "extra": "iterations: 10\nforks: 1\nthreads: 1"
           }
