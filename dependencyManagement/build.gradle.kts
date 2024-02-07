@@ -75,7 +75,7 @@ val DEPENDENCIES = listOf(
   "org.awaitility:awaitility:4.2.0",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
   "org.codehaus.mojo:animal-sniffer-annotations:1.23",
-  "org.jctools:jctools-core:4.0.2",
+  "org.jctools:jctools-core:4.0.3",
   "org.junit-pioneer:junit-pioneer:1.9.1",
   "org.skyscreamer:jsonassert:1.5.1",
   "com.android.tools:desugar_jdk_libs:2.0.4",
