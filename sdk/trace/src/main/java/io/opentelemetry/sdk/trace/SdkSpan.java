@@ -394,6 +394,9 @@ final class SdkSpan implements ReadWriteSpan, ExtendedSpan {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return this;
+      } else if (this.status.getStatusCode() == StatusCode.OK) {
+        logger.log(Level.FINE, "Calling setStatus() on a Span that is already set to OK.");
+        return this;
       }
       this.status = StatusData.create(statusCode, description);
     }
