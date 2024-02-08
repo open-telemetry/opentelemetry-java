@@ -18,7 +18,7 @@ instead.
 
 ### SDK
 
-#### Traces 
+#### Traces
 
 * Bugfix: Ensure span status cannot Be updated after set to StatusCode.OK
   ([#6209](https://github.com/open-telemetry/opentelemetry-java/pull/6209)
@@ -46,7 +46,7 @@ instead.
   ([#6119](https://github.com/open-telemetry/opentelemetry-java/pull/6119))
 * Update dependency io.zipkin.reporter2:zipkin-reporter-bom to 3.2.1.
   Note: `ZipkinSpanExporterBuilder#setEncoder(zipkin2.codec.BytesEncoder)` has been deprecated in
-  favor of `ZipkinSpanExporterBuilder#setEncoder(zipkin2.reporter.BytesEncoder)`. 
+  favor of `ZipkinSpanExporterBuilder#setEncoder(zipkin2.reporter.BytesEncoder)`.
   `ZipkinSpanExporterBuilder#setSender(zipkin2.reporter.Sender)` has been deprecated in favor
   of `ZipkinSpanExporterBuilder#setSender(zipkin2.reporter.BytesMessageSender)`.
   ([#6129](https://github.com/open-telemetry/opentelemetry-java/pull/6129),
