@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -39,14 +40,17 @@ import javax.annotation.Nullable;
  */
 public final class LongLastValueAggregator implements Aggregator<LongPointData, LongExemplarData> {
   private final Supplier<ExemplarReservoir<LongExemplarData>> reservoirSupplier;
+  private final MemoryMode memoryMode;
 
-  public LongLastValueAggregator(Supplier<ExemplarReservoir<LongExemplarData>> reservoirSupplier) {
+  public LongLastValueAggregator(
+      Supplier<ExemplarReservoir<LongExemplarData>> reservoirSupplier, MemoryMode memoryMode) {
     this.reservoirSupplier = reservoirSupplier;
+    this.memoryMode = memoryMode;
   }
 
   @Override
   public AggregatorHandle<LongPointData, LongExemplarData> createHandle() {
-    return new Handle(reservoirSupplier.get());
+    return new Handle(reservoirSupplier.get(), memoryMode);
   }
 
   @Override
@@ -109,8 +113,16 @@ public final class LongLastValueAggregator implements Aggregator<LongPointData, 
     @Nullable private static final Long DEFAULT_VALUE = null;
     private final AtomicReference<Long> current = new AtomicReference<>(DEFAULT_VALUE);
 
-    Handle(ExemplarReservoir<LongExemplarData> exemplarReservoir) {
+    // Only used when memoryMode is REUSABLE_DATA
+    @Nullable private final MutableLongPointData reusablePoint;
+
+    Handle(ExemplarReservoir<LongExemplarData> exemplarReservoir, MemoryMode memoryMode) {
       super(exemplarReservoir);
+      if (memoryMode == MemoryMode.REUSABLE_DATA) {
+        reusablePoint = new MutableLongPointData();
+      } else {
+        reusablePoint = null;
+      }
     }
 
     @Override
@@ -121,8 +133,15 @@ public final class LongLastValueAggregator implements Aggregator<LongPointData, 
         List<LongExemplarData> exemplars,
         boolean reset) {
       Long value = reset ? this.current.getAndSet(DEFAULT_VALUE) : this.current.get();
-      return ImmutableLongPointData.create(
-          startEpochNanos, epochNanos, attributes, Objects.requireNonNull(value), exemplars);
+
+      if (reusablePoint != null) {
+        reusablePoint.set(
+            startEpochNanos, epochNanos, attributes, Objects.requireNonNull(value), exemplars);
+        return reusablePoint;
+      } else {
+        return ImmutableLongPointData.create(
+            startEpochNanos, epochNanos, attributes, Objects.requireNonNull(value), exemplars);
+      }
     }
 
     @Override
