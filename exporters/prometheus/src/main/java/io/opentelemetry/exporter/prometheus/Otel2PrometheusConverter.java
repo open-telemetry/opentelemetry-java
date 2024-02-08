@@ -499,12 +499,14 @@ final class Otel2PrometheusConverter {
 
     String[] names = new String[labelNameToValue.size()];
     String[] values = new String[labelNameToValue.size()];
-    int i = 0;
-    for (Map.Entry<String, String> entry : labelNameToValue.entrySet()) {
-      names[i] = entry.getKey();
-      values[i] = entry.getValue();
-      i += 1;
-    }
+    int[] pos = new int[] {0};
+    labelNameToValue.forEach(
+        (name, value) -> {
+          names[pos[0]] = name;
+          values[pos[0]] = value;
+          pos[0] += 1;
+        });
+
     return Labels.of(names, values);
   }
 
