@@ -1,10 +1,13 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.common.export;
 
-/**
- * Configuration for proxy settings.
- */
+/** Configuration for proxy settings. */
 public class ProxyOptions {
-  private final  String host;
+  private final String host;
 
   private final int port;
 
@@ -30,9 +33,7 @@ public class ProxyOptions {
     private final String host;
     private final int port;
 
-    /**
-     * Supply the host name or IP address of the proxy and the port it is working on.
-     */
+    /** Supply the host name or IP address of the proxy and the port it is working on. */
     ProxyOptionsBuilder(String host, int port) {
       this.host = host;
       this.port = port;

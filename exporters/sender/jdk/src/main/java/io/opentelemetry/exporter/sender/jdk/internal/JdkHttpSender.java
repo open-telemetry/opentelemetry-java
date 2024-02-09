@@ -121,8 +121,7 @@ public final class JdkHttpSender implements HttpSender {
     }
     if (proxyOptions != null) {
       builder.proxy(
-          ProxySelector.of(
-              new InetSocketAddress(proxyOptions.getHost(), proxyOptions.getPort())));
+          ProxySelector.of(new InetSocketAddress(proxyOptions.getHost(), proxyOptions.getPort())));
     }
     return builder.build();
   }
