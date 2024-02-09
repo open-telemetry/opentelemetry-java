@@ -368,6 +368,12 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     return this;
   }
 
+  public AutoConfiguredOpenTelemetrySdkBuilder setComponentLoader(ComponentLoader componentLoader) {
+    requireNonNull(componentLoader, "componentLoader");
+    this.spiHelper = SpiHelper.create(componentLoader);
+    return this;
+  }
+
   /**
    * Returns a new {@link AutoConfiguredOpenTelemetrySdk} holding components auto-configured using
    * the settings of this {@link AutoConfiguredOpenTelemetrySdkBuilder}.
@@ -403,41 +409,53 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       boolean sdkEnabled = !config.getBoolean("otel.sdk.disabled", false);
 
       if (sdkEnabled) {
-        SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
-        meterProviderBuilder.setResource(resource);
-        MeterProviderConfiguration.configureMeterProvider(
-            meterProviderBuilder, config, spiHelper, metricExporterCustomizer, closeables);
-        meterProviderBuilder = meterProviderCustomizer.apply(meterProviderBuilder, config);
-        SdkMeterProvider meterProvider = meterProviderBuilder.build();
+        SdkMeterProvider meterProvider =
+            spiHelper.loadOptional(SdkMeterProvider.class).orElse(null);
+        if (meterProvider == null) {
+          SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
+          meterProviderBuilder.setResource(resource);
+          MeterProviderConfiguration.configureMeterProvider(
+              meterProviderBuilder, config, spiHelper, metricExporterCustomizer, closeables);
+          meterProviderBuilder = meterProviderCustomizer.apply(meterProviderBuilder, config);
+          meterProvider = meterProviderBuilder.build();
+        }
         closeables.add(meterProvider);
 
-        SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
-        tracerProviderBuilder.setResource(resource);
-        TracerProviderConfiguration.configureTracerProvider(
-            tracerProviderBuilder,
-            config,
-            spiHelper,
-            meterProvider,
-            spanExporterCustomizer,
-            spanProcessorCustomizer,
-            samplerCustomizer,
-            closeables);
-        tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
-        SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
+        SdkTracerProvider tracerProvider =
+            spiHelper.loadOptional(SdkTracerProvider.class).orElse(null);
+        if (tracerProvider == null) {
+          SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
+          tracerProviderBuilder.setResource(resource);
+          TracerProviderConfiguration.configureTracerProvider(
+              tracerProviderBuilder,
+              config,
+              spiHelper,
+              meterProvider,
+              spanExporterCustomizer,
+              spanProcessorCustomizer,
+              samplerCustomizer,
+              closeables);
+          tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
+          tracerProvider = tracerProviderBuilder.build();
+        }
         closeables.add(tracerProvider);
 
-        SdkLoggerProviderBuilder loggerProviderBuilder = SdkLoggerProvider.builder();
-        loggerProviderBuilder.setResource(resource);
-        LoggerProviderConfiguration.configureLoggerProvider(
-            loggerProviderBuilder,
-            config,
-            spiHelper,
-            meterProvider,
-            logRecordExporterCustomizer,
-            logRecordProcessorCustomizer,
-            closeables);
-        loggerProviderBuilder = loggerProviderCustomizer.apply(loggerProviderBuilder, config);
-        SdkLoggerProvider loggerProvider = loggerProviderBuilder.build();
+        SdkLoggerProvider loggerProvider =
+            spiHelper.loadOptional(SdkLoggerProvider.class).orElse(null);
+        if (loggerProvider == null) {
+          SdkLoggerProviderBuilder loggerProviderBuilder = SdkLoggerProvider.builder();
+          loggerProviderBuilder.setResource(resource);
+          LoggerProviderConfiguration.configureLoggerProvider(
+              loggerProviderBuilder,
+              config,
+              spiHelper,
+              meterProvider,
+              logRecordExporterCustomizer,
+              logRecordProcessorCustomizer,
+              closeables);
+          loggerProviderBuilder = loggerProviderCustomizer.apply(loggerProviderBuilder, config);
+          loggerProvider = loggerProviderBuilder.build();
+        }
         closeables.add(loggerProvider);
 
         ContextPropagators propagators =

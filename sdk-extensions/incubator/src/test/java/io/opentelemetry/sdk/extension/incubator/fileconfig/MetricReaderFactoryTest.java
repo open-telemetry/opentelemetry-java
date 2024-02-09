@@ -145,7 +145,7 @@ class MetricReaderFactoryTest {
     ArgumentCaptor<ConfigProperties> configCaptor = ArgumentCaptor.forClass(ConfigProperties.class);
     verify(spiHelper)
         .loadConfigurable(
-            eq(ConfigurableMetricReaderProvider.class), any(), any(), configCaptor.capture());
+            eq(ConfigurableMetricReaderProvider.class), any(), configCaptor.capture());
     ConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("otel.exporter.prometheus.host")).isNull();
     assertThat(configProperties.getInt("otel.exporter.prometheus.port")).isEqualTo(port);
@@ -182,7 +182,7 @@ class MetricReaderFactoryTest {
     ArgumentCaptor<ConfigProperties> configCaptor = ArgumentCaptor.forClass(ConfigProperties.class);
     verify(spiHelper)
         .loadConfigurable(
-            eq(ConfigurableMetricReaderProvider.class), any(), any(), configCaptor.capture());
+            eq(ConfigurableMetricReaderProvider.class), any(), configCaptor.capture());
     ConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("otel.exporter.prometheus.host")).isEqualTo("localhost");
     assertThat(configProperties.getInt("otel.exporter.prometheus.port")).isEqualTo(port);

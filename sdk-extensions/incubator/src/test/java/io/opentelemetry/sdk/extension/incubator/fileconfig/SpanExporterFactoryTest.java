@@ -82,7 +82,7 @@ class SpanExporterFactoryTest {
     ArgumentCaptor<ConfigProperties> configCaptor = ArgumentCaptor.forClass(ConfigProperties.class);
     verify(spiHelper)
         .loadConfigurable(
-            eq(ConfigurableSpanExporterProvider.class), any(), any(), configCaptor.capture());
+            eq(ConfigurableSpanExporterProvider.class), any(), configCaptor.capture());
     ConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("otel.exporter.otlp.traces.protocol")).isNull();
     assertThat(configProperties.getString("otel.exporter.otlp.endpoint")).isNull();
@@ -147,7 +147,7 @@ class SpanExporterFactoryTest {
     ArgumentCaptor<ConfigProperties> configCaptor = ArgumentCaptor.forClass(ConfigProperties.class);
     verify(spiHelper)
         .loadConfigurable(
-            eq(ConfigurableSpanExporterProvider.class), any(), any(), configCaptor.capture());
+            eq(ConfigurableSpanExporterProvider.class), any(), configCaptor.capture());
     ConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("otel.exporter.otlp.traces.protocol"))
         .isEqualTo("http/protobuf");
@@ -212,7 +212,7 @@ class SpanExporterFactoryTest {
     ArgumentCaptor<ConfigProperties> configCaptor = ArgumentCaptor.forClass(ConfigProperties.class);
     verify(spiHelper)
         .loadConfigurable(
-            eq(ConfigurableSpanExporterProvider.class), any(), any(), configCaptor.capture());
+            eq(ConfigurableSpanExporterProvider.class), any(), configCaptor.capture());
     ConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("otel.exporter.zipkin.endpoint")).isNull();
     assertThat(configProperties.getDuration("otel.exporter.zipkin.timeout")).isNull();
@@ -248,7 +248,7 @@ class SpanExporterFactoryTest {
     ArgumentCaptor<ConfigProperties> configCaptor = ArgumentCaptor.forClass(ConfigProperties.class);
     verify(spiHelper)
         .loadConfigurable(
-            eq(ConfigurableSpanExporterProvider.class), any(), any(), configCaptor.capture());
+            eq(ConfigurableSpanExporterProvider.class), any(), configCaptor.capture());
     ConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("otel.exporter.zipkin.endpoint"))
         .isEqualTo("http://zipkin:9411/v1/v2/spans");

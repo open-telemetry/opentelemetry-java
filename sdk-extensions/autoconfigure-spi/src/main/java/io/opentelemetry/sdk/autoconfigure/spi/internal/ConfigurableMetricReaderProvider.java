@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure.spi.internal;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
@@ -24,7 +25,7 @@ import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public interface ConfigurableMetricReaderProvider {
+public interface ConfigurableMetricReaderProvider extends ConfigurableProvider {
 
   /**
    * Returns a {@link MetricReader} that can be registered to OpenTelemetry by providing the
@@ -40,5 +41,6 @@ public interface ConfigurableMetricReaderProvider {
    * name, the resulting behavior is undefined and it is explicitly unspecified which reader /
    * exporter will actually be used.
    */
+  @Override
   String getName();
 }

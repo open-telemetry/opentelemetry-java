@@ -15,7 +15,7 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
  * #getPropagator(ConfigProperties)} will be enabled and available as part of {@link
  * OpenTelemetry#getPropagators()}.
  */
-public interface ConfigurablePropagatorProvider {
+public interface ConfigurablePropagatorProvider extends ConfigurableProvider {
   /**
    * Returns a {@link TextMapPropagator} that can be registered to OpenTelemetry by providing the
    * property value specified by {@link #getName()}.
@@ -27,5 +27,6 @@ public interface ConfigurablePropagatorProvider {
    * property to enable it. If the name is the same as any other defined propagator name, it is
    * undefined which will be used.
    */
+  @Override
   String getName();
 }

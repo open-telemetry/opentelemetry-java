@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +55,7 @@ final class TracerProviderConfiguration {
             config, spiHelper, spanExporterCustomizer, closeables);
 
     List<SpanProcessor> processors =
-        configureSpanProcessors(config, exportersByName, meterProvider, closeables);
+        configureSpanProcessors(config, exportersByName, meterProvider, closeables, spiHelper);
     for (SpanProcessor processor : processors) {
       SpanProcessor wrapped = spanProcessorCustomizer.apply(processor, config);
       if (wrapped != processor) {
@@ -70,9 +69,10 @@ final class TracerProviderConfiguration {
       ConfigProperties config,
       Map<String, SpanExporter> exportersByName,
       MeterProvider meterProvider,
-      List<Closeable> closeables) {
+      List<Closeable> closeables,
+      SpiHelper spiHelper) {
     Map<String, SpanExporter> exportersByNameCopy = new HashMap<>(exportersByName);
-    List<SpanProcessor> spanProcessors = new ArrayList<>();
+    List<SpanProcessor> spanProcessors = spiHelper.load(SpanProcessor.class);
 
     SpanExporter exporter = exportersByNameCopy.remove("logging");
     if (exporter != null) {
@@ -162,10 +162,7 @@ final class TracerProviderConfiguration {
   static Sampler configureSampler(String sampler, ConfigProperties config, SpiHelper spiHelper) {
     NamedSpiManager<Sampler> spiSamplersManager =
         spiHelper.loadConfigurable(
-            ConfigurableSamplerProvider.class,
-            ConfigurableSamplerProvider::getName,
-            ConfigurableSamplerProvider::createSampler,
-            config);
+            ConfigurableSamplerProvider.class, ConfigurableSamplerProvider::createSampler, config);
 
     switch (sampler) {
       case "always_on":
@@ -173,21 +170,13 @@ final class TracerProviderConfiguration {
       case "always_off":
         return Sampler.alwaysOff();
       case "traceidratio":
-        {
-          double ratio =
-              config.getDouble("otel.traces.sampler.arg", DEFAULT_TRACEIDRATIO_SAMPLE_RATIO);
-          return Sampler.traceIdRatioBased(ratio);
-        }
+        return ratioSampler(config);
       case PARENTBASED_ALWAYS_ON:
         return Sampler.parentBased(Sampler.alwaysOn());
       case "parentbased_always_off":
         return Sampler.parentBased(Sampler.alwaysOff());
       case "parentbased_traceidratio":
-        {
-          double ratio =
-              config.getDouble("otel.traces.sampler.arg", DEFAULT_TRACEIDRATIO_SAMPLE_RATIO);
-          return Sampler.parentBased(Sampler.traceIdRatioBased(ratio));
-        }
+        return Sampler.parentBased(ratioSampler(config));
       case "parentbased_jaeger_remote":
         Sampler jaegerRemote = spiSamplersManager.getByName("jaeger_remote");
         if (jaegerRemote == null) {
@@ -203,6 +192,11 @@ final class TracerProviderConfiguration {
         }
         return spiSampler;
     }
+  }
+
+  private static Sampler ratioSampler(ConfigProperties config) {
+    double ratio = config.getDouble("otel.traces.sampler.arg", DEFAULT_TRACEIDRATIO_SAMPLE_RATIO);
+    return Sampler.traceIdRatioBased(ratio);
   }
 
   private TracerProviderConfiguration() {}

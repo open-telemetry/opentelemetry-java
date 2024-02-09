@@ -49,7 +49,6 @@ final class TextMapPropagatorFactory implements Factory<List<String>, TextMapPro
     NamedSpiManager<TextMapPropagator> spiPropagatorsManager =
         spiHelper.loadConfigurable(
             ConfigurablePropagatorProvider.class,
-            ConfigurablePropagatorProvider::getName,
             ConfigurablePropagatorProvider::getPropagator,
             DefaultConfigProperties.createFromMap(Collections.emptyMap()));
     Set<TextMapPropagator> propagators = new LinkedHashSet<>();

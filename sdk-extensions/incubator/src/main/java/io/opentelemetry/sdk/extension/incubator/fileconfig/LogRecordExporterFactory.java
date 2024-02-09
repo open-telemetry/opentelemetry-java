@@ -107,7 +107,6 @@ final class LogRecordExporterFactory
       ConfigProperties config, SpiHelper spiHelper) {
     return spiHelper.loadConfigurable(
         ConfigurableLogRecordExporterProvider.class,
-        ConfigurableLogRecordExporterProvider::getName,
         ConfigurableLogRecordExporterProvider::createExporter,
         config);
   }

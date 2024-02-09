@@ -80,7 +80,6 @@ final class SpanExporterConfiguration {
       ConfigProperties config, SpiHelper spiHelper) {
     return spiHelper.loadConfigurable(
         ConfigurableSpanExporterProvider.class,
-        ConfigurableSpanExporterProvider::getName,
         ConfigurableSpanExporterProvider::createExporter,
         config);
   }

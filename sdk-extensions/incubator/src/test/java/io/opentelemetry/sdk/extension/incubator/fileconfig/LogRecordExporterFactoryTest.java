@@ -89,7 +89,7 @@ class LogRecordExporterFactoryTest {
     ArgumentCaptor<ConfigProperties> configCaptor = ArgumentCaptor.forClass(ConfigProperties.class);
     verify(spiHelper)
         .loadConfigurable(
-            eq(ConfigurableLogRecordExporterProvider.class), any(), any(), configCaptor.capture());
+            eq(ConfigurableLogRecordExporterProvider.class), any(), configCaptor.capture());
     ConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("otel.exporter.otlp.logs.protocol")).isNull();
     assertThat(configProperties.getString("otel.exporter.otlp.endpoint")).isNull();
@@ -154,7 +154,7 @@ class LogRecordExporterFactoryTest {
     ArgumentCaptor<ConfigProperties> configCaptor = ArgumentCaptor.forClass(ConfigProperties.class);
     verify(spiHelper)
         .loadConfigurable(
-            eq(ConfigurableLogRecordExporterProvider.class), any(), any(), configCaptor.capture());
+            eq(ConfigurableLogRecordExporterProvider.class), any(), configCaptor.capture());
     ConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("otel.exporter.otlp.logs.protocol"))
         .isEqualTo("http/protobuf");

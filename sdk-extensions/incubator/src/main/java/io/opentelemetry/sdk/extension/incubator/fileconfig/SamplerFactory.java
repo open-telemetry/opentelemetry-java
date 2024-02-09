@@ -130,7 +130,6 @@ final class SamplerFactory
       ConfigProperties config, SpiHelper spiHelper) {
     return spiHelper.loadConfigurable(
         ConfigurableSamplerProvider.class,
-        ConfigurableSamplerProvider::getName,
         ConfigurableSamplerProvider::createSampler,
         config);
   }

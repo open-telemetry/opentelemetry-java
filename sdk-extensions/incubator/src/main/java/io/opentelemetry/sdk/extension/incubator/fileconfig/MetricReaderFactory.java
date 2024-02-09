@@ -108,7 +108,6 @@ final class MetricReaderFactory
       metricReaderSpiManager(ConfigProperties config, SpiHelper spiHelper) {
     return spiHelper.loadConfigurable(
         ConfigurableMetricReaderProvider.class,
-        ConfigurableMetricReaderProvider::getName,
         ConfigurableMetricReaderProvider::createMetricReader,
         config);
   }
