@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.35.0 (2024-02-09)
+
 **NOTE:** The `opentelemetry-exporter-jaeger` and `opentelemetry-exporter-jaeger-thift` artifacts
 have stopped being published. Jaeger
 has [native support for OTLP](https://opentelemetry.io/blog/2022/jaeger-native-otlp/), and users
