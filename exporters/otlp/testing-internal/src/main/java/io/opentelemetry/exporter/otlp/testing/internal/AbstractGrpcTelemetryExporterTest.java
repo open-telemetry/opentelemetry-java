@@ -840,8 +840,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
                   + ", "
-                  + "proxyHost=null, "
-                  + "proxyPort=null, "
+                  + "proxyOptions=null, "
                   + "compressorEncoding=null, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
                   + ".*" // Maybe additional grpcChannel field
@@ -879,8 +878,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(5)
                   + ", "
-                  + "proxyHost=null, "
-                  + "proxyPort=null, "
+                  + "proxyOptions=null, "
                   + "compressorEncoding=gzip, "
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
                   + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3\\}"

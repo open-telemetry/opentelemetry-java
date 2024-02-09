@@ -815,12 +815,11 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
                   + ", "
+                  + "proxyOptions=null, "
                   + "compressorEncoding=null, "
                   + "connectTimeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
                   + ", "
-                  + "proxyHost=null, "
-                  + "proxyPort=null, "
                   + "exportAsJson=false, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
                   + "\\}");
@@ -857,6 +856,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(5)
                   + ", "
+                  + "proxyOptions=null, "
                   + "compressorEncoding=gzip, "
                   + "connectTimeoutNanos="
                   + TimeUnit.SECONDS.toNanos(4)

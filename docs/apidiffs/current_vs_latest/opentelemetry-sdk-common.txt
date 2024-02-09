@@ -1,2 +1,11 @@
 Comparing source compatibility of  against 
-No changes.
++++  NEW CLASS: PUBLIC(+) io.opentelemetry.sdk.common.export.ProxyOptions  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.export.ProxyOptions$ProxyOptionsBuilder builder(java.lang.String, int)
+	+++  NEW METHOD: PUBLIC(+) java.lang.String getHost()
+	+++  NEW METHOD: PUBLIC(+) int getPort()
++++  NEW CLASS: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.export.ProxyOptions$ProxyOptionsBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.export.ProxyOptions build()
