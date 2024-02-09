@@ -104,7 +104,6 @@ public class OltpExporterBenchmark {
                 null,
                 null,
                 null,
-                null,
                 null),
             MeterProvider::noop);
 

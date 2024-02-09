@@ -14,6 +14,7 @@ import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
@@ -52,8 +53,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
       grpcStubFactory;
 
   private long timeoutNanos;
-  @Nullable private String proxyHost;
-  @Nullable private Integer proxyPort;
+  @Nullable private ProxyOptions proxyOptions;
   private URI endpoint;
   @Nullable private Compressor compressor;
   private final Map<String, String> constantHeaders = new HashMap<>();
@@ -94,9 +94,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
   }
 
-  public GrpcExporterBuilder<T> setProxy(String proxyHost, Integer proxyPort) {
-    this.proxyHost = proxyHost;
-    this.proxyPort = proxyPort;
+  public GrpcExporterBuilder<T> setProxy(ProxyOptions proxyOptions) {
+    this.proxyOptions = proxyOptions;
     return this;
   }
 
@@ -169,8 +168,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     }
     copy.meterProviderSupplier = meterProviderSupplier;
     copy.grpcChannel = grpcChannel;
-    copy.proxyHost = proxyHost;
-    copy.proxyPort = proxyPort;
+    copy.proxyOptions = proxyOptions;
     return copy;
   }
 
@@ -204,8 +202,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
             compressor,
             timeoutNanos,
             headerSupplier,
-            proxyHost,
-            proxyPort,
+            proxyOptions,
             grpcChannel,
             grpcStubFactory,
             retryPolicy,
@@ -226,8 +223,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     joiner.add("endpoint=" + endpoint.toString());
     joiner.add("endpointPath=" + grpcEndpointPath);
     joiner.add("timeoutNanos=" + timeoutNanos);
-    joiner.add("proxyHost=" + proxyHost);
-    joiner.add("proxyPort=" + proxyPort);
+    joiner.add("proxyOptions=" + proxyOptions);
     joiner.add(
         "compressorEncoding="
             + Optional.ofNullable(compressor).map(Compressor::getEncoding).orElse(null));

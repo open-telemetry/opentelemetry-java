@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.time.Duration;
@@ -106,8 +107,8 @@ public class HttpMetricExporterBuilderWrapper implements TelemetryExporterBuilde
   }
 
   @Override
-  public TelemetryExporterBuilder<MetricData> setProxy(String proxyHost, int proxyPort) {
-    builder.setProxy(proxyHost, proxyPort);
+  public TelemetryExporterBuilder<MetricData> setProxy(ProxyOptions proxyOptions) {
+    builder.setProxy(proxyOptions);
     return this;
   }
 

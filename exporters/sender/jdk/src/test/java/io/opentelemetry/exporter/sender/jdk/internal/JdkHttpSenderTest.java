@@ -109,7 +109,6 @@ class JdkHttpSenderTest {
             Collections::emptyMap,
             null,
             null,
-            null,
             null);
 
     assertThat(sender)

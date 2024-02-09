@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.time.Duration;
@@ -103,8 +104,8 @@ final class GrpcLogRecordExporterBuilderWrapper implements TelemetryExporterBuil
   }
 
   @Override
-  public TelemetryExporterBuilder<LogRecordData> setProxy(String proxyHost, int proxyPort) {
-    builder.setProxy(proxyHost, proxyPort);
+  public TelemetryExporterBuilder<LogRecordData> setProxy(ProxyOptions proxyOptions) {
+    builder.setProxy(proxyOptions);
     return this;
   }
 

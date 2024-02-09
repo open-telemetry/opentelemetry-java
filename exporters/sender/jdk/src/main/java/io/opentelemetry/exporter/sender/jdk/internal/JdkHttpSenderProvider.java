@@ -9,6 +9,7 @@ import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.http.HttpSender;
 import io.opentelemetry.exporter.internal.http.HttpSenderProvider;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.util.List;
 import java.util.Map;
@@ -34,8 +35,7 @@ public final class JdkHttpSenderProvider implements HttpSenderProvider {
       long timeoutNanos,
       long connectTimeout,
       Supplier<Map<String, List<String>>> headerSupplier,
-      @Nullable String proxyHost,
-      @Nullable Integer proxyPort,
+      @Nullable ProxyOptions proxyOptions,
       @Nullable Authenticator authenticator,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
@@ -49,8 +49,7 @@ public final class JdkHttpSenderProvider implements HttpSenderProvider {
         connectTimeout,
         headerSupplier,
         retryPolicy,
-        proxyHost,
-        proxyPort,
+        proxyOptions,
         sslContext);
   }
 }

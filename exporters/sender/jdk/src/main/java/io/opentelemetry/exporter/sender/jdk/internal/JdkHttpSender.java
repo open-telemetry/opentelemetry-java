@@ -9,6 +9,7 @@ import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.http.HttpSender;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,7 +26,6 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -97,11 +97,10 @@ public final class JdkHttpSender implements HttpSender {
       long connectTimeoutNanos,
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable RetryPolicy retryPolicy,
-      @Nullable String proxyHost,
-      @Nullable Integer proxyPort,
+      @Nullable ProxyOptions proxyOptions,
       @Nullable SSLContext sslContext) {
     this(
-        configureClient(sslContext, connectTimeoutNanos, proxyHost, proxyPort),
+        configureClient(sslContext, connectTimeoutNanos, proxyOptions),
         endpoint,
         compressor,
         exportAsJson,
@@ -114,17 +113,16 @@ public final class JdkHttpSender implements HttpSender {
   private static HttpClient configureClient(
       @Nullable SSLContext sslContext,
       long connectionTimeoutNanos,
-      @Nullable String proxyHost,
-      @Nullable Integer proxyPort) {
+      @Nullable ProxyOptions proxyOptions) {
     HttpClient.Builder builder =
         HttpClient.newBuilder().connectTimeout(Duration.ofNanos(connectionTimeoutNanos));
     if (sslContext != null) {
       builder.sslContext(sslContext);
     }
-    if (proxyHost != null) {
+    if (proxyOptions != null) {
       builder.proxy(
           ProxySelector.of(
-              new InetSocketAddress(proxyHost, Optional.ofNullable(proxyPort).orElse(8080))));
+              new InetSocketAddress(proxyOptions.getHost(), proxyOptions.getPort())));
     }
     return builder.build();
   }

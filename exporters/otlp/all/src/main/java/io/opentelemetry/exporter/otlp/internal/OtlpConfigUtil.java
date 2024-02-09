@@ -9,6 +9,7 @@ import static io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -64,7 +65,7 @@ public final class OtlpConfigUtil {
       Consumer<byte[]> setTrustedCertificates,
       BiConsumer<byte[], byte[]> setClientTls,
       Consumer<RetryPolicy> setRetryPolicy,
-      BiConsumer<String, Integer> setProxy) {
+      Consumer<ProxyOptions> setProxy) {
     String protocol = getOtlpProtocol(dataType, config);
     boolean isHttpProtobuf = protocol.equals(PROTOCOL_HTTP_PROTOBUF);
     URL endpoint =
@@ -158,7 +159,7 @@ public final class OtlpConfigUtil {
     String proxyHost = config.getString("otel.exporter.otlp." + dataType + ".proxy.host");
     Integer proxyPort = config.getInt("otel.exporter.otlp." + dataType + ".proxy.port");
     if (proxyHost != null && proxyPort != null) {
-      setProxy.accept(proxyHost, proxyPort);
+      setProxy.accept(ProxyOptions.builder(proxyHost, proxyPort).build());
     }
   }
 

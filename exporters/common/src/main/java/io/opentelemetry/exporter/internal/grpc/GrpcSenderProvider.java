@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.internal.grpc;
 import io.grpc.Channel;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.util.List;
@@ -35,8 +36,7 @@ public interface GrpcSenderProvider {
       @Nullable Compressor compressor,
       long timeoutNanos,
       Supplier<Map<String, List<String>>> headersSupplier,
-      @Nullable String proxyHost,
-      @Nullable Integer proxyPort,
+      @Nullable ProxyOptions proxyOptions,
       @Nullable Object managedChannel,
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
       @Nullable RetryPolicy retryPolicy,

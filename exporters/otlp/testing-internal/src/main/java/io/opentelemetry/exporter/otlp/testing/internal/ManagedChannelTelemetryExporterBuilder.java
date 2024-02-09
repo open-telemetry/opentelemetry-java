@@ -17,6 +17,7 @@ import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
@@ -152,8 +153,8 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   }
 
   @Override
-  public TelemetryExporterBuilder<T> setProxy(String proxyHost, int proxyPort) {
-    delegate.setProxy(proxyHost, proxyPort);
+  public TelemetryExporterBuilder<T> setProxy(ProxyOptions proxyOptions) {
+    delegate.setProxy(proxyOptions);
     return this;
   }
 

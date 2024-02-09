@@ -16,6 +16,7 @@ import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -236,10 +237,8 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /** Sets the proxy to be used. */
-  public OtlpGrpcMetricExporterBuilder setProxy(String proxyHost, Integer proxyPort) {
-    requireNonNull(proxyHost, "proxyHost");
-    requireNonNull(proxyPort, "proxyPort");
-    delegate.setProxy(proxyHost, proxyPort);
+  public OtlpGrpcMetricExporterBuilder setProxy(ProxyOptions proxyOptions) {
+    requireNonNull(proxyOptions, "proxyOptions");
     return this;
   }
 

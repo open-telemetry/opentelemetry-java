@@ -16,6 +16,7 @@ import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.time.Duration;
 import java.util.Map;
@@ -173,9 +174,9 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /** Sets the proxy to be used. */
-  public OtlpHttpSpanExporterBuilder setProxy(String proxyHost, int proxyPort) {
-    requireNonNull(proxyHost, "proxyHost");
-    delegate.setProxy(proxyHost, proxyPort);
+  public OtlpHttpSpanExporterBuilder setProxy(ProxyOptions proxyOptions) {
+    requireNonNull(proxyOptions, "proxyOptions");
+    delegate.setProxy(proxyOptions);
     return this;
   }
 
