@@ -57,6 +57,7 @@ public final class ZipkinSpanExporterBuilder {
    *
    * @param sender the Zipkin sender implementation.
    * @return this.
+   * @since 1.35.0
    */
   public ZipkinSpanExporterBuilder setSender(BytesMessageSender sender) {
     requireNonNull(sender, "sender");
@@ -86,6 +87,7 @@ public final class ZipkinSpanExporterBuilder {
    * @param encoder the {@code BytesEncoder} to use.
    * @return this.
    * @see SpanBytesEncoder
+   * @since 1.35.0
    */
   public ZipkinSpanExporterBuilder setEncoder(BytesEncoder<Span> encoder) {
     requireNonNull(encoder, "encoder");
