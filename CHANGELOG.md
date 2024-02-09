@@ -13,14 +13,14 @@ instead.
 
 #### Incubator
 
-* Add Span#addLink, for adding link after span start
+* Add Span#addLink, for adding a link after span start
   ([#6084](https://github.com/open-telemetry/opentelemetry-java/pull/6084))
 
 ### SDK
 
 #### Traces
 
-* Bugfix: Ensure span status cannot Be updated after set to StatusCode.OK
+* Bugfix: Ensure span status cannot be updated after set to StatusCode.OK
   ([#6209](https://github.com/open-telemetry/opentelemetry-java/pull/6209)
 
 #### Metrics
@@ -44,7 +44,7 @@ instead.
   ([#6138](https://github.com/open-telemetry/opentelemetry-java/pull/6138))
 * WARNING: Remove jaeger exporters
   ([#6119](https://github.com/open-telemetry/opentelemetry-java/pull/6119))
-* Update dependency io.zipkin.reporter2:zipkin-reporter-bom to 3.2.1.
+* Update dependency `io.zipkin.reporter2:zipkin-reporter-bom` to 3.2.1.
   Note: `ZipkinSpanExporterBuilder#setEncoder(zipkin2.codec.BytesEncoder)` has been deprecated in
   favor of `ZipkinSpanExporterBuilder#setEncoder(zipkin2.reporter.BytesEncoder)`.
   `ZipkinSpanExporterBuilder#setSender(zipkin2.reporter.Sender)` has been deprecated in favor
