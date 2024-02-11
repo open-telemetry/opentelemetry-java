@@ -1,9 +1,9 @@
 package io.opentelemetry.sdk.metrics.data;
 
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
-
-import static java.util.Objects.requireNonNull;
 
 public abstract class DelegatingMetricData implements MetricData {
 
@@ -17,6 +17,7 @@ public abstract class DelegatingMetricData implements MetricData {
   public Resource getResource() {
     return delegate.getResource();
   }
+
   @Override
   public InstrumentationScopeInfo getInstrumentationScopeInfo() {
     return delegate.getInstrumentationScopeInfo();
