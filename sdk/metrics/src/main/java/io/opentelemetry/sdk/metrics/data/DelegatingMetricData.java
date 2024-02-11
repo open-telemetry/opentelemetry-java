@@ -67,6 +67,26 @@ public abstract class DelegatingMetricData implements MetricData {
   }
 
   @Override
+  public int hashCode() {
+    int result = 1;
+    result *= 1000003;
+    result ^= this.getResource().hashCode();
+    result *= 1000003;
+    result ^= this.getInstrumentationScopeInfo().hashCode();
+    result *= 1000003;
+    result ^= this.getName().hashCode();
+    result *= 1000003;
+    result ^= this.getDescription().hashCode();
+    result *= 1000003;
+    result ^= this.getUnit().hashCode();
+    result *= 1000003;
+    result ^= this.getType().hashCode();
+    result *= 1000003;
+    result ^= this.getData().hashCode();
+    return result;
+  }
+
+  @Override
   public String toString() {
     return "DelegatingMetricData{" +
         "resource=" + getResource() + ", " +
