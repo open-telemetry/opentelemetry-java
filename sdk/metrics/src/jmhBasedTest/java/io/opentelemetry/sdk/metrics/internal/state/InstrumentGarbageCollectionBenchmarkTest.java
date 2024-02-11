@@ -109,10 +109,10 @@ public class InstrumentGarbageCollectionBenchmarkTest {
                 assertThat(immutableDataAllocRate).isNotNull().isNotZero();
                 assertThat(reusableDataAllocRate).isNotNull().isNotZero();
 
-                TestInstrumentType testInstrumentType = TestInstrumentType.valueOf(
-                    testInstrumentTypeString);
-                float dataAllocRateReductionPercentage = testInstrumentType
-                    .getDataAllocRateReductionPercentage();
+                TestInstrumentType testInstrumentType =
+                    TestInstrumentType.valueOf(testInstrumentTypeString);
+                float dataAllocRateReductionPercentage =
+                    testInstrumentType.getDataAllocRateReductionPercentage();
                 double allowedOffset = testInstrumentType.getAllowedPercentOffset();
 
                 // If this test suddenly fails for you this means you have changed the code in a way

@@ -24,16 +24,20 @@ public enum TestInstrumentType {
   ASYNC_COUNTER(AsyncCounterTester::new),
   EXPONENTIAL_HISTOGRAM(ExponentialHistogramTester::new),
   EXPLICIT_BUCKET(ExplicitBucketHistogramTester::new),
-  LONG_SUM(LongSumTester::new,
+  LONG_SUM(
+      LongSumTester::new,
       /* dataAllocRateReductionPercentage= */ 97.3f,
       /* allowedPercentOffset= */ 4.0f),
-  DOUBLE_SUM(DoubleSumTester::new,
+  DOUBLE_SUM(
+      DoubleSumTester::new,
       /* dataAllocRateReductionPercentage= */ 97.3f,
       /* allowedPercentOffset= */ 2.0f),
-  LONG_LAST_VALUE(LongLastValueTester::new,
+  LONG_LAST_VALUE(
+      LongLastValueTester::new,
       /* dataAllocRateReductionPercentage= */ 97.3f,
       /* allowedPercentOffset= */ 4.0f),
-  DOUBLE_LAST_VALUE(DoubleLastValueTester::new,
+  DOUBLE_LAST_VALUE(
+      DoubleLastValueTester::new,
       /* dataAllocRateReductionPercentage= */ 97.3f,
       /* allowedPercentOffset= */ 4.0f);
 
