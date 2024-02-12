@@ -21,6 +21,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -85,13 +86,18 @@ public final class ResourceConfiguration {
       ConfigProperties config,
       SpiHelper spiHelper,
       BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer) {
-    Resource result = Resource.getDefault();
+
+    // don't add the default service name yet
+    Resource result =
+        Resource.getDefault().toBuilder().removeIf(key -> key.equals(SERVICE_NAME)).build();
 
     Set<String> enabledProviders =
         new HashSet<>(config.getList("otel.java.enabled.resource.providers"));
     Set<String> disabledProviders =
         new HashSet<>(config.getList("otel.java.disabled.resource.providers"));
-    for (ResourceProvider resourceProvider : spiHelper.loadOrdered(ResourceProvider.class)) {
+    List<ResourceProvider> providers = spiHelper.loadOrdered(ResourceProvider.class);
+    Collections.reverse(providers);
+    for (ResourceProvider resourceProvider : providers) {
       if (!enabledProviders.isEmpty()
           && !enabledProviders.contains(resourceProvider.getClass().getName())) {
         continue;
@@ -103,8 +109,20 @@ public final class ResourceConfiguration {
           && !((ConditionalResourceProvider) resourceProvider).shouldApply(config, result)) {
         continue;
       }
-      result = result.merge(resourceProvider.createResource(config));
+
+      Set<AttributeKey<?>> supportedKeys = resourceProvider.supportedKeys();
+      if (!supportedKeys.isEmpty()) {
+        // empty means it always applies
+        Map<AttributeKey<?>, Object> attributes = result.getAttributes().asMap();
+        if (supportedKeys.stream().allMatch(attributes::containsKey)) {
+          continue;
+        }
+      }
+      result = result.mergeReverse(resourceProvider.createResource(config));
     }
+
+    // now add the default service name
+    result = result.mergeReverse(Resource.getDefault());
 
     result = filterAttributes(result, config);
 

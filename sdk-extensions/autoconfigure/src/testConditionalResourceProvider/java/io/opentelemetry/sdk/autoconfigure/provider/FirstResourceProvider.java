@@ -7,16 +7,25 @@ package io.opentelemetry.sdk.autoconfigure.provider;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ConditionalResourceProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collections;
+import java.util.Set;
 
-public class FirstResourceProvider implements ConditionalResourceProvider {
+public class FirstResourceProvider implements ResourceProvider {
+
+  @SuppressWarnings("NonFinalStaticField")
+  public static int calls = 0;
+
+  public static final AttributeKey<String> KEY = stringKey("service.name");
 
   @Override
   public Resource createResource(ConfigProperties config) {
-    return Resource.create(Attributes.of(stringKey("service.name"), "test-service"));
+    calls++;
+    return Resource.create(Attributes.of(KEY, "test-service"));
   }
 
   @Override
@@ -25,7 +34,7 @@ public class FirstResourceProvider implements ConditionalResourceProvider {
   }
 
   @Override
-  public boolean shouldApply(ConfigProperties config, Resource existing) {
-    return !config.getBoolean("skip-first-resource-provider", false);
+  public Set<AttributeKey<?>> supportedKeys() {
+    return Collections.singleton(KEY);
   }
 }

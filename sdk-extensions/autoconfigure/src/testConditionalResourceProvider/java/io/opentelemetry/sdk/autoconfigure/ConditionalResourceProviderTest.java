@@ -5,31 +5,31 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
 
-import org.junit.jupiter.api.Test;
+import io.opentelemetry.sdk.autoconfigure.provider.FirstResourceProvider;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class ConditionalResourceProviderTest {
 
-  @Test
-  void shouldConditionallyProvideResourceAttributes_skipBasedOnPreviousResource() {
-    AutoConfiguredOpenTelemetrySdk sdk = AutoConfiguredOpenTelemetrySdk.builder().build();
-
-    assertThat(sdk.getResource().getAttributes().asMap())
-        .contains(entry(stringKey("service.name"), "test-service"));
-  }
-
-  @Test
-  void shouldConditionallyProvideResourceAttributes_skipBasedOnConfig() {
+  @ParameterizedTest
+  @CsvSource({
+    "false, test-service-2, 0",
+    "true, test-service, 1",
+  })
+  void shouldConditionallyProvideResourceAttributes_skipBasedOnConfig(
+      boolean skipSecond, String expectedServiceName, int expectedCallsToFirst) {
     AutoConfiguredOpenTelemetrySdk sdk =
         AutoConfiguredOpenTelemetrySdk.builder()
-            .addPropertiesSupplier(() -> singletonMap("skip-first-resource-provider", "true"))
+            .addPropertiesSupplier(
+                () -> singletonMap("skip-second-resource-provider", String.valueOf(skipSecond)))
             .build();
 
     assertThat(sdk.getResource().getAttributes().asMap())
-        .contains(entry(stringKey("service.name"), "test-service-2"));
+        .containsEntry(FirstResourceProvider.KEY, expectedServiceName);
+
+    assertThat(FirstResourceProvider.calls).isEqualTo(expectedCallsToFirst);
   }
 }

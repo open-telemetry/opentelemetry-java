@@ -7,16 +7,21 @@ package io.opentelemetry.sdk.autoconfigure.provider;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ConditionalResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collections;
+import java.util.Set;
 
 public class SecondResourceProvider implements ConditionalResourceProvider {
 
+  public static final AttributeKey<String> KEY = stringKey("service.name");
+
   @Override
   public Resource createResource(ConfigProperties config) {
-    return Resource.create(Attributes.of(stringKey("service.name"), "test-service-2"));
+    return Resource.create(Attributes.of(KEY, "test-service-2"));
   }
 
   @Override
@@ -25,8 +30,12 @@ public class SecondResourceProvider implements ConditionalResourceProvider {
   }
 
   @Override
+  public Set<AttributeKey<?>> supportedKeys() {
+    return Collections.singleton(KEY);
+  }
+
+  @Override
   public boolean shouldApply(ConfigProperties config, Resource existing) {
-    String serviceName = existing.getAttribute(stringKey("service.name"));
-    return serviceName == null || "unknown_service:java".equals(serviceName);
+    return !config.getBoolean("skip-second-resource-provider", false);
   }
 }

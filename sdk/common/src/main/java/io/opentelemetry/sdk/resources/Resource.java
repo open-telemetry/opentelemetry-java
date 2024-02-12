@@ -63,6 +63,11 @@ public abstract class Resource {
 
   private static final Resource DEFAULT = MANDATORY.merge(TELEMETRY_SDK);
 
+  private enum MergePrecedence {
+    OTHER_TAKES_PRECEDENCE,
+    THIS_TAKES_PRECEDENCE
+  }
+
   /**
    * Returns the default {@link Resource}. This resource contains the default attributes provided by
    * the SDK.
@@ -146,13 +151,36 @@ public abstract class Resource {
    * @return the newly merged {@code Resource}.
    */
   public Resource merge(@Nullable Resource other) {
+    return doMerge(other, MergePrecedence.OTHER_TAKES_PRECEDENCE);
+  }
+
+  /**
+   * Returns a new, merged {@link Resource} by merging the current {@code Resource} with the {@code
+   * other} {@code Resource}. In case of a collision, the "this" {@code Resource} takes precedence.
+   *
+   * @param other the {@code Resource} that will be merged with {@code this}.
+   * @return the newly merged {@code Resource}.
+   */
+  public Resource mergeReverse(@Nullable Resource other) {
+    return doMerge(other, MergePrecedence.THIS_TAKES_PRECEDENCE);
+  }
+
+  private Resource doMerge(@Nullable Resource other, MergePrecedence precedence) {
     if (other == null || other == EMPTY) {
       return this;
     }
 
     AttributesBuilder attrBuilder = Attributes.builder();
-    attrBuilder.putAll(this.getAttributes());
-    attrBuilder.putAll(other.getAttributes());
+    switch (precedence) {
+      case OTHER_TAKES_PRECEDENCE:
+        attrBuilder.putAll(this.getAttributes());
+        attrBuilder.putAll(other.getAttributes());
+        break;
+      case THIS_TAKES_PRECEDENCE:
+        attrBuilder.putAll(other.getAttributes());
+        attrBuilder.putAll(this.getAttributes());
+        break;
+    }
 
     if (other.getSchemaUrl() == null) {
       return create(attrBuilder.build(), getSchemaUrl());
