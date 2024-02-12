@@ -12,13 +12,14 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 public abstract class TestMetricData implements MetricData {
   public static Builder builder() {
-    //TODO: Need to figure out how to set the Data value
+    // TODO: Need to figure out how to set the Data value
     return new AutoValue_TestMetricData.Builder()
         .setResource(Resource.empty())
         .setInstrumentationScopeInfo(InstrumentationScopeInfo.empty())
-        .setDescription("")
+        .setDescription("description")
         .setUnit("1")
-        .setType(MetricDataType.DOUBLE_GAUGE);
+        .setData(null)
+        .setType(MetricDataType.SUMMARY);
   }
 
   /** A builder for {@link TestMetricData}. */
