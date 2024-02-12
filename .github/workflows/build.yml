@@ -32,6 +32,7 @@ jobs:
           - os: ubuntu-20.04
             test-java-version: 17
             coverage: true
+            jmh-based-tests: true
     steps:
       - uses: actions/checkout@v4
 
@@ -58,6 +59,8 @@ jobs:
             -Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }},${{ steps.setup-java.outputs.path }}
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          # JMH-based tests run only  if this environment variable is set to true
+          RUN_JMH_BASED_TESTS: ${{ matrix.jmh-based-tests }}
 
       - name: Check for diff
         # The jApiCmp diff compares current to latest, which isn't appropriate for release branches
