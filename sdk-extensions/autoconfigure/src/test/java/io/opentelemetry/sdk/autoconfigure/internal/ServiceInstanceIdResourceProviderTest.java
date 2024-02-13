@@ -68,8 +68,8 @@ class ServiceInstanceIdResourceProviderTest {
                   "host")),
           new TestCase(
               "k8s pod",
-              "8ded023e-2034-5633-a0c2-f86ab54f8909",
-              "telemetry.sdk.name,telemetry.sdk.language,k8s.namespace.name,k8s.pod.name,k8s.container.name",
+              "f3a5f61b-9fff-5707-8d41-d3a9d2423b7d",
+              "telemetry.sdk.name,telemetry.sdk.language,k8s.namespace.name,service.name,k8s.pod.name,k8s.container.name",
               ImmutableMap.of(
                   "telemetry.sdk.name",
                   "opentelemetry",
@@ -82,7 +82,7 @@ class ServiceInstanceIdResourceProviderTest {
                   "k8s.container.name",
                   "some-sidecar",
                   "service.name",
-                  "customers",
+                  "vendors",
                   "host.id",
                   "graviola")),
           new TestCase(
