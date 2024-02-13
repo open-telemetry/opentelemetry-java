@@ -1,10 +1,19 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package io.opentelemetry.sdk.metrics.data;
 
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import javax.annotation.Nullable;
 
+/**
+ * A {@link MetricData} which delegates all methods to another {@link MetricData}. Extend this class to
+ * modify the {@link MetricData} that will be exported.
+ */
 public abstract class DelegatingMetricData implements MetricData {
 
   private final MetricData delegate;
@@ -49,20 +58,19 @@ public abstract class DelegatingMetricData implements MetricData {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (o == this) {
       return true;
     }
-    if (o instanceof DelegatingMetricData) {
-      DelegatingMetricData that = (DelegatingMetricData) o;
-      return this.delegate.equals(that.delegate) &&
-          this.getResource().equals(that.getResource()) &&
-          this.getInstrumentationScopeInfo().equals(that.getInstrumentationScopeInfo()) &&
-          this.getName().equals(that.getName()) &&
-          this.getDescription().equals(that.getDescription()) &&
-          this.getUnit().equals(that.getUnit()) &&
-          this.getType().equals(that.getType()) &&
-          this.getData().equals(that.getData());
+    if (o instanceof MetricData) {
+      MetricData that = (MetricData) o;
+      return getResource().equals(that.getResource()) &&
+          getInstrumentationScopeInfo().equals(that.getInstrumentationScopeInfo()) &&
+          getName().equals(that.getName()) &&
+          getDescription().equals(that.getDescription()) &&
+          getUnit().equals(that.getUnit()) &&
+          getType().equals(that.getType()) &&
+          getData().equals(that.getData());
     }
     return false;
   }

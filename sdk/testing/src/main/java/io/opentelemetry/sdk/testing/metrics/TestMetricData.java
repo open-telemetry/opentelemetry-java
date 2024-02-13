@@ -1,3 +1,7 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package io.opentelemetry.sdk.testing.metrics;
 
 import com.google.auto.value.AutoValue;
@@ -5,20 +9,25 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.Data;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * Immutable representation of all data collected by the {@link io.opentelemetry.sdk.metrics.data.MetricData}
+ * class.
+ */
 @Immutable
 @AutoValue
 public abstract class TestMetricData implements MetricData {
   public static Builder builder() {
-    // TODO: Need to figure out how to set the Data value
     return new AutoValue_TestMetricData.Builder()
         .setResource(Resource.empty())
+        .setName("name")
         .setInstrumentationScopeInfo(InstrumentationScopeInfo.empty())
         .setDescription("description")
         .setUnit("1")
-        .setData(null)
+        .setData(ImmutableSummaryData.empty())
         .setType(MetricDataType.SUMMARY);
   }
 
