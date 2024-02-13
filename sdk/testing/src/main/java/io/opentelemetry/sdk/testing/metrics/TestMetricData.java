@@ -97,7 +97,7 @@ public abstract class TestMetricData implements MetricData {
      * Sets the Instrumentation scope of the metric
      *
      * @param instrumentationScopeInfo the instrumentation scope of the tracer which created this
-     * metric.
+     *     metric.
      * @return this
      */
     public abstract Builder setInstrumentationScopeInfo(

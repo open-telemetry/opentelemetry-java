@@ -5,6 +5,7 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -53,6 +54,7 @@ class DelegatingMetricDataTest {
 
     assertThat(withCustomDescription.getDescription()).isEqualTo("test");
   }
+
   @Test
   void equals() {
     MetricData metricData = createBasicMetricBuilder().build();
