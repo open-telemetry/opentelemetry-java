@@ -9,5 +9,7 @@ Comparing source compatibility of  against
 		GENERIC TEMPLATES: +++ T:java.lang.Object
 	+++* NEW METHOD: PUBLIC(+) java.util.Map<java.lang.String,T> loadConfigurableProviders(java.lang.Class<T>)
 		GENERIC TEMPLATES: +++ T:io.opentelemetry.sdk.autoconfigure.spi.ConfigurableProvider
+	+++* NEW METHOD: PUBLIC(+) java.util.Optional<T> loadOptional(java.lang.Class<T>)
+		GENERIC TEMPLATES: +++ T:java.lang.Object
 	+++* NEW METHOD: PUBLIC(+) java.util.List<T> loadOrdered(java.lang.Class<T>)
 		GENERIC TEMPLATES: +++ T:io.opentelemetry.sdk.autoconfigure.spi.Ordered
