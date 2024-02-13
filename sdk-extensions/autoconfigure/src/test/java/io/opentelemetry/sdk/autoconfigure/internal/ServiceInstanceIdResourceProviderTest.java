@@ -56,10 +56,10 @@ class ServiceInstanceIdResourceProviderTest {
           new TestCase(
               "user requested random service.instance.id",
               "random",
-              "uuidv1",
+              "uuidv4",
               ImmutableMap.of(
                   "service.instance.id",
-                  "uuidv1",
+                  "uuidv4",
                   "service.name",
                   "service",
                   "service.namespace",

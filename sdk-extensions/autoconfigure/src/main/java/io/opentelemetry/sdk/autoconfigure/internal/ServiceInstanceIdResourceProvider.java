@@ -61,7 +61,7 @@ public final class ServiceInstanceIdResourceProvider {
   public static final Resource RANDOM =
       Resource.create(
           Attributes.of(SERVICE_INSTANCE_ID, UuidCreator.getRandomBasedFast().toString()));
-  private static final String REQUEST_RANDOM_VALUE = "uuidv1";
+  private static final String REQUEST_RANDOM_UUID_V4_VALUE = "uuidv4";
 
   private ServiceInstanceIdResourceProvider() {}
 
@@ -104,7 +104,7 @@ public final class ServiceInstanceIdResourceProvider {
         new Variant() {
           @Override
           public boolean matches(Attributes attributes) {
-            return REQUEST_RANDOM_VALUE.equals(attributes.get(SERVICE_INSTANCE_ID));
+            return REQUEST_RANDOM_UUID_V4_VALUE.equals(attributes.get(SERVICE_INSTANCE_ID));
           }
 
           @Override
@@ -114,7 +114,7 @@ public final class ServiceInstanceIdResourceProvider {
 
           @Override
           public String toString() {
-            return REQUEST_RANDOM_VALUE;
+            return REQUEST_RANDOM_UUID_V4_VALUE;
           }
         });
 
