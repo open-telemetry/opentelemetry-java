@@ -2,6 +2,7 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package io.opentelemetry.sdk.testing.metrics;
 
 import com.google.auto.value.AutoValue;
@@ -14,9 +15,8 @@ import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Immutable representation of all data collected by the
- * {@link io.opentelemetry.sdk.metrics.data.MetricData}
- * class.
+ * Immutable representation of all data collected by the {@link
+ * io.opentelemetry.sdk.metrics.data.MetricData} class.
  */
 @Immutable
 @AutoValue
@@ -98,12 +98,10 @@ public abstract class TestMetricData implements MetricData {
      * Sets the Instrumentation scope of the metric
      *
      * @param instrumentationScopeInfo the instrumentation scope of the tracer which created this
-     * metric.
+     *     metric.
      * @return this
      */
     public abstract Builder setInstrumentationScopeInfo(
         InstrumentationScopeInfo instrumentationScopeInfo);
-
   }
-
 }
