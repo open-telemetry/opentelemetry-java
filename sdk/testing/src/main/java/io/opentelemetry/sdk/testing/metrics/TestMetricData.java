@@ -14,7 +14,8 @@ import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Immutable representation of all data collected by the {@link io.opentelemetry.sdk.metrics.data.MetricData}
+ * Immutable representation of all data collected by the
+ * {@link io.opentelemetry.sdk.metrics.data.MetricData}
  * class.
  */
 @Immutable
