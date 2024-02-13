@@ -56,10 +56,10 @@ class ServiceInstanceIdResourceProviderTest {
           new TestCase(
               "user requested random service.instance.id",
               "random",
-              "uuid1",
+              "uuidv1",
               ImmutableMap.of(
                   "service.instance.id",
-                  "uuid1",
+                  "uuidv1",
                   "service.name",
                   "service",
                   "service.namespace",
@@ -151,7 +151,7 @@ class ServiceInstanceIdResourceProviderTest {
         .collect(Collectors.toList());
   }
 
-  private void runCreateResourceTest(TestCase testCase) {
+  private static void runCreateResourceTest(TestCase testCase) {
     // use "go" to make it comparable to the spec
     // https://github.com/open-telemetry/semantic-conventions/pull/312
     Map<String, String> map = new HashMap<>(testCase.attributes);

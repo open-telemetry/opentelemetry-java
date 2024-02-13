@@ -27,7 +27,7 @@ public final class ServiceInstanceIdResourceProvider {
   private static final AttributeKey<String> SERVICE_NAMESPACE =
       AttributeKey.stringKey("service.namespace");
 
-  static final AttributeKey<String> SERVICE_INSTANCE_ID =
+  public static final AttributeKey<String> SERVICE_INSTANCE_ID =
       AttributeKey.stringKey("service.instance.id");
 
   private static final AttributeKey<String> HOST_ID = AttributeKey.stringKey("host.id");
@@ -61,6 +61,7 @@ public final class ServiceInstanceIdResourceProvider {
   public static final Resource RANDOM =
       Resource.create(
           Attributes.of(SERVICE_INSTANCE_ID, UuidCreator.getRandomBasedFast().toString()));
+  private static final String REQUEST_RANDOM_VALUE = "uuidv1";
 
   private ServiceInstanceIdResourceProvider() {}
 
@@ -103,7 +104,7 @@ public final class ServiceInstanceIdResourceProvider {
         new Variant() {
           @Override
           public boolean matches(Attributes attributes) {
-            return "uuid1".equals(attributes.get(SERVICE_INSTANCE_ID));
+            return REQUEST_RANDOM_VALUE.equals(attributes.get(SERVICE_INSTANCE_ID));
           }
 
           @Override
@@ -113,7 +114,7 @@ public final class ServiceInstanceIdResourceProvider {
 
           @Override
           public String toString() {
-            return "uuid1";
+            return REQUEST_RANDOM_VALUE;
           }
         });
 
