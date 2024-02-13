@@ -8,7 +8,6 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
-
 import javax.annotation.Nullable;
 
 /**
