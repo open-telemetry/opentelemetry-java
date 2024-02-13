@@ -38,68 +38,68 @@ public abstract class TestMetricData implements MetricData {
     abstract TestMetricData autoBuild();
 
     /**
-     * Builds and returns a new {@link MetricData} instance from the data in {@code this}
+     * Builds and returns a new {@link MetricData} instance from the data in {@code this}.
      *
-     * @return a new {@link MetricData} instance
+     * @return a new {@link MetricData} instance.
      */
     public TestMetricData build() {
       return autoBuild();
     }
 
     /**
-     * Sets the resource of the metric
+     * Sets the resource of the metric.
      *
-     * @param resource the resource of the metric
-     * @return this
+     * @param resource the resource of the metric.
+     * @return this.
      */
     public abstract Builder setResource(Resource resource);
 
     /**
-     * Sets the name of the metric
+     * Sets the name of the metric.
      *
-     * @param name the name of the metric
-     * @return this
+     * @param name the name of the metric.
+     * @return this.
      */
     public abstract Builder setName(String name);
 
     /**
-     * Sets the description of the metric
+     * Sets the description of the metric.
      *
-     * @param description the description of the metric
-     * @return this
+     * @param description the description of the metric.
+     * @return this.
      */
     public abstract Builder setDescription(String description);
 
     /**
-     * Sets the unit of the metric
+     * Sets the unit of the metric.
      *
-     * @param unit the unit of the metric
-     * @return this
+     * @param unit the unit of the metric.
+     * @return this.
      */
     public abstract Builder setUnit(String unit);
 
     /**
-     * Sets the type of the metric
+     * Sets the type of the metric.
      *
-     * @param type the type of the metric
-     * @return this
+     * @param type the type of the metric.
+     * @return this.
      */
     public abstract Builder setType(MetricDataType type);
 
     /**
-     * Sets the data of the metric
+     * Sets the data of the metric.
      *
-     * @param data the data of the metric
-     * @return this
+     * @param data the data of the metric.
+     * @return this.
      */
     public abstract Builder setData(Data<?> data);
 
     /**
-     * Sets the Instrumentation scope of the metric
+     * Sets the Instrumentation scope of the metric.
      *
      * @param instrumentationScopeInfo the instrumentation scope of the tracer which created this
      *     metric.
-     * @return this
+     * @return this.
      */
     public abstract Builder setInstrumentationScopeInfo(
         InstrumentationScopeInfo instrumentationScopeInfo);
