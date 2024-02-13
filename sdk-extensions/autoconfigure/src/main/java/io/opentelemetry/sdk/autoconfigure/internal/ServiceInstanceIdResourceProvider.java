@@ -30,8 +30,6 @@ public final class ServiceInstanceIdResourceProvider {
   public static final AttributeKey<String> SERVICE_INSTANCE_ID =
       AttributeKey.stringKey("service.instance.id");
 
-  private static final AttributeKey<String> HOST_ID = AttributeKey.stringKey("host.id");
-
   private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
 
   private static final String UNKNOWN_SERVICE = "unknown_service:java";
@@ -51,8 +49,6 @@ public final class ServiceInstanceIdResourceProvider {
       AttributeKey.stringKey("k8s.container.name");
 
   private static final AttributeKey<String> CONTAINER_ID = AttributeKey.stringKey("container.id");
-
-  private static final AttributeKey<String> MACHINE_ID = AttributeKey.stringKey("machine.id");
 
   private static final UUID SERVICE_INSTANCE_ID_NAMESPACE =
       UUID.fromString("4d63009a-8d0f-11ee-aad7-4c796ed8e320");
@@ -77,6 +73,21 @@ public final class ServiceInstanceIdResourceProvider {
               TELEMETRY_SDK_NAME,
               TELEMETRY_SDK_LANGUAGE,
               K8S_NAMESPACE_NAME,
+              SERVICE_NAMESPACE,
+              SERVICE_NAME,
+              K8S_POD_NAME,
+              K8S_CONTAINER_NAME),
+          Arrays.asList(
+              TELEMETRY_SDK_NAME,
+              TELEMETRY_SDK_LANGUAGE,
+              K8S_NAMESPACE_NAME,
+              SERVICE_NAME,
+              K8S_POD_NAME,
+              K8S_CONTAINER_NAME),
+          Arrays.asList(
+              TELEMETRY_SDK_NAME,
+              TELEMETRY_SDK_LANGUAGE,
+              K8S_NAMESPACE_NAME,
               K8S_POD_NAME,
               K8S_CONTAINER_NAME),
           Arrays.asList(
@@ -87,15 +98,16 @@ public final class ServiceInstanceIdResourceProvider {
               CONTAINER_ID),
           Arrays.asList(TELEMETRY_SDK_NAME, TELEMETRY_SDK_LANGUAGE, SERVICE_NAME, CONTAINER_ID),
           Arrays.asList(
-              TELEMETRY_SDK_NAME, TELEMETRY_SDK_LANGUAGE, SERVICE_NAMESPACE, SERVICE_NAME, HOST_ID),
-          Arrays.asList(TELEMETRY_SDK_NAME, TELEMETRY_SDK_LANGUAGE, SERVICE_NAME, HOST_ID),
-          Arrays.asList(
               TELEMETRY_SDK_NAME,
               TELEMETRY_SDK_LANGUAGE,
               SERVICE_NAMESPACE,
               SERVICE_NAME,
-              MACHINE_ID),
-          Arrays.asList(TELEMETRY_SDK_NAME, TELEMETRY_SDK_LANGUAGE, SERVICE_NAME, MACHINE_ID));
+              HostIdResourceProvider.HOST_ID),
+          Arrays.asList(
+              TELEMETRY_SDK_NAME,
+              TELEMETRY_SDK_LANGUAGE,
+              SERVICE_NAME,
+              HostIdResourceProvider.HOST_ID));
 
   private static List<Variant> createVariants() {
     List<Variant> result = new ArrayList<>();
