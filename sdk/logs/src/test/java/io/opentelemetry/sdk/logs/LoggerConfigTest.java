@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.logs;
 
-import static io.opentelemetry.sdk.common.ScopeSelector.named;
-import static io.opentelemetry.sdk.logs.LoggerConfig.disabled;
+import static io.opentelemetry.sdk.common.ScopeConfig.applyToMatching;
+import static io.opentelemetry.sdk.common.ScopeConfig.scopeNameEquals;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.logs.Logger;
@@ -28,7 +28,8 @@ class LoggerConfigTest {
         SdkLoggerProvider.builder()
             // Disable loggerB. Since loggers are enabled by default, loggerA and loggerC are
             // enabled.
-            .addScopeConfig(named("loggerB"), disabled())
+            .setLoggerConfigProvider(
+                applyToMatching(scopeNameEquals("loggerB"), LoggerConfig.disabled()))
             .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter))
             .build();
 

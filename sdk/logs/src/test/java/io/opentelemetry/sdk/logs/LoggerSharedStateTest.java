@@ -13,7 +13,6 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.LinkedHashMap;
 import org.junit.jupiter.api.Test;
 
 class LoggerSharedStateTest {
@@ -29,7 +28,7 @@ class LoggerSharedStateTest {
             LogLimits::getDefault,
             logRecordProcessor,
             Clock.getDefault(),
-            new LinkedHashMap<>());
+            unused -> LoggerConfig.defaultConfig());
     state.shutdown();
     state.shutdown();
     verify(logRecordProcessor, times(1)).shutdown();

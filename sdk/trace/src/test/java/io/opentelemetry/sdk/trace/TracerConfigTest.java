@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.sdk.common.ScopeSelector.named;
+import static io.opentelemetry.sdk.common.ScopeConfig.applyToMatching;
+import static io.opentelemetry.sdk.common.ScopeConfig.scopeNameEquals;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static io.opentelemetry.sdk.trace.TracerConfig.disabled;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
@@ -28,7 +28,8 @@ class TracerConfigTest {
         SdkTracerProvider.builder()
             // Disable tracerB. Since tracers are enabled by default, tracerA and tracerC are
             // enabled.
-            .addScopeConfig(named("tracerB"), disabled())
+            .setTracerConfigProvider(
+                applyToMatching(scopeNameEquals("scopeB"), TracerConfig.disabled()))
             .addSpanProcessor(SimpleSpanProcessor.create(exporter))
             .build();
 

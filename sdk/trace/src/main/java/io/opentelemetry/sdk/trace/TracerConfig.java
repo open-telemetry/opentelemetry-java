@@ -12,10 +12,15 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class TracerConfig {
 
-  private static final TracerConfig DEFAULT_CONFIG = new AutoValue_TracerConfig(true);
+  private static final TracerConfig DEFAULT_CONFIG =
+      new AutoValue_TracerConfig(/* enabled= */ true);
 
   public static TracerConfig disabled() {
-    return new AutoValue_TracerConfig(false);
+    return new AutoValue_TracerConfig(/* enabled= */ false);
+  }
+
+  public static TracerConfig enabled() {
+    return DEFAULT_CONFIG;
   }
 
   public static TracerConfig defaultConfig() {

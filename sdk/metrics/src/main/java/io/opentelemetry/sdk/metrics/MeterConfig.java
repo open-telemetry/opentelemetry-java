@@ -12,10 +12,14 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class MeterConfig {
 
-  private static final MeterConfig DEFAULT_CONFIG = new AutoValue_MeterConfig(true);
+  private static final MeterConfig DEFAULT_CONFIG = new AutoValue_MeterConfig(/* enabled= */ true);
 
   public static MeterConfig disabled() {
-    return new AutoValue_MeterConfig(false);
+    return new AutoValue_MeterConfig(/* enabled= */ false);
+  }
+
+  public static MeterConfig enabled() {
+    return DEFAULT_CONFIG;
   }
 
   public static MeterConfig defaultConfig() {

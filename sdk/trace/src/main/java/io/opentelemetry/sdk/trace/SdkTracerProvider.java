@@ -10,14 +10,14 @@ import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.ScopeSelector;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,7 +47,7 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
       Supplier<SpanLimits> spanLimitsSupplier,
       Sampler sampler,
       List<SpanProcessor> spanProcessors,
-      LinkedHashMap<ScopeSelector, TracerConfig> tracerConfigMap) {
+      Function<InstrumentationScopeInfo, TracerConfig> tracerConfigProvider) {
     this.sharedState =
         new TracerSharedState(
             clock,
@@ -56,7 +56,7 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
             spanLimitsSupplier,
             sampler,
             spanProcessors,
-            tracerConfigMap);
+            tracerConfigProvider);
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
             instrumentationScopeInfo -> new SdkTracer(sharedState, instrumentationScopeInfo));

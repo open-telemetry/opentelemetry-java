@@ -8,9 +8,8 @@ package io.opentelemetry.sdk.logs;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.ScopeSelector;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.LinkedHashMap;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -24,7 +23,7 @@ final class LoggerSharedState {
   private final Supplier<LogLimits> logLimitsSupplier;
   private final LogRecordProcessor logRecordProcessor;
   private final Clock clock;
-  private final LinkedHashMap<ScopeSelector, LoggerConfig> loggerConfigMap;
+  private final Function<InstrumentationScopeInfo, LoggerConfig> loggerConfigProvider;
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
   LoggerSharedState(
@@ -32,12 +31,12 @@ final class LoggerSharedState {
       Supplier<LogLimits> logLimitsSupplier,
       LogRecordProcessor logRecordProcessor,
       Clock clock,
-      LinkedHashMap<ScopeSelector, LoggerConfig> loggerConfigMap) {
+      Function<InstrumentationScopeInfo, LoggerConfig> loggerConfigProvider) {
     this.resource = resource;
     this.logLimitsSupplier = logLimitsSupplier;
     this.logRecordProcessor = logRecordProcessor;
     this.clock = clock;
-    this.loggerConfigMap = loggerConfigMap;
+    this.loggerConfigProvider = loggerConfigProvider;
   }
 
   Resource getResource() {
@@ -57,12 +56,8 @@ final class LoggerSharedState {
   }
 
   LoggerConfig getLoggerConfig(InstrumentationScopeInfo instrumentationScopeInfo) {
-    for (ScopeSelector scopeSelector : loggerConfigMap.keySet()) {
-      if (scopeSelector.matchesScope(instrumentationScopeInfo)) {
-        return loggerConfigMap.get(scopeSelector);
-      }
-    }
-    return LoggerConfig.defaultConfig();
+    LoggerConfig loggerConfig = loggerConfigProvider.apply(instrumentationScopeInfo);
+    return loggerConfig == null ? LoggerConfig.defaultConfig() : loggerConfig;
   }
 
   boolean hasBeenShutdown() {
