@@ -2,6 +2,7 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package io.opentelemetry.sdk.metrics.data;
 
 import static java.util.Objects.requireNonNull;
@@ -11,8 +12,8 @@ import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 
 /**
- * A {@link MetricData} which delegates all methods to another {@link MetricData}. Extend this class to
- * modify the {@link MetricData} that will be exported.
+ * A {@link MetricData} which delegates all methods to another {@link MetricData}. Extend this class
+ * to modify the {@link MetricData} that will be exported.
  */
 public abstract class DelegatingMetricData implements MetricData {
 
@@ -64,13 +65,13 @@ public abstract class DelegatingMetricData implements MetricData {
     }
     if (o instanceof MetricData) {
       MetricData that = (MetricData) o;
-      return getResource().equals(that.getResource()) &&
-          getInstrumentationScopeInfo().equals(that.getInstrumentationScopeInfo()) &&
-          getName().equals(that.getName()) &&
-          getDescription().equals(that.getDescription()) &&
-          getUnit().equals(that.getUnit()) &&
-          getType().equals(that.getType()) &&
-          getData().equals(that.getData());
+      return getResource().equals(that.getResource())
+          && getInstrumentationScopeInfo().equals(that.getInstrumentationScopeInfo())
+          && getName().equals(that.getName())
+          && getDescription().equals(that.getDescription())
+          && getUnit().equals(that.getUnit())
+          && getType().equals(that.getType())
+          && getData().equals(that.getData());
     }
     return false;
   }
@@ -97,14 +98,27 @@ public abstract class DelegatingMetricData implements MetricData {
 
   @Override
   public String toString() {
-    return "DelegatingMetricData{" +
-        "resource=" + getResource() + ", " +
-        "instrumentationScopeInfo=" + getInstrumentationScopeInfo() + ", " +
-        "name=" + getName() + ", " +
-        "description=" + getDescription() + ", " +
-        "unit=" + getUnit() + ", " +
-        "type=" + getType() + ", " +
-        "data=" + getData() +
-        "}";
+    return "DelegatingMetricData{"
+        + "resource="
+        + getResource()
+        + ", "
+        + "instrumentationScopeInfo="
+        + getInstrumentationScopeInfo()
+        + ", "
+        + "name="
+        + getName()
+        + ", "
+        + "description="
+        + getDescription()
+        + ", "
+        + "unit="
+        + getUnit()
+        + ", "
+        + "type="
+        + getType()
+        + ", "
+        + "data="
+        + getData()
+        + "}";
   }
 }

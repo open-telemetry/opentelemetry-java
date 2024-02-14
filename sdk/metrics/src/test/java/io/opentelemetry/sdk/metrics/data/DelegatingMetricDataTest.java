@@ -2,6 +2,7 @@
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package io.opentelemetry.sdk.metrics.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,7 +34,6 @@ class DelegatingMetricDataTest {
     public String getDescription() {
       return description;
     }
-
   }
 
   @Test
@@ -54,6 +54,7 @@ class DelegatingMetricDataTest {
 
     assertThat(withCustomDescription.getDescription()).isEqualTo("test");
   }
+
   @Test
   void equals() {
     MetricData metricData = createBasicMetricBuilder().build();
