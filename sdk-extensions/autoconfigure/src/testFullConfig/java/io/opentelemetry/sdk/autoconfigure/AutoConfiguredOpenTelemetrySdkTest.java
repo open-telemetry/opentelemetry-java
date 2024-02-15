@@ -5,12 +5,16 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
+import com.linecorp.armeria.client.WebClient;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.events.GlobalEventEmitterProvider;
+import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.lang.reflect.Field;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +33,23 @@ class AutoConfiguredOpenTelemetrySdkTest {
   void setUp() {
     GlobalOpenTelemetry.resetForTest();
     GlobalEventEmitterProvider.resetForTest();
+  }
+
+  @SuppressWarnings("ResultOfMethodCallIgnored")
+  @Test
+  void build_addMetricReaderCustomizerPrometheus() {
+    AutoConfiguredOpenTelemetrySdkBuilder builder = AutoConfiguredOpenTelemetrySdk.builder();
+
+    builder.addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "prometheus"));
+    builder.addMetricReaderCustomizer(
+        (reader, config) -> {
+          assertThat(reader).isInstanceOf(PrometheusHttpServer.class);
+          return PrometheusHttpServer.builder().setPort(1234).build();
+        });
+    builder.build();
+
+    WebClient client = WebClient.builder("http://localhost:1234").build();
+    assertThatCode(() -> client.get("/metrics")).doesNotThrowAnyException();
   }
 
   @Test

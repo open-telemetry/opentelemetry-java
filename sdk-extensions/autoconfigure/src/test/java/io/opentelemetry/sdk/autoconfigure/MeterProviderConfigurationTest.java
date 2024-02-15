@@ -54,6 +54,7 @@ class MeterProviderConfigurationTest {
         DefaultConfigProperties.createFromMap(configWithDefault),
         SpiHelper.create(MeterProviderConfigurationTest.class.getClassLoader()),
         (a, b) -> a,
+        (a, b) -> a,
         new ArrayList<>());
     return assertThat(builder)
         .extracting("exemplarFilter", as(InstanceOfAssertFactories.type(ExemplarFilter.class)));

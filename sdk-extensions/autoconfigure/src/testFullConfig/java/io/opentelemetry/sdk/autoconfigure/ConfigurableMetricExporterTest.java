@@ -87,7 +87,7 @@ class ConfigurableMetricExporterTest {
     assertThatThrownBy(
             () ->
                 MeterProviderConfiguration.configureMetricReaders(
-                    config, spiHelper, (a, unused) -> a, closeables))
+                    config, spiHelper, (a, unused) -> a, (a, unused) -> a, closeables))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.metrics.exporter contains none along with other exporters");
     cleanup.addCloseables(closeables);
@@ -102,7 +102,11 @@ class ConfigurableMetricExporterTest {
 
     List<MetricReader> metricReaders =
         MeterProviderConfiguration.configureMetricReaders(
-            config, spiHelper, (metricExporter, unused) -> metricExporter, closeables);
+            config,
+            spiHelper,
+            (a, unused) -> a,
+            (metricExporter, unused) -> metricExporter,
+            closeables);
     cleanup.addCloseables(closeables);
 
     assertThat(metricReaders)
@@ -125,7 +129,11 @@ class ConfigurableMetricExporterTest {
 
     List<MetricReader> metricReaders =
         MeterProviderConfiguration.configureMetricReaders(
-            config, spiHelper, (metricExporter, unused) -> metricExporter, closeables);
+            config,
+            spiHelper,
+            (a, unused) -> a,
+            (metricExporter, unused) -> metricExporter,
+            closeables);
     cleanup.addCloseables(closeables);
 
     assertThat(metricReaders).hasSize(2).hasOnlyElementsOfType(PeriodicMetricReader.class);

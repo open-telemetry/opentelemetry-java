@@ -50,6 +50,7 @@ class MeterProviderConfigurationTest {
                           "0")),
                   spiHelper,
                   (a, b) -> a,
+                  (a, b) -> a,
                   closeables);
             })
         .isInstanceOf(ConfigurationException.class)
@@ -69,6 +70,7 @@ class MeterProviderConfigurationTest {
             Collections.singletonMap("otel.metrics.exporter", "logging")),
         spiHelper,
         (a, b) -> a,
+        (a, b) -> a,
         closeables);
     cleanup.addCloseables(closeables);
     assertCardinalityLimit(builder, 2000);
@@ -84,6 +86,7 @@ class MeterProviderConfigurationTest {
                 "otel.experimental.metrics.cardinality.limit",
                 "100")),
         spiHelper,
+        (a, b) -> a,
         (a, b) -> a,
         closeables);
     cleanup.addCloseables(closeables);

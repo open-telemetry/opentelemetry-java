@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -150,9 +151,22 @@ public interface AutoConfigurationCustomizer {
    *
    * <p>Multiple calls will execute the customizers in order.
    */
+  @SuppressWarnings("UnusedReturnValue")
   default AutoConfigurationCustomizer addMetricExporterCustomizer(
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
           exporterCustomizer) {
+    return this;
+  }
+
+  /**
+   * Adds a {@link BiFunction} to invoke with the autoconfigured {@link MetricReader} to allow
+   * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  @SuppressWarnings("UnusedReturnValue")
+  default AutoConfigurationCustomizer addMetricReaderCustomizer(
+      BiFunction<? super MetricReader, ConfigProperties, ? extends MetricReader> readerCustomizer) {
     return this;
   }
 
