@@ -46,10 +46,12 @@ OpenTelemetry is the merging of OpenCensus and OpenTracing into a single project
 This project contains the following top level components:
 
 * [OpenTelemetry API](api/):
-  * [stable apis](api/all/src/main/java/io/opentelemetry/api/) including `Tracer`, `Span`, `SpanContext`, `Meter`, and `Baggage`
-  * [context api](context/src/main/java/io/opentelemetry/context/) The OpenTelemetry Context implementation.
-* [extensions](extensions/) define additional API extensions, which are not part of the core API.
+  * [stable apis](api/all) including `Tracer`, `Span`, `SpanContext`, `Meter`, and `Baggage`.
+  * [context api](context/) The OpenTelemetry Context implementation.
+  * [experimental apis](api/events) including `Events`.
+* [extensions](extensions/) define additional API extensions not part of the core API, including propagators and experimental extension APIs.
 * [sdk](sdk/) defines the implementation of the OpenTelemetry API.
+* [exporters](exporters/) trace, metric, and log exporters for the SDK.
 * [sdk-extensions](sdk-extensions/) defines additional SDK extensions, which are not part of the core SDK.
 * [OpenTracing shim](opentracing-shim/) defines a bridge layer from OpenTracing to the OpenTelemetry API.
 * [OpenCensus shim](opencensus-shim/) defines a bridge layer from OpenCensus to the OpenTelemetry API.
