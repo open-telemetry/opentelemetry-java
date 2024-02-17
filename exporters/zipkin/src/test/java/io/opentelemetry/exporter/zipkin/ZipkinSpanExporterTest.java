@@ -189,7 +189,7 @@ class ZipkinSpanExporterTest {
   void compressionDefault() {
     ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().build();
     try {
-      assertThat(exporter).extracting("sender.compressionEnabled").isEqualTo(true);
+      assertThat(exporter).extracting("sender.delegate.compressionEnabled").isEqualTo(true);
     } finally {
       exporter.shutdown();
     }
@@ -199,7 +199,7 @@ class ZipkinSpanExporterTest {
   void compressionNone() {
     ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().setCompression("none").build();
     try {
-      assertThat(exporter).extracting("sender.compressionEnabled").isEqualTo(false);
+      assertThat(exporter).extracting("sender.delegate.compressionEnabled").isEqualTo(false);
     } finally {
       exporter.shutdown();
     }
@@ -209,7 +209,7 @@ class ZipkinSpanExporterTest {
   void compressionGzip() {
     ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().setCompression("gzip").build();
     try {
-      assertThat(exporter).extracting("sender.compressionEnabled").isEqualTo(true);
+      assertThat(exporter).extracting("sender.delegate.compressionEnabled").isEqualTo(true);
     } finally {
       exporter.shutdown();
     }
@@ -220,7 +220,7 @@ class ZipkinSpanExporterTest {
     ZipkinSpanExporter exporter =
         ZipkinSpanExporter.builder().setCompression("gzip").setCompression("none").build();
     try {
-      assertThat(exporter).extracting("sender.compressionEnabled").isEqualTo(false);
+      assertThat(exporter).extracting("sender.delegate.compressionEnabled").isEqualTo(false);
     } finally {
       exporter.shutdown();
     }
