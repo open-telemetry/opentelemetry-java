@@ -63,11 +63,12 @@ class MetricExporterConfigurationTest {
   }
 
   @Test
-  void configureReader_customizeReader() {
+  void configureReader_customizeReader_prometheus() {
     List<Closeable> closeables = new ArrayList<>();
 
+    int port = FreePortFinder.getFreePort();
     BiFunction<MetricReader, ConfigProperties, MetricReader> readerCustomizer =
-        (existingReader, config) -> PrometheusHttpServer.builder().setPort(7137).build();
+        (existingReader, config) -> PrometheusHttpServer.builder().setPort(port).build();
     MetricReader reader =
         MetricExporterConfiguration.configureReader(
             "prometheus", CONFIG_PROPERTIES, spiHelper, readerCustomizer, (a, b) -> a, closeables);
@@ -78,23 +79,25 @@ class MetricExporterConfigurationTest {
     PrometheusHttpServer prometheusHttpServer = (PrometheusHttpServer) reader;
     assertThat(prometheusHttpServer)
         .extracting("httpServer", as(InstanceOfAssertFactories.type(HTTPServer.class)))
-        .satisfies(httpServer -> assertThat(httpServer.getPort()).isEqualTo(7137));
+        .satisfies(httpServer -> assertThat(httpServer.getPort()).isEqualTo(port));
+  }
 
-    List<Closeable> closeablesPart2 = new ArrayList<>();
+  @Test
+  void configureReader_customizeReader_otlp() {
+    List<Closeable> closeables = new ArrayList<>();
 
-    readerCustomizer =
+    BiFunction<MetricReader, ConfigProperties, MetricReader> readerCustomizer =
         (existingReader, config) ->
             PeriodicMetricReader.builder(OtlpGrpcMetricExporter.builder().build())
                 .setInterval(Duration.ofSeconds(123))
                 .build();
-
-    reader =
+    MetricReader reader =
         MetricExporterConfiguration.configureReader(
-            "otlp", CONFIG_PROPERTIES, spiHelper, readerCustomizer, (a, b) -> a, closeablesPart2);
-    cleanup.addCloseables(closeablesPart2);
+            "otlp", CONFIG_PROPERTIES, spiHelper, readerCustomizer, (a, b) -> a, closeables);
+    cleanup.addCloseables(closeables);
 
     assertThat(reader).isInstanceOf(PeriodicMetricReader.class);
-    assertThat(closeablesPart2).hasSize(3);
+    assertThat(closeables).hasSize(3);
     PeriodicMetricReader periodicMetricReader = (PeriodicMetricReader) reader;
     assertThat(periodicMetricReader)
         .extracting("intervalNanos")

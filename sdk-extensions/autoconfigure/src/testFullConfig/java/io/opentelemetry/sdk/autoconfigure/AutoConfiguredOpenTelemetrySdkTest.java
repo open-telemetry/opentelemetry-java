@@ -39,17 +39,19 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @Test
   void build_addMetricReaderCustomizerPrometheus() {
     AutoConfiguredOpenTelemetrySdkBuilder builder = AutoConfiguredOpenTelemetrySdk.builder();
-
     builder.addPropertiesSupplier(() -> singletonMap("otel.metrics.exporter", "prometheus"));
+
+    int port = FreePortFinder.getFreePort();
     builder.addMetricReaderCustomizer(
         (reader, config) -> {
           assertThat(reader).isInstanceOf(PrometheusHttpServer.class);
-          return PrometheusHttpServer.builder().setPort(1234).build();
+          return PrometheusHttpServer.builder().setPort(port).build();
         });
-    builder.build();
 
-    WebClient client = WebClient.builder("http://localhost:1234").build();
-    assertThatCode(() -> client.get("/metrics")).doesNotThrowAnyException();
+    try (OpenTelemetrySdk ignored = builder.build().getOpenTelemetrySdk()) {
+      WebClient client = WebClient.builder("http://localhost:" + port).build();
+      assertThatCode(() -> client.get("/metrics")).doesNotThrowAnyException();
+    }
   }
 
   @Test
