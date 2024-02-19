@@ -2,14 +2,14 @@ Comparing source compatibility of  against
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder setComponentLoader(io.opentelemetry.sdk.autoconfigure.ComponentLoader)
-+++* NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.ComponentLoader  (not serializable)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.ComponentLoader  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Iterable<T> load(java.lang.Class<T>)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Iterable<T> load(java.lang.Class<T>)
 		GENERIC TEMPLATES: +++ T:java.lang.Object
-	+++* NEW METHOD: PUBLIC(+) java.util.Map<java.lang.String,T> loadConfigurableProviders(java.lang.Class<T>)
+	+++  NEW METHOD: PUBLIC(+) java.util.Map<java.lang.String,T> loadConfigurableProviders(java.lang.Class<T>)
 		GENERIC TEMPLATES: +++ T:io.opentelemetry.sdk.autoconfigure.spi.ConfigurableProvider
-	+++* NEW METHOD: PUBLIC(+) java.util.Optional<T> loadOptional(java.lang.Class<T>)
+	+++  NEW METHOD: PUBLIC(+) java.util.Optional<T> loadOptional(java.lang.Class<T>)
 		GENERIC TEMPLATES: +++ T:java.lang.Object
-	+++* NEW METHOD: PUBLIC(+) java.util.List<T> loadOrdered(java.lang.Class<T>)
+	+++  NEW METHOD: PUBLIC(+) java.util.List<T> loadOrdered(java.lang.Class<T>)
 		GENERIC TEMPLATES: +++ T:io.opentelemetry.sdk.autoconfigure.spi.Ordered
