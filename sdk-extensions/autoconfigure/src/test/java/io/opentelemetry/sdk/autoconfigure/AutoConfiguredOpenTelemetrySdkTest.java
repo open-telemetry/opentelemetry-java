@@ -316,6 +316,44 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   @Test
+  void builder_addSpanProcessorUsingComponentLoader() {
+    SpanProcessor spanProcessor = Mockito.mock(SpanProcessor.class);
+    doReturn(true).when(spanProcessor).isStartRequired();
+    doReturn(true).when(spanProcessor).isEndRequired();
+    Mockito.lenient().doReturn(CompletableResultCode.ofSuccess()).when(spanProcessor).shutdown();
+    Mockito.lenient().when(spanExporter1.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    SpiHelper spiHelper =
+        SpiHelper.create(AutoConfiguredOpenTelemetrySdkBuilder.class.getClassLoader());
+
+    SdkTracerProvider sdkTracerProvider =
+        builder
+            .setComponentLoader(
+                new ComponentLoader() {
+                  @SuppressWarnings("unchecked")
+                  @Override
+                  public <T> Iterable<T> load(Class<T> spiClass) {
+                    if (spiClass.equals(SpanProcessor.class)) {
+                      return Collections.singletonList((T) spanProcessor);
+                    }
+                    return spiHelper.load(spiClass);
+                  }
+                })
+            .build()
+            .getOpenTelemetrySdk()
+            .getSdkTracerProvider();
+
+    Span span = sdkTracerProvider.get("dummy-scope").spanBuilder("dummy-span").startSpan();
+
+    verify(spanProcessor).onStart(any(), same((ReadWriteSpan) span));
+
+    span.end();
+    verify(spanProcessor).onEnd(same((ReadableSpan) span));
+
+    verifyNoInteractions(spanExporter1);
+  }
+
+  @Test
   void builder_addPropertiesSupplier() {
     AutoConfiguredOpenTelemetrySdk autoConfigured =
         builder
