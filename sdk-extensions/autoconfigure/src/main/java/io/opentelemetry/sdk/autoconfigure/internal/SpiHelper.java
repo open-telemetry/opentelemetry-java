@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -108,10 +107,6 @@ public final class SpiHelper {
       result.add(maybeAddListener(service));
     }
     return result;
-  }
-
-  public <T> Optional<T> loadOptional(Class<T> spiClass) {
-    return componentLoader.loadOptional(spiClass).map(this::maybeAddListener);
   }
 
   private <T> T maybeAddListener(T object) {
