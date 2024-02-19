@@ -19,7 +19,6 @@ import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -34,25 +33,20 @@ final class MeterProviderConfiguration {
           metricExporterCustomizer,
       List<Closeable> closeables) {
 
-    Optional<ExemplarFilter> spiExemplarFilter = spiHelper.loadOptional(ExemplarFilter.class);
-    if (spiExemplarFilter.isPresent()) {
-      SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, spiExemplarFilter.get());
-    } else {
-      // Configure default exemplar filters.
-      String exemplarFilter =
-          config.getString("otel.metrics.exemplar.filter", "trace_based").toLowerCase(Locale.ROOT);
-      switch (exemplarFilter) {
-        case "always_off":
-          SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, ExemplarFilter.alwaysOff());
-          break;
-        case "always_on":
-          SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, ExemplarFilter.alwaysOn());
-          break;
-        case "trace_based":
-        default:
-          SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, ExemplarFilter.traceBased());
-          break;
-      }
+    // Configure default exemplar filters.
+    String exemplarFilter =
+        config.getString("otel.metrics.exemplar.filter", "trace_based").toLowerCase(Locale.ROOT);
+    switch (exemplarFilter) {
+      case "always_off":
+        SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, ExemplarFilter.alwaysOff());
+        break;
+      case "always_on":
+        SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, ExemplarFilter.alwaysOn());
+        break;
+      case "trace_based":
+      default:
+        SdkMeterProviderUtil.setExemplarFilter(meterProviderBuilder, ExemplarFilter.traceBased());
+        break;
     }
 
     int cardinalityLimit =
