@@ -1,2 +1,20 @@
 Comparing source compatibility of  against 
-No changes.
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: io.opentelemetry.sdk.autoconfigure.spi.ConfigurableProvider
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.ConfigurableProvider  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getName()
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: io.opentelemetry.sdk.autoconfigure.spi.ConfigurableProvider
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: io.opentelemetry.sdk.autoconfigure.spi.ConfigurableProvider
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: io.opentelemetry.sdk.autoconfigure.spi.ConfigurableProvider
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: io.opentelemetry.sdk.autoconfigure.spi.ConfigurableProvider
