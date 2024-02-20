@@ -115,7 +115,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
    * {@link #addPropertiesSupplier(Supplier)} and {@link #addPropertiesCustomizer(Function)} will
    * have no effect if this method is used.
    */
-  AutoConfiguredOpenTelemetrySdkBuilder setConfig(ConfigProperties config) {
+  public AutoConfiguredOpenTelemetrySdkBuilder setConfig(ConfigProperties config) {
     requireNonNull(config, "config");
     this.config = config;
     return this;
