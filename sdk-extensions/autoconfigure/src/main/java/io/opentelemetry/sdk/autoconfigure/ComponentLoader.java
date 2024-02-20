@@ -11,18 +11,12 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /** A loader for components that are discovered via SPI. */
 public interface ComponentLoader {
   <T> Iterable<T> load(Class<T> spiClass);
-
-  default <T> Optional<T> loadOptional(Class<T> spiClass) {
-    Iterable<T> iterable = load(spiClass);
-    return StreamSupport.stream(iterable.spliterator(), false).findFirst();
-  }
 
   /**
    * Load implementations of an ordered SPI (i.e. implements {@link Ordered}).
