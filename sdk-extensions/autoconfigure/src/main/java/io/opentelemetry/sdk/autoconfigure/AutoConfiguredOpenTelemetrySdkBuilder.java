@@ -569,19 +569,12 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   private ConfigProperties computeConfigProperties() {
-    return spiHelper
-        .loadOptional(ConfigProperties.class)
-        .orElseGet(
-            () -> {
-              DefaultConfigProperties properties =
-                  DefaultConfigProperties.create(propertiesSupplier.get());
-              for (Function<ConfigProperties, Map<String, String>> customizer :
-                  propertiesCustomizers) {
-                Map<String, String> overrides = customizer.apply(properties);
-                properties = properties.withOverrides(overrides);
-              }
-              return properties;
-            });
+    DefaultConfigProperties properties = DefaultConfigProperties.create(propertiesSupplier.get());
+    for (Function<ConfigProperties, Map<String, String>> customizer : propertiesCustomizers) {
+      Map<String, String> overrides = customizer.apply(properties);
+      properties = properties.withOverrides(overrides);
+    }
+    return properties;
   }
 
   // Visible for testing
