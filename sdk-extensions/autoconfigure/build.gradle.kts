@@ -19,7 +19,6 @@ dependencies {
 
   testImplementation("com.google.guava:guava")
   testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
-  testImplementation("com.linecorp.armeria:armeria")
 }
 
 testing {
