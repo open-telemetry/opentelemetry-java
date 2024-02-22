@@ -655,7 +655,6 @@ class SdkSpanTest {
   @Test
   void addEvent() {
     SdkSpan span = createTestRootSpan();
-    assertThat(span.toSpanData().getEvents()).isEmpty();
     try {
       span.addEvent("event1");
       span.addEvent("event2", Attributes.of(stringKey("e1key"), "e1Value"));

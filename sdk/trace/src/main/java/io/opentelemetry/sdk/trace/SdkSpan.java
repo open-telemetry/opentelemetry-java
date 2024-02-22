@@ -521,7 +521,7 @@ final class SdkSpan implements ReadWriteSpan, ExtendedSpan {
 
   @GuardedBy("lock")
   private List<EventData> getImmutableTimedEvents() {
-    if (events == null || events.isEmpty()) {
+    if (events == null) {
       return Collections.emptyList();
     }
 
