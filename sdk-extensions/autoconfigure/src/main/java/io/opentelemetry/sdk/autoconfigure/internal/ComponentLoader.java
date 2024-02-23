@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure;
+package io.opentelemetry.sdk.autoconfigure.internal;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
@@ -14,7 +14,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-/** A loader for components that are discovered via SPI. */
+/**
+ * A loader for components that are discovered via SPI.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public interface ComponentLoader {
   <T> Iterable<T> load(Class<T> spiClass);
 
