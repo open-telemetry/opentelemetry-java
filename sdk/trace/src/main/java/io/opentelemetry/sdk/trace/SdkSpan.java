@@ -72,7 +72,7 @@ final class SdkSpan implements ReadWriteSpan, ExtendedSpan {
   // List of recorded events.
   @GuardedBy("lock")
   @Nullable
-  private List<EventData> events; // faulted in
+  private List<EventData> events;
 
   // Number of events recorded.
   @GuardedBy("lock")
