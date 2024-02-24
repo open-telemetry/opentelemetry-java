@@ -114,6 +114,26 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
+   * Sets the maximum time to wait for new connections to be established. If unset, defaults to
+   * {@value GrpcExporterBuilder#DEFAULT_CONNECT_TIMEOUT_SECS}s.
+   */
+  public OtlpGrpcMetricExporterBuilder setConnectTimeout(long timeout, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(timeout >= 0, "timeout must be non-negative");
+    delegate.setConnectTimeout(timeout, unit);
+    return this;
+  }
+
+  /**
+   * Sets the maximum time to wait for new connections to be established. If unset, defaults to
+   * {@value GrpcExporterBuilder#DEFAULT_CONNECT_TIMEOUT_SECS}s.
+   */
+  public OtlpGrpcMetricExporterBuilder setConnectTimeout(Duration timeout) {
+    requireNonNull(timeout, "timeout");
+    return setConnectTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+  }
+
+  /**
    * Sets the OTLP endpoint to connect to. If unset, defaults to {@value DEFAULT_ENDPOINT_URL}. The
    * endpoint must start with either http:// or https://.
    */

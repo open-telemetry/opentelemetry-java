@@ -75,6 +75,7 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
       String endpoint,
       @Nullable Compressor compressor,
       long timeoutNanos,
+      long connectTimeoutNanos,
       Supplier<Map<String, List<String>>> headersSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
@@ -82,7 +83,8 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
     OkHttpClient.Builder clientBuilder =
         new OkHttpClient.Builder()
             .dispatcher(OkHttpUtil.newDispatcher())
-            .callTimeout(Duration.ofNanos(timeoutNanos));
+            .callTimeout(Duration.ofNanos(timeoutNanos))
+            .connectTimeout(Duration.ofNanos(connectTimeoutNanos));
     if (retryPolicy != null) {
       clientBuilder.addInterceptor(
           new RetryInterceptor(retryPolicy, OkHttpGrpcSender::isRetryable));
