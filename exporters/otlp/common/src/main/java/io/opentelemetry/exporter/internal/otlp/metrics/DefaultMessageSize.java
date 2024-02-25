@@ -4,15 +4,17 @@ import io.opentelemetry.sdk.internal.DynamicList;
 
 public final class DefaultMessageSize implements MessageSize {
 
-  private final long encodedSize;
-  private final DynamicList<MessageSize> messageFieldSizes;
+  private long encodedSize = 0;
+  private DynamicList<MessageSize> messageFieldSizes = DynamicList.empty();
 
-  public DefaultMessageSize(long encodedSize) {
+  DefaultMessageSize() {}
+
+  void set(long encodedSize) {
     this.encodedSize = encodedSize;
     this.messageFieldSizes = DynamicList.empty();
   }
 
-  public DefaultMessageSize(long encodedSize, DynamicList<MessageSize> messageFieldSizes) {
+  void set(long encodedSize, DynamicList<MessageSize> messageFieldSizes) {
     this.encodedSize = encodedSize;
     this.messageFieldSizes = messageFieldSizes;
   }

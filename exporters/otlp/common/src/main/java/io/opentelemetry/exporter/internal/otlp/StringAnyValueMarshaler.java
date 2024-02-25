@@ -9,6 +9,9 @@ import io.opentelemetry.exporter.internal.marshal.CodedOutputStream;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
+import io.opentelemetry.exporter.internal.otlp.metrics.DefaultMessageSize;
+import io.opentelemetry.exporter.internal.otlp.metrics.MarshallingObjectsPool;
+import io.opentelemetry.exporter.internal.otlp.metrics.MessageSize;
 import io.opentelemetry.proto.common.v1.internal.AnyValue;
 import java.io.IOException;
 
@@ -31,6 +34,13 @@ final class StringAnyValueMarshaler extends MarshalerWithSize {
     return new StringAnyValueMarshaler(MarshalerUtil.toBytes(value));
   }
 
+  static MessageSize messageSize(String value, MarshallingObjectsPool pool) {
+    long encodedSize = AnyValue.STRING_VALUE.getTagSize();
+
+
+    DefaultMessageSize messageSize = pool.getDefaultMessageSizePool().borrowObject();
+    return messageSize;
+  }
 
   @Override
   public void writeTo(Serializer output) throws IOException {
