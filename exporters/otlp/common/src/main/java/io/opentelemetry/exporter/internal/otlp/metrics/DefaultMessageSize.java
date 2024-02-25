@@ -9,12 +9,12 @@ public final class DefaultMessageSize implements MessageSize {
 
   DefaultMessageSize() {}
 
-  void set(long encodedSize) {
+  public void set(long encodedSize) {
     this.encodedSize = encodedSize;
     this.messageFieldSizes = DynamicList.empty();
   }
 
-  void set(long encodedSize, DynamicList<MessageSize> messageFieldSizes) {
+  public void set(long encodedSize, DynamicList<MessageSize> messageFieldSizes) {
     this.encodedSize = encodedSize;
     this.messageFieldSizes = messageFieldSizes;
   }

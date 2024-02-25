@@ -35,11 +35,19 @@ final class StringAnyValueMarshaler extends MarshalerWithSize {
   }
 
   static MessageSize messageSize(String value, MarshallingObjectsPool pool) {
-    long encodedSize = AnyValue.STRING_VALUE.getTagSize();
-
+    long encodedSize = AnyValue.STRING_VALUE.getTagSize()
+        + CodedOutputStream.computeStringSizeNoTag(value);
 
     DefaultMessageSize messageSize = pool.getDefaultMessageSizePool().borrowObject();
+    messageSize.set(encodedSize);
     return messageSize;
+  }
+
+  static void encode(
+      Serializer output,
+      String value,
+      MessageSize stringAnyValueMessageSize) throws IOException {
+    //output.writeString(AnyValue.STRING_VALUE, value);
   }
 
   @Override
