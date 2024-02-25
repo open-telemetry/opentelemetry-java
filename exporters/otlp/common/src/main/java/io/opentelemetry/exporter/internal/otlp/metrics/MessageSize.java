@@ -22,11 +22,11 @@ public interface MessageSize {
    * </pre>
    * <p>
    *   The field sizes that are returned are the sizes of the embedded message types only.
-   *   In the above example, {@code getFieldSize(0)} will return the size of {@code field2}
-   *   and {@code getFieldSize(1)} will return the size of {@code field4}.
+   *   In the above example, {@code getMessageTypedFieldSize(0)} will return the size of {@code field2}
+   *   and {@code getMessageTypedFieldSize(1)} will return the size of {@code field4}.
    * </p>
    *
-   * @param fieldPosition The embedded message sequence number, starting from 0.
+   * @param messageFieldPosition The embedded message sequence number, starting from 0.
    */
-  MessageSize getFieldSize(int fieldPosition);
+  MessageSize getMessageTypedFieldSize(int messageFieldPosition);
 }

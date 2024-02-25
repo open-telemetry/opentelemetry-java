@@ -31,6 +31,7 @@ final class StringAnyValueMarshaler extends MarshalerWithSize {
     return new StringAnyValueMarshaler(MarshalerUtil.toBytes(value));
   }
 
+
   @Override
   public void writeTo(Serializer output) throws IOException {
     // Do not call serialize* method because we always have to write the message tag even if the

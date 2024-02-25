@@ -1,17 +1,29 @@
 package io.opentelemetry.exporter.internal.otlp.metrics;
 
+import io.opentelemetry.sdk.internal.DynamicList;
+
 public final class DefaultMessageSize implements MessageSize {
 
-//  private final long size;
-//  private final DynamicList<MessageSize> fieldSizes;
+  private final long encodedSize;
+  private final DynamicList<MessageSize> messageFieldSizes;
 
-  @Override
-  public long getEncodedSize() {
-    return 0;
+  public DefaultMessageSize(long encodedSize) {
+    this.encodedSize = encodedSize;
+    this.messageFieldSizes = DynamicList.empty();
+  }
+
+  public DefaultMessageSize(long encodedSize, DynamicList<MessageSize> messageFieldSizes) {
+    this.encodedSize = encodedSize;
+    this.messageFieldSizes = messageFieldSizes;
   }
 
   @Override
-  public MessageSize getFieldSize(int fieldPosition) {
-    return null;
+  public long getEncodedSize() {
+    return encodedSize;
+  }
+
+  @Override
+  public MessageSize getMessageTypedFieldSize(int messageFieldPosition) {
+    return messageFieldSizes.get(messageFieldPosition);
   }
 }
