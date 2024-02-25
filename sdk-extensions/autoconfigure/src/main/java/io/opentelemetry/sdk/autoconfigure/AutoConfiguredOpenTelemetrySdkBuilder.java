@@ -344,7 +344,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
    * <p>Multiple calls will execute the customizers in order.
    */
   @Override
-  public AutoConfigurationCustomizer addLogRecordProcessorCustomizer(
+  public AutoConfiguredOpenTelemetrySdkBuilder addLogRecordProcessorCustomizer(
       BiFunction<? super LogRecordProcessor, ConfigProperties, ? extends LogRecordProcessor>
           logRecordProcessorCustomizer) {
     requireNonNull(logRecordProcessorCustomizer, "logRecordProcessorCustomizer");
