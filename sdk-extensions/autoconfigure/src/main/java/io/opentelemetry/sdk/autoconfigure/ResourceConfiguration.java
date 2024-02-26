@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.autoconfigure.internal.ServiceInstanceIdResourceProvider;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -106,8 +105,6 @@ public final class ResourceConfiguration {
       }
       result = result.merge(resourceProvider.createResource(config));
     }
-
-    result = result.merge(ServiceInstanceIdResourceProvider.createResource(result.getAttributes()));
 
     result = filterAttributes(result, config);
 

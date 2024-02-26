@@ -11,7 +11,6 @@ dependencies {
   api(project(":sdk-extensions:autoconfigure-spi"))
 
   implementation(project(":api:events"))
-  implementation("com.github.f4b6a3:uuid-creator:5.3.3")
 
   annotationProcessor("com.google.auto.value:auto-value")
 
