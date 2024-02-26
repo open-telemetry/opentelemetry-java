@@ -83,7 +83,16 @@ class ResourceConfigurationFullTest {
   @Test
   void configureResource_UserConfiguredService() {
     Map<String, String> customConfigs = new HashMap<>(1);
-    customConfigs.put("service.name", "user");
+    customConfigs.put("otel.resource.attributes", "service.name=user");
+    Attributes attributes = configureResource(customConfigs);
+
+    assertThat(attributes.get(AttributeKey.stringKey("service.name"))).isEqualTo("user");
+  }
+
+  @Test
+  void configureResource_UserConfiguredServiceUsingService() {
+    Map<String, String> customConfigs = new HashMap<>(1);
+    customConfigs.put("otel.service.name", "user");
     Attributes attributes = configureResource(customConfigs);
 
     assertThat(attributes.get(AttributeKey.stringKey("service.name"))).isEqualTo("user");
