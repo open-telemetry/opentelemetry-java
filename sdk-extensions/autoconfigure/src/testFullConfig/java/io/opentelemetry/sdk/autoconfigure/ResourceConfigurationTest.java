@@ -68,9 +68,7 @@ class ResourceConfigurationTest {
     customConfigs.put(
         "otel.java.enabled.resource.providers",
         "io.opentelemetry.sdk.autoconfigure.provider.TestAnimalResourceProvider");
-    customConfigs.put(
-        "otel.java.disabled.resource.providers",
-        "io.opentelemetry.sdk.extension.resources.TestColorResourceProvider");
+    customConfigs.put("otel.resource.provider.color.enabled", "false");
     Attributes attributes =
         ResourceConfiguration.configureResource(
                 DefaultConfigProperties.create(customConfigs), spiHelper, (r, c) -> r)
@@ -83,9 +81,7 @@ class ResourceConfigurationTest {
   @Test
   void configureResource_OnlyDisabled() {
     Map<String, String> customConfigs = new HashMap<>(1);
-    customConfigs.put(
-        "otel.java.disabled.resource.providers",
-        "io.opentelemetry.sdk.autoconfigure.provider.TestColorResourceProvider");
+    customConfigs.put("otel.resource.provider.color.enabled", "false");
     Attributes attributes =
         ResourceConfiguration.configureResource(
                 DefaultConfigProperties.create(customConfigs), spiHelper, (r, c) -> r)

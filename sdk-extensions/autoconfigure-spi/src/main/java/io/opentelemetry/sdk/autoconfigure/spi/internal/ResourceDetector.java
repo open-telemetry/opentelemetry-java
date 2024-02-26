@@ -20,7 +20,9 @@ public interface ResourceDetector<D> extends Ordered {
 
   /** Greater order means lower priority. The default order is 0. */
   @Override
-  int order();
+  default int order() {
+    return 0;
+  }
 
   /** Returns the name of this resource detector. */
   String name();
