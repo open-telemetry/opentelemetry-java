@@ -898,6 +898,36 @@ class SdkSpanTest {
   }
 
   @Test
+  void addLink_FaultIn() {
+    SdkSpan span =
+        SdkSpan.startSpan(
+            spanContext,
+            SPAN_NAME,
+            instrumentationScopeInfo,
+            SpanKind.INTERNAL,
+            Span.getInvalid(),
+            Context.root(),
+            SpanLimits.getDefault(),
+            spanProcessor,
+            testClock,
+            resource,
+            null,
+            null, // exercises the fault-in path
+            0,
+            0);
+    ExtendedSpan linkedSpan = createTestSpan(SpanKind.INTERNAL);
+    span.addLink(linkedSpan.getSpanContext());
+
+    SpanData spanData = span.toSpanData();
+    assertThat(spanData.getTotalRecordedLinks()).isEqualTo(1);
+    assertThat(spanData.getLinks())
+        .satisfiesExactly(
+            link -> {
+              assertThat(link.getSpanContext()).isEqualTo(linkedSpan.getSpanContext());
+            });
+  }
+
+  @Test
   void droppingAttributes() {
     int maxNumberOfAttributes = 8;
     SpanLimits spanLimits =
