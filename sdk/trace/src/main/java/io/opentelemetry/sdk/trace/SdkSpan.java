@@ -462,7 +462,7 @@ final class SdkSpan implements ReadWriteSpan, ExtendedSpan {
         return this;
       }
       if (links == null) {
-        links = new ArrayList<>(spanLimits.getMaxNumberOfLinks());
+        links = new ArrayList<>();
       }
       if (links.size() < spanLimits.getMaxNumberOfLinks()) {
         links.add(link);
