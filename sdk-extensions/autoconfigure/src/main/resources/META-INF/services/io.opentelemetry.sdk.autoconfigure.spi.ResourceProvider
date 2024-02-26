@@ -1,2 +1,2 @@
-io.opentelemetry.sdk.autoconfigure.internal.HostIdResourceProvider
 io.opentelemetry.sdk.autoconfigure.internal.EnvironmentResourceProvider
+io.opentelemetry.sdk.autoconfigure.internal.ServiceInstanceIdResourceProvider
