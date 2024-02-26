@@ -16,9 +16,15 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -136,5 +142,116 @@ class ResourceConfigurationTest {
               assertThat(resource.getAttributes().get(stringKey("foo"))).isNull();
               assertThat(resource.getAttributes().get(stringKey("bar"))).isNull();
             });
+  }
+
+  private static class EnabledTestCase {
+    private final String name;
+    private final boolean result;
+    private final String className;
+    private final Set<String> enabledProviders;
+    private final Set<String> disabledProviders;
+    private final boolean defaultEnabled;
+    private final Boolean explicitEnabled;
+
+    private EnabledTestCase(
+        String name,
+        boolean result,
+        String className,
+        Set<String> enabledProviders,
+        Set<String> disabledProviders,
+        boolean defaultEnabled,
+        @Nullable Boolean explicitEnabled) {
+      this.name = name;
+      this.result = result;
+      this.className = className;
+      this.enabledProviders = enabledProviders;
+      this.disabledProviders = disabledProviders;
+      this.defaultEnabled = defaultEnabled;
+      this.explicitEnabled = explicitEnabled;
+    }
+  }
+
+  @SuppressWarnings("BooleanParameter")
+  @TestFactory
+  Stream<DynamicTest> enabledTestCases() {
+    return Stream.of(
+            new EnabledTestCase(
+                "explicitEnabled",
+                true,
+                "className",
+                Collections.emptySet(),
+                Collections.emptySet(),
+                true,
+                true),
+            new EnabledTestCase(
+                "explicitEnabledFalse",
+                false,
+                "className",
+                Collections.emptySet(),
+                Collections.emptySet(),
+                true,
+                false),
+            new EnabledTestCase(
+                "enabledProvidersEmpty",
+                true,
+                "className",
+                Collections.emptySet(),
+                Collections.emptySet(),
+                true,
+                null),
+            new EnabledTestCase(
+                "enabledProvidersContains",
+                true,
+                "className",
+                Collections.singleton("className"),
+                Collections.emptySet(),
+                true,
+                null),
+            new EnabledTestCase(
+                "enabledProvidersNotContains",
+                false,
+                "className",
+                Collections.singleton("otherClassName"),
+                Collections.emptySet(),
+                true,
+                null),
+            new EnabledTestCase(
+                "disabledProvidersContains",
+                false,
+                "className",
+                Collections.emptySet(),
+                Collections.singleton("className"),
+                true,
+                null),
+            new EnabledTestCase(
+                "disabledProvidersNotContains",
+                true,
+                "className",
+                Collections.emptySet(),
+                Collections.singleton("otherClassName"),
+                true,
+                null),
+            new EnabledTestCase(
+                "defaultEnabledFalse",
+                false,
+                "className",
+                Collections.emptySet(),
+                Collections.emptySet(),
+                false,
+                null))
+        .map(
+            tc ->
+                DynamicTest.dynamicTest(
+                    tc.name,
+                    () -> {
+                      assertThat(
+                              ResourceConfiguration.isEnabled(
+                                  tc.className,
+                                  tc.enabledProviders,
+                                  tc.disabledProviders,
+                                  tc.defaultEnabled,
+                                  tc.explicitEnabled))
+                          .isEqualTo(tc.result);
+                    }));
   }
 }

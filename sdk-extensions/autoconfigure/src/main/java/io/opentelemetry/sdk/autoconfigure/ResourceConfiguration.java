@@ -8,22 +8,28 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.autoconfigure.internal.ResourceDetectorReader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ConditionalResourceProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ResourceDetector;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
+import javax.annotation.Nullable;
 
 /**
  * Auto-configuration for the OpenTelemetry {@link Resource}.
@@ -81,6 +87,7 @@ public final class ResourceConfiguration {
     return Resource.create(resourceAttributes.build());
   }
 
+  @SuppressWarnings({"rawtypes", "unchecked"})
   static Resource configureResource(
       ConfigProperties config,
       SpiHelper spiHelper,
@@ -91,24 +98,68 @@ public final class ResourceConfiguration {
         new HashSet<>(config.getList("otel.java.enabled.resource.providers"));
     Set<String> disabledProviders =
         new HashSet<>(config.getList("otel.java.disabled.resource.providers"));
-    for (ResourceProvider resourceProvider : spiHelper.loadOrdered(ResourceProvider.class)) {
-      if (!enabledProviders.isEmpty()
-          && !enabledProviders.contains(resourceProvider.getClass().getName())) {
-        continue;
+    List<Ordered> providers = (List) spiHelper.load(ResourceProvider.class);
+    providers.addAll(spiHelper.load(ResourceDetector.class));
+    providers.sort(Comparator.comparingInt(Ordered::order));
+    for (Ordered ordered : providers) {
+      if (ordered instanceof ResourceProvider) {
+        ResourceProvider provider = (ResourceProvider) ordered;
+
+        if (!isEnabled(
+            provider.getClass().getName(),
+            enabledProviders,
+            disabledProviders,
+            /* defaultEnabled= */ true,
+            /* explicitEnabled= */ null)) {
+          continue;
+        }
+        if (provider instanceof ConditionalResourceProvider
+            && !((ConditionalResourceProvider) provider).shouldApply(config, result)) {
+          continue;
+        }
+        result = result.merge(provider.createResource(config));
+      } else {
+        ResourceDetector<Object> detector = (ResourceDetector<Object>) ordered;
+
+        Boolean explictEnabled =
+            config.getBoolean(String.format("otel.resource.provider.%s.enabled", detector.name()));
+        if (!isEnabled(
+            detector.getClass().getName(),
+            enabledProviders,
+            disabledProviders,
+            detector.defaultEnabled(),
+            explictEnabled)) {
+          continue;
+        }
+
+        ResourceDetectorReader<Object> reader = new ResourceDetectorReader<>(detector);
+        if (reader.shouldApply(config, result)) {
+          result = result.merge(reader.createResource(config, result));
+        }
       }
-      if (disabledProviders.contains(resourceProvider.getClass().getName())) {
-        continue;
-      }
-      if (resourceProvider instanceof ConditionalResourceProvider
-          && !((ConditionalResourceProvider) resourceProvider).shouldApply(config, result)) {
-        continue;
-      }
-      result = result.merge(resourceProvider.createResource(config));
     }
 
     result = filterAttributes(result, config);
 
     return resourceCustomizer.apply(result, config);
+  }
+
+  static boolean isEnabled(
+      String className,
+      Set<String> enabledProviders,
+      Set<String> disabledProviders,
+      boolean defaultEnabled,
+      @Nullable Boolean explicitEnabled) {
+    if (explicitEnabled != null) {
+      return explicitEnabled;
+    }
+    if (!enabledProviders.isEmpty() && !enabledProviders.contains(className)) {
+      return false;
+    }
+    if (disabledProviders.contains(className)) {
+      return false;
+    }
+    return defaultEnabled;
   }
 
   // visible for testing
