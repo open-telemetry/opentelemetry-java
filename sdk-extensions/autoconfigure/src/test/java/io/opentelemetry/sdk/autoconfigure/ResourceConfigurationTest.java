@@ -41,7 +41,7 @@ class ResourceConfigurationTest {
 
     assertThat(
             ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(props),
+                DefaultConfigProperties.createFromMap(props),
                 SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
                 (r, c) -> r))
         .isEqualTo(

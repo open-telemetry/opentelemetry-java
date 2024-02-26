@@ -18,27 +18,25 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-class ResourceConfigurationTest {
+class ResourceConfigurationFullTest {
 
   private final SpiHelper spiHelper =
-      SpiHelper.create(ResourceConfigurationTest.class.getClassLoader());
+      SpiHelper.create(ResourceConfigurationFullTest.class.getClassLoader());
 
   @Test
-  void configureResource() {
-    Attributes attributes =
-        ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(Collections.emptyMap()), spiHelper, (r, c) -> r)
-            .getAttributes();
+  void configureResource_Default() {
+    Attributes attributes = configureResource(Collections.emptyMap());
 
-    assertThat(attributes.get(AttributeKey.stringKey("animal"))).isNotNull();
-    assertThat(attributes.get(AttributeKey.stringKey("color"))).isNotNull();
+    assertThat(attributes.get(AttributeKey.stringKey("animal"))).isEqualTo("cat");
+    assertThat(attributes.get(AttributeKey.stringKey("color"))).isEqualTo("blue");
+    assertThat(attributes.get(AttributeKey.stringKey("service.name"))).isEqualTo("cart");
   }
 
   @Test
   void configureResource_EmptyClassLoader() {
     Attributes attributes =
         ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(Collections.emptyMap()),
+                DefaultConfigProperties.createFromMap(Collections.emptyMap()),
                 SpiHelper.create(new URLClassLoader(new URL[0], null)),
                 (r, c) -> r)
             .getAttributes();
@@ -53,10 +51,7 @@ class ResourceConfigurationTest {
     customConfigs.put(
         "otel.java.enabled.resource.providers",
         "io.opentelemetry.sdk.autoconfigure.provider.TestAnimalResourceProvider");
-    Attributes attributes =
-        ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(customConfigs), spiHelper, (r, c) -> r)
-            .getAttributes();
+    Attributes attributes = configureResource(customConfigs);
 
     assertThat(attributes.get(AttributeKey.stringKey("animal"))).isEqualTo("cat");
     assertThat(attributes.get(AttributeKey.stringKey("color"))).isNull();
@@ -69,10 +64,7 @@ class ResourceConfigurationTest {
         "otel.java.enabled.resource.providers",
         "io.opentelemetry.sdk.autoconfigure.provider.TestAnimalResourceProvider");
     customConfigs.put("otel.resource.provider.color.enabled", "false");
-    Attributes attributes =
-        ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(customConfigs), spiHelper, (r, c) -> r)
-            .getAttributes();
+    Attributes attributes = configureResource(customConfigs);
 
     assertThat(attributes.get(AttributeKey.stringKey("animal"))).isEqualTo("cat");
     assertThat(attributes.get(AttributeKey.stringKey("color"))).isNull();
@@ -82,12 +74,33 @@ class ResourceConfigurationTest {
   void configureResource_OnlyDisabled() {
     Map<String, String> customConfigs = new HashMap<>(1);
     customConfigs.put("otel.resource.provider.color.enabled", "false");
-    Attributes attributes =
-        ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(customConfigs), spiHelper, (r, c) -> r)
-            .getAttributes();
+    Attributes attributes = configureResource(customConfigs);
 
     assertThat(attributes.get(AttributeKey.stringKey("animal"))).isEqualTo("cat");
     assertThat(attributes.get(AttributeKey.stringKey("color"))).isNull();
+  }
+
+  @Test
+  void configureResource_UserConfiguredService() {
+    Map<String, String> customConfigs = new HashMap<>(1);
+    customConfigs.put("service.name", "user");
+    Attributes attributes = configureResource(customConfigs);
+
+    assertThat(attributes.get(AttributeKey.stringKey("service.name"))).isEqualTo("user");
+  }
+
+  @Test
+  void configureResource_UserConfiguredColor() {
+    Map<String, String> customConfigs = new HashMap<>(1);
+    customConfigs.put("otel.resource.attributes", "color=red");
+    Attributes attributes = configureResource(customConfigs);
+
+    assertThat(attributes.get(AttributeKey.stringKey("color"))).isEqualTo("red");
+  }
+
+  private Attributes configureResource(Map<String, String> customConfigs) {
+    return ResourceConfiguration.configureResource(
+            DefaultConfigProperties.createFromMap(customConfigs), spiHelper, (r, c) -> r)
+        .getAttributes();
   }
 }

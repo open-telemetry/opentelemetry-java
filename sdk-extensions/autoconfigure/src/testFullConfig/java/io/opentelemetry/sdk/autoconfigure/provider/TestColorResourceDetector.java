@@ -10,7 +10,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ResourceDetector;
 import java.util.Optional;
 
-public class TestColorResourceProvider implements ResourceDetector<String> {
+public class TestColorResourceDetector implements ResourceDetector<String> {
 
   @Override
   public Optional<String> readData(ConfigProperties config) {
