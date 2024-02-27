@@ -56,10 +56,7 @@ class SdkEventEmitterProviderTest {
         .hasInstrumentationScope(InstrumentationScopeInfo.create("test-scope"))
         .hasTimestamp(10L)
         .hasAttributes(
-            Attributes.builder()
-                .put("key1", "value1")
-                .put("event.name", "event-name")
-                .build());
+            Attributes.builder().put("key1", "value1").put("event.name", "event-name").build());
   }
 
   @Test
@@ -78,9 +75,6 @@ class SdkEventEmitterProviderTest {
         .hasResource(RESOURCE)
         .hasInstrumentationScope(InstrumentationScopeInfo.create("test-scope"))
         .hasTimestamp(timestamp)
-        .hasAttributes(
-            attributes.toBuilder()
-                .put("event.name", "testing")
-                .build());
+        .hasAttributes(attributes.toBuilder().put("event.name", "testing").build());
   }
 }

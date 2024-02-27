@@ -52,8 +52,7 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
 
   @Override
   public EventEmitter get(String instrumentationScopeName) {
-    return eventEmitterBuilder(instrumentationScopeName)
-        .build();
+    return eventEmitterBuilder(instrumentationScopeName).build();
   }
 
   @Override
@@ -122,8 +121,7 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
     }
   }
 
-  static void addEventName(
-      LogRecordBuilder logRecordBuilder, String eventName) {
+  static void addEventName(LogRecordBuilder logRecordBuilder, String eventName) {
     logRecordBuilder.setAttribute(EVENT_NAME, eventName);
   }
 }

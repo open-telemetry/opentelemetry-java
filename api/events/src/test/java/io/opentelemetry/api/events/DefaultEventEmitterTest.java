@@ -21,7 +21,9 @@ class DefaultEventEmitterTest {
     assertThatCode(
             () ->
                 DefaultEventEmitter.getInstance()
-                    .emit("otel.scope.event-name", Attributes.builder().put("key1", "value1").build()))
+                    .emit(
+                        "otel.scope.event-name",
+                        Attributes.builder().put("key1", "value1").build()))
         .doesNotThrowAnyException();
   }
 
