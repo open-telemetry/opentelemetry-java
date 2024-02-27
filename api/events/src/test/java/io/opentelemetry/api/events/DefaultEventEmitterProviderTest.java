@@ -23,7 +23,6 @@ class DefaultEventEmitterProviderTest {
             () ->
                 provider
                     .eventEmitterBuilder("scope-name")
-                    .setEventDomain("event-domain")
                     .setInstrumentationVersion("1.0")
                     .setSchemaUrl("http://schema.com")
                     .build())

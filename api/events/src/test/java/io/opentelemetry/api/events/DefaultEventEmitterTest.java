@@ -21,7 +21,7 @@ class DefaultEventEmitterTest {
     assertThatCode(
             () ->
                 DefaultEventEmitter.getInstance()
-                    .emit("event-name", Attributes.builder().put("key1", "value1").build()))
+                    .emit("otel.scope.event-name", Attributes.builder().put("key1", "value1").build()))
         .doesNotThrowAnyException();
   }
 
@@ -32,7 +32,7 @@ class DefaultEventEmitterTest {
     assertThatCode(
             () ->
                 emitter
-                    .builder("myEvent", attributes)
+                    .builder("com.example.MyEvent", attributes)
                     .setTimestamp(123456L, TimeUnit.NANOSECONDS)
                     .setTimestamp(Instant.now())
                     .emit())
