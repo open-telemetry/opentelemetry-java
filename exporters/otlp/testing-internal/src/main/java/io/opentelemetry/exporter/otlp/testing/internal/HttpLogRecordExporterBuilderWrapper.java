@@ -108,8 +108,8 @@ public class HttpLogRecordExporterBuilderWrapper
   }
 
   @Override
-  public TelemetryExporterBuilder<LogRecordData> setProxy(ProxyOptions proxyOptions) {
-    builder.setProxy(proxyOptions);
+  public TelemetryExporterBuilder<LogRecordData> setProxyOptions(ProxyOptions proxyOptions) {
+    builder.setProxyOptions(proxyOptions);
     return this;
   }
 

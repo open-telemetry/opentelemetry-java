@@ -15,8 +15,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
-import java.net.InetSocketAddress;
-import java.net.ProxySelector;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -120,8 +118,7 @@ public final class JdkHttpSender implements HttpSender {
       builder.sslContext(sslContext);
     }
     if (proxyOptions != null) {
-      builder.proxy(
-          ProxySelector.of(new InetSocketAddress(proxyOptions.getHost(), proxyOptions.getPort())));
+      builder.proxy(proxyOptions.getProxySelector());
     }
     return builder.build();
   }

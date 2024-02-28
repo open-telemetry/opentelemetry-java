@@ -216,8 +216,8 @@ public final class OtlpHttpMetricExporterBuilder {
     return this;
   }
 
-  /** Sets the proxy to be used. */
-  public OtlpHttpMetricExporterBuilder setProxy(ProxyOptions proxyOptions) {
+  /** Sets the proxy options. Proxying is disabled by default. */
+  public OtlpHttpMetricExporterBuilder setProxyOptions(ProxyOptions proxyOptions) {
     requireNonNull(proxyOptions, "proxyOptions");
     delegate.setProxy(proxyOptions);
     return this;

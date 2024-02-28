@@ -61,7 +61,7 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy);
 
-  TelemetryExporterBuilder<T> setProxy(ProxyOptions proxyOptions);
+  TelemetryExporterBuilder<T> setProxyOptions(ProxyOptions proxyOptions);
 
   TelemetryExporterBuilder<T> setChannel(Object channel);
 

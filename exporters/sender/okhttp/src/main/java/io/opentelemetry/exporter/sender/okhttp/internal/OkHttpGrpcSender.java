@@ -31,12 +31,8 @@ import io.opentelemetry.exporter.internal.grpc.GrpcResponse;
 import io.opentelemetry.exporter.internal.grpc.GrpcSender;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -80,7 +76,6 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
       @Nullable Compressor compressor,
       long timeoutNanos,
       Supplier<Map<String, List<String>>> headersSupplier,
-      @Nullable ProxyOptions proxyOptions,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager) {
@@ -99,12 +94,6 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
       clientBuilder.protocols(Collections.singletonList(Protocol.H2_PRIOR_KNOWLEDGE));
     } else {
       clientBuilder.protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1));
-    }
-    if (proxyOptions != null) {
-      SocketAddress proxyAddress =
-          new InetSocketAddress(proxyOptions.getHost(), proxyOptions.getPort());
-      Proxy proxy = new Proxy(Proxy.Type.HTTP, proxyAddress);
-      clientBuilder.proxy(proxy);
     }
     this.client = clientBuilder.build();
     this.headersSupplier = headersSupplier;

@@ -104,9 +104,8 @@ final class GrpcMetricExporterBuilderWrapper implements TelemetryExporterBuilder
   }
 
   @Override
-  public TelemetryExporterBuilder<MetricData> setProxy(ProxyOptions proxyOptions) {
-    builder.setProxy(proxyOptions);
-    return this;
+  public TelemetryExporterBuilder<MetricData> setProxyOptions(ProxyOptions proxyOptions) {
+    throw new UnsupportedOperationException();
   }
 
   @Override

@@ -51,8 +51,7 @@ public class OtlpLogRecordExporterProvider
           builder::setTimeout,
           builder::setTrustedCertificates,
           builder::setClientTls,
-          builder::setRetryPolicy,
-          builder::setProxy);
+          builder::setRetryPolicy);
       builder.setMeterProvider(meterProviderRef::get);
 
       return builder.build();
@@ -68,8 +67,7 @@ public class OtlpLogRecordExporterProvider
           builder::setTimeout,
           builder::setTrustedCertificates,
           builder::setClientTls,
-          builder::setRetryPolicy,
-          builder::setProxy);
+          builder::setRetryPolicy);
       builder.setMeterProvider(meterProviderRef::get);
 
       return builder.build();

@@ -107,8 +107,8 @@ public class HttpMetricExporterBuilderWrapper implements TelemetryExporterBuilde
   }
 
   @Override
-  public TelemetryExporterBuilder<MetricData> setProxy(ProxyOptions proxyOptions) {
-    builder.setProxy(proxyOptions);
+  public TelemetryExporterBuilder<MetricData> setProxyOptions(ProxyOptions proxyOptions) {
+    builder.setProxyOptions(proxyOptions);
     return this;
   }
 

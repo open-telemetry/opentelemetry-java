@@ -5,44 +5,67 @@
 
 package io.opentelemetry.sdk.common.export;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
+
 /** Configuration for proxy settings. */
-public class ProxyOptions {
-  private final String host;
+public final class ProxyOptions {
+  private final ProxySelector proxySelector;
 
-  private final int port;
-
-  public int getPort() {
-    return port;
+  /** Return the {@link ProxySelector}. */
+  public ProxySelector getProxySelector() {
+    return proxySelector;
   }
 
-  public String getHost() {
-    return host;
+  private ProxyOptions(ProxySelector proxySelector) {
+    this.proxySelector = proxySelector;
   }
 
-  ProxyOptions(String host, int port) {
-    this.host = host;
-    this.port = port;
+  /** Create proxy options with the {@code proxySelector}. */
+  public static ProxyOptions create(ProxySelector proxySelector) {
+    return new ProxyOptions(proxySelector);
   }
 
-  public static ProxyOptionsBuilder builder(String host, int port) {
-    return new ProxyOptions.ProxyOptionsBuilder(host, port);
+  /**
+   * Create proxy options with a {@link ProxySelector} which always uses an {@link Proxy.Type#HTTP}
+   * proxy with the {@code socketAddress}.
+   */
+  public static ProxyOptions create(InetSocketAddress socketAddress) {
+    return new ProxyOptions(new SimpleProxySelector(new Proxy(Proxy.Type.HTTP, socketAddress)));
   }
 
-  public static class ProxyOptionsBuilder {
+  @Override
+  public String toString() {
+    return "ProxyOptions{proxySelector=" + proxySelector + "}";
+  }
 
-    private final String host;
-    private final int port;
+  private static final class SimpleProxySelector extends ProxySelector {
 
-    /** Supply the host name or IP address of the proxy and the port it is working on. */
-    ProxyOptionsBuilder(String host, int port) {
-      this.host = host;
-      this.port = port;
+    private final List<Proxy> proxyList;
+
+    private SimpleProxySelector(Proxy proxy) {
+      this.proxyList = Collections.singletonList(proxy);
     }
 
-    public ProxyOptions build() {
-      ProxyOptions proxyOptions = new ProxyOptions(host, port);
+    @Override
+    public List<Proxy> select(URI uri) {
+      return proxyList;
+    }
 
-      return proxyOptions;
+    @Override
+    public void connectFailed(URI uri, SocketAddress sa, IOException e) {
+      // ignore
+    }
+
+    @Override
+    public String toString() {
+      return "SimpleProxySelector{proxy=" + proxyList.get(0).toString() + "}";
     }
   }
 }

@@ -15,9 +15,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.SocketAddress;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -74,10 +71,7 @@ public final class OkHttpHttpSender implements HttpSender {
             .callTimeout(Duration.ofNanos(timeoutNanos));
 
     if (proxyOptions != null) {
-      SocketAddress proxyAddress =
-          new InetSocketAddress(proxyOptions.getHost(), proxyOptions.getPort());
-      Proxy proxy = new Proxy(Proxy.Type.HTTP, proxyAddress);
-      builder.proxy(proxy);
+      builder.proxySelector(proxyOptions.getProxySelector());
     }
 
     if (authenticator != null) {

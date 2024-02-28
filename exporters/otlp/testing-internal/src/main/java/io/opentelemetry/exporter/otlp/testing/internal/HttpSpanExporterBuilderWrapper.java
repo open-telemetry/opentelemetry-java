@@ -107,7 +107,7 @@ public class HttpSpanExporterBuilderWrapper implements TelemetryExporterBuilder<
   }
 
   @Override
-  public TelemetryExporterBuilder<SpanData> setProxy(ProxyOptions proxyOptions) {
+  public TelemetryExporterBuilder<SpanData> setProxyOptions(ProxyOptions proxyOptions) {
     builder.setProxy(proxyOptions);
     return this;
   }

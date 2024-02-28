@@ -153,8 +153,8 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   }
 
   @Override
-  public TelemetryExporterBuilder<T> setProxy(ProxyOptions proxyOptions) {
-    delegate.setProxy(proxyOptions);
+  public TelemetryExporterBuilder<T> setProxyOptions(ProxyOptions proxyOptions) {
+    delegate.setProxyOptions(proxyOptions);
     return this;
   }
 
