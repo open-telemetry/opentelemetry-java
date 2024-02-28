@@ -116,7 +116,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
    * {@link #addPropertiesSupplier(Supplier)} and {@link #addPropertiesCustomizer(Function)} will
    * have no effect if this method is used.
    */
-  public AutoConfiguredOpenTelemetrySdkBuilder setConfig(ConfigProperties config) {
+  AutoConfiguredOpenTelemetrySdkBuilder setConfig(ConfigProperties config) {
     requireNonNull(config, "config");
     this.config = config;
     return this;
@@ -370,7 +370,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   /** Sets the {@link ComponentLoader} to be used to load SPI implementations. */
-  public AutoConfiguredOpenTelemetrySdkBuilder setComponentLoader(ComponentLoader componentLoader) {
+  AutoConfiguredOpenTelemetrySdkBuilder setComponentLoader(ComponentLoader componentLoader) {
     requireNonNull(componentLoader, "componentLoader");
     this.spiHelper = SpiHelper.create(componentLoader);
     return this;

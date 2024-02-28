@@ -1,5 +1,2 @@
 Comparing source compatibility of  against 
-***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder setComponentLoader(io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader)
-	***  MODIFIED METHOD: PUBLIC (<- PACKAGE_PROTECTED) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder setConfig(io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)
+No changes.
