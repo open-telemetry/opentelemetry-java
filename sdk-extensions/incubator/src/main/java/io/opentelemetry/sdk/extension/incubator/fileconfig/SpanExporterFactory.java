@@ -141,6 +141,7 @@ final class SpanExporterFactory
       ConfigProperties config, SpiHelper spiHelper) {
     return spiHelper.loadConfigurable(
         ConfigurableSpanExporterProvider.class,
+        ConfigurableSpanExporterProvider::getName,
         ConfigurableSpanExporterProvider::createExporter,
         config);
   }

@@ -146,8 +146,7 @@ class ConfigurableSpanExporterTest {
                 Collections.singletonMap("otel.traces.exporter", exporterName)),
             ImmutableMap.of(exporterName, LoggingSpanExporter.create()),
             MeterProvider.noop(),
-            closeables,
-            spiHelper);
+            closeables);
     cleanup.addCloseables(closeables);
 
     assertThat(spanProcessors).hasExactlyElementsOfTypes(SimpleSpanProcessor.class);
@@ -165,8 +164,7 @@ class ConfigurableSpanExporterTest {
                 Collections.singletonMap("otel.traces.exporter", exporterName)),
             ImmutableMap.of(exporterName, ZipkinSpanExporter.builder().build()),
             MeterProvider.noop(),
-            closeables,
-            spiHelper);
+            closeables);
     cleanup.addCloseables(closeables);
 
     assertThat(spanProcessors).hasExactlyElementsOfTypes(BatchSpanProcessor.class);
@@ -187,8 +185,7 @@ class ConfigurableSpanExporterTest {
                 "zipkin",
                 ZipkinSpanExporter.builder().build()),
             MeterProvider.noop(),
-            closeables,
-            spiHelper);
+            closeables);
     cleanup.addCloseables(closeables);
 
     assertThat(spanProcessors)
@@ -230,8 +227,7 @@ class ConfigurableSpanExporterTest {
                 "zipkin",
                 ZipkinSpanExporter.builder().build()),
             MeterProvider.noop(),
-            closeables,
-            spiHelper);
+            closeables);
     cleanup.addCloseables(closeables);
 
     assertThat(spanProcessors)

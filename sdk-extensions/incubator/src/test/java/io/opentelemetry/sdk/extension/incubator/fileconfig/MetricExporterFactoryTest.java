@@ -88,7 +88,7 @@ class MetricExporterFactoryTest {
     ArgumentCaptor<ConfigProperties> configCaptor = ArgumentCaptor.forClass(ConfigProperties.class);
     verify(spiHelper)
         .loadConfigurable(
-            eq(ConfigurableMetricExporterProvider.class), any(), configCaptor.capture());
+            eq(ConfigurableMetricExporterProvider.class), any(), any(), configCaptor.capture());
     ConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("otel.exporter.otlp.metrics.protocol")).isNull();
     assertThat(configProperties.getString("otel.exporter.otlp.endpoint")).isNull();
@@ -162,7 +162,7 @@ class MetricExporterFactoryTest {
     ArgumentCaptor<ConfigProperties> configCaptor = ArgumentCaptor.forClass(ConfigProperties.class);
     verify(spiHelper)
         .loadConfigurable(
-            eq(ConfigurableMetricExporterProvider.class), any(), configCaptor.capture());
+            eq(ConfigurableMetricExporterProvider.class), any(), any(), configCaptor.capture());
     ConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("otel.exporter.otlp.metrics.protocol"))
         .isEqualTo("http/protobuf");

@@ -134,6 +134,7 @@ final class MetricExporterFactory
       ConfigProperties config, SpiHelper spiHelper) {
     return spiHelper.loadConfigurable(
         ConfigurableMetricExporterProvider.class,
+        ConfigurableMetricExporterProvider::getName,
         ConfigurableMetricExporterProvider::createExporter,
         config);
   }

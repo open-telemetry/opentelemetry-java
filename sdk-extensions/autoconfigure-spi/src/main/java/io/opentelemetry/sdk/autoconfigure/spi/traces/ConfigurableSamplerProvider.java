@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.autoconfigure.spi.traces;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableProvider;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 
 /**
@@ -15,7 +14,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
  * returned by {@link #getName()}, the sampler returned by {@link #createSampler(ConfigProperties)}
  * will be enabled and added to the SDK.
  */
-public interface ConfigurableSamplerProvider extends ConfigurableProvider {
+public interface ConfigurableSamplerProvider {
 
   /**
    * Returns a {@link Sampler} that can be registered to OpenTelemetry by providing the property
@@ -29,6 +28,5 @@ public interface ConfigurableSamplerProvider extends ConfigurableProvider {
    * the name does conflict with another exporter name, the resulting behavior is undefined and it
    * is explicitly unspecified which exporter will actually be used.
    */
-  @Override
   String getName();
 }

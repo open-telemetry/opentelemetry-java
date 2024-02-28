@@ -129,6 +129,9 @@ final class SamplerFactory
   private static NamedSpiManager<Sampler> samplerSpiManager(
       ConfigProperties config, SpiHelper spiHelper) {
     return spiHelper.loadConfigurable(
-        ConfigurableSamplerProvider.class, ConfigurableSamplerProvider::createSampler, config);
+        ConfigurableSamplerProvider.class,
+        ConfigurableSamplerProvider::getName,
+        ConfigurableSamplerProvider::createSampler,
+        config);
   }
 }

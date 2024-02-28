@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.autoconfigure.internal;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import java.util.ArrayList;
@@ -18,6 +17,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -47,26 +47,29 @@ public final class SpiHelper {
    * Load implementations of an SPI which are configurable (i.e. they accept {@link
    * ConfigProperties}.
    *
-   * @param <T> the configurable type
-   * @param <S> the SPI type
    * @param spiClass the SPI class
+   * @param getName function returning the name of an SPI implementation
    * @param getConfigurable function returning a configured instance
    * @param config the configuration to pass to invocations of {@code #getConfigurable}
+   * @param <T> the configurable type
+   * @param <S> the SPI type
    * @return a {@link NamedSpiManager} used to access configured instances of the SPI by name
    */
-  public <T, S extends ConfigurableProvider> NamedSpiManager<T> loadConfigurable(
+  public <T, S> NamedSpiManager<T> loadConfigurable(
       Class<S> spiClass,
+      Function<S, String> getName,
       BiFunction<S, ConfigProperties, T> getConfigurable,
       ConfigProperties config) {
     Map<String, Supplier<T>> nameToProvider = new HashMap<>();
-    Map<String, S> providers = componentLoader.loadConfigurableProviders(spiClass);
-    for (Map.Entry<String, S> entry : providers.entrySet()) {
-      S provider = entry.getValue();
-      String name = entry.getKey();
-      // both the provider and the result may have a listener
-      maybeAddListener(provider);
-
-      nameToProvider.put(name, () -> maybeAddListener(getConfigurable.apply(provider, config)));
+    for (S provider : load(spiClass)) {
+      String name = getName.apply(provider);
+      nameToProvider.put(
+          name,
+          () -> {
+            T result = getConfigurable.apply(provider, config);
+            maybeAddListener(result);
+            return result;
+          });
     }
     return NamedSpiManager.create(nameToProvider);
   }

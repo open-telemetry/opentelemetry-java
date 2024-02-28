@@ -5,12 +5,9 @@
 
 package io.opentelemetry.sdk.autoconfigure.internal;
 
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -34,14 +31,5 @@ public interface ComponentLoader {
     return StreamSupport.stream(load(spiClass).spliterator(), false)
         .sorted(Comparator.comparing(Ordered::order))
         .collect(Collectors.toList());
-  }
-
-  default <T extends ConfigurableProvider> Map<String, T> loadConfigurableProviders(
-      Class<T> spiClass) {
-    Map<String, T> components = new HashMap<>();
-    for (T component : load(spiClass)) {
-      components.put(component.getName(), component);
-    }
-    return components;
   }
 }

@@ -82,6 +82,7 @@ final class MetricExporterConfiguration {
       ConfigProperties config, SpiHelper spiHelper) {
     return spiHelper.loadConfigurable(
         ConfigurableMetricReaderProvider.class,
+        ConfigurableMetricReaderProvider::getName,
         ConfigurableMetricReaderProvider::createMetricReader,
         config);
   }
@@ -106,6 +107,7 @@ final class MetricExporterConfiguration {
       ConfigProperties config, SpiHelper spiHelper) {
     return spiHelper.loadConfigurable(
         ConfigurableMetricExporterProvider.class,
+        ConfigurableMetricExporterProvider::getName,
         ConfigurableMetricExporterProvider::createExporter,
         config);
   }

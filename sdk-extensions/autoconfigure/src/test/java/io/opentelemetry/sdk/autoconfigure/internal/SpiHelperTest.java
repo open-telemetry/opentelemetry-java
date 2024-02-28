@@ -16,7 +16,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import java.util.Collections;
@@ -38,7 +37,10 @@ public class SpiHelperTest {
 
     NamedSpiManager<SpiExample> spiProvider =
         spiHelper.loadConfigurable(
-            SpiExampleProvider.class, SpiExampleProvider::createSpiExample, EMPTY);
+            SpiExampleProvider.class,
+            SpiExampleProvider::getName,
+            SpiExampleProvider::createSpiExample,
+            EMPTY);
 
     assertThat(spiProvider.getByName(SpiExampleProviderImplementation.NAME)).isNotNull();
     assertThat(spiProvider.getByName("invalid-provider")).isNull();
@@ -55,7 +57,10 @@ public class SpiHelperTest {
 
     NamedSpiManager<SpiExample> spiProvider =
         spiHelper.loadConfigurable(
-            SpiExampleProvider.class, SpiExampleProvider::createSpiExample, EMPTY);
+            SpiExampleProvider.class,
+            SpiExampleProvider::getName,
+            SpiExampleProvider::createSpiExample,
+            EMPTY);
 
     verify(mockProvider, never()).createSpiExample(any()); // not requested yet
     spiProvider.getByName("lazy-init-example");
@@ -72,7 +77,10 @@ public class SpiHelperTest {
 
     NamedSpiManager<SpiExample> spiProvider =
         spiHelper.loadConfigurable(
-            SpiExampleProvider.class, SpiExampleProvider::createSpiExample, EMPTY);
+            SpiExampleProvider.class,
+            SpiExampleProvider::getName,
+            SpiExampleProvider::createSpiExample,
+            EMPTY);
 
     SpiExample first = spiProvider.getByName(SpiExampleProviderImplementation.NAME);
     SpiExample second = spiProvider.getByName(SpiExampleProviderImplementation.NAME);
@@ -93,7 +101,10 @@ public class SpiHelperTest {
 
     NamedSpiManager<SpiExample> spiProvider =
         spiHelper.loadConfigurable(
-            SpiExampleProvider.class, SpiExampleProvider::createSpiExample, EMPTY);
+            SpiExampleProvider.class,
+            SpiExampleProvider::getName,
+            SpiExampleProvider::createSpiExample,
+            EMPTY);
 
     assertThatThrownBy(() -> spiProvider.getByName("init-failure-example"))
         .withFailMessage(exceptionMessage)
@@ -120,9 +131,8 @@ public class SpiHelperTest {
     assertThat(loadedSpi).containsExactly(spi2, spi3, spi1);
   }
 
-  private interface SpiExampleProvider extends ConfigurableProvider {
+  private interface SpiExampleProvider {
 
-    @Override
     String getName();
 
     SpiExample createSpiExample(ConfigProperties config);

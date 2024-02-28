@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +56,7 @@ final class TracerProviderConfiguration {
             config, spiHelper, spanExporterCustomizer, closeables);
 
     List<SpanProcessor> processors =
-        configureSpanProcessors(config, exportersByName, meterProvider, closeables, spiHelper);
+        configureSpanProcessors(config, exportersByName, meterProvider, closeables);
     for (SpanProcessor processor : processors) {
       SpanProcessor wrapped = spanProcessorCustomizer.apply(processor, config);
       if (wrapped != processor) {
@@ -69,10 +70,9 @@ final class TracerProviderConfiguration {
       ConfigProperties config,
       Map<String, SpanExporter> exportersByName,
       MeterProvider meterProvider,
-      List<Closeable> closeables,
-      SpiHelper spiHelper) {
+      List<Closeable> closeables) {
     Map<String, SpanExporter> exportersByNameCopy = new HashMap<>(exportersByName);
-    List<SpanProcessor> spanProcessors = spiHelper.load(SpanProcessor.class);
+    List<SpanProcessor> spanProcessors = new ArrayList<>();
 
     SpanExporter exporter = exportersByNameCopy.remove("logging");
     if (exporter != null) {
@@ -162,7 +162,10 @@ final class TracerProviderConfiguration {
   static Sampler configureSampler(String sampler, ConfigProperties config, SpiHelper spiHelper) {
     NamedSpiManager<Sampler> spiSamplersManager =
         spiHelper.loadConfigurable(
-            ConfigurableSamplerProvider.class, ConfigurableSamplerProvider::createSampler, config);
+            ConfigurableSamplerProvider.class,
+            ConfigurableSamplerProvider::getName,
+            ConfigurableSamplerProvider::createSampler,
+            config);
 
     switch (sampler) {
       case "always_on":

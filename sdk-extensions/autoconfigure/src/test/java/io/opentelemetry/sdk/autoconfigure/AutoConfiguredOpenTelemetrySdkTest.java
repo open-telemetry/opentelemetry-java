@@ -20,6 +20,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -38,6 +39,7 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
@@ -317,41 +319,30 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   @Test
-  void builder_addSpanProcessorUsingComponentLoader() {
-    SpanProcessor spanProcessor = Mockito.mock(SpanProcessor.class);
-    doReturn(true).when(spanProcessor).isStartRequired();
-    doReturn(true).when(spanProcessor).isEndRequired();
-    Mockito.lenient().doReturn(CompletableResultCode.ofSuccess()).when(spanProcessor).shutdown();
-    Mockito.lenient().when(spanExporter1.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+  void builder_addAutoConfigurationCustomizerProviderUsingComponentLoader() {
+    AutoConfigurationCustomizerProvider customizerProvider =
+        mock(AutoConfigurationCustomizerProvider.class);
 
     SpiHelper spiHelper =
         SpiHelper.create(AutoConfiguredOpenTelemetrySdkBuilder.class.getClassLoader());
 
-    SdkTracerProvider sdkTracerProvider =
-        builder
-            .setComponentLoader(
-                new ComponentLoader() {
-                  @SuppressWarnings("unchecked")
-                  @Override
-                  public <T> Iterable<T> load(Class<T> spiClass) {
-                    if (spiClass.equals(SpanProcessor.class)) {
-                      return Collections.singletonList((T) spanProcessor);
-                    }
-                    return spiHelper.load(spiClass);
-                  }
-                })
-            .build()
-            .getOpenTelemetrySdk()
-            .getSdkTracerProvider();
+    builder
+        .setComponentLoader(
+            new ComponentLoader() {
+              @SuppressWarnings("unchecked")
+              @Override
+              public <T> Iterable<T> load(Class<T> spiClass) {
+                if (spiClass.equals(AutoConfigurationCustomizerProvider.class)) {
+                  return Collections.singletonList((T) customizerProvider);
+                }
+                return spiHelper.load(spiClass);
+              }
+            })
+        .build();
 
-    Span span = sdkTracerProvider.get("dummy-scope").spanBuilder("dummy-span").startSpan();
+    verify(customizerProvider).customize(any());
 
-    verify(spanProcessor).onStart(any(), same((ReadWriteSpan) span));
-
-    span.end();
-    verify(spanProcessor).onEnd(same((ReadableSpan) span));
-
-    verifyNoInteractions(spanExporter1);
+    verifyNoMoreInteractions(customizerProvider);
   }
 
   @Test

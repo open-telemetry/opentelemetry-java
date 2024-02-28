@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.autoconfigure.spi.logs;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableProvider;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 
 /**
@@ -17,7 +16,7 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
  *
  * @since 1.19.0
  */
-public interface ConfigurableLogRecordExporterProvider extends ConfigurableProvider {
+public interface ConfigurableLogRecordExporterProvider {
 
   /**
    * Returns a {@link LogRecordExporter} that can be registered to OpenTelemetry by providing the
@@ -31,6 +30,5 @@ public interface ConfigurableLogRecordExporterProvider extends ConfigurableProvi
    * the name does conflict with another exporter name, the resulting behavior is undefined and it
    * is explicitly unspecified which exporter will actually be used.
    */
-  @Override
   String getName();
 }

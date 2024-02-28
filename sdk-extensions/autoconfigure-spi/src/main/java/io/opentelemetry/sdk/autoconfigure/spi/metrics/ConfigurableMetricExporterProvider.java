@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.autoconfigure.spi.metrics;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ConfigurableMetricReaderProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
@@ -23,7 +22,7 @@ import io.opentelemetry.sdk.metrics.export.MetricReader;
  *
  * @since 1.15.0
  */
-public interface ConfigurableMetricExporterProvider extends ConfigurableProvider {
+public interface ConfigurableMetricExporterProvider {
 
   /**
    * Returns a {@link MetricExporter} that can be registered to OpenTelemetry by providing the
@@ -39,6 +38,5 @@ public interface ConfigurableMetricExporterProvider extends ConfigurableProvider
    * name, the resulting behavior is undefined and it is explicitly unspecified which exporter /
    * reader will actually be used.
    */
-  @Override
   String getName();
 }
