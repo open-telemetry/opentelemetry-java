@@ -71,7 +71,8 @@ final class SdkSpan implements ReadWriteSpan, ExtendedSpan {
 
   // List of recorded events.
   @GuardedBy("lock")
-  private final List<EventData> events;
+  @Nullable
+  private List<EventData> events;
 
   // Number of events recorded.
   @GuardedBy("lock")
@@ -126,7 +127,6 @@ final class SdkSpan implements ReadWriteSpan, ExtendedSpan {
     this.clock = clock;
     this.startEpochNanos = startEpochNanos;
     this.attributes = attributes;
-    this.events = new ArrayList<>();
     this.spanLimits = spanLimits;
   }
 
@@ -378,6 +378,9 @@ final class SdkSpan implements ReadWriteSpan, ExtendedSpan {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
         return;
       }
+      if (events == null) {
+        events = new ArrayList<>();
+      }
       if (events.size() < spanLimits.getMaxNumberOfEvents()) {
         events.add(timedEvent);
       }
@@ -518,7 +521,7 @@ final class SdkSpan implements ReadWriteSpan, ExtendedSpan {
 
   @GuardedBy("lock")
   private List<EventData> getImmutableTimedEvents() {
-    if (events.isEmpty()) {
+    if (events == null) {
       return Collections.emptyList();
     }
 

@@ -50,7 +50,8 @@ final class GrpcSpanExporterBuilderWrapper implements TelemetryExporterBuilder<S
 
   @Override
   public TelemetryExporterBuilder<SpanData> setConnectTimeout(Duration timeout) {
-    throw new UnsupportedOperationException();
+    builder.setConnectTimeout(timeout);
+    return this;
   }
 
   @Override
