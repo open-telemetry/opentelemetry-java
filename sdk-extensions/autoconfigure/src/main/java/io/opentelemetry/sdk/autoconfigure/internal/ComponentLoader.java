@@ -18,6 +18,13 @@ import java.util.stream.StreamSupport;
  * at any time.
  */
 public interface ComponentLoader {
+  /**
+   * Load implementations of an SPI.
+   *
+   * @param spiClass the SPI class
+   * @param <T> the SPI type
+   * @return iterable of SPI implementations
+   */
   <T> Iterable<T> load(Class<T> spiClass);
 
   /**

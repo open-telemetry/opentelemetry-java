@@ -39,6 +39,7 @@ public final class SpiHelper {
     return new SpiHelper(new ServiceLoaderComponentLoader(classLoader));
   }
 
+  /** Create a {@link SpiHelper} which loads SPIs using the {@code componentLoader}. */
   public static SpiHelper create(ComponentLoader componentLoader) {
     return new SpiHelper(componentLoader);
   }

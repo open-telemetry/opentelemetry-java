@@ -369,6 +369,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     return this;
   }
 
+  /** Sets the {@link ComponentLoader} to be used to load SPI implementations. */
   public AutoConfiguredOpenTelemetrySdkBuilder setComponentLoader(ComponentLoader componentLoader) {
     requireNonNull(componentLoader, "componentLoader");
     this.spiHelper = SpiHelper.create(componentLoader);
