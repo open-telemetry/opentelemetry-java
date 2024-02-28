@@ -1,11 +1,15 @@
-package io.opentelemetry.exporter.internal.otlp.metrics;
+package io.opentelemetry.exporter.internal.marshal;
+
+import java.util.List;
 
 public interface MessageSize {
 
   /**
    * @return the size of the protobuf-encoded message in bytes.
    */
-  long getEncodedSize();
+  int getEncodedSize();
+
+  List<MessageSize> getMessageTypedFieldSizes();
 
   /**
    * Returns the size of the field at the given position.

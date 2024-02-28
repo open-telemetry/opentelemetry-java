@@ -45,6 +45,7 @@ import com.google.common.base.Utf8;
 import io.opentelemetry.api.internal.ConfigUtil;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -182,6 +183,8 @@ public abstract class CodedOutputStream {
   final void writeEnumNoTag(final int value) throws IOException {
     writeInt32NoTag(value);
   }
+
+  abstract void writeByteArrayNoTag(final ByteBuffer value) throws IOException;
 
   /** Write a {@code bytes} field to the stream. */
   final void writeByteArrayNoTag(final byte[] value) throws IOException {
@@ -496,6 +499,15 @@ public abstract class CodedOutputStream {
       this.out = out;
       position = 0;
       totalBytesWritten = 0;
+    }
+
+    @Override
+    void writeByteArrayNoTag(final ByteBuffer value) throws IOException {
+      // what happens if the value is an empty string?
+      writeUInt32NoTag(value.remaining());
+      while (value.hasRemaining()) {
+        write(value.get());
+      }
     }
 
     @Override

@@ -11,6 +11,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 final class JsonSerializer extends Serializer {
 
@@ -108,6 +111,12 @@ final class JsonSerializer extends Serializer {
     generator.writeString(new String(utf8Bytes, StandardCharsets.UTF_8));
   }
 
+  /** Writes a protobuf {@code string} field, even if it matches the default value. */
+  public void writeString(ProtoFieldInfo field, String string) throws IOException {
+    generator.writeFieldName(field.getJsonName());
+    generator.writeString(string);
+  }
+
   @Override
   public void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
     generator.writeBinaryField(field.getJsonName(), value);
@@ -164,11 +173,32 @@ final class JsonSerializer extends Serializer {
     }
     generator.writeEndArray();
   }
+  @Override
+  public void serializeRepeatedMessage(
+      ProtoFieldInfo field,
+      List<?> repeatedMessage,
+      BiConsumer<Serializer, Object> repeatedMessageSerializer,
+      List<MessageSize> ignored) throws IOException {
+    generator.writeArrayFieldStart(field.getJsonName());
+    for (int i = 0; i < repeatedMessage.size(); i++) {
+      Object message = repeatedMessage.get(i);
+      writeMessageValue(message, repeatedMessageSerializer);
+    }
+  }
 
   // Not a field.
   void writeMessageValue(Marshaler message) throws IOException {
     generator.writeStartObject();
     message.writeTo(this);
+    generator.writeEndObject();
+  }
+
+  void writeMessageValue(
+      Object message,
+      BiConsumer<Serializer, Object> messageSerializer)
+      throws IOException {
+    generator.writeStartObject();
+    messageSerializer.accept(this, message);
     generator.writeEndObject();
   }
 

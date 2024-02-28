@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.internal.marshal;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.DynamicList;
 import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
@@ -161,6 +162,19 @@ public final class MarshalerUtil {
   }
 
   /** Returns the size of a repeated message field. */
+  public static int sizeRepeatedMessage(
+      ProtoFieldInfo field,
+      DynamicList<MessageSize> repeatedMessage) {
+    int size = 0;
+    int fieldTagSize = field.getTagSize();
+    for (int i = 0; i < repeatedMessage.size(); i++) {
+      int fieldSize = repeatedMessage.get(i).getEncodedSize();
+      size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
+    }
+    return size;
+  }
+
+  /** Returns the size of a repeated message field. */
   @SuppressWarnings("AvoidObjectArrays")
   public static <T extends Marshaler> int sizeRepeatedMessage(
       ProtoFieldInfo field, T[] repeatedMessage) {
@@ -188,6 +202,11 @@ public final class MarshalerUtil {
   /** Returns the size of a message field. */
   public static int sizeMessage(ProtoFieldInfo field, Marshaler message) {
     int fieldSize = message.getBinarySerializedSize();
+    return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
+  }
+
+  public static int sizeMessage(ProtoFieldInfo field, MessageSize messageSize) {
+    int fieldSize = messageSize.getEncodedSize();
     return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
   }
 

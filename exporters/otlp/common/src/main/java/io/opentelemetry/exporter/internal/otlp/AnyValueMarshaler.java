@@ -6,8 +6,12 @@
 package io.opentelemetry.exporter.internal.otlp;
 
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
+import io.opentelemetry.exporter.internal.marshal.Serializer;
+import io.opentelemetry.exporter.internal.otlp.metrics.MarshallingObjectsPool;
+import io.opentelemetry.exporter.internal.marshal.MessageSize;
 import io.opentelemetry.extension.incubator.logs.AnyValue;
 import io.opentelemetry.extension.incubator.logs.KeyAnyValue;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -41,4 +45,45 @@ public final class AnyValueMarshaler {
     }
     throw new IllegalArgumentException("Unsupported AnyValue type: " + anyValue.getType());
   }
+
+  public static MessageSize messageSize(AnyValue<?> anyValue, MarshallingObjectsPool pool) {
+    switch (anyValue.getType()) {
+      case STRING:
+        return StringAnyValueMarshaler.messageSize((String) anyValue.getValue(), pool);
+      case BOOLEAN:
+        return BoolAnyValueMarshaler.messageSize((boolean) anyValue.getValue(), pool);
+      case LONG:
+        return IntAnyValueMarshaler.messageSize((long) anyValue.getValue(), pool);
+      case DOUBLE:
+        return DoubleAnyValueMarshaler.messageSize((double) anyValue.getValue(), pool);
+      case ARRAY:
+        return ArrayAnyValueMarshaler.messageSize((List<AnyValue<?>>) anyValue.getValue(), pool);
+      case KEY_VALUE_LIST:
+        return KeyValueListAnyValueMarshaler.messageSize(
+            (List<KeyAnyValue>) anyValue.getValue(), pool);
+//      case BYTES:
+//        return BytesAnyValueMarshaler.messageSize((ByteBuffer) anyValue.getValue());
+    }
+    throw new IllegalArgumentException("Unsupported AnyValue type: " + anyValue.getType());
+  }
+
+  public static void encode(Serializer output, AnyValue<?> anyValue, MessageSize messageSize)
+      throws IOException {
+    switch (anyValue.getType()) {
+      case STRING:
+        StringAnyValueMarshaler.encode(output, (String) anyValue.getValue());
+        return;
+      case BOOLEAN:
+        BoolAnyValueMarshaler.encode(output, (boolean) anyValue.getValue());
+        return;
+      case LONG:
+        IntAnyValueMarshaler.encode(output, (long) anyValue.getValue());
+        return;
+      case DOUBLE:
+        DoubleAnyValueMarshaler.encode(output, (double) anyValue.getValue());
+        return;
+      case ARRAY:
+        ArrayAnyValueMarshaler.encode(
+            output, (List<AnyValue<?>>) anyValue.getValue(), messageSize);
+        return;
 }

@@ -8,10 +8,14 @@ package io.opentelemetry.exporter.internal.otlp;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.InternalAttributeKeyImpl;
+import io.opentelemetry.exporter.internal.marshal.DefaultMessageSize;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
+import io.opentelemetry.exporter.internal.marshal.MessageSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
+import io.opentelemetry.exporter.internal.otlp.metrics.MarshallingObjectsPool;
+import io.opentelemetry.extension.incubator.logs.AnyValue;
 import io.opentelemetry.extension.incubator.logs.KeyAnyValue;
 import io.opentelemetry.proto.common.v1.internal.KeyValue;
 import java.io.IOException;
@@ -100,6 +104,25 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
     // Error prone ensures the switch statement is complete, otherwise only can happen with
     // unaligned versions which are not supported.
     throw new IllegalArgumentException("Unsupported attribute type.");
+  }
+
+  public static MessageSize messageSize(KeyAnyValue keyAnyValue, MarshallingObjectsPool pool) {
+    int encodedMessageSize
+    DefaultMessageSize messageSize = pool.getDefaultMessageSizePool().borrowObject();
+    return messageSize;
+  }
+
+  public static void encode(
+      Serializer serializer,
+      KeyAnyValue keyAnyValue,
+      MessageSize keyValueMessageSize) throws IOException {
+    serializer.serializeString(KeyValue.KEY, keyAnyValue.getKey());
+    serializer.serializeMessage(
+        KeyValue.VALUE,
+        keyAnyValue.getAnyValue(),
+        (Serializer output, Object message, MessageSize size) ->
+            AnyValueMarshaler.encode(output, (AnyValue<?>) message, size),
+        keyValueMessageSize.getMessageTypedFieldSize(0));
   }
 
   @Override

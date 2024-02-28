@@ -9,9 +9,9 @@ import io.opentelemetry.exporter.internal.marshal.CodedOutputStream;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.exporter.internal.otlp.metrics.DefaultMessageSize;
+import io.opentelemetry.exporter.internal.marshal.DefaultMessageSize;
 import io.opentelemetry.exporter.internal.otlp.metrics.MarshallingObjectsPool;
-import io.opentelemetry.exporter.internal.otlp.metrics.MessageSize;
+import io.opentelemetry.exporter.internal.marshal.MessageSize;
 import io.opentelemetry.proto.common.v1.internal.AnyValue;
 import java.io.IOException;
 
@@ -35,7 +35,7 @@ final class StringAnyValueMarshaler extends MarshalerWithSize {
   }
 
   static MessageSize messageSize(String value, MarshallingObjectsPool pool) {
-    long encodedSize = AnyValue.STRING_VALUE.getTagSize()
+    int encodedSize = AnyValue.STRING_VALUE.getTagSize()
         + CodedOutputStream.computeStringSizeNoTag(value);
 
     DefaultMessageSize messageSize = pool.getDefaultMessageSizePool().borrowObject();
@@ -43,11 +43,8 @@ final class StringAnyValueMarshaler extends MarshalerWithSize {
     return messageSize;
   }
 
-  static void encode(
-      Serializer output,
-      String value,
-      MessageSize stringAnyValueMessageSize) throws IOException {
-    //output.writeString(AnyValue.STRING_VALUE, value);
+  static void encode(Serializer output, String value) throws IOException {
+    output.writeString(AnyValue.STRING_VALUE, value);
   }
 
   @Override
