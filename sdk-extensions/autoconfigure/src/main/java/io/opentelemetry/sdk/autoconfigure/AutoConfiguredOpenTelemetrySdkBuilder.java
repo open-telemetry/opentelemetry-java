@@ -293,7 +293,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
    * <p>Multiple calls will execute the customizers in order.
    */
   @Override
-  public AutoConfigurationCustomizer addMetricReaderCustomizer(
+  public AutoConfiguredOpenTelemetrySdkBuilder addMetricReaderCustomizer(
       BiFunction<? super MetricReader, ConfigProperties, ? extends MetricReader> readerCustomizer) {
     requireNonNull(readerCustomizer, "readerCustomizer");
     this.metricReaderCustomizer = mergeCustomizer(this.metricReaderCustomizer, readerCustomizer);
