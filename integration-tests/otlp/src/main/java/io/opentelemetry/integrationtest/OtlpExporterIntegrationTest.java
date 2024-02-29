@@ -536,7 +536,6 @@ abstract class OtlpExporterIntegrationTest {
     EventEmitter eventEmitter =
         SdkEventEmitterProvider.create(loggerProvider)
             .eventEmitterBuilder(OtlpExporterIntegrationTest.class.getName())
-            .setEventDomain("event-domain")
             .build();
 
     SpanContext spanContext =
@@ -712,10 +711,6 @@ abstract class OtlpExporterIntegrationTest {
     assertThat(protoLog2.getBody().getStringValue()).isEmpty();
     assertThat(protoLog2.getAttributesList())
         .containsExactlyInAnyOrder(
-            KeyValue.newBuilder()
-                .setKey("event.domain")
-                .setValue(AnyValue.newBuilder().setStringValue("event-domain").build())
-                .build(),
             KeyValue.newBuilder()
                 .setKey("event.name")
                 .setValue(AnyValue.newBuilder().setStringValue("event-name").build())

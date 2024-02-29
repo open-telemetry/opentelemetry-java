@@ -209,7 +209,6 @@ class FullConfigTest {
     EventEmitter eventEmitter =
         GlobalEventEmitterProvider.get()
             .eventEmitterBuilder("test")
-            .setEventDomain("test-domain")
             .build();
     eventEmitter.emit("test-name", Attributes.builder().put("cow", "moo").build());
 
@@ -336,10 +335,6 @@ class FullConfigTest {
             logRecord ->
                 assertThat(logRecord.getAttributesList())
                     .containsExactlyInAnyOrder(
-                        KeyValue.newBuilder()
-                            .setKey("event.domain")
-                            .setValue(AnyValue.newBuilder().setStringValue("test-domain").build())
-                            .build(),
                         KeyValue.newBuilder()
                             .setKey("event.name")
                             .setValue(AnyValue.newBuilder().setStringValue("test-name").build())
