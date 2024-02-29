@@ -22,7 +22,7 @@ class DefaultEventEmitterTest {
             () ->
                 DefaultEventEmitter.getInstance()
                     .emit(
-                        "otel.scope.event-name",
+                        "event-domain.event-name",
                         Attributes.builder().put("key1", "value1").build()))
         .doesNotThrowAnyException();
   }
