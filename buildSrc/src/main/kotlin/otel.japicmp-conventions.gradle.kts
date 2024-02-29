@@ -54,6 +54,16 @@ class AllowNewAbstractMethodOnAutovalueClasses : AbstractRecordingSeenMembers() 
 class SourceIncompatibleRule : AbstractRecordingSeenMembers() {
   override fun maybeAddViolation(member: JApiCompatibility): Violation? {
     if (!member.isSourceCompatible()) {
+
+      // TODO: remove after 1.36.0 is released, see https://github.com/open-telemetry/opentelemetry-java/pull/6248
+      if (member.compatibilityChanges.isEmpty() &&
+        member is JApiClass &&
+        member.newClass.get().name.equals("io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder")
+      ) {
+        return null
+      }
+      // end of suppression
+
       return Violation.error(member, "Not source compatible")
     }
     return null
