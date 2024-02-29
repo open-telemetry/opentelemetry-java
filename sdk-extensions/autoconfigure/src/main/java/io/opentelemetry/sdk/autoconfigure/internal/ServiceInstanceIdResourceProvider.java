@@ -36,4 +36,11 @@ public final class ServiceInstanceIdResourceProvider implements ConditionalResou
     return config.getString(SERVICE_INSTANCE_ID.getKey()) == null
         && existing.getAttribute(SERVICE_INSTANCE_ID) == null;
   }
+
+  @Override
+  public int order() {
+    // Run just before the environment resource provider - only set the service instance ID if it
+    // hasn't been set by any other provider.
+    return Integer.MAX_VALUE - 1;
+  }
 }
