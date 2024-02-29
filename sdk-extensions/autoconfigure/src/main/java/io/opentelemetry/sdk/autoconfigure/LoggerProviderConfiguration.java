@@ -39,6 +39,8 @@ final class LoggerProviderConfiguration {
       MeterProvider meterProvider,
       BiFunction<? super LogRecordExporter, ConfigProperties, ? extends LogRecordExporter>
           logRecordExporterCustomizer,
+      BiFunction<? super LogRecordProcessor, ConfigProperties, ? extends LogRecordProcessor>
+          logRecordProcessorCustomizer,
       List<Closeable> closeables) {
 
     loggerProviderBuilder.setLogLimits(() -> configureLogLimits(config));
@@ -46,8 +48,15 @@ final class LoggerProviderConfiguration {
     Map<String, LogRecordExporter> exportersByName =
         configureLogRecordExporters(config, spiHelper, logRecordExporterCustomizer, closeables);
 
-    configureLogRecordProcessors(config, exportersByName, meterProvider, closeables)
-        .forEach(loggerProviderBuilder::addLogRecordProcessor);
+    List<LogRecordProcessor> processors =
+        configureLogRecordProcessors(config, exportersByName, meterProvider, closeables);
+    for (LogRecordProcessor processor : processors) {
+      LogRecordProcessor wrapped = logRecordProcessorCustomizer.apply(processor, config);
+      if (wrapped != processor) {
+        closeables.add(wrapped);
+      }
+      loggerProviderBuilder.addLogRecordProcessor(wrapped);
+    }
   }
 
   // Visible for testing

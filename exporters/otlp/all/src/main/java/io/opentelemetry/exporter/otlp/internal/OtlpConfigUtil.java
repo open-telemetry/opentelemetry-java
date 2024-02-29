@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Locale;
 import java.util.Map;
@@ -89,7 +91,17 @@ public final class OtlpConfigUtil {
     if (headers.isEmpty()) {
       headers = config.getMap("otel.exporter.otlp.headers");
     }
-    headers.forEach(addHeader);
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      String key = entry.getKey();
+      String value = entry.getValue();
+      try {
+        // headers are encoded as URL - see
+        // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md#specifying-headers-via-environment-variables
+        addHeader.accept(key, URLDecoder.decode(value, StandardCharsets.UTF_8.displayName()));
+      } catch (Exception e) {
+        throw new ConfigurationException("Cannot decode header value: " + value, e);
+      }
+    }
 
     String compression = config.getString("otel.exporter.otlp." + dataType + ".compression");
     if (compression == null) {

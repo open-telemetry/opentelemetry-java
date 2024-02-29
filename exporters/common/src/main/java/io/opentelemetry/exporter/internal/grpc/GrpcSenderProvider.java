@@ -6,9 +6,11 @@
 package io.opentelemetry.exporter.internal.grpc;
 
 import io.grpc.Channel;
+import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -30,9 +32,10 @@ public interface GrpcSenderProvider {
   <T extends Marshaler> GrpcSender<T> createSender(
       URI endpoint,
       String endpointPath,
-      boolean compressionEnabled,
+      @Nullable Compressor compressor,
       long timeoutNanos,
-      Map<String, String> headers,
+      long connectTimeoutNanos,
+      Supplier<Map<String, List<String>>> headersSupplier,
       @Nullable Object managedChannel,
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
       @Nullable RetryPolicy retryPolicy,

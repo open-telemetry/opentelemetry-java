@@ -93,15 +93,15 @@ public class MutableDoublePointData implements DoublePointData {
     if (this == o) {
       return true;
     }
-    if (o == null || !(o instanceof MutableDoublePointData)) {
+    if (!(o instanceof DoublePointData)) {
       return false;
     }
-    MutableDoublePointData pointData = (MutableDoublePointData) o;
-    return startEpochNanos == pointData.startEpochNanos
-        && epochNanos == pointData.epochNanos
-        && Double.doubleToLongBits(value) == Double.doubleToLongBits(pointData.value)
-        && Objects.equals(attributes, pointData.attributes)
-        && Objects.equals(exemplars, pointData.exemplars);
+    DoublePointData pointData = (DoublePointData) o;
+    return startEpochNanos == pointData.getStartEpochNanos()
+        && epochNanos == pointData.getEpochNanos()
+        && Double.doubleToLongBits(value) == Double.doubleToLongBits(pointData.getValue())
+        && Objects.equals(attributes, pointData.getAttributes())
+        && Objects.equals(exemplars, pointData.getExemplars());
   }
 
   @Override

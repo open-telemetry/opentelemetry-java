@@ -5,11 +5,13 @@
 
 package io.opentelemetry.integrationtest;
 
+import static io.opentelemetry.extension.incubator.logs.AnyValue.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.testcontainers.Testcontainers.exposeHostPorts;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
@@ -38,6 +40,8 @@ import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.extension.incubator.logs.ExtendedLogRecordBuilder;
+import io.opentelemetry.extension.incubator.logs.KeyAnyValue;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
@@ -45,7 +49,9 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.common.v1.AnyValue;
+import io.opentelemetry.proto.common.v1.ArrayValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.common.v1.KeyValueList;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.proto.logs.v1.ScopeLogs;
 import io.opentelemetry.proto.metrics.v1.AggregationTemporality;
@@ -73,6 +79,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -514,6 +521,7 @@ abstract class OtlpExporterIntegrationTest {
     testLogRecordExporter(exporter);
   }
 
+  @SuppressWarnings("BadImport")
   private static void testLogRecordExporter(LogRecordExporter logRecordExporter) {
     SdkLoggerProvider loggerProvider =
         SdkLoggerProvider.builder()
@@ -539,10 +547,23 @@ abstract class OtlpExporterIntegrationTest {
             TraceState.getDefault());
 
     try (Scope unused = Span.wrap(spanContext).makeCurrent()) {
-      logger
-          .logRecordBuilder()
+      ((ExtendedLogRecordBuilder) logger.logRecordBuilder())
+          .setBody(
+              of(
+                  KeyAnyValue.of("str_key", of("value")),
+                  KeyAnyValue.of("bool_key", of(true)),
+                  KeyAnyValue.of("int_key", of(1L)),
+                  KeyAnyValue.of("double_key", of(1.1)),
+                  KeyAnyValue.of("bytes_key", of("value".getBytes(StandardCharsets.UTF_8))),
+                  KeyAnyValue.of("arr_key", of(of("value"), of(1L))),
+                  KeyAnyValue.of(
+                      "kv_list",
+                      of(
+                          KeyAnyValue.of("child_str_key", of("value")),
+                          KeyAnyValue.of(
+                              "child_kv_list",
+                              of(KeyAnyValue.of("grandchild_str_key", of("value"))))))))
           .setTimestamp(100, TimeUnit.NANOSECONDS)
-          .setBody("log body")
           .setAllAttributes(Attributes.builder().put("key", "value").build())
           .setSeverity(Severity.DEBUG)
           .setSeverityText("DEBUG")
@@ -576,7 +597,98 @@ abstract class OtlpExporterIntegrationTest {
 
     // LogRecord via Logger.logRecordBuilder()...emit()
     io.opentelemetry.proto.logs.v1.LogRecord protoLog1 = ilLogs.getLogRecords(0);
-    assertThat(protoLog1.getBody().getStringValue()).isEqualTo("log body");
+    assertThat(protoLog1.getBody())
+        .isEqualTo(
+            AnyValue.newBuilder()
+                .setKvlistValue(
+                    KeyValueList.newBuilder()
+                        .addValues(
+                            KeyValue.newBuilder()
+                                .setKey("str_key")
+                                .setValue(AnyValue.newBuilder().setStringValue("value").build())
+                                .build())
+                        .addValues(
+                            KeyValue.newBuilder()
+                                .setKey("bool_key")
+                                .setValue(AnyValue.newBuilder().setBoolValue(true).build())
+                                .build())
+                        .addValues(
+                            KeyValue.newBuilder()
+                                .setKey("int_key")
+                                .setValue(AnyValue.newBuilder().setIntValue(1).build())
+                                .build())
+                        .addValues(
+                            KeyValue.newBuilder()
+                                .setKey("double_key")
+                                .setValue(AnyValue.newBuilder().setDoubleValue(1.1).build())
+                                .build())
+                        .addValues(
+                            KeyValue.newBuilder()
+                                .setKey("bytes_key")
+                                .setValue(
+                                    AnyValue.newBuilder()
+                                        .setBytesValue(
+                                            ByteString.copyFrom(
+                                                "value".getBytes(StandardCharsets.UTF_8)))
+                                        .build())
+                                .build())
+                        .addValues(
+                            KeyValue.newBuilder()
+                                .setKey("arr_key")
+                                .setValue(
+                                    AnyValue.newBuilder()
+                                        .setArrayValue(
+                                            ArrayValue.newBuilder()
+                                                .addValues(
+                                                    AnyValue.newBuilder()
+                                                        .setStringValue("value")
+                                                        .build())
+                                                .addValues(
+                                                    AnyValue.newBuilder().setIntValue(1).build())
+                                                .build())
+                                        .build())
+                                .build())
+                        .addValues(
+                            KeyValue.newBuilder()
+                                .setKey("kv_list")
+                                .setValue(
+                                    AnyValue.newBuilder()
+                                        .setKvlistValue(
+                                            KeyValueList.newBuilder()
+                                                .addValues(
+                                                    KeyValue.newBuilder()
+                                                        .setKey("child_str_key")
+                                                        .setValue(
+                                                            AnyValue.newBuilder()
+                                                                .setStringValue("value")
+                                                                .build())
+                                                        .build())
+                                                .addValues(
+                                                    KeyValue.newBuilder()
+                                                        .setKey("child_kv_list")
+                                                        .setValue(
+                                                            AnyValue.newBuilder()
+                                                                .setKvlistValue(
+                                                                    KeyValueList.newBuilder()
+                                                                        .addValues(
+                                                                            KeyValue.newBuilder()
+                                                                                .setKey(
+                                                                                    "grandchild_str_key")
+                                                                                .setValue(
+                                                                                    AnyValue
+                                                                                        .newBuilder()
+                                                                                        .setStringValue(
+                                                                                            "value")
+                                                                                        .build())
+                                                                                .build())
+                                                                        .build())
+                                                                .build())
+                                                        .build())
+                                                .build())
+                                        .build())
+                                .build())
+                        .build())
+                .build());
     assertThat(protoLog1.getAttributesList())
         .isEqualTo(
             Collections.singletonList(

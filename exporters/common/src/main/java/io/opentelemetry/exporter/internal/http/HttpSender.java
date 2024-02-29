@@ -5,9 +5,9 @@
 
 package io.opentelemetry.exporter.internal.http;
 
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.function.Consumer;
 
 /**
@@ -33,7 +33,7 @@ public interface HttpSender {
    * @param onError the callback to invoke when the HTTP request could not be executed
    */
   void send(
-      Consumer<OutputStream> marshaler,
+      Marshaler marshaler,
       int contentLength,
       Consumer<Response> onResponse,
       Consumer<Throwable> onError);

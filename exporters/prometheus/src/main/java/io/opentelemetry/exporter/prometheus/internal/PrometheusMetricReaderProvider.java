@@ -31,6 +31,7 @@ public class PrometheusMetricReaderProvider implements ConfigurableMetricReaderP
     if (host != null) {
       prometheusBuilder.setHost(host);
     }
+
     return prometheusBuilder.build();
   }
 

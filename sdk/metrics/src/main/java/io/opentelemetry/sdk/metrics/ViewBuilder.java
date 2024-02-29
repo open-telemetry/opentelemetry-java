@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor.setIncludes;
 
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
@@ -96,6 +97,7 @@ public final class ViewBuilder {
    * <p>Note: not currently stable but additional attribute processors can be configured via {@link
    * SdkMeterProviderUtil#appendAllBaggageAttributes(ViewBuilder)}.
    */
+  @SuppressWarnings("unused")
   ViewBuilder addAttributesProcessor(AttributesProcessor attributesProcessor) {
     this.processor = this.processor.then(attributesProcessor);
     return this;
@@ -105,7 +107,10 @@ public final class ViewBuilder {
    * Set the cardinality limit.
    *
    * <p>Note: not currently stable but cardinality limit can be configured via
-   * SdkMeterProviderUtil#setCardinalityLimit(ViewBuilder, int)}.
+   * SdkMeterProviderUtil#setCardinalityLimit(ViewBuilder, int).
+   *
+   * <p>Read {@link MemoryMode} to understand the memory usage behavior of reaching cardinality
+   * limit.
    *
    * @param cardinalityLimit the maximum number of series for a metric
    */

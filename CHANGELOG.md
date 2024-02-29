@@ -2,6 +2,189 @@
 
 ## Unreleased
 
+## Version 1.35.0 (2024-02-09)
+
+**NOTE:** The `opentelemetry-exporter-jaeger` and `opentelemetry-exporter-jaeger-thift` artifacts
+have stopped being published. Jaeger
+has [native support for OTLP](https://opentelemetry.io/blog/2022/jaeger-native-otlp/), and users
+should export to jaeger
+using [OTLP](https://opentelemetry.io/docs/instrumentation/java/exporters/#otlp-dependencies)
+instead.
+
+### API
+
+#### Incubator
+
+* Add Span#addLink, for adding a link after span start
+  ([#6084](https://github.com/open-telemetry/opentelemetry-java/pull/6084))
+
+### SDK
+
+#### Traces
+
+* Bugfix: Ensure span status cannot be updated after set to StatusCode.OK
+  ([#6209](https://github.com/open-telemetry/opentelemetry-java/pull/6209)
+
+#### Metrics
+
+* Reusable memory Mode: Adding support for exponential histogram aggregation
+  ([#6058](https://github.com/open-telemetry/opentelemetry-java/pull/6058),
+   [#6136](https://github.com/open-telemetry/opentelemetry-java/pull/6136))
+* Reusable memory mode: Adding support for explicit histogram aggregation
+  ([#6153](https://github.com/open-telemetry/opentelemetry-java/pull/6153))
+* Reusable memory mode: Adding support for sum aggregation
+  ([#6182](https://github.com/open-telemetry/opentelemetry-java/pull/6182))
+* Reusable memory mode: Adding support for last value aggregation
+  ([#6196](https://github.com/open-telemetry/opentelemetry-java/pull/6196))
+
+#### Exporters
+
+* Recreate / fix graal issue detecting RetryPolicy class
+  ([#6139](https://github.com/open-telemetry/opentelemetry-java/pull/6139),
+   [#6134](https://github.com/open-telemetry/opentelemetry-java/pull/6134))
+* Restore prometheus metric name mapper tests, fix regressions
+  ([#6138](https://github.com/open-telemetry/opentelemetry-java/pull/6138))
+* WARNING: Remove jaeger exporters
+  ([#6119](https://github.com/open-telemetry/opentelemetry-java/pull/6119))
+* Update dependency `io.zipkin.reporter2:zipkin-reporter-bom` to 3.2.1.
+  Note: `ZipkinSpanExporterBuilder#setEncoder(zipkin2.codec.BytesEncoder)` has been deprecated in
+  favor of `ZipkinSpanExporterBuilder#setEncoder(zipkin2.reporter.BytesEncoder)`.
+  `ZipkinSpanExporterBuilder#setSender(zipkin2.reporter.Sender)` has been deprecated in favor
+  of `ZipkinSpanExporterBuilder#setSender(zipkin2.reporter.BytesMessageSender)`.
+  ([#6129](https://github.com/open-telemetry/opentelemetry-java/pull/6129),
+  [#6151](https://github.com/open-telemetry/opentelemetry-java/pull/6151))
+* Include trace flags in otlp marshaller
+  ([#6167](https://github.com/open-telemetry/opentelemetry-java/pull/6167))
+* Add Compressor SPI support to OtlpGrpc{Signal}Exporters
+  ([#6103](https://github.com/open-telemetry/opentelemetry-java/pull/6103))
+* Allow Prometheus exporter to add resource attributes to metric attributes
+  ([#6179](https://github.com/open-telemetry/opentelemetry-java/pull/6179))
+
+#### Extension
+
+* Autoconfigure accepts encoded header values for OTLP exporters
+  ([#6164](https://github.com/open-telemetry/opentelemetry-java/pull/6164))
+
+#### Incubator
+
+* Align file configuration with latest changes to spec
+  ([#6088](https://github.com/open-telemetry/opentelemetry-java/pull/6088))
+
+### Tooling
+
+* Stop including old artifacts in bom
+  ([#6157](https://github.com/open-telemetry/opentelemetry-java/pull/6157))
+* Define CODECOV token
+  ([#6186](https://github.com/open-telemetry/opentelemetry-java/pull/6186))
+
+## Version 1.34.1 (2024-01-11)
+
+* Fix prometheus exporter regressions
+  ([#6138](https://github.com/open-telemetry/opentelemetry-java/pull/6138))
+* Fix native image regression
+  ([#6134](https://github.com/open-telemetry/opentelemetry-java/pull/6134))
+
+## Version 1.34.0 (2024-01-05)
+
+**NOTE:** This is the LAST release for `opentelemetry-exporter-jaeger`
+and `opentelemetry-exporter-jaeger-thift`. Jaeger
+has [native support for OTLP](https://opentelemetry.io/blog/2022/jaeger-native-otlp/), and users
+should export to jaeger
+using [OTLP](https://opentelemetry.io/docs/instrumentation/java/exporters/#otlp-dependencies)
+instead.
+
+### API
+
+* Ability to access version.properties API file with GraalVM native
+  ([#6095](https://github.com/open-telemetry/opentelemetry-java/pull/6095))
+
+### SDK
+
+#### Traces
+
+* Only call SpanProcessor onStart / onEnd if required
+  ([#6112](https://github.com/open-telemetry/opentelemetry-java/pull/6112))
+* Add option to export unsampled spans from span processors
+  ([#6057](https://github.com/open-telemetry/opentelemetry-java/pull/6057))
+
+#### Metrics
+
+* Memory Mode: Adding first part support for synchronous instruments - storage
+  ([#5998](https://github.com/open-telemetry/opentelemetry-java/pull/5998))
+* Base2ExponentialHistogramAggregation maxBuckets must be >= 2
+  ([#6093](https://github.com/open-telemetry/opentelemetry-java/pull/6093))
+* Convert histogram measurements to double before passing recording exemplar reservoir
+  ([#6024](https://github.com/open-telemetry/opentelemetry-java/pull/6024))
+
+#### Exporters
+
+* Add compressor SPI to support additional compression algos
+  ([#5990](https://github.com/open-telemetry/opentelemetry-java/pull/5990))
+* Test OTLP exporters with different OkHttp versions
+  ([#6045](https://github.com/open-telemetry/opentelemetry-java/pull/6045))
+* Refactor prometheus exporter to use `io.prometheus:prometheus-metrics-exporter-httpserver`, add
+  exponential Histogram support
+  ([#6015](https://github.com/open-telemetry/opentelemetry-java/pull/6015))
+* UpstreamGrpcSenderProvider uses minimal fallback managed channel when none is specified
+  ([#6110](https://github.com/open-telemetry/opentelemetry-java/pull/6110))
+* OTLP exporters propagate serialization IOException instead of rethrowing as runtime
+  ([#6082](https://github.com/open-telemetry/opentelemetry-java/pull/6082))
+
+#### Extensions
+
+* Autoconfigure reads normalized otel.config.file property
+  ([#6105](https://github.com/open-telemetry/opentelemetry-java/pull/6105))
+
+## Version 1.33.0 (2023-12-08)
+
+### API
+
+* Fix issue where wrapping "invalid" SpanContexts in Span does not preserve SpanContext
+  ([#6044](https://github.com/open-telemetry/opentelemetry-java/pull/6044))
+
+#### Incubator
+
+* Refactor and add to ExtendedTracer, add ExtendedContextPropagators
+  ([#6017](https://github.com/open-telemetry/opentelemetry-java/pull/6017))
+* Base64 encode AnyValue bytes in string representation
+  ([#6003](https://github.com/open-telemetry/opentelemetry-java/pull/6003))
+
+### SDK
+
+#### Exporters
+
+* Add connectTimeout configuration option OtlpHttp{Signal}Exporters
+  ([#5941](https://github.com/open-telemetry/opentelemetry-java/pull/5941))
+* Add ability for Otlp{Protocol}LogRecordExporter to serialize log body any value
+  ([#5938](https://github.com/open-telemetry/opentelemetry-java/pull/5938))
+* Android environments can now handle base64 encoded PEM keys, remove exception handling in
+  TlsUtil#decodePem
+  ([#6034](https://github.com/open-telemetry/opentelemetry-java/pull/6034))
+* Add header supplier configuration option to OTLP exporters
+  ([#6004](https://github.com/open-telemetry/opentelemetry-java/pull/6004))
+
+
+#### Extensions
+
+* Add autoconfigure option for customizing SpanProcessor, LogRecordProcessor
+  ([#5986](https://github.com/open-telemetry/opentelemetry-java/pull/5986))
+* Incubator allows for simpler creation of start-only and end-only SpanProcessors.
+  ([#5923](https://github.com/open-telemetry/opentelemetry-java/pull/5923))
+
+#### Testing
+
+* Add hasAttributesSatisfying overload to AbstractPointAssert
+  ([#6048](https://github.com/open-telemetry/opentelemetry-java/pull/6048))
+
+### Project Tooling
+
+* Building animal sniffer signatures directly from android corelib
+  ([#5973](https://github.com/open-telemetry/opentelemetry-java/pull/5973))
+* Target kotlin 1.6 in kotlin extension
+  ([#5910](https://github.com/open-telemetry/opentelemetry-java/pull/5910))
+* Define language version compatibility requirements
+  ([#5983](https://github.com/open-telemetry/opentelemetry-java/pull/5983))
+
 ## Version 1.32.0 (2023-11-13)
 
 ### API

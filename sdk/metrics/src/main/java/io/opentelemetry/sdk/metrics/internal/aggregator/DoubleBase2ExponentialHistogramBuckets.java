@@ -5,6 +5,11 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
+import static io.opentelemetry.sdk.common.export.MemoryMode.IMMUTABLE_DATA;
+import static io.opentelemetry.sdk.common.export.MemoryMode.REUSABLE_DATA;
+
+import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import io.opentelemetry.sdk.internal.PrimitiveLongList;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import java.util.Collections;
@@ -20,12 +25,17 @@ import javax.annotation.Nullable;
  */
 final class DoubleBase2ExponentialHistogramBuckets implements ExponentialHistogramBuckets {
 
+  private final MemoryMode memoryMode;
   private AdaptingCircularBufferCounter counts;
   private int scale;
   private Base2ExponentialHistogramIndexer base2ExponentialHistogramIndexer;
   private long totalCount;
 
-  DoubleBase2ExponentialHistogramBuckets(int scale, int maxBuckets) {
+  // Only used when memory mode is REUSABLE_DATA
+  @Nullable private AdaptingCircularBufferCounter reusableCounts;
+
+  DoubleBase2ExponentialHistogramBuckets(int scale, int maxBuckets, MemoryMode memoryMode) {
+    this.memoryMode = memoryMode;
     this.counts = new AdaptingCircularBufferCounter(maxBuckets);
     this.scale = scale;
     this.base2ExponentialHistogramIndexer = Base2ExponentialHistogramIndexer.get(this.scale);
@@ -38,6 +48,8 @@ final class DoubleBase2ExponentialHistogramBuckets implements ExponentialHistogr
     this.scale = buckets.scale;
     this.base2ExponentialHistogramIndexer = buckets.base2ExponentialHistogramIndexer;
     this.totalCount = buckets.totalCount;
+    this.memoryMode = buckets.memoryMode;
+    this.reusableCounts = buckets.reusableCounts;
   }
 
   /** Returns a copy of this bucket. */
@@ -90,6 +102,31 @@ final class DoubleBase2ExponentialHistogramBuckets implements ExponentialHistogr
     return PrimitiveLongList.wrap(countsArr);
   }
 
+  /**
+   * Fills the given reusable list with the bucket counts.
+   *
+   * <p>NOTE: This is the same as {@link #getBucketCounts()} but instead of returning a List with
+   * the values is fill the values into {@code reusableLongList}
+   *
+   * @param reusableLongList The list to fill with the bucket counts
+   */
+  void getBucketCountsIntoReusableList(DynamicPrimitiveLongList reusableLongList) {
+    if (counts.isEmpty()) {
+      reusableLongList.resizeAndClear(0);
+      return;
+    }
+
+    int length = counts.getIndexEnd() - counts.getIndexStart() + 1;
+
+    if (reusableLongList.size() != length) {
+      reusableLongList.resizeAndClear(length);
+    }
+
+    for (int i = 0; i < length; i++) {
+      reusableLongList.setLong(i, counts.get(i + counts.getIndexStart()));
+    }
+  }
+
   @Override
   public long getTotalCount() {
     return totalCount;
@@ -107,7 +144,16 @@ final class DoubleBase2ExponentialHistogramBuckets implements ExponentialHistogr
       // We want to preserve other optimisations here as well, e.g. integer size.
       // Instead of  creating a new counter, we copy the existing one (for bucket size
       // optimisations), and clear the values before writing the new ones.
-      AdaptingCircularBufferCounter newCounts = new AdaptingCircularBufferCounter(counts);
+      AdaptingCircularBufferCounter newCounts;
+      if (memoryMode == IMMUTABLE_DATA) {
+        newCounts = new AdaptingCircularBufferCounter(counts);
+      } else {
+        if (reusableCounts == null) {
+          reusableCounts = new AdaptingCircularBufferCounter(counts);
+        }
+        newCounts = reusableCounts;
+      }
+
       newCounts.clear();
 
       for (int i = counts.getIndexStart(); i <= counts.getIndexEnd(); i++) {
@@ -119,7 +165,14 @@ final class DoubleBase2ExponentialHistogramBuckets implements ExponentialHistogr
           }
         }
       }
-      this.counts = newCounts;
+
+      if (memoryMode == REUSABLE_DATA) {
+        AdaptingCircularBufferCounter existingCounts = this.counts;
+        this.counts = newCounts;
+        reusableCounts = existingCounts;
+      } else {
+        this.counts = newCounts;
+      }
     }
 
     this.scale = this.scale - by;

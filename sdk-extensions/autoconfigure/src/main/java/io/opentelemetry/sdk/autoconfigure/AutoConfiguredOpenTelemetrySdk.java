@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
@@ -47,8 +48,12 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
   }
 
   /**
-   * Returns the {@link OpenTelemetrySdk} that was auto-configured, or {@code null} if the SDK has
-   * been disabled.
+   * Returns the {@link OpenTelemetrySdk} that was auto-configured, or an effectively noop instance
+   * if the SDK has been disabled.
+   *
+   * <p>The instance returned if the SDK is disabled is equivalent to {@code
+   * OpenTelemetrySdk.builder().build()}, which is notably not the same as {@link
+   * OpenTelemetry#noop()}.
    */
   public abstract OpenTelemetrySdk getOpenTelemetrySdk();
 

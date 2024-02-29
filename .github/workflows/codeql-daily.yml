@@ -14,26 +14,26 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Java 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: java
           # using "latest" helps to keep up with the latest Kotlin support
           # see https://github.com/github/codeql-action/issues/1555#issuecomment-1452228433
           tools: latest
 
-      - uses: gradle/gradle-build-action@v2
+      - uses: gradle/gradle-build-action@v3
         with:
           # skipping build cache is needed so that all modules will be analyzed
           arguments: assemble --no-build-cache
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
 
   open-issue-on-failure:
     # open an issue on failure because it can be easy to miss CI failure notifications

@@ -39,7 +39,7 @@ final class ExemplarMarshaler extends MarshalerWithSize {
 
   private static ExemplarMarshaler create(ExemplarData exemplar) {
     KeyValueMarshaler[] attributeMarshalers =
-        KeyValueMarshaler.createRepeated(exemplar.getFilteredAttributes());
+        KeyValueMarshaler.createForAttributes(exemplar.getFilteredAttributes());
 
     ProtoFieldInfo valueField;
     if (exemplar instanceof LongExemplarData) {

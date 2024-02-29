@@ -28,14 +28,11 @@ class SpanExporterConfigurationTest {
       SpiHelper.create(SpanExporterConfigurationTest.class.getClassLoader());
 
   @Test
-  @SuppressWarnings("deprecation") // Testing deprecated jaeger exporter
   void configureExporter_KnownSpiExportersOnClasspath() {
     NamedSpiManager<SpanExporter> spiExportersManager =
         SpanExporterConfiguration.spanExporterSpiManager(
             DefaultConfigProperties.createFromMap(Collections.emptyMap()), spiHelper);
 
-    assertThat(SpanExporterConfiguration.configureExporter("jaeger", spiExportersManager))
-        .isInstanceOf(io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter.class);
     assertThat(SpanExporterConfiguration.configureExporter("console", spiExportersManager))
         .isInstanceOf(LoggingSpanExporter.class);
     assertThat(SpanExporterConfiguration.configureExporter("logging", spiExportersManager))

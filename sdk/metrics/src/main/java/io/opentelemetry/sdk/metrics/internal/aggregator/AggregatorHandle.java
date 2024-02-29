@@ -28,6 +28,7 @@ public abstract class AggregatorHandle<T extends PointData, U extends ExemplarDa
 
   // A reservoir of sampled exemplars for this time period.
   private final ExemplarReservoir<U> exemplarReservoir;
+  private volatile boolean valuesRecorded = false;
 
   protected AggregatorHandle(ExemplarReservoir<U> exemplarReservoir) {
     this.exemplarReservoir = exemplarReservoir;
@@ -39,6 +40,10 @@ public abstract class AggregatorHandle<T extends PointData, U extends ExemplarDa
    */
   public final T aggregateThenMaybeReset(
       long startEpochNanos, long epochNanos, Attributes attributes, boolean reset) {
+    if (reset) {
+      valuesRecorded = false;
+    }
+
     return doAggregateThenMaybeReset(
         startEpochNanos,
         epochNanos,
@@ -69,6 +74,7 @@ public abstract class AggregatorHandle<T extends PointData, U extends ExemplarDa
    */
   public final void recordLong(long value) {
     doRecordLong(value);
+    valuesRecorded = true;
   }
 
   /**
@@ -94,6 +100,7 @@ public abstract class AggregatorHandle<T extends PointData, U extends ExemplarDa
    */
   public final void recordDouble(double value) {
     doRecordDouble(value);
+    valuesRecorded = true;
   }
 
   /**
@@ -103,5 +110,14 @@ public abstract class AggregatorHandle<T extends PointData, U extends ExemplarDa
   protected void doRecordDouble(double value) {
     throw new UnsupportedOperationException(
         "This aggregator does not support recording double values.");
+  }
+
+  /**
+   * Checks whether this handle has values recorded.
+   *
+   * @return True if values has been recorded to it
+   */
+  public boolean hasRecordedValues() {
+    return valuesRecorded;
   }
 }

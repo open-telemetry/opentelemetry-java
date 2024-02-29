@@ -2,7 +2,7 @@ plugins {
   `kotlin-dsl`
 
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "6.22.0"
+  id("com.diffplug.spotless") version "6.25.0"
 }
 
 if (!JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
@@ -42,12 +42,12 @@ repositories {
 }
 
 dependencies {
-  implementation(enforcedPlatform("com.squareup.wire:wire-bom:4.9.3"))
+  implementation(enforcedPlatform("com.squareup.wire:wire-bom:4.9.7"))
   implementation("com.google.auto.value:auto-value-annotations:1.10.4")
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.22.0")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.25.0")
   // Needed for japicmp but not automatically brought in for some reason.
-  implementation("com.google.guava:guava:32.1.3-jre")
+  implementation("com.google.guava:guava:33.0.0-jre")
   implementation("com.squareup:javapoet:1.13.0")
   implementation("com.squareup.wire:wire-compiler")
   implementation("com.squareup.wire:wire-gradle-plugin")
@@ -56,9 +56,9 @@ dependencies {
   implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.2")
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.2")
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.1.0")
-  implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.6.0")
-  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.21")
-  implementation("org.owasp:dependency-check-gradle:9.0.1")
+  implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.0.0")
+  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
+  implementation("org.owasp:dependency-check-gradle:9.0.9")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:1.7.1")
 }
 

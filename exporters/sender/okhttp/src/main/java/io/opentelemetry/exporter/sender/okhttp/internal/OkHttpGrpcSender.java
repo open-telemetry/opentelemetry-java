@@ -25,6 +25,7 @@ package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.opentelemetry.exporter.internal.InstrumentationUtil;
 import io.opentelemetry.exporter.internal.RetryUtil;
+import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcResponse;
 import io.opentelemetry.exporter.internal.grpc.GrpcSender;
@@ -37,14 +38,15 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
@@ -65,22 +67,24 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
 
   private final OkHttpClient client;
   private final HttpUrl url;
-  private final Headers headers;
-  private final boolean compressionEnabled;
+  private final Supplier<Map<String, List<String>>> headersSupplier;
+  @Nullable private final Compressor compressor;
 
   /** Creates a new {@link OkHttpGrpcSender}. */
   public OkHttpGrpcSender(
       String endpoint,
-      boolean compressionEnabled,
+      @Nullable Compressor compressor,
       long timeoutNanos,
-      Map<String, String> headers,
+      long connectTimeoutNanos,
+      Supplier<Map<String, List<String>>> headersSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager) {
     OkHttpClient.Builder clientBuilder =
         new OkHttpClient.Builder()
             .dispatcher(OkHttpUtil.newDispatcher())
-            .callTimeout(Duration.ofNanos(timeoutNanos));
+            .callTimeout(Duration.ofNanos(timeoutNanos))
+            .connectTimeout(Duration.ofNanos(connectTimeoutNanos));
     if (retryPolicy != null) {
       clientBuilder.addInterceptor(
           new RetryInterceptor(retryPolicy, OkHttpGrpcSender::isRetryable));
@@ -94,23 +98,25 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
       clientBuilder.protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1));
     }
     this.client = clientBuilder.build();
-
-    Headers.Builder headersBuilder = new Headers.Builder();
-    headers.forEach(headersBuilder::add);
-    headersBuilder.add("te", "trailers");
-    if (compressionEnabled) {
-      headersBuilder.add("grpc-encoding", "gzip");
-    }
-    this.headers = headersBuilder.build();
+    this.headersSupplier = headersSupplier;
     this.url = HttpUrl.get(endpoint);
-    this.compressionEnabled = compressionEnabled;
+    this.compressor = compressor;
   }
 
   @Override
   public void send(T request, Runnable onSuccess, BiConsumer<GrpcResponse, Throwable> onError) {
-    Request.Builder requestBuilder = new Request.Builder().url(url).headers(headers);
+    Request.Builder requestBuilder = new Request.Builder().url(url);
 
-    RequestBody requestBody = new GrpcRequestBody(request, compressionEnabled);
+    Map<String, List<String>> headers = headersSupplier.get();
+    if (headers != null) {
+      headers.forEach(
+          (key, values) -> values.forEach(value -> requestBuilder.addHeader(key, value)));
+    }
+    requestBuilder.addHeader("te", "trailers");
+    if (compressor != null) {
+      requestBuilder.addHeader("grpc-encoding", compressor.getEncoding());
+    }
+    RequestBody requestBody = new GrpcRequestBody(request, compressor);
     requestBuilder.post(requestBody);
 
     InstrumentationUtil.suppressInstrumentation(

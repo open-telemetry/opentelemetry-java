@@ -5,35 +5,47 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.internal.marshal.ProtoFieldInfo;
+import io.opentelemetry.exporter.internal.marshal.Serializer;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.function.Consumer;
 
 class OkHttpHttpSuppressionTest extends AbstractOkHttpSuppressionTest<OkHttpHttpSender> {
 
   @Override
   void send(OkHttpHttpSender sender, Runnable onSuccess, Runnable onFailure) {
     byte[] content = "A".getBytes(StandardCharsets.UTF_8);
-    Consumer<OutputStream> outputStreamConsumer =
-        outputStream -> {
-          try {
-            outputStream.write(content);
-          } catch (IOException e) {
-            throw new RuntimeException(e);
+    Marshaler marshaler =
+        new Marshaler() {
+          @Override
+          public int getBinarySerializedSize() {
+            return content.length;
+          }
+
+          @Override
+          protected void writeTo(Serializer output) throws IOException {
+            output.serializeBytes(ProtoFieldInfo.create(1, 1, "field"), content);
           }
         };
     sender.send(
-        outputStreamConsumer,
-        content.length,
-        (response) -> onSuccess.run(),
-        (error) -> onFailure.run());
+        marshaler, content.length, (response) -> onSuccess.run(), (error) -> onFailure.run());
   }
 
   @Override
   OkHttpHttpSender createSender(String endpoint) {
     return new OkHttpHttpSender(
-        endpoint, false, "text/plain", 10L, Collections::emptyMap, null, null, null, null);
+        endpoint,
+        null,
+        false,
+        "text/plain",
+        10L,
+        10L,
+        Collections::emptyMap,
+        null,
+        null,
+        null,
+        null);
   }
 }

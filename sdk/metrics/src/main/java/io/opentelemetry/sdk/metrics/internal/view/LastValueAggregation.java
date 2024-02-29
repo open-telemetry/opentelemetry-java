@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
@@ -36,14 +37,18 @@ public final class LastValueAggregation implements Aggregation, AggregatorFactor
   @Override
   @SuppressWarnings("unchecked")
   public <T extends PointData, U extends ExemplarData> Aggregator<T, U> createAggregator(
-      InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
+      InstrumentDescriptor instrumentDescriptor,
+      ExemplarFilter exemplarFilter,
+      MemoryMode memoryMode) {
 
     // For the initial version we do not sample exemplars on gauges.
     switch (instrumentDescriptor.getValueType()) {
       case LONG:
-        return (Aggregator<T, U>) new LongLastValueAggregator(ExemplarReservoir::longNoSamples);
+        return (Aggregator<T, U>)
+            new LongLastValueAggregator(ExemplarReservoir::longNoSamples, memoryMode);
       case DOUBLE:
-        return (Aggregator<T, U>) new DoubleLastValueAggregator(ExemplarReservoir::doubleNoSamples);
+        return (Aggregator<T, U>)
+            new DoubleLastValueAggregator(ExemplarReservoir::doubleNoSamples, memoryMode);
     }
     throw new IllegalArgumentException("Invalid instrument value type");
   }

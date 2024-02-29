@@ -22,6 +22,8 @@ dependencies {
   api(project(":api:all"))
   api(project(":sdk:common"))
 
+  implementation(project(":extensions:incubator"))
+
   compileOnly(project(":sdk:trace-shaded-deps"))
 
   annotationProcessor("com.google.auto.value:auto-value")
@@ -39,7 +41,6 @@ dependencies {
     // dependencies.
     isTransitive = false
   }
-  jmh(project(":exporters:jaeger-thrift"))
   jmh(project(":exporters:otlp:all")) {
     // The opentelemetry-exporter-otlp depends on this project itself. So don't pull in
     // the transitive dependencies.

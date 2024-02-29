@@ -15,6 +15,7 @@ import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.HashMap;
@@ -49,6 +50,7 @@ class PrometheusMetricReaderProviderTest {
     try (MetricReader metricReader = provider.createMetricReader(configProperties)) {
       assertThat(metricReader)
           .isInstanceOf(PrometheusHttpServer.class)
+          .extracting("httpServer", as(InstanceOfAssertFactories.type(HTTPServer.class)))
           .extracting("server", as(InstanceOfAssertFactories.type(HttpServer.class)))
           .satisfies(
               server -> {
@@ -78,6 +80,7 @@ class PrometheusMetricReaderProviderTest {
     try (MetricReader metricReader =
         provider.createMetricReader(DefaultConfigProperties.createFromMap(config))) {
       assertThat(metricReader)
+          .extracting("httpServer", as(InstanceOfAssertFactories.type(HTTPServer.class)))
           .extracting("server", as(InstanceOfAssertFactories.type(HttpServer.class)))
           .satisfies(
               server -> {

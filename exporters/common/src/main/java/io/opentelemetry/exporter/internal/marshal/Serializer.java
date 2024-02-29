@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.marshal;
 
+import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import java.io.IOException;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -127,6 +128,14 @@ public abstract class Serializer implements AutoCloseable {
 
   protected abstract void writeUInt64Value(long value) throws IOException;
 
+  /**
+   * Serializes a byte as a protobuf {@code fixed32} field. Ensures that there is no sign
+   * propagation if the high bit in the byte is set.
+   */
+  public void serializeByteAsFixed32(ProtoFieldInfo field, byte value) throws IOException {
+    serializeFixed32(field, ((int) value) & 0xff);
+  }
+
   /** Serializes a protobuf {@code fixed32} field. */
   public void serializeFixed32(ProtoFieldInfo field, int value) throws IOException {
     if (value == 0) {
@@ -177,7 +186,7 @@ public abstract class Serializer implements AutoCloseable {
     writeBytes(field, value);
   }
 
-  protected abstract void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException;
+  public abstract void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException;
 
   protected abstract void writeStartMessage(ProtoFieldInfo field, int protoMessageSize)
       throws IOException;
@@ -191,6 +200,7 @@ public abstract class Serializer implements AutoCloseable {
     writeEndMessage();
   }
 
+  @SuppressWarnings("SameParameterValue")
   protected abstract void writeStartRepeatedPrimitive(
       ProtoFieldInfo field, int protoSizePerElement, int numElements) throws IOException;
 
@@ -238,6 +248,32 @@ public abstract class Serializer implements AutoCloseable {
 
     writeStartRepeatedVarint(field, payloadSize);
     for (long value : values) {
+      writeUInt64Value(value);
+    }
+    writeEndRepeatedVarint();
+  }
+
+  /**
+   * Serializes a {@code repeated uint64} field.
+   *
+   * <p>NOTE: This is the same as {@link #serializeRepeatedUInt64(ProtoFieldInfo, long[])} but
+   * instead of taking a primitive array it takes a {@link DynamicPrimitiveLongList} as input.
+   */
+  public void serializeRepeatedUInt64(ProtoFieldInfo field, DynamicPrimitiveLongList values)
+      throws IOException {
+    if (values.isEmpty()) {
+      return;
+    }
+
+    int payloadSize = 0;
+    for (int i = 0; i < values.size(); i++) {
+      long v = values.getLong(i);
+      payloadSize += CodedOutputStream.computeUInt64SizeNoTag(v);
+    }
+
+    writeStartRepeatedVarint(field, payloadSize);
+    for (int i = 0; i < values.size(); i++) {
+      long value = values.getLong(i);
       writeUInt64Value(value);
     }
     writeEndRepeatedVarint();

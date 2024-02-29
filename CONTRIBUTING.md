@@ -8,7 +8,7 @@ requirements and recommendations.
 
 If you want to add new features or change behavior, please make sure your changes follow the
 [OpenTelemetry Specification](https://github.com/open-telemetry/opentelemetry-specification).
-Otherwise, file an issue or submit a PR to the specification repo first.
+Otherwise, file an issue or submit a pull request (PR) to the specification repo first.
 
 Make sure to review the projects [license](LICENSE) and sign the
 [CNCF CLA](https://identity.linuxfoundation.org/projects/cncf). A signed CLA will be enforced by an
@@ -60,6 +60,14 @@ add those files to your commits in the PR).
 After you submit a PR, it will be reviewed by the project maintainers and approvers. Not all
 maintainers need to review a particular PR, but merging to the base branch is authorized to
 restricted members (administrators).
+
+### Draft PRs
+
+Draft PRs are welcome, especially when exploring new ideas or experimenting with a hypothesis.
+However, draft PRs may not receive the same degree of attention, feedback, or scrutiny unless
+requested directly. In order to help keep the PR backlog maintainable, drafts older than 6 months
+will be closed by the project maintainers. This should not be interpreted as a rejection. Closed
+PRs may be reopened by the author when time or interest allows.
 
 ## Project Scope
 

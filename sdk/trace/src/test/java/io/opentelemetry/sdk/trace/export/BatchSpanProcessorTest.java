@@ -518,6 +518,38 @@ class BatchSpanProcessorTest {
   }
 
   @Test
+  void exportUnsampledSpans_recordOnly() {
+    WaitingSpanExporter waitingSpanExporter =
+        new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
+
+    when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
+        .thenReturn(SamplingResult.recordOnly());
+    sdkTracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(
+                BatchSpanProcessor.builder(waitingSpanExporter)
+                    .setExportUnsampledSpans(true)
+                    .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
+                    .build())
+            .setSampler(mockSampler)
+            .build();
+
+    ReadableSpan span1 = createEndedSpan(SPAN_NAME_1);
+    when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
+        .thenReturn(SamplingResult.recordAndSample());
+    ReadableSpan span2 = createEndedSpan(SPAN_NAME_2);
+
+    // Spans are recorded and exported in the same order as they are ended, we test that a non
+    // exported span is not exported by creating and ending a sampled span after a non sampled span
+    // and checking that the first exported span is the sampled span (the non sampled did not get
+    // exported).
+    List<SpanData> exported = waitingSpanExporter.waitForExport();
+    // Need to check this because otherwise the variable span1 is unused, other option is to not
+    // have a span1 variable.
+    assertThat(exported).containsExactly(span1.toSpanData(), span2.toSpanData());
+  }
+
+  @Test
   @Timeout(10)
   @SuppressLogger(SdkTracerProvider.class)
   void shutdownFlushes() {
@@ -569,6 +601,7 @@ class BatchSpanProcessorTest {
         .hasToString(
             "BatchSpanProcessor{"
                 + "spanExporter=mockSpanExporter, "
+                + "exportUnsampledSpans=false, "
                 + "scheduleDelayNanos=5000000000, "
                 + "maxExportBatchSize=512, "
                 + "exporterTimeoutNanos=30000000000}");

@@ -5,54 +5,40 @@
 
 package io.opentelemetry.extension.incubator.trace;
 
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Scope;
-import java.util.concurrent.Callable;
 
-/** Provides easy mechanisms for wrapping standard Java constructs with an OpenTelemetry Span. */
+/**
+ * Utility class to simplify tracing.
+ *
+ * <p>The <a
+ * href="https://github.com/opentelemetry/opentelemetry-java/blob/main/extensions/incubator/src/main/java/io/opentelemetry/extension/incubator">README</a>
+ * explains the use cases in more detail.
+ */
 public final class ExtendedTracer implements Tracer {
 
   private final Tracer delegate;
-
-  /** Create a new {@link ExtendedTracer} that wraps the provided Tracer. */
-  public static ExtendedTracer create(Tracer delegate) {
-    return new ExtendedTracer(delegate);
-  }
 
   private ExtendedTracer(Tracer delegate) {
     this.delegate = delegate;
   }
 
-  /** Run the provided {@link Runnable} and wrap with a {@link Span} with the provided name. */
-  public void run(String spanName, Runnable runnable) {
-    Span span = delegate.spanBuilder(spanName).startSpan();
-    try (Scope scope = span.makeCurrent()) {
-      runnable.run();
-    } catch (Throwable e) {
-      span.recordException(e);
-      throw e;
-    } finally {
-      span.end();
-    }
+  /**
+   * Creates a new instance of {@link ExtendedTracer}.
+   *
+   * @param delegate the {@link Tracer} to use
+   */
+  public static ExtendedTracer create(Tracer delegate) {
+    return new ExtendedTracer(delegate);
   }
 
-  /** Call the provided {@link Callable} and wrap with a {@link Span} with the provided name. */
-  public <T> T call(String spanName, Callable<T> callable) throws Exception {
-    Span span = delegate.spanBuilder(spanName).startSpan();
-    try (Scope scope = span.makeCurrent()) {
-      return callable.call();
-    } catch (Throwable e) {
-      span.recordException(e);
-      throw e;
-    } finally {
-      span.end();
-    }
-  }
-
+  /**
+   * Creates a new {@link ExtendedSpanBuilder} with the given span name.
+   *
+   * @param spanName the name of the span
+   * @return the {@link ExtendedSpanBuilder}
+   */
   @Override
-  public SpanBuilder spanBuilder(String spanName) {
-    return delegate.spanBuilder(spanName);
+  public ExtendedSpanBuilder spanBuilder(String spanName) {
+    return new ExtendedSpanBuilder(delegate.spanBuilder(spanName));
   }
 }

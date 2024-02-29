@@ -16,7 +16,9 @@ sourceSets {
 }
 
 dependencies {
-  implementation(project(path = ":sdk:trace-shaded-deps"))
+  implementation(project(":sdk:all"))
+  implementation(project(":sdk:trace-shaded-deps"))
+  implementation(project(":exporters:otlp:all"))
 }
 
 // org.graalvm.buildtools.native pluging requires java 11+ as of version 0.9.26

@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.metrics.data.PointData;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
@@ -108,6 +109,17 @@ public abstract class AbstractPointAssert<
    */
   public final PointAssertT hasAttributesSatisfying(Iterable<AttributeAssertion> assertions) {
     AssertUtil.assertAttributes(actual.getAttributes(), assertions);
+    return myself;
+  }
+
+  /**
+   * Asserts the point has attributes satisfying the given condition.
+   *
+   * @since 1.33.0
+   */
+  public final PointAssertT hasAttributesSatisfying(Consumer<Attributes> attributes) {
+    isNotNull();
+    assertThat(actual.getAttributes()).as("attributes").satisfies(attributes);
     return myself;
   }
 

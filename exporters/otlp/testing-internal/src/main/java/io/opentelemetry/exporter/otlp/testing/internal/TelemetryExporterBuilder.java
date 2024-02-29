@@ -14,7 +14,9 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
@@ -38,9 +40,15 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> setTimeout(Duration timeout);
 
+  TelemetryExporterBuilder<T> setConnectTimeout(long timeout, TimeUnit unit);
+
+  TelemetryExporterBuilder<T> setConnectTimeout(Duration timeout);
+
   TelemetryExporterBuilder<T> setCompression(String compression);
 
   TelemetryExporterBuilder<T> addHeader(String key, String value);
+
+  TelemetryExporterBuilder<T> setHeaders(Supplier<Map<String, String>> headerSupplier);
 
   TelemetryExporterBuilder<T> setAuthenticator(Authenticator authenticator);
 

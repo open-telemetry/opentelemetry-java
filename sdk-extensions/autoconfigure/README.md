@@ -334,11 +334,11 @@ The following exporters are only available for the metric signal. See [exporters
 
 The [Prometheus](https://github.com/prometheus/docs/blob/master/content/docs/instrumenting/exposition_formats.md) exporter.
 
-| System property                  | Environment variable             | Description                                                                        |
-|----------------------------------|----------------------------------|------------------------------------------------------------------------------------|
-| otel.metrics.exporter=prometheus | OTEL_METRICS_EXPORTER=prometheus | Select the Prometheus exporter                                                     |
-| otel.exporter.prometheus.port    | OTEL_EXPORTER_PROMETHEUS_PORT    | The local port used to bind the prometheus metric server. Default is `9464`.       |
-| otel.exporter.prometheus.host    | OTEL_EXPORTER_PROMETHEUS_HOST    | The local address used to bind the prometheus metric server. Default is `0.0.0.0`. |
+| System property                                         | Environment variable                                    | Description                                                                                                                          |
+|---------------------------------------------------------|---------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| otel.metrics.exporter=prometheus                        | OTEL_METRICS_EXPORTER=prometheus                        | Select the Prometheus exporter                                                                                                       |
+| otel.exporter.prometheus.port                           | OTEL_EXPORTER_PROMETHEUS_PORT                           | The local port used to bind the prometheus metric server. Default is `9464`.                                                         |
+| otel.exporter.prometheus.host                           | OTEL_EXPORTER_PROMETHEUS_HOST                           | The local address used to bind the prometheus metric server. Default is `0.0.0.0`.                                                   |
 
 Note that this is a pull exporter - it opens up a server on the local process listening on the specified host and port, which
 a Prometheus server scrapes from.

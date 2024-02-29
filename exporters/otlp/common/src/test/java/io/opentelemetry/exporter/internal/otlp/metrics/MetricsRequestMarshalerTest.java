@@ -40,6 +40,7 @@ import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.proto.metrics.v1.Summary;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
@@ -61,6 +62,8 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
+import io.opentelemetry.sdk.metrics.internal.data.MutableExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.internal.data.MutableExponentialHistogramPointData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -458,6 +461,105 @@ class MetricsRequestMarshalerTest {
                                     TraceFlags.getDefault(),
                                     TraceState.getDefault()),
                                 1.5))))))
+        .containsExactly(
+            ExponentialHistogramDataPoint.newBuilder()
+                .setStartTimeUnixNano(123)
+                .setTimeUnixNano(456)
+                .setCount(1)
+                .setScale(0)
+                .setSum(123.4)
+                .setZeroCount(1)
+                .setPositive(
+                    ExponentialHistogramDataPoint.Buckets.newBuilder().setOffset(0)) // no buckets
+                .setNegative(
+                    ExponentialHistogramDataPoint.Buckets.newBuilder().setOffset(0)) // no buckets
+                .build(),
+            ExponentialHistogramDataPoint.newBuilder()
+                .setStartTimeUnixNano(123)
+                .setTimeUnixNano(456)
+                .setCount(4) // Counts in positive, negative, and zero count.
+                .addAllAttributes(
+                    singletonList(
+                        KeyValue.newBuilder().setKey("key").setValue(stringValue("value")).build()))
+                .setScale(0)
+                .setSum(123.4)
+                .setMin(3.3)
+                .setMax(80.1)
+                .setZeroCount(1)
+                .setPositive(
+                    ExponentialHistogramDataPoint.Buckets.newBuilder()
+                        .setOffset(1)
+                        .addBucketCounts(1)
+                        .addBucketCounts(0)
+                        .addBucketCounts(2))
+                .setNegative(
+                    ExponentialHistogramDataPoint.Buckets.newBuilder().setOffset(0)) // no buckets
+                .addExemplars(
+                    Exemplar.newBuilder()
+                        .setTimeUnixNano(2)
+                        .addFilteredAttributes(
+                            KeyValue.newBuilder()
+                                .setKey("test")
+                                .setValue(stringValue("value"))
+                                .build())
+                        .setSpanId(ByteString.copyFrom(new byte[] {0, 0, 0, 0, 0, 0, 0, 2}))
+                        .setTraceId(
+                            ByteString.copyFrom(
+                                new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}))
+                        .setAsDouble(1.5)
+                        .build())
+                .build());
+  }
+
+  @SuppressWarnings("PointlessArithmeticExpression")
+  @Test
+  void exponentialHistogramReusableDataPoints() {
+    assertThat(
+            toExponentialHistogramDataPoints(
+                ImmutableList.of(
+                    new MutableExponentialHistogramPointData()
+                        .set(
+                            0,
+                            123.4,
+                            1,
+                            /* hasMin= */ false,
+                            0,
+                            /* hasMax= */ false,
+                            0,
+                            new MutableExponentialHistogramBuckets()
+                                .set(0, 0, 0, DynamicPrimitiveLongList.empty()),
+                            new MutableExponentialHistogramBuckets()
+                                .set(0, 0, 0, DynamicPrimitiveLongList.empty()),
+                            123,
+                            456,
+                            Attributes.empty(),
+                            Collections.emptyList()),
+                    new MutableExponentialHistogramPointData()
+                        .set(
+                            0,
+                            123.4,
+                            1,
+                            /* hasMin= */ true,
+                            3.3,
+                            /* hasMax= */ true,
+                            80.1,
+                            new MutableExponentialHistogramBuckets()
+                                .set(0, 1, 1 + 0 + 2, DynamicPrimitiveLongList.of(1L, 0L, 2L)),
+                            new MutableExponentialHistogramBuckets()
+                                .set(0, 0, 0, DynamicPrimitiveLongList.empty()),
+                            123,
+                            456,
+                            Attributes.of(stringKey("key"), "value"),
+                            ImmutableList.of(
+                                ImmutableDoubleExemplarData.create(
+                                    Attributes.of(stringKey("test"), "value"),
+                                    2,
+                                    SpanContext.create(
+                                        "00000000000000000000000000000001",
+                                        "0000000000000002",
+                                        TraceFlags.getDefault(),
+                                        TraceState.getDefault()),
+                                    1.5))))))
         .containsExactly(
             ExponentialHistogramDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)

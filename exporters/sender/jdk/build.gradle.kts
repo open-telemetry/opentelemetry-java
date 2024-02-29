@@ -9,6 +9,8 @@ otelJava.moduleName.set("io.opentelemetry.exporter.sender.jdk.internal")
 dependencies {
   implementation(project(":exporters:common"))
   implementation(project(":sdk:common"))
+
+  compileOnly("com.fasterxml.jackson.core:jackson-core")
 }
 
 tasks {

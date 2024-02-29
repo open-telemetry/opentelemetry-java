@@ -27,6 +27,10 @@
       "matchPackageNames": ["org.jetbrains.kotlinx:kotlinx-coroutines-core"],
       "matchCurrentVersion": "1.5.2",
       "enabled": false
+    },
+    {
+      "matchPackagePrefixes": ["com.diffplug.spotless"],
+      "groupName": "spotless packages"
     }
   ]
 }

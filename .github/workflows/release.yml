@@ -16,13 +16,13 @@ jobs:
 
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
       - name: Build and publish artifacts
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           arguments: assemble publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:

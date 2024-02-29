@@ -9,8 +9,7 @@ import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.spanBuilder;
 import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.zipkinSpanBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -29,18 +28,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import zipkin2.Call;
-import zipkin2.Callback;
 import zipkin2.Span;
-import zipkin2.codec.SpanBytesEncoder;
-import zipkin2.reporter.Sender;
+import zipkin2.reporter.BytesEncoder;
+import zipkin2.reporter.BytesMessageSender;
+import zipkin2.reporter.Encoding;
+import zipkin2.reporter.SpanBytesEncoder;
 
 @ExtendWith(MockitoExtension.class)
 class ZipkinSpanExporterTest {
 
-  @Mock private Sender mockSender;
+  @Mock private BytesMessageSender mockSender;
   @Mock private SpanBytesEncoder mockEncoder;
-  @Mock private Call<Void> mockZipkinCall;
   @Mock private OtelToZipkinSpanTransformer mockTransformer;
   @Mock private InetAddress localIp;
 
@@ -48,7 +46,7 @@ class ZipkinSpanExporterTest {
   LogCapturer logs = LogCapturer.create().captureForType(ZipkinSpanExporter.class);
 
   @Test
-  void testExport() {
+  void testExport() throws IOException {
     TestSpanData testSpanData = spanBuilder().build();
 
     ZipkinSpanExporter zipkinSpanExporter =
@@ -66,25 +64,18 @@ class ZipkinSpanExporterTest {
             .build();
     when(mockTransformer.generateSpan(testSpanData)).thenReturn(zipkinSpan);
     when(mockEncoder.encode(zipkinSpan)).thenReturn(someBytes);
-    when(mockSender.sendSpans(Collections.singletonList(someBytes))).thenReturn(mockZipkinCall);
-    doAnswer(
-            invocation -> {
-              Callback<Void> callback = invocation.getArgument(0);
-              callback.onSuccess(null);
-              return null;
-            })
-        .when(mockZipkinCall)
-        .enqueue(any());
 
     CompletableResultCode resultCode =
         zipkinSpanExporter.export(Collections.singleton(testSpanData));
 
     assertThat(resultCode.isSuccess()).isTrue();
+
+    verify(mockSender).send(Collections.singletonList(someBytes));
   }
 
   @Test
   @SuppressLogger(ZipkinSpanExporter.class)
-  void testExport_failed() {
+  void testExport_failed() throws IOException {
     TestSpanData testSpanData = spanBuilder().build();
 
     ZipkinSpanExporter zipkinSpanExporter =
@@ -102,20 +93,14 @@ class ZipkinSpanExporterTest {
             .build();
     when(mockTransformer.generateSpan(testSpanData)).thenReturn(zipkinSpan);
     when(mockEncoder.encode(zipkinSpan)).thenReturn(someBytes);
-    when(mockSender.sendSpans(Collections.singletonList(someBytes))).thenReturn(mockZipkinCall);
-    doAnswer(
-            invocation -> {
-              Callback<Void> callback = invocation.getArgument(0);
-              callback.onError(new IOException());
-              return null;
-            })
-        .when(mockZipkinCall)
-        .enqueue(any());
+    doThrow(new IOException()).when(mockSender).send(Collections.singletonList(someBytes));
 
     CompletableResultCode resultCode =
         zipkinSpanExporter.export(Collections.singleton(testSpanData));
 
     assertThat(resultCode.isSuccess()).isFalse();
+
+    verify(mockSender).send(Collections.singletonList(someBytes));
   }
 
   @Test
@@ -144,7 +129,8 @@ class ZipkinSpanExporterTest {
   }
 
   @Test
-  @SuppressWarnings("PreferJavaTimeOverload")
+  @SuppressWarnings({"PreferJavaTimeOverload", "deprecation"})
+  // we have to use the deprecated setEncoder overload to test it
   void invalidConfig() {
     assertThatThrownBy(() -> ZipkinSpanExporter.builder().setReadTimeout(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
@@ -170,16 +156,40 @@ class ZipkinSpanExporterTest {
         .isInstanceOf(NullPointerException.class)
         .hasMessage("sender");
 
-    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setEncoder(null))
+    assertThatThrownBy(
+            () -> ZipkinSpanExporter.builder().setEncoder((zipkin2.codec.BytesEncoder<Span>) null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("encoder");
+
+    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setEncoder((BytesEncoder<Span>) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("encoder");
+  }
+
+  @Test
+  void encoderProtobuf() {
+    @SuppressWarnings("deprecation") // we have to use the deprecated setEncoderto test it
+    ZipkinSpanExporter exporter =
+        ZipkinSpanExporter.builder().setEncoder(zipkin2.codec.SpanBytesEncoder.PROTO3).build();
+    try {
+      assertThat(exporter).extracting("encoder.encoding").isEqualTo(Encoding.PROTO3);
+    } finally {
+      exporter.shutdown();
+    }
+
+    exporter = ZipkinSpanExporter.builder().setEncoder(SpanBytesEncoder.PROTO3).build();
+    try {
+      assertThat(exporter).extracting("encoder").isEqualTo(SpanBytesEncoder.PROTO3);
+    } finally {
+      exporter.shutdown();
+    }
   }
 
   @Test
   void compressionDefault() {
     ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().build();
     try {
-      assertThat(exporter).extracting("sender.compressionEnabled").isEqualTo(true);
+      assertThat(exporter).extracting("sender.delegate.compressionEnabled").isEqualTo(true);
     } finally {
       exporter.shutdown();
     }
@@ -189,7 +199,7 @@ class ZipkinSpanExporterTest {
   void compressionNone() {
     ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().setCompression("none").build();
     try {
-      assertThat(exporter).extracting("sender.compressionEnabled").isEqualTo(false);
+      assertThat(exporter).extracting("sender.delegate.compressionEnabled").isEqualTo(false);
     } finally {
       exporter.shutdown();
     }
@@ -199,7 +209,7 @@ class ZipkinSpanExporterTest {
   void compressionGzip() {
     ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().setCompression("gzip").build();
     try {
-      assertThat(exporter).extracting("sender.compressionEnabled").isEqualTo(true);
+      assertThat(exporter).extracting("sender.delegate.compressionEnabled").isEqualTo(true);
     } finally {
       exporter.shutdown();
     }
@@ -210,7 +220,7 @@ class ZipkinSpanExporterTest {
     ZipkinSpanExporter exporter =
         ZipkinSpanExporter.builder().setCompression("gzip").setCompression("none").build();
     try {
-      assertThat(exporter).extracting("sender.compressionEnabled").isEqualTo(false);
+      assertThat(exporter).extracting("sender.delegate.compressionEnabled").isEqualTo(false);
     } finally {
       exporter.shutdown();
     }

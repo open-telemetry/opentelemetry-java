@@ -33,6 +33,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
+import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -52,8 +53,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 class PrometheusHttpServerTest {
   private static final AtomicReference<List<MetricData>> metricData = new AtomicReference<>();
@@ -65,7 +64,7 @@ class PrometheusHttpServerTest {
   static WebClient client;
 
   @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(PrometheusHttpServer.class);
+  LogCapturer logs = LogCapturer.create().captureForType(Otel2PrometheusConverter.class);
 
   @BeforeAll
   static void beforeAll() {
@@ -95,6 +94,7 @@ class PrometheusHttpServerTest {
     prometheusServer.shutdown();
   }
 
+  @SuppressWarnings("DataFlowIssue")
   @Test
   void invalidConfig() {
     assertThatThrownBy(() -> PrometheusHttpServer.builder().setPort(-1))
@@ -108,35 +108,32 @@ class PrometheusHttpServerTest {
         .hasMessage("host must not be empty");
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {"/metrics", "/"})
-  void fetchPrometheus(String endpoint) {
-    AggregatedHttpResponse response = client.get(endpoint).aggregate().join();
+  @Test
+  void fetchPrometheus() {
+    AggregatedHttpResponse response = client.get("/metrics").aggregate().join();
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
         .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
     assertThat(response.contentUtf8())
         .isEqualTo(
-            "# TYPE target info\n"
-                + "# HELP target Target metadata\n"
-                + "target_info{kr=\"vr\"} 1\n"
-                + "# TYPE grpc_name_total counter\n"
-                + "# HELP grpc_name_total long_description\n"
-                + "grpc_name_total{otel_scope_name=\"grpc\",otel_scope_version=\"version\",kp=\"vp\"} 5.0 0\n"
-                + "# TYPE http_name_total counter\n"
-                + "# HELP http_name_total double_description\n"
-                + "http_name_total{otel_scope_name=\"http\",otel_scope_version=\"version\",kp=\"vp\"} 3.5 0\n");
+            "# HELP grpc_name_unit_total long_description\n"
+                + "# TYPE grpc_name_unit_total counter\n"
+                + "grpc_name_unit_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
+                + "# HELP http_name_unit_total double_description\n"
+                + "# TYPE http_name_unit_total counter\n"
+                + "http_name_unit_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
+                + "# TYPE target_info gauge\n"
+                + "target_info{kr=\"vr\"} 1\n");
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {"/metrics", "/"})
-  void fetchOpenMetrics(String endpoint) {
+  @Test
+  void fetchOpenMetrics() {
     AggregatedHttpResponse response =
         client
             .execute(
                 RequestHeaders.of(
                     HttpMethod.GET,
-                    endpoint,
+                    "/metrics",
                     HttpHeaderNames.ACCEPT,
                     "application/openmetrics-text"))
             .aggregate()
@@ -146,35 +143,41 @@ class PrometheusHttpServerTest {
         .isEqualTo("application/openmetrics-text; version=1.0.0; charset=utf-8");
     assertThat(response.contentUtf8())
         .isEqualTo(
-            "# TYPE target info\n"
-                + "# HELP target Target metadata\n"
+            "# TYPE grpc_name_unit counter\n"
+                + "# UNIT grpc_name_unit unit\n"
+                + "# HELP grpc_name_unit long_description\n"
+                + "grpc_name_unit_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
+                + "# TYPE http_name_unit counter\n"
+                + "# UNIT http_name_unit unit\n"
+                + "# HELP http_name_unit double_description\n"
+                + "http_name_unit_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
+                + "# TYPE target info\n"
                 + "target_info{kr=\"vr\"} 1\n"
-                + "# TYPE grpc_name counter\n"
-                + "# HELP grpc_name long_description\n"
-                + "grpc_name_total{otel_scope_name=\"grpc\",otel_scope_version=\"version\",kp=\"vp\"} 5.0 0.000\n"
-                + "# TYPE http_name counter\n"
-                + "# HELP http_name double_description\n"
-                + "http_name_total{otel_scope_name=\"http\",otel_scope_version=\"version\",kp=\"vp\"} 3.5 0.000\n"
                 + "# EOF\n");
   }
 
+  @SuppressWarnings("ConcatenationWithEmptyString")
   @Test
   void fetchFiltered() {
     AggregatedHttpResponse response =
-        client.get("/?name[]=grpc_name_total&name[]=bears_total").aggregate().join();
+        client
+            .get("/?name[]=grpc_name_unit_total&name[]=bears_total&name[]=target_info")
+            .aggregate()
+            .join();
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
         .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
     assertThat(response.contentUtf8())
         .isEqualTo(
-            "# TYPE target info\n"
-                + "# HELP target Target metadata\n"
-                + "target_info{kr=\"vr\"} 1\n"
-                + "# TYPE grpc_name_total counter\n"
-                + "# HELP grpc_name_total long_description\n"
-                + "grpc_name_total{otel_scope_name=\"grpc\",otel_scope_version=\"version\",kp=\"vp\"} 5.0 0\n");
+            ""
+                + "# HELP grpc_name_unit_total long_description\n"
+                + "# TYPE grpc_name_unit_total counter\n"
+                + "grpc_name_unit_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
+                + "# TYPE target_info gauge\n"
+                + "target_info{kr=\"vr\"} 1\n");
   }
 
+  @SuppressWarnings("resource")
   @Test
   void fetchPrometheusCompressed() throws IOException {
     WebClient client =
@@ -182,7 +185,7 @@ class PrometheusHttpServerTest {
             .decorator(RetryingClient.newDecorator(RetryRule.failsafe()))
             .addHeader(HttpHeaderNames.ACCEPT_ENCODING, "gzip")
             .build();
-    AggregatedHttpResponse response = client.get("/").aggregate().join();
+    AggregatedHttpResponse response = client.get("/metrics").aggregate().join();
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
         .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
@@ -191,17 +194,17 @@ class PrometheusHttpServerTest {
     String content = new String(ByteStreams.toByteArray(gis), StandardCharsets.UTF_8);
     assertThat(content)
         .isEqualTo(
-            "# TYPE target info\n"
-                + "# HELP target Target metadata\n"
-                + "target_info{kr=\"vr\"} 1\n"
-                + "# TYPE grpc_name_total counter\n"
-                + "# HELP grpc_name_total long_description\n"
-                + "grpc_name_total{otel_scope_name=\"grpc\",otel_scope_version=\"version\",kp=\"vp\"} 5.0 0\n"
-                + "# TYPE http_name_total counter\n"
-                + "# HELP http_name_total double_description\n"
-                + "http_name_total{otel_scope_name=\"http\",otel_scope_version=\"version\",kp=\"vp\"} 3.5 0\n");
+            "# HELP grpc_name_unit_total long_description\n"
+                + "# TYPE grpc_name_unit_total counter\n"
+                + "grpc_name_unit_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
+                + "# HELP http_name_unit_total double_description\n"
+                + "# TYPE http_name_unit_total counter\n"
+                + "http_name_unit_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
+                + "# TYPE target_info gauge\n"
+                + "target_info{kr=\"vr\"} 1\n");
   }
 
+  @SuppressWarnings("resource")
   @Test
   void fetchHead() {
     AggregatedHttpResponse response = client.head("/").aggregate().join();
@@ -216,7 +219,7 @@ class PrometheusHttpServerTest {
     AggregatedHttpResponse response = client.get("/-/healthy").aggregate().join();
 
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
-    assertThat(response.contentUtf8()).isEqualTo("Exporter is Healthy.");
+    assertThat(response.contentUtf8()).isEqualTo("Exporter is healthy.\n");
   }
 
   @Test
@@ -255,33 +258,27 @@ class PrometheusHttpServerTest {
                 InstrumentationScopeInfo.create("scope3"),
                 "foo_unit_total",
                 "unused",
-                "unit",
+                "",
                 ImmutableGaugeData.create(
                     Collections.singletonList(
                         ImmutableLongPointData.create(123, 456, Attributes.empty(), 3))))));
 
-    AggregatedHttpResponse response = client.get("/").aggregate().join();
+    AggregatedHttpResponse response = client.get("/metrics").aggregate().join();
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
         .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
     assertThat(response.contentUtf8())
         .isEqualTo(
-            "# TYPE target info\n"
-                + "# HELP target Target metadata\n"
-                + "target_info{kr=\"vr\"} 1\n"
-                + "# TYPE foo_unit_total counter\n"
-                + "# HELP foo_unit_total description1\n"
-                + "foo_unit_total{otel_scope_name=\"scope1\"} 1.0 0\n"
-                + "foo_unit_total{otel_scope_name=\"scope2\"} 2.0 0\n");
+            "# TYPE foo_unit_total counter\n"
+                + "foo_unit_total{otel_scope_name=\"scope1\"} 1.0\n"
+                + "foo_unit_total{otel_scope_name=\"scope2\"} 2.0\n"
+                + "# TYPE target_info gauge\n"
+                + "target_info{kr=\"vr\"} 1\n");
 
     // Validate conflict warning message
     assertThat(logs.getEvents()).hasSize(1);
     logs.assertContains(
-        "Metric conflict(s) detected. Multiple metrics with same name but different type: [foo_unit_total]");
-
-    // Make another request and confirm warning is only logged once
-    client.get("/").aggregate().join();
-    assertThat(logs.getEvents()).hasSize(1);
+        "Conflicting metrics: Multiple metrics with name foo_unit but different units found. Dropping the one with unit null.");
   }
 
   @Test
@@ -293,8 +290,9 @@ class PrometheusHttpServerTest {
   @Test
   void defaultExecutor() {
     assertThat(prometheusServer)
-        .extracting("executor", as(InstanceOfAssertFactories.type(ThreadPoolExecutor.class)))
-        .satisfies(executor -> assertThat(executor.getCorePoolSize()).isEqualTo(5));
+        .extracting("httpServer", as(InstanceOfAssertFactories.type(HTTPServer.class)))
+        .extracting("executorService", as(InstanceOfAssertFactories.type(ThreadPoolExecutor.class)))
+        .satisfies(executor -> assertThat(executor.getCorePoolSize()).isEqualTo(1));
   }
 
   @Test
@@ -311,9 +309,54 @@ class PrometheusHttpServerTest {
             .setExecutor(scheduledExecutor)
             .build()) {
       assertThat(server)
+          .extracting("httpServer", as(InstanceOfAssertFactories.type(HTTPServer.class)))
           .extracting(
-              "executor", as(InstanceOfAssertFactories.type(ScheduledThreadPoolExecutor.class)))
+              "executorService",
+              as(InstanceOfAssertFactories.type(ScheduledThreadPoolExecutor.class)))
           .satisfies(executor -> assertThat(executor).isSameAs(scheduledExecutor));
+    }
+  }
+
+  @Test
+  void addResourceAttributesWorks() {
+    WebClient testClient;
+    try (PrometheusHttpServer testPrometheusServer =
+        PrometheusHttpServer.builder()
+            .setHost("localhost")
+            .setPort(0)
+            .setAllowedResourceAttributesFilter(Predicates.ALLOW_ALL)
+            .build()) {
+      testPrometheusServer.register(
+          new CollectionRegistration() {
+            @Override
+            public Collection<MetricData> collectAllMetrics() {
+              return metricData.get();
+            }
+          });
+
+      testClient =
+          WebClient.builder("http://localhost:" + testPrometheusServer.getAddress().getPort())
+              .decorator(RetryingClient.newDecorator(RetryRule.failsafe()))
+              .build();
+
+      AggregatedHttpResponse response = testClient.get("/metrics").aggregate().join();
+      assertThat(response.status()).isEqualTo(HttpStatus.OK);
+      assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
+          .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
+      assertThat(response.contentUtf8())
+          .isEqualTo(
+              "# HELP grpc_name_unit_total long_description\n"
+                  + "# TYPE grpc_name_unit_total counter\n"
+
+                  // Note the added resource attributes as labels
+                  + "grpc_name_unit_total{kp=\"vp\",kr=\"vr\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
+                  + "# HELP http_name_unit_total double_description\n"
+                  + "# TYPE http_name_unit_total counter\n"
+
+                  // Note the added resource attributes as labels
+                  + "http_name_unit_total{kp=\"vp\",kr=\"vr\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
+                  + "# TYPE target_info gauge\n"
+                  + "target_info{kr=\"vr\"} 1\n");
     }
   }
 
@@ -324,7 +367,7 @@ class PrometheusHttpServerTest {
             InstrumentationScopeInfo.builder("grpc").setVersion("version").build(),
             "grpc.name",
             "long_description",
-            "1",
+            "unit",
             ImmutableSumData.create(
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
@@ -336,7 +379,7 @@ class PrometheusHttpServerTest {
             InstrumentationScopeInfo.builder("http").setVersion("version").build(),
             "http.name",
             "double_description",
-            "1",
+            "unit",
             ImmutableSumData.create(
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,

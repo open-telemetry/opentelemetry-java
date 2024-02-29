@@ -36,7 +36,8 @@ public final class ResourceMarshaler extends MarshalerWithSize {
       // a few times until the cache gets filled which is fine.
 
       RealResourceMarshaler realMarshaler =
-          new RealResourceMarshaler(KeyValueMarshaler.createRepeated(resource.getAttributes()));
+          new RealResourceMarshaler(
+              KeyValueMarshaler.createForAttributes(resource.getAttributes()));
 
       ByteArrayOutputStream binaryBos =
           new ByteArrayOutputStream(realMarshaler.getBinarySerializedSize());

@@ -1,11 +1,11 @@
 pluginManagement {
   plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("com.gradle.enterprise") version "3.15.1"
+    id("com.gradle.enterprise") version "3.16.2"
     id("de.undercouch.download") version "5.5.0"
     id("org.jsonschema2pojo") version "1.2.1"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
-    id("org.graalvm.buildtools.native") version "0.9.28"
+    id("org.graalvm.buildtools.native") version "0.10.1"
   }
 }
 
@@ -36,9 +36,6 @@ include(":exporters:common")
 include(":exporters:sender:grpc-managed-channel")
 include(":exporters:sender:jdk")
 include(":exporters:sender:okhttp")
-include(":exporters:jaeger")
-include(":exporters:jaeger-proto")
-include(":exporters:jaeger-thrift")
 include(":exporters:logging")
 include(":exporters:logging-otlp")
 include(":exporters:otlp:all")
