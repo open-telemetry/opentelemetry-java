@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.function.Function;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
@@ -47,18 +48,20 @@ public final class AutoConfigureUtil {
     }
   }
 
-  /** Sets the {@link ConfigProperties} to be used in the auto-configuration process. */
-  public static void setConfigProperties(
-      AutoConfiguredOpenTelemetrySdkBuilder builder, ConfigProperties config) {
+  /** Sets the {@link ConfigProperties} customizer to be used in the auto-configuration process. */
+  public static void setConfigPropertiesCustomizer(
+      AutoConfiguredOpenTelemetrySdkBuilder builder,
+      Function<ConfigProperties, ConfigProperties> customizer) {
     try {
       Method method =
           AutoConfiguredOpenTelemetrySdkBuilder.class.getDeclaredMethod(
-              "setConfig", ConfigProperties.class);
+              "setConfigPropertiesCustomizer", Function.class);
       method.setAccessible(true);
-      method.invoke(builder, config);
+      method.invoke(builder, customizer);
     } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
       throw new IllegalStateException(
-          "Error calling setConfig on AutoConfiguredOpenTelemetrySdkBuilder", e);
+          "Error calling setConfigPropertiesCustomizer on AutoConfiguredOpenTelemetrySdkBuilder",
+          e);
     }
   }
 }

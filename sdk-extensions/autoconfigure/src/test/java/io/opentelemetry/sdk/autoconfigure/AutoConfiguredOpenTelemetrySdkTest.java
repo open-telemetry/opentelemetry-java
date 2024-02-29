@@ -43,6 +43,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvide
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -384,6 +385,24 @@ class AutoConfiguredOpenTelemetrySdkTest {
         .isEqualTo("overridden-service-name");
     assertThat(autoConfigured.getConfig().getString("some-key")).isEqualTo("override-2");
     assertThat(autoConfigured.getConfig().getString("some.key")).isEqualTo("override-2");
+  }
+
+  @Test
+  void builder_setConfigPropertiesCustomizer() {
+    AutoConfiguredOpenTelemetrySdk autoConfigured =
+        builder
+            .addPropertiesCustomizer(config -> singletonMap("some-key", "defaultValue"))
+            .setConfigPropertiesCustomizer(
+                config -> {
+                  assertThat(config.getString("some-key")).isEqualTo("defaultValue");
+
+                  Map<String, String> map = new HashMap<>(singletonMap("some-key", "override"));
+                  map.putAll(disableExportPropertySupplier().get());
+                  return DefaultConfigProperties.createFromMap(map);
+                })
+            .build();
+
+    assertThat(autoConfigured.getConfig().getString("some.key")).isEqualTo("override");
   }
 
   @Test

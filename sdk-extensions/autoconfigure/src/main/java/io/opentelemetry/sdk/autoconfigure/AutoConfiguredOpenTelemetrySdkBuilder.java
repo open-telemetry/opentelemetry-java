@@ -100,6 +100,9 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   private final List<Function<ConfigProperties, Map<String, String>>> propertiesCustomizers =
       new ArrayList<>();
 
+  private Function<ConfigProperties, ConfigProperties> configPropertiesCustomizer =
+      Function.identity();
+
   private SpiHelper spiHelper =
       SpiHelper.create(AutoConfiguredOpenTelemetrySdk.class.getClassLoader());
 
@@ -248,6 +251,21 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       Function<ConfigProperties, Map<String, String>> propertiesCustomizer) {
     requireNonNull(propertiesCustomizer, "propertiesCustomizer");
     this.propertiesCustomizers.add(propertiesCustomizer);
+    return this;
+  }
+
+  /**
+   * Adds a {@link Function} to invoke the with the {@link ConfigProperties} to allow customization.
+   *
+   * <p>The argument to the function is the {@link ConfigProperties}, with the {@link
+   * #addPropertiesCustomizer(Function)} already applied.
+   *
+   * <p>The return value of the {@link Function} replace the {@link ConfigProperties} to be used.
+   */
+  AutoConfiguredOpenTelemetrySdkBuilder setConfigPropertiesCustomizer(
+      Function<ConfigProperties, ConfigProperties> configPropertiesCustomizer) {
+    requireNonNull(configPropertiesCustomizer, "configPropertiesCustomizer");
+    this.configPropertiesCustomizer = configPropertiesCustomizer;
     return this;
   }
 
@@ -576,7 +594,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       Map<String, String> overrides = customizer.apply(properties);
       properties = properties.withOverrides(overrides);
     }
-    return properties;
+    return configPropertiesCustomizer.apply(properties);
   }
 
   // Visible for testing
