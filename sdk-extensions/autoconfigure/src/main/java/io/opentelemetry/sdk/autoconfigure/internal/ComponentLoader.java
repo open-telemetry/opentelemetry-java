@@ -5,12 +5,6 @@
 
 package io.opentelemetry.sdk.autoconfigure.internal;
 
-import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
 /**
  * A loader for components that are discovered via SPI.
  *
@@ -26,17 +20,4 @@ public interface ComponentLoader {
    * @return iterable of SPI implementations
    */
   <T> Iterable<T> load(Class<T> spiClass);
-
-  /**
-   * Load implementations of an ordered SPI (i.e. implements {@link Ordered}).
-   *
-   * @param spiClass the SPI class
-   * @param <T> the SPI type
-   * @return list of SPI implementations, in order
-   */
-  default <T extends Ordered> List<T> loadOrdered(Class<T> spiClass) {
-    return StreamSupport.stream(load(spiClass).spliterator(), false)
-        .sorted(Comparator.comparing(Ordered::order))
-        .collect(Collectors.toList());
-  }
 }

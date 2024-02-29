@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -83,7 +84,9 @@ public final class SpiHelper {
    * @return list of SPI implementations, in order
    */
   public <T extends Ordered> List<T> loadOrdered(Class<T> spiClass) {
-    return init(componentLoader.loadOrdered(spiClass));
+    List<T> result = load(spiClass);
+    result.sort(Comparator.comparing(Ordered::order));
+    return result;
   }
 
   /**
@@ -94,29 +97,18 @@ public final class SpiHelper {
    * @return list of SPI implementations
    */
   public <T> List<T> load(Class<T> spiClass) {
-    return init(componentLoader.load(spiClass));
-  }
-
-  /**
-   * Load implementations of an SPI.
-   *
-   * @param components the SPI implementations
-   * @param <T> the SPI type
-   * @return list of SPI implementations
-   */
-  private <T> List<T> init(Iterable<T> components) {
     List<T> result = new ArrayList<>();
-    for (T service : components) {
-      result.add(maybeAddListener(service));
+    for (T service : componentLoader.load(spiClass)) {
+      maybeAddListener(service);
+      result.add(service);
     }
     return result;
   }
 
-  private <T> T maybeAddListener(T object) {
+  private void maybeAddListener(Object object) {
     if (object instanceof AutoConfigureListener) {
       listeners.add((AutoConfigureListener) object);
     }
-    return object;
   }
 
   /** Return the set of SPIs loaded which implement {@link AutoConfigureListener}. */
