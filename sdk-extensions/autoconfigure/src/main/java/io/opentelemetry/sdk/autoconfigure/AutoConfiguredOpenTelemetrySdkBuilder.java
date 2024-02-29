@@ -28,6 +28,7 @@ import io.opentelemetry.sdk.logs.internal.SdkEventEmitterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
@@ -83,6 +84,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       meterProviderCustomizer = (a, unused) -> a;
   private BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
       metricExporterCustomizer = (a, unused) -> a;
+  private BiFunction<? super MetricReader, ConfigProperties, ? extends MetricReader>
+      metricReaderCustomizer = (a, unused) -> a;
 
   private BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder>
       loggerProviderCustomizer = (a, unused) -> a;
@@ -284,6 +287,20 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   /**
+   * Adds a {@link BiFunction} to invoke with the autoconfigured {@link MetricReader} to allow
+   * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  @Override
+  public AutoConfiguredOpenTelemetrySdkBuilder addMetricReaderCustomizer(
+      BiFunction<? super MetricReader, ConfigProperties, ? extends MetricReader> readerCustomizer) {
+    requireNonNull(readerCustomizer, "readerCustomizer");
+    this.metricReaderCustomizer = mergeCustomizer(this.metricReaderCustomizer, readerCustomizer);
+    return this;
+  }
+
+  /**
    * Adds a {@link BiFunction} to invoke the with the {@link SdkLoggerProviderBuilder} to allow
    * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
    *
@@ -406,7 +423,12 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
         meterProviderBuilder.setResource(resource);
         MeterProviderConfiguration.configureMeterProvider(
-            meterProviderBuilder, config, spiHelper, metricExporterCustomizer, closeables);
+            meterProviderBuilder,
+            config,
+            spiHelper,
+            metricReaderCustomizer,
+            metricExporterCustomizer,
+            closeables);
         meterProviderBuilder = meterProviderCustomizer.apply(meterProviderBuilder, config);
         SdkMeterProvider meterProvider = meterProviderBuilder.build();
         closeables.add(meterProvider);

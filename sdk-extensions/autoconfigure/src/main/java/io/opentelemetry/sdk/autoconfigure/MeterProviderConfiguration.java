@@ -29,6 +29,8 @@ final class MeterProviderConfiguration {
       SdkMeterProviderBuilder meterProviderBuilder,
       ConfigProperties config,
       SpiHelper spiHelper,
+      BiFunction<? super MetricReader, ConfigProperties, ? extends MetricReader>
+          metricReaderCustomizer,
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
           metricExporterCustomizer,
       List<Closeable> closeables) {
@@ -56,7 +58,8 @@ final class MeterProviderConfiguration {
       throw new ConfigurationException("otel.experimental.metrics.cardinality.limit must be >= 1");
     }
 
-    configureMetricReaders(config, spiHelper, metricExporterCustomizer, closeables)
+    configureMetricReaders(
+            config, spiHelper, metricReaderCustomizer, metricExporterCustomizer, closeables)
         .forEach(
             reader ->
                 SdkMeterProviderUtil.registerMetricReaderWithCardinalitySelector(
@@ -66,6 +69,8 @@ final class MeterProviderConfiguration {
   static List<MetricReader> configureMetricReaders(
       ConfigProperties config,
       SpiHelper spiHelper,
+      BiFunction<? super MetricReader, ConfigProperties, ? extends MetricReader>
+          metricReaderCustomizer,
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
           metricExporterCustomizer,
       List<Closeable> closeables) {
@@ -85,7 +90,12 @@ final class MeterProviderConfiguration {
         .map(
             exporterName ->
                 MetricExporterConfiguration.configureReader(
-                    exporterName, config, spiHelper, metricExporterCustomizer, closeables))
+                    exporterName,
+                    config,
+                    spiHelper,
+                    metricReaderCustomizer,
+                    metricExporterCustomizer,
+                    closeables))
         .collect(Collectors.toList());
   }
 
