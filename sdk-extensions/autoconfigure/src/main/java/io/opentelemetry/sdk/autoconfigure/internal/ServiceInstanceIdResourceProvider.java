@@ -33,14 +33,13 @@ public final class ServiceInstanceIdResourceProvider implements ConditionalResou
 
   @Override
   public boolean shouldApply(ConfigProperties config, Resource existing) {
-    return config.getString(SERVICE_INSTANCE_ID.getKey()) == null
-        && existing.getAttribute(SERVICE_INSTANCE_ID) == null;
+    return existing.getAttribute(SERVICE_INSTANCE_ID) == null;
   }
 
   @Override
   public int order() {
-    // Run just before the environment resource provider - only set the service instance ID if it
+    // Run after environment resource provider - only set the service instance ID if it
     // hasn't been set by any other provider.
-    return Integer.MAX_VALUE - 1;
+    return Integer.MAX_VALUE;
   }
 }
