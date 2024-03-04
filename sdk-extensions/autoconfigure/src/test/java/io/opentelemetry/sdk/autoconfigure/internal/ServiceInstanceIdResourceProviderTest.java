@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.autoconfigure.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -46,9 +48,12 @@ class ServiceInstanceIdResourceProviderTest {
                       ServiceInstanceIdResourceProvider provider =
                           new ServiceInstanceIdResourceProvider();
                       DefaultConfigProperties config =
-                          DefaultConfigProperties.createFromMap(testCase.attributes);
+                          DefaultConfigProperties.createFromMap(Collections.emptyMap());
+                      AttributesBuilder builder = Attributes.builder();
+                      testCase.attributes.forEach(builder::put);
+                      Resource existing = Resource.create(builder.build());
                       Resource resource =
-                          provider.shouldApply(config, Resource.getDefault())
+                          provider.shouldApply(config, existing)
                               ? provider.createResource(config)
                               : Resource.empty();
 
