@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -14,6 +13,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -27,6 +27,8 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 /** Unit tests for {@link AggregatorHandle}. */
 class DoubleLastValueAggregatorTest {
@@ -35,16 +37,24 @@ class DoubleLastValueAggregatorTest {
       InstrumentationScopeInfo.empty();
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
-  private static final DoubleLastValueAggregator aggregator =
-      new DoubleLastValueAggregator(ExemplarReservoir::doubleNoSamples);
+  private DoubleLastValueAggregator aggregator;
 
-  @Test
-  void createHandle() {
+  private void init(MemoryMode memoryMode) {
+    aggregator = new DoubleLastValueAggregator(ExemplarReservoir::doubleNoSamples, memoryMode);
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void createHandle(MemoryMode memoryMode) {
+    init(memoryMode);
     assertThat(aggregator.createHandle()).isInstanceOf(DoubleLastValueAggregator.Handle.class);
   }
 
-  @Test
-  void multipleRecords() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void multipleRecords(MemoryMode memoryMode) {
+    init(memoryMode);
+
     AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordDouble(12.1);
@@ -62,8 +72,11 @@ class DoubleLastValueAggregatorTest {
         .isEqualTo(14.1);
   }
 
-  @Test
-  void aggregateThenMaybeReset() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void aggregateThenMaybeReset(MemoryMode memoryMode) {
+    init(memoryMode);
+
     AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
 
@@ -82,8 +95,11 @@ class DoubleLastValueAggregatorTest {
         .isEqualTo(12.1);
   }
 
-  @Test
-  void diff() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void diff(MemoryMode memoryMode) {
+    init(memoryMode);
+
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
@@ -116,8 +132,11 @@ class DoubleLastValueAggregatorTest {
         .isEqualTo(ImmutableDoublePointData.create(0, 1, Attributes.empty(), 2, exemplars));
   }
 
-  @Test
-  void diffInPlace() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void diffInPlace(MemoryMode memoryMode) {
+    init(memoryMode);
+
     Attributes attributes = Attributes.builder().put("test", "value").build();
     DoubleExemplarData exemplar =
         ImmutableDoubleExemplarData.create(
@@ -158,8 +177,11 @@ class DoubleLastValueAggregatorTest {
     assertThat(previous.getExemplars()).isEqualTo(exemplars);
   }
 
-  @Test
-  void copyPoint() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void copyPoint(MemoryMode memoryMode) {
+    init(memoryMode);
+
     MutableDoublePointData pointData = (MutableDoublePointData) aggregator.createReusablePoint();
 
     Attributes attributes = Attributes.of(AttributeKey.longKey("test"), 100L);
@@ -201,8 +223,11 @@ class DoubleLastValueAggregatorTest {
     assertThat(toPointData.getExemplars()).isEqualTo(pointData.getExemplars());
   }
 
-  @Test
-  void toMetricData() {
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void toMetricData(MemoryMode memoryMode) {
+    init(memoryMode);
+
     AggregatorHandle<DoublePointData, DoubleExemplarData> aggregatorHandle =
         aggregator.createHandle();
     aggregatorHandle.recordDouble(10);
@@ -229,5 +254,26 @@ class DoubleLastValueAggregatorTest {
                             .hasStartEpochNanos(10)
                             .hasEpochNanos(100)
                             .hasValue(10)));
+  }
+
+  @Test
+  void testReusableDataOnCollect() {
+    init(MemoryMode.REUSABLE_DATA);
+    AggregatorHandle<DoublePointData, DoubleExemplarData> handle = aggregator.createHandle();
+    handle.recordDouble(1);
+    DoublePointData pointData =
+        handle.aggregateThenMaybeReset(0, 10, Attributes.empty(), /* reset= */ false);
+
+    handle.recordDouble(1);
+    DoublePointData pointData2 =
+        handle.aggregateThenMaybeReset(0, 10, Attributes.empty(), /* reset= */ false);
+
+    assertThat(pointData).isSameAs(pointData2);
+
+    handle.recordDouble(1);
+    DoublePointData pointDataWithReset =
+        handle.aggregateThenMaybeReset(0, 10, Attributes.empty(), /* reset= */ true);
+
+    assertThat(pointData).isSameAs(pointDataWithReset);
   }
 }

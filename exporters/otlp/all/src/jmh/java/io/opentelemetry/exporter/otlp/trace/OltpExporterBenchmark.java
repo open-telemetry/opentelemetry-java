@@ -100,6 +100,7 @@ public class OltpExporterBenchmark {
                     .toString(),
                 null,
                 10,
+                10,
                 Collections::emptyMap,
                 null,
                 null,

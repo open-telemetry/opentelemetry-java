@@ -5,7 +5,7 @@ pluginManagement {
     id("de.undercouch.download") version "5.5.0"
     id("org.jsonschema2pojo") version "1.2.1"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
-    id("org.graalvm.buildtools.native") version "0.9.28"
+    id("org.graalvm.buildtools.native") version "0.10.1"
   }
 }
 

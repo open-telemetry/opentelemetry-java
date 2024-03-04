@@ -2,6 +2,81 @@
 
 ## Unreleased
 
+## Version 1.35.0 (2024-02-09)
+
+**NOTE:** The `opentelemetry-exporter-jaeger` and `opentelemetry-exporter-jaeger-thift` artifacts
+have stopped being published. Jaeger
+has [native support for OTLP](https://opentelemetry.io/blog/2022/jaeger-native-otlp/), and users
+should export to jaeger
+using [OTLP](https://opentelemetry.io/docs/instrumentation/java/exporters/#otlp-dependencies)
+instead.
+
+### API
+
+#### Incubator
+
+* Add Span#addLink, for adding a link after span start
+  ([#6084](https://github.com/open-telemetry/opentelemetry-java/pull/6084))
+
+### SDK
+
+#### Traces
+
+* Bugfix: Ensure span status cannot be updated after set to StatusCode.OK
+  ([#6209](https://github.com/open-telemetry/opentelemetry-java/pull/6209)
+
+#### Metrics
+
+* Reusable memory Mode: Adding support for exponential histogram aggregation
+  ([#6058](https://github.com/open-telemetry/opentelemetry-java/pull/6058),
+   [#6136](https://github.com/open-telemetry/opentelemetry-java/pull/6136))
+* Reusable memory mode: Adding support for explicit histogram aggregation
+  ([#6153](https://github.com/open-telemetry/opentelemetry-java/pull/6153))
+* Reusable memory mode: Adding support for sum aggregation
+  ([#6182](https://github.com/open-telemetry/opentelemetry-java/pull/6182))
+* Reusable memory mode: Adding support for last value aggregation
+  ([#6196](https://github.com/open-telemetry/opentelemetry-java/pull/6196))
+
+#### Exporters
+
+* Recreate / fix graal issue detecting RetryPolicy class
+  ([#6139](https://github.com/open-telemetry/opentelemetry-java/pull/6139),
+   [#6134](https://github.com/open-telemetry/opentelemetry-java/pull/6134))
+* Restore prometheus metric name mapper tests, fix regressions
+  ([#6138](https://github.com/open-telemetry/opentelemetry-java/pull/6138))
+* WARNING: Remove jaeger exporters
+  ([#6119](https://github.com/open-telemetry/opentelemetry-java/pull/6119))
+* Update dependency `io.zipkin.reporter2:zipkin-reporter-bom` to 3.2.1.
+  Note: `ZipkinSpanExporterBuilder#setEncoder(zipkin2.codec.BytesEncoder)` has been deprecated in
+  favor of `ZipkinSpanExporterBuilder#setEncoder(zipkin2.reporter.BytesEncoder)`.
+  `ZipkinSpanExporterBuilder#setSender(zipkin2.reporter.Sender)` has been deprecated in favor
+  of `ZipkinSpanExporterBuilder#setSender(zipkin2.reporter.BytesMessageSender)`.
+  ([#6129](https://github.com/open-telemetry/opentelemetry-java/pull/6129),
+  [#6151](https://github.com/open-telemetry/opentelemetry-java/pull/6151))
+* Include trace flags in otlp marshaller
+  ([#6167](https://github.com/open-telemetry/opentelemetry-java/pull/6167))
+* Add Compressor SPI support to OtlpGrpc{Signal}Exporters
+  ([#6103](https://github.com/open-telemetry/opentelemetry-java/pull/6103))
+* Allow Prometheus exporter to add resource attributes to metric attributes
+  ([#6179](https://github.com/open-telemetry/opentelemetry-java/pull/6179))
+
+#### Extension
+
+* Autoconfigure accepts encoded header values for OTLP exporters
+  ([#6164](https://github.com/open-telemetry/opentelemetry-java/pull/6164))
+
+#### Incubator
+
+* Align file configuration with latest changes to spec
+  ([#6088](https://github.com/open-telemetry/opentelemetry-java/pull/6088))
+
+### Tooling
+
+* Stop including old artifacts in bom
+  ([#6157](https://github.com/open-telemetry/opentelemetry-java/pull/6157))
+* Define CODECOV token
+  ([#6186](https://github.com/open-telemetry/opentelemetry-java/pull/6186))
+
 ## Version 1.34.1 (2024-01-11)
 
 * Fix prometheus exporter regressions

@@ -1,2 +1,4 @@
 Comparing source compatibility of  against 
-No changes.
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder addMetricReaderCustomizer(java.util.function.BiFunction<? super io.opentelemetry.sdk.metrics.export.MetricReader,io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties,? extends io.opentelemetry.sdk.metrics.export.MetricReader>)

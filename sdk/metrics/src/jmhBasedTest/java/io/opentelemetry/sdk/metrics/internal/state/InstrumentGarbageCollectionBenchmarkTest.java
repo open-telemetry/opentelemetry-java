@@ -45,11 +45,12 @@ public class InstrumentGarbageCollectionBenchmarkTest {
   @SuppressWarnings("rawtypes")
   @Test
   public void normalizedAllocationRateTest() throws RunnerException {
-    // GitHub CI has an environment variable (CI=true). We can use it to skip
-    // this test since it's a lengthy one (roughly 10 seconds) and have it running
-    // only in GitHub CI
+    // OTel GitHub CI Workflow (see .github/) sets an environment variable
+    // (RUN_JMH_BASED_TESTS=true).
+    // We set it only there since it's a lengthy test (roughly 2.5min)
+    // and we want to run it only in CI.
     Assumptions.assumeTrue(
-        "true".equals(System.getenv("CI")),
+        "true".equals(System.getenv("RUN_JMH_BASED_TESTS")),
         "This test should only run in GitHub CI since it's long");
 
     // Runs InstrumentGarbageCollectionBenchmark
@@ -91,7 +92,7 @@ public class InstrumentGarbageCollectionBenchmarkTest {
     }
 
     testInstrumentTypeResultsMap.forEach(
-        (testInstrumentType, testInstrumentTypeResults) -> {
+        (testInstrumentTypeString, testInstrumentTypeResults) -> {
           Map<String, Map<String, Double>> resultMap =
               testInstrumentTypeResults.aggregationTemporalityToMemoryModeResult;
           assertThat(resultMap).hasSameSizeAs(AggregationTemporality.values());
@@ -108,9 +109,11 @@ public class InstrumentGarbageCollectionBenchmarkTest {
                 assertThat(immutableDataAllocRate).isNotNull().isNotZero();
                 assertThat(reusableDataAllocRate).isNotNull().isNotZero();
 
+                TestInstrumentType testInstrumentType =
+                    TestInstrumentType.valueOf(testInstrumentTypeString);
                 float dataAllocRateReductionPercentage =
-                    TestInstrumentType.valueOf(testInstrumentType)
-                        .getDataAllocRateReductionPercentage();
+                    testInstrumentType.getDataAllocRateReductionPercentage();
+                double allowedOffset = testInstrumentType.getAllowedPercentOffset();
 
                 // If this test suddenly fails for you this means you have changed the code in a way
                 // that allocates more memory than before. You can find out where, by running
@@ -119,8 +122,8 @@ public class InstrumentGarbageCollectionBenchmarkTest {
                 assertThat(100 - (reusableDataAllocRate / immutableDataAllocRate) * 100)
                     .describedAs(
                         "Aggregation temporality = %s, testInstrumentType = %s",
-                        aggregationTemporality, testInstrumentType)
-                    .isCloseTo(dataAllocRateReductionPercentage, Offset.offset(2.0));
+                        aggregationTemporality, testInstrumentTypeString)
+                    .isCloseTo(dataAllocRateReductionPercentage, Offset.offset(allowedOffset));
               });
         });
   }

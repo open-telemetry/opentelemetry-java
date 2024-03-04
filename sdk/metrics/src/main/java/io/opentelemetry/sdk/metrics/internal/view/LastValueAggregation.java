@@ -44,9 +44,11 @@ public final class LastValueAggregation implements Aggregation, AggregatorFactor
     // For the initial version we do not sample exemplars on gauges.
     switch (instrumentDescriptor.getValueType()) {
       case LONG:
-        return (Aggregator<T, U>) new LongLastValueAggregator(ExemplarReservoir::longNoSamples);
+        return (Aggregator<T, U>)
+            new LongLastValueAggregator(ExemplarReservoir::longNoSamples, memoryMode);
       case DOUBLE:
-        return (Aggregator<T, U>) new DoubleLastValueAggregator(ExemplarReservoir::doubleNoSamples);
+        return (Aggregator<T, U>)
+            new DoubleLastValueAggregator(ExemplarReservoir::doubleNoSamples, memoryMode);
     }
     throw new IllegalArgumentException("Invalid instrument value type");
   }

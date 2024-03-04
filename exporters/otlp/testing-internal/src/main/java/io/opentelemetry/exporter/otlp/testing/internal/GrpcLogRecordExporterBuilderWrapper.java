@@ -50,7 +50,8 @@ final class GrpcLogRecordExporterBuilderWrapper implements TelemetryExporterBuil
 
   @Override
   public TelemetryExporterBuilder<LogRecordData> setConnectTimeout(Duration timeout) {
-    throw new UnsupportedOperationException();
+    builder.setConnectTimeout(timeout);
+    return this;
   }
 
   @Override

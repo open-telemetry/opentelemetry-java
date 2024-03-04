@@ -94,6 +94,7 @@ class PrometheusHttpServerTest {
     prometheusServer.shutdown();
   }
 
+  @SuppressWarnings("DataFlowIssue")
   @Test
   void invalidConfig() {
     assertThatThrownBy(() -> PrometheusHttpServer.builder().setPort(-1))
@@ -155,6 +156,7 @@ class PrometheusHttpServerTest {
                 + "# EOF\n");
   }
 
+  @SuppressWarnings("ConcatenationWithEmptyString")
   @Test
   void fetchFiltered() {
     AggregatedHttpResponse response =
@@ -175,6 +177,7 @@ class PrometheusHttpServerTest {
                 + "target_info{kr=\"vr\"} 1\n");
   }
 
+  @SuppressWarnings("resource")
   @Test
   void fetchPrometheusCompressed() throws IOException {
     WebClient client =
@@ -201,6 +204,7 @@ class PrometheusHttpServerTest {
                 + "target_info{kr=\"vr\"} 1\n");
   }
 
+  @SuppressWarnings("resource")
   @Test
   void fetchHead() {
     AggregatedHttpResponse response = client.head("/").aggregate().join();
@@ -310,6 +314,49 @@ class PrometheusHttpServerTest {
               "executorService",
               as(InstanceOfAssertFactories.type(ScheduledThreadPoolExecutor.class)))
           .satisfies(executor -> assertThat(executor).isSameAs(scheduledExecutor));
+    }
+  }
+
+  @Test
+  void addResourceAttributesWorks() {
+    WebClient testClient;
+    try (PrometheusHttpServer testPrometheusServer =
+        PrometheusHttpServer.builder()
+            .setHost("localhost")
+            .setPort(0)
+            .setAllowedResourceAttributesFilter(Predicates.ALLOW_ALL)
+            .build()) {
+      testPrometheusServer.register(
+          new CollectionRegistration() {
+            @Override
+            public Collection<MetricData> collectAllMetrics() {
+              return metricData.get();
+            }
+          });
+
+      testClient =
+          WebClient.builder("http://localhost:" + testPrometheusServer.getAddress().getPort())
+              .decorator(RetryingClient.newDecorator(RetryRule.failsafe()))
+              .build();
+
+      AggregatedHttpResponse response = testClient.get("/metrics").aggregate().join();
+      assertThat(response.status()).isEqualTo(HttpStatus.OK);
+      assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
+          .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
+      assertThat(response.contentUtf8())
+          .isEqualTo(
+              "# HELP grpc_name_unit_total long_description\n"
+                  + "# TYPE grpc_name_unit_total counter\n"
+
+                  // Note the added resource attributes as labels
+                  + "grpc_name_unit_total{kp=\"vp\",kr=\"vr\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
+                  + "# HELP http_name_unit_total double_description\n"
+                  + "# TYPE http_name_unit_total counter\n"
+
+                  // Note the added resource attributes as labels
+                  + "http_name_unit_total{kp=\"vp\",kr=\"vr\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
+                  + "# TYPE target_info gauge\n"
+                  + "target_info{kr=\"vr\"} 1\n");
     }
   }
 

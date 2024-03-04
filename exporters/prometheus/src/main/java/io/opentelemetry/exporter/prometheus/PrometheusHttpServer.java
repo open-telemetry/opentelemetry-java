@@ -23,6 +23,7 @@ import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 /**
@@ -55,8 +56,10 @@ public final class PrometheusHttpServer implements MetricReader {
       int port,
       @Nullable ExecutorService executor,
       PrometheusRegistry prometheusRegistry,
-      boolean otelScopeEnabled) {
-    this.prometheusMetricReader = new PrometheusMetricReader(otelScopeEnabled);
+      boolean otelScopeEnabled,
+      @Nullable Predicate<String> allowedResourceAttributesFilter) {
+    this.prometheusMetricReader =
+        new PrometheusMetricReader(otelScopeEnabled, allowedResourceAttributesFilter);
     this.host = host;
     this.prometheusRegistry = prometheusRegistry;
     prometheusRegistry.register(prometheusMetricReader);

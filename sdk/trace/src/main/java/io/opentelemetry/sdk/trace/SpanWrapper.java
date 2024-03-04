@@ -43,6 +43,8 @@ abstract class SpanWrapper implements SpanData {
 
   abstract int totalRecordedEvents();
 
+  abstract int totalRecordedLinks();
+
   abstract StatusData status();
 
   abstract String name();
@@ -62,6 +64,7 @@ abstract class SpanWrapper implements SpanData {
       Attributes attributes,
       int totalAttributeCount,
       int totalRecordedEvents,
+      int totalRecordedLinks,
       StatusData status,
       String name,
       long endEpochNanos,
@@ -73,6 +76,7 @@ abstract class SpanWrapper implements SpanData {
         attributes,
         totalAttributeCount,
         totalRecordedEvents,
+        totalRecordedLinks,
         status,
         name,
         endEpochNanos,
@@ -158,7 +162,7 @@ abstract class SpanWrapper implements SpanData {
 
   @Override
   public int getTotalRecordedLinks() {
-    return delegate().getTotalRecordedLinks();
+    return totalRecordedLinks();
   }
 
   @Override
