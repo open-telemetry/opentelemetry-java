@@ -34,7 +34,7 @@ public final class AutoConfigureUtil {
   }
 
   /** Sets the {@link ComponentLoader} to be used in the auto-configuration process. */
-  public static void setComponentLoader(
+  public static AutoConfiguredOpenTelemetrySdkBuilder setComponentLoader(
       AutoConfiguredOpenTelemetrySdkBuilder builder, ComponentLoader componentLoader) {
     try {
       Method method =
@@ -42,6 +42,7 @@ public final class AutoConfigureUtil {
               "setComponentLoader", ComponentLoader.class);
       method.setAccessible(true);
       method.invoke(builder, componentLoader);
+      return builder;
     } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
       throw new IllegalStateException(
           "Error calling setComponentLoader on AutoConfiguredOpenTelemetrySdkBuilder", e);
@@ -49,7 +50,7 @@ public final class AutoConfigureUtil {
   }
 
   /** Sets the {@link ConfigProperties} customizer to be used in the auto-configuration process. */
-  public static void setConfigPropertiesCustomizer(
+  public static AutoConfiguredOpenTelemetrySdkBuilder setConfigPropertiesCustomizer(
       AutoConfiguredOpenTelemetrySdkBuilder builder,
       Function<ConfigProperties, ConfigProperties> customizer) {
     try {
@@ -58,6 +59,7 @@ public final class AutoConfigureUtil {
               "setConfigPropertiesCustomizer", Function.class);
       method.setAccessible(true);
       method.invoke(builder, customizer);
+      return builder;
     } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
       throw new IllegalStateException(
           "Error calling setConfigPropertiesCustomizer on AutoConfiguredOpenTelemetrySdkBuilder",

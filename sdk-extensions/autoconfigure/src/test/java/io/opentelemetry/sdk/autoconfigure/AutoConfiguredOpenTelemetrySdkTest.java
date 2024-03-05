@@ -37,6 +37,7 @@ import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.internal.AutoConfigureUtil;
 import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
@@ -327,8 +328,8 @@ class AutoConfiguredOpenTelemetrySdkTest {
     SpiHelper spiHelper =
         SpiHelper.create(AutoConfiguredOpenTelemetrySdkBuilder.class.getClassLoader());
 
-    builder
-        .setComponentLoader(
+    AutoConfigureUtil.setComponentLoader(
+            builder,
             new ComponentLoader() {
               @SuppressWarnings("unchecked")
               @Override
@@ -342,7 +343,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
         .build();
 
     verify(customizerProvider).customize(any());
-
     verifyNoMoreInteractions(customizerProvider);
   }
 
@@ -390,9 +390,8 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @Test
   void builder_setConfigPropertiesCustomizer() {
     AutoConfiguredOpenTelemetrySdk autoConfigured =
-        builder
-            .addPropertiesCustomizer(config -> singletonMap("some-key", "defaultValue"))
-            .setConfigPropertiesCustomizer(
+        AutoConfigureUtil.setConfigPropertiesCustomizer(
+                builder.addPropertiesCustomizer(config -> singletonMap("some-key", "defaultValue")),
                 config -> {
                   assertThat(config.getString("some-key")).isEqualTo("defaultValue");
 
