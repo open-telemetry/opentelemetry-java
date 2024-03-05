@@ -18,11 +18,6 @@ import java.util.List;
 public final class ProxyOptions {
   private final ProxySelector proxySelector;
 
-  /** Return the {@link ProxySelector}. */
-  public ProxySelector getProxySelector() {
-    return proxySelector;
-  }
-
   private ProxyOptions(ProxySelector proxySelector) {
     this.proxySelector = proxySelector;
   }
@@ -38,6 +33,11 @@ public final class ProxyOptions {
    */
   public static ProxyOptions create(InetSocketAddress socketAddress) {
     return new ProxyOptions(new SimpleProxySelector(new Proxy(Proxy.Type.HTTP, socketAddress)));
+  }
+
+  /** Return the {@link ProxySelector}. */
+  public ProxySelector getProxySelector() {
+    return proxySelector;
   }
 
   @Override

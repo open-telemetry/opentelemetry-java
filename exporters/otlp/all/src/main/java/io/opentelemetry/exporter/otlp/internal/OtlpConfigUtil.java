@@ -53,7 +53,6 @@ public final class OtlpConfigUtil {
   }
 
   /** Invoke the setters with the OTLP configuration for the {@code dataType}. */
-  @SuppressWarnings("TooManyParameters")
   public static void configureOtlpExporterBuilder(
       String dataType,
       ConfigProperties config,
