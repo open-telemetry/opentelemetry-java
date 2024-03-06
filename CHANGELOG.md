@@ -64,6 +64,8 @@ instead.
 
 * Autoconfigure accepts encoded header values for OTLP exporters
   ([#6164](https://github.com/open-telemetry/opentelemetry-java/pull/6164))
+* Return implementation type from `AutoConfiguredOpenTelemetrySdkBuilder.addLogRecordProcessorCustomizer`
+  ([#6248](https://github.com/open-telemetry/opentelemetry-java/pull/6248))
 
 #### Incubator
 
