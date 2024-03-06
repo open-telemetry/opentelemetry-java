@@ -13,6 +13,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
+import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
@@ -101,6 +102,9 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
   private final List<Function<ConfigProperties, Map<String, String>>> propertiesCustomizers =
       new ArrayList<>();
+
+  private Function<ConfigProperties, ConfigProperties> configPropertiesCustomizer =
+      Function.identity();
 
   private SpiHelper spiHelper =
       SpiHelper.create(AutoConfiguredOpenTelemetrySdk.class.getClassLoader());
@@ -254,6 +258,21 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   /**
+   * Adds a {@link Function} to invoke the with the {@link ConfigProperties} to allow customization.
+   *
+   * <p>The argument to the function is the {@link ConfigProperties}, with the {@link
+   * #addPropertiesCustomizer(Function)} already applied.
+   *
+   * <p>The return value of the {@link Function} replace the {@link ConfigProperties} to be used.
+   */
+  AutoConfiguredOpenTelemetrySdkBuilder setConfigPropertiesCustomizer(
+      Function<ConfigProperties, ConfigProperties> configPropertiesCustomizer) {
+    requireNonNull(configPropertiesCustomizer, "configPropertiesCustomizer");
+    this.configPropertiesCustomizer = configPropertiesCustomizer;
+    return this;
+  }
+
+  /**
    * Adds a {@link BiFunction} to invoke the with the {@link SdkMeterProviderBuilder} to allow
    * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
    *
@@ -382,6 +401,13 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       ClassLoader serviceClassLoader) {
     requireNonNull(serviceClassLoader, "serviceClassLoader");
     this.spiHelper = SpiHelper.create(serviceClassLoader);
+    return this;
+  }
+
+  /** Sets the {@link ComponentLoader} to be used to load SPI implementations. */
+  AutoConfiguredOpenTelemetrySdkBuilder setComponentLoader(ComponentLoader componentLoader) {
+    requireNonNull(componentLoader, "componentLoader");
+    this.spiHelper = SpiHelper.create(componentLoader);
     return this;
   }
 
@@ -590,7 +616,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       Map<String, String> overrides = customizer.apply(properties);
       properties = properties.withOverrides(overrides);
     }
-    return properties;
+    return configPropertiesCustomizer.apply(properties);
   }
 
   // Visible for testing

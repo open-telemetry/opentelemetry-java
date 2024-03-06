@@ -173,21 +173,13 @@ final class TracerProviderConfiguration {
       case "always_off":
         return Sampler.alwaysOff();
       case "traceidratio":
-        {
-          double ratio =
-              config.getDouble("otel.traces.sampler.arg", DEFAULT_TRACEIDRATIO_SAMPLE_RATIO);
-          return Sampler.traceIdRatioBased(ratio);
-        }
+        return ratioSampler(config);
       case PARENTBASED_ALWAYS_ON:
         return Sampler.parentBased(Sampler.alwaysOn());
       case "parentbased_always_off":
         return Sampler.parentBased(Sampler.alwaysOff());
       case "parentbased_traceidratio":
-        {
-          double ratio =
-              config.getDouble("otel.traces.sampler.arg", DEFAULT_TRACEIDRATIO_SAMPLE_RATIO);
-          return Sampler.parentBased(Sampler.traceIdRatioBased(ratio));
-        }
+        return Sampler.parentBased(ratioSampler(config));
       case "parentbased_jaeger_remote":
         Sampler jaegerRemote = spiSamplersManager.getByName("jaeger_remote");
         if (jaegerRemote == null) {
@@ -203,6 +195,11 @@ final class TracerProviderConfiguration {
         }
         return spiSampler;
     }
+  }
+
+  private static Sampler ratioSampler(ConfigProperties config) {
+    double ratio = config.getDouble("otel.traces.sampler.arg", DEFAULT_TRACEIDRATIO_SAMPLE_RATIO);
+    return Sampler.traceIdRatioBased(ratio);
   }
 
   private TracerProviderConfiguration() {}

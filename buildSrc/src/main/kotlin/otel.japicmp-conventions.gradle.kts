@@ -154,6 +154,8 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
         // Reproduce defaults from https://github.com/melix/japicmp-gradle-plugin/blob/09f52739ef1fccda6b4310cf3f4b19dc97377024/src/main/java/me/champeau/gradle/japicmp/report/ViolationsGenerator.java#L130
         // with some changes.
         val exclusions = mutableListOf<String>()
+        // Generics are not detected correctly
+        exclusions.add("CLASS_GENERIC_TEMPLATE_CHANGED")
         // Allow new default methods on interfaces
         exclusions.add("METHOD_NEW_DEFAULT")
         // Allow adding default implementations for default methods
