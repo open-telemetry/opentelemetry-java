@@ -45,7 +45,8 @@ final class GrpcLogRecordExporterBuilderWrapper implements TelemetryExporterBuil
 
   @Override
   public TelemetryExporterBuilder<LogRecordData> setConnectTimeout(long timeout, TimeUnit unit) {
-    throw new UnsupportedOperationException();
+    builder.setConnectTimeout(timeout, unit);
+    return this;
   }
 
   @Override
@@ -106,7 +107,7 @@ final class GrpcLogRecordExporterBuilderWrapper implements TelemetryExporterBuil
 
   @Override
   public TelemetryExporterBuilder<LogRecordData> setProxyOptions(ProxyOptions proxyOptions) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException("ProxyOptions are not supported for gRPC");
   }
 
   @Override

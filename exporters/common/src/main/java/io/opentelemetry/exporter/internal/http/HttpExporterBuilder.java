@@ -133,7 +133,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public HttpExporterBuilder<T> setProxy(ProxyOptions proxyOptions) {
+  public HttpExporterBuilder<T> setProxyOptions(ProxyOptions proxyOptions) {
     this.proxyOptions = proxyOptions;
     return this;
   }

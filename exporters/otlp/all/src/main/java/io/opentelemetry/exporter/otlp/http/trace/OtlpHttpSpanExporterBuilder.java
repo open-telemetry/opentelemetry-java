@@ -176,7 +176,7 @@ public final class OtlpHttpSpanExporterBuilder {
   /** Sets the proxy options. Proxying is disabled by default. */
   public OtlpHttpSpanExporterBuilder setProxy(ProxyOptions proxyOptions) {
     requireNonNull(proxyOptions, "proxyOptions");
-    delegate.setProxy(proxyOptions);
+    delegate.setProxyOptions(proxyOptions);
     return this;
   }
 

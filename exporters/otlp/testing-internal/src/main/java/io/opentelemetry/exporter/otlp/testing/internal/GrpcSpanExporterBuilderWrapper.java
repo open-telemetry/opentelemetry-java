@@ -46,7 +46,8 @@ final class GrpcSpanExporterBuilderWrapper implements TelemetryExporterBuilder<S
 
   @Override
   public TelemetryExporterBuilder<SpanData> setConnectTimeout(long timeout, TimeUnit unit) {
-    throw new UnsupportedOperationException();
+    builder.setConnectTimeout(timeout, unit);
+    return this;
   }
 
   @Override
@@ -107,7 +108,7 @@ final class GrpcSpanExporterBuilderWrapper implements TelemetryExporterBuilder<S
 
   @Override
   public TelemetryExporterBuilder<SpanData> setProxyOptions(ProxyOptions proxyOptions) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException("ProxyOptions are not supported for gRPC");
   }
 
   @Override
