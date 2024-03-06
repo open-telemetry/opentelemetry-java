@@ -96,6 +96,12 @@ final class JsonSerializer extends Serializer {
     generator.writeNumber(value);
   }
 
+  /** Writes a protobuf {@code string} field, even if it matches the default value. */
+  public void writeString(ProtoFieldInfo field, String string) throws IOException {
+    generator.writeFieldName(field.getJsonName());
+    generator.writeString(string);
+  }
+
   @Override
   public void writeString(ProtoFieldInfo field, byte[] utf8Bytes) throws IOException {
     generator.writeFieldName(field.getJsonName());

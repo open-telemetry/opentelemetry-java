@@ -18,7 +18,7 @@ final class JsonUtil {
     try {
       return JSON_FACTORY.createGenerator(stringWriter);
     } catch (IOException e) {
-      throw new IllegalStateException("Unable to create in-memory JsonGenerator, can't happen.", e);
+      throw new IllegalStateException("Unable to createIntoDynamicList in-memory JsonGenerator, can't happen.", e);
     }
   }
 

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp.metrics;
 
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.ProtoEnumInfo;
@@ -13,31 +14,13 @@ import io.opentelemetry.proto.metrics.v1.internal.Sum;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SumData;
 import java.io.IOException;
+import java.util.List;
 
-final class SumMarshaler extends MarshalerWithSize {
-  private final NumberDataPointMarshaler[] dataPoints;
-  private final ProtoEnumInfo aggregationTemporality;
-  private final boolean isMonotonic;
+abstract class SumMarshaler extends Marshaler {
 
-  static SumMarshaler create(SumData<? extends PointData> sum) {
-    NumberDataPointMarshaler[] dataPointMarshalers =
-        NumberDataPointMarshaler.createRepeated(sum.getPoints());
-
-    return new SumMarshaler(
-        dataPointMarshalers,
-        MetricsMarshalerUtil.mapToTemporality(sum.getAggregationTemporality()),
-        sum.isMonotonic());
-  }
-
-  private SumMarshaler(
-      NumberDataPointMarshaler[] dataPoints,
-      ProtoEnumInfo aggregationTemporality,
-      boolean isMonotonic) {
-    super(calculateSize(dataPoints, aggregationTemporality, isMonotonic));
-    this.dataPoints = dataPoints;
-    this.aggregationTemporality = aggregationTemporality;
-    this.isMonotonic = isMonotonic;
-  }
+  abstract List<NumberDataPointMarshaler> getDataPoints();
+  abstract ProtoEnumInfo getAggregationTemporality();
+  abstract boolean getIsMonotonic();
 
   @Override
   public void writeTo(Serializer output) throws IOException {
@@ -46,8 +29,8 @@ final class SumMarshaler extends MarshalerWithSize {
     output.serializeBool(Sum.IS_MONOTONIC, isMonotonic);
   }
 
-  private static int calculateSize(
-      NumberDataPointMarshaler[] dataPoints,
+  protected static int calculateSize(
+      List<NumberDataPointMarshaler> dataPoints,
       ProtoEnumInfo aggregationTemporality,
       boolean isMonotonic) {
     int size = 0;
