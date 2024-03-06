@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.internal.state;
+package io.opentelemetry.sdk.internal;
 
 import javax.annotation.Nullable;
 
@@ -38,10 +38,7 @@ public final class ArrayBasedStack<T> {
    * @throws NullPointerException if {@code element} is null
    */
   public void push(T element) {
-    if (element == null) {
-      throw new NullPointerException("Null is not permitted as element in the stack");
-    }
-    if (size == array.length) {
+      if (size == array.length) {
       resizeArray(array.length * 2);
     }
     array[size++] = element;

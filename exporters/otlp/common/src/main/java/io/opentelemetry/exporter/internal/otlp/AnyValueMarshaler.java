@@ -6,9 +6,9 @@
 package io.opentelemetry.exporter.internal.otlp;
 
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
-import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.exporter.internal.otlp.metrics.MarshallingObjectsPool;
+import io.opentelemetry.exporter.internal.marshal.MarshallingObjectsPool;
 import io.opentelemetry.exporter.internal.marshal.MessageSize;
+import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.extension.incubator.logs.AnyValue;
 import io.opentelemetry.extension.incubator.logs.KeyAnyValue;
 import java.io.IOException;
@@ -46,6 +46,7 @@ public final class AnyValueMarshaler {
     throw new IllegalArgumentException("Unsupported AnyValue type: " + anyValue.getType());
   }
 
+  @SuppressWarnings("unchecked")
   public static MessageSize messageSize(AnyValue<?> anyValue, MarshallingObjectsPool pool) {
     switch (anyValue.getType()) {
       case STRING:
@@ -61,13 +62,18 @@ public final class AnyValueMarshaler {
       case KEY_VALUE_LIST:
         return KeyValueListAnyValueMarshaler.messageSize(
             (List<KeyAnyValue>) anyValue.getValue(), pool);
-//      case BYTES:
-//        return BytesAnyValueMarshaler.messageSize((ByteBuffer) anyValue.getValue());
+      case BYTES:
+        return BytesAnyValueMarshaler.messageSize((ByteBuffer) anyValue.getValue(), pool);
     }
     throw new IllegalArgumentException("Unsupported AnyValue type: " + anyValue.getType());
   }
 
-  public static void encode(Serializer output, AnyValue<?> anyValue, MessageSize messageSize)
+  @SuppressWarnings("unchecked")
+  public static void encode(
+      Serializer output,
+      AnyValue<?> anyValue,
+      MessageSize anyValueMessageSize,
+      MarshallingObjectsPool pool)
       throws IOException {
     switch (anyValue.getType()) {
       case STRING:
@@ -84,6 +90,22 @@ public final class AnyValueMarshaler {
         return;
       case ARRAY:
         ArrayAnyValueMarshaler.encode(
-            output, (List<AnyValue<?>>) anyValue.getValue(), messageSize);
+            output,
+            (List<AnyValue<?>>) anyValue.getValue(),
+            anyValueMessageSize.getMessageTypeFieldSize(0),
+            pool);
         return;
+      case KEY_VALUE_LIST:
+        KeyValueListAnyValueMarshaler.encode(
+            output,
+            (List<KeyAnyValue>) anyValue.getValue(),
+            anyValueMessageSize.getMessageTypeFieldSize(0),
+            pool);
+        return;
+      case BYTES:
+        BytesAnyValueMarshaler.encode(output, (ByteBuffer) anyValue.getValue());
+        return;
+    }
+    throw new IllegalArgumentException("Unsupported AnyValue type: " + anyValue.getType());
+  }
 }

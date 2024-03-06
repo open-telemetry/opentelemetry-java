@@ -14,9 +14,6 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 /** Serializer for the protobuf binary wire format. */
 final class ProtoSerializer extends Serializer implements AutoCloseable {
@@ -27,7 +24,8 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   // reusing buffers for the thread is almost free. Even with multiple threads, it should still be
   // worth it and is common practice in serialization libraries such as Jackson.
   private static final ThreadLocal<Map<String, byte[]>> THREAD_LOCAL_ID_CACHE = new ThreadLocal<>();
-  private static final ThreadLocal<ByteBuffer> THREAD_LOCAL_STRING_BYTE_BUFFER = new ThreadLocal<>();
+  private static final ThreadLocal<ByteBuffer> THREAD_LOCAL_STRING_BYTE_BUFFER =
+      new ThreadLocal<>();
   private final CodedOutputStream output;
   private final Map<String, byte[]> idCache;
 
@@ -202,16 +200,19 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
     }
   }
 
+  @Override
   public void serializeRepeatedMessage(
       ProtoFieldInfo field,
       List<?> repeatedMessage,
       MessageSerializer repeatedMessageSerializer,
-      List<MessageSize> repeatedMessageSize) throws IOException {
+      List<MessageSize> repeatedMessageSize,
+      MarshallingObjectsPool pool)
+      throws IOException {
 
     for (int i = 0; i < repeatedMessage.size(); i++) {
       Object message = repeatedMessage.get(i);
       MessageSize messageSize = repeatedMessageSize.get(i);
-      serializeMessage(field, message, repeatedMessageSerializer, messageSize);
+      serializeMessage(field, message, repeatedMessageSerializer, messageSize, pool);
     }
   }
 

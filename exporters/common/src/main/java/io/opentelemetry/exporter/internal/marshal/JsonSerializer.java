@@ -11,9 +11,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 final class JsonSerializer extends Serializer {
 
@@ -112,6 +109,7 @@ final class JsonSerializer extends Serializer {
   }
 
   /** Writes a protobuf {@code string} field, even if it matches the default value. */
+  @Override
   public void writeString(ProtoFieldInfo field, String string) throws IOException {
     generator.writeFieldName(field.getJsonName());
     generator.writeString(string);
@@ -173,17 +171,22 @@ final class JsonSerializer extends Serializer {
     }
     generator.writeEndArray();
   }
+
   @Override
   public void serializeRepeatedMessage(
       ProtoFieldInfo field,
       List<?> repeatedMessage,
-      BiConsumer<Serializer, Object> repeatedMessageSerializer,
-      List<MessageSize> ignored) throws IOException {
+      MessageSerializer repeatedMessageSerializer,
+      List<MessageSize> repeatedMessageSize,
+      MarshallingObjectsPool pool)
+      throws IOException {
     generator.writeArrayFieldStart(field.getJsonName());
     for (int i = 0; i < repeatedMessage.size(); i++) {
       Object message = repeatedMessage.get(i);
-      writeMessageValue(message, repeatedMessageSerializer);
+      MessageSize messageSize = repeatedMessageSize.get(i);
+      writeMessageValue(message, repeatedMessageSerializer, messageSize, pool);
     }
+    generator.writeEndArray();
   }
 
   // Not a field.
@@ -195,10 +198,12 @@ final class JsonSerializer extends Serializer {
 
   void writeMessageValue(
       Object message,
-      BiConsumer<Serializer, Object> messageSerializer)
+      MessageSerializer messageSerializer,
+      MessageSize messageSize,
+      MarshallingObjectsPool pool)
       throws IOException {
     generator.writeStartObject();
-    messageSerializer.accept(this, message);
+    messageSerializer.serialize(this, message, messageSize, pool);
     generator.writeEndObject();
   }
 

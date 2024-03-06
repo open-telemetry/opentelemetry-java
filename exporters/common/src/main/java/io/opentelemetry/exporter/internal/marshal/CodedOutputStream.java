@@ -329,9 +329,7 @@ public abstract class CodedOutputStream {
     return computeInt32SizeNoTag(value);
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode a {@code string} field
-   */
+  /** Compute the number of bytes that would be needed to encode a {@code string} field. */
   public static int computeStringSizeNoTag(final String value) {
     int length;
     try {
@@ -347,6 +345,11 @@ public abstract class CodedOutputStream {
   /** Compute the number of bytes that would be needed to encode a {@code bytes} field. */
   public static int computeByteArraySizeNoTag(final byte[] value) {
     return computeLengthDelimitedFieldSize(value.length);
+  }
+
+  /** Compute the number of bytes that would be needed to encode a {@code bytes} field. */
+  public static int computeByteBufferSizeNoTag(final ByteBuffer value) {
+    return computeLengthDelimitedFieldSize(value.remaining());
   }
 
   static int computeLengthDelimitedFieldSize(int fieldLength) {

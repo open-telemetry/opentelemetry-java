@@ -1,9 +1,7 @@
-// Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
-//
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 package io.opentelemetry.exporter.internal.marshal;
 
@@ -15,40 +13,19 @@ import static java.lang.Character.toCodePoint;
 
 import java.nio.ByteBuffer;
 
-/**
- * A set of low-level, high-performance static utility methods related to the UTF-8 character
- * encoding. This class has no dependencies outside of the core JDK libraries.
- *
- * <p>There are several variants of UTF-8. The one implemented by this class is the restricted
- * definition of UTF-8 introduced in Unicode 3.1, which mandates the rejection of "overlong" byte
- * sequences as well as rejection of 3-byte surrogate codepoint byte sequences. Note that the UTF-8
- * decoder included in Oracle's JDK has been modified to also reject "overlong" byte sequences, but
- * (as of 2011) still accepts 3-byte surrogate codepoint byte sequences.
- *
- * <p>The byte sequences considered valid by this class are exactly those that can be roundtrip
- * converted to Strings and back to bytes using the UTF-8 charset, without loss:
- *
- * <pre>{@code
- * Arrays.equals(bytes, new String(bytes, Internal.UTF_8).getBytes(Internal.UTF_8))
- * }</pre>
- *
- * <p>See the Unicode Standard,</br> Table 3-6. <em>UTF-8 Bit Distribution</em>,</br> Table 3-7.
- * <em>Well Formed UTF-8 Byte Sequences</em>.
- *
- * <p>This class supports decoding of partial byte sequences, so that the bytes in a complete UTF-8
- * byte sequence can be stored in multiple segments. Methods typically return {@link #MALFORMED} if
- * the partial byte sequence is definitely not well-formed; {@link #COMPLETE} if it is well-formed
- * in the absence of additional input; or, if the byte sequence apparently terminated in the middle
- * of a character, an opaque integer "state" value containing enough information to decode the
- * character when passed to a subsequent invocation of a partial decoding method.
- *
- * @author martinrb@google.com (Martin Buchholz)
- */
 // Copied in and trimmed from
 // https://github.com/protocolbuffers/protobuf/blob/master/java/core/src/main/java/com/google/protobuf/Utf8.java
 //
 // Removed:
 //    * All decoding methods - we only need encoding, and it has brought other classes in.
+//    * Javadoc of class
+@SuppressWarnings({
+  "UnnecessaryFinal",
+  "UngroupedOverloads",
+  "UnusedException",
+  "InconsistentOverloads",
+  "unused"
+})
 final class Utf8 {
 
   private static final Processor processor = new SafeProcessor();
@@ -190,6 +167,7 @@ final class Utf8 {
   // a protocol buffer local exception. This exception is then caught in CodedOutputStream so it can
   // fallback to more lenient behavior.
 
+  @SuppressWarnings("serial")
   static class UnpairedSurrogateException extends IllegalArgumentException {
     UnpairedSurrogateException(int index, int length) {
       super("Unpaired surrogate at index " + index + " of " + length);
@@ -260,6 +238,7 @@ final class Utf8 {
   static int encode(String in, byte[] out, int offset, int length) {
     return processor.encodeUtf8(in, out, offset, length);
   }
+
   // End Guava UTF-8 methods.
 
   /**
@@ -540,8 +519,8 @@ final class Utf8 {
      * return offset + a.length;
      * }</pre>
      *
-     * but is more efficient in both time and space. One key difference is that this method requires
-     * paired surrogates, and therefore does not support chunking. While {@code
+     * <p>but is more efficient in both time and space. One key difference is that this method
+     * requires paired surrogates, and therefore does not support chunking. While {@code
      * String.getBytes(UTF_8)} replaces unpaired surrogates with the default replacement character,
      * this method throws {@link UnpairedSurrogateException}.
      *
@@ -554,11 +533,11 @@ final class Utf8 {
      * @param out the target array
      * @param offset the starting offset in {@code bytes} to start writing at
      * @param length the length of the {@code bytes}, starting from {@code offset}
+     * @return the new offset, equivalent to {@code offset + Utf8.encodedLength(sequence)}
      * @throws UnpairedSurrogateException if {@code sequence} contains ill-formed UTF-16 (unpaired
      *     surrogates)
      * @throws ArrayIndexOutOfBoundsException if {@code sequence} encoded in UTF-8 is longer than
      *     {@code bytes.length - offset}
-     * @return the new offset, equivalent to {@code offset + Utf8.encodedLength(sequence)}
      */
     abstract int encodeUtf8(String in, byte[] out, int offset, int length);
 

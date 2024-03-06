@@ -1,9 +1,12 @@
-package io.opentelemetry.exporter.internal.otlp.metrics;
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-import io.opentelemetry.exporter.internal.marshal.DefaultMessageSize;
-import io.opentelemetry.exporter.internal.marshal.MessageSize;
+package io.opentelemetry.exporter.internal.marshal;
+
 import io.opentelemetry.sdk.internal.DynamicList;
-import io.opentelemetry.sdk.metrics.internal.state.ObjectPool;
+import io.opentelemetry.sdk.internal.ObjectPool;
 
 public class MarshallingObjectsPool {
   private final ObjectPool<DynamicList<MessageSize>> messageSizeDynamicListPool =

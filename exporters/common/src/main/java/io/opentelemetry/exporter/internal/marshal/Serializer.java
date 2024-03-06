@@ -8,9 +8,6 @@ package io.opentelemetry.exporter.internal.marshal;
 import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import java.io.IOException;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 
 /**
@@ -218,9 +215,11 @@ public abstract class Serializer implements AutoCloseable {
       ProtoFieldInfo field,
       Object message,
       MessageSerializer messageSerializer,
-      MessageSize messageSize) throws IOException {
+      MessageSize messageSize,
+      MarshallingObjectsPool marshallingObjectsPool)
+      throws IOException {
     writeStartMessage(field, messageSize.getEncodedSize());
-    messageSerializer.serialize(this, message, messageSize);
+    messageSerializer.serialize(this, message, messageSize, marshallingObjectsPool);
     writeEndMessage();
   }
 
@@ -330,9 +329,11 @@ public abstract class Serializer implements AutoCloseable {
       ProtoFieldInfo field,
       List<?> repeatedMessage,
       MessageSerializer repeatedMessageSerializer,
-      List<MessageSize> repeatedMessageSize) throws IOException;
+      List<MessageSize> repeatedMessageSize,
+      MarshallingObjectsPool marshallingObjectsPool)
+      throws IOException;
 
-    /** Writes the value for a message field that has been pre-serialized. */
+  /** Writes the value for a message field that has been pre-serialized. */
   public abstract void writeSerializedMessage(byte[] protoSerialized, String jsonSerialized)
       throws IOException;
 
@@ -340,7 +341,8 @@ public abstract class Serializer implements AutoCloseable {
   public abstract void close() throws IOException;
 
   public interface MessageSerializer {
-    void serialize(Serializer serializer, Object message, MessageSize messageSize)
+    void serialize(
+        Serializer serializer, Object message, MessageSize messageSize, MarshallingObjectsPool pool)
         throws IOException;
   }
 }

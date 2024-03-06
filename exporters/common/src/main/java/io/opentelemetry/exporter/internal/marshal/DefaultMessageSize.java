@@ -1,6 +1,10 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.exporter.internal.marshal;
 
-import io.opentelemetry.exporter.internal.marshal.MessageSize;
 import io.opentelemetry.sdk.internal.DynamicList;
 import java.util.List;
 
@@ -32,7 +36,7 @@ public final class DefaultMessageSize implements MessageSize {
   }
 
   @Override
-  public MessageSize getMessageTypedFieldSize(int messageFieldPosition) {
+  public MessageSize getMessageTypeFieldSize(int messageFieldPosition) {
     return messageFieldSizes.get(messageFieldPosition);
   }
 }

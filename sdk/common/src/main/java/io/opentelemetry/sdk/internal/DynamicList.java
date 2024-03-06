@@ -1,7 +1,13 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.internal;
 
 import java.util.AbstractList;
 import java.util.Arrays;
+import javax.annotation.Nullable;
 
 public class DynamicList<T> extends AbstractList<T> {
   private static final int DEFAULT_SUBARRAY_CAPACITY = 10;
@@ -46,7 +52,7 @@ public class DynamicList<T> extends AbstractList<T> {
   }
 
   @Override
-  public T set(int index, T element) {
+  public T set(int index, @Nullable T element) {
     rangeCheck(index);
     T oldValue = get(index);
     arrays[index / subarrayCapacity][index % subarrayCapacity] = element;

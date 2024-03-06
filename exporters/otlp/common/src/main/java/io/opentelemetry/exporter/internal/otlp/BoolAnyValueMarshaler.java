@@ -6,11 +6,11 @@
 package io.opentelemetry.exporter.internal.otlp;
 
 import io.opentelemetry.exporter.internal.marshal.CodedOutputStream;
-import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
-import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.DefaultMessageSize;
-import io.opentelemetry.exporter.internal.otlp.metrics.MarshallingObjectsPool;
+import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
+import io.opentelemetry.exporter.internal.marshal.MarshallingObjectsPool;
 import io.opentelemetry.exporter.internal.marshal.MessageSize;
+import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.common.v1.internal.AnyValue;
 import java.io.IOException;
 

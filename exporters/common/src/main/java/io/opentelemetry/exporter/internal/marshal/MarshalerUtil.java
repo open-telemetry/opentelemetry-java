@@ -162,9 +162,9 @@ public final class MarshalerUtil {
   }
 
   /** Returns the size of a repeated message field. */
+  @SuppressWarnings("ForLoopReplaceableByForEach")
   public static int sizeRepeatedMessage(
-      ProtoFieldInfo field,
-      DynamicList<MessageSize> repeatedMessage) {
+      ProtoFieldInfo field, DynamicList<MessageSize> repeatedMessage) {
     int size = 0;
     int fieldTagSize = field.getTagSize();
     for (int i = 0; i < repeatedMessage.size(); i++) {
@@ -287,6 +287,14 @@ public final class MarshalerUtil {
       return 0;
     }
     return field.getTagSize() + CodedOutputStream.computeFixed32SizeNoTag(message);
+  }
+
+  /** Returns the size of a string field, encoded using UTF-8 encoding. */
+  public static int sizeStringUtf8(ProtoFieldInfo field, String message) {
+    if (message.isEmpty()) {
+      return 0;
+    }
+    return field.getTagSize() + CodedOutputStream.computeStringSizeNoTag(message);
   }
 
   /** Returns the size of a bytes field. */
