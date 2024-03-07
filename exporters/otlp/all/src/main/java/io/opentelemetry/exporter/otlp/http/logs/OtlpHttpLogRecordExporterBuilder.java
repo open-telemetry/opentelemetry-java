@@ -172,7 +172,11 @@ public final class OtlpHttpLogRecordExporterBuilder {
     return this;
   }
 
-  /** Sets the proxy options. Proxying is disabled by default. */
+  /**
+   * Sets the proxy options. Proxying is disabled by default.
+   *
+   * @since 1.36.0
+   */
   public OtlpHttpLogRecordExporterBuilder setProxyOptions(ProxyOptions proxyOptions) {
     requireNonNull(proxyOptions, "proxyOptions");
     delegate.setProxyOptions(proxyOptions);
