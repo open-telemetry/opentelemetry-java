@@ -12,6 +12,7 @@ import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.http.HttpSender;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
 import java.time.Duration;
@@ -58,6 +59,7 @@ public final class OkHttpHttpSender implements HttpSender {
       long timeoutNanos,
       long connectionTimeoutNanos,
       Supplier<Map<String, List<String>>> headerSupplier,
+      @Nullable ProxyOptions proxyOptions,
       @Nullable Authenticator authenticator,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
@@ -67,6 +69,10 @@ public final class OkHttpHttpSender implements HttpSender {
             .dispatcher(OkHttpUtil.newDispatcher())
             .connectTimeout(Duration.ofNanos(connectionTimeoutNanos))
             .callTimeout(Duration.ofNanos(timeoutNanos));
+
+    if (proxyOptions != null) {
+      builder.proxySelector(proxyOptions.getProxySelector());
+    }
 
     if (authenticator != null) {
       Authenticator finalAuthenticator = authenticator;

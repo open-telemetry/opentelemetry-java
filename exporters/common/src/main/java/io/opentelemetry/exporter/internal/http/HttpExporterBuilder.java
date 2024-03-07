@@ -13,6 +13,7 @@ import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   @Nullable private Compressor compressor;
   private long connectTimeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_CONNECT_TIMEOUT_SECS);
+  @Nullable private ProxyOptions proxyOptions;
   private boolean exportAsJson = false;
   private final Map<String, String> constantHeaders = new HashMap<>();
   private Supplier<Map<String, String>> headerSupplier = Collections::emptyMap;
@@ -131,6 +133,11 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  public HttpExporterBuilder<T> setProxyOptions(ProxyOptions proxyOptions) {
+    this.proxyOptions = proxyOptions;
+    return this;
+  }
+
   public HttpExporterBuilder<T> exportAsJson() {
     this.exportAsJson = true;
     return this;
@@ -152,6 +159,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     }
     copy.meterProviderSupplier = meterProviderSupplier;
     copy.authenticator = authenticator;
+    copy.proxyOptions = proxyOptions;
     return copy;
   }
 
@@ -187,6 +195,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
             timeoutNanos,
             connectTimeoutNanos,
             headerSupplier,
+            proxyOptions,
             authenticator,
             retryPolicy,
             tlsConfigHelper.getSslContext(),
@@ -205,6 +214,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     joiner.add("type=" + type);
     joiner.add("endpoint=" + endpoint);
     joiner.add("timeoutNanos=" + timeoutNanos);
+    joiner.add("proxyOptions=" + proxyOptions);
     joiner.add(
         "compressorEncoding="
             + Optional.ofNullable(compressor).map(Compressor::getEncoding).orElse(null));

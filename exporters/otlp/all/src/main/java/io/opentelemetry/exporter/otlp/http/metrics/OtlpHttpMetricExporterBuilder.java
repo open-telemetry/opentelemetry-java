@@ -15,6 +15,7 @@ import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -212,6 +213,13 @@ public final class OtlpHttpMetricExporterBuilder {
   public OtlpHttpMetricExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
     requireNonNull(retryPolicy, "retryPolicy");
     delegate.setRetryPolicy(retryPolicy);
+    return this;
+  }
+
+  /** Sets the proxy options. Proxying is disabled by default. */
+  public OtlpHttpMetricExporterBuilder setProxyOptions(ProxyOptions proxyOptions) {
+    requireNonNull(proxyOptions, "proxyOptions");
+    delegate.setProxyOptions(proxyOptions);
     return this;
   }
 
