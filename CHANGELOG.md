@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 1.36.0 (2024-03-08)
 
 ### SDK
 
