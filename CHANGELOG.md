@@ -6,7 +6,7 @@
 
 #### Traces
 
-* Fault in SdkSpan.events
+* Lazily initialize the container for events in the SDK Span implementation
   ([#6244](https://github.com/open-telemetry/opentelemetry-java/pull/6244))
 
 #### Exporters
