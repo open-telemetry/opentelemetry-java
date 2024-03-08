@@ -2,6 +2,34 @@
 
 ## Unreleased
 
+### SDK
+
+#### Traces
+
+* Lazily initialize the container for events in the SDK Span implementation
+  ([#6244](https://github.com/open-telemetry/opentelemetry-java/pull/6244))
+
+#### Exporters
+
+* Add basic proxy configuration to OtlpHttp{Signal}Exporters
+  ([#6270](https://github.com/open-telemetry/opentelemetry-java/pull/6270))
+* Add connectTimeout configuration option OtlpGrpc{Signal}Exporters
+  ([#6079](https://github.com/open-telemetry/opentelemetry-java/pull/6079))
+
+#### Extensions
+
+* Add ComponentLoader to autoconfigure support more scenarios
+  ([#6217](https://github.com/open-telemetry/opentelemetry-java/pull/6217))
+* Added MetricReader customizer for AutoConfiguredOpenTelemetrySdkBuilder
+  ([#6231](https://github.com/open-telemetry/opentelemetry-java/pull/6231))
+* Return AutoConfiguredOpenTelemetrySdkBuilder instead of the base type
+  ([#6248](https://github.com/open-telemetry/opentelemetry-java/pull/6248))
+
+### Tooling
+
+* Add note about draft PRs to CONTRIBUTING.md
+  ([#6247](https://github.com/open-telemetry/opentelemetry-java/pull/6247))
+
 ## Version 1.35.0 (2024-02-09)
 
 **NOTE:** The `opentelemetry-exporter-jaeger` and `opentelemetry-exporter-jaeger-thift` artifacts

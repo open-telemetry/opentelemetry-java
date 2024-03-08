@@ -14,7 +14,11 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
-/** Configuration for proxy settings. */
+/**
+ * Configuration for proxy settings.
+ *
+ * @since 1.36.0
+ */
 public final class ProxyOptions {
   private final ProxySelector proxySelector;
 

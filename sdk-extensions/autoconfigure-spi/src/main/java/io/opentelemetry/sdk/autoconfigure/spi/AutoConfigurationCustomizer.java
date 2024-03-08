@@ -163,6 +163,8 @@ public interface AutoConfigurationCustomizer {
    * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
    *
    * <p>Multiple calls will execute the customizers in order.
+   *
+   * @since 1.36.0
    */
   @SuppressWarnings("UnusedReturnValue")
   default AutoConfigurationCustomizer addMetricReaderCustomizer(
