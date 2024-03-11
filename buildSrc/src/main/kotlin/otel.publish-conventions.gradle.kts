@@ -1,3 +1,5 @@
+import java.util.UUID
+
 plugins {
   `maven-publish`
   signing
@@ -71,7 +73,15 @@ if (!project.name.startsWith("bom")) {
       // create a target with name based on the project path,
       // this is used for the task name (spdxSbomFor<PATH>)
       // and output file (<PATH>.spdx.json)
-      create(project.path.substring(1).replace(":", "-"))
+      create(project.path.substring(1).replace(":", "-")) {
+        scm {
+          uri.set("https://github.com/" + System.getenv("GITHUB_REPOSITORY"))
+          revision.set(System.getenv("GITHUB_SHA"))
+        }
+        document {
+          namespace.set("https://opentelemetry.io/spdx/" + UUID.randomUUID())
+        }
+      }
     }
   }
   tasks.named("assemble") {
