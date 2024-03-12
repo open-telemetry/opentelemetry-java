@@ -12,7 +12,7 @@ otelJava.moduleName.set("io.opentelemetry.sdk.logs")
 dependencies {
   api(project(":api:all"))
   api(project(":sdk:common"))
-  implementation(project(":extensions:incubator"))
+  implementation(project(":api:incubator"))
 
   implementation(project(":api:events"))
 

@@ -5,9 +5,9 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
+import io.opentelemetry.api.incubator.logs.AnyValue;
+import io.opentelemetry.api.incubator.logs.KeyAnyValue;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
-import io.opentelemetry.extension.incubator.logs.AnyValue;
-import io.opentelemetry.extension.incubator.logs.KeyAnyValue;
 import java.nio.ByteBuffer;
 import java.util.List;
 
