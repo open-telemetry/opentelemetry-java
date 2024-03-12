@@ -35,11 +35,6 @@ class DefaultEventEmitterProvider implements EventEmitterProvider {
     }
 
     @Override
-    public EventEmitterBuilder setEventDomain(String eventDomain) {
-      return this;
-    }
-
-    @Override
     public EventEmitter build() {
       return DefaultEventEmitter.getInstance();
     }

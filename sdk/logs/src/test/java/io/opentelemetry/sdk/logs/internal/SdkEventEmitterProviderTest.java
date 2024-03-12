@@ -37,37 +37,7 @@ class SdkEventEmitterProviderTest {
           clock);
 
   @Test
-  void emit_WithDomain() {
-    when(clock.now()).thenReturn(10L);
-
-    eventEmitterProvider
-        .eventEmitterBuilder("test-scope")
-        .setEventDomain("event-domain")
-        .build()
-        .emit(
-            "event-name",
-            Attributes.builder()
-                .put("key1", "value1")
-                // should be overridden by the eventName argument passed to emit
-                .put("event.name", "foo")
-                // should be overridden by the eventDomain
-                .put("event.domain", "foo")
-                .build());
-
-    assertThat(seenLog.get().toLogRecordData())
-        .hasResource(RESOURCE)
-        .hasInstrumentationScope(InstrumentationScopeInfo.create("test-scope"))
-        .hasTimestamp(10L)
-        .hasAttributes(
-            Attributes.builder()
-                .put("key1", "value1")
-                .put("event.domain", "event-domain")
-                .put("event.name", "event-name")
-                .build());
-  }
-
-  @Test
-  void emit_NoDomain() {
+  void emit() {
     when(clock.now()).thenReturn(10L);
 
     eventEmitterProvider
@@ -79,8 +49,6 @@ class SdkEventEmitterProviderTest {
                 .put("key1", "value1")
                 // should be overridden by the eventName argument passed to emit
                 .put("event.name", "foo")
-                // should be overridden by the default eventDomain
-                .put("event.domain", "foo")
                 .build());
 
     assertThat(seenLog.get().toLogRecordData())
@@ -88,11 +56,7 @@ class SdkEventEmitterProviderTest {
         .hasInstrumentationScope(InstrumentationScopeInfo.create("test-scope"))
         .hasTimestamp(10L)
         .hasAttributes(
-            Attributes.builder()
-                .put("key1", "value1")
-                .put("event.domain", "unknown")
-                .put("event.name", "event-name")
-                .build());
+            Attributes.builder().put("key1", "value1").put("event.name", "event-name").build());
   }
 
   @Test
@@ -111,10 +75,6 @@ class SdkEventEmitterProviderTest {
         .hasResource(RESOURCE)
         .hasInstrumentationScope(InstrumentationScopeInfo.create("test-scope"))
         .hasTimestamp(timestamp)
-        .hasAttributes(
-            attributes.toBuilder()
-                .put("event.domain", "unknown")
-                .put("event.name", "testing")
-                .build());
+        .hasAttributes(attributes.toBuilder().put("event.name", "testing").build());
   }
 }

@@ -207,10 +207,7 @@ class FullConfigTest {
     logger.logRecordBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
 
     EventEmitter eventEmitter =
-        GlobalEventEmitterProvider.get()
-            .eventEmitterBuilder("test")
-            .setEventDomain("test-domain")
-            .build();
+        GlobalEventEmitterProvider.get().eventEmitterBuilder("test").build();
     eventEmitter.emit("test-name", Attributes.builder().put("cow", "moo").build());
 
     openTelemetrySdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
@@ -336,10 +333,6 @@ class FullConfigTest {
             logRecord ->
                 assertThat(logRecord.getAttributesList())
                     .containsExactlyInAnyOrder(
-                        KeyValue.newBuilder()
-                            .setKey("event.domain")
-                            .setValue(AnyValue.newBuilder().setStringValue("test-domain").build())
-                            .build(),
                         KeyValue.newBuilder()
                             .setKey("event.name")
                             .setValue(AnyValue.newBuilder().setStringValue("test-name").build())

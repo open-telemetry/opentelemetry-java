@@ -15,15 +15,6 @@ package io.opentelemetry.api.events;
 public interface EventEmitterBuilder {
 
   /**
-   * Sets the event domain. Event domain is not part of {@link EventEmitter} identity.
-   *
-   * @param eventDomain The event domain, which acts as a namespace for event names. Within a
-   *     particular event domain, event name defines a particular class or type of event.
-   * @return this
-   */
-  EventEmitterBuilder setEventDomain(String eventDomain);
-
-  /**
    * Set the scope schema URL of the resulting {@link EventEmitter}. Schema URL is part of {@link
    * EventEmitter} identity.
    *

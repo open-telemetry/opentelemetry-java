@@ -12,12 +12,10 @@ import java.util.concurrent.TimeUnit;
 
 class SdkEventBuilder implements EventBuilder {
   private final LogRecordBuilder logRecordBuilder;
-  private final String eventDomain;
   private final String eventName;
 
-  SdkEventBuilder(LogRecordBuilder logRecordBuilder, String eventDomain, String eventName) {
+  SdkEventBuilder(LogRecordBuilder logRecordBuilder, String eventName) {
     this.logRecordBuilder = logRecordBuilder;
-    this.eventDomain = eventDomain;
     this.eventName = eventName;
   }
 
@@ -35,7 +33,7 @@ class SdkEventBuilder implements EventBuilder {
 
   @Override
   public void emit() {
-    SdkEventEmitterProvider.addEventNameAndDomain(logRecordBuilder, eventDomain, eventName);
+    SdkEventEmitterProvider.addEventName(logRecordBuilder, eventName);
     logRecordBuilder.emit();
   }
 }

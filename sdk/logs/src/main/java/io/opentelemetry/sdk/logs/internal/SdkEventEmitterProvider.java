@@ -26,10 +26,7 @@ import java.util.concurrent.TimeUnit;
  */
 public final class SdkEventEmitterProvider implements EventEmitterProvider {
 
-  static final AttributeKey<String> EVENT_DOMAIN = AttributeKey.stringKey("event.domain");
   static final AttributeKey<String> EVENT_NAME = AttributeKey.stringKey("event.name");
-
-  static final String DEFAULT_EVENT_DOMAIN = "unknown";
 
   private final LoggerProvider delegateLoggerProvider;
   private final Clock clock;
@@ -55,9 +52,7 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
 
   @Override
   public EventEmitter get(String instrumentationScopeName) {
-    return eventEmitterBuilder(instrumentationScopeName)
-        .setEventDomain(DEFAULT_EVENT_DOMAIN)
-        .build();
+    return eventEmitterBuilder(instrumentationScopeName).build();
   }
 
   @Override
@@ -70,17 +65,10 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
 
     private final Clock clock;
     private final LoggerBuilder delegateLoggerBuilder;
-    private String eventDomain = DEFAULT_EVENT_DOMAIN;
 
     private SdkEventEmitterBuilder(Clock clock, LoggerBuilder delegateLoggerBuilder) {
       this.clock = clock;
       this.delegateLoggerBuilder = delegateLoggerBuilder;
-    }
-
-    @Override
-    public EventEmitterBuilder setEventDomain(String eventDomain) {
-      this.eventDomain = eventDomain;
-      return this;
     }
 
     @Override
@@ -97,7 +85,7 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
 
     @Override
     public EventEmitter build() {
-      return new SdkEventEmitter(clock, delegateLoggerBuilder.build(), eventDomain);
+      return new SdkEventEmitter(clock, delegateLoggerBuilder.build());
     }
   }
 
@@ -105,12 +93,10 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
 
     private final Clock clock;
     private final Logger delegateLogger;
-    private final String eventDomain;
 
-    private SdkEventEmitter(Clock clock, Logger delegateLogger, String eventDomain) {
+    private SdkEventEmitter(Clock clock, Logger delegateLogger) {
       this.clock = clock;
       this.delegateLogger = delegateLogger;
-      this.eventDomain = eventDomain;
     }
 
     @Override
@@ -120,7 +106,6 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
               .logRecordBuilder()
               .setTimestamp(clock.now(), TimeUnit.NANOSECONDS)
               .setAllAttributes(attributes),
-          eventDomain,
           eventName);
     }
 
@@ -131,13 +116,12 @@ public final class SdkEventEmitterProvider implements EventEmitterProvider {
               .logRecordBuilder()
               .setTimestamp(clock.now(), TimeUnit.NANOSECONDS)
               .setAllAttributes(attributes);
-      addEventNameAndDomain(logRecordBuilder, eventDomain, eventName);
+      addEventName(logRecordBuilder, eventName);
       logRecordBuilder.emit();
     }
   }
 
-  static void addEventNameAndDomain(
-      LogRecordBuilder logRecordBuilder, String eventDomain, String eventName) {
-    logRecordBuilder.setAttribute(EVENT_DOMAIN, eventDomain).setAttribute(EVENT_NAME, eventName);
+  static void addEventName(LogRecordBuilder logRecordBuilder, String eventName) {
+    logRecordBuilder.setAttribute(EVENT_NAME, eventName);
   }
 }

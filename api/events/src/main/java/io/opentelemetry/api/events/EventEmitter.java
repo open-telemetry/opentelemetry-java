@@ -15,8 +15,8 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * class MyClass {
- *   private final EventEmitter eventEmitter = openTelemetryEventEmitterProvider.eventEmitterBuilder("scope-name")
- *         .setEventDomain("acme.observability")
+ *   private final EventEmitter eventEmitter = openTelemetryEventEmitterProvider
+ *         .eventEmitterBuilder("scope-name")
  *         .build();
  *
  *   void doWork() {
