@@ -11,7 +11,7 @@ import io.opentelemetry.api.trace.Tracer;
  * Utility class to simplify tracing.
  *
  * <p>The <a
- * href="https://github.com/opentelemetry/opentelemetry-java/blob/main/extensions/incubator/src/main/java/io/opentelemetry/extension/incubator">README</a>
+ * href="https://github.com/opentelemetry/opentelemetry-java/blob/main/api/incubator">README</a>
  * explains the use cases in more detail.
  */
 public final class ExtendedTracer implements Tracer {
