@@ -48,8 +48,7 @@ This project contains the following top level components:
 * [OpenTelemetry API](api/):
   * [stable apis](api/all) including `Tracer`, `Span`, `SpanContext`, `Meter`, and `Baggage`.
   * [context api](context/) The OpenTelemetry Context implementation.
-  * [experimental apis](api/events) including `Events`.
-  * [incubating apis](api/incubator) including APIs.
+  * [incubating apis](api/incubator) incubating APIs, including `Events`.
 * [extensions](extensions/) define additional API extensions not part of the core API, including propagators.
 * [sdk](sdk/) defines the implementation of the OpenTelemetry API.
 * [exporters](exporters/) trace, metric, and log exporters for the SDK.
@@ -236,12 +235,11 @@ dependency as follows, replacing `{{artifact-id}}` with the value from the "Arti
 ### API
 
 
-| Component                                | Description                                                           | Artifact ID                   | Version                                                     | Javadoc                                                                                                                                                         |
-|------------------------------------------|-----------------------------------------------------------------------|-------------------------------|-------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [API](./api/all)                         | OpenTelemetry API, including metrics, traces, baggage, context        | `opentelemetry-api`           | <!--VERSION_STABLE-->1.36.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-api.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-api)               |
-| [Events API](./api/events)               | OpenTelemetry Event API for emitting events.                          | `opentelemetry-api-events`    | <!--VERSION_UNSTABLE-->1.36.0-alpha<!--/VERSION_UNSTABLE--> | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-api-events.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-api-events) |
-| [API  Incubator](./extensions/incubator) | API incubator, including pass through propagator, and extended tracer | `opentelemetry-api-incubator` | TODO: add after first publish                               | TODO: add after first publish                                                                                                                                   |
-| [Context API](./context)                 | OpenTelemetry context API                                             | `opentelemetry-context`       | <!--VERSION_STABLE-->1.36.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-context.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-context)       |
+| Component                                | Description                                                                          | Artifact ID                   | Version                                                     | Javadoc                                                                                                                                                         |
+|------------------------------------------|--------------------------------------------------------------------------------------|-------------------------------|-------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [API](./api/all)                         | OpenTelemetry API, including metrics, traces, baggage, context                       | `opentelemetry-api`           | <!--VERSION_STABLE-->1.36.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-api.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-api)               |
+| [API  Incubator](./extensions/incubator) | API incubator, including pass through propagator, and extended tracer, and Event API | `opentelemetry-api-incubator` | TODO: add after first publish                               | TODO: add after first publish                                                                                                                                   |
+| [Context API](./context)                 | OpenTelemetry context API                                                            | `opentelemetry-context`       | <!--VERSION_STABLE-->1.36.0<!--/VERSION_STABLE-->           | [![Javadocs](https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-context.svg)](https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-context)       |
 
 ### API Extensions
 

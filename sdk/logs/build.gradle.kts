@@ -14,8 +14,6 @@ dependencies {
   api(project(":sdk:common"))
   implementation(project(":api:incubator"))
 
-  implementation(project(":api:events"))
-
   annotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":sdk:testing"))

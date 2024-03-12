@@ -24,7 +24,6 @@ dependencyResolutionManagement {
 rootProject.name = "opentelemetry-java"
 include(":all")
 include(":api:all")
-include(":api:events")
 include(":api:incubator")
 include(":bom")
 include(":bom-alpha")

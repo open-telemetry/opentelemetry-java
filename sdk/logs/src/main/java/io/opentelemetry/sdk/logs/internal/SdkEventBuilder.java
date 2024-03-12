@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.logs.internal;
 
-import io.opentelemetry.api.events.EventBuilder;
+import io.opentelemetry.api.incubator.events.EventBuilder;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;

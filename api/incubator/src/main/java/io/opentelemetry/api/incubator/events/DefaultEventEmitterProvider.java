@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.events;
+package io.opentelemetry.api.incubator.events;
 
 class DefaultEventEmitterProvider implements EventEmitterProvider {
 
