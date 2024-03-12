@@ -143,9 +143,14 @@ The logging exporter prints the name of the span along with its attributes to st
 
 | System property               | Environment variable          | Description                                                          |
 |-------------------------------|-------------------------------|----------------------------------------------------------------------|
-| otel.traces.exporter=logging  | OTEL_TRACES_EXPORTER=logging  | Select the logging exporter for tracing                              |
-| otel.metrics.exporter=logging | OTEL_METRICS_EXPORTER=logging | Select the logging exporter for metrics                              |
-| otel.logs.exporter=logging    | OTEL_LOGS_EXPORTER=logging    | Select the logging exporter for logs                                 |
+| otel.traces.exporter=console  | OTEL_TRACES_EXPORTER=console  | Select the logging exporter for tracing                              |
+| otel.metrics.exporter=console | OTEL_METRICS_EXPORTER=console | Select the logging exporter for metrics                              |
+| otel.logs.exporter=console    | OTEL_LOGS_EXPORTER=console    | Select the logging exporter for logs                                 |
+
+The logging exporter is also set when `otel.traces.exporter`, `otel.metrics.exporter`,
+or `otel.logs.exporter` is set to `logging`. `logging` is a deprecated alias for `console`, the
+preferred value
+as [defined in the specification](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/sdk-environment-variables.md#exporter-selection).
 
 #### Logging OTLP JSON exporter
 
