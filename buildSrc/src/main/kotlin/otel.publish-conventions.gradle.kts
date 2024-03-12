@@ -67,24 +67,28 @@ if (System.getenv("CI") != null) {
   }
 }
 
-if (!project.name.startsWith("bom")) {
-  spdxSbom {
-    targets {
-      // create a target with name based on the project path,
-      // this is used for the task name (spdxSbomFor<PATH>)
-      // and output file (<PATH>.spdx.json)
-      create(project.path.substring(1).replace(":", "-")) {
-        scm {
-          uri.set("https://github.com/" + System.getenv("GITHUB_REPOSITORY"))
-          revision.set(System.getenv("GITHUB_SHA"))
-        }
-        document {
-          namespace.set("https://opentelemetry.io/spdx/" + UUID.randomUUID())
+project.afterEvaluate {
+  if (!project.name.startsWith("bom")) {
+    spdxSbom {
+      targets {
+        val sbomName = "opentelemetry-java_" + base.archivesName.get()
+        // Create a target to match the published jar name.
+        // This is used for the task name (spdxSbomFor<SbomName>)
+        // and output file (<sbomName>.spdx.json).
+        create(sbomName) {
+          scm {
+            uri.set("https://github.com/" + System.getenv("GITHUB_REPOSITORY"))
+            revision.set(System.getenv("GITHUB_SHA"))
+          }
+          document {
+            name.set(sbomName)
+            namespace.set("https://opentelemetry.io/spdx/" + UUID.randomUUID())
+          }
         }
       }
     }
-  }
-  tasks.named("assemble") {
-    dependsOn("spdxSbom")
+    tasks.named("assemble") {
+      dependsOn("spdxSbom")
+    }
   }
 }

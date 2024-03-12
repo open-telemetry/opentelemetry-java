@@ -31,17 +31,19 @@ jobs:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
 
+      - shell: bash
+        name: Collect SBOM's
+        run: |
+          mkdir sboms
+          find . -path ./sboms -prune -o -name "*.spdx.json" -print
+          find . -path ./sboms -prune -o -name "*.spdx.json" -exec mv {} ./sboms/ \;
+          zip SBOM.zip sboms/*
+
       - uses: actions/upload-artifact@v4
-        name: Save gradle generated SBOM's to build
+        name: Save SBOM's to build
         with:
-          name: Gradle SPDX SBOMs
-          path: "**/build/spdx/*.spdx.json"
-
-      - uses: anchore/sbom-action@v0
-
-      - uses: anchore/sbom-action@v0
-        with:
-          format: cyclonedx-json
+          name: SBOM.zip
+          path: "sboms/*.spdx.json"
 
       - name: Set environment variables
         run: |
@@ -132,7 +134,8 @@ jobs:
           gh release create --target $GITHUB_REF_NAME \
                             --title "Version $VERSION" \
                             --notes-file /tmp/release-notes.txt \
-                            v$VERSION
+                            v$VERSION \
+                            SBOM.zip
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
