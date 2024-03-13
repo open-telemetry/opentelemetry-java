@@ -89,9 +89,6 @@ The following credentials are required for building or publishing (and automatic
   * To obtain `SONATYPE_USER` and `SONATYPE_KEY` for your account, login
     to [oss.sonatype.org](https://oss.sonatype.org/) and navigate to Profile -> User Token -> Access
     User Token.
-* `CODECOV_TOKEN`: Token used for uploading codecov reports. Each maintainer can obtain their own
-  credential from codecov as
-  described [here](https://docs.codecov.com/docs/adding-the-codecov-token#github-actions).
 
 Additionally, credentials are stored with maintainers via
 the [OpenTelemetry 1Password](https://opentelemetry.1password.com/signin) account. The following
