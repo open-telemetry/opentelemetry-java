@@ -9,7 +9,7 @@ rootProject.extra["versions"] = dependencyVersions
 
 val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.17.0",
-  "com.google.guava:guava-bom:33.0.0-jre",
+  "com.google.guava:guava-bom:33.1.0-jre",
   "com.google.protobuf:protobuf-bom:3.25.3",
   "com.linecorp.armeria:armeria-bom:1.27.2",
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
