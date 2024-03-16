@@ -72,7 +72,7 @@ val DEPENDENCIES = listOf(
   "io.prometheus:prometheus-metrics-exporter-httpserver:1.1.0",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.15.8",
-  "org.awaitility:awaitility:4.2.0",
+  "org.awaitility:awaitility:4.2.1",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
   "org.codehaus.mojo:animal-sniffer-annotations:1.23",
   "org.jctools:jctools-core:4.0.3",
