@@ -5,9 +5,9 @@ plugins {
   id("com.diffplug.spotless") version "6.25.0"
 }
 
-if (!JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
+if (JavaVersion.current() != JavaVersion.VERSION_17) {
   throw GradleException(
-    "JDK 17 or higher is required to build. " +
+    "JDK 17 is required to build. " +
       "One option is to download it from https://adoptium.net/. If you believe you already " +
       "have it, please check that the JAVA_HOME environment variable is pointing at the " +
       "JDK 17 installation.",
