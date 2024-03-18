@@ -47,7 +47,7 @@ public final class OtlpGrpcMetricExporterBuilder {
   private static final long DEFAULT_TIMEOUT_SECS = 10;
   private static final AggregationTemporalitySelector DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR =
       AggregationTemporalitySelector.alwaysCumulative();
-  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
+  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
 
   // Visible for testing
   final GrpcExporterBuilder<MetricsRequestMarshaler> delegate;
