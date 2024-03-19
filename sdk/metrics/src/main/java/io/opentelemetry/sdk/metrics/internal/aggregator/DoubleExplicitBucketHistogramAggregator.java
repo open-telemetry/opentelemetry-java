@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -95,22 +94,20 @@ public final class DoubleExplicitBucketHistogramAggregator
     // read-only
     private final double[] boundaries;
 
-    @GuardedBy("lock")
+    @GuardedBy("this")
     private double sum;
 
-    @GuardedBy("lock")
+    @GuardedBy("this")
     private double min;
 
-    @GuardedBy("lock")
+    @GuardedBy("this")
     private double max;
 
-    @GuardedBy("lock")
+    @GuardedBy("this")
     private long count;
 
-    @GuardedBy("lock")
+    @GuardedBy("this")
     private final long[] counts;
-
-    private final ReentrantLock lock = new ReentrantLock();
 
     // Used only when MemoryMode = REUSABLE_DATA
     @Nullable private MutableHistogramPointData reusablePoint;
@@ -134,71 +131,61 @@ public final class DoubleExplicitBucketHistogramAggregator
     }
 
     @Override
-    protected HistogramPointData doAggregateThenMaybeReset(
+    protected synchronized HistogramPointData doAggregateThenMaybeReset(
         long startEpochNanos,
         long epochNanos,
         Attributes attributes,
         List<DoubleExemplarData> exemplars,
         boolean reset) {
-      lock.lock();
-      try {
-        HistogramPointData pointData;
-        if (reusablePoint == null) {
-          pointData =
-              ImmutableHistogramPointData.create(
-                  startEpochNanos,
-                  epochNanos,
-                  attributes,
-                  sum,
-                  this.count > 0,
-                  this.min,
-                  this.count > 0,
-                  this.max,
-                  boundaryList,
-                  PrimitiveLongList.wrap(Arrays.copyOf(counts, counts.length)),
-                  exemplars);
-        } else /* REUSABLE_DATA */ {
-          pointData =
-              reusablePoint.set(
-                  startEpochNanos,
-                  epochNanos,
-                  attributes,
-                  sum,
-                  this.count > 0,
-                  this.min,
-                  this.count > 0,
-                  this.max,
-                  boundaryList,
-                  counts,
-                  exemplars);
-        }
-        if (reset) {
-          this.sum = 0;
-          this.min = Double.MAX_VALUE;
-          this.max = -1;
-          this.count = 0;
-          Arrays.fill(this.counts, 0);
-        }
-        return pointData;
-      } finally {
-        lock.unlock();
+      HistogramPointData pointData;
+      if (reusablePoint == null) {
+        pointData =
+            ImmutableHistogramPointData.create(
+                startEpochNanos,
+                epochNanos,
+                attributes,
+                sum,
+                this.count > 0,
+                this.min,
+                this.count > 0,
+                this.max,
+                boundaryList,
+                PrimitiveLongList.wrap(Arrays.copyOf(counts, counts.length)),
+                exemplars);
+      } else /* REUSABLE_DATA */ {
+        pointData =
+            reusablePoint.set(
+                startEpochNanos,
+                epochNanos,
+                attributes,
+                sum,
+                this.count > 0,
+                this.min,
+                this.count > 0,
+                this.max,
+                boundaryList,
+                counts,
+                exemplars);
       }
+      if (reset) {
+        this.sum = 0;
+        this.min = Double.MAX_VALUE;
+        this.max = -1;
+        this.count = 0;
+        Arrays.fill(this.counts, 0);
+      }
+      return pointData;
     }
 
     @Override
-    protected void doRecordDouble(double value) {
+    protected synchronized void doRecordDouble(double value) {
       int bucketIndex = ExplicitBucketHistogramUtils.findBucketIndex(this.boundaries, value);
 
-      lock.lock();
-      try {
-        this.sum += value;
-        this.min = Math.min(this.min, value);
-        this.max = Math.max(this.max, value);
-        this.count++;
-        this.counts[bucketIndex]++;
-      } finally {
-        lock.unlock();
-      }
+      this.sum += value;
+      this.min = Math.min(this.min, value);
+      this.max = Math.max(this.max, value);
+      this.count++;
+      this.counts[bucketIndex]++;
     }
 
     @Override
