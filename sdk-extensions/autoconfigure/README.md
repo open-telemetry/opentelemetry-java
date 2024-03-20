@@ -253,13 +253,9 @@ The following exporters are only available for the trace signal. See [exporters]
 
 #### Jaeger exporter
 
-The [Jaeger](https://www.jaegertracing.io/docs/1.21/apis/#protobuf-via-grpc-stable) exporter. This exporter uses gRPC for its communications protocol.
+The Jaeger exporters (artifacts `opentelemetry-exporter-jaeger` and `opentelemetry-exporter-jaeger-thrift`) were removed in the [1.35.0](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v1.35.0) release (last published in `1.34.0`) and are no longer available in later versions of autoconfigure.
 
-| System property                   | Environment variable              | Description                                                                                        |
-|-----------------------------------|-----------------------------------|----------------------------------------------------------------------------------------------------|
-| otel.traces.exporter=jaeger       | OTEL_TRACES_EXPORTER=jaeger       | Select the Jaeger exporter                                                                         |
-| otel.exporter.jaeger.endpoint     | OTEL_EXPORTER_JAEGER_ENDPOINT     | The Jaeger gRPC endpoint to connect to. Default is `http://localhost:14250`.                       |
-| otel.exporter.jaeger.timeout      | OTEL_EXPORTER_JAEGER_TIMEOUT      | The maximum waiting time, in milliseconds, allowed to send each batch. Default is `10000`.         |
+Jaeger now has [native support for OTLP](https://opentelemetry.io/blog/2022/jaeger-native-otlp/), and users should export to jaeger using [OTLP](https://opentelemetry.io/docs/instrumentation/java/exporters/#otlp-dependencies) instead.
 
 #### Zipkin exporter
 
