@@ -175,8 +175,18 @@ public abstract class Serializer implements AutoCloseable {
     writeString(field, utf8Bytes);
   }
 
+  public void serializeString(ProtoFieldInfo field, String string) throws IOException {
+    if (string.isEmpty()) {
+      return;
+    }
+    writeString(field, string);
+  }
+
   /** Writes a protobuf {@code string} field, even if it matches the default value. */
   public abstract void writeString(ProtoFieldInfo field, byte[] utf8Bytes) throws IOException;
+
+  /** Writes a protobuf {@code string} field, even if it matches the default value. */
+  public abstract void writeString(ProtoFieldInfo field, String string) throws IOException;
 
   /** Serializes a protobuf {@code bytes} field. */
   public void serializeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
@@ -197,6 +207,19 @@ public abstract class Serializer implements AutoCloseable {
   public void serializeMessage(ProtoFieldInfo field, Marshaler message) throws IOException {
     writeStartMessage(field, message.getBinarySerializedSize());
     message.writeTo(this);
+    writeEndMessage();
+  }
+
+  /** Serializes a protobuf embedded {@code message}. */
+  public void serializeMessage(
+      ProtoFieldInfo field,
+      Object message,
+      MessageSerializer messageSerializer,
+      MessageSize messageSize,
+      MarshallingObjectsPool marshallingObjectsPool)
+      throws IOException {
+    writeStartMessage(field, messageSize.getEncodedSize());
+    messageSerializer.serialize(this, message, messageSize, marshallingObjectsPool);
     writeEndMessage();
   }
 
@@ -301,10 +324,25 @@ public abstract class Serializer implements AutoCloseable {
   public abstract void serializeRepeatedMessage(
       ProtoFieldInfo field, List<? extends Marshaler> repeatedMessage) throws IOException;
 
+  /** Serializes {@code repeated message} field. */
+  public abstract void serializeRepeatedMessage(
+      ProtoFieldInfo field,
+      List<?> repeatedMessage,
+      MessageSerializer repeatedMessageSerializer,
+      List<MessageSize> repeatedMessageSize,
+      MarshallingObjectsPool marshallingObjectsPool)
+      throws IOException;
+
   /** Writes the value for a message field that has been pre-serialized. */
   public abstract void writeSerializedMessage(byte[] protoSerialized, String jsonSerialized)
       throws IOException;
 
   @Override
   public abstract void close() throws IOException;
+
+  public interface MessageSerializer {
+    void serialize(
+        Serializer serializer, Object message, MessageSize messageSize, MarshallingObjectsPool pool)
+        throws IOException;
+  }
 }

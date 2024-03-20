@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.sdk.internal.ObjectPool;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;

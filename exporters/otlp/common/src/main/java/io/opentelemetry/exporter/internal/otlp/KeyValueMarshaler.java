@@ -8,12 +8,17 @@ package io.opentelemetry.exporter.internal.otlp;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.InternalAttributeKeyImpl;
+import io.opentelemetry.exporter.internal.marshal.DefaultMessageSize;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
+import io.opentelemetry.exporter.internal.marshal.MarshallingObjectsPool;
+import io.opentelemetry.exporter.internal.marshal.MessageSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
+import io.opentelemetry.extension.incubator.logs.AnyValue;
 import io.opentelemetry.extension.incubator.logs.KeyAnyValue;
 import io.opentelemetry.proto.common.v1.internal.KeyValue;
+import io.opentelemetry.sdk.internal.DynamicList;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -100,6 +105,42 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
     // Error prone ensures the switch statement is complete, otherwise only can happen with
     // unaligned versions which are not supported.
     throw new IllegalArgumentException("Unsupported attribute type.");
+  }
+
+  public static MessageSize messageSize(KeyAnyValue keyAnyValue, MarshallingObjectsPool pool) {
+    MessageSize valueMessageSize = AnyValueMarshaler.messageSize(keyAnyValue.getAnyValue(), pool);
+
+    int encodedMessageSize = 0;
+    encodedMessageSize += MarshalerUtil.sizeStringUtf8(KeyValue.KEY, keyAnyValue.getKey());
+    encodedMessageSize += MarshalerUtil.sizeMessage(KeyValue.VALUE, valueMessageSize);
+
+    DefaultMessageSize messageSize = pool.getDefaultMessageSizePool().borrowObject();
+
+    DynamicList<MessageSize> messageFieldSizes = pool.borrowDynamicList(1);
+    messageFieldSizes.add(valueMessageSize);
+
+    messageSize.set(encodedMessageSize, messageFieldSizes);
+
+    return messageSize;
+  }
+
+  public static void encode(
+      Serializer serializer,
+      KeyAnyValue keyAnyValue,
+      MessageSize keyValueMessageSize,
+      MarshallingObjectsPool pool)
+      throws IOException {
+    serializer.serializeString(KeyValue.KEY, keyAnyValue.getKey());
+    serializer.serializeMessage(
+        KeyValue.VALUE,
+        keyAnyValue.getAnyValue(),
+        (Serializer output,
+            Object message,
+            MessageSize size,
+            MarshallingObjectsPool marshallingObjectsPool) ->
+            AnyValueMarshaler.encode(output, (AnyValue<?>) message, size, marshallingObjectsPool),
+        keyValueMessageSize.getMessageTypeFieldSize(0),
+        pool);
   }
 
   @Override

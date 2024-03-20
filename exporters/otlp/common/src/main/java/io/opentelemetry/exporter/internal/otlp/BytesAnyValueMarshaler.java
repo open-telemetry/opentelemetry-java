@@ -6,7 +6,10 @@
 package io.opentelemetry.exporter.internal.otlp;
 
 import io.opentelemetry.exporter.internal.marshal.CodedOutputStream;
+import io.opentelemetry.exporter.internal.marshal.DefaultMessageSize;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
+import io.opentelemetry.exporter.internal.marshal.MarshallingObjectsPool;
+import io.opentelemetry.exporter.internal.marshal.MessageSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.common.v1.internal.AnyValue;
 import java.io.IOException;
@@ -25,6 +28,21 @@ final class BytesAnyValueMarshaler extends MarshalerWithSize {
     byte[] bytes = new byte[value.remaining()];
     value.get(bytes);
     return new BytesAnyValueMarshaler(bytes);
+  }
+
+  public static MessageSize messageSize(ByteBuffer value, MarshallingObjectsPool pool) {
+    DefaultMessageSize messageSize = pool.getDefaultMessageSizePool().borrowObject();
+    int encodedSize =
+        AnyValue.BYTES_VALUE.getTagSize() + CodedOutputStream.computeByteBufferSizeNoTag(value);
+    messageSize.set(encodedSize);
+    return messageSize;
+  }
+
+  public static void encode(Serializer output, ByteBuffer value) throws IOException {
+    byte[] bytes = new byte[value.remaining()];
+    value.get(bytes);
+
+    output.writeBytes(AnyValue.BYTES_VALUE, bytes);
   }
 
   @Override

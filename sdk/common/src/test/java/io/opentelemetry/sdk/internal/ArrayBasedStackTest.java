@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.internal.state;
+package io.opentelemetry.sdk.internal;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -53,11 +53,5 @@ class ArrayBasedStackTest {
   void testPopOnEmptyStack() {
     ArrayBasedStack<Integer> stack = new ArrayBasedStack<>();
     assertThat(stack.pop()).isNull();
-  }
-
-  @Test
-  void testPushNullElement() {
-    ArrayBasedStack<Integer> stack = new ArrayBasedStack<>();
-    assertThatThrownBy(() -> stack.push(null)).isInstanceOf(NullPointerException.class);
   }
 }

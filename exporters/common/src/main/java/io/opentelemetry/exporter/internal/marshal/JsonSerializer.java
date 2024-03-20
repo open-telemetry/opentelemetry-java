@@ -108,6 +108,13 @@ final class JsonSerializer extends Serializer {
     generator.writeString(new String(utf8Bytes, StandardCharsets.UTF_8));
   }
 
+  /** Writes a protobuf {@code string} field, even if it matches the default value. */
+  @Override
+  public void writeString(ProtoFieldInfo field, String string) throws IOException {
+    generator.writeFieldName(field.getJsonName());
+    generator.writeString(string);
+  }
+
   @Override
   public void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
     generator.writeBinaryField(field.getJsonName(), value);
@@ -165,10 +172,38 @@ final class JsonSerializer extends Serializer {
     generator.writeEndArray();
   }
 
+  @Override
+  public void serializeRepeatedMessage(
+      ProtoFieldInfo field,
+      List<?> repeatedMessage,
+      MessageSerializer repeatedMessageSerializer,
+      List<MessageSize> repeatedMessageSize,
+      MarshallingObjectsPool pool)
+      throws IOException {
+    generator.writeArrayFieldStart(field.getJsonName());
+    for (int i = 0; i < repeatedMessage.size(); i++) {
+      Object message = repeatedMessage.get(i);
+      MessageSize messageSize = repeatedMessageSize.get(i);
+      writeMessageValue(message, repeatedMessageSerializer, messageSize, pool);
+    }
+    generator.writeEndArray();
+  }
+
   // Not a field.
   void writeMessageValue(Marshaler message) throws IOException {
     generator.writeStartObject();
     message.writeTo(this);
+    generator.writeEndObject();
+  }
+
+  void writeMessageValue(
+      Object message,
+      MessageSerializer messageSerializer,
+      MessageSize messageSize,
+      MarshallingObjectsPool pool)
+      throws IOException {
+    generator.writeStartObject();
+    messageSerializer.serialize(this, message, messageSize, pool);
     generator.writeEndObject();
   }
 
