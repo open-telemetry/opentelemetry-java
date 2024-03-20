@@ -38,6 +38,8 @@ jobs:
           find . -path ./sboms -prune -o -name "*.spdx.json" -print
           find . -path ./sboms -prune -o -name "*.spdx.json" -exec mv {} ./sboms/ \;
           zip SBOM.zip sboms/*
+          cp SBOM.zip /tmp/
+        # copy SBOM.zip out of the repo to avoid being deleted with repo checkout below.
 
       - uses: actions/upload-artifact@v4
         name: Save SBOM's to build
@@ -135,7 +137,7 @@ jobs:
                             --title "Version $VERSION" \
                             --notes-file /tmp/release-notes.txt \
                             v$VERSION \
-                            SBOM.zip
+                            /tmp/SBOM.zip
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
