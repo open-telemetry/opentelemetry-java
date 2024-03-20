@@ -8,11 +8,13 @@ package io.opentelemetry.sdk.trace;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /** Builder of {@link SdkTracerProvider}. */
@@ -26,6 +28,8 @@ public final class SdkTracerProviderBuilder {
   private Resource resource = Resource.getDefault();
   private Supplier<SpanLimits> spanLimitsSupplier = SpanLimits::getDefault;
   private Sampler sampler = DEFAULT_SAMPLER;
+  private Function<InstrumentationScopeInfo, TracerConfig> tracerConfigProvider =
+      unused -> TracerConfig.defaultConfig();
 
   /**
    * Assign a {@link Clock}. {@link Clock} will be used each time a {@link
@@ -147,6 +151,12 @@ public final class SdkTracerProviderBuilder {
     return this;
   }
 
+  public SdkTracerProviderBuilder setTracerConfigProvider(
+      Function<InstrumentationScopeInfo, TracerConfig> tracerConfigProvider) {
+    this.tracerConfigProvider = tracerConfigProvider;
+    return this;
+  }
+
   /**
    * Create a new {@link SdkTracerProvider} instance with the configuration.
    *
@@ -154,7 +164,13 @@ public final class SdkTracerProviderBuilder {
    */
   public SdkTracerProvider build() {
     return new SdkTracerProvider(
-        clock, idsGenerator, resource, spanLimitsSupplier, sampler, spanProcessors);
+        clock,
+        idsGenerator,
+        resource,
+        spanLimitsSupplier,
+        sampler,
+        spanProcessors,
+        tracerConfigProvider);
   }
 
   SdkTracerProviderBuilder() {}

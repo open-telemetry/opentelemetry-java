@@ -11,11 +11,13 @@ import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -29,6 +31,8 @@ public final class SdkLoggerProviderBuilder {
   private Resource resource = Resource.getDefault();
   private Supplier<LogLimits> logLimitsSupplier = LogLimits::getDefault;
   private Clock clock = Clock.getDefault();
+  private Function<InstrumentationScopeInfo, LoggerConfig> loggerConfigProvider =
+      unused -> LoggerConfig.defaultConfig();
 
   SdkLoggerProviderBuilder() {}
 
@@ -100,12 +104,19 @@ public final class SdkLoggerProviderBuilder {
     return this;
   }
 
+  public SdkLoggerProviderBuilder setLoggerConfigProvider(
+      Function<InstrumentationScopeInfo, LoggerConfig> loggerConfigProvider) {
+    this.loggerConfigProvider = loggerConfigProvider;
+    return this;
+  }
+
   /**
    * Create a {@link SdkLoggerProvider} instance.
    *
    * @return an instance configured with the provided options
    */
   public SdkLoggerProvider build() {
-    return new SdkLoggerProvider(resource, logLimitsSupplier, logRecordProcessors, clock);
+    return new SdkLoggerProvider(
+        resource, logLimitsSupplier, logRecordProcessors, clock, loggerConfigProvider);
   }
 }

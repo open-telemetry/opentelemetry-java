@@ -9,6 +9,7 @@ import static io.opentelemetry.sdk.metrics.internal.view.NoopAttributesProcessor
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.GlobUtil;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -27,10 +28,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -170,7 +169,8 @@ public final class ViewRegistry {
       return false;
     }
     if (selector.getInstrumentName() != null
-        && !toGlobPatternPredicate(selector.getInstrumentName()).test(descriptor.getName())) {
+        && !GlobUtil.toGlobPatternPredicate(selector.getInstrumentName())
+            .test(descriptor.getName())) {
       return false;
     }
     return matchesMeter(selector, meterScope);
@@ -188,69 +188,6 @@ public final class ViewRegistry {
     }
     return selector.getMeterSchemaUrl() == null
         || selector.getMeterSchemaUrl().equals(meterScope.getSchemaUrl());
-  }
-
-  /**
-   * Return a predicate that returns {@code true} if a string matches the {@code globPattern}.
-   *
-   * <p>{@code globPattern} may contain the wildcard characters {@code *} and {@code ?} with the
-   * following matching criteria:
-   *
-   * <ul>
-   *   <li>{@code *} matches 0 or more instances of any character
-   *   <li>{@code ?} matches exactly one instance of any character
-   * </ul>
-   */
-  // Visible for testing
-  static Predicate<String> toGlobPatternPredicate(String globPattern) {
-    // Match all
-    if (globPattern.equals("*")) {
-      return unused -> true;
-    }
-
-    // If globPattern contains '*' or '?', convert it to a regex and return corresponding predicate
-    for (int i = 0; i < globPattern.length(); i++) {
-      char c = globPattern.charAt(i);
-      if (c == '*' || c == '?') {
-        Pattern pattern = toRegexPattern(globPattern);
-        return string -> pattern.matcher(string).matches();
-      }
-    }
-
-    // Exact match, ignoring case
-    return globPattern::equalsIgnoreCase;
-  }
-
-  /**
-   * Transform the {@code globPattern} to a regex by converting {@code *} to {@code .*}, {@code ?}
-   * to {@code .}, and escaping other regex special characters.
-   */
-  private static Pattern toRegexPattern(String globPattern) {
-    int tokenStart = -1;
-    StringBuilder patternBuilder = new StringBuilder();
-    for (int i = 0; i < globPattern.length(); i++) {
-      char c = globPattern.charAt(i);
-      if (c == '*' || c == '?') {
-        if (tokenStart != -1) {
-          patternBuilder.append(Pattern.quote(globPattern.substring(tokenStart, i)));
-          tokenStart = -1;
-        }
-        if (c == '*') {
-          patternBuilder.append(".*");
-        } else {
-          // c == '?'
-          patternBuilder.append(".");
-        }
-      } else {
-        if (tokenStart == -1) {
-          tokenStart = i;
-        }
-      }
-    }
-    if (tokenStart != -1) {
-      patternBuilder.append(Pattern.quote(globPattern.substring(tokenStart)));
-    }
-    return Pattern.compile(patternBuilder.toString());
   }
 
   private static RegisteredView applyAdviceToDefaultView(

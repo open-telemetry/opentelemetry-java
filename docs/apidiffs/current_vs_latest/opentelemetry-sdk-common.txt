@@ -1,2 +1,10 @@
 Comparing source compatibility of  against 
-No changes.
++++* NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.common.ScopeConfig  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++* NEW METHOD: PUBLIC(+) STATIC(+) java.util.function.Function<io.opentelemetry.sdk.common.InstrumentationScopeInfo,T> applyToMatching(java.util.function.Predicate<io.opentelemetry.sdk.common.InstrumentationScopeInfo>, java.lang.Object)
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++* NEW METHOD: PUBLIC(+) STATIC(+) java.util.function.Function<io.opentelemetry.sdk.common.InstrumentationScopeInfo,T> applyToMatching(java.util.function.Predicate<io.opentelemetry.sdk.common.InstrumentationScopeInfo>, java.lang.Object, java.lang.Object)
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) java.util.function.Predicate<io.opentelemetry.sdk.common.InstrumentationScopeInfo> scopeNameEquals(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) java.util.function.Predicate<io.opentelemetry.sdk.common.InstrumentationScopeInfo> scopeNameMatches(java.lang.String)

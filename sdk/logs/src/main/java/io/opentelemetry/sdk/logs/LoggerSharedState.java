@@ -7,7 +7,9 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -21,17 +23,20 @@ final class LoggerSharedState {
   private final Supplier<LogLimits> logLimitsSupplier;
   private final LogRecordProcessor logRecordProcessor;
   private final Clock clock;
+  private final Function<InstrumentationScopeInfo, LoggerConfig> loggerConfigProvider;
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
   LoggerSharedState(
       Resource resource,
       Supplier<LogLimits> logLimitsSupplier,
       LogRecordProcessor logRecordProcessor,
-      Clock clock) {
+      Clock clock,
+      Function<InstrumentationScopeInfo, LoggerConfig> loggerConfigProvider) {
     this.resource = resource;
     this.logLimitsSupplier = logLimitsSupplier;
     this.logRecordProcessor = logRecordProcessor;
     this.clock = clock;
+    this.loggerConfigProvider = loggerConfigProvider;
   }
 
   Resource getResource() {
@@ -48,6 +53,11 @@ final class LoggerSharedState {
 
   Clock getClock() {
     return clock;
+  }
+
+  LoggerConfig getLoggerConfig(InstrumentationScopeInfo instrumentationScopeInfo) {
+    LoggerConfig loggerConfig = loggerConfigProvider.apply(instrumentationScopeInfo);
+    return loggerConfig == null ? LoggerConfig.defaultConfig() : loggerConfig;
   }
 
   boolean hasBeenShutdown() {

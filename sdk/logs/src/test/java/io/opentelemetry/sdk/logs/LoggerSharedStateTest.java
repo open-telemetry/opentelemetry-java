@@ -24,7 +24,11 @@ class LoggerSharedStateTest {
     when(logRecordProcessor.shutdown()).thenReturn(code);
     LoggerSharedState state =
         new LoggerSharedState(
-            Resource.empty(), LogLimits::getDefault, logRecordProcessor, Clock.getDefault());
+            Resource.empty(),
+            LogLimits::getDefault,
+            logRecordProcessor,
+            Clock.getDefault(),
+            unused -> LoggerConfig.defaultConfig());
     state.shutdown();
     state.shutdown();
     verify(logRecordProcessor, times(1)).shutdown();

@@ -1,2 +1,10 @@
 Comparing source compatibility of  against 
-No changes.
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.logs.LoggerConfig  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.logs.LoggerConfig defaultConfig()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.logs.LoggerConfig disabled()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean isEnabled()
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder addScopeConfig(io.opentelemetry.sdk.common.ScopeSelector, io.opentelemetry.sdk.logs.LoggerConfig)
