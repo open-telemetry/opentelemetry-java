@@ -22,7 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A {@link MetricExporter} which writes {@linkplain MetricData spans} to a {@link Logger} in OTLP
+ * A {@link MetricExporter} which writes {@linkplain MetricData metrics} to a {@link Logger} in OTLP
  * JSON format. Each log line will include a single {@code ResourceMetrics}.
  */
 public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
