@@ -7,10 +7,10 @@ package io.opentelemetry.sdk.logs.internal;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.events.EventBuilder;
-import io.opentelemetry.api.events.EventEmitter;
-import io.opentelemetry.api.events.EventEmitterBuilder;
-import io.opentelemetry.api.events.EventEmitterProvider;
+import io.opentelemetry.api.incubator.events.EventBuilder;
+import io.opentelemetry.api.incubator.events.EventEmitter;
+import io.opentelemetry.api.incubator.events.EventEmitterBuilder;
+import io.opentelemetry.api.incubator.events.EventEmitterProvider;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerBuilder;

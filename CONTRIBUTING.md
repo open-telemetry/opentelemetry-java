@@ -78,7 +78,7 @@ which implement concepts defined in
 the [opentelemetry-specification](https://github.com/open-telemetry/opentelemetry-specification),
 with a few exceptions / comments:
 
-* The [API incubator](./extensions/incubator) and [SDK incubator](./extensions/incubator)
+* The [API incubator](./api/incubator) and [SDK incubator](./sdk-extensions/incubator)
   contain prototypes which have been discussed in the specification
   or [oteps](https://github.com/open-telemetry/oteps) and have a reasonable chance of becoming part
   of the specification, subject to maintainers' discretion.

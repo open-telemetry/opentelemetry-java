@@ -22,7 +22,7 @@ dependencies {
   api(project(":api:all"))
   api(project(":sdk:common"))
 
-  implementation(project(":extensions:incubator"))
+  implementation(project(":api:incubator"))
 
   compileOnly(project(":sdk:trace-shaded-deps"))
 
