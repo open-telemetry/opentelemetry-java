@@ -94,19 +94,21 @@ public final class DoubleExplicitBucketHistogramAggregator
     // read-only
     private final double[] boundaries;
 
-    @GuardedBy("this")
+    private final Object lock = new Object();
+
+    @GuardedBy("lock")
     private double sum;
 
-    @GuardedBy("this")
+    @GuardedBy("lock")
     private double min;
 
-    @GuardedBy("this")
+    @GuardedBy("lock")
     private double max;
 
-    @GuardedBy("this")
+    @GuardedBy("lock")
     private long count;
 
-    @GuardedBy("this")
+    @GuardedBy("lock")
     private final long[] counts;
 
     // Used only when MemoryMode = REUSABLE_DATA
@@ -131,61 +133,65 @@ public final class DoubleExplicitBucketHistogramAggregator
     }
 
     @Override
-    protected synchronized HistogramPointData doAggregateThenMaybeReset(
+    protected HistogramPointData doAggregateThenMaybeReset(
         long startEpochNanos,
         long epochNanos,
         Attributes attributes,
         List<DoubleExemplarData> exemplars,
         boolean reset) {
-      HistogramPointData pointData;
-      if (reusablePoint == null) {
-        pointData =
-            ImmutableHistogramPointData.create(
-                startEpochNanos,
-                epochNanos,
-                attributes,
-                sum,
-                this.count > 0,
-                this.min,
-                this.count > 0,
-                this.max,
-                boundaryList,
-                PrimitiveLongList.wrap(Arrays.copyOf(counts, counts.length)),
-                exemplars);
-      } else /* REUSABLE_DATA */ {
-        pointData =
-            reusablePoint.set(
-                startEpochNanos,
-                epochNanos,
-                attributes,
-                sum,
-                this.count > 0,
-                this.min,
-                this.count > 0,
-                this.max,
-                boundaryList,
-                counts,
-                exemplars);
+      synchronized (lock) {
+        HistogramPointData pointData;
+        if (reusablePoint == null) {
+          pointData =
+              ImmutableHistogramPointData.create(
+                  startEpochNanos,
+                  epochNanos,
+                  attributes,
+                  sum,
+                  this.count > 0,
+                  this.min,
+                  this.count > 0,
+                  this.max,
+                  boundaryList,
+                  PrimitiveLongList.wrap(Arrays.copyOf(counts, counts.length)),
+                  exemplars);
+        } else /* REUSABLE_DATA */ {
+          pointData =
+              reusablePoint.set(
+                  startEpochNanos,
+                  epochNanos,
+                  attributes,
+                  sum,
+                  this.count > 0,
+                  this.min,
+                  this.count > 0,
+                  this.max,
+                  boundaryList,
+                  counts,
+                  exemplars);
+        }
+        if (reset) {
+          this.sum = 0;
+          this.min = Double.MAX_VALUE;
+          this.max = -1;
+          this.count = 0;
+          Arrays.fill(this.counts, 0);
+        }
+        return pointData;
       }
-      if (reset) {
-        this.sum = 0;
-        this.min = Double.MAX_VALUE;
-        this.max = -1;
-        this.count = 0;
-        Arrays.fill(this.counts, 0);
-      }
-      return pointData;
     }
 
     @Override
-    protected synchronized void doRecordDouble(double value) {
+    protected void doRecordDouble(double value) {
       int bucketIndex = ExplicitBucketHistogramUtils.findBucketIndex(this.boundaries, value);
 
-      this.sum += value;
-      this.min = Math.min(this.min, value);
-      this.max = Math.max(this.max, value);
-      this.count++;
-      this.counts[bucketIndex]++;
+      synchronized (lock) {
+        this.sum += value;
+        this.min = Math.min(this.min, value);
+        this.max = Math.max(this.max, value);
+        this.count++;
+        this.counts[bucketIndex]++;
+      }
     }
 
     @Override
