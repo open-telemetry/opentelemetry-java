@@ -8,9 +8,9 @@ package io.opentelemetry.sdk.logs.internal;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.events.EventBuilder;
-import io.opentelemetry.api.incubator.events.EventEmitter;
-import io.opentelemetry.api.incubator.events.EventEmitterBuilder;
-import io.opentelemetry.api.incubator.events.EventEmitterProvider;
+import io.opentelemetry.api.incubator.events.EventLogger;
+import io.opentelemetry.api.incubator.events.EventLoggerBuilder;
+import io.opentelemetry.api.incubator.events.EventLoggerProvider;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerBuilder;
@@ -19,82 +19,82 @@ import io.opentelemetry.sdk.common.Clock;
 import java.util.concurrent.TimeUnit;
 
 /**
- * SDK implementation for {@link EventEmitterProvider}.
+ * SDK implementation for {@link EventLoggerProvider}.
  *
  * <p>Delegates all calls to the configured {@link LoggerProvider}, and its {@link LoggerBuilder}s,
  * {@link Logger}s.
  */
-public final class SdkEventEmitterProvider implements EventEmitterProvider {
+public final class SdkEventLoggerProvider implements EventLoggerProvider {
 
   static final AttributeKey<String> EVENT_NAME = AttributeKey.stringKey("event.name");
 
   private final LoggerProvider delegateLoggerProvider;
   private final Clock clock;
 
-  private SdkEventEmitterProvider(LoggerProvider delegateLoggerProvider, Clock clock) {
+  private SdkEventLoggerProvider(LoggerProvider delegateLoggerProvider, Clock clock) {
     this.delegateLoggerProvider = delegateLoggerProvider;
     this.clock = clock;
   }
 
   /**
-   * Create a {@link SdkEventEmitterProvider} which delegates to the {@code delegateLoggerProvider}.
+   * Create a {@link SdkEventLoggerProvider} which delegates to the {@code delegateLoggerProvider}.
    */
-  public static SdkEventEmitterProvider create(LoggerProvider delegateLoggerProvider) {
-    return new SdkEventEmitterProvider(delegateLoggerProvider, Clock.getDefault());
+  public static SdkEventLoggerProvider create(LoggerProvider delegateLoggerProvider) {
+    return new SdkEventLoggerProvider(delegateLoggerProvider, Clock.getDefault());
   }
 
   /**
-   * Create a {@link SdkEventEmitterProvider} which delegates to the {@code delegateLoggerProvider}.
+   * Create a {@link SdkEventLoggerProvider} which delegates to the {@code delegateLoggerProvider}.
    */
-  public static SdkEventEmitterProvider create(LoggerProvider delegateLoggerProvider, Clock clock) {
-    return new SdkEventEmitterProvider(delegateLoggerProvider, clock);
+  public static SdkEventLoggerProvider create(LoggerProvider delegateLoggerProvider, Clock clock) {
+    return new SdkEventLoggerProvider(delegateLoggerProvider, clock);
   }
 
   @Override
-  public EventEmitter get(String instrumentationScopeName) {
-    return eventEmitterBuilder(instrumentationScopeName).build();
+  public EventLogger get(String instrumentationScopeName) {
+    return eventLoggerBuilder(instrumentationScopeName).build();
   }
 
   @Override
-  public EventEmitterBuilder eventEmitterBuilder(String instrumentationScopeName) {
-    return new SdkEventEmitterBuilder(
+  public EventLoggerBuilder eventLoggerBuilder(String instrumentationScopeName) {
+    return new SdkEventLoggerBuilder(
         clock, delegateLoggerProvider.loggerBuilder(instrumentationScopeName));
   }
 
-  private static class SdkEventEmitterBuilder implements EventEmitterBuilder {
+  private static class SdkEventLoggerBuilder implements EventLoggerBuilder {
 
     private final Clock clock;
     private final LoggerBuilder delegateLoggerBuilder;
 
-    private SdkEventEmitterBuilder(Clock clock, LoggerBuilder delegateLoggerBuilder) {
+    private SdkEventLoggerBuilder(Clock clock, LoggerBuilder delegateLoggerBuilder) {
       this.clock = clock;
       this.delegateLoggerBuilder = delegateLoggerBuilder;
     }
 
     @Override
-    public EventEmitterBuilder setSchemaUrl(String schemaUrl) {
+    public EventLoggerBuilder setSchemaUrl(String schemaUrl) {
       delegateLoggerBuilder.setSchemaUrl(schemaUrl);
       return this;
     }
 
     @Override
-    public EventEmitterBuilder setInstrumentationVersion(String instrumentationScopeVersion) {
+    public EventLoggerBuilder setInstrumentationVersion(String instrumentationScopeVersion) {
       delegateLoggerBuilder.setInstrumentationVersion(instrumentationScopeVersion);
       return this;
     }
 
     @Override
-    public EventEmitter build() {
-      return new SdkEventEmitter(clock, delegateLoggerBuilder.build());
+    public EventLogger build() {
+      return new SdkEventLogger(clock, delegateLoggerBuilder.build());
     }
   }
 
-  private static class SdkEventEmitter implements EventEmitter {
+  private static class SdkEventLogger implements EventLogger {
 
     private final Clock clock;
     private final Logger delegateLogger;
 
-    private SdkEventEmitter(Clock clock, Logger delegateLogger) {
+    private SdkEventLogger(Clock clock, Logger delegateLogger) {
       this.clock = clock;
       this.delegateLogger = delegateLogger;
     }

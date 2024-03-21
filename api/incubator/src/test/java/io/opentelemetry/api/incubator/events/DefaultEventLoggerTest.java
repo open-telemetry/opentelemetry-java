@@ -12,15 +12,15 @@ import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
-class DefaultEventEmitterTest {
+class DefaultEventLoggerTest {
 
   @Test
   void emit() {
-    assertThatCode(() -> DefaultEventEmitter.getInstance().emit("event-name", Attributes.empty()))
+    assertThatCode(() -> DefaultEventLogger.getInstance().emit("event-name", Attributes.empty()))
         .doesNotThrowAnyException();
     assertThatCode(
             () ->
-                DefaultEventEmitter.getInstance()
+                DefaultEventLogger.getInstance()
                     .emit(
                         "event-domain.event-name",
                         Attributes.builder().put("key1", "value1").build()))
@@ -30,10 +30,10 @@ class DefaultEventEmitterTest {
   @Test
   void builder() {
     Attributes attributes = Attributes.builder().put("key1", "value1").build();
-    EventEmitter emitter = DefaultEventEmitter.getInstance();
+    EventLogger eventLogger = DefaultEventLogger.getInstance();
     assertThatCode(
             () ->
-                emitter
+                eventLogger
                     .builder("com.example.MyEvent", attributes)
                     .setTimestamp(123456L, TimeUnit.NANOSECONDS)
                     .setTimestamp(Instant.now())

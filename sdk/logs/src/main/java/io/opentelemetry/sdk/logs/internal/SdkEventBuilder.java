@@ -33,7 +33,7 @@ class SdkEventBuilder implements EventBuilder {
 
   @Override
   public void emit() {
-    SdkEventEmitterProvider.addEventName(logRecordBuilder, eventName);
+    SdkEventLoggerProvider.addEventName(logRecordBuilder, eventName);
     logRecordBuilder.emit();
   }
 }

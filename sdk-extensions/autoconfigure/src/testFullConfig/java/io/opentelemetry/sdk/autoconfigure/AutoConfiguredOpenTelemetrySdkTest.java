@@ -13,7 +13,7 @@ import com.linecorp.armeria.client.WebClient;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.incubator.events.GlobalEventEmitterProvider;
+import io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.lang.reflect.Field;
@@ -32,7 +32,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @BeforeEach
   void setUp() {
     GlobalOpenTelemetry.resetForTest();
-    GlobalEventEmitterProvider.resetForTest();
+    GlobalEventLoggerProvider.resetForTest();
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")

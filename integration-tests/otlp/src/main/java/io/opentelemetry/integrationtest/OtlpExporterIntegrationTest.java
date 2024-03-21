@@ -21,7 +21,7 @@ import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.events.EventEmitter;
+import io.opentelemetry.api.incubator.events.EventLogger;
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.incubator.logs.KeyAnyValue;
 import io.opentelemetry.api.logs.Logger;
@@ -66,7 +66,7 @@ import io.opentelemetry.proto.trace.v1.Span.Link;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
-import io.opentelemetry.sdk.logs.internal.SdkEventEmitterProvider;
+import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -533,9 +533,9 @@ abstract class OtlpExporterIntegrationTest {
             .build();
 
     Logger logger = loggerProvider.get(OtlpExporterIntegrationTest.class.getName());
-    EventEmitter eventEmitter =
-        SdkEventEmitterProvider.create(loggerProvider)
-            .eventEmitterBuilder(OtlpExporterIntegrationTest.class.getName())
+    EventLogger eventLogger =
+        SdkEventLoggerProvider.create(loggerProvider)
+            .eventLoggerBuilder(OtlpExporterIntegrationTest.class.getName())
             .build();
 
     SpanContext spanContext =
@@ -568,7 +568,7 @@ abstract class OtlpExporterIntegrationTest {
           .setSeverityText("DEBUG")
           .setContext(Context.current())
           .emit();
-      eventEmitter.emit("event-name", Attributes.builder().put("key", "value").build());
+      eventLogger.emit("event-name", Attributes.builder().put("key", "value").build());
     }
 
     // Closing triggers flush of processor
@@ -706,7 +706,7 @@ abstract class OtlpExporterIntegrationTest {
         .isEqualTo(spanContext.getTraceFlags());
     assertThat(protoLog1.getTimeUnixNano()).isEqualTo(100);
 
-    // LogRecord via EventEmitter.emit(String, Attributes)
+    // LogRecord via EventLogger.emit(String, Attributes)
     io.opentelemetry.proto.logs.v1.LogRecord protoLog2 = ilLogs.getLogRecords(1);
     assertThat(protoLog2.getBody().getStringValue()).isEmpty();
     assertThat(protoLog2.getAttributesList())

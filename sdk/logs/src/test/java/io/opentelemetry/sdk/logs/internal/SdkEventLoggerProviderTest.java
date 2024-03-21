@@ -11,7 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.events.EventEmitter;
+import io.opentelemetry.api.incubator.events.EventLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
@@ -21,15 +21,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 
-class SdkEventEmitterProviderTest {
+class SdkEventLoggerProviderTest {
 
   private static final Resource RESOURCE =
       Resource.builder().put("resource-key", "resource-value").build();
 
   private final Clock clock = mock(Clock.class);
   private final AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
-  private final SdkEventEmitterProvider eventEmitterProvider =
-      SdkEventEmitterProvider.create(
+  private final SdkEventLoggerProvider eventLoggerProvider =
+      SdkEventLoggerProvider.create(
           SdkLoggerProvider.builder()
               .setResource(RESOURCE)
               .addLogRecordProcessor((context, logRecord) -> seenLog.set(logRecord))
@@ -40,8 +40,8 @@ class SdkEventEmitterProviderTest {
   void emit() {
     when(clock.now()).thenReturn(10L);
 
-    eventEmitterProvider
-        .eventEmitterBuilder("test-scope")
+    eventLoggerProvider
+        .eventLoggerBuilder("test-scope")
         .build()
         .emit(
             "event-name",
@@ -64,9 +64,9 @@ class SdkEventEmitterProviderTest {
     long yesterday = System.nanoTime() - TimeUnit.DAYS.toNanos(1);
     Attributes attributes = Attributes.of(stringKey("foo"), "bar");
 
-    EventEmitter emitter = eventEmitterProvider.eventEmitterBuilder("test-scope").build();
+    EventLogger eventLogger = eventLoggerProvider.eventLoggerBuilder("test-scope").build();
 
-    emitter.builder("testing", attributes).setTimestamp(yesterday, TimeUnit.NANOSECONDS).emit();
+    eventLogger.builder("testing", attributes).setTimestamp(yesterday, TimeUnit.NANOSECONDS).emit();
     verifySeen(yesterday, attributes);
   }
 
