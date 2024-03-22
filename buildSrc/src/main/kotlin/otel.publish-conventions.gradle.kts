@@ -1,4 +1,4 @@
-import java.util.UUID
+import java.util.*
 
 plugins {
   `maven-publish`
@@ -28,6 +28,15 @@ publishing {
       versionMapping {
         allVariants {
           fromResolutionResult()
+        }
+      }
+
+      if (!project.name.startsWith("bom")) {
+        afterEvaluate {
+          artifact("${layout.buildDirectory.get()}/spdx/${"opentelemetry-java_" + base.archivesName.get()}.spdx.json") {
+            classifier = "spdx"
+            extension = "spdx.json"
+          }
         }
       }
 
@@ -67,8 +76,8 @@ if (System.getenv("CI") != null) {
   }
 }
 
-project.afterEvaluate {
-  if (!project.name.startsWith("bom")) {
+if (!project.name.startsWith("bom")) {
+  project.afterEvaluate {
     spdxSbom {
       targets {
         val sbomName = "opentelemetry-java_" + base.archivesName.get()
