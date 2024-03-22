@@ -593,6 +593,12 @@ class BatchSpanProcessorTest {
   }
 
   @Test
+  void getSpanExporter() {
+    assertThat(BatchSpanProcessor.builder(mockSpanExporter).build().getSpanExporter())
+        .isSameAs(mockSpanExporter);
+  }
+
+  @Test
   void stringRepresentation() {
     BatchSpanProcessor processor = BatchSpanProcessor.builder(mockSpanExporter).build();
     String processorStr = processor.toString();
