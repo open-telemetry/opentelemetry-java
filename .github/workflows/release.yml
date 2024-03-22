@@ -35,7 +35,7 @@ jobs:
         name: Collect SBOM's
         run: |
           mkdir sboms
-          find . -path ./sboms -prune -o -name "*.spdx.json" -print
+          find . -path ./sboms -prune -o -name "*.cyclonedx.json" -exec mv {} ./sboms/ \;
           find . -path ./sboms -prune -o -name "*.spdx.json" -exec mv {} ./sboms/ \;
           zip SBOM.zip sboms/*
           cp SBOM.zip /tmp/
@@ -45,7 +45,7 @@ jobs:
         name: Save SBOM's to build
         with:
           name: SBOM.zip
-          path: "sboms/*.spdx.json"
+          path: "sboms/*.json"
 
       - name: Set environment variables
         run: |

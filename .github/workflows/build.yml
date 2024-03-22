@@ -93,14 +93,14 @@ jobs:
         name: Collect SBOM's
         run: |
           mkdir sboms
-          find . -path ./sboms -prune -o -name "*.spdx.json" -print
+          find . -path ./sboms -prune -o -name "*.cyclonedx.json" -exec mv {} ./sboms/ \;
           find . -path ./sboms -prune -o -name "*.spdx.json" -exec mv {} ./sboms/ \;
 
       - uses: actions/upload-artifact@v4
         name: Save SBOM's to build
         with:
           name: SBOM-${{ matrix.os }}-${{ matrix.test-java-version }}.zip
-          path: "sboms/*.spdx.json"
+          path: "sboms/*.json"
 
   markdown-link-check:
     # release branches are excluded to avoid unnecessary maintenance
