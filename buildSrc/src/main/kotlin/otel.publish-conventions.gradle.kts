@@ -111,5 +111,8 @@ if (!project.name.startsWith("bom")) {
     tasks.named("assemble") {
       dependsOn("spdxSbom", "cyclonedxBom")
     }
+    tasks.withType<AbstractPublishToMaven>() {
+      dependsOn("spdxSbom", "cyclonedxBom")
+    }
   }
 }
