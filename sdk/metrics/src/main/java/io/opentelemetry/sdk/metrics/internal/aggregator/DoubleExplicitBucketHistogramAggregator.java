@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -95,6 +94,8 @@ public final class DoubleExplicitBucketHistogramAggregator
     // read-only
     private final double[] boundaries;
 
+    private final Object lock = new Object();
+
     @GuardedBy("lock")
     private double sum;
 
@@ -109,8 +110,6 @@ public final class DoubleExplicitBucketHistogramAggregator
 
     @GuardedBy("lock")
     private final long[] counts;
-
-    private final ReentrantLock lock = new ReentrantLock();
 
     // Used only when MemoryMode = REUSABLE_DATA
     @Nullable private MutableHistogramPointData reusablePoint;
@@ -140,8 +139,7 @@ public final class DoubleExplicitBucketHistogramAggregator
         Attributes attributes,
         List<DoubleExemplarData> exemplars,
         boolean reset) {
-      lock.lock();
-      try {
+      synchronized (lock) {
         HistogramPointData pointData;
         if (reusablePoint == null) {
           pointData =
@@ -180,8 +178,6 @@ public final class DoubleExplicitBucketHistogramAggregator
           Arrays.fill(this.counts, 0);
         }
         return pointData;
-      } finally {
-        lock.unlock();
       }
     }
 
@@ -189,15 +185,12 @@ public final class DoubleExplicitBucketHistogramAggregator
     protected void doRecordDouble(double value) {
       int bucketIndex = ExplicitBucketHistogramUtils.findBucketIndex(this.boundaries, value);
 
-      lock.lock();
-      try {
+      synchronized (lock) {
         this.sum += value;
         this.min = Math.min(this.min, value);
         this.max = Math.max(this.max, value);
         this.count++;
         this.counts[bucketIndex]++;
-      } finally {
-        lock.unlock();
       }
     }
 

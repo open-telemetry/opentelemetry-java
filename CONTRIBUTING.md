@@ -138,6 +138,14 @@ uses [google-java-format](https://github.com/google/google-java-format) library:
 * Adding `toString()` overrides on classes is encouraged, but we only use `toString()` to provide
   debugging assistance. The implementations of all `toString()` methods should be considered to be
   unstable unless explicitly documented otherwise.
+* Avoid synchronizing using a class's intrinsic lock. Instead, synchronize on a dedicated lock object. E.g:
+  ```java
+  private final Object lock = new Object();
+
+  public void doSomething() {
+    synchronized (lock) { ... }
+  }
+  ```
 
 If you notice any practice being applied in the project consistently that isn't listed here, please
 consider a pull request to add it.
