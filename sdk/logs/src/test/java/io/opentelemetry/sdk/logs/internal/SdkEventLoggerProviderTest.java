@@ -82,12 +82,12 @@ class SdkEventLoggerProviderTest {
         .builder("namespace.my-event-name")
         // Helper methods to set primitive types
         .put("stringKey", "value")
-        .put("longKey", 1)
+        .put("longKey", 1L)
         .put("doubleKey", 1.0)
         .put("boolKey", true)
         // Helper methods to set primitive array types
         .put("stringArrKey", "value1", "value2")
-        .put("longArrKey", 1, 2)
+        .put("longArrKey", 1L, 2L)
         .put("doubleArrKey", 1.0, 2.0)
         .put("boolArrKey", true, false)
         // Set AnyValue types to encode complex data
@@ -101,12 +101,12 @@ class SdkEventLoggerProviderTest {
 
     Map<String, AnyValue<?>> expectedPayload = new HashMap<>();
     expectedPayload.put("stringKey", AnyValue.of("value"));
-    expectedPayload.put("longKey", AnyValue.of(1));
+    expectedPayload.put("longKey", AnyValue.of(1L));
     expectedPayload.put("doubleKey", AnyValue.of(1.0));
     expectedPayload.put("boolKey", AnyValue.of(true));
     expectedPayload.put(
         "stringArrKey", AnyValue.of(Arrays.asList(AnyValue.of("value1"), AnyValue.of("value2"))));
-    expectedPayload.put("longArrKey", AnyValue.of(Arrays.asList(AnyValue.of(1), AnyValue.of("2"))));
+    expectedPayload.put("longArrKey", AnyValue.of(Arrays.asList(AnyValue.of(1L), AnyValue.of(2L))));
     expectedPayload.put(
         "doubleArrKey", AnyValue.of(Arrays.asList(AnyValue.of(1.0), AnyValue.of(2.0))));
     expectedPayload.put(
@@ -117,7 +117,7 @@ class SdkEventLoggerProviderTest {
             ImmutableMap.of(
                 "childKey1", AnyValue.of("value"),
                 "childKey2", AnyValue.of("value"))));
-    assertThat(((AnyValueBody) seenLog.get().toLogRecordData().getBody()).asAnyValue().toString())
-        .isEqualTo(AnyValue.of(expectedPayload).toString());
+    assertThat(((AnyValueBody) seenLog.get().toLogRecordData().getBody()).asAnyValue())
+        .isEqualTo(AnyValue.of(expectedPayload));
   }
 }
