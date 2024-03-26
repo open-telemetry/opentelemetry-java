@@ -433,7 +433,11 @@ class PrometheusMetricReaderTest {
             + "request_size_bytes_bucket{animal=\"bear\",otel_scope_name=\"test\",le=\"7500.0\"} 2\n"
             + "request_size_bytes_bucket{animal=\"bear\",otel_scope_name=\"test\",le=\"10000.0\"} 2\n"
             + "request_size_bytes_bucket{animal=\"bear\",otel_scope_name=\"test\",le=\"+Inf\"} 2\n"
-            + "request_size_bytes_count{animal=\"bear\",otel_scope_name=\"test\"} 2\n"
+            + "request_size_bytes_count{animal=\"bear\",otel_scope_name=\"test\"} 2 # {span_id=\""
+            + span1.getSpanContext().getSpanId()
+            + "\",trace_id=\""
+            + span1.getSpanContext().getTraceId()
+            + "\"} 173.0 <timestamp>\n"
             + "request_size_bytes_sum{animal=\"bear\",otel_scope_name=\"test\"} 573.0\n"
             + "request_size_bytes_created{animal=\"bear\",otel_scope_name=\"test\"} "
             + createdTimestamp
@@ -458,7 +462,11 @@ class PrometheusMetricReaderTest {
             + "request_size_bytes_bucket{animal=\"mouse\",otel_scope_name=\"test\",le=\"7500.0\"} 1\n"
             + "request_size_bytes_bucket{animal=\"mouse\",otel_scope_name=\"test\",le=\"10000.0\"} 1\n"
             + "request_size_bytes_bucket{animal=\"mouse\",otel_scope_name=\"test\",le=\"+Inf\"} 1\n"
-            + "request_size_bytes_count{animal=\"mouse\",otel_scope_name=\"test\"} 1\n"
+            + "request_size_bytes_count{animal=\"mouse\",otel_scope_name=\"test\"} 1 # {span_id=\""
+            + span3.getSpanContext().getSpanId()
+            + "\",trace_id=\""
+            + span3.getSpanContext().getTraceId()
+            + "\"} 204.0 <timestamp>\n"
             + "request_size_bytes_sum{animal=\"mouse\",otel_scope_name=\"test\"} 204.0\n"
             + "request_size_bytes_created{animal=\"mouse\",otel_scope_name=\"test\"} "
             + createdTimestamp
