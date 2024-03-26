@@ -38,9 +38,12 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
+import io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
+import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
@@ -63,6 +66,7 @@ import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span.Link;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
@@ -93,6 +97,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.BindMode;
@@ -195,7 +200,7 @@ abstract class OtlpExporterIntegrationTest {
   @ParameterizedTest
   @ValueSource(strings = {"gzip", "none"})
   void testOtlpGrpcTraceExport(String compression) {
-    SpanExporter otlpGrpcTraceExporter =
+    SpanExporter exporter =
         OtlpGrpcSpanExporter.builder()
             .setEndpoint(
                 "http://"
@@ -205,7 +210,7 @@ abstract class OtlpExporterIntegrationTest {
             .setCompression(compression)
             .build();
 
-    testTraceExport(otlpGrpcTraceExporter);
+    testTraceExport(exporter);
   }
 
   @Test
@@ -227,7 +232,7 @@ abstract class OtlpExporterIntegrationTest {
   @ParameterizedTest
   @ValueSource(strings = {"gzip", "none"})
   void testOtlpHttpTraceExport(String compression) {
-    SpanExporter otlpGrpcTraceExporter =
+    SpanExporter exporter =
         OtlpHttpSpanExporter.builder()
             .setEndpoint(
                 "http://"
@@ -238,7 +243,7 @@ abstract class OtlpExporterIntegrationTest {
             .setCompression(compression)
             .build();
 
-    testTraceExport(otlpGrpcTraceExporter);
+    testTraceExport(exporter);
   }
 
   @Test
@@ -328,7 +333,7 @@ abstract class OtlpExporterIntegrationTest {
   @ParameterizedTest
   @ValueSource(strings = {"gzip", "none"})
   void testOtlpGrpcMetricExport(String compression) {
-    MetricExporter otlpGrpcMetricExporter =
+    MetricExporter exporter =
         OtlpGrpcMetricExporter.builder()
             .setEndpoint(
                 "http://"
@@ -338,7 +343,26 @@ abstract class OtlpExporterIntegrationTest {
             .setCompression(compression)
             .build();
 
-    testMetricExport(otlpGrpcMetricExporter);
+    testMetricExport(exporter);
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void testOtlpGrpcMetricExport_memoryMode(MemoryMode memoryMode) {
+    OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder();
+    OtlpConfigUtil.setMemoryModeOnOtlpMetricExporterBuilder(builder, memoryMode);
+
+    MetricExporter exporter =
+        builder
+            .setEndpoint(
+                "http://"
+                    + collector.getHost()
+                    + ":"
+                    + collector.getMappedPort(COLLECTOR_OTLP_GRPC_PORT))
+            .build();
+    assertThat(exporter.getMemoryMode()).isEqualTo(memoryMode);
+
+    testMetricExport(exporter);
   }
 
   @Test
@@ -360,7 +384,8 @@ abstract class OtlpExporterIntegrationTest {
   @ParameterizedTest
   @ValueSource(strings = {"gzip", "none"})
   void testOtlpHttpMetricExport(String compression) {
-    MetricExporter otlpGrpcMetricExporter =
+
+    MetricExporter exporter =
         OtlpHttpMetricExporter.builder()
             .setEndpoint(
                 "http://"
@@ -371,7 +396,27 @@ abstract class OtlpExporterIntegrationTest {
             .setCompression(compression)
             .build();
 
-    testMetricExport(otlpGrpcMetricExporter);
+    testMetricExport(exporter);
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void testOtlpHttpMetricExport_memoryMode(MemoryMode memoryMode) {
+    OtlpHttpMetricExporterBuilder builder = OtlpHttpMetricExporter.builder();
+    OtlpConfigUtil.setMemoryModeOnOtlpMetricExporterBuilder(builder, memoryMode);
+
+    MetricExporter exporter =
+        builder
+            .setEndpoint(
+                "http://"
+                    + collector.getHost()
+                    + ":"
+                    + collector.getMappedPort(COLLECTOR_OTLP_HTTP_PORT)
+                    + "/v1/metrics")
+            .build();
+    assertThat(exporter.getMemoryMode()).isEqualTo(memoryMode);
+
+    testMetricExport(exporter);
   }
 
   @Test
