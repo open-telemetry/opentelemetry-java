@@ -11,6 +11,7 @@ import static org.mockito.Mockito.times;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import java.lang.reflect.InvocationTargetException;
@@ -120,7 +121,10 @@ class DelegatingSpanTest {
         // `true`
         Arguments.of("isRecording", new Class<?>[] {}, times(0)),
         // called twice: once in constructor, then once during delegation
-        Arguments.of("getSpanContext", new Class<?>[] {}, times(2)));
+        Arguments.of("getSpanContext", new Class<?>[] {}, times(2)),
+        // addLink is never called
+        Arguments.of("addLink", new Class<?>[] {SpanContext.class}, times(0)),
+        Arguments.of("addLink", new Class<?>[] {SpanContext.class, Attributes.class}, times(0)));
   }
 
   // gets default values for all cases, as mockito can't mock wrappers or primitives, including

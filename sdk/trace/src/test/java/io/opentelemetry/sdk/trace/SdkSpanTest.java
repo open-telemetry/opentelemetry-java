@@ -15,7 +15,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -25,7 +24,6 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.incubator.trace.ExtendedSpan;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -821,10 +819,10 @@ class SdkSpanTest {
             null,
             null);
     try {
-      ExtendedSpan span1 = createTestSpan(SpanKind.INTERNAL);
-      ExtendedSpan span2 = createTestSpan(SpanKind.INTERNAL);
-      ExtendedSpan span3 = createTestSpan(SpanKind.INTERNAL);
-      ExtendedSpan span4 = createTestSpan(SpanKind.INTERNAL);
+      Span span1 = createTestSpan(SpanKind.INTERNAL);
+      Span span2 = createTestSpan(SpanKind.INTERNAL);
+      Span span3 = createTestSpan(SpanKind.INTERNAL);
+      Span span4 = createTestSpan(SpanKind.INTERNAL);
 
       span.addLink(span1.getSpanContext());
 
@@ -885,16 +883,6 @@ class SdkSpanTest {
     } finally {
       span.end();
     }
-  }
-
-  @Test
-  void addLink_InvalidArgs() {
-    ExtendedSpan span = createTestSpan(SpanKind.INTERNAL);
-    assertThatCode(() -> span.addLink(null)).doesNotThrowAnyException();
-    assertThatCode(() -> span.addLink(SpanContext.getInvalid())).doesNotThrowAnyException();
-    assertThatCode(() -> span.addLink(null, null)).doesNotThrowAnyException();
-    assertThatCode(() -> span.addLink(SpanContext.getInvalid(), Attributes.empty()))
-        .doesNotThrowAnyException();
   }
 
   @Test
