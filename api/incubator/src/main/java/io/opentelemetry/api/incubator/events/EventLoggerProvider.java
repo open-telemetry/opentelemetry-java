@@ -8,39 +8,38 @@ package io.opentelemetry.api.incubator.events;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * A registry for creating scoped {@link EventEmitter}s. The name <i>Provider</i> is for consistency
+ * A registry for creating scoped {@link EventLogger}s. The name <i>Provider</i> is for consistency
  * with other languages and it is <b>NOT</b> loaded using reflection.
  *
- * @see EventEmitter
+ * @see EventLogger
  */
 @ThreadSafe
-public interface EventEmitterProvider {
+public interface EventLoggerProvider {
 
   /**
-   * Gets or creates a named EventEmitter instance which emits events to the {@code eventDomain}.
+   * Gets or creates a named {@link EventLogger} instance.
    *
    * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
    *     the instrumentation library, package, or fully qualified class name. Must not be null.
    * @return a Logger instance.
    */
-  default EventEmitter get(String instrumentationScopeName) {
-    return eventEmitterBuilder(instrumentationScopeName).build();
+  default EventLogger get(String instrumentationScopeName) {
+    return eventLoggerBuilder(instrumentationScopeName).build();
   }
 
   /**
-   * Creates a LoggerBuilder for a named EventEmitter instance.
+   * Creates a LoggerBuilder for a named {@link EventLogger} instance.
    *
    * @param instrumentationScopeName A name uniquely identifying the instrumentation scope, such as
    *     the instrumentation library, package, or fully qualified class name. Must not be null.
    * @return a LoggerBuilder instance.
    */
-  EventEmitterBuilder eventEmitterBuilder(String instrumentationScopeName);
+  EventLoggerBuilder eventLoggerBuilder(String instrumentationScopeName);
 
   /**
-   * Returns a no-op {@link EventEmitterProvider} which provides Loggers which do not record or
-   * emit.
+   * Returns a no-op {@link EventLoggerProvider} which provides Loggers which do not record or emit.
    */
-  static EventEmitterProvider noop() {
-    return DefaultEventEmitterProvider.getInstance();
+  static EventLoggerProvider noop() {
+    return DefaultEventLoggerProvider.getInstance();
   }
 }

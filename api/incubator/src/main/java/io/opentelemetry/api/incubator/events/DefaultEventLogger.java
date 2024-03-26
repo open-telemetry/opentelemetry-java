@@ -9,13 +9,13 @@ import io.opentelemetry.api.common.Attributes;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
-class DefaultEventEmitter implements EventEmitter {
+class DefaultEventLogger implements EventLogger {
 
-  private static final EventEmitter INSTANCE = new DefaultEventEmitter();
+  private static final EventLogger INSTANCE = new DefaultEventLogger();
 
-  private DefaultEventEmitter() {}
+  private DefaultEventLogger() {}
 
-  static EventEmitter getInstance() {
+  static EventLogger getInstance() {
     return INSTANCE;
   }
 

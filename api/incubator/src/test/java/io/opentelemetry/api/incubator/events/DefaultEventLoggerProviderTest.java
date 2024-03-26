@@ -11,18 +11,18 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import io.opentelemetry.api.common.Attributes;
 import org.junit.jupiter.api.Test;
 
-class DefaultEventEmitterProviderTest {
+class DefaultEventLoggerProviderTest {
 
   @Test
-  void noopEventEmitterProvider_doesNotThrow() {
-    EventEmitterProvider provider = EventEmitterProvider.noop();
+  void noopEventLoggerProvider_doesNotThrow() {
+    EventLoggerProvider provider = EventLoggerProvider.noop();
 
-    assertThat(provider).isSameAs(DefaultEventEmitterProvider.getInstance());
+    assertThat(provider).isSameAs(DefaultEventLoggerProvider.getInstance());
     assertThatCode(() -> provider.get("scope-name")).doesNotThrowAnyException();
     assertThatCode(
             () ->
                 provider
-                    .eventEmitterBuilder("scope-name")
+                    .eventLoggerBuilder("scope-name")
                     .setInstrumentationVersion("1.0")
                     .setSchemaUrl("http://schema.com")
                     .build())
@@ -31,7 +31,7 @@ class DefaultEventEmitterProviderTest {
     assertThatCode(
             () ->
                 provider
-                    .eventEmitterBuilder("scope-name")
+                    .eventLoggerBuilder("scope-name")
                     .build()
                     .emit("event-name", Attributes.empty()))
         .doesNotThrowAnyException();

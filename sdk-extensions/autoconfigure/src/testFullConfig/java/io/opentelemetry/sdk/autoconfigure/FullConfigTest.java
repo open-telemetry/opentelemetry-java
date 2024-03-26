@@ -18,8 +18,8 @@ import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.events.EventEmitter;
-import io.opentelemetry.api.incubator.events.GlobalEventEmitterProvider;
+import io.opentelemetry.api.incubator.events.EventLogger;
+import io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.Meter;
@@ -159,7 +159,7 @@ class FullConfigTest {
 
     // Initialize here so we can shutdown when done
     GlobalOpenTelemetry.resetForTest();
-    GlobalEventEmitterProvider.resetForTest();
+    GlobalEventLoggerProvider.resetForTest();
     openTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
   }
 
@@ -167,7 +167,7 @@ class FullConfigTest {
   void afterEach() {
     openTelemetrySdk.close();
     GlobalOpenTelemetry.resetForTest();
-    GlobalEventEmitterProvider.resetForTest();
+    GlobalEventLoggerProvider.resetForTest();
   }
 
   @Test
@@ -206,9 +206,8 @@ class FullConfigTest {
     logger.logRecordBuilder().setBody("debug log message").setSeverity(Severity.DEBUG).emit();
     logger.logRecordBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
 
-    EventEmitter eventEmitter =
-        GlobalEventEmitterProvider.get().eventEmitterBuilder("test").build();
-    eventEmitter.emit("test-name", Attributes.builder().put("cow", "moo").build());
+    EventLogger eventLogger = GlobalEventLoggerProvider.get().eventLoggerBuilder("test").build();
+    eventLogger.emit("test-name", Attributes.builder().put("cow", "moo").build());
 
     openTelemetrySdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
     openTelemetrySdk.getSdkLoggerProvider().forceFlush().join(10, TimeUnit.SECONDS);

@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.incubator.events.GlobalEventEmitterProvider;
+import io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
@@ -49,7 +49,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
-import io.opentelemetry.sdk.logs.internal.SdkEventEmitterProvider;
+import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
@@ -156,7 +156,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @BeforeEach
   void resetGlobal() {
     GlobalOpenTelemetry.resetForTest();
-    GlobalEventEmitterProvider.resetForTest();
+    GlobalEventLoggerProvider.resetForTest();
     builder =
         AutoConfiguredOpenTelemetrySdk.builder()
             .addPropertiesSupplier(disableExportPropertySupplier());
@@ -456,7 +456,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
     OpenTelemetrySdk openTelemetry = builder.build().getOpenTelemetrySdk();
 
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isNotSameAs(openTelemetry);
-    assertThat(GlobalEventEmitterProvider.get()).isNotSameAs(openTelemetry.getSdkLoggerProvider());
+    assertThat(GlobalEventLoggerProvider.get()).isNotSameAs(openTelemetry.getSdkLoggerProvider());
   }
 
   @Test
@@ -464,8 +464,8 @@ class AutoConfiguredOpenTelemetrySdkTest {
     OpenTelemetrySdk openTelemetry = builder.setResultAsGlobal().build().getOpenTelemetrySdk();
 
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(openTelemetry);
-    assertThat(GlobalEventEmitterProvider.get())
-        .isInstanceOf(SdkEventEmitterProvider.class)
+    assertThat(GlobalEventLoggerProvider.get())
+        .isInstanceOf(SdkEventLoggerProvider.class)
         .extracting("delegateLoggerProvider")
         .isSameAs(openTelemetry.getSdkLoggerProvider());
   }
