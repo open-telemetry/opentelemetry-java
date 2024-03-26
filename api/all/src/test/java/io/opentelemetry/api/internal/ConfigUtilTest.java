@@ -8,6 +8,7 @@ package io.opentelemetry.api.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledInNativeImage;
 import org.junitpioneer.jupiter.SetSystemProperty;
 
 /** Relies on environment configuration in {@code ./api/all/build.gradle.kts}. */
@@ -30,6 +31,7 @@ class ConfigUtilTest {
   }
 
   @Test
+  @DisabledInNativeImage // Set "CONFIG_KEY" environment variable to "environment"
   void getString_EnvironmentVariable() {
     assertThat(ConfigUtil.getString("config.key", "default")).isEqualTo("environment");
     assertThat(ConfigUtil.getString("other.config.key", "default")).isEqualTo("default");

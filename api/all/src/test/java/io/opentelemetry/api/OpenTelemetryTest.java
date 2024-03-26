@@ -16,6 +16,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledInNativeImage;
 
 class OpenTelemetryTest {
 
@@ -38,6 +39,7 @@ class OpenTelemetryTest {
   }
 
   @Test
+  @DisabledInNativeImage // Because of Mockito
   void propagating() {
     ContextPropagators contextPropagators = mock(ContextPropagators.class);
     OpenTelemetry openTelemetry = OpenTelemetry.propagating(contextPropagators);
@@ -57,6 +59,7 @@ class OpenTelemetryTest {
   }
 
   @Test
+  @DisabledInNativeImage // Because of Mockito
   void independentNonGlobalPropagators() {
     ContextPropagators propagators1 = mock(ContextPropagators.class);
     OpenTelemetry otel1 = OpenTelemetry.propagating(propagators1);

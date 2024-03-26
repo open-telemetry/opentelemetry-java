@@ -25,10 +25,12 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledInNativeImage;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
 
 @SuppressWarnings("SystemOut")
+@DisabledInNativeImage // To investigate, may be related to JQF
 class W3CBaggagePropagatorFuzzTest {
 
   @RunWith(JQF.class)
