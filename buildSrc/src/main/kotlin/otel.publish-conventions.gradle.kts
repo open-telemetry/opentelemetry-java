@@ -1,8 +1,12 @@
+import java.util.*
+
 plugins {
   `maven-publish`
   signing
 
   id("otel.japicmp-conventions")
+  id("org.spdx.sbom")
+  id("org.cyclonedx.bom")
 }
 
 publishing {
@@ -25,6 +29,19 @@ publishing {
       versionMapping {
         allVariants {
           fromResolutionResult()
+        }
+      }
+
+      if (!project.name.startsWith("bom")) {
+        afterEvaluate {
+          artifact("${layout.buildDirectory.get()}/cyclonedx/${"opentelemetry-java_" + base.archivesName.get()}.cyclonedx.json") {
+            classifier = "cyclonedx"
+            extension = "json"
+          }
+          artifact("${layout.buildDirectory.get()}/spdx/${"opentelemetry-java_" + base.archivesName.get()}.spdx.json") {
+            classifier = "spdx"
+            extension = "json"
+          }
         }
       }
 
@@ -61,5 +78,41 @@ if (System.getenv("CI") != null) {
   signing {
     useInMemoryPgpKeys(System.getenv("GPG_PRIVATE_KEY"), System.getenv("GPG_PASSWORD"))
     sign(publishing.publications["mavenPublication"])
+  }
+}
+
+if (!project.name.startsWith("bom")) {
+  project.afterEvaluate {
+    val sbomName = "opentelemetry-java_" + base.archivesName.get()
+    tasks.cyclonedxBom {
+      outputName = "$sbomName.cyclonedx"
+      includeConfigs = listOf("runtimeClasspath")
+      skipConfigs = listOf("compileClasspath", "testCompileClasspath")
+      destination = project.file("build/cyclonedx")
+      outputFormat = "json"
+    }
+    spdxSbom {
+      targets {
+        // Create a target to match the published jar name.
+        // This is used for the task name (spdxSbomFor<SbomName>)
+        // and output file (<sbomName>.spdx.json).
+        create(sbomName) {
+          scm {
+            uri.set("https://github.com/" + System.getenv("GITHUB_REPOSITORY"))
+            revision.set(System.getenv("GITHUB_SHA"))
+          }
+          document {
+            name.set(sbomName)
+            namespace.set("https://opentelemetry.io/spdx/" + UUID.randomUUID())
+          }
+        }
+      }
+    }
+    tasks.named("assemble") {
+      dependsOn("spdxSbom", "cyclonedxBom")
+    }
+    tasks.withType<AbstractPublishToMaven>() {
+      dependsOn("spdxSbom", "cyclonedxBom")
+    }
   }
 }

@@ -31,6 +31,22 @@ jobs:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
 
+      - shell: bash
+        name: Collect SBOM's
+        run: |
+          mkdir sboms
+          find . -path ./sboms -prune -o -name "*.cyclonedx.json" -exec mv {} ./sboms/ \;
+          find . -path ./sboms -prune -o -name "*.spdx.json" -exec mv {} ./sboms/ \;
+          zip SBOM.zip sboms/*
+          cp SBOM.zip /tmp/
+        # copy SBOM.zip out of the repo to avoid being deleted with repo checkout below.
+
+      - uses: actions/upload-artifact@v4
+        name: Save SBOM's to build
+        with:
+          name: SBOM.zip
+          path: "sboms/*.json"
+
       - name: Set environment variables
         run: |
           version=$(.github/scripts/get-version.sh)
@@ -120,7 +136,8 @@ jobs:
           gh release create --target $GITHUB_REF_NAME \
                             --title "Version $VERSION" \
                             --notes-file /tmp/release-notes.txt \
-                            v$VERSION
+                            v$VERSION \
+                            /tmp/SBOM.zip
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
