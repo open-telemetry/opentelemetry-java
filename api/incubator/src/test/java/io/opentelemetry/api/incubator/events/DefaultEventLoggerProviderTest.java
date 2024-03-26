@@ -8,7 +8,6 @@ package io.opentelemetry.api.incubator.events;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-import io.opentelemetry.api.common.Attributes;
 import org.junit.jupiter.api.Test;
 
 class DefaultEventLoggerProviderTest {
@@ -33,7 +32,8 @@ class DefaultEventLoggerProviderTest {
                 provider
                     .eventLoggerBuilder("scope-name")
                     .build()
-                    .emit("event-name", Attributes.empty()))
+                    .builder("namespace.event-name")
+                    .emit())
         .doesNotThrowAnyException();
   }
 }
