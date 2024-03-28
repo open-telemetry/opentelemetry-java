@@ -31,7 +31,7 @@ final class DoubleAnyValueMarshaler extends MarshalerWithSize {
     output.writeDouble(AnyValue.DOUBLE_VALUE, value);
   }
 
-  private static int calculateSize(double value) {
+  public static int calculateSize(double value) {
     return AnyValue.DOUBLE_VALUE.getTagSize() + CodedOutputStream.computeDoubleSizeNoTag(value);
   }
 }

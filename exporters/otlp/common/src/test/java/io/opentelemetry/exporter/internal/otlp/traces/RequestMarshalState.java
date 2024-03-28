@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal.otlp;
+package io.opentelemetry.exporter.internal.otlp.traces;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -11,7 +11,6 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.exporter.internal.otlp.traces.LowAllocationTraceRequestMarshaler;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
@@ -22,13 +21,8 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.openjdk.jmh.annotations.Param;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
-import org.openjdk.jmh.annotations.State;
 
-@State(Scope.Benchmark)
-public class RequestMarshalState {
+class RequestMarshalState {
 
   private static final AttributeKey<Boolean> KEY_BOOL = AttributeKey.booleanKey("key_bool");
   private static final AttributeKey<String> KEY_STRING = AttributeKey.stringKey("key_string");
@@ -64,15 +58,10 @@ public class RequestMarshalState {
   private static final SpanContext SPAN_CONTEXT =
       SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault());
 
-  @Param({"16", "512"})
-  int numSpans;
+  int numSpans = 1;
 
   List<SpanData> spanDataList;
 
-  final LowAllocationTraceRequestMarshaler lowAllocationTraceRequestMarshaler =
-      new LowAllocationTraceRequestMarshaler();
-
-  @Setup
   public void setup() {
     spanDataList = new ArrayList<>(numSpans);
     for (int i = 0; i < numSpans; i++) {
@@ -94,7 +83,7 @@ public class RequestMarshalState {
         .setAttributes(
             Attributes.builder()
                 .put(KEY_BOOL, true)
-                .put(KEY_STRING, "string")
+                // .put(KEY_STRING, "string")
                 .put(KEY_INT, 100L)
                 .put(KEY_DOUBLE, 100.3)
                 .build())

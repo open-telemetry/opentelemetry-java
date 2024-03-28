@@ -9,6 +9,7 @@ import static io.opentelemetry.api.trace.propagation.internal.W3CTraceContextEnc
 
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
@@ -92,6 +93,19 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
     output.serializeByteAsFixed32(Span.Link.FLAGS, traceFlags.asByte());
   }
 
+  public static void writeTo(Serializer output, LinkData linkData, MarshalerContext context)
+      throws IOException {
+    output.serializeTraceId(Span.Link.TRACE_ID, linkData.getSpanContext().getTraceId(), context);
+    output.serializeSpanId(Span.Link.SPAN_ID, linkData.getSpanContext().getSpanId(), context);
+    output.serializeString(Span.Link.TRACE_STATE, context.getByteArray());
+    KeyValueMarshaler.writeTo(output, context, Span.Link.ATTRIBUTES, linkData.getAttributes());
+    int droppedAttributesCount =
+        linkData.getTotalAttributeCount() - linkData.getAttributes().size();
+    output.serializeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
+    output.serializeByteAsFixed32(
+        Span.Link.FLAGS, linkData.getSpanContext().getTraceFlags().asByte());
+  }
+
   private static int calculateSize(
       String traceId,
       String spanId,
@@ -106,6 +120,31 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeRepeatedMessage(Span.Link.ATTRIBUTES, attributeMarshalers);
     size += MarshalerUtil.sizeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
     size += MarshalerUtil.sizeByteAsFixed32(Span.Link.FLAGS, flags.asByte());
+    return size;
+  }
+
+  public static int calculateSize(MarshalerContext context, LinkData link) {
+    int sizeIndex = context.addSize();
+    TraceState traceState = link.getSpanContext().getTraceState();
+    byte[] traceStateUtf8 =
+        traceState.isEmpty()
+            ? EMPTY_BYTES
+            : encodeTraceState(traceState).getBytes(StandardCharsets.UTF_8);
+    context.addData(traceStateUtf8);
+
+    int size = 0;
+    size += MarshalerUtil.sizeTraceId(Span.Link.TRACE_ID, link.getSpanContext().getTraceId());
+    size += MarshalerUtil.sizeSpanId(Span.Link.SPAN_ID, link.getSpanContext().getSpanId());
+    size += MarshalerUtil.sizeBytes(Span.Link.TRACE_STATE, traceStateUtf8);
+    size += KeyValueMarshaler.calculateSize(Span.Link.ATTRIBUTES, context, link.getAttributes());
+    int droppedAttributesCount = link.getTotalAttributeCount() - link.getAttributes().size();
+    size += MarshalerUtil.sizeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
+    size +=
+        MarshalerUtil.sizeByteAsFixed32(
+            Span.Link.FLAGS, link.getSpanContext().getTraceFlags().asByte());
+
+    context.setSize(sizeIndex, size);
+
     return size;
   }
 }

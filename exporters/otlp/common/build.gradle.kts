@@ -35,6 +35,7 @@ dependencies {
   jmhImplementation("com.fasterxml.jackson.core:jackson-core")
   jmhImplementation("io.opentelemetry.proto:opentelemetry-proto")
   jmhImplementation("io.grpc:grpc-netty")
+  jmhAnnotationProcessor("org.openjdk.jmh:jmh-generator-annprocess")
 }
 
 wire {

@@ -5,11 +5,13 @@
 
 package io.opentelemetry.exporter.internal.otlp.traces;
 
+import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.otlp.InstrumentationScopeMarshaler;
 import io.opentelemetry.proto.trace.v1.internal.ScopeSpans;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
 import java.util.List;
 
@@ -35,6 +37,18 @@ final class InstrumentationScopeSpansMarshaler extends MarshalerWithSize {
     output.serializeString(ScopeSpans.SCHEMA_URL, schemaUrlUtf8);
   }
 
+  public static void writeTo(
+      Serializer output,
+      MarshalerContext context,
+      InstrumentationScopeMarshaler instrumentationScopeMarshaler,
+      List<SpanData> spanData,
+      byte[] schemaUrlUtf8)
+      throws IOException {
+    output.serializeMessage(ScopeSpans.SCOPE, instrumentationScopeMarshaler);
+    output.serializeRepeatedMessage(ScopeSpans.SPANS, spanData, context, SpanMarshaler::writeTo);
+    output.serializeString(ScopeSpans.SCHEMA_URL, schemaUrlUtf8);
+  }
+
   private static int calculateSize(
       InstrumentationScopeMarshaler instrumentationScope,
       byte[] schemaUrlUtf8,
@@ -43,6 +57,24 @@ final class InstrumentationScopeSpansMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeMessage(ScopeSpans.SCOPE, instrumentationScope);
     size += MarshalerUtil.sizeBytes(ScopeSpans.SCHEMA_URL, schemaUrlUtf8);
     size += MarshalerUtil.sizeRepeatedMessage(ScopeSpans.SPANS, spanMarshalers);
+
+    return size;
+  }
+
+  public static int calculateSize(
+      InstrumentationScopeMarshaler instrumentationScope,
+      byte[] schemaUrlUtf8,
+      MarshalerContext context,
+      List<SpanData> spanData) {
+    int sizeIndex = context.addSize();
+    int size = 0;
+    size += MarshalerUtil.sizeMessage(ScopeSpans.SCOPE, instrumentationScope);
+    size += MarshalerUtil.sizeBytes(ScopeSpans.SCHEMA_URL, schemaUrlUtf8);
+    size +=
+        MarshalerUtil.sizeRepeatedMessage(
+            ScopeSpans.SPANS, SpanMarshaler::calculateSpanSize, spanData, context);
+    context.setSize(sizeIndex, size);
+
     return size;
   }
 }

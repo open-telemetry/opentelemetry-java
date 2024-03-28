@@ -31,7 +31,7 @@ final class BoolAnyValueMarshaler extends MarshalerWithSize {
     output.writeBool(AnyValue.BOOL_VALUE, value);
   }
 
-  private static int calculateSize(boolean value) {
+  public static int calculateSize(boolean value) {
     return AnyValue.BOOL_VALUE.getTagSize() + CodedOutputStream.computeBoolSizeNoTag(value);
   }
 }

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
+import io.opentelemetry.exporter.internal.otlp.traces.LowAllocationTraceRequestMarshaler;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -26,9 +27,9 @@ public class RequestMarshalBenchmarks {
 
   @Benchmark
   @Threads(1)
-  public TestOutputStream createCustomMarshal(RequestMarshalState state) {
+  public int createCustomMarshal(RequestMarshalState state) {
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
-    return new TestOutputStream(requestMarshaler.getBinarySerializedSize());
+    return requestMarshaler.getBinarySerializedSize();
   }
 
   @Benchmark
@@ -48,5 +49,45 @@ public class RequestMarshalBenchmarks {
     TestOutputStream customOutput = new TestOutputStream();
     requestMarshaler.writeJsonTo(customOutput);
     return customOutput;
+  }
+
+  @Benchmark
+  @Threads(1)
+  public int createCustomMarshalLowAllocation(RequestMarshalState state) {
+    LowAllocationTraceRequestMarshaler requestMarshaler = state.lowAllocationTraceRequestMarshaler;
+    requestMarshaler.initialize(state.spanDataList);
+    try {
+      return requestMarshaler.getBinarySerializedSize();
+    } finally {
+      requestMarshaler.reset();
+    }
+  }
+
+  @Benchmark
+  @Threads(1)
+  public TestOutputStream marshalCustomLowAllocation(RequestMarshalState state) throws IOException {
+    LowAllocationTraceRequestMarshaler requestMarshaler = state.lowAllocationTraceRequestMarshaler;
+    requestMarshaler.initialize(state.spanDataList);
+    try {
+      TestOutputStream customOutput = new TestOutputStream();
+      requestMarshaler.writeBinaryTo(customOutput);
+      return customOutput;
+    } finally {
+      requestMarshaler.reset();
+    }
+  }
+
+  @Benchmark
+  @Threads(1)
+  public TestOutputStream marshalJsonLowAllocation(RequestMarshalState state) throws IOException {
+    LowAllocationTraceRequestMarshaler requestMarshaler = state.lowAllocationTraceRequestMarshaler;
+    requestMarshaler.initialize(state.spanDataList);
+    try {
+      TestOutputStream customOutput = new TestOutputStream();
+      requestMarshaler.writeJsonTo(customOutput);
+      return customOutput;
+    } finally {
+      requestMarshaler.reset();
+    }
   }
 }

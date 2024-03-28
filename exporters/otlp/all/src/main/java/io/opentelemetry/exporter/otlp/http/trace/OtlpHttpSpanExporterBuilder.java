@@ -14,7 +14,7 @@ import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
-import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -34,9 +34,9 @@ public final class OtlpHttpSpanExporterBuilder {
 
   private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/traces";
 
-  private final HttpExporterBuilder<TraceRequestMarshaler> delegate;
+  private final HttpExporterBuilder<Marshaler> delegate;
 
-  OtlpHttpSpanExporterBuilder(HttpExporterBuilder<TraceRequestMarshaler> delegate) {
+  OtlpHttpSpanExporterBuilder(HttpExporterBuilder<Marshaler> delegate) {
     this.delegate = delegate;
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeaders);
   }

@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.internal.otlp;
 
 import io.opentelemetry.exporter.internal.marshal.CodedOutputStream;
+import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
@@ -41,5 +42,19 @@ final class StringAnyValueMarshaler extends MarshalerWithSize {
   private static int calculateSize(byte[] valueUtf8) {
     return AnyValue.STRING_VALUE.getTagSize()
         + CodedOutputStream.computeByteArraySizeNoTag(valueUtf8);
+  }
+
+  public static int calculateSize(MarshalerContext context, String value) {
+    if (context.marshalStringNoAllocation()) {
+      int utf8Size = MarshalerUtil.getUtf8Size(value);
+      context.addSize(utf8Size);
+      return AnyValue.STRING_VALUE.getTagSize()
+          + CodedOutputStream.computeLengthDelimitedFieldSize(utf8Size);
+    } else {
+      byte[] valueUtf8 = MarshalerUtil.toBytes(value);
+      context.addData(valueUtf8);
+      return AnyValue.STRING_VALUE.getTagSize()
+          + CodedOutputStream.computeLengthDelimitedFieldSize(valueUtf8.length);
+    }
   }
 }

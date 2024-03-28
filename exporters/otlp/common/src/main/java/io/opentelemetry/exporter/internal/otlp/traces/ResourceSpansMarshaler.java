@@ -5,8 +5,11 @@
 
 package io.opentelemetry.exporter.internal.otlp.traces;
 
+import io.opentelemetry.exporter.internal.marshal.CodedOutputStream;
+import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
+import io.opentelemetry.exporter.internal.marshal.ProtoFieldInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.otlp.InstrumentationScopeMarshaler;
 import io.opentelemetry.exporter.internal.otlp.ResourceMarshaler;
@@ -18,6 +21,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 /**
  * A Marshaler of ResourceSpans.
@@ -78,6 +82,23 @@ public final class ResourceSpansMarshaler extends MarshalerWithSize {
     output.serializeString(ResourceSpans.SCHEMA_URL, schemaUrlUtf8);
   }
 
+  public static void writeTo(
+      Serializer output,
+      Map<InstrumentationScopeInfo, List<SpanData>> scopeMap,
+      MarshalerContext context)
+      throws IOException {
+    ResourceMarshaler resourceMarshaler = context.getObject(ResourceMarshaler.class);
+    output.serializeMessage(ResourceSpans.RESOURCE, resourceMarshaler);
+
+    ScopeSpanListWriter scopeSpanListWriter =
+        context.getInstance(ScopeSpanListWriter.class, ScopeSpanListWriter::new);
+    scopeSpanListWriter.init(output, context);
+    scopeMap.forEach(scopeSpanListWriter);
+
+    byte[] schemaUrlUtf8 = context.getByteArray();
+    output.serializeString(ResourceSpans.SCHEMA_URL, schemaUrlUtf8);
+  }
+
   private static int calculateSize(
       ResourceMarshaler resourceMarshaler,
       byte[] schemaUrlUtf8,
@@ -88,6 +109,34 @@ public final class ResourceSpansMarshaler extends MarshalerWithSize {
     size +=
         MarshalerUtil.sizeRepeatedMessage(
             ResourceSpans.SCOPE_SPANS, instrumentationScopeSpansMarshalers);
+
+    return size;
+  }
+
+  public static int calculateSize(
+      MarshalerContext context,
+      Resource resource,
+      Map<InstrumentationScopeInfo, List<SpanData>> scopeMap) {
+
+    int size = 0;
+    int sizeIndex = context.addSize();
+
+    ResourceMarshaler resourceMarshaler = ResourceMarshaler.create(resource);
+    context.addData(resourceMarshaler);
+    size += MarshalerUtil.sizeMessage(ResourceSpans.RESOURCE, resourceMarshaler);
+
+    ScopeSpanListSizeCalculator scopeSpanListSizeCalculator =
+        context.getInstance(ScopeSpanListSizeCalculator.class, ScopeSpanListSizeCalculator::new);
+    scopeSpanListSizeCalculator.initialize(ResourceSpans.SCOPE_SPANS, context);
+    scopeMap.forEach(scopeSpanListSizeCalculator);
+    size += scopeSpanListSizeCalculator.size;
+
+    byte[] schemaUrlUtf8 = MarshalerUtil.toBytes(resource.getSchemaUrl());
+    context.addData(schemaUrlUtf8);
+    size += MarshalerUtil.sizeBytes(ResourceSpans.SCHEMA_URL, schemaUrlUtf8);
+
+    context.setSize(sizeIndex, size);
+
     return size;
   }
 
@@ -100,5 +149,66 @@ public final class ResourceSpansMarshaler extends MarshalerWithSize {
         SpanData::getResource,
         SpanData::getInstrumentationScopeInfo,
         SpanMarshaler::create);
+  }
+
+  private static class ScopeSpanListWriter
+      implements BiConsumer<InstrumentationScopeInfo, List<SpanData>> {
+    @SuppressWarnings("NullAway")
+    Serializer output;
+
+    @SuppressWarnings("NullAway")
+    MarshalerContext context;
+
+    void init(Serializer output, MarshalerContext context) {
+      this.output = output;
+      this.context = context;
+    }
+
+    @Override
+    public void accept(InstrumentationScopeInfo instrumentationScopeInfo, List<SpanData> spanData) {
+      try {
+        output.writeStartRepeated(ResourceSpans.SCOPE_SPANS);
+        output.writeStartRepeatedElement(ResourceSpans.SCOPE_SPANS, context.getSize());
+
+        InstrumentationScopeMarshaler instrumentationScopeMarshaler =
+            context.getObject(InstrumentationScopeMarshaler.class);
+        byte[] schemaUrlUtf8 = context.getByteArray();
+        InstrumentationScopeSpansMarshaler.writeTo(
+            output, context, instrumentationScopeMarshaler, spanData, schemaUrlUtf8);
+
+        output.writeEndRepeatedElement();
+        output.writeEndRepeated();
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+  }
+
+  private static class ScopeSpanListSizeCalculator
+      implements BiConsumer<InstrumentationScopeInfo, List<SpanData>> {
+    int size;
+    int fieldTagSize;
+
+    @SuppressWarnings("NullAway")
+    MarshalerContext context;
+
+    void initialize(ProtoFieldInfo field, MarshalerContext context) {
+      this.size = 0;
+      this.fieldTagSize = field.getTagSize();
+      this.context = context;
+    }
+
+    @Override
+    public void accept(InstrumentationScopeInfo instrumentationScopeInfo, List<SpanData> spanData) {
+      InstrumentationScopeMarshaler instrumentationScopeMarshaler =
+          InstrumentationScopeMarshaler.create(instrumentationScopeInfo);
+      context.addData(instrumentationScopeMarshaler);
+      byte[] schemaUrlUtf8 = MarshalerUtil.toBytes(instrumentationScopeInfo.getSchemaUrl());
+      context.addData(schemaUrlUtf8);
+      int fieldSize =
+          InstrumentationScopeSpansMarshaler.calculateSize(
+              instrumentationScopeMarshaler, schemaUrlUtf8, context, spanData);
+      size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
+    }
   }
 }

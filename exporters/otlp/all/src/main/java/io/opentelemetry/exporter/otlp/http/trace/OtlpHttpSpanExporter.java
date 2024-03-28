@@ -7,11 +7,15 @@ package io.opentelemetry.exporter.otlp.http.trace;
 
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.internal.otlp.traces.LowAllocationTraceRequestMarshaler;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.Deque;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -22,12 +26,13 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpHttpSpanExporter implements SpanExporter {
 
-  private final HttpExporterBuilder<TraceRequestMarshaler> builder;
-  private final HttpExporter<TraceRequestMarshaler> delegate;
+  private static final boolean LOW_ALLOCATION_MODE = true;
+  private static final Deque<LowAllocationTraceRequestMarshaler> requests = new ArrayDeque<>();
 
-  OtlpHttpSpanExporter(
-      HttpExporterBuilder<TraceRequestMarshaler> builder,
-      HttpExporter<TraceRequestMarshaler> delegate) {
+  private final HttpExporterBuilder<Marshaler> builder;
+  private final HttpExporter<Marshaler> delegate;
+
+  OtlpHttpSpanExporter(HttpExporterBuilder<Marshaler> builder, HttpExporter<Marshaler> delegate) {
     this.builder = builder;
     this.delegate = delegate;
   }
@@ -72,8 +77,24 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
-    TraceRequestMarshaler exportRequest = TraceRequestMarshaler.create(spans);
-    return delegate.export(exportRequest, spans.size());
+    if (LOW_ALLOCATION_MODE) {
+      LowAllocationTraceRequestMarshaler request = requests.poll();
+      if (request == null) {
+        request = new LowAllocationTraceRequestMarshaler();
+      }
+      LowAllocationTraceRequestMarshaler exportRequest = request;
+      exportRequest.initialize(spans);
+      return delegate
+          .export(exportRequest, spans.size())
+          .whenComplete(
+              () -> {
+                exportRequest.reset();
+                requests.add(exportRequest);
+              });
+    } else {
+      TraceRequestMarshaler exportRequest = TraceRequestMarshaler.create(spans);
+      return delegate.export(exportRequest, spans.size());
+    }
   }
 
   /**

@@ -109,17 +109,23 @@ final class JsonSerializer extends Serializer {
   }
 
   @Override
+  public void writeString(ProtoFieldInfo field, String string, int utf8Length) throws IOException {
+    generator.writeFieldName(field.getJsonName());
+    generator.writeString(string);
+  }
+
+  @Override
   public void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
     generator.writeBinaryField(field.getJsonName(), value);
   }
 
   @Override
-  protected void writeStartMessage(ProtoFieldInfo field, int protoMessageSize) throws IOException {
+  public void writeStartMessage(ProtoFieldInfo field, int protoMessageSize) throws IOException {
     generator.writeObjectFieldStart(field.getJsonName());
   }
 
   @Override
-  protected void writeEndMessage() throws IOException {
+  public void writeEndMessage() throws IOException {
     generator.writeEndObject();
   }
 
@@ -163,6 +169,44 @@ final class JsonSerializer extends Serializer {
       writeMessageValue(marshaler);
     }
     generator.writeEndArray();
+  }
+
+  @Override
+  public <T> void serializeRepeatedMessage(
+      ProtoFieldInfo field,
+      List<T> messages,
+      MarshalerContext context,
+      MessageConsumer<Serializer, T, MarshalerContext> consumer)
+      throws IOException {
+    generator.writeArrayFieldStart(field.getJsonName());
+    for (int i = 0; i < messages.size(); i++) {
+      T message = messages.get(i);
+      generator.writeStartObject();
+      consumer.accept(this, message, context);
+      generator.writeEndObject();
+    }
+    generator.writeEndArray();
+  }
+
+  @Override
+  public void writeStartRepeated(ProtoFieldInfo field) throws IOException {
+    generator.writeArrayFieldStart(field.getJsonName());
+  }
+
+  @Override
+  public void writeEndRepeated() throws IOException {
+    generator.writeEndArray();
+  }
+
+  @Override
+  public void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
+      throws IOException {
+    generator.writeStartObject();
+  }
+
+  @Override
+  public void writeEndRepeatedElement() throws IOException {
+    generator.writeEndObject();
   }
 
   // Not a field.

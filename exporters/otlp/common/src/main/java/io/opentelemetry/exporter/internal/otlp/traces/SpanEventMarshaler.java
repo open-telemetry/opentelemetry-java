@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp.traces;
 
+import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
@@ -64,6 +65,20 @@ final class SpanEventMarshaler extends MarshalerWithSize {
     output.serializeUInt32(Span.Event.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
   }
 
+  public static void writeTo(Serializer output, EventData eventData, MarshalerContext context)
+      throws IOException {
+    output.serializeFixed64(Span.Event.TIME_UNIX_NANO, eventData.getEpochNanos());
+    if (context.marshalStringNoAllocation()) {
+      output.writeString(Span.Event.NAME, eventData.getName(), context.getSize());
+    } else {
+      output.serializeString(Span.Event.NAME, context.getByteArray());
+    }
+    KeyValueMarshaler.writeTo(output, context, Span.Event.ATTRIBUTES, eventData.getAttributes());
+    int droppedAttributesCount =
+        eventData.getTotalAttributeCount() - eventData.getAttributes().size();
+    output.serializeUInt32(Span.Event.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
+  }
+
   private static int calculateSize(
       long epochNanos,
       byte[] name,
@@ -74,6 +89,29 @@ final class SpanEventMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeBytes(Span.Event.NAME, name);
     size += MarshalerUtil.sizeRepeatedMessage(Span.Event.ATTRIBUTES, attributeMarshalers);
     size += MarshalerUtil.sizeUInt32(Span.Event.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
+    return size;
+  }
+
+  public static int calculateSize(MarshalerContext context, EventData event) {
+    int sizeIndex = context.addSize();
+
+    int size = 0;
+    size += MarshalerUtil.sizeFixed64(Span.Event.TIME_UNIX_NANO, event.getEpochNanos());
+    if (context.marshalStringNoAllocation()) {
+      int utf8Size = MarshalerUtil.getUtf8Size(event.getName());
+      context.addSize(utf8Size);
+      size += MarshalerUtil.sizeBytes(Span.Event.NAME, utf8Size);
+    } else {
+      byte[] nameUtf8 = MarshalerUtil.toBytes(event.getName());
+      context.addData(nameUtf8);
+      size += MarshalerUtil.sizeBytes(Span.Event.NAME, nameUtf8);
+    }
+    size += KeyValueMarshaler.calculateSize(Span.Event.ATTRIBUTES, context, event.getAttributes());
+    int droppedAttributesCount = event.getTotalAttributeCount() - event.getAttributes().size();
+    size += MarshalerUtil.sizeUInt32(Span.Event.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
+
+    context.setSize(sizeIndex, size);
+
     return size;
   }
 }

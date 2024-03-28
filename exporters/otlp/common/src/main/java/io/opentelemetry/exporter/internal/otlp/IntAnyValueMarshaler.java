@@ -31,7 +31,7 @@ final class IntAnyValueMarshaler extends MarshalerWithSize {
     output.writeInt64(AnyValue.INT_VALUE, value);
   }
 
-  private static int calculateSize(long value) {
+  public static int calculateSize(long value) {
     return AnyValue.INT_VALUE.getTagSize() + CodedOutputStream.computeInt64SizeNoTag(value);
   }
 }

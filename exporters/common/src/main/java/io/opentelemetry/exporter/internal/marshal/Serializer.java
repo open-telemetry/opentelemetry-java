@@ -34,7 +34,20 @@ public abstract class Serializer implements AutoCloseable {
     writeTraceId(field, traceId);
   }
 
+  public void serializeTraceId(
+      ProtoFieldInfo field, @Nullable String traceId, MarshalerContext context) throws IOException {
+    if (traceId == null) {
+      return;
+    }
+    writeTraceId(field, traceId, context);
+  }
+
   protected abstract void writeTraceId(ProtoFieldInfo field, String traceId) throws IOException;
+
+  protected void writeTraceId(ProtoFieldInfo field, String traceId, MarshalerContext context)
+      throws IOException {
+    writeTraceId(field, traceId);
+  }
 
   /** Serializes a span ID field. */
   public void serializeSpanId(ProtoFieldInfo field, @Nullable String spanId) throws IOException {
@@ -44,7 +57,20 @@ public abstract class Serializer implements AutoCloseable {
     writeSpanId(field, spanId);
   }
 
+  public void serializeSpanId(
+      ProtoFieldInfo field, @Nullable String spanId, MarshalerContext context) throws IOException {
+    if (spanId == null) {
+      return;
+    }
+    writeSpanId(field, spanId, context);
+  }
+
   protected abstract void writeSpanId(ProtoFieldInfo field, String spanId) throws IOException;
+
+  protected void writeSpanId(ProtoFieldInfo field, String spanId, MarshalerContext context)
+      throws IOException {
+    writeSpanId(field, spanId);
+  }
 
   /** Serializes a protobuf {@code bool} field. */
   public void serializeBool(ProtoFieldInfo field, boolean value) throws IOException {
@@ -175,8 +201,23 @@ public abstract class Serializer implements AutoCloseable {
     writeString(field, utf8Bytes);
   }
 
+  /**
+   * Serializes a protobuf {@code string} field. {@code string} is the value to be serialized and
+   * {@code utf8Length} is the length of the string after it is encoded in UTF8.
+   */
+  public void serializeString(ProtoFieldInfo field, String string, int utf8Length)
+      throws IOException {
+    if (string.isEmpty()) {
+      return;
+    }
+    writeString(field, string, utf8Length);
+  }
+
   /** Writes a protobuf {@code string} field, even if it matches the default value. */
   public abstract void writeString(ProtoFieldInfo field, byte[] utf8Bytes) throws IOException;
+
+  public abstract void writeString(ProtoFieldInfo field, String string, int utf8Length)
+      throws IOException;
 
   /** Serializes a protobuf {@code bytes} field. */
   public void serializeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
@@ -188,15 +229,26 @@ public abstract class Serializer implements AutoCloseable {
 
   public abstract void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException;
 
-  protected abstract void writeStartMessage(ProtoFieldInfo field, int protoMessageSize)
+  public abstract void writeStartMessage(ProtoFieldInfo field, int protoMessageSize)
       throws IOException;
 
-  protected abstract void writeEndMessage() throws IOException;
+  public abstract void writeEndMessage() throws IOException;
 
   /** Serializes a protobuf embedded {@code message}. */
   public void serializeMessage(ProtoFieldInfo field, Marshaler message) throws IOException {
     writeStartMessage(field, message.getBinarySerializedSize());
     message.writeTo(this);
+    writeEndMessage();
+  }
+
+  public <T> void serializeMessage(
+      ProtoFieldInfo field,
+      T message,
+      MarshalerContext context,
+      MessageConsumer<Serializer, T, MarshalerContext> consumer)
+      throws IOException {
+    writeStartMessage(field, context.getSize());
+    consumer.accept(this, message, context);
     writeEndMessage();
   }
 
@@ -301,10 +353,36 @@ public abstract class Serializer implements AutoCloseable {
   public abstract void serializeRepeatedMessage(
       ProtoFieldInfo field, List<? extends Marshaler> repeatedMessage) throws IOException;
 
+  /** Serializes {@code repeated message} field. */
+  public abstract <T> void serializeRepeatedMessage(
+      ProtoFieldInfo field,
+      List<T> messages,
+      MarshalerContext context,
+      MessageConsumer<Serializer, T, MarshalerContext> consumer)
+      throws IOException;
+
+  /** Writes start of repeated messages. */
+  public abstract void writeStartRepeated(ProtoFieldInfo field) throws IOException;
+
+  /** Writes end of repeated messages. */
+  public abstract void writeEndRepeated() throws IOException;
+
+  /** Writes start of a repeated message element. */
+  public abstract void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
+      throws IOException;
+
+  /** Writes end of a repeated message element. */
+  public abstract void writeEndRepeatedElement() throws IOException;
+
   /** Writes the value for a message field that has been pre-serialized. */
   public abstract void writeSerializedMessage(byte[] protoSerialized, String jsonSerialized)
       throws IOException;
 
   @Override
   public abstract void close() throws IOException;
+
+  @FunctionalInterface
+  public interface MessageConsumer<O, D, C> {
+    void accept(O output, D data, C context) throws IOException;
+  }
 }

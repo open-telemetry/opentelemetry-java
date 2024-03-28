@@ -20,6 +20,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.ToIntBiFunction;
+import java.util.function.ToIntFunction;
 import javax.annotation.Nullable;
 
 /**
@@ -67,6 +69,34 @@ public final class MarshalerUtil {
               getInstrumentationScope.apply(data), unused -> new ArrayList<>());
       marshalerList.add(createMarshaler.apply(data));
     }
+    return result;
+  }
+
+  /** Groups SDK items by resource and instrumentation scope. */
+  public static <T, U>
+      Map<Resource, Map<InstrumentationScopeInfo, List<U>>> groupByResourceAndScope(
+          Collection<T> dataList,
+          Function<T, Resource> getResource,
+          Function<T, InstrumentationScopeInfo> getInstrumentationScope,
+          Function<T, U> createMarshaler,
+          MarshalerContext context) {
+    Map<Resource, Map<InstrumentationScopeInfo, List<U>>> result = context.getIdentityMap();
+    for (T data : dataList) {
+      Resource resource = getResource.apply(data);
+      Map<InstrumentationScopeInfo, List<U>> scopeInfoListMap = result.get(resource);
+      if (scopeInfoListMap == null) {
+        scopeInfoListMap = context.getIdentityMap();
+        result.put(resource, scopeInfoListMap);
+      }
+      InstrumentationScopeInfo instrumentationScopeInfo = getInstrumentationScope.apply(data);
+      List<U> marshalerList = scopeInfoListMap.get(instrumentationScopeInfo);
+      if (marshalerList == null) {
+        marshalerList = context.getList();
+        scopeInfoListMap.put(instrumentationScopeInfo, marshalerList);
+      }
+      marshalerList.add(createMarshaler.apply(data));
+    }
+
     return result;
   }
 
@@ -185,9 +215,51 @@ public final class MarshalerUtil {
     return size;
   }
 
+  /** Returns the size of a repeated message field. */
+  public static <T> int sizeRepeatedMessage(
+      ProtoFieldInfo field,
+      ToIntBiFunction<MarshalerContext, T> consumer,
+      List<T> messages,
+      MarshalerContext context) {
+    if (messages.isEmpty()) {
+      return 0;
+    }
+
+    int size = 0;
+    int fieldTagSize = field.getTagSize();
+    for (int i = 0; i < messages.size(); i++) {
+      T message = messages.get(i);
+      int fieldSize = consumer.applyAsInt(context, message);
+      size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
+    }
+    return size;
+  }
+
+  /** Returns the size of a repeated message field. */
+  public static <T> int sizeRepeatedMessage(
+      ProtoFieldInfo field, ToIntFunction<T> consumer, List<T> messages) {
+    if (messages.isEmpty()) {
+      return 0;
+    }
+
+    int size = 0;
+    int fieldTagSize = field.getTagSize();
+    for (int i = 0; i < messages.size(); i++) {
+      T message = messages.get(i);
+      int fieldSize = consumer.applyAsInt(message);
+      size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
+    }
+    return size;
+  }
+
   /** Returns the size of a message field. */
   public static int sizeMessage(ProtoFieldInfo field, Marshaler message) {
     int fieldSize = message.getBinarySerializedSize();
+    return sizeMessage(field, fieldSize);
+  }
+
+  /** Returns the size of a message field. */
+  public static int sizeMessage(ProtoFieldInfo field, int fieldSize) {
     return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
   }
 
@@ -278,6 +350,14 @@ public final class MarshalerUtil {
     return field.getTagSize() + CodedOutputStream.computeByteArraySizeNoTag(message);
   }
 
+  /** Returns the size of a bytes field. */
+  public static int sizeBytes(ProtoFieldInfo field, int length) {
+    if (length == 0) {
+      return 0;
+    }
+    return field.getTagSize() + CodedOutputStream.computeLengthDelimitedFieldSize(length);
+  }
+
   /** Returns the size of a enum field. */
   // Assumes OTLP always defines the first item in an enum with number 0, which it does and will.
   public static int sizeEnum(ProtoFieldInfo field, ProtoEnumInfo enumValue) {
@@ -310,6 +390,78 @@ public final class MarshalerUtil {
       return EMPTY_BYTES;
     }
     return value.getBytes(StandardCharsets.UTF_8);
+  }
+
+  /** Returns the size of utf8 encoded string in bytes. */
+  public static int getUtf8Size(String string) {
+    // return string.length();
+    int size = 0;
+    for (int i = 0; i < string.length(); i++) {
+      char c = string.charAt(i);
+      if (c < 0x80) {
+        // 1 byte, 7 bits
+        size += 1;
+      } else if (c < 0x800) {
+        // 2 bytes, 11 bits
+        size += 2;
+      } else if (!Character.isSurrogate(c)) {
+        // 3 bytes, 16 bits
+        size += 3;
+      } else {
+        // 4 bytes, 21 bits
+        if (Character.isHighSurrogate(c) && i + 1 < string.length()) {
+          char d = string.charAt(i + 1);
+          if (Character.isLowSurrogate(d)) {
+            i += 1;
+            size += 4;
+            continue;
+          }
+        }
+        // invalid characters are replaced with ?
+        size += 1;
+      }
+    }
+
+    return size;
+  }
+
+  /** Write utf8 encoded string to output stream. */
+  public static void writeUtf8(CodedOutputStream output, String string) throws IOException {
+    for (int i = 0; i < string.length(); i++) {
+      char c = string.charAt(i);
+      if (c < 0x80) {
+        // 1 byte, 7 bits
+        output.write((byte) c);
+      } else if (c < 0x800) {
+        // 2 bytes, 11 bits
+        output.write((byte) (0xc0 | (c >> 6)));
+        output.write((byte) (0x80 | (c & 0x3f)));
+      } else if (!Character.isSurrogate(c)) {
+        // 3 bytes, 16 bits
+        output.write((byte) (0xe0 | (c >> 12)));
+        output.write((byte) (0x80 | ((c >> 6) & 0x3f)));
+        output.write((byte) (0x80 | (c & 0x3f)));
+      } else {
+        // 4 bytes, 21 bits
+        int codePoint = -1;
+        if (Character.isHighSurrogate(c) && i + 1 < string.length()) {
+          char d = string.charAt(i + 1);
+          if (Character.isLowSurrogate(d)) {
+            codePoint = Character.toCodePoint(c, d);
+          }
+        }
+        // invalid character
+        if (codePoint == -1) {
+          output.write((byte) '?');
+        } else {
+          output.write((byte) (0xf0 | (codePoint >> 18)));
+          output.write((byte) (0x80 | ((codePoint >> 12) & 0x3f)));
+          output.write((byte) (0x80 | ((codePoint >> 6) & 0x3f)));
+          output.write((byte) (0x80 | (codePoint & 0x3f)));
+          i++;
+        }
+      }
+    }
   }
 
   private MarshalerUtil() {}
