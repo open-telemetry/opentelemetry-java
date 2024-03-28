@@ -285,10 +285,14 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
     assertThat(exportedResourceTelemetry).hasSize(1);
     assertThat(expectedResourceTelemetry).hasSize(1);
-    ResourceSpans exportedResourceSpans = (ResourceSpans) exportedResourceTelemetry.peek();
-    ResourceSpans expectedResourceSpans = (ResourceSpans) expectedResourceTelemetry.get(0);
-    assertThat(exportedResourceSpans.getScopeSpansList())
-        .containsExactlyInAnyOrderElementsOf(expectedResourceSpans.getScopeSpansList());
+    if (exportedResourceTelemetry.peek() instanceof ResourceSpans) {
+      ResourceSpans exportedResourceSpans = (ResourceSpans) exportedResourceTelemetry.peek();
+      ResourceSpans expectedResourceSpans = (ResourceSpans) expectedResourceTelemetry.get(0);
+      assertThat(exportedResourceSpans.getScopeSpansList())
+          .containsExactlyInAnyOrderElementsOf(expectedResourceSpans.getScopeSpansList());
+    } else {
+      assertThat(exportedResourceTelemetry).containsExactlyElementsOf(expectedResourceTelemetry);
+    }
   }
 
   @Test
