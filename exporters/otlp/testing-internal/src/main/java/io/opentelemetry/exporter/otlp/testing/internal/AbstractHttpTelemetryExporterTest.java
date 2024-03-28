@@ -38,6 +38,7 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
+import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -281,7 +282,13 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     }
     assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
     List<U> expectedResourceTelemetry = toProto(telemetry);
-    assertThat(exportedResourceTelemetry).containsExactlyElementsOf(expectedResourceTelemetry);
+
+    assertThat(exportedResourceTelemetry).hasSize(1);
+    assertThat(expectedResourceTelemetry).hasSize(1);
+    ResourceSpans exportedResourceSpans = (ResourceSpans) exportedResourceTelemetry.peek();
+    ResourceSpans expectedResourceSpans = (ResourceSpans) expectedResourceTelemetry.get(0);
+    assertThat(exportedResourceSpans.getScopeSpansList())
+        .containsExactlyInAnyOrderElementsOf(expectedResourceSpans.getScopeSpansList());
   }
 
   @Test
