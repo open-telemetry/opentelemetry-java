@@ -28,6 +28,10 @@ final class AnyValueArray implements AnyValue<List<AnyValue<?>>> {
     return new AnyValueArray(Collections.unmodifiableList(list));
   }
 
+  static AnyValue<List<AnyValue<?>>> create(List<AnyValue<?>> value) {
+    return new AnyValueArray(Collections.unmodifiableList(value));
+  }
+
   @Override
   public AnyValueType getType() {
     return AnyValueType.ARRAY;

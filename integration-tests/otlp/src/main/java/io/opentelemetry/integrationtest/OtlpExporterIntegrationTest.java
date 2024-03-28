@@ -568,7 +568,7 @@ abstract class OtlpExporterIntegrationTest {
           .setSeverityText("DEBUG")
           .setContext(Context.current())
           .emit();
-      eventLogger.emit("event-name", Attributes.builder().put("key", "value").build());
+      eventLogger.builder("namespace.event-name").put("key", "value").emit();
     }
 
     // Closing triggers flush of processor
@@ -708,16 +708,17 @@ abstract class OtlpExporterIntegrationTest {
 
     // LogRecord via EventLogger.emit(String, Attributes)
     io.opentelemetry.proto.logs.v1.LogRecord protoLog2 = ilLogs.getLogRecords(1);
-    assertThat(protoLog2.getBody().getStringValue()).isEmpty();
+    assertThat(protoLog2.getBody().getKvlistValue().getValuesList())
+        .containsExactlyInAnyOrder(
+            KeyValue.newBuilder()
+                .setKey("key")
+                .setValue(AnyValue.newBuilder().setStringValue("value").build())
+                .build());
     assertThat(protoLog2.getAttributesList())
         .containsExactlyInAnyOrder(
             KeyValue.newBuilder()
                 .setKey("event.name")
-                .setValue(AnyValue.newBuilder().setStringValue("event-name").build())
-                .build(),
-            KeyValue.newBuilder()
-                .setKey("key")
-                .setValue(AnyValue.newBuilder().setStringValue("value").build())
+                .setValue(AnyValue.newBuilder().setStringValue("namespace.event-name").build())
                 .build());
     assertThat(protoLog2.getSeverityText()).isEmpty();
     assertThat(TraceId.fromBytes(protoLog2.getTraceId().toByteArray()))

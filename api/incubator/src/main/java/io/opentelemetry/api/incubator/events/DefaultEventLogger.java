@@ -6,6 +6,9 @@
 package io.opentelemetry.api.incubator.events;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.logs.AnyValue;
+import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
@@ -20,10 +23,7 @@ class DefaultEventLogger implements EventLogger {
   }
 
   @Override
-  public void emit(String eventName, Attributes attributes) {}
-
-  @Override
-  public EventBuilder builder(String eventName, Attributes attributes) {
+  public EventBuilder builder(String eventName) {
     return NoOpEventBuilder.INSTANCE;
   }
 
@@ -32,12 +32,32 @@ class DefaultEventLogger implements EventLogger {
     public static final EventBuilder INSTANCE = new NoOpEventBuilder();
 
     @Override
+    public EventBuilder put(String key, AnyValue<?> value) {
+      return this;
+    }
+
+    @Override
     public EventBuilder setTimestamp(long timestamp, TimeUnit unit) {
       return this;
     }
 
     @Override
     public EventBuilder setTimestamp(Instant instant) {
+      return this;
+    }
+
+    @Override
+    public EventBuilder setContext(Context context) {
+      return this;
+    }
+
+    @Override
+    public EventBuilder setSeverity(Severity severity) {
+      return this;
+    }
+
+    @Override
+    public EventBuilder setAttributes(Attributes attributes) {
       return this;
     }
 

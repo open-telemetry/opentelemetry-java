@@ -62,6 +62,11 @@ public interface AnyValue<T> {
     return AnyValueArray.create(value);
   }
 
+  /** Returns an {@link AnyValue} for the list of {@link AnyValue} values. */
+  static AnyValue<List<AnyValue<?>>> of(List<AnyValue<?>> value) {
+    return AnyValueArray.create(value);
+  }
+
   /**
    * Returns an {@link AnyValue} for the array of {@link KeyAnyValue} values. {@link
    * KeyAnyValue#getKey()} values should not repeat - duplicates may be dropped.

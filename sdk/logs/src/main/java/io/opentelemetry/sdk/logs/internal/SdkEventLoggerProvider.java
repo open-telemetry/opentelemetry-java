@@ -5,18 +5,16 @@
 
 package io.opentelemetry.sdk.logs.internal;
 
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.events.EventBuilder;
 import io.opentelemetry.api.incubator.events.EventLogger;
 import io.opentelemetry.api.incubator.events.EventLoggerBuilder;
 import io.opentelemetry.api.incubator.events.EventLoggerProvider;
-import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerBuilder;
 import io.opentelemetry.api.logs.LoggerProvider;
+import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
-import java.util.concurrent.TimeUnit;
 
 /**
  * SDK implementation for {@link EventLoggerProvider}.
@@ -26,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  */
 public final class SdkEventLoggerProvider implements EventLoggerProvider {
 
-  static final AttributeKey<String> EVENT_NAME = AttributeKey.stringKey("event.name");
+  private static final Severity DEFAULT_SEVERITY = Severity.INFO;
 
   private final LoggerProvider delegateLoggerProvider;
   private final Clock clock;
@@ -100,28 +98,14 @@ public final class SdkEventLoggerProvider implements EventLoggerProvider {
     }
 
     @Override
-    public EventBuilder builder(String eventName, Attributes attributes) {
+    public EventBuilder builder(String eventName) {
       return new SdkEventBuilder(
+          clock,
           delegateLogger
               .logRecordBuilder()
-              .setTimestamp(clock.now(), TimeUnit.NANOSECONDS)
-              .setAllAttributes(attributes),
+              .setSeverity(DEFAULT_SEVERITY)
+              .setContext(Context.current()),
           eventName);
     }
-
-    @Override
-    public void emit(String eventName, Attributes attributes) {
-      LogRecordBuilder logRecordBuilder =
-          delegateLogger
-              .logRecordBuilder()
-              .setTimestamp(clock.now(), TimeUnit.NANOSECONDS)
-              .setAllAttributes(attributes);
-      addEventName(logRecordBuilder, eventName);
-      logRecordBuilder.emit();
-    }
-  }
-
-  static void addEventName(LogRecordBuilder logRecordBuilder, String eventName) {
-    logRecordBuilder.setAttribute(EVENT_NAME, eventName);
   }
 }
