@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
+import okhttp3.ConnectionSpec;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
@@ -165,14 +166,17 @@ public final class JaegerRemoteSamplerBuilder {
 
     clientBuilder.callTimeout(Duration.ofNanos(TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS)));
 
-    SSLContext sslContext = tlsConfigHelper.getSslContext();
-    X509TrustManager trustManager = tlsConfigHelper.getTrustManager();
+    String endpoint = this.endpoint.resolve(GRPC_ENDPOINT_PATH).toString();
+    boolean isPlainHttp = endpoint.startsWith("http://");
+
+    SSLContext sslContext = isPlainHttp ? null : tlsConfigHelper.getSslContext();
+    X509TrustManager trustManager = isPlainHttp ? null : tlsConfigHelper.getTrustManager();
     if (sslContext != null && trustManager != null) {
       clientBuilder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
     }
 
-    String endpoint = this.endpoint.resolve(GRPC_ENDPOINT_PATH).toString();
-    if (endpoint.startsWith("http://")) {
+    if (isPlainHttp) {
+      clientBuilder.connectionSpecs(Collections.singletonList(ConnectionSpec.CLEARTEXT));
       clientBuilder.protocols(Collections.singletonList(Protocol.H2_PRIOR_KNOWLEDGE));
     } else {
       clientBuilder.protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1));

@@ -185,6 +185,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
           return result;
         };
 
+    boolean isPlainHttp = endpoint.startsWith("http://");
     HttpSenderProvider httpSenderProvider = resolveHttpSenderProvider();
     HttpSender httpSender =
         httpSenderProvider.createSender(
@@ -198,8 +199,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
             proxyOptions,
             authenticator,
             retryPolicy,
-            tlsConfigHelper.getSslContext(),
-            tlsConfigHelper.getTrustManager());
+            isPlainHttp ? null : tlsConfigHelper.getSslContext(),
+            isPlainHttp ? null : tlsConfigHelper.getTrustManager());
     LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
 
     return new HttpExporter<>(exporterName, type, httpSender, meterProviderSupplier, exportAsJson);
