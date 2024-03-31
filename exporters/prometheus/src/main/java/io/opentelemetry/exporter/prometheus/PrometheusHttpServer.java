@@ -36,6 +36,7 @@ public final class PrometheusHttpServer implements MetricReader {
   private final PrometheusMetricReader prometheusMetricReader;
   private final PrometheusRegistry prometheusRegistry;
   private final String host;
+  private final PrometheusHttpServerBuilder builder;
 
   /**
    * Returns a new {@link PrometheusHttpServer} which can be registered to an {@link
@@ -52,12 +53,14 @@ public final class PrometheusHttpServer implements MetricReader {
   }
 
   PrometheusHttpServer(
+      PrometheusHttpServerBuilder builder,
       String host,
       int port,
       @Nullable ExecutorService executor,
       PrometheusRegistry prometheusRegistry,
       boolean otelScopeEnabled,
       @Nullable Predicate<String> allowedResourceAttributesFilter) {
+    this.builder = builder;
     this.prometheusMetricReader =
         new PrometheusMetricReader(otelScopeEnabled, allowedResourceAttributesFilter);
     this.host = host;
@@ -119,6 +122,13 @@ public final class PrometheusHttpServer implements MetricReader {
   @Override
   public String toString() {
     return "PrometheusHttpServer{address=" + getAddress() + "}";
+  }
+
+  /**
+   * Returns a new {@link PrometheusHttpServerBuilder} with the same configuration as this instance.
+   */
+  public PrometheusHttpServerBuilder toBuilder() {
+    return new PrometheusHttpServerBuilder(builder);
   }
 
   // Visible for testing.

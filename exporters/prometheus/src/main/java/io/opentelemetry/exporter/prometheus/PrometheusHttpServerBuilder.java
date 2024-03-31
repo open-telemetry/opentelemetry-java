@@ -49,6 +49,7 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /** Sets the {@link PrometheusRegistry} to be used for {@link PrometheusHttpServer}. */
+  @SuppressWarnings("UnusedReturnValue")
   public PrometheusHttpServerBuilder setPrometheusRegistry(PrometheusRegistry prometheusRegistry) {
     requireNonNull(prometheusRegistry, "prometheusRegistry");
     this.prometheusRegistry = prometheusRegistry;
@@ -56,6 +57,7 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /** Set if the {@code otel_scope_*} attributes are generated. Default is {@code true}. */
+  @SuppressWarnings("UnusedReturnValue")
   public PrometheusHttpServerBuilder setOtelScopeEnabled(boolean otelScopeEnabled) {
     this.otelScopeEnabled = otelScopeEnabled;
     return this;
@@ -83,6 +85,7 @@ public final class PrometheusHttpServerBuilder {
    */
   public PrometheusHttpServer build() {
     return new PrometheusHttpServer(
+        new PrometheusHttpServerBuilder(this), // copy to prevent modification
         host,
         port,
         executor,
@@ -92,4 +95,13 @@ public final class PrometheusHttpServerBuilder {
   }
 
   PrometheusHttpServerBuilder() {}
+
+  PrometheusHttpServerBuilder(PrometheusHttpServerBuilder builder) {
+    this.host = builder.host;
+    this.port = builder.port;
+    this.prometheusRegistry = builder.prometheusRegistry;
+    this.otelScopeEnabled = builder.otelScopeEnabled;
+    this.allowedResourceAttributesFilter = builder.allowedResourceAttributesFilter;
+    this.executor = builder.executor;
+  }
 }

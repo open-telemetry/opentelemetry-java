@@ -34,6 +34,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
+import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -41,11 +42,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import java.util.zip.GZIPInputStream;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.AfterAll;
@@ -386,5 +389,34 @@ class PrometheusHttpServerTest {
                 Collections.singletonList(
                     ImmutableDoublePointData.create(
                         123, 456, Attributes.of(stringKey("kp"), "vp"), 3.5)))));
+  }
+
+  @Test
+  void testToBuilder() {
+    PrometheusHttpServerBuilder builder = PrometheusHttpServer.builder();
+    builder.setHost("localhost");
+    builder.setPort(1234);
+    builder.setOtelScopeEnabled(false);
+
+    Predicate<String> resourceAttributesFilter = s -> false;
+    builder.setAllowedResourceAttributesFilter(resourceAttributesFilter);
+
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    builder.setExecutor(executor);
+
+    PrometheusRegistry prometheusRegistry = new PrometheusRegistry();
+    builder.setPrometheusRegistry(prometheusRegistry);
+
+    PrometheusHttpServer httpServer = builder.build();
+    PrometheusHttpServerBuilder fromOriginalBuilder = httpServer.toBuilder();
+    httpServer.close();
+    assertThat(fromOriginalBuilder)
+        .isInstanceOf(PrometheusHttpServerBuilder.class)
+        .hasFieldOrPropertyWithValue("host", "localhost")
+        .hasFieldOrPropertyWithValue("port", 1234)
+        .hasFieldOrPropertyWithValue("otelScopeEnabled", false)
+        .hasFieldOrPropertyWithValue("allowedResourceAttributesFilter", resourceAttributesFilter)
+        .hasFieldOrPropertyWithValue("executor", executor)
+        .hasFieldOrPropertyWithValue("prometheusRegistry", prometheusRegistry);
   }
 }
