@@ -7,6 +7,8 @@ package io.opentelemetry.exporter.otlp.http.metrics;
 
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.internal.otlp.metrics.LowAllocationMetricsRequestMarshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.Aggregation;
@@ -16,7 +18,9 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.Deque;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -27,14 +31,17 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpHttpMetricExporter implements MetricExporter {
 
-  private final HttpExporterBuilder<MetricsRequestMarshaler> builder;
-  private final HttpExporter<MetricsRequestMarshaler> delegate;
+  private static final boolean LOW_ALLOCATION_MODE = true;
+  private static final Deque<LowAllocationMetricsRequestMarshaler> requests = new ArrayDeque<>();
+
+  private final HttpExporterBuilder<Marshaler> builder;
+  private final HttpExporter<Marshaler> delegate;
   private final AggregationTemporalitySelector aggregationTemporalitySelector;
   private final DefaultAggregationSelector defaultAggregationSelector;
 
   OtlpHttpMetricExporter(
-      HttpExporterBuilder<MetricsRequestMarshaler> builder,
-      HttpExporter<MetricsRequestMarshaler> delegate,
+      HttpExporterBuilder<Marshaler> builder,
+      HttpExporter<Marshaler> delegate,
       AggregationTemporalitySelector aggregationTemporalitySelector,
       DefaultAggregationSelector defaultAggregationSelector) {
     this.builder = builder;
@@ -93,8 +100,24 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
    */
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
-    MetricsRequestMarshaler exportRequest = MetricsRequestMarshaler.create(metrics);
-    return delegate.export(exportRequest, metrics.size());
+    if (LOW_ALLOCATION_MODE) {
+      LowAllocationMetricsRequestMarshaler request = requests.poll();
+      if (request == null) {
+        request = new LowAllocationMetricsRequestMarshaler();
+      }
+      LowAllocationMetricsRequestMarshaler exportRequest = request;
+      exportRequest.initialize(metrics);
+      return delegate
+          .export(exportRequest, metrics.size())
+          .whenComplete(
+              () -> {
+                exportRequest.reset();
+                requests.add(exportRequest);
+              });
+    } else {
+      MetricsRequestMarshaler exportRequest = MetricsRequestMarshaler.create(metrics);
+      return delegate.export(exportRequest, metrics.size());
+    }
   }
 
   /**

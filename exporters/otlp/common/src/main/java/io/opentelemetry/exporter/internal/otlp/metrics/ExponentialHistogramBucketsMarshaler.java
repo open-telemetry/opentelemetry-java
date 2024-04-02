@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp.metrics;
 
+import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
@@ -45,6 +46,20 @@ public class ExponentialHistogramBucketsMarshaler extends MarshalerWithSize {
     }
   }
 
+  public static void writeTo(
+      Serializer output, ExponentialHistogramBuckets buckets, MarshalerContext context)
+      throws IOException {
+    output.serializeSInt32(ExponentialHistogramDataPoint.Buckets.OFFSET, buckets.getOffset());
+    List<Long> counts = buckets.getBucketCounts();
+    if (counts instanceof DynamicPrimitiveLongList) {
+      output.serializeRepeatedUInt64(
+          ExponentialHistogramDataPoint.Buckets.BUCKET_COUNTS, (DynamicPrimitiveLongList) counts);
+    } else {
+      output.serializeRepeatedUInt64(
+          ExponentialHistogramDataPoint.Buckets.BUCKET_COUNTS, PrimitiveLongList.toArray(counts));
+    }
+  }
+
   private static int calculateSize(int offset, List<Long> counts) {
     int size = 0;
     size += MarshalerUtil.sizeSInt32(ExponentialHistogramDataPoint.Buckets.OFFSET, offset);
@@ -60,5 +75,9 @@ public class ExponentialHistogramBucketsMarshaler extends MarshalerWithSize {
               PrimitiveLongList.toArray(counts));
     }
     return size;
+  }
+
+  public static int calculateSize(ExponentialHistogramBuckets buckets, MarshalerContext context) {
+    return calculateSize(buckets.getOffset(), buckets.getBucketCounts());
   }
 }

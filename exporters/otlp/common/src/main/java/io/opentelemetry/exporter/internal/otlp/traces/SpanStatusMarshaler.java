@@ -64,7 +64,7 @@ final class SpanStatusMarshaler extends MarshalerWithSize {
     return size;
   }
 
-  public static int calculateSize(MarshalerContext context, StatusData status) {
+  public static int calculateSize(StatusData status, MarshalerContext context) {
     ProtoEnumInfo protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET;
     if (status.getStatusCode() == StatusCode.OK) {
       protoStatusCode = Status.StatusCode.STATUS_CODE_OK;
@@ -77,8 +77,6 @@ final class SpanStatusMarshaler extends MarshalerWithSize {
     int size = 0;
     size += MarshalerUtil.sizeBytes(Status.MESSAGE, descriptionUtf8);
     size += MarshalerUtil.sizeEnum(Status.CODE, protoStatusCode);
-
-    context.addSize(size);
 
     return size;
   }

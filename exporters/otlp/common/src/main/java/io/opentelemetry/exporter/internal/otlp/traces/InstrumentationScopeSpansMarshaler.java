@@ -39,13 +39,13 @@ final class InstrumentationScopeSpansMarshaler extends MarshalerWithSize {
 
   public static void writeTo(
       Serializer output,
-      MarshalerContext context,
       InstrumentationScopeMarshaler instrumentationScopeMarshaler,
-      List<SpanData> spanData,
-      byte[] schemaUrlUtf8)
+      List<SpanData> spans,
+      byte[] schemaUrlUtf8,
+      MarshalerContext context)
       throws IOException {
     output.serializeMessage(ScopeSpans.SCOPE, instrumentationScopeMarshaler);
-    output.serializeRepeatedMessage(ScopeSpans.SPANS, spanData, context, SpanMarshaler::writeTo);
+    output.serializeRepeatedMessage(ScopeSpans.SPANS, spans, SpanMarshaler::writeTo, context);
     output.serializeString(ScopeSpans.SCHEMA_URL, schemaUrlUtf8);
   }
 
@@ -64,15 +64,15 @@ final class InstrumentationScopeSpansMarshaler extends MarshalerWithSize {
   public static int calculateSize(
       InstrumentationScopeMarshaler instrumentationScope,
       byte[] schemaUrlUtf8,
-      MarshalerContext context,
-      List<SpanData> spanData) {
+      List<SpanData> spans,
+      MarshalerContext context) {
     int sizeIndex = context.addSize();
     int size = 0;
     size += MarshalerUtil.sizeMessage(ScopeSpans.SCOPE, instrumentationScope);
     size += MarshalerUtil.sizeBytes(ScopeSpans.SCHEMA_URL, schemaUrlUtf8);
     size +=
         MarshalerUtil.sizeRepeatedMessage(
-            ScopeSpans.SPANS, SpanMarshaler::calculateSpanSize, spanData, context);
+            ScopeSpans.SPANS, spans, SpanMarshaler::calculateSize, context);
     context.setSize(sizeIndex, size);
 
     return size;

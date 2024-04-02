@@ -19,9 +19,9 @@ import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ToIntBiFunction;
-import java.util.function.ToIntFunction;
 import javax.annotation.Nullable;
 
 /**
@@ -73,31 +73,60 @@ public final class MarshalerUtil {
   }
 
   /** Groups SDK items by resource and instrumentation scope. */
-  public static <T, U>
-      Map<Resource, Map<InstrumentationScopeInfo, List<U>>> groupByResourceAndScope(
-          Collection<T> dataList,
-          Function<T, Resource> getResource,
-          Function<T, InstrumentationScopeInfo> getInstrumentationScope,
-          Function<T, U> createMarshaler,
-          MarshalerContext context) {
-    Map<Resource, Map<InstrumentationScopeInfo, List<U>>> result = context.getIdentityMap();
-    for (T data : dataList) {
+  public static <T> Map<Resource, Map<InstrumentationScopeInfo, List<T>>> groupByResourceAndScope(
+      Collection<T> dataList,
+      Function<T, Resource> getResource,
+      Function<T, InstrumentationScopeInfo> getInstrumentationScope,
+      MarshalerContext context) {
+    Map<Resource, Map<InstrumentationScopeInfo, List<T>>> result = context.getIdentityMap();
+
+    Grouper<T> grouper = context.getInstance(Grouper.class, Grouper::new);
+    grouper.initialize(result, getResource, getInstrumentationScope, context);
+    dataList.forEach(grouper);
+
+    return result;
+  }
+
+  private static class Grouper<T> implements Consumer<T> {
+    @SuppressWarnings("NullAway")
+    private Map<Resource, Map<InstrumentationScopeInfo, List<T>>> result;
+
+    @SuppressWarnings("NullAway")
+    private Function<T, Resource> getResource;
+
+    @SuppressWarnings("NullAway")
+    private Function<T, InstrumentationScopeInfo> getInstrumentationScope;
+
+    @SuppressWarnings("NullAway")
+    private MarshalerContext context;
+
+    void initialize(
+        Map<Resource, Map<InstrumentationScopeInfo, List<T>>> result,
+        Function<T, Resource> getResource,
+        Function<T, InstrumentationScopeInfo> getInstrumentationScope,
+        MarshalerContext context) {
+      this.result = result;
+      this.getResource = getResource;
+      this.getInstrumentationScope = getInstrumentationScope;
+      this.context = context;
+    }
+
+    @Override
+    public void accept(T data) {
       Resource resource = getResource.apply(data);
-      Map<InstrumentationScopeInfo, List<U>> scopeInfoListMap = result.get(resource);
+      Map<InstrumentationScopeInfo, List<T>> scopeInfoListMap = result.get(resource);
       if (scopeInfoListMap == null) {
         scopeInfoListMap = context.getIdentityMap();
         result.put(resource, scopeInfoListMap);
       }
       InstrumentationScopeInfo instrumentationScopeInfo = getInstrumentationScope.apply(data);
-      List<U> marshalerList = scopeInfoListMap.get(instrumentationScopeInfo);
-      if (marshalerList == null) {
-        marshalerList = context.getList();
-        scopeInfoListMap.put(instrumentationScopeInfo, marshalerList);
+      List<T> elementList = scopeInfoListMap.get(instrumentationScopeInfo);
+      if (elementList == null) {
+        elementList = context.getList();
+        scopeInfoListMap.put(instrumentationScopeInfo, elementList);
       }
-      marshalerList.add(createMarshaler.apply(data));
+      elementList.add(data);
     }
-
-    return result;
   }
 
   /** Preserialize into JSON format. */
@@ -218,8 +247,8 @@ public final class MarshalerUtil {
   /** Returns the size of a repeated message field. */
   public static <T> int sizeRepeatedMessage(
       ProtoFieldInfo field,
-      ToIntBiFunction<MarshalerContext, T> consumer,
       List<T> messages,
+      ToIntBiFunction<T, MarshalerContext> consumer,
       MarshalerContext context) {
     if (messages.isEmpty()) {
       return 0;
@@ -229,7 +258,9 @@ public final class MarshalerUtil {
     int fieldTagSize = field.getTagSize();
     for (int i = 0; i < messages.size(); i++) {
       T message = messages.get(i);
-      int fieldSize = consumer.applyAsInt(context, message);
+      int sizeIndex = context.addSize();
+      int fieldSize = consumer.applyAsInt(message, context);
+      context.setSize(sizeIndex, fieldSize);
       size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
     }
     return size;
@@ -237,30 +268,73 @@ public final class MarshalerUtil {
 
   /** Returns the size of a repeated message field. */
   public static <T> int sizeRepeatedMessage(
-      ProtoFieldInfo field, ToIntFunction<T> consumer, List<T> messages) {
+      ProtoFieldInfo field,
+      Collection<T> messages,
+      ToIntBiFunction<T, MarshalerContext> consumer,
+      MarshalerContext context,
+      Object key) {
     if (messages.isEmpty()) {
       return 0;
     }
 
-    int size = 0;
-    int fieldTagSize = field.getTagSize();
-    for (int i = 0; i < messages.size(); i++) {
-      T message = messages.get(i);
-      int fieldSize = consumer.applyAsInt(message);
+    RepeatedElementSizeCalculator<T> sizeCalculator =
+        context.getInstance(key, RepeatedElementSizeCalculator::new);
+    sizeCalculator.initialize(field, consumer, context);
+    messages.forEach(sizeCalculator);
+
+    return sizeCalculator.size;
+  }
+
+  private static class RepeatedElementSizeCalculator<T> implements Consumer<T> {
+    private int size;
+    private int fieldTagSize;
+
+    @SuppressWarnings("NullAway")
+    private ToIntBiFunction<T, MarshalerContext> calculateSize;
+
+    @SuppressWarnings("NullAway")
+    private MarshalerContext context;
+
+    void initialize(
+        ProtoFieldInfo field,
+        ToIntBiFunction<T, MarshalerContext> calculateSize,
+        MarshalerContext context) {
+      this.size = 0;
+      this.fieldTagSize = field.getTagSize();
+      this.calculateSize = calculateSize;
+      this.context = context;
+    }
+
+    @Override
+    public void accept(T element) {
+      int sizeIndex = context.addSize();
+      int fieldSize = calculateSize.applyAsInt(element, context);
+      context.setSize(sizeIndex, fieldSize);
       size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
     }
-    return size;
   }
 
   /** Returns the size of a message field. */
   public static int sizeMessage(ProtoFieldInfo field, Marshaler message) {
     int fieldSize = message.getBinarySerializedSize();
-    return sizeMessage(field, fieldSize);
+    return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
   }
 
   /** Returns the size of a message field. */
   public static int sizeMessage(ProtoFieldInfo field, int fieldSize) {
     return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
+  }
+
+  public static <T> int sizeMessage(
+      ProtoFieldInfo field,
+      T element,
+      ToIntBiFunction<T, MarshalerContext> sizeCalculator,
+      MarshalerContext context) {
+    int sizeIndex = context.addSize();
+    int fieldSize = sizeCalculator.applyAsInt(element, context);
+    int size = field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
+    context.setSize(sizeIndex, fieldSize);
+    return size;
   }
 
   /** Returns the size of a bool field. */

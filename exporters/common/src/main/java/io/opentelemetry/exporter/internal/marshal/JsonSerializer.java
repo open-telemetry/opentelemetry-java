@@ -175,8 +175,8 @@ final class JsonSerializer extends Serializer {
   public <T> void serializeRepeatedMessage(
       ProtoFieldInfo field,
       List<T> messages,
-      MarshalerContext context,
-      MessageConsumer<Serializer, T, MarshalerContext> consumer)
+      MessageConsumer<Serializer, T, MarshalerContext> consumer,
+      MarshalerContext context)
       throws IOException {
     generator.writeArrayFieldStart(field.getJsonName());
     for (int i = 0; i < messages.size(); i++) {

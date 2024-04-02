@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp.metrics;
 
+import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
@@ -139,6 +140,41 @@ public class ExponentialHistogramDataPointMarshaler extends MarshalerWithSize {
     output.serializeRepeatedMessage(ExponentialHistogramDataPoint.ATTRIBUTES, attributes);
   }
 
+  public static void writeTo(
+      Serializer output, ExponentialHistogramPointData point, MarshalerContext context)
+      throws IOException {
+    output.serializeFixed64(
+        ExponentialHistogramDataPoint.START_TIME_UNIX_NANO, point.getStartEpochNanos());
+    output.serializeFixed64(ExponentialHistogramDataPoint.TIME_UNIX_NANO, point.getEpochNanos());
+    output.serializeFixed64(ExponentialHistogramDataPoint.COUNT, point.getCount());
+    output.serializeDouble(ExponentialHistogramDataPoint.SUM, point.getSum());
+    if (point.hasMin()) {
+      output.serializeDoubleOptional(ExponentialHistogramDataPoint.MIN, point.getMin());
+    }
+    if (point.hasMax()) {
+      output.serializeDoubleOptional(ExponentialHistogramDataPoint.MAX, point.getMax());
+    }
+    output.serializeSInt32(ExponentialHistogramDataPoint.SCALE, point.getScale());
+    output.serializeFixed64(ExponentialHistogramDataPoint.ZERO_COUNT, point.getZeroCount());
+    output.serializeMessage(
+        ExponentialHistogramDataPoint.POSITIVE,
+        point.getPositiveBuckets(),
+        ExponentialHistogramBucketsMarshaler::writeTo,
+        context);
+    output.serializeMessage(
+        ExponentialHistogramDataPoint.NEGATIVE,
+        point.getNegativeBuckets(),
+        ExponentialHistogramBucketsMarshaler::writeTo,
+        context);
+    output.serializeRepeatedMessage(
+        ExponentialHistogramDataPoint.EXEMPLARS,
+        point.getExemplars(),
+        ExemplarMarshaler::writeTo,
+        context);
+    KeyValueMarshaler.writeTo(
+        output, context, ExponentialHistogramDataPoint.ATTRIBUTES, point.getAttributes());
+  }
+
   private static int calculateSize(
       long startTimeUnixNano,
       long timeUnixNano,
@@ -159,7 +195,6 @@ public class ExponentialHistogramDataPointMarshaler extends MarshalerWithSize {
         MarshalerUtil.sizeFixed64(
             ExponentialHistogramDataPoint.START_TIME_UNIX_NANO, startTimeUnixNano);
     size += MarshalerUtil.sizeFixed64(ExponentialHistogramDataPoint.TIME_UNIX_NANO, timeUnixNano);
-    size += MarshalerUtil.sizeSInt32(ExponentialHistogramDataPoint.SCALE, scale);
     size += MarshalerUtil.sizeFixed64(ExponentialHistogramDataPoint.COUNT, count);
     size += MarshalerUtil.sizeDouble(ExponentialHistogramDataPoint.SUM, sum);
     if (hasMin) {
@@ -168,6 +203,7 @@ public class ExponentialHistogramDataPointMarshaler extends MarshalerWithSize {
     if (hasMax) {
       size += MarshalerUtil.sizeDoubleOptional(ExponentialHistogramDataPoint.MAX, max);
     }
+    size += MarshalerUtil.sizeSInt32(ExponentialHistogramDataPoint.SCALE, scale);
     size += MarshalerUtil.sizeFixed64(ExponentialHistogramDataPoint.ZERO_COUNT, zeroCount);
     size +=
         MarshalerUtil.sizeMessage(ExponentialHistogramDataPoint.POSITIVE, positiveBucketMarshaler);
@@ -179,6 +215,49 @@ public class ExponentialHistogramDataPointMarshaler extends MarshalerWithSize {
     size +=
         MarshalerUtil.sizeRepeatedMessage(
             ExponentialHistogramDataPoint.ATTRIBUTES, attributesMarshalers);
+    return size;
+  }
+
+  public static int calculateSize(ExponentialHistogramPointData point, MarshalerContext context) {
+    int size = 0;
+    size +=
+        MarshalerUtil.sizeFixed64(
+            ExponentialHistogramDataPoint.START_TIME_UNIX_NANO, point.getStartEpochNanos());
+    size +=
+        MarshalerUtil.sizeFixed64(
+            ExponentialHistogramDataPoint.TIME_UNIX_NANO, point.getEpochNanos());
+    size += MarshalerUtil.sizeFixed64(ExponentialHistogramDataPoint.COUNT, point.getCount());
+    size += MarshalerUtil.sizeDouble(ExponentialHistogramDataPoint.SUM, point.getSum());
+    if (point.hasMin()) {
+      size += MarshalerUtil.sizeDoubleOptional(ExponentialHistogramDataPoint.MIN, point.getMin());
+    }
+    if (point.hasMax()) {
+      size += MarshalerUtil.sizeDoubleOptional(ExponentialHistogramDataPoint.MAX, point.getMax());
+    }
+    size += MarshalerUtil.sizeSInt32(ExponentialHistogramDataPoint.SCALE, point.getScale());
+    size +=
+        MarshalerUtil.sizeFixed64(ExponentialHistogramDataPoint.ZERO_COUNT, point.getZeroCount());
+    size +=
+        MarshalerUtil.sizeMessage(
+            ExponentialHistogramDataPoint.POSITIVE,
+            point.getPositiveBuckets(),
+            ExponentialHistogramBucketsMarshaler::calculateSize,
+            context);
+    size +=
+        MarshalerUtil.sizeMessage(
+            ExponentialHistogramDataPoint.NEGATIVE,
+            point.getNegativeBuckets(),
+            ExponentialHistogramBucketsMarshaler::calculateSize,
+            context);
+    size +=
+        MarshalerUtil.sizeRepeatedMessage(
+            ExponentialHistogramDataPoint.EXEMPLARS,
+            point.getExemplars(),
+            ExemplarMarshaler::calculateSize,
+            context);
+    size +=
+        KeyValueMarshaler.calculateSize(
+            ExponentialHistogramDataPoint.ATTRIBUTES, point.getAttributes(), context);
     return size;
   }
 }

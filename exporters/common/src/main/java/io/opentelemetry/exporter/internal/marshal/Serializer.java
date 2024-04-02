@@ -7,7 +7,9 @@ package io.opentelemetry.exporter.internal.marshal;
 
 import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 /**
@@ -244,8 +246,8 @@ public abstract class Serializer implements AutoCloseable {
   public <T> void serializeMessage(
       ProtoFieldInfo field,
       T message,
-      MarshalerContext context,
-      MessageConsumer<Serializer, T, MarshalerContext> consumer)
+      MessageConsumer<Serializer, T, MarshalerContext> consumer,
+      MarshalerContext context)
       throws IOException {
     writeStartMessage(field, context.getSize());
     consumer.accept(this, message, context);
@@ -269,7 +271,8 @@ public abstract class Serializer implements AutoCloseable {
       return;
     }
     writeStartRepeatedPrimitive(field, WireFormat.FIXED64_SIZE, values.size());
-    for (long value : values) {
+    for (int i = 0; i < values.size(); i++) {
+      Long value = values.get(i);
       writeFixed64Value(value);
     }
     writeEndRepeatedPrimitive();
@@ -338,7 +341,8 @@ public abstract class Serializer implements AutoCloseable {
       return;
     }
     writeStartRepeatedPrimitive(field, WireFormat.FIXED64_SIZE, values.size());
-    for (double value : values) {
+    for (int i = 0; i < values.size(); i++) {
+      Double value = values.get(i);
       writeDoubleValue(value);
     }
     writeEndRepeatedPrimitive();
@@ -357,9 +361,63 @@ public abstract class Serializer implements AutoCloseable {
   public abstract <T> void serializeRepeatedMessage(
       ProtoFieldInfo field,
       List<T> messages,
-      MarshalerContext context,
-      MessageConsumer<Serializer, T, MarshalerContext> consumer)
+      MessageConsumer<Serializer, T, MarshalerContext> consumer,
+      MarshalerContext context)
       throws IOException;
+
+  public <T> void serializeRepeatedMessage(
+      ProtoFieldInfo field,
+      Collection<T> messages,
+      MessageConsumer<Serializer, T, MarshalerContext> consumer,
+      MarshalerContext context,
+      Object key)
+      throws IOException {
+    writeStartRepeated(field);
+
+    if (!messages.isEmpty()) {
+      RepeatedElementWriter<T> writer = context.getInstance(key, RepeatedElementWriter::new);
+      writer.initialize(field, this, consumer, context);
+      messages.forEach(writer);
+    }
+
+    writeEndRepeated();
+  }
+
+  private static class RepeatedElementWriter<T> implements Consumer<T> {
+    @SuppressWarnings("NullAway")
+    private ProtoFieldInfo field;
+
+    @SuppressWarnings("NullAway")
+    private Serializer output;
+
+    @SuppressWarnings("NullAway")
+    private MessageConsumer<Serializer, T, MarshalerContext> write;
+
+    @SuppressWarnings("NullAway")
+    private MarshalerContext context;
+
+    void initialize(
+        ProtoFieldInfo field,
+        Serializer output,
+        MessageConsumer<Serializer, T, MarshalerContext> write,
+        MarshalerContext context) {
+      this.field = field;
+      this.output = output;
+      this.write = write;
+      this.context = context;
+    }
+
+    @Override
+    public void accept(T element) {
+      try {
+        output.writeStartRepeatedElement(field, context.getSize());
+        write.accept(output, element, context);
+        output.writeEndRepeatedElement();
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+  }
 
   /** Writes start of repeated messages. */
   public abstract void writeStartRepeated(ProtoFieldInfo field) throws IOException;

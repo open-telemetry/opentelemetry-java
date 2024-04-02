@@ -39,12 +39,22 @@ final class StringAnyValueMarshaler extends MarshalerWithSize {
     output.writeString(AnyValue.STRING_VALUE, valueUtf8);
   }
 
+  public static void writeTo(Serializer output, String value, MarshalerContext context)
+      throws IOException {
+    if (context.marshalStringNoAllocation()) {
+      output.writeString(AnyValue.STRING_VALUE, value, context.getSize());
+    } else {
+      byte[] valueUtf8 = context.getByteArray();
+      output.writeString(AnyValue.STRING_VALUE, valueUtf8);
+    }
+  }
+
   private static int calculateSize(byte[] valueUtf8) {
     return AnyValue.STRING_VALUE.getTagSize()
         + CodedOutputStream.computeByteArraySizeNoTag(valueUtf8);
   }
 
-  public static int calculateSize(MarshalerContext context, String value) {
+  public static int calculateSize(String value, MarshalerContext context) {
     if (context.marshalStringNoAllocation()) {
       int utf8Size = MarshalerUtil.getUtf8Size(value);
       context.addSize(utf8Size);

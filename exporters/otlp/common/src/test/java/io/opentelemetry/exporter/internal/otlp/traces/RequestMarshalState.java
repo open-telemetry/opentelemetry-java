@@ -83,9 +83,13 @@ class RequestMarshalState {
         .setAttributes(
             Attributes.builder()
                 .put(KEY_BOOL, true)
-                // .put(KEY_STRING, "string")
+                .put(KEY_STRING, "string")
                 .put(KEY_INT, 100L)
                 .put(KEY_DOUBLE, 100.3)
+                .put(KEY_STRING_ARRAY, Arrays.asList("string", "string"))
+                .put(KEY_LONG_ARRAY, Arrays.asList(12L, 23L))
+                .put(KEY_DOUBLE_ARRAY, Arrays.asList(12.3, 23.1))
+                .put(KEY_BOOLEAN_ARRAY, Arrays.asList(true, false))
                 .build())
         .setTotalAttributeCount(2)
         .setEvents(

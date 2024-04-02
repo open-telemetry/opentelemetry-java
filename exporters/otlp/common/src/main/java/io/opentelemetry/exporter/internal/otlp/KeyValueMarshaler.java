@@ -16,8 +16,6 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.ProtoFieldInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.proto.common.v1.internal.AnyValue;
-import io.opentelemetry.proto.common.v1.internal.ArrayValue;
 import io.opentelemetry.proto.common.v1.internal.KeyValue;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -124,7 +122,7 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
     if (!attributes.isEmpty()) {
       AttributesWriter attributesWriter =
           context.getInstance(AttributesWriter.class, AttributesWriter::new);
-      attributesWriter.init(protoFieldInfo, output, context);
+      attributesWriter.initialize(protoFieldInfo, output, context);
       attributes.forEach(attributesWriter);
     }
 
@@ -148,101 +146,37 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
       throws IOException {
     switch (attributeKey.getType()) {
       case STRING:
-        if (context.marshalStringNoAllocation()) {
-          output.writeString(AnyValue.STRING_VALUE, (String) value, context.getSize());
-        } else {
-          byte[] valueUtf8 = context.getByteArray();
-          // Do not call serialize* method because we always have to write the message tag even if
-          // the value is empty since it's a oneof.
-          output.writeString(AnyValue.STRING_VALUE, valueUtf8);
-        }
+        StringAnyValueMarshaler.writeTo(output, (String) value, context);
         return;
       case LONG:
-        // Do not call serialize* method because we always have to write the message tag even if the
-        // value is empty since it's a oneof.
-        output.writeInt64(AnyValue.INT_VALUE, (long) value);
+        IntAnyValueMarshaler.writeTo(output, (long) value);
         return;
       case BOOLEAN:
-        // Do not call serialize* method because we always have to write the message tag even if the
-        // value is empty since it's a oneof.
-        output.writeBool(AnyValue.BOOL_VALUE, (boolean) value);
+        BoolAnyValueMarshaler.writeTo(output, (boolean) value);
         return;
       case DOUBLE:
-        // Do not call serialize* method because we always have to write the message tag even if the
-        // value is empty since it's a oneof.
-        output.writeDouble(AnyValue.DOUBLE_VALUE, (double) value);
+        DoubleAnyValueMarshaler.writeTo(output, (double) value);
         return;
       case STRING_ARRAY:
-        // output.serializeMessage(AnyValue.ARRAY_VALUE, value);
-        writeToStringArray(context, output, (List<String>) value);
+        ArrayAnyValueMarshaler.writeTo(
+            output, (List<String>) value, StringAnyValueMarshaler::writeTo, context);
         return;
       case LONG_ARRAY:
-        // output.serializeMessage(AnyValue.ARRAY_VALUE, value);
-        writeToLongArray(context, output, (List<Long>) value);
+        ArrayAnyValueMarshaler.writeTo(
+            output, (List<Long>) value, IntAnyValueMarshaler::writeTo, context);
         return;
       case BOOLEAN_ARRAY:
-        writeToBooleanArray(context, output, (List<Boolean>) value);
+        ArrayAnyValueMarshaler.writeTo(
+            output, (List<Boolean>) value, BoolAnyValueMarshaler::writeTo, context);
         return;
       case DOUBLE_ARRAY:
-        writeToDoubleArray(context, output, (List<Double>) value);
+        ArrayAnyValueMarshaler.writeTo(
+            output, (List<Double>) value, DoubleAnyValueMarshaler::writeTo, context);
         return;
     }
     // Error prone ensures the switch statement is complete, otherwise only can happen with
     // unaligned versions which are not supported.
     throw new IllegalArgumentException("Unsupported attribute type.");
-  }
-
-  private static void writeToStringArray(
-      MarshalerContext context, Serializer output, List<String> values) throws IOException {
-    output.writeStartMessage(AnyValue.ARRAY_VALUE, context.getSize());
-    if (context.marshalStringNoAllocation()) {
-      for (String value : values) {
-        output.writeStartMessage(AnyValue.STRING_VALUE, context.getSize());
-        output.writeString(AnyValue.STRING_VALUE, value, context.getSize());
-        output.writeEndMessage();
-      }
-    } else {
-      for (int i = 0; i < values.size(); i++) {
-        output.writeStartMessage(AnyValue.STRING_VALUE, context.getSize());
-        byte[] valueUtf8 = context.getByteArray();
-        output.writeString(AnyValue.STRING_VALUE, valueUtf8);
-        output.writeEndMessage();
-      }
-    }
-    output.writeEndMessage();
-  }
-
-  private static void writeToLongArray(
-      MarshalerContext context, Serializer output, List<Long> values) throws IOException {
-    output.writeStartMessage(AnyValue.ARRAY_VALUE, context.getSize());
-    for (Long value : values) {
-      output.writeStartMessage(AnyValue.INT_VALUE, context.getSize());
-      output.writeInt64(AnyValue.INT_VALUE, value);
-      output.writeEndMessage();
-    }
-    output.writeEndMessage();
-  }
-
-  private static void writeToBooleanArray(
-      MarshalerContext context, Serializer output, List<Boolean> values) throws IOException {
-    output.writeStartMessage(AnyValue.ARRAY_VALUE, context.getSize());
-    for (Boolean value : values) {
-      output.writeStartMessage(AnyValue.BOOL_VALUE, context.getSize());
-      output.writeBool(AnyValue.BOOL_VALUE, value);
-      output.writeEndMessage();
-    }
-    output.writeEndMessage();
-  }
-
-  private static void writeToDoubleArray(
-      MarshalerContext context, Serializer output, List<Double> values) throws IOException {
-    output.writeStartMessage(AnyValue.ARRAY_VALUE, context.getSize());
-    for (Double value : values) {
-      output.writeStartMessage(AnyValue.DOUBLE_VALUE, context.getSize());
-      output.writeDouble(AnyValue.DOUBLE_VALUE, value);
-      output.writeEndMessage();
-    }
-    output.writeEndMessage();
   }
 
   private static int calculateSize(byte[] keyUtf8, Marshaler value) {
@@ -253,7 +187,7 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
   }
 
   public static int calculateSize(
-      ProtoFieldInfo field, MarshalerContext context, Attributes attributes) {
+      ProtoFieldInfo field, Attributes attributes, MarshalerContext context) {
     if (attributes.isEmpty()) {
       return 0;
     }
@@ -267,7 +201,7 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
   }
 
   private static int calculateSize(
-      MarshalerContext context, AttributeKey<?> attributeKey, Object value) {
+      AttributeKey<?> attributeKey, Object value, MarshalerContext context) {
     byte[] keyUtf8;
     if (attributeKey.getKey().isEmpty()) {
       keyUtf8 = EMPTY_BYTES;
@@ -283,7 +217,7 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
 
     int size = 0;
     size += MarshalerUtil.sizeBytes(KeyValue.KEY, keyUtf8);
-    int valueSize = calculateValueSize(context, attributeKey, value);
+    int valueSize = calculateValueSize(attributeKey, value, context);
     size += MarshalerUtil.sizeMessage(KeyValue.VALUE, valueSize);
 
     context.setSize(sizeIndex, size);
@@ -294,10 +228,10 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
 
   @SuppressWarnings("unchecked")
   private static int calculateValueSize(
-      MarshalerContext context, AttributeKey<?> attributeKey, Object value) {
+      AttributeKey<?> attributeKey, Object value, MarshalerContext context) {
     switch (attributeKey.getType()) {
       case STRING:
-        return StringAnyValueMarshaler.calculateSize(context, (String) value);
+        return StringAnyValueMarshaler.calculateSize((String) value, context);
       case LONG:
         return IntAnyValueMarshaler.calculateSize((long) value);
       case BOOLEAN:
@@ -305,20 +239,17 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
       case DOUBLE:
         return DoubleAnyValueMarshaler.calculateSize((double) value);
       case STRING_ARRAY:
-        return MarshalerUtil.sizeRepeatedMessage(
-            ArrayValue.VALUES,
-            StringAnyValueMarshaler::calculateSize,
-            (List<String>) value,
-            context);
+        return ArrayAnyValueMarshaler.calculateSize(
+            (List<String>) value, StringAnyValueMarshaler::calculateSize, context);
       case LONG_ARRAY:
-        return MarshalerUtil.sizeRepeatedMessage(
-            ArrayValue.VALUES, IntAnyValueMarshaler::calculateSize, (List<Long>) value);
+        return ArrayAnyValueMarshaler.calculateSize(
+            (List<Long>) value, IntAnyValueMarshaler::calculateSize, context);
       case BOOLEAN_ARRAY:
-        return MarshalerUtil.sizeRepeatedMessage(
-            ArrayValue.VALUES, BoolAnyValueMarshaler::calculateSize, (List<Boolean>) value);
+        return ArrayAnyValueMarshaler.calculateSize(
+            (List<Boolean>) value, BoolAnyValueMarshaler::calculateSize, context);
       case DOUBLE_ARRAY:
-        return MarshalerUtil.sizeRepeatedMessage(
-            ArrayValue.VALUES, DoubleAnyValueMarshaler::calculateSize, (List<Double>) value);
+        return ArrayAnyValueMarshaler.calculateSize(
+            (List<Double>) value, DoubleAnyValueMarshaler::calculateSize, context);
     }
     // Error prone ensures the switch statement is complete, otherwise only can happen with
     // unaligned versions which are not supported.
@@ -335,7 +266,7 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
     @SuppressWarnings("NullAway")
     MarshalerContext context;
 
-    void init(ProtoFieldInfo field, Serializer output, MarshalerContext context) {
+    void initialize(ProtoFieldInfo field, Serializer output, MarshalerContext context) {
       this.field = field;
       this.output = output;
       this.context = context;
@@ -345,9 +276,7 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
     public void accept(AttributeKey<?> attributeKey, Object value) {
       try {
         output.writeStartRepeatedElement(field, context.getSize());
-        // output.writeStartMessage(field, context.getSize());
         writeTo(output, context, attributeKey, value);
-        // output.writeEndMessage();
         output.writeEndRepeatedElement();
       } catch (IOException e) {
         throw new IllegalStateException(e);
@@ -370,7 +299,7 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
 
     @Override
     public void accept(AttributeKey<?> attributeKey, Object value) {
-      int fieldSize = calculateSize(context, attributeKey, value);
+      int fieldSize = calculateSize(attributeKey, value, context);
       size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
     }
   }

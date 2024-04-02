@@ -65,17 +65,16 @@ final class SpanEventMarshaler extends MarshalerWithSize {
     output.serializeUInt32(Span.Event.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
   }
 
-  public static void writeTo(Serializer output, EventData eventData, MarshalerContext context)
+  public static void writeTo(Serializer output, EventData event, MarshalerContext context)
       throws IOException {
-    output.serializeFixed64(Span.Event.TIME_UNIX_NANO, eventData.getEpochNanos());
+    output.serializeFixed64(Span.Event.TIME_UNIX_NANO, event.getEpochNanos());
     if (context.marshalStringNoAllocation()) {
-      output.writeString(Span.Event.NAME, eventData.getName(), context.getSize());
+      output.writeString(Span.Event.NAME, event.getName(), context.getSize());
     } else {
       output.serializeString(Span.Event.NAME, context.getByteArray());
     }
-    KeyValueMarshaler.writeTo(output, context, Span.Event.ATTRIBUTES, eventData.getAttributes());
-    int droppedAttributesCount =
-        eventData.getTotalAttributeCount() - eventData.getAttributes().size();
+    KeyValueMarshaler.writeTo(output, context, Span.Event.ATTRIBUTES, event.getAttributes());
+    int droppedAttributesCount = event.getTotalAttributeCount() - event.getAttributes().size();
     output.serializeUInt32(Span.Event.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
   }
 
@@ -92,9 +91,7 @@ final class SpanEventMarshaler extends MarshalerWithSize {
     return size;
   }
 
-  public static int calculateSize(MarshalerContext context, EventData event) {
-    int sizeIndex = context.addSize();
-
+  public static int calculateSize(EventData event, MarshalerContext context) {
     int size = 0;
     size += MarshalerUtil.sizeFixed64(Span.Event.TIME_UNIX_NANO, event.getEpochNanos());
     if (context.marshalStringNoAllocation()) {
@@ -106,11 +103,9 @@ final class SpanEventMarshaler extends MarshalerWithSize {
       context.addData(nameUtf8);
       size += MarshalerUtil.sizeBytes(Span.Event.NAME, nameUtf8);
     }
-    size += KeyValueMarshaler.calculateSize(Span.Event.ATTRIBUTES, context, event.getAttributes());
+    size += KeyValueMarshaler.calculateSize(Span.Event.ATTRIBUTES, event.getAttributes(), context);
     int droppedAttributesCount = event.getTotalAttributeCount() - event.getAttributes().size();
     size += MarshalerUtil.sizeUInt32(Span.Event.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
-
-    context.setSize(sizeIndex, size);
 
     return size;
   }

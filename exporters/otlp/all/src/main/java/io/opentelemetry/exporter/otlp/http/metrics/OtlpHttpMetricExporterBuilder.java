@@ -13,7 +13,7 @@ import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
-import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -40,14 +40,14 @@ public final class OtlpHttpMetricExporterBuilder {
   private static final AggregationTemporalitySelector DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR =
       AggregationTemporalitySelector.alwaysCumulative();
 
-  private final HttpExporterBuilder<MetricsRequestMarshaler> delegate;
+  private final HttpExporterBuilder<Marshaler> delegate;
   private AggregationTemporalitySelector aggregationTemporalitySelector =
       DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR;
 
   private DefaultAggregationSelector defaultAggregationSelector =
       DefaultAggregationSelector.getDefault();
 
-  OtlpHttpMetricExporterBuilder(HttpExporterBuilder<MetricsRequestMarshaler> delegate) {
+  OtlpHttpMetricExporterBuilder(HttpExporterBuilder<Marshaler> delegate) {
     this.delegate = delegate;
     delegate.setMeterProvider(MeterProvider::noop);
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeaders);

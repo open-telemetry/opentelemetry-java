@@ -93,17 +93,15 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
     output.serializeByteAsFixed32(Span.Link.FLAGS, traceFlags.asByte());
   }
 
-  public static void writeTo(Serializer output, LinkData linkData, MarshalerContext context)
+  public static void writeTo(Serializer output, LinkData link, MarshalerContext context)
       throws IOException {
-    output.serializeTraceId(Span.Link.TRACE_ID, linkData.getSpanContext().getTraceId(), context);
-    output.serializeSpanId(Span.Link.SPAN_ID, linkData.getSpanContext().getSpanId(), context);
+    output.serializeTraceId(Span.Link.TRACE_ID, link.getSpanContext().getTraceId(), context);
+    output.serializeSpanId(Span.Link.SPAN_ID, link.getSpanContext().getSpanId(), context);
     output.serializeString(Span.Link.TRACE_STATE, context.getByteArray());
-    KeyValueMarshaler.writeTo(output, context, Span.Link.ATTRIBUTES, linkData.getAttributes());
-    int droppedAttributesCount =
-        linkData.getTotalAttributeCount() - linkData.getAttributes().size();
+    KeyValueMarshaler.writeTo(output, context, Span.Link.ATTRIBUTES, link.getAttributes());
+    int droppedAttributesCount = link.getTotalAttributeCount() - link.getAttributes().size();
     output.serializeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
-    output.serializeByteAsFixed32(
-        Span.Link.FLAGS, linkData.getSpanContext().getTraceFlags().asByte());
+    output.serializeByteAsFixed32(Span.Link.FLAGS, link.getSpanContext().getTraceFlags().asByte());
   }
 
   private static int calculateSize(
@@ -123,8 +121,7 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
     return size;
   }
 
-  public static int calculateSize(MarshalerContext context, LinkData link) {
-    int sizeIndex = context.addSize();
+  public static int calculateSize(LinkData link, MarshalerContext context) {
     TraceState traceState = link.getSpanContext().getTraceState();
     byte[] traceStateUtf8 =
         traceState.isEmpty()
@@ -136,14 +133,12 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeTraceId(Span.Link.TRACE_ID, link.getSpanContext().getTraceId());
     size += MarshalerUtil.sizeSpanId(Span.Link.SPAN_ID, link.getSpanContext().getSpanId());
     size += MarshalerUtil.sizeBytes(Span.Link.TRACE_STATE, traceStateUtf8);
-    size += KeyValueMarshaler.calculateSize(Span.Link.ATTRIBUTES, context, link.getAttributes());
+    size += KeyValueMarshaler.calculateSize(Span.Link.ATTRIBUTES, link.getAttributes(), context);
     int droppedAttributesCount = link.getTotalAttributeCount() - link.getAttributes().size();
     size += MarshalerUtil.sizeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
     size +=
         MarshalerUtil.sizeByteAsFixed32(
             Span.Link.FLAGS, link.getSpanContext().getTraceFlags().asByte());
-
-    context.setSize(sizeIndex, size);
 
     return size;
   }

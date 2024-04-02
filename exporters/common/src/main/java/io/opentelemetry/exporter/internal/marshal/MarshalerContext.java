@@ -25,10 +25,10 @@ import javax.annotation.Nullable;
 public final class MarshalerContext {
   public static final boolean MARSHAL_STRING_NO_ALLOCATION = true;
 
-  private int[] sizes = new int[1024];
+  private int[] sizes = new int[16];
   private int sizeReadIndex;
   private int sizeWriteIndex;
-  private Object[] data = new Object[1024];
+  private Object[] data = new Object[16];
   private int dataReadIndex;
   private int dataWriteIndex;
 
@@ -49,6 +49,7 @@ public final class MarshalerContext {
   private void growSizeIfNeeded() {
     if (sizeWriteIndex == sizes.length) {
       int[] newSizes = new int[sizes.length * 2];
+      System.arraycopy(sizes, 0, newSizes, 0, sizes.length);
       sizes = newSizes;
     }
   }
@@ -203,11 +204,11 @@ public final class MarshalerContext {
     listPool.reset();
   }
 
-  private final Map<Class<?>, Object> instanceMap = new HashMap<>();
+  private final Map<Object, Object> instanceMap = new HashMap<>();
 
   /** Returns cached instance produced by the given supplier. */
   @SuppressWarnings("unchecked")
-  public <T> T getInstance(Class<T> key, Supplier<T> supplier) {
+  public <T> T getInstance(Object key, Supplier<T> supplier) {
     T result = (T) instanceMap.get(key);
     if (result == null) {
       result = supplier.get();

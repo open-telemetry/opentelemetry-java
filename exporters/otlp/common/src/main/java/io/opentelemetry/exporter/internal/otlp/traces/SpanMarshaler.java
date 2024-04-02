@@ -158,50 +158,46 @@ final class SpanMarshaler extends MarshalerWithSize {
     output.serializeByteAsFixed32(Span.FLAGS, flags.asByte());
   }
 
-  public static void writeTo(Serializer output, SpanData spanData, MarshalerContext context)
+  public static void writeTo(Serializer output, SpanData span, MarshalerContext context)
       throws IOException {
-    output.serializeTraceId(Span.TRACE_ID, spanData.getTraceId(), context);
-    output.serializeSpanId(Span.SPAN_ID, spanData.getSpanId(), context);
+    output.serializeTraceId(Span.TRACE_ID, span.getTraceId(), context);
+    output.serializeSpanId(Span.SPAN_ID, span.getSpanId(), context);
 
     byte[] traceStateUtf8 = context.getByteArray();
     output.serializeString(Span.TRACE_STATE, traceStateUtf8);
     String parentSpanId =
-        spanData.getParentSpanContext().isValid()
-            ? spanData.getParentSpanContext().getSpanId()
-            : null;
+        span.getParentSpanContext().isValid() ? span.getParentSpanContext().getSpanId() : null;
     output.serializeSpanId(Span.PARENT_SPAN_ID, parentSpanId, context);
 
     if (context.marshalStringNoAllocation()) {
-      output.writeString(Span.NAME, spanData.getName(), context.getSize());
+      output.writeString(Span.NAME, span.getName(), context.getSize());
     } else {
       byte[] nameUtf8 = context.getByteArray();
       output.serializeString(Span.NAME, nameUtf8);
     }
 
-    output.serializeEnum(Span.KIND, toProtoSpanKind(spanData.getKind()));
+    output.serializeEnum(Span.KIND, toProtoSpanKind(span.getKind()));
 
-    output.serializeFixed64(Span.START_TIME_UNIX_NANO, spanData.getStartEpochNanos());
-    output.serializeFixed64(Span.END_TIME_UNIX_NANO, spanData.getEndEpochNanos());
+    output.serializeFixed64(Span.START_TIME_UNIX_NANO, span.getStartEpochNanos());
+    output.serializeFixed64(Span.END_TIME_UNIX_NANO, span.getEndEpochNanos());
 
-    KeyValueMarshaler.writeTo(output, context, Span.ATTRIBUTES, spanData.getAttributes());
-    int droppedAttributesCount =
-        spanData.getTotalAttributeCount() - spanData.getAttributes().size();
+    KeyValueMarshaler.writeTo(output, context, Span.ATTRIBUTES, span.getAttributes());
+    int droppedAttributesCount = span.getTotalAttributeCount() - span.getAttributes().size();
     output.serializeUInt32(Span.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
 
     output.serializeRepeatedMessage(
-        Span.EVENTS, spanData.getEvents(), context, SpanEventMarshaler::writeTo);
-    int droppedEventsCount = spanData.getTotalRecordedEvents() - spanData.getEvents().size();
+        Span.EVENTS, span.getEvents(), SpanEventMarshaler::writeTo, context);
+    int droppedEventsCount = span.getTotalRecordedEvents() - span.getEvents().size();
     output.serializeUInt32(Span.DROPPED_EVENTS_COUNT, droppedEventsCount);
 
     output.serializeRepeatedMessage(
-        Span.LINKS, spanData.getLinks(), context, SpanLinkMarshaler::writeTo);
-    int droppedLinksCount = spanData.getTotalRecordedLinks() - spanData.getLinks().size();
+        Span.LINKS, span.getLinks(), SpanLinkMarshaler::writeTo, context);
+    int droppedLinksCount = span.getTotalRecordedLinks() - span.getLinks().size();
     output.serializeUInt32(Span.DROPPED_LINKS_COUNT, droppedLinksCount);
 
-    output.serializeMessage(
-        Span.STATUS, spanData.getStatus(), context, SpanStatusMarshaler::writeTo);
+    output.serializeMessage(Span.STATUS, span.getStatus(), SpanStatusMarshaler::writeTo, context);
 
-    output.serializeByteAsFixed32(Span.FLAGS, spanData.getSpanContext().getTraceFlags().asByte());
+    output.serializeByteAsFixed32(Span.FLAGS, span.getSpanContext().getTraceFlags().asByte());
   }
 
   private static int calculateSize(
@@ -248,13 +244,12 @@ final class SpanMarshaler extends MarshalerWithSize {
     return size;
   }
 
-  public static int calculateSpanSize(MarshalerContext context, SpanData spanData) {
-    int sizeIndex = context.addSize();
+  public static int calculateSize(SpanData span, MarshalerContext context) {
     int size = 0;
-    size += MarshalerUtil.sizeTraceId(Span.TRACE_ID, spanData.getTraceId());
-    size += MarshalerUtil.sizeSpanId(Span.SPAN_ID, spanData.getSpanId());
+    size += MarshalerUtil.sizeTraceId(Span.TRACE_ID, span.getTraceId());
+    size += MarshalerUtil.sizeSpanId(Span.SPAN_ID, span.getSpanId());
 
-    TraceState traceState = spanData.getSpanContext().getTraceState();
+    TraceState traceState = span.getSpanContext().getTraceState();
     byte[] traceStateUtf8 =
         traceState.isEmpty()
             ? EMPTY_BYTES
@@ -263,51 +258,46 @@ final class SpanMarshaler extends MarshalerWithSize {
 
     size += MarshalerUtil.sizeBytes(Span.TRACE_STATE, traceStateUtf8);
     String parentSpanId =
-        spanData.getParentSpanContext().isValid()
-            ? spanData.getParentSpanContext().getSpanId()
-            : null;
+        span.getParentSpanContext().isValid() ? span.getParentSpanContext().getSpanId() : null;
     size += MarshalerUtil.sizeSpanId(Span.PARENT_SPAN_ID, parentSpanId);
 
     if (context.marshalStringNoAllocation()) {
-      int utf8Size = MarshalerUtil.getUtf8Size(spanData.getName());
+      int utf8Size = MarshalerUtil.getUtf8Size(span.getName());
       context.addSize(utf8Size);
       size += MarshalerUtil.sizeBytes(Span.NAME, utf8Size);
     } else {
-      byte[] nameUtf8 = MarshalerUtil.toBytes(spanData.getName());
+      byte[] nameUtf8 = MarshalerUtil.toBytes(span.getName());
       context.addData(nameUtf8);
       size += MarshalerUtil.sizeBytes(Span.NAME, nameUtf8);
     }
 
-    size += MarshalerUtil.sizeEnum(Span.KIND, toProtoSpanKind(spanData.getKind()));
+    size += MarshalerUtil.sizeEnum(Span.KIND, toProtoSpanKind(span.getKind()));
 
-    size += MarshalerUtil.sizeFixed64(Span.START_TIME_UNIX_NANO, spanData.getStartEpochNanos());
-    size += MarshalerUtil.sizeFixed64(Span.END_TIME_UNIX_NANO, spanData.getEndEpochNanos());
+    size += MarshalerUtil.sizeFixed64(Span.START_TIME_UNIX_NANO, span.getStartEpochNanos());
+    size += MarshalerUtil.sizeFixed64(Span.END_TIME_UNIX_NANO, span.getEndEpochNanos());
 
-    size += KeyValueMarshaler.calculateSize(Span.ATTRIBUTES, context, spanData.getAttributes());
-    int droppedAttributesCount =
-        spanData.getTotalAttributeCount() - spanData.getAttributes().size();
+    size += KeyValueMarshaler.calculateSize(Span.ATTRIBUTES, span.getAttributes(), context);
+    int droppedAttributesCount = span.getTotalAttributeCount() - span.getAttributes().size();
     size += MarshalerUtil.sizeUInt32(Span.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
 
     size +=
         MarshalerUtil.sizeRepeatedMessage(
-            Span.EVENTS, SpanEventMarshaler::calculateSize, spanData.getEvents(), context);
-    int droppedEventsCount = spanData.getTotalRecordedEvents() - spanData.getEvents().size();
+            Span.EVENTS, span.getEvents(), SpanEventMarshaler::calculateSize, context);
+    int droppedEventsCount = span.getTotalRecordedEvents() - span.getEvents().size();
     size += MarshalerUtil.sizeUInt32(Span.DROPPED_EVENTS_COUNT, droppedEventsCount);
 
     size +=
         MarshalerUtil.sizeRepeatedMessage(
-            Span.LINKS, SpanLinkMarshaler::calculateSize, spanData.getLinks(), context);
-    int droppedLinksCount = spanData.getTotalRecordedLinks() - spanData.getLinks().size();
+            Span.LINKS, span.getLinks(), SpanLinkMarshaler::calculateSize, context);
+    int droppedLinksCount = span.getTotalRecordedLinks() - span.getLinks().size();
     size += MarshalerUtil.sizeUInt32(Span.DROPPED_LINKS_COUNT, droppedLinksCount);
 
-    int spanStatusSize = SpanStatusMarshaler.calculateSize(context, spanData.getStatus());
-    size += MarshalerUtil.sizeMessage(Span.STATUS, spanStatusSize);
+    size +=
+        MarshalerUtil.sizeMessage(
+            Span.STATUS, span.getStatus(), SpanStatusMarshaler::calculateSize, context);
 
     size +=
-        MarshalerUtil.sizeByteAsFixed32(
-            Span.FLAGS, spanData.getSpanContext().getTraceFlags().asByte());
-
-    context.setSize(sizeIndex, size);
+        MarshalerUtil.sizeByteAsFixed32(Span.FLAGS, span.getSpanContext().getTraceFlags().asByte());
 
     return size;
   }

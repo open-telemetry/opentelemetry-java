@@ -5,12 +5,12 @@
 
 package io.opentelemetry.exporter.internal.otlp.traces;
 
-import io.opentelemetry.exporter.internal.marshal.CodedOutputStream;
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
-import io.opentelemetry.exporter.internal.marshal.ProtoFieldInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
+import io.opentelemetry.exporter.internal.otlp.AbstractScopeListSizeCalculator;
+import io.opentelemetry.exporter.internal.otlp.AbstractScopeListWriter;
 import io.opentelemetry.exporter.internal.otlp.InstrumentationScopeMarshaler;
 import io.opentelemetry.exporter.internal.otlp.ResourceMarshaler;
 import io.opentelemetry.proto.trace.v1.internal.ResourceSpans;
@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 /**
  * A Marshaler of ResourceSpans.
@@ -92,7 +91,7 @@ public final class ResourceSpansMarshaler extends MarshalerWithSize {
 
     ScopeSpanListWriter scopeSpanListWriter =
         context.getInstance(ScopeSpanListWriter.class, ScopeSpanListWriter::new);
-    scopeSpanListWriter.init(output, context);
+    scopeSpanListWriter.initialize(output, ResourceSpans.SCOPE_SPANS, context);
     scopeMap.forEach(scopeSpanListWriter);
 
     byte[] schemaUrlUtf8 = context.getByteArray();
@@ -129,7 +128,7 @@ public final class ResourceSpansMarshaler extends MarshalerWithSize {
         context.getInstance(ScopeSpanListSizeCalculator.class, ScopeSpanListSizeCalculator::new);
     scopeSpanListSizeCalculator.initialize(ResourceSpans.SCOPE_SPANS, context);
     scopeMap.forEach(scopeSpanListSizeCalculator);
-    size += scopeSpanListSizeCalculator.size;
+    size += scopeSpanListSizeCalculator.getSize();
 
     byte[] schemaUrlUtf8 = MarshalerUtil.toBytes(resource.getSchemaUrl());
     context.addData(schemaUrlUtf8);
@@ -151,64 +150,29 @@ public final class ResourceSpansMarshaler extends MarshalerWithSize {
         SpanMarshaler::create);
   }
 
-  private static class ScopeSpanListWriter
-      implements BiConsumer<InstrumentationScopeInfo, List<SpanData>> {
-    @SuppressWarnings("NullAway")
-    Serializer output;
-
-    @SuppressWarnings("NullAway")
-    MarshalerContext context;
-
-    void init(Serializer output, MarshalerContext context) {
-      this.output = output;
-      this.context = context;
-    }
+  private static class ScopeSpanListWriter extends AbstractScopeListWriter<SpanData> {
 
     @Override
-    public void accept(InstrumentationScopeInfo instrumentationScopeInfo, List<SpanData> spanData) {
-      try {
-        output.writeStartRepeated(ResourceSpans.SCOPE_SPANS);
-        output.writeStartRepeatedElement(ResourceSpans.SCOPE_SPANS, context.getSize());
-
-        InstrumentationScopeMarshaler instrumentationScopeMarshaler =
-            context.getObject(InstrumentationScopeMarshaler.class);
-        byte[] schemaUrlUtf8 = context.getByteArray();
-        InstrumentationScopeSpansMarshaler.writeTo(
-            output, context, instrumentationScopeMarshaler, spanData, schemaUrlUtf8);
-
-        output.writeEndRepeatedElement();
-        output.writeEndRepeated();
-      } catch (IOException e) {
-        throw new IllegalStateException(e);
-      }
+    protected void handle(
+        InstrumentationScopeMarshaler instrumentationScopeMarshaler,
+        List<SpanData> list,
+        byte[] schemaUrlUtf8)
+        throws IOException {
+      InstrumentationScopeSpansMarshaler.writeTo(
+          output, instrumentationScopeMarshaler, list, schemaUrlUtf8, context);
     }
   }
 
   private static class ScopeSpanListSizeCalculator
-      implements BiConsumer<InstrumentationScopeInfo, List<SpanData>> {
-    int size;
-    int fieldTagSize;
-
-    @SuppressWarnings("NullAway")
-    MarshalerContext context;
-
-    void initialize(ProtoFieldInfo field, MarshalerContext context) {
-      this.size = 0;
-      this.fieldTagSize = field.getTagSize();
-      this.context = context;
-    }
+      extends AbstractScopeListSizeCalculator<SpanData> {
 
     @Override
-    public void accept(InstrumentationScopeInfo instrumentationScopeInfo, List<SpanData> spanData) {
-      InstrumentationScopeMarshaler instrumentationScopeMarshaler =
-          InstrumentationScopeMarshaler.create(instrumentationScopeInfo);
-      context.addData(instrumentationScopeMarshaler);
-      byte[] schemaUrlUtf8 = MarshalerUtil.toBytes(instrumentationScopeInfo.getSchemaUrl());
-      context.addData(schemaUrlUtf8);
-      int fieldSize =
-          InstrumentationScopeSpansMarshaler.calculateSize(
-              instrumentationScopeMarshaler, schemaUrlUtf8, context, spanData);
-      size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
+    public int calculateSize(
+        InstrumentationScopeMarshaler instrumentationScopeMarshaler,
+        byte[] schemaUrlUtf8,
+        List<SpanData> list) {
+      return InstrumentationScopeSpansMarshaler.calculateSize(
+          instrumentationScopeMarshaler, schemaUrlUtf8, list, context);
     }
   }
 }

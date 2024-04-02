@@ -25,6 +25,9 @@ import org.openjdk.jmh.annotations.Warmup;
 @Fork(1)
 public class RequestMarshalBenchmarks {
 
+  private static final LowAllocationTraceRequestMarshaler MARSHALER =
+      new LowAllocationTraceRequestMarshaler();
+
   @Benchmark
   @Threads(1)
   public int createCustomMarshal(RequestMarshalState state) {
@@ -54,7 +57,7 @@ public class RequestMarshalBenchmarks {
   @Benchmark
   @Threads(1)
   public int createCustomMarshalLowAllocation(RequestMarshalState state) {
-    LowAllocationTraceRequestMarshaler requestMarshaler = state.lowAllocationTraceRequestMarshaler;
+    LowAllocationTraceRequestMarshaler requestMarshaler = MARSHALER;
     requestMarshaler.initialize(state.spanDataList);
     try {
       return requestMarshaler.getBinarySerializedSize();
@@ -66,7 +69,7 @@ public class RequestMarshalBenchmarks {
   @Benchmark
   @Threads(1)
   public TestOutputStream marshalCustomLowAllocation(RequestMarshalState state) throws IOException {
-    LowAllocationTraceRequestMarshaler requestMarshaler = state.lowAllocationTraceRequestMarshaler;
+    LowAllocationTraceRequestMarshaler requestMarshaler = MARSHALER;
     requestMarshaler.initialize(state.spanDataList);
     try {
       TestOutputStream customOutput = new TestOutputStream();
@@ -80,7 +83,7 @@ public class RequestMarshalBenchmarks {
   @Benchmark
   @Threads(1)
   public TestOutputStream marshalJsonLowAllocation(RequestMarshalState state) throws IOException {
-    LowAllocationTraceRequestMarshaler requestMarshaler = state.lowAllocationTraceRequestMarshaler;
+    LowAllocationTraceRequestMarshaler requestMarshaler = MARSHALER;
     requestMarshaler.initialize(state.spanDataList);
     try {
       TestOutputStream customOutput = new TestOutputStream();
