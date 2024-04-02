@@ -41,7 +41,7 @@ public final class ServiceInstanceIdResourceProvider implements ConditionalResou
   @Override
   public int order() {
     // Run after environment resource provider - only set the service instance ID if it
-    // hasn't been set by any other provider.
+    // hasn't been set by any other provider or the user.
     return ORDER;
   }
 }

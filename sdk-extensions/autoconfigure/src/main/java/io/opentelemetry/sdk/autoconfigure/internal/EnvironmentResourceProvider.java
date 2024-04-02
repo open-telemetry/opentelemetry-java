@@ -24,6 +24,6 @@ public final class EnvironmentResourceProvider implements ResourceProvider {
   public int order() {
     // Environment resource takes precedent over all other ResourceProviders except
     // ServiceInstanceIdResourceProvider.
-    return ServiceInstanceIdResourceProvider.ORDER - 1;
+    return Integer.MAX_VALUE - 1;
   }
 }
