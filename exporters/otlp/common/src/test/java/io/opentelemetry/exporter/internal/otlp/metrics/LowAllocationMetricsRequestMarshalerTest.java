@@ -58,7 +58,6 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 
 class LowAllocationMetricsRequestMarshalerTest {
 
-  @SuppressWarnings("SystemOut")
   @ParameterizedTest
   @ArgumentsSource(MetricsProvider.class)
   void validateOutput(Collection<MetricData> metrics) throws Exception {
@@ -80,13 +79,6 @@ class LowAllocationMetricsRequestMarshalerTest {
           new ByteArrayOutputStream(requestMarshaler.getBinarySerializedSize());
       requestMarshaler.writeBinaryTo(customOutput);
       lowAllocationResult = customOutput.toByteArray();
-    }
-
-    // XXX
-    for (int i = 0; i < lowAllocationResult.length; i++) {
-      if (lowAllocationResult[i] != result[i]) {
-        System.err.println(i + " " + lowAllocationResult[i] + " " + result[i]);
-      }
     }
 
     assertThat(lowAllocationResult).isEqualTo(result);

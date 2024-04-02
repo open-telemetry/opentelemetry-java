@@ -17,10 +17,8 @@ public abstract class AbstractScopeListWriter<T>
     implements BiConsumer<InstrumentationScopeInfo, List<T>> {
   @SuppressWarnings("NullAway")
   protected Serializer output;
-
   @SuppressWarnings("NullAway")
   protected ProtoFieldInfo field;
-
   @SuppressWarnings("NullAway")
   protected MarshalerContext context;
 

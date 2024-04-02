@@ -132,8 +132,16 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
   private static void writeTo(
       Serializer output, MarshalerContext context, AttributeKey<?> attributeKey, Object value)
       throws IOException {
-    byte[] keyUtf8 = context.getByteArray();
-    output.serializeString(KeyValue.KEY, keyUtf8);
+    if (attributeKey.getKey().isEmpty()) {
+      output.serializeString(KeyValue.KEY, EMPTY_BYTES);
+    } else if (attributeKey instanceof InternalAttributeKeyImpl) {
+      byte[] keyUtf8 = ((InternalAttributeKeyImpl<?>) attributeKey).getKeyUtf8();
+      output.serializeString(KeyValue.KEY, keyUtf8);
+    } else if (context.marshalStringNoAllocation()) {
+      output.writeString(KeyValue.KEY, attributeKey.getKey(), context.getSize());
+    } else {
+      output.serializeString(KeyValue.KEY, context.getByteArray());
+    }
 
     output.writeStartMessage(KeyValue.VALUE, context.getSize());
     writeAttributeValue(output, context, attributeKey, value);
@@ -202,21 +210,23 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
 
   private static int calculateSize(
       AttributeKey<?> attributeKey, Object value, MarshalerContext context) {
-    byte[] keyUtf8;
-    if (attributeKey.getKey().isEmpty()) {
-      keyUtf8 = EMPTY_BYTES;
-    } else if (attributeKey instanceof InternalAttributeKeyImpl) {
-      keyUtf8 = ((InternalAttributeKeyImpl<?>) attributeKey).getKeyUtf8();
-    } else {
-      keyUtf8 = attributeKey.getKey().getBytes(StandardCharsets.UTF_8);
-    }
-    context.addData(keyUtf8);
-
     int sizeIndex = context.addSize();
-    int valueSizeIndex = context.addSize();
-
     int size = 0;
-    size += MarshalerUtil.sizeBytes(KeyValue.KEY, keyUtf8);
+    if (!attributeKey.getKey().isEmpty()) {
+      if (attributeKey instanceof InternalAttributeKeyImpl) {
+        byte[] keyUtf8 = ((InternalAttributeKeyImpl<?>) attributeKey).getKeyUtf8();
+        size += MarshalerUtil.sizeBytes(KeyValue.KEY, keyUtf8);
+      } else if (context.marshalStringNoAllocation()) {
+        int utf8Size = MarshalerUtil.getUtf8Size(attributeKey.getKey());
+        context.addSize(utf8Size);
+        size += MarshalerUtil.sizeBytes(KeyValue.KEY, utf8Size);
+      } else {
+        byte[] keyUtf8 = attributeKey.getKey().getBytes(StandardCharsets.UTF_8);
+        context.addData(keyUtf8);
+        size += MarshalerUtil.sizeBytes(KeyValue.KEY, keyUtf8);
+      }
+    }
+    int valueSizeIndex = context.addSize();
     int valueSize = calculateValueSize(attributeKey, value, context);
     size += MarshalerUtil.sizeMessage(KeyValue.VALUE, valueSize);
 
@@ -259,10 +269,8 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
   private static class AttributesWriter implements BiConsumer<AttributeKey<?>, Object> {
     @SuppressWarnings("NullAway")
     ProtoFieldInfo field;
-
     @SuppressWarnings("NullAway")
     Serializer output;
-
     @SuppressWarnings("NullAway")
     MarshalerContext context;
 
@@ -287,7 +295,6 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
   private static class AttributesSizeCalculator implements BiConsumer<AttributeKey<?>, Object> {
     int size;
     int fieldTagSize;
-
     @SuppressWarnings("NullAway")
     MarshalerContext context;
 
