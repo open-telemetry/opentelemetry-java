@@ -12,7 +12,6 @@ import static java.util.Collections.singletonMap;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.autoconfigure.internal.ServiceInstanceIdResourceProvider;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -36,19 +35,15 @@ class ResourceConfigurationTest {
 
     assertThat(
             ResourceConfiguration.configureResource(
-                    DefaultConfigProperties.create(props),
-                    SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
-                    (r, c) -> r)
-                .getAttributes()
-                .asMap())
-        .containsAllEntriesOf(
-            Attributes.builder()
-                .put("service.name", "test-service")
+                DefaultConfigProperties.create(props),
+                SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
+                (r, c) -> r))
+        .isEqualTo(
+            Resource.getDefault().toBuilder()
+                .put(stringKey("service.name"), "test-service")
                 .put("food", "cheesecake")
                 .put("shape", "square")
-                .build()
-                .asMap())
-        .containsKey(ServiceInstanceIdResourceProvider.SERVICE_INSTANCE_ID);
+                .build());
   }
 
   @Test
