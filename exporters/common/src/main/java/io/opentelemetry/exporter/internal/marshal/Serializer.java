@@ -386,10 +386,13 @@ public abstract class Serializer implements AutoCloseable {
   private static class RepeatedElementWriter<T> implements Consumer<T> {
     @SuppressWarnings("NullAway")
     private ProtoFieldInfo field;
+
     @SuppressWarnings("NullAway")
     private Serializer output;
+
     @SuppressWarnings("NullAway")
     private MessageConsumer<Serializer, T, MarshalerContext> write;
+
     @SuppressWarnings("NullAway")
     private MarshalerContext context;
 

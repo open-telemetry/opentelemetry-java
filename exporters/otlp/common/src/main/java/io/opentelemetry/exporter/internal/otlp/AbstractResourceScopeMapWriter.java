@@ -19,8 +19,10 @@ public abstract class AbstractResourceScopeMapWriter<T>
     implements BiConsumer<Resource, Map<InstrumentationScopeInfo, List<T>>> {
   @SuppressWarnings("NullAway")
   protected Serializer output;
+
   @SuppressWarnings("NullAway")
   private ProtoFieldInfo field;
+
   @SuppressWarnings("NullAway")
   protected MarshalerContext context;
 

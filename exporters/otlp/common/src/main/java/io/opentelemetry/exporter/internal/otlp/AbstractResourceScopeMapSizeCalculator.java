@@ -18,6 +18,7 @@ public abstract class AbstractResourceScopeMapSizeCalculator<T>
     implements BiConsumer<Resource, Map<InstrumentationScopeInfo, List<T>>> {
   private int size;
   private int fieldTagSize;
+
   @SuppressWarnings("NullAway")
   protected MarshalerContext context;
 

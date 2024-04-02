@@ -269,8 +269,10 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
   private static class AttributesWriter implements BiConsumer<AttributeKey<?>, Object> {
     @SuppressWarnings("NullAway")
     ProtoFieldInfo field;
+
     @SuppressWarnings("NullAway")
     Serializer output;
+
     @SuppressWarnings("NullAway")
     MarshalerContext context;
 
@@ -295,6 +297,7 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
   private static class AttributesSizeCalculator implements BiConsumer<AttributeKey<?>, Object> {
     int size;
     int fieldTagSize;
+
     @SuppressWarnings("NullAway")
     MarshalerContext context;
 

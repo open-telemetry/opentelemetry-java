@@ -17,6 +17,7 @@ public abstract class AbstractScopeListSizeCalculator<T>
     implements BiConsumer<InstrumentationScopeInfo, List<T>> {
   private int size;
   private int fieldTagSize;
+
   @SuppressWarnings("NullAway")
   protected MarshalerContext context;
 
