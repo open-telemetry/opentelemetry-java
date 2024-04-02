@@ -1,1 +1,1 @@
-io.opentelemetry.sdk.autoconfigure.internal.ServiceInstanceIdResourceProvider
+io.opentelemetry.sdk.extension.incubator.resources.ServiceInstanceIdResourceProvider
