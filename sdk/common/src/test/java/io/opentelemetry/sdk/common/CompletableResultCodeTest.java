@@ -12,12 +12,27 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 
 class CompletableResultCodeTest {
+
+  @Test
+  void completeExceptionally() throws ExecutionException, InterruptedException {
+    CompletableFuture<Void> completableFuture = new CompletableFuture<Void>();
+    completableFuture.handle((unused, throwable) -> {
+      System.out.format("handle: %s, %s\n", unused, throwable);
+      return null;
+    });
+    completableFuture.completeExceptionally(new Exception());
+    System.out.println(completableFuture.get());
+  }
 
   @Test
   void ofSuccess() {
