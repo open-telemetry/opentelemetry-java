@@ -12,36 +12,41 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 
 class CompletableResultCodeTest {
 
   @Test
-  void completeExceptionally() throws ExecutionException, InterruptedException {
-    CompletableFuture<Void> completableFuture = new CompletableFuture<Void>();
-    completableFuture.handle((unused, throwable) -> {
-      System.out.format("handle: %s, %s\n", unused, throwable);
-      return null;
-    });
-    completableFuture.completeExceptionally(new Exception());
-    System.out.println(completableFuture.get());
-  }
-
-  @Test
   void ofSuccess() {
-    assertThat(CompletableResultCode.ofSuccess().isSuccess()).isTrue();
+    assertThat(CompletableResultCode.ofSuccess())
+        .satisfies(
+            code -> {
+              assertThat(code.isSuccess()).isTrue();
+              assertThat(code.getFailureThrowable()).isNull();
+            });
   }
 
   @Test
   void ofFailure() {
-    assertThat(CompletableResultCode.ofFailure().isSuccess()).isFalse();
+    assertThat(CompletableResultCode.ofFailure())
+        .satisfies(
+            code -> {
+              assertThat(code.isSuccess()).isFalse();
+              assertThat(code.getFailureThrowable()).isNull();
+            });
+  }
+
+  @Test
+  void ofExceptionalFailure() {
+    assertThat(CompletableResultCode.ofExceptionalFailure(new Exception("error")))
+        .satisfies(
+            code -> {
+              assertThat(code.isSuccess()).isFalse();
+              assertThat(code.getFailureThrowable()).hasMessage("error");
+            });
   }
 
   @Test
@@ -162,6 +167,24 @@ class CompletableResultCodeTest {
                         CompletableResultCode.ofSuccess()))
                 .isSuccess())
         .isFalse();
+  }
+
+  @Test
+  void ofAllWithExceptionalFailure() {
+    assertThat(
+            CompletableResultCode.ofAll(
+                Arrays.asList(
+                    CompletableResultCode.ofSuccess(),
+                    CompletableResultCode.ofFailure(),
+                    CompletableResultCode.ofExceptionalFailure(new Exception("error1")),
+                    CompletableResultCode.ofExceptionalFailure(new Exception("error2")),
+                    CompletableResultCode.ofSuccess())))
+        .satisfies(
+            code -> {
+              assertThat(code.isSuccess()).isFalse();
+              // failure throwable is set to first throwable seen in the collection
+              assertThat(code.getFailureThrowable()).hasMessage("error1");
+            });
   }
 
   @Test
