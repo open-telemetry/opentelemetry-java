@@ -33,6 +33,7 @@ import javax.annotation.Nullable;
  */
 public final class PrometheusHttpServer implements MetricReader {
 
+  private final PrometheusHttpServerBuilder builder;
   private final HTTPServer httpServer;
   private final PrometheusMetricReader prometheusMetricReader;
   private final PrometheusRegistry prometheusRegistry;
@@ -54,6 +55,7 @@ public final class PrometheusHttpServer implements MetricReader {
   }
 
   PrometheusHttpServer(
+      PrometheusHttpServerBuilder builder,
       String host,
       int port,
       @Nullable ExecutorService executor,
@@ -61,6 +63,7 @@ public final class PrometheusHttpServer implements MetricReader {
       boolean otelScopeEnabled,
       @Nullable Predicate<String> allowedResourceAttributesFilter,
       MemoryMode memoryMode) {
+    this.builder = builder;
     this.prometheusMetricReader =
         new PrometheusMetricReader(otelScopeEnabled, allowedResourceAttributesFilter);
     this.host = host;
@@ -128,6 +131,13 @@ public final class PrometheusHttpServer implements MetricReader {
   @Override
   public String toString() {
     return "PrometheusHttpServer{address=" + getAddress() + "}";
+  }
+
+  /**
+   * Returns a new {@link PrometheusHttpServerBuilder} with the same configuration as this instance.
+   */
+  public PrometheusHttpServerBuilder toBuilder() {
+    return new PrometheusHttpServerBuilder(builder);
   }
 
   // Visible for testing.

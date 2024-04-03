@@ -121,6 +121,14 @@ class SimpleLogRecordProcessorTest {
   }
 
   @Test
+  void getLogRecordExporter() {
+    assertThat(
+            ((SimpleLogRecordProcessor) SimpleLogRecordProcessor.create(logRecordExporter))
+                .getLogRecordExporter())
+        .isSameAs(logRecordExporter);
+  }
+
+  @Test
   void toString_Valid() {
     when(logRecordExporter.toString()).thenReturn("MockLogRecordExporter");
     assertThat(logRecordProcessor.toString())

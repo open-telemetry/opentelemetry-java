@@ -16,7 +16,7 @@ dependencies {
   protoSource("io.opentelemetry.proto:opentelemetry-proto:${versions["io.opentelemetry.proto"]}")
 
   api(project(":exporters:common"))
-  implementation(project(":extensions:incubator"))
+  implementation(project(":api:incubator"))
 
   compileOnly(project(":sdk:metrics"))
   compileOnly(project(":sdk:trace"))

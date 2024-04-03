@@ -10,7 +10,7 @@ dependencies {
   api(project(":sdk:all"))
   api(project(":sdk-extensions:autoconfigure-spi"))
 
-  implementation(project(":api:events"))
+  implementation(project(":api:incubator"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 
@@ -47,7 +47,7 @@ testing {
     }
     register<JvmTestSuite>("testFullConfig") {
       dependencies {
-        implementation(project(":api:events"))
+        implementation(project(":api:incubator"))
         implementation(project(":extensions:trace-propagators"))
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:logging-otlp"))
