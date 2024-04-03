@@ -178,7 +178,7 @@ class OtlpMetricExporterProviderTest {
     config.put("otel.exporter.otlp.metrics.compression", "gzip");
     config.put("otel.exporter.otlp.timeout", "1s");
     config.put("otel.exporter.otlp.metrics.timeout", "15s");
-    config.put("otel.java.experimental.exporter.otlp.metrics.memory_mode", "reusable_data");
+    config.put("otel.java.experimental.exporter.memory_mode", "reusable_data");
 
     try (MetricExporter exporter =
         provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
@@ -265,7 +265,7 @@ class OtlpMetricExporterProviderTest {
     config.put("otel.exporter.otlp.metrics.compression", "gzip");
     config.put("otel.exporter.otlp.timeout", "1s");
     config.put("otel.exporter.otlp.metrics.timeout", "15s");
-    config.put("otel.java.experimental.exporter.otlp.metrics.memory_mode", "reusable_data");
+    config.put("otel.java.experimental.exporter.memory_mode", "reusable_data");
 
     try (MetricExporter exporter =
         provider.createExporter(DefaultConfigProperties.createFromMap(config))) {

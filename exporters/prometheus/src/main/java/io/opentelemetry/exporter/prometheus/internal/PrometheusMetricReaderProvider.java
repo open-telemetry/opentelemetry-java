@@ -5,11 +5,15 @@
 
 package io.opentelemetry.exporter.prometheus.internal;
 
+import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServerBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ConfigurableMetricReaderProvider;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * SPI implementation for {@link PrometheusHttpServer}.
@@ -32,7 +36,24 @@ public class PrometheusMetricReaderProvider implements ConfigurableMetricReaderP
       prometheusBuilder.setHost(host);
     }
 
+    ExporterBuilderUtil.configureExporterMemoryMode(
+        config, memoryMode -> setMemoryMode(prometheusBuilder, memoryMode));
+
     return prometheusBuilder.build();
+  }
+
+  /**
+   * Calls {@code #setMemoryMode} on the {@link PrometheusHttpServerBuilder} with the {@code
+   * memoryMode}.
+   */
+  public static void setMemoryMode(PrometheusHttpServerBuilder builder, MemoryMode memoryMode) {
+    try {
+      Method method = builder.getClass().getDeclaredMethod("setMemoryMode", MemoryMode.class);
+      method.setAccessible(true);
+      method.invoke(builder, memoryMode);
+    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+      throw new IllegalStateException("Error calling setMemoryMode.", e);
+    }
   }
 
   @Override

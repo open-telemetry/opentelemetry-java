@@ -211,23 +211,6 @@ public final class OtlpConfigUtil {
     }
   }
 
-  /** Invoke the {@code memoryModeConsumer} with the configured {@link MemoryMode}. */
-  public static void configureOtlpMetricMemoryMode(
-      ConfigProperties config, Consumer<MemoryMode> memoryModeConsumer) {
-    String memoryModeStr =
-        config.getString("otel.java.experimental.exporter.otlp.metrics.memory_mode");
-    if (memoryModeStr == null) {
-      return;
-    }
-    MemoryMode memoryMode;
-    try {
-      memoryMode = MemoryMode.valueOf(memoryModeStr.toUpperCase(Locale.ROOT));
-    } catch (IllegalArgumentException e) {
-      throw new ConfigurationException("Unrecognized memory mode: " + memoryModeStr, e);
-    }
-    memoryModeConsumer.accept(memoryMode);
-  }
-
   /**
    * Calls {@code #setMemoryMode} on the {@code Otlp{Protocol}MetricExporterBuilder} with the {@code
    * memoryMode}.
