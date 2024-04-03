@@ -392,7 +392,7 @@ class PrometheusHttpServerTest {
   }
 
   @Test
-  void testToBuilder() {
+  void toBuilder() {
     PrometheusHttpServerBuilder builder = PrometheusHttpServer.builder();
     builder.setHost("localhost");
     builder.setPort(1234);
