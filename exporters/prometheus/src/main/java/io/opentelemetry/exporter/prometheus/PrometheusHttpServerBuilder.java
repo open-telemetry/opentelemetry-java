@@ -94,7 +94,7 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /** Set the {@link MemoryMode}. */
-  PrometheusHttpServerBuilder setMemoryMode(MemoryMode memoryMode) {
+  public PrometheusHttpServerBuilder setMemoryMode(MemoryMode memoryMode) {
     requireNonNull(memoryMode, "memoryMode");
     this.memoryMode = memoryMode;
     return this;
