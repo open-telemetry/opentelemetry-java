@@ -304,7 +304,6 @@ Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemet
 
 - [Jason Plumb](https://github.com/breedx-splk), Splunk
 - [Josh Suereth](https://github.com/jsuereth), Google
-- [Mateusz Rzeszutek](https://github.com/mateuszrzeszutek), Splunk
 - [Trask Stalnaker](https://github.com/trask), Microsoft
 
 *Find more about the approver role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#approver).*
@@ -314,10 +313,11 @@ Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-tel
 - [Jack Berg](https://github.com/jack-berg), New Relic
 - [John Watson](https://github.com/jkwatson), Verta.ai
 
-Maintainers Emeritus:
+Emeritus:
 
-- [Bogdan Drutu](https://github.com/BogdanDrutu), Splunk
-- [Carlos Alberto](https://github.com/carlosalberto), LightStep
+- Maintainer [Bogdan Drutu](https://github.com/BogdanDrutu)
+- Maintainer [Carlos Alberto](https://github.com/carlosalberto)
+- Approver [Mateusz Rzeszutek](https://github.com/mateuszrzeszutek)
 
 *Find more about the maintainer role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#maintainer).*
 
