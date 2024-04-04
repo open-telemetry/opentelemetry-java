@@ -374,6 +374,7 @@ public interface Span extends ImplicitContextKeyed {
    *
    * @param spanContext the context of the linked {@code Span}.
    * @return this.
+   * @since 1.37.0
    */
   default Span addLink(SpanContext spanContext) {
     return addLink(spanContext, Attributes.empty());
@@ -395,6 +396,7 @@ public interface Span extends ImplicitContextKeyed {
    * @param spanContext the context of the linked {@code Span}.
    * @param attributes the attributes of the {@code Link}.
    * @return this.
+   * @since 1.37.0
    */
   default Span addLink(SpanContext spanContext, Attributes attributes) {
     return this;
