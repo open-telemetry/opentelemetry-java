@@ -315,9 +315,9 @@ Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-tel
 
 Emeritus:
 
-- Maintainer [Bogdan Drutu](https://github.com/BogdanDrutu), Splunk
-- Maintainer [Carlos Alberto](https://github.com/carlosalberto), LightStep
-- Approver [Mateusz Rzeszutek](https://github.com/mateuszrzeszutek), Splunk
+- Maintainer [Bogdan Drutu](https://github.com/BogdanDrutu)
+- Maintainer [Carlos Alberto](https://github.com/carlosalberto)
+- Approver [Mateusz Rzeszutek](https://github.com/mateuszrzeszutek)
 
 *Find more about the maintainer role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#maintainer).*
 
