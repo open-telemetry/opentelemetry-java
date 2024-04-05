@@ -11,6 +11,7 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.LowAllocationMetricsRequestMarshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -38,16 +39,19 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
   private final HttpExporter<Marshaler> delegate;
   private final AggregationTemporalitySelector aggregationTemporalitySelector;
   private final DefaultAggregationSelector defaultAggregationSelector;
+  private final MemoryMode memoryMode;
 
   OtlpHttpMetricExporter(
       HttpExporterBuilder<Marshaler> builder,
       HttpExporter<Marshaler> delegate,
       AggregationTemporalitySelector aggregationTemporalitySelector,
-      DefaultAggregationSelector defaultAggregationSelector) {
+      DefaultAggregationSelector defaultAggregationSelector,
+      MemoryMode memoryMode) {
     this.builder = builder;
     this.delegate = delegate;
     this.aggregationTemporalitySelector = aggregationTemporalitySelector;
     this.defaultAggregationSelector = defaultAggregationSelector;
+    this.memoryMode = memoryMode;
   }
 
   /**
@@ -79,7 +83,7 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
    * @since 1.29.0
    */
   public OtlpHttpMetricExporterBuilder toBuilder() {
-    return new OtlpHttpMetricExporterBuilder(builder.copy());
+    return new OtlpHttpMetricExporterBuilder(builder.copy(), memoryMode);
   }
 
   @Override
@@ -90,6 +94,11 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
   @Override
   public Aggregation getDefaultAggregation(InstrumentType instrumentType) {
     return defaultAggregationSelector.getDefaultAggregation(instrumentType);
+  }
+
+  @Override
+  public MemoryMode getMemoryMode() {
+    return memoryMode;
   }
 
   /**

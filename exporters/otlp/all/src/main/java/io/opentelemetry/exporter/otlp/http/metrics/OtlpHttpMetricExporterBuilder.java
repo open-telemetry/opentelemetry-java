@@ -15,6 +15,7 @@ import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -39,6 +40,7 @@ public final class OtlpHttpMetricExporterBuilder {
 
   private static final AggregationTemporalitySelector DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR =
       AggregationTemporalitySelector.alwaysCumulative();
+  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
 
   private final HttpExporterBuilder<Marshaler> delegate;
   private AggregationTemporalitySelector aggregationTemporalitySelector =
@@ -46,15 +48,17 @@ public final class OtlpHttpMetricExporterBuilder {
 
   private DefaultAggregationSelector defaultAggregationSelector =
       DefaultAggregationSelector.getDefault();
+  private MemoryMode memoryMode;
 
-  OtlpHttpMetricExporterBuilder(HttpExporterBuilder<Marshaler> delegate) {
+  OtlpHttpMetricExporterBuilder(HttpExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
+    this.memoryMode = memoryMode;
     delegate.setMeterProvider(MeterProvider::noop);
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeaders);
   }
 
   OtlpHttpMetricExporterBuilder() {
-    this(new HttpExporterBuilder<>("otlp", "metric", DEFAULT_ENDPOINT));
+    this(new HttpExporterBuilder<>("otlp", "metric", DEFAULT_ENDPOINT), DEFAULT_MEMORY_MODE);
   }
 
   /**
@@ -227,6 +231,13 @@ public final class OtlpHttpMetricExporterBuilder {
     return this;
   }
 
+  /** Set the {@link MemoryMode}. */
+  OtlpHttpMetricExporterBuilder setMemoryMode(MemoryMode memoryMode) {
+    requireNonNull(memoryMode, "memoryMode");
+    this.memoryMode = memoryMode;
+    return this;
+  }
+
   OtlpHttpMetricExporterBuilder exportAsJson() {
     delegate.exportAsJson();
     return this;
@@ -239,6 +250,10 @@ public final class OtlpHttpMetricExporterBuilder {
    */
   public OtlpHttpMetricExporter build() {
     return new OtlpHttpMetricExporter(
-        delegate, delegate.build(), aggregationTemporalitySelector, defaultAggregationSelector);
+        delegate,
+        delegate.build(),
+        aggregationTemporalitySelector,
+        defaultAggregationSelector,
+        memoryMode);
   }
 }

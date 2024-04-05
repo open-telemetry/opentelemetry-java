@@ -38,6 +38,7 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.logs.v1.SeverityNumber;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;
@@ -207,7 +208,8 @@ class FullConfigTest {
     logger.logRecordBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
 
     EventLogger eventLogger = GlobalEventLoggerProvider.get().eventLoggerBuilder("test").build();
-    eventLogger.emit("test-name", Attributes.builder().put("cow", "moo").build());
+    eventLogger.builder("namespace.test-name").put("cow", "moo").emit();
+    ;
 
     openTelemetrySdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
     openTelemetrySdk.getSdkLoggerProvider().forceFlush().join(10, TimeUnit.SECONDS);
@@ -329,17 +331,23 @@ class FullConfigTest {
               assertThat(logRecord.getSeverityNumberValue())
                   .isEqualTo(Severity.INFO.getSeverityNumber());
             },
-            logRecord ->
-                assertThat(logRecord.getAttributesList())
-                    .containsExactlyInAnyOrder(
-                        KeyValue.newBuilder()
-                            .setKey("event.name")
-                            .setValue(AnyValue.newBuilder().setStringValue("test-name").build())
-                            .build(),
-                        KeyValue.newBuilder()
-                            .setKey("cow")
-                            .setValue(AnyValue.newBuilder().setStringValue("moo").build())
-                            .build()));
+            logRecord -> {
+              assertThat(logRecord.getBody().getKvlistValue().getValuesList())
+                  .containsExactlyInAnyOrder(
+                      KeyValue.newBuilder()
+                          .setKey("cow")
+                          .setValue(AnyValue.newBuilder().setStringValue("moo").build())
+                          .build());
+              assertThat(logRecord.getSeverityNumber())
+                  .isEqualTo(SeverityNumber.SEVERITY_NUMBER_INFO);
+              assertThat(logRecord.getAttributesList())
+                  .containsExactlyInAnyOrder(
+                      KeyValue.newBuilder()
+                          .setKey("event.name")
+                          .setValue(
+                              AnyValue.newBuilder().setStringValue("namespace.test-name").build())
+                          .build());
+            });
   }
 
   private static List<KeyValue> getFirstDataPointLabels(Metric metric) {
