@@ -120,12 +120,12 @@ final class JsonSerializer extends Serializer {
   }
 
   @Override
-  public void writeStartMessage(ProtoFieldInfo field, int protoMessageSize) throws IOException {
+  protected void writeStartMessage(ProtoFieldInfo field, int protoMessageSize) throws IOException {
     generator.writeObjectFieldStart(field.getJsonName());
   }
 
   @Override
-  public void writeEndMessage() throws IOException {
+  protected void writeEndMessage() throws IOException {
     generator.writeEndObject();
   }
 
@@ -189,23 +189,23 @@ final class JsonSerializer extends Serializer {
   }
 
   @Override
-  public void writeStartRepeated(ProtoFieldInfo field) throws IOException {
+  protected void writeStartRepeated(ProtoFieldInfo field) throws IOException {
     generator.writeArrayFieldStart(field.getJsonName());
   }
 
   @Override
-  public void writeEndRepeated() throws IOException {
+  protected void writeEndRepeated() throws IOException {
     generator.writeEndArray();
   }
 
   @Override
-  public void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
+  protected void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
       throws IOException {
     generator.writeStartObject();
   }
 
   @Override
-  public void writeEndRepeatedElement() throws IOException {
+  protected void writeEndRepeatedElement() throws IOException {
     generator.writeEndObject();
   }
 

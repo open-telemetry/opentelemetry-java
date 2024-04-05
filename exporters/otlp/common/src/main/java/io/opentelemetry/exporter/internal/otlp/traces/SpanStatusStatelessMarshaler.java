@@ -28,7 +28,7 @@ final class SpanStatusStatelessMarshaler implements StatelessMarshaler<StatusDat
       protoStatusCode = Status.StatusCode.STATUS_CODE_ERROR;
     }
 
-    byte[] descriptionUtf8 = context.getByteArray();
+    byte[] descriptionUtf8 = context.getData(byte[].class);
 
     output.serializeString(Status.MESSAGE, descriptionUtf8);
     output.serializeEnum(Status.CODE, protoStatusCode);

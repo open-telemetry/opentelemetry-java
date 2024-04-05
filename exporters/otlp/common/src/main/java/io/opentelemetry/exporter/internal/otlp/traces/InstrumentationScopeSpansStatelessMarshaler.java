@@ -29,13 +29,12 @@ final class InstrumentationScopeSpansStatelessMarshaler
       MarshalerContext context)
       throws IOException {
     InstrumentationScopeMarshaler instrumentationScopeMarshaler =
-        context.getObject(InstrumentationScopeMarshaler.class);
-    byte[] schemaUrlUtf8 = context.getByteArray();
+        context.getData(InstrumentationScopeMarshaler.class);
 
     output.serializeMessage(ScopeSpans.SCOPE, instrumentationScopeMarshaler);
     output.serializeRepeatedMessage(
         ScopeSpans.SPANS, spans, SpanStatelessMarshaler.INSTANCE, context);
-    output.serializeString(ScopeSpans.SCHEMA_URL, schemaUrlUtf8);
+    output.serializeString(ScopeSpans.SCHEMA_URL, instrumentationScope.getSchemaUrl(), context);
   }
 
   @Override
@@ -46,18 +45,15 @@ final class InstrumentationScopeSpansStatelessMarshaler
     InstrumentationScopeMarshaler instrumentationScopeMarshaler =
         InstrumentationScopeMarshaler.create(instrumentationScope);
     context.addData(instrumentationScopeMarshaler);
-    // XXX
-    byte[] schemaUrlUtf8 = MarshalerUtil.toBytes(instrumentationScope.getSchemaUrl());
-    context.addData(schemaUrlUtf8);
 
-    // int sizeIndex = context.addSize();
     int size = 0;
     size += MarshalerUtil.sizeMessage(ScopeSpans.SCOPE, instrumentationScopeMarshaler);
-    size += MarshalerUtil.sizeBytes(ScopeSpans.SCHEMA_URL, schemaUrlUtf8);
     size +=
         MarshalerUtil.sizeRepeatedMessage(
             ScopeSpans.SPANS, spans, SpanStatelessMarshaler.INSTANCE, context);
-    // context.setSize(sizeIndex, size);
+    size +=
+        MarshalerUtil.sizeString(
+            ScopeSpans.SCHEMA_URL, instrumentationScope.getSchemaUrl(), context);
 
     return size;
   }

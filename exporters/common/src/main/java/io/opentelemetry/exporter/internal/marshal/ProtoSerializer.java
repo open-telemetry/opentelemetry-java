@@ -161,13 +161,13 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   }
 
   @Override
-  public void writeStartMessage(ProtoFieldInfo field, int protoMessageSize) throws IOException {
+  protected void writeStartMessage(ProtoFieldInfo field, int protoMessageSize) throws IOException {
     output.writeUInt32NoTag(field.getTag());
     output.writeUInt32NoTag(protoMessageSize);
   }
 
   @Override
-  public void writeEndMessage() {
+  protected void writeEndMessage() {
     // Do nothing
   }
 
@@ -227,23 +227,23 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   }
 
   @Override
-  public void writeStartRepeated(ProtoFieldInfo field) {
+  protected void writeStartRepeated(ProtoFieldInfo field) {
     // Do nothing
   }
 
   @Override
-  public void writeEndRepeated() {
+  protected void writeEndRepeated() {
     // Do nothing
   }
 
   @Override
-  public void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
+  protected void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
       throws IOException {
     writeStartMessage(field, protoMessageSize);
   }
 
   @Override
-  public void writeEndRepeatedElement() {
+  protected void writeEndRepeatedElement() {
     writeEndMessage();
   }
 

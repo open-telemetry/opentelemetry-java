@@ -29,7 +29,7 @@ final class SpanStatelessMarshaler implements StatelessMarshaler<SpanData> {
     output.serializeTraceId(Span.TRACE_ID, span.getTraceId(), context);
     output.serializeSpanId(Span.SPAN_ID, span.getSpanId(), context);
 
-    byte[] traceStateUtf8 = context.getByteArray();
+    byte[] traceStateUtf8 = context.getData(byte[].class);
     output.serializeString(Span.TRACE_STATE, traceStateUtf8);
     String parentSpanId =
         span.getParentSpanContext().isValid() ? span.getParentSpanContext().getSpanId() : null;

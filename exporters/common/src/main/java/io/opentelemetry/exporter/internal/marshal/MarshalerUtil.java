@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.ToIntBiFunction;
 import javax.annotation.Nullable;
 
 /**
@@ -251,27 +250,6 @@ public final class MarshalerUtil {
   /** Returns the size of a repeated message field. */
   public static <T> int sizeRepeatedMessage(
       ProtoFieldInfo field,
-      List<T> messages,
-      ToIntBiFunction<T, MarshalerContext> consumer,
-      MarshalerContext context) {
-    if (messages.isEmpty()) {
-      return 0;
-    }
-
-    int size = 0;
-    int fieldTagSize = field.getTagSize();
-    for (int i = 0; i < messages.size(); i++) {
-      T message = messages.get(i);
-      int sizeIndex = context.addSize();
-      int fieldSize = consumer.applyAsInt(message, context);
-      context.setSize(sizeIndex, fieldSize);
-      size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
-    }
-    return size;
-  }
-
-  public static <T> int sizeRepeatedMessage(
-      ProtoFieldInfo field,
       List<? extends T> messages,
       StatelessMarshaler<T> marshaler,
       MarshalerContext context) {
@@ -310,6 +288,7 @@ public final class MarshalerUtil {
     return sizeCalculator.size;
   }
 
+  /** Returns the size of a repeated message field. */
   public static <K, V> int sizeRepeatedMessage(
       ProtoFieldInfo field,
       Map<K, V> messages,
@@ -328,6 +307,7 @@ public final class MarshalerUtil {
     return sizeCalculator.size;
   }
 
+  /** Returns the size of a repeated message field. */
   public static int sizeRepeatedMessage(
       ProtoFieldInfo field,
       Attributes attributes,
@@ -406,10 +386,6 @@ public final class MarshalerUtil {
   }
 
   /** Returns the size of a message field. */
-  public static int sizeMessage(ProtoFieldInfo field, int fieldSize) {
-    return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
-  }
-
   public static <T> int sizeMessage(
       ProtoFieldInfo field, T element, StatelessMarshaler<T> marshaler, MarshalerContext context) {
     int sizeIndex = context.addSize();
@@ -419,6 +395,7 @@ public final class MarshalerUtil {
     return size;
   }
 
+  /** Returns the size of a message field. */
   public static <K, V> int sizeMessage(
       ProtoFieldInfo field,
       K key,
@@ -554,9 +531,9 @@ public final class MarshalerUtil {
   }
 
   /** Returns the size of a string field. */
-  @SuppressWarnings("SystemOut")
-  public static int sizeString(ProtoFieldInfo field, String value, MarshalerContext context) {
-    if (value.isEmpty()) {
+  public static int sizeString(
+      ProtoFieldInfo field, @Nullable String value, MarshalerContext context) {
+    if (value == null || value.isEmpty()) {
       return sizeBytes(field, 0);
     }
     if (context.marshalStringNoAllocation()) {

@@ -37,7 +37,7 @@ public final class ResourceMetricsStatelessMarshaler
       Map<InstrumentationScopeInfo, List<MetricData>> scopeMap,
       MarshalerContext context)
       throws IOException {
-    ResourceMarshaler resourceMarshaler = context.getObject(ResourceMarshaler.class);
+    ResourceMarshaler resourceMarshaler = context.getData(ResourceMarshaler.class);
     output.serializeMessage(ResourceMetrics.RESOURCE, resourceMarshaler);
 
     output.serializeRepeatedMessage(
@@ -47,8 +47,7 @@ public final class ResourceMetricsStatelessMarshaler
         context,
         SCOPE_SPAN_WRITER_KEY);
 
-    byte[] schemaUrlUtf8 = context.getByteArray();
-    output.serializeString(ResourceMetrics.SCHEMA_URL, schemaUrlUtf8);
+    output.serializeString(ResourceMetrics.SCHEMA_URL, resource.getSchemaUrl(), context);
   }
 
   @Override
@@ -71,9 +70,7 @@ public final class ResourceMetricsStatelessMarshaler
             context,
             SCOPE_SPAN_SIZE_CALCULATOR_KEY);
 
-    byte[] schemaUrlUtf8 = MarshalerUtil.toBytes(resource.getSchemaUrl());
-    context.addData(schemaUrlUtf8);
-    size += MarshalerUtil.sizeBytes(ResourceMetrics.SCHEMA_URL, schemaUrlUtf8);
+    size += MarshalerUtil.sizeString(ResourceMetrics.SCHEMA_URL, resource.getSchemaUrl(), context);
 
     return size;
   }

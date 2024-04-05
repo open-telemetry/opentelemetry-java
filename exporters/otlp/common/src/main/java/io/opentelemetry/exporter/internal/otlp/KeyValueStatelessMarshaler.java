@@ -95,21 +95,6 @@ public final class KeyValueStatelessMarshaler
               (List<Object>) value,
               ArrayAnyValueStatelessMarshaler.INSTANCE,
               context);
-          /*
-          case STRING_ARRAY:
-            return ArrayAnyValueMarshaler.calculateSize(
-                (List<String>) value, StringAnyValueMarshaler::calculateSize, context);
-          case LONG_ARRAY:
-            return ArrayAnyValueMarshaler.calculateSize(
-                (List<Long>) value, IntAnyValueMarshaler::calculateSize, context);
-          case BOOLEAN_ARRAY:
-            return ArrayAnyValueMarshaler.calculateSize(
-                (List<Boolean>) value, BoolAnyValueMarshaler::calculateSize, context);
-          case DOUBLE_ARRAY:
-            return ArrayAnyValueMarshaler.calculateSize(
-                (List<Double>) value, DoubleAnyValueMarshaler::calculateSize, context);
-
-           */
       }
       // Error prone ensures the switch statement is complete, otherwise only can happen with
       // unaligned versions which are not supported.
@@ -146,24 +131,6 @@ public final class KeyValueStatelessMarshaler
               ArrayAnyValueStatelessMarshaler.INSTANCE,
               context);
           return;
-          /*
-                 case STRING_ARRAY:
-                   ArrayAnyValueMarshaler.writeTo(
-                       output, (List<String>) value, StringAnyValueMarshaler::writeTo, context);
-                   return;
-                 case LONG_ARRAY:
-                   ArrayAnyValueMarshaler.writeTo(
-                       output, (List<Long>) value, IntAnyValueMarshaler::writeTo, context);
-                   return;
-                 case BOOLEAN_ARRAY:
-                   ArrayAnyValueMarshaler.writeTo(
-                       output, (List<Boolean>) value, BoolAnyValueMarshaler::writeTo, context);
-                   return;
-                 case DOUBLE_ARRAY:
-                   ArrayAnyValueMarshaler.writeTo(
-                       output, (List<Double>) value, DoubleAnyValueMarshaler::writeTo, context);
-                   return;
-          */
       }
       // Error prone ensures the switch statement is complete, otherwise only can happen with
       // unaligned versions which are not supported.

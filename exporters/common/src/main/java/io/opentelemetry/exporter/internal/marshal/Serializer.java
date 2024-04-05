@@ -220,15 +220,15 @@ public abstract class Serializer implements AutoCloseable {
     writeString(field, string, utf8Length);
   }
 
-  public void serializeString(ProtoFieldInfo field, String string, MarshalerContext context)
-      throws IOException {
-    if (string.isEmpty()) {
+  public void serializeString(
+      ProtoFieldInfo field, @Nullable String string, MarshalerContext context) throws IOException {
+    if (string == null || string.isEmpty()) {
       return;
     }
     if (context.marshalStringNoAllocation()) {
       writeString(field, string, context.getSize());
     } else {
-      byte[] valueUtf8 = context.getByteArray();
+      byte[] valueUtf8 = context.getData(byte[].class);
       writeString(field, valueUtf8);
     }
   }

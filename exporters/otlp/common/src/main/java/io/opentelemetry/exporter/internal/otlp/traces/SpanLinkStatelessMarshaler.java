@@ -27,7 +27,7 @@ final class SpanLinkStatelessMarshaler implements StatelessMarshaler<LinkData> {
       throws IOException {
     output.serializeTraceId(Span.Link.TRACE_ID, link.getSpanContext().getTraceId(), context);
     output.serializeSpanId(Span.Link.SPAN_ID, link.getSpanContext().getSpanId(), context);
-    output.serializeString(Span.Link.TRACE_STATE, context.getByteArray());
+    output.serializeString(Span.Link.TRACE_STATE, context.getData(byte[].class));
     output.serializeRepeatedMessage(
         Span.Link.ATTRIBUTES, link.getAttributes(), KeyValueStatelessMarshaler.INSTANCE, context);
     int droppedAttributesCount = link.getTotalAttributeCount() - link.getAttributes().size();

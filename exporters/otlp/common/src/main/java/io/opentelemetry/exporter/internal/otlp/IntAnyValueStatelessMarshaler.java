@@ -20,10 +20,6 @@ final class IntAnyValueStatelessMarshaler implements StatelessMarshaler<Long> {
     output.writeInt64(AnyValue.INT_VALUE, value);
   }
 
-  public static int calculateSize(long value) {
-    return AnyValue.INT_VALUE.getTagSize() + CodedOutputStream.computeInt64SizeNoTag(value);
-  }
-
   @Override
   public int getBinarySerializedSize(Long value, MarshalerContext context) {
     return AnyValue.INT_VALUE.getTagSize() + CodedOutputStream.computeInt64SizeNoTag(value);

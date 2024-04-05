@@ -11,6 +11,7 @@ import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler2;
 import io.opentelemetry.exporter.internal.otlp.InstrumentationScopeMarshaler;
 import io.opentelemetry.proto.metrics.v1.internal.ScopeMetrics;
+import io.opentelemetry.proto.trace.v1.internal.ScopeSpans;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.io.IOException;
@@ -29,12 +30,12 @@ final class InstrumentationScopeMetricsStatelessMarshaler
       MarshalerContext context)
       throws IOException {
     InstrumentationScopeMarshaler instrumentationScopeMarshaler =
-        context.getObject(InstrumentationScopeMarshaler.class);
-    byte[] schemaUrlUtf8 = context.getByteArray();
+        context.getData(InstrumentationScopeMarshaler.class);
+
     output.serializeMessage(ScopeMetrics.SCOPE, instrumentationScopeMarshaler);
     output.serializeRepeatedMessage(
         ScopeMetrics.METRICS, metrics, MetricStatelessMarshaler.INSTANCE, context);
-    output.serializeString(ScopeMetrics.SCHEMA_URL, schemaUrlUtf8);
+    output.serializeString(ScopeMetrics.SCHEMA_URL, instrumentationScope.getSchemaUrl(), context);
   }
 
   @Override
@@ -45,18 +46,15 @@ final class InstrumentationScopeMetricsStatelessMarshaler
     InstrumentationScopeMarshaler instrumentationScopeMarshaler =
         InstrumentationScopeMarshaler.create(instrumentationScope);
     context.addData(instrumentationScopeMarshaler);
-    // XXX
-    byte[] schemaUrlUtf8 = MarshalerUtil.toBytes(instrumentationScope.getSchemaUrl());
-    context.addData(schemaUrlUtf8);
 
-    // int sizeIndex = context.addSize();
     int size = 0;
     size += MarshalerUtil.sizeMessage(ScopeMetrics.SCOPE, instrumentationScopeMarshaler);
-    size += MarshalerUtil.sizeBytes(ScopeMetrics.SCHEMA_URL, schemaUrlUtf8);
     size +=
         MarshalerUtil.sizeRepeatedMessage(
             ScopeMetrics.METRICS, metrics, MetricStatelessMarshaler.INSTANCE, context);
-    // context.setSize(sizeIndex, size);
+    size +=
+        MarshalerUtil.sizeString(
+            ScopeSpans.SCHEMA_URL, instrumentationScope.getSchemaUrl(), context);
 
     return size;
   }

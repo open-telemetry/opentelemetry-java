@@ -31,11 +31,7 @@ final class DoubleAnyValueMarshaler extends MarshalerWithSize {
     output.writeDouble(AnyValue.DOUBLE_VALUE, value);
   }
 
-  public static void writeTo(Serializer output, double value) throws IOException {
-    output.writeDouble(AnyValue.DOUBLE_VALUE, value);
-  }
-
-  public static int calculateSize(double value) {
+  private static int calculateSize(double value) {
     return AnyValue.DOUBLE_VALUE.getTagSize() + CodedOutputStream.computeDoubleSizeNoTag(value);
   }
 }

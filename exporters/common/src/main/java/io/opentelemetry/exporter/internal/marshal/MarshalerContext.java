@@ -62,11 +62,6 @@ public final class MarshalerContext {
     return sizes[sizeReadIndex++];
   }
 
-  public int addData() {
-    growDataIfNeeded();
-    return dataWriteIndex++;
-  }
-
   public void addData(@Nullable Object o) {
     growDataIfNeeded();
     data[dataWriteIndex++] = o;
@@ -80,20 +75,8 @@ public final class MarshalerContext {
     }
   }
 
-  public byte[] getByteArray() {
-    return (byte[]) data[dataReadIndex++];
-  }
-
-  public String getString() {
-    return (String) data[dataReadIndex++];
-  }
-
-  public <T> T getObject(Class<T> type) {
+  public <T> T getData(Class<T> type) {
     return type.cast(data[dataReadIndex++]);
-  }
-
-  public void setData(int index, Object value) {
-    data[index] = value;
   }
 
   private final IdPool traceIdPool = new IdPool(TraceId.getLength() / 2);
