@@ -48,6 +48,9 @@
 
 #### Extensions
 
+* Add Metric exporter REUSABLE_DATA memory mode configuration options, including autoconfigure
+  support via env var `OTEL_JAVA_EXPERIMENTAL_EXPORTER_MEMORY_MODE=REUSABLE_DATA`.
+  ([#6304](https://github.com/open-telemetry/opentelemetry-java/pull/6304))
 * Add autoconfigure console alias for logging exporter
   ([#6027](https://github.com/open-telemetry/opentelemetry-java/pull/6027))
 * Update jaeger autoconfigure docs to point to OTLP
