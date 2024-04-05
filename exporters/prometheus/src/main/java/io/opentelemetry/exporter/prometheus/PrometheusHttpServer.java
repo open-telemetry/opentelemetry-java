@@ -11,6 +11,7 @@
 package io.opentelemetry.exporter.prometheus;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
@@ -32,11 +33,12 @@ import javax.annotation.Nullable;
  */
 public final class PrometheusHttpServer implements MetricReader {
 
+  private final PrometheusHttpServerBuilder builder;
   private final HTTPServer httpServer;
   private final PrometheusMetricReader prometheusMetricReader;
   private final PrometheusRegistry prometheusRegistry;
   private final String host;
-  private final PrometheusHttpServerBuilder builder;
+  private final MemoryMode memoryMode;
 
   /**
    * Returns a new {@link PrometheusHttpServer} which can be registered to an {@link
@@ -59,11 +61,13 @@ public final class PrometheusHttpServer implements MetricReader {
       @Nullable ExecutorService executor,
       PrometheusRegistry prometheusRegistry,
       boolean otelScopeEnabled,
-      @Nullable Predicate<String> allowedResourceAttributesFilter) {
+      @Nullable Predicate<String> allowedResourceAttributesFilter,
+      MemoryMode memoryMode) {
     this.builder = builder;
     this.prometheusMetricReader =
         new PrometheusMetricReader(otelScopeEnabled, allowedResourceAttributesFilter);
     this.host = host;
+    this.memoryMode = memoryMode;
     this.prometheusRegistry = prometheusRegistry;
     prometheusRegistry.register(prometheusMetricReader);
     try {
@@ -83,6 +87,11 @@ public final class PrometheusHttpServer implements MetricReader {
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
     return prometheusMetricReader.getAggregationTemporality(instrumentType);
+  }
+
+  @Override
+  public MemoryMode getMemoryMode() {
+    return memoryMode;
   }
 
   @Override

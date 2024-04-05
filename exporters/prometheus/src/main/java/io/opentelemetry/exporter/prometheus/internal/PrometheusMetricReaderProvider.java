@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.prometheus.internal;
 
+import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServerBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -31,6 +32,8 @@ public class PrometheusMetricReaderProvider implements ConfigurableMetricReaderP
     if (host != null) {
       prometheusBuilder.setHost(host);
     }
+
+    ExporterBuilderUtil.configureExporterMemoryMode(config, prometheusBuilder::setMemoryMode);
 
     return prometheusBuilder.build();
   }

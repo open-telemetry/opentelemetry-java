@@ -11,6 +11,7 @@ otelJava.moduleName.set("io.opentelemetry.exporter.internal")
 val versions: Map<String, String> by project
 dependencies {
   api(project(":api:all"))
+  api(project(":sdk-extensions:autoconfigure-spi"))
 
   compileOnly(project(":sdk:common"))
 
