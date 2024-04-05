@@ -1,10 +1,47 @@
-# ExtendedTracer
+# API Incubator
+
+Experimental APIs, including Event API, extended Log Bridge APIs, extended Metrics APIs, extended ContextPropagator APIs, and extended Trace APIs.
+
+## Event API
+
+Features:
+
+* Event API for producing log records according to [Event Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/general/events/).
+
+See [EventApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/events/EventApiUsageTest.java).
+
+## Extended Log Bridge API
+
+Features:
+
+* Set AnyValue log record body with arbitrarily complex data
+
+See [ExtendedLogsBridgeApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/logs/ExtendedLogsBridgeApiUsageTest.java).
+
+## Extended Metrics APIs
+
+Features:
+
+* Synchronous gauge instrument
+* Attributes advice
+
+See [ExtendedMetricsApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/metrics/ExtendedMetricsApiUsageTest.java).
+
+## Extended ContextPropagator APIs
+
+Features:
+
+* Simplified injection / extraction of context
+
+See [ExtendedContextPropagatorsUsageTest](./src/test/java/io/opentelemetry/api/incubator/propagation/ExtendedContextPropagatorsUsageTest.java).
+
+## ExtendedTracer
 
 Utility methods to make it easier to use the OpenTelemetry tracer.
 
-## Usage Examples
-
 Here are some examples how the utility methods can help reduce boilerplate code.
+
+TODO: translate examples to test to ensure no java compilation issues.
 
 ### Tracing a function
 
@@ -145,7 +182,7 @@ String transactionId = extendedTracer.spanBuilder("checkout_cart")
     .startAndCall(() -> processCheckout(cartId));
 ```
 
-## Exception handling
+### Exception handling
 
 `ExtendedTracer` re-throws exceptions without modification. This means you can
 catch exceptions around `ExtendedTracer` calls and handle them as you would without `ExtendedTracer`.
