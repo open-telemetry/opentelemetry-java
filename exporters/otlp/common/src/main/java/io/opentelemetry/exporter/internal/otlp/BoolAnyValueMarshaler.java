@@ -6,7 +6,6 @@
 package io.opentelemetry.exporter.internal.otlp;
 
 import io.opentelemetry.exporter.internal.marshal.CodedOutputStream;
-import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.common.v1.internal.AnyValue;
@@ -36,16 +35,7 @@ final class BoolAnyValueMarshaler extends MarshalerWithSize {
     output.writeBool(AnyValue.BOOL_VALUE, value);
   }
 
-  public static void writeTo(Serializer output, boolean value, MarshalerContext context)
-      throws IOException {
-    writeTo(output, value);
-  }
-
   public static int calculateSize(boolean value) {
     return AnyValue.BOOL_VALUE.getTagSize() + CodedOutputStream.computeBoolSizeNoTag(value);
-  }
-
-  public static int calculateSize(boolean value, MarshalerContext context) {
-    return calculateSize(value);
   }
 }

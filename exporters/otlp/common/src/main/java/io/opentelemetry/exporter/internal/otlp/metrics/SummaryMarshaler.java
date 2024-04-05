@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.internal.otlp.metrics;
 
-import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
@@ -14,9 +13,6 @@ import io.opentelemetry.sdk.metrics.data.SummaryData;
 import java.io.IOException;
 
 final class SummaryMarshaler extends MarshalerWithSize {
-  private static final Object DATA_POINT_SIZE_CALCULATOR_KEY = new Object();
-  private static final Object DATA_POINT_WRITER_KEY = new Object();
-
   private final SummaryDataPointMarshaler[] dataPoints;
 
   static SummaryMarshaler create(SummaryData summary) {
@@ -35,31 +31,9 @@ final class SummaryMarshaler extends MarshalerWithSize {
     output.serializeRepeatedMessage(Summary.DATA_POINTS, dataPoints);
   }
 
-  public static void writeTo(Serializer output, SummaryData summary, MarshalerContext context)
-      throws IOException {
-    output.serializeRepeatedMessage(
-        Summary.DATA_POINTS,
-        summary.getPoints(),
-        SummaryDataPointMarshaler::writeTo,
-        context,
-        DATA_POINT_WRITER_KEY);
-  }
-
   private static int calculateSize(SummaryDataPointMarshaler[] dataPoints) {
     int size = 0;
     size += MarshalerUtil.sizeRepeatedMessage(Summary.DATA_POINTS, dataPoints);
-    return size;
-  }
-
-  public static int calculateSize(SummaryData summary, MarshalerContext context) {
-    int size = 0;
-    size +=
-        MarshalerUtil.sizeRepeatedMessage(
-            Summary.DATA_POINTS,
-            summary.getPoints(),
-            SummaryDataPointMarshaler::calculateSize,
-            context,
-            DATA_POINT_SIZE_CALCULATOR_KEY);
     return size;
   }
 }

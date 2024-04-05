@@ -9,10 +9,7 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.exporter.internal.otlp.AbstractResourceScopeMapSizeCalculator;
-import io.opentelemetry.exporter.internal.otlp.AbstractResourceScopeMapWriter;
 import io.opentelemetry.proto.collector.metrics.v1.internal.ExportMetricsServiceRequest;
-import io.opentelemetry.proto.collector.trace.v1.internal.ExportTraceServiceRequest;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -29,6 +26,8 @@ import java.util.Map;
  * at any time.
  */
 public final class LowAllocationMetricsRequestMarshaler extends Marshaler {
+  private static final Object RESOURCE_METRIC_SIZE_CALCULATOR_KEY = new Object();
+  private static final Object RESOURCE_METRIC_WRITER_KEY = new Object();
 
   private final MarshalerContext context = new MarshalerContext();
 
@@ -51,31 +50,27 @@ public final class LowAllocationMetricsRequestMarshaler extends Marshaler {
     return size;
   }
 
-  private final ResourceScopeMapWriter resourceScopeMapWriter = new ResourceScopeMapWriter();
-
   @Override
-  public void writeTo(Serializer output) {
+  public void writeTo(Serializer output) throws IOException {
     // serializing can be retried, reset the indexes, so we could call writeTo multiple times
     context.resetReadIndex();
-    resourceScopeMapWriter.initialize(
-        output, ExportMetricsServiceRequest.RESOURCE_METRICS, context);
-    resourceAndScopeMap.forEach(resourceScopeMapWriter);
+    output.serializeRepeatedMessage(
+        ExportMetricsServiceRequest.RESOURCE_METRICS,
+        resourceAndScopeMap,
+        ResourceMetricsStatelessMarshaler.INSTANCE,
+        context,
+        RESOURCE_METRIC_WRITER_KEY);
   }
 
   private static int calculateSize(
       MarshalerContext context,
       Map<Resource, Map<InstrumentationScopeInfo, List<MetricData>>> resourceAndScopeMap) {
-    if (resourceAndScopeMap.isEmpty()) {
-      return 0;
-    }
-
-    ResourceScopeMapSizeCalculator resourceScopeMapSizeCalculator =
-        context.getInstance(
-            ResourceScopeMapSizeCalculator.class, ResourceScopeMapSizeCalculator::new);
-    resourceScopeMapSizeCalculator.initialize(ExportTraceServiceRequest.RESOURCE_SPANS, context);
-    resourceAndScopeMap.forEach(resourceScopeMapSizeCalculator);
-
-    return resourceScopeMapSizeCalculator.getSize();
+    return MarshalerUtil.sizeRepeatedMessage(
+        ExportMetricsServiceRequest.RESOURCE_METRICS,
+        resourceAndScopeMap,
+        ResourceMetricsStatelessMarshaler.INSTANCE,
+        context,
+        RESOURCE_METRIC_SIZE_CALCULATOR_KEY);
   }
 
   private static Map<Resource, Map<InstrumentationScopeInfo, List<MetricData>>>
@@ -92,27 +87,5 @@ public final class LowAllocationMetricsRequestMarshaler extends Marshaler {
         MetricData::getResource,
         MetricData::getInstrumentationScopeInfo,
         context);
-  }
-
-  private static class ResourceScopeMapWriter extends AbstractResourceScopeMapWriter<MetricData> {
-
-    @Override
-    protected void handle(
-        Map<InstrumentationScopeInfo, List<MetricData>> instrumentationScopeInfoListMap)
-        throws IOException {
-      ResourceMetricsMarshaler.writeTo(output, instrumentationScopeInfoListMap, context);
-    }
-  }
-
-  private static class ResourceScopeMapSizeCalculator
-      extends AbstractResourceScopeMapSizeCalculator<MetricData> {
-
-    @Override
-    public int calculateSize(
-        Resource resource,
-        Map<InstrumentationScopeInfo, List<MetricData>> instrumentationScopeInfoListMap) {
-      return ResourceMetricsMarshaler.calculateSize(
-          context, resource, instrumentationScopeInfoListMap);
-    }
   }
 }

@@ -128,12 +128,12 @@ class LowAllocationMetricsRequestMarshalerTest {
       class TestMarshaler extends MarshalerWithSize {
 
         protected TestMarshaler() {
-          super(ExemplarMarshaler.calculateSize(exemplar, context));
+          super(ExemplarStatelessMarshaler.INSTANCE.getBinarySerializedSize(exemplar, context));
         }
 
         @Override
         protected void writeTo(Serializer output) throws IOException {
-          ExemplarMarshaler.writeTo(output, exemplar, context);
+          ExemplarStatelessMarshaler.INSTANCE.writeTo(output, exemplar, context);
         }
       }
       Marshaler marshaler = new TestMarshaler();
@@ -171,12 +171,12 @@ class LowAllocationMetricsRequestMarshalerTest {
       class TestMarshaler extends MarshalerWithSize {
 
         protected TestMarshaler() {
-          super(SummaryMarshaler.calculateSize(summary, context));
+          super(SummaryStatelessMarshaler.INSTANCE.getBinarySerializedSize(summary, context));
         }
 
         @Override
         protected void writeTo(Serializer output) throws IOException {
-          SummaryMarshaler.writeTo(output, summary, context);
+          SummaryStatelessMarshaler.INSTANCE.writeTo(output, summary, context);
         }
       }
       Marshaler marshaler = new TestMarshaler();

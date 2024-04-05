@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.internal.marshal;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -19,6 +21,7 @@ import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ToIntBiFunction;
@@ -35,6 +38,7 @@ public final class MarshalerUtil {
       CodedOutputStream.computeLengthDelimitedFieldSize(TraceId.getLength() / 2);
   private static final int SPAN_ID_VALUE_SIZE =
       CodedOutputStream.computeLengthDelimitedFieldSize(SpanId.getLength() / 2);
+  private static final Object ATTRIBUTES_SIZE_CALCULATOR_KEY = new Object();
 
   private static final boolean JSON_AVAILABLE;
 
@@ -266,11 +270,32 @@ public final class MarshalerUtil {
     return size;
   }
 
+  public static <T> int sizeRepeatedMessage(
+      ProtoFieldInfo field,
+      List<? extends T> messages,
+      StatelessMarshaler<T> marshaler,
+      MarshalerContext context) {
+    if (messages.isEmpty()) {
+      return 0;
+    }
+
+    int size = 0;
+    int fieldTagSize = field.getTagSize();
+    for (int i = 0; i < messages.size(); i++) {
+      T message = messages.get(i);
+      int sizeIndex = context.addSize();
+      int fieldSize = marshaler.getBinarySerializedSize(message, context);
+      context.setSize(sizeIndex, fieldSize);
+      size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
+    }
+    return size;
+  }
+
   /** Returns the size of a repeated message field. */
   public static <T> int sizeRepeatedMessage(
       ProtoFieldInfo field,
-      Collection<T> messages,
-      ToIntBiFunction<T, MarshalerContext> consumer,
+      Collection<? extends T> messages,
+      StatelessMarshaler<T> marshaler,
       MarshalerContext context,
       Object key) {
     if (messages.isEmpty()) {
@@ -279,8 +304,43 @@ public final class MarshalerUtil {
 
     RepeatedElementSizeCalculator<T> sizeCalculator =
         context.getInstance(key, RepeatedElementSizeCalculator::new);
-    sizeCalculator.initialize(field, consumer, context);
+    sizeCalculator.initialize(field, marshaler, context);
     messages.forEach(sizeCalculator);
+
+    return sizeCalculator.size;
+  }
+
+  public static <K, V> int sizeRepeatedMessage(
+      ProtoFieldInfo field,
+      Map<K, V> messages,
+      StatelessMarshaler2<K, V> marshaler,
+      MarshalerContext context,
+      Object key) {
+    if (messages.isEmpty()) {
+      return 0;
+    }
+
+    RepeatedElementPairSizeCalculator<K, V> sizeCalculator =
+        context.getInstance(key, RepeatedElementPairSizeCalculator::new);
+    sizeCalculator.initialize(field, marshaler, context);
+    messages.forEach(sizeCalculator);
+
+    return sizeCalculator.size;
+  }
+
+  public static int sizeRepeatedMessage(
+      ProtoFieldInfo field,
+      Attributes attributes,
+      StatelessMarshaler2<AttributeKey<?>, Object> marshaler,
+      MarshalerContext context) {
+    if (attributes.isEmpty()) {
+      return 0;
+    }
+
+    RepeatedElementPairSizeCalculator<AttributeKey<?>, Object> sizeCalculator =
+        context.getInstance(ATTRIBUTES_SIZE_CALCULATOR_KEY, RepeatedElementPairSizeCalculator::new);
+    sizeCalculator.initialize(field, marshaler, context);
+    attributes.forEach(sizeCalculator);
 
     return sizeCalculator.size;
   }
@@ -290,25 +350,50 @@ public final class MarshalerUtil {
     private int fieldTagSize;
 
     @SuppressWarnings("NullAway")
-    private ToIntBiFunction<T, MarshalerContext> calculateSize;
+    private StatelessMarshaler<T> marshaler;
 
     @SuppressWarnings("NullAway")
     private MarshalerContext context;
 
     void initialize(
-        ProtoFieldInfo field,
-        ToIntBiFunction<T, MarshalerContext> calculateSize,
-        MarshalerContext context) {
+        ProtoFieldInfo field, StatelessMarshaler<T> marshaler, MarshalerContext context) {
       this.size = 0;
       this.fieldTagSize = field.getTagSize();
-      this.calculateSize = calculateSize;
+      this.marshaler = marshaler;
       this.context = context;
     }
 
     @Override
     public void accept(T element) {
       int sizeIndex = context.addSize();
-      int fieldSize = calculateSize.applyAsInt(element, context);
+      int fieldSize = marshaler.getBinarySerializedSize(element, context);
+      context.setSize(sizeIndex, fieldSize);
+      size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
+    }
+  }
+
+  private static class RepeatedElementPairSizeCalculator<K, V> implements BiConsumer<K, V> {
+    private int size;
+    private int fieldTagSize;
+
+    @SuppressWarnings("NullAway")
+    private StatelessMarshaler2<K, V> marshaler;
+
+    @SuppressWarnings("NullAway")
+    private MarshalerContext context;
+
+    void initialize(
+        ProtoFieldInfo field, StatelessMarshaler2<K, V> marshaler, MarshalerContext context) {
+      this.size = 0;
+      this.fieldTagSize = field.getTagSize();
+      this.marshaler = marshaler;
+      this.context = context;
+    }
+
+    @Override
+    public void accept(K key, V value) {
+      int sizeIndex = context.addSize();
+      int fieldSize = marshaler.getBinarySerializedSize(key, value, context);
       context.setSize(sizeIndex, fieldSize);
       size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
     }
@@ -326,12 +411,22 @@ public final class MarshalerUtil {
   }
 
   public static <T> int sizeMessage(
+      ProtoFieldInfo field, T element, StatelessMarshaler<T> marshaler, MarshalerContext context) {
+    int sizeIndex = context.addSize();
+    int fieldSize = marshaler.getBinarySerializedSize(element, context);
+    int size = field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
+    context.setSize(sizeIndex, fieldSize);
+    return size;
+  }
+
+  public static <K, V> int sizeMessage(
       ProtoFieldInfo field,
-      T element,
-      ToIntBiFunction<T, MarshalerContext> sizeCalculator,
+      K key,
+      V value,
+      StatelessMarshaler2<K, V> marshaler,
       MarshalerContext context) {
     int sizeIndex = context.addSize();
-    int fieldSize = sizeCalculator.applyAsInt(element, context);
+    int fieldSize = marshaler.getBinarySerializedSize(key, value, context);
     int size = field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
     context.setSize(sizeIndex, fieldSize);
     return size;
@@ -456,6 +551,23 @@ public final class MarshalerUtil {
       return 0;
     }
     return field.getTagSize() + SPAN_ID_VALUE_SIZE;
+  }
+
+  /** Returns the size of a string field. */
+  @SuppressWarnings("SystemOut")
+  public static int sizeString(ProtoFieldInfo field, String value, MarshalerContext context) {
+    if (value.isEmpty()) {
+      return sizeBytes(field, 0);
+    }
+    if (context.marshalStringNoAllocation()) {
+      int utf8Size = MarshalerUtil.getUtf8Size(value);
+      context.addSize(utf8Size);
+      return sizeBytes(field, utf8Size);
+    } else {
+      byte[] valueUtf8 = MarshalerUtil.toBytes(value);
+      context.addData(valueUtf8);
+      return sizeBytes(field, valueUtf8.length);
+    }
   }
 
   /** Converts the string to utf8 bytes for encoding. */

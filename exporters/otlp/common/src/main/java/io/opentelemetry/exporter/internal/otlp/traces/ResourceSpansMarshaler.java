@@ -5,12 +5,9 @@
 
 package io.opentelemetry.exporter.internal.otlp.traces;
 
-import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.exporter.internal.otlp.AbstractScopeListSizeCalculator;
-import io.opentelemetry.exporter.internal.otlp.AbstractScopeListWriter;
 import io.opentelemetry.exporter.internal.otlp.InstrumentationScopeMarshaler;
 import io.opentelemetry.exporter.internal.otlp.ResourceMarshaler;
 import io.opentelemetry.proto.trace.v1.internal.ResourceSpans;
@@ -81,6 +78,7 @@ public final class ResourceSpansMarshaler extends MarshalerWithSize {
     output.serializeString(ResourceSpans.SCHEMA_URL, schemaUrlUtf8);
   }
 
+  /*
   public static void writeTo(
       Serializer output,
       Map<InstrumentationScopeInfo, List<SpanData>> scopeMap,
@@ -98,6 +96,8 @@ public final class ResourceSpansMarshaler extends MarshalerWithSize {
     output.serializeString(ResourceSpans.SCHEMA_URL, schemaUrlUtf8);
   }
 
+   */
+
   private static int calculateSize(
       ResourceMarshaler resourceMarshaler,
       byte[] schemaUrlUtf8,
@@ -112,6 +112,7 @@ public final class ResourceSpansMarshaler extends MarshalerWithSize {
     return size;
   }
 
+  /*
   public static int calculateSize(
       MarshalerContext context,
       Resource resource,
@@ -139,6 +140,8 @@ public final class ResourceSpansMarshaler extends MarshalerWithSize {
     return size;
   }
 
+   */
+
   private static Map<Resource, Map<InstrumentationScopeInfo, List<SpanMarshaler>>>
       groupByResourceAndScope(Collection<SpanData> spanDataList) {
     return MarshalerUtil.groupByResourceAndScope(
@@ -148,31 +151,5 @@ public final class ResourceSpansMarshaler extends MarshalerWithSize {
         SpanData::getResource,
         SpanData::getInstrumentationScopeInfo,
         SpanMarshaler::create);
-  }
-
-  private static class ScopeSpanListWriter extends AbstractScopeListWriter<SpanData> {
-
-    @Override
-    protected void handle(
-        InstrumentationScopeMarshaler instrumentationScopeMarshaler,
-        List<SpanData> list,
-        byte[] schemaUrlUtf8)
-        throws IOException {
-      InstrumentationScopeSpansMarshaler.writeTo(
-          output, instrumentationScopeMarshaler, list, schemaUrlUtf8, context);
-    }
-  }
-
-  private static class ScopeSpanListSizeCalculator
-      extends AbstractScopeListSizeCalculator<SpanData> {
-
-    @Override
-    public int calculateSize(
-        InstrumentationScopeMarshaler instrumentationScopeMarshaler,
-        byte[] schemaUrlUtf8,
-        List<SpanData> list) {
-      return InstrumentationScopeSpansMarshaler.calculateSize(
-          instrumentationScopeMarshaler, schemaUrlUtf8, list, context);
-    }
   }
 }

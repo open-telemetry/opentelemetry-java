@@ -6,7 +6,6 @@
 package io.opentelemetry.exporter.internal.otlp.metrics;
 
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.ProtoFieldInfo;
@@ -86,35 +85,6 @@ final class ExemplarMarshaler extends MarshalerWithSize {
         filteredAttributeMarshalers);
   }
 
-  public static void writeTo(Serializer output, ExemplarData exemplar, MarshalerContext context)
-      throws IOException {
-    output.serializeFixed64(
-        io.opentelemetry.proto.metrics.v1.internal.Exemplar.TIME_UNIX_NANO,
-        exemplar.getEpochNanos());
-    ProtoFieldInfo valueField = getValueField(exemplar);
-    if (valueField == io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_INT) {
-      output.serializeFixed64Optional(valueField, ((LongExemplarData) exemplar).getValue());
-    } else {
-      output.serializeDoubleOptional(valueField, ((DoubleExemplarData) exemplar).getValue());
-    }
-    SpanContext spanContext = exemplar.getSpanContext();
-    if (spanContext.isValid()) {
-      output.serializeSpanId(
-          io.opentelemetry.proto.metrics.v1.internal.Exemplar.SPAN_ID,
-          spanContext.getSpanId(),
-          context);
-      output.serializeTraceId(
-          io.opentelemetry.proto.metrics.v1.internal.Exemplar.TRACE_ID,
-          spanContext.getTraceId(),
-          context);
-    }
-    KeyValueMarshaler.writeTo(
-        output,
-        context,
-        io.opentelemetry.proto.metrics.v1.internal.Exemplar.FILTERED_ATTRIBUTES,
-        exemplar.getFilteredAttributes());
-  }
-
   private static int calculateSize(
       long timeUnixNano,
       ProtoFieldInfo valueField,
@@ -146,39 +116,7 @@ final class ExemplarMarshaler extends MarshalerWithSize {
     return size;
   }
 
-  public static int calculateSize(ExemplarData exemplar, MarshalerContext context) {
-    int size = 0;
-    size +=
-        MarshalerUtil.sizeFixed64(
-            io.opentelemetry.proto.metrics.v1.internal.Exemplar.TIME_UNIX_NANO,
-            exemplar.getEpochNanos());
-    ProtoFieldInfo valueField = getValueField(exemplar);
-    if (valueField == io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_INT) {
-      size +=
-          MarshalerUtil.sizeFixed64Optional(valueField, ((LongExemplarData) exemplar).getValue());
-    } else {
-      size +=
-          MarshalerUtil.sizeDoubleOptional(valueField, ((DoubleExemplarData) exemplar).getValue());
-    }
-    SpanContext spanContext = exemplar.getSpanContext();
-    if (spanContext.isValid()) {
-      size +=
-          MarshalerUtil.sizeSpanId(
-              io.opentelemetry.proto.metrics.v1.internal.Exemplar.SPAN_ID, spanContext.getSpanId());
-      size +=
-          MarshalerUtil.sizeTraceId(
-              io.opentelemetry.proto.metrics.v1.internal.Exemplar.TRACE_ID,
-              spanContext.getTraceId());
-    }
-    size +=
-        KeyValueMarshaler.calculateSize(
-            io.opentelemetry.proto.metrics.v1.internal.Exemplar.FILTERED_ATTRIBUTES,
-            exemplar.getFilteredAttributes(),
-            context);
-    return size;
-  }
-
-  private static ProtoFieldInfo getValueField(ExemplarData exemplar) {
+  static ProtoFieldInfo getValueField(ExemplarData exemplar) {
     if (exemplar instanceof LongExemplarData) {
       return io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_INT;
     } else {

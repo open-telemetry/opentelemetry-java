@@ -214,14 +214,14 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   @Override
   public <T> void serializeRepeatedMessage(
       ProtoFieldInfo field,
-      List<T> messages,
-      MessageConsumer<Serializer, T, MarshalerContext> consumer,
+      List<? extends T> messages,
+      StatelessMarshaler<T> marshaler,
       MarshalerContext context)
       throws IOException {
     for (int i = 0; i < messages.size(); i++) {
       T message = messages.get(i);
       writeStartMessage(field, context.getSize());
-      consumer.accept(this, message, context);
+      marshaler.writeTo(this, message, context);
       writeEndMessage();
     }
   }

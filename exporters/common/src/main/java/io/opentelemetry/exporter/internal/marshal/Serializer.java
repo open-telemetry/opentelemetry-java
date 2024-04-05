@@ -5,10 +5,14 @@
 
 package io.opentelemetry.exporter.internal.marshal;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
@@ -25,6 +29,7 @@ import javax.annotation.Nullable;
  * at any time.
  */
 public abstract class Serializer implements AutoCloseable {
+  private static final Object ATTRIBUTES_WRITER_KEY = new Object();
 
   Serializer() {}
 
@@ -215,6 +220,19 @@ public abstract class Serializer implements AutoCloseable {
     writeString(field, string, utf8Length);
   }
 
+  public void serializeString(ProtoFieldInfo field, String string, MarshalerContext context)
+      throws IOException {
+    if (string.isEmpty()) {
+      return;
+    }
+    if (context.marshalStringNoAllocation()) {
+      writeString(field, string, context.getSize());
+    } else {
+      byte[] valueUtf8 = context.getByteArray();
+      writeString(field, valueUtf8);
+    }
+  }
+
   /** Writes a protobuf {@code string} field, even if it matches the default value. */
   public abstract void writeString(ProtoFieldInfo field, byte[] utf8Bytes) throws IOException;
 
@@ -231,10 +249,10 @@ public abstract class Serializer implements AutoCloseable {
 
   public abstract void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException;
 
-  public abstract void writeStartMessage(ProtoFieldInfo field, int protoMessageSize)
+  protected abstract void writeStartMessage(ProtoFieldInfo field, int protoMessageSize)
       throws IOException;
 
-  public abstract void writeEndMessage() throws IOException;
+  protected abstract void writeEndMessage() throws IOException;
 
   /** Serializes a protobuf embedded {@code message}. */
   public void serializeMessage(ProtoFieldInfo field, Marshaler message) throws IOException {
@@ -244,13 +262,22 @@ public abstract class Serializer implements AutoCloseable {
   }
 
   public <T> void serializeMessage(
+      ProtoFieldInfo field, T message, StatelessMarshaler<T> marshaler, MarshalerContext context)
+      throws IOException {
+    writeStartMessage(field, context.getSize());
+    marshaler.writeTo(this, message, context);
+    writeEndMessage();
+  }
+
+  public <K, V> void serializeMessage(
       ProtoFieldInfo field,
-      T message,
-      MessageConsumer<Serializer, T, MarshalerContext> consumer,
+      K key,
+      V value,
+      StatelessMarshaler2<K, V> marshaler,
       MarshalerContext context)
       throws IOException {
     writeStartMessage(field, context.getSize());
-    consumer.accept(this, message, context);
+    marshaler.writeTo(this, key, value, context);
     writeEndMessage();
   }
 
@@ -360,15 +387,15 @@ public abstract class Serializer implements AutoCloseable {
   /** Serializes {@code repeated message} field. */
   public abstract <T> void serializeRepeatedMessage(
       ProtoFieldInfo field,
-      List<T> messages,
-      MessageConsumer<Serializer, T, MarshalerContext> consumer,
+      List<? extends T> messages,
+      StatelessMarshaler<T> marshaler,
       MarshalerContext context)
       throws IOException;
 
   public <T> void serializeRepeatedMessage(
       ProtoFieldInfo field,
-      Collection<T> messages,
-      MessageConsumer<Serializer, T, MarshalerContext> consumer,
+      Collection<? extends T> messages,
+      StatelessMarshaler<T> marshaler,
       MarshalerContext context,
       Object key)
       throws IOException {
@@ -376,8 +403,45 @@ public abstract class Serializer implements AutoCloseable {
 
     if (!messages.isEmpty()) {
       RepeatedElementWriter<T> writer = context.getInstance(key, RepeatedElementWriter::new);
-      writer.initialize(field, this, consumer, context);
+      writer.initialize(field, this, marshaler, context);
       messages.forEach(writer);
+    }
+
+    writeEndRepeated();
+  }
+
+  public <K, V> void serializeRepeatedMessage(
+      ProtoFieldInfo field,
+      Map<K, V> messages,
+      StatelessMarshaler2<K, V> marshaler,
+      MarshalerContext context,
+      Object key)
+      throws IOException {
+    writeStartRepeated(field);
+
+    if (!messages.isEmpty()) {
+      RepeatedElementPairWriter<K, V> writer =
+          context.getInstance(key, RepeatedElementPairWriter::new);
+      writer.initialize(field, this, marshaler, context);
+      messages.forEach(writer);
+    }
+
+    writeEndRepeated();
+  }
+
+  public void serializeRepeatedMessage(
+      ProtoFieldInfo field,
+      Attributes attributes,
+      StatelessMarshaler2<AttributeKey<?>, Object> marshaler,
+      MarshalerContext context)
+      throws IOException {
+    writeStartRepeated(field);
+
+    if (!attributes.isEmpty()) {
+      RepeatedElementPairWriter<AttributeKey<?>, Object> writer =
+          context.getInstance(ATTRIBUTES_WRITER_KEY, RepeatedElementPairWriter::new);
+      writer.initialize(field, this, marshaler, context);
+      attributes.forEach(writer);
     }
 
     writeEndRepeated();
@@ -391,7 +455,7 @@ public abstract class Serializer implements AutoCloseable {
     private Serializer output;
 
     @SuppressWarnings("NullAway")
-    private MessageConsumer<Serializer, T, MarshalerContext> write;
+    private StatelessMarshaler<T> marshaler;
 
     @SuppressWarnings("NullAway")
     private MarshalerContext context;
@@ -399,11 +463,11 @@ public abstract class Serializer implements AutoCloseable {
     void initialize(
         ProtoFieldInfo field,
         Serializer output,
-        MessageConsumer<Serializer, T, MarshalerContext> write,
+        StatelessMarshaler<T> marshaler,
         MarshalerContext context) {
       this.field = field;
       this.output = output;
-      this.write = write;
+      this.marshaler = marshaler;
       this.context = context;
     }
 
@@ -411,7 +475,43 @@ public abstract class Serializer implements AutoCloseable {
     public void accept(T element) {
       try {
         output.writeStartRepeatedElement(field, context.getSize());
-        write.accept(output, element, context);
+        marshaler.writeTo(output, element, context);
+        output.writeEndRepeatedElement();
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+  }
+
+  private static class RepeatedElementPairWriter<K, V> implements BiConsumer<K, V> {
+    @SuppressWarnings("NullAway")
+    private ProtoFieldInfo field;
+
+    @SuppressWarnings("NullAway")
+    private Serializer output;
+
+    @SuppressWarnings("NullAway")
+    private StatelessMarshaler2<K, V> marshaler;
+
+    @SuppressWarnings("NullAway")
+    private MarshalerContext context;
+
+    void initialize(
+        ProtoFieldInfo field,
+        Serializer output,
+        StatelessMarshaler2<K, V> marshaler,
+        MarshalerContext context) {
+      this.field = field;
+      this.output = output;
+      this.marshaler = marshaler;
+      this.context = context;
+    }
+
+    @Override
+    public void accept(K key, V value) {
+      try {
+        output.writeStartRepeatedElement(field, context.getSize());
+        marshaler.writeTo(output, key, value, context);
         output.writeEndRepeatedElement();
       } catch (IOException e) {
         throw new IllegalStateException(e);
@@ -420,17 +520,17 @@ public abstract class Serializer implements AutoCloseable {
   }
 
   /** Writes start of repeated messages. */
-  public abstract void writeStartRepeated(ProtoFieldInfo field) throws IOException;
+  protected abstract void writeStartRepeated(ProtoFieldInfo field) throws IOException;
 
   /** Writes end of repeated messages. */
-  public abstract void writeEndRepeated() throws IOException;
+  protected abstract void writeEndRepeated() throws IOException;
 
   /** Writes start of a repeated message element. */
-  public abstract void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
+  protected abstract void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
       throws IOException;
 
   /** Writes end of a repeated message element. */
-  public abstract void writeEndRepeatedElement() throws IOException;
+  protected abstract void writeEndRepeatedElement() throws IOException;
 
   /** Writes the value for a message field that has been pre-serialized. */
   public abstract void writeSerializedMessage(byte[] protoSerialized, String jsonSerialized)
@@ -438,9 +538,4 @@ public abstract class Serializer implements AutoCloseable {
 
   @Override
   public abstract void close() throws IOException;
-
-  @FunctionalInterface
-  public interface MessageConsumer<O, D, C> {
-    void accept(O output, D data, C context) throws IOException;
-  }
 }

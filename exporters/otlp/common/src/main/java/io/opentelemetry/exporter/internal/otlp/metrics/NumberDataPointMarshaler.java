@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.internal.otlp.metrics;
 
-import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.ProtoFieldInfo;
@@ -81,21 +80,6 @@ final class NumberDataPointMarshaler extends MarshalerWithSize {
     output.serializeRepeatedMessage(NumberDataPoint.ATTRIBUTES, attributes);
   }
 
-  public static void writeTo(Serializer output, PointData point, MarshalerContext context)
-      throws IOException {
-    output.serializeFixed64(NumberDataPoint.START_TIME_UNIX_NANO, point.getStartEpochNanos());
-    output.serializeFixed64(NumberDataPoint.TIME_UNIX_NANO, point.getEpochNanos());
-    ProtoFieldInfo valueField = getValueField(point);
-    if (valueField == NumberDataPoint.AS_INT) {
-      output.serializeFixed64Optional(valueField, ((LongPointData) point).getValue());
-    } else {
-      output.serializeDoubleOptional(valueField, ((DoublePointData) point).getValue());
-    }
-    output.serializeRepeatedMessage(
-        NumberDataPoint.EXEMPLARS, point.getExemplars(), ExemplarMarshaler::writeTo, context);
-    KeyValueMarshaler.writeTo(output, context, NumberDataPoint.ATTRIBUTES, point.getAttributes());
-  }
-
   private static int calculateSize(
       long startTimeUnixNano,
       long timeUnixNano,
@@ -116,29 +100,7 @@ final class NumberDataPointMarshaler extends MarshalerWithSize {
     return size;
   }
 
-  public static int calculateSize(PointData point, MarshalerContext context) {
-    int size = 0;
-    size +=
-        MarshalerUtil.sizeFixed64(NumberDataPoint.START_TIME_UNIX_NANO, point.getStartEpochNanos());
-    size += MarshalerUtil.sizeFixed64(NumberDataPoint.TIME_UNIX_NANO, point.getEpochNanos());
-    ProtoFieldInfo valueField = getValueField(point);
-    if (valueField == NumberDataPoint.AS_INT) {
-      size += MarshalerUtil.sizeFixed64Optional(valueField, ((LongPointData) point).getValue());
-    } else {
-      size += MarshalerUtil.sizeDoubleOptional(valueField, ((DoublePointData) point).getValue());
-    }
-    size +=
-        MarshalerUtil.sizeRepeatedMessage(
-            NumberDataPoint.EXEMPLARS,
-            point.getExemplars(),
-            ExemplarMarshaler::calculateSize,
-            context);
-    size +=
-        KeyValueMarshaler.calculateSize(NumberDataPoint.ATTRIBUTES, point.getAttributes(), context);
-    return size;
-  }
-
-  private static ProtoFieldInfo getValueField(PointData pointData) {
+  static ProtoFieldInfo getValueField(PointData pointData) {
     if (pointData instanceof LongPointData) {
       return NumberDataPoint.AS_INT;
     } else {

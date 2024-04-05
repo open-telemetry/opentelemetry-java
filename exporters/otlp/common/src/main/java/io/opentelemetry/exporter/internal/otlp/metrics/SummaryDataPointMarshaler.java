@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.internal.otlp.metrics;
 
-import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
@@ -73,20 +72,6 @@ final class SummaryDataPointMarshaler extends MarshalerWithSize {
     output.serializeRepeatedMessage(SummaryDataPoint.ATTRIBUTES, attributes);
   }
 
-  public static void writeTo(Serializer output, SummaryPointData point, MarshalerContext context)
-      throws IOException {
-    output.serializeFixed64(SummaryDataPoint.START_TIME_UNIX_NANO, point.getStartEpochNanos());
-    output.serializeFixed64(SummaryDataPoint.TIME_UNIX_NANO, point.getEpochNanos());
-    output.serializeFixed64(SummaryDataPoint.COUNT, point.getCount());
-    output.serializeDoubleOptional(SummaryDataPoint.SUM, point.getSum());
-    output.serializeRepeatedMessage(
-        SummaryDataPoint.QUANTILE_VALUES,
-        point.getValues(),
-        ValueAtQuantileMarshaler::writeTo,
-        context);
-    KeyValueMarshaler.writeTo(output, context, SummaryDataPoint.ATTRIBUTES, point.getAttributes());
-  }
-
   private static int calculateSize(
       long startTimeUnixNano,
       long timeUnixNano,
@@ -101,26 +86,6 @@ final class SummaryDataPointMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeDouble(SummaryDataPoint.SUM, sum);
     size += MarshalerUtil.sizeRepeatedMessage(SummaryDataPoint.QUANTILE_VALUES, quantileValues);
     size += MarshalerUtil.sizeRepeatedMessage(SummaryDataPoint.ATTRIBUTES, attributes);
-    return size;
-  }
-
-  public static int calculateSize(SummaryPointData point, MarshalerContext context) {
-    int size = 0;
-    size +=
-        MarshalerUtil.sizeFixed64(
-            SummaryDataPoint.START_TIME_UNIX_NANO, point.getStartEpochNanos());
-    size += MarshalerUtil.sizeFixed64(SummaryDataPoint.TIME_UNIX_NANO, point.getEpochNanos());
-    size += MarshalerUtil.sizeFixed64(SummaryDataPoint.COUNT, point.getCount());
-    size += MarshalerUtil.sizeDoubleOptional(SummaryDataPoint.SUM, point.getSum());
-    size +=
-        MarshalerUtil.sizeRepeatedMessage(
-            SummaryDataPoint.QUANTILE_VALUES,
-            point.getValues(),
-            ValueAtQuantileMarshaler::calculateSize,
-            context);
-    size +=
-        KeyValueMarshaler.calculateSize(
-            SummaryDataPoint.ATTRIBUTES, point.getAttributes(), context);
     return size;
   }
 }

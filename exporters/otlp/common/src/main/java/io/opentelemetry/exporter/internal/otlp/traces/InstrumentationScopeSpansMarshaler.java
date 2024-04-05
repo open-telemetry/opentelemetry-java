@@ -45,7 +45,8 @@ final class InstrumentationScopeSpansMarshaler extends MarshalerWithSize {
       MarshalerContext context)
       throws IOException {
     output.serializeMessage(ScopeSpans.SCOPE, instrumentationScopeMarshaler);
-    output.serializeRepeatedMessage(ScopeSpans.SPANS, spans, SpanMarshaler::writeTo, context);
+    output.serializeRepeatedMessage(
+        ScopeSpans.SPANS, spans, SpanStatelessMarshaler.INSTANCE, context);
     output.serializeString(ScopeSpans.SCHEMA_URL, schemaUrlUtf8);
   }
 
@@ -72,7 +73,7 @@ final class InstrumentationScopeSpansMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeBytes(ScopeSpans.SCHEMA_URL, schemaUrlUtf8);
     size +=
         MarshalerUtil.sizeRepeatedMessage(
-            ScopeSpans.SPANS, spans, SpanMarshaler::calculateSize, context);
+            ScopeSpans.SPANS, spans, SpanStatelessMarshaler.INSTANCE, context);
     context.setSize(sizeIndex, size);
 
     return size;

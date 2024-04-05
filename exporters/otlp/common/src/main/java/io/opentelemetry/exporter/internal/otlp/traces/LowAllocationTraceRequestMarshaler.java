@@ -9,8 +9,6 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.exporter.internal.otlp.AbstractResourceScopeMapSizeCalculator;
-import io.opentelemetry.exporter.internal.otlp.AbstractResourceScopeMapWriter;
 import io.opentelemetry.proto.collector.trace.v1.internal.ExportTraceServiceRequest;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -27,7 +25,10 @@ import java.util.Map;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
+@SuppressWarnings({"UnusedNestedClass", "UnusedVariable", "CheckedExceptionNotThrown"})
 public final class LowAllocationTraceRequestMarshaler extends Marshaler {
+  private static final Object RESOURCE_SPAN_SIZE_CALCULATOR_KEY = new Object();
+  private static final Object RESOURCE_SPAN_WRITER_KEY = new Object();
 
   private final MarshalerContext context = new MarshalerContext();
 
@@ -50,30 +51,27 @@ public final class LowAllocationTraceRequestMarshaler extends Marshaler {
     return size;
   }
 
-  private final ResourceScopeMapWriter resourceScopeMapWriter = new ResourceScopeMapWriter();
-
   @Override
-  public void writeTo(Serializer output) {
+  public void writeTo(Serializer output) throws IOException {
     // serializing can be retried, reset the indexes, so we could call writeTo multiple times
     context.resetReadIndex();
-    resourceScopeMapWriter.initialize(output, ExportTraceServiceRequest.RESOURCE_SPANS, context);
-    resourceAndScopeMap.forEach(resourceScopeMapWriter);
+    output.serializeRepeatedMessage(
+        ExportTraceServiceRequest.RESOURCE_SPANS,
+        resourceAndScopeMap,
+        ResourceSpansStatelessMarshaler.INSTANCE,
+        context,
+        RESOURCE_SPAN_WRITER_KEY);
   }
 
   private static int calculateSize(
       MarshalerContext context,
       Map<Resource, Map<InstrumentationScopeInfo, List<SpanData>>> resourceAndScopeMap) {
-    if (resourceAndScopeMap.isEmpty()) {
-      return 0;
-    }
-
-    ResourceScopeMapSizeCalculator resourceScopeMapSizeCalculator =
-        context.getInstance(
-            ResourceScopeMapSizeCalculator.class, ResourceScopeMapSizeCalculator::new);
-    resourceScopeMapSizeCalculator.initialize(ExportTraceServiceRequest.RESOURCE_SPANS, context);
-    resourceAndScopeMap.forEach(resourceScopeMapSizeCalculator);
-
-    return resourceScopeMapSizeCalculator.getSize();
+    return MarshalerUtil.sizeRepeatedMessage(
+        ExportTraceServiceRequest.RESOURCE_SPANS,
+        resourceAndScopeMap,
+        ResourceSpansStatelessMarshaler.INSTANCE,
+        context,
+        RESOURCE_SPAN_SIZE_CALCULATOR_KEY);
   }
 
   private static Map<Resource, Map<InstrumentationScopeInfo, List<SpanData>>>
@@ -90,27 +88,5 @@ public final class LowAllocationTraceRequestMarshaler extends Marshaler {
         SpanData::getResource,
         SpanData::getInstrumentationScopeInfo,
         context);
-  }
-
-  private static class ResourceScopeMapWriter extends AbstractResourceScopeMapWriter<SpanData> {
-
-    @Override
-    protected void handle(
-        Map<InstrumentationScopeInfo, List<SpanData>> instrumentationScopeInfoListMap)
-        throws IOException {
-      ResourceSpansMarshaler.writeTo(output, instrumentationScopeInfoListMap, context);
-    }
-  }
-
-  private static class ResourceScopeMapSizeCalculator
-      extends AbstractResourceScopeMapSizeCalculator<SpanData> {
-
-    @Override
-    public int calculateSize(
-        Resource resource,
-        Map<InstrumentationScopeInfo, List<SpanData>> instrumentationScopeInfoListMap) {
-      return ResourceSpansMarshaler.calculateSize(
-          context, resource, instrumentationScopeInfoListMap);
-    }
   }
 }
