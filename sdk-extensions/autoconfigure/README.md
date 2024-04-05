@@ -72,11 +72,18 @@ The OpenTelemetry SDK can be disabled entirely. If disabled, `AutoConfiguredOpen
 
 The following configuration properties are common to all exporters:
 
-| System property       | Environment variable  | Purpose                                                                                                                    |
-|-----------------------|-----------------------|----------------------------------------------------------------------------------------------------------------------------|
-| otel.traces.exporter  | OTEL_TRACES_EXPORTER  | List of exporters to be used for tracing, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter. |
-| otel.metrics.exporter | OTEL_METRICS_EXPORTER | List of exporters to be used for metrics, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter. |
-| otel.logs.exporter    | OTEL_LOGS_EXPORTER    | List of exporters to be used for logging, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter. |
+| System property                             | Environment variable                        | Purpose                                                                                                                                                                                                  |
+|---------------------------------------------|---------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| otel.traces.exporter                        | OTEL_TRACES_EXPORTER                        | List of exporters to be used for tracing, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter.                                                                               |
+| otel.metrics.exporter                       | OTEL_METRICS_EXPORTER                       | List of exporters to be used for metrics, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter.                                                                               |
+| otel.logs.exporter                          | OTEL_LOGS_EXPORTER                          | List of exporters to be used for logging, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter.                                                                               |
+| otel.java.experimental.exporter.memory_mode | OTEL_JAVA_EXPERIMENTAL_EXPORTER_MEMORY_MODE | If `reusable_data`, enable reusable memory mode (on exporters which support it) to reduce allocations. Default is `immutable_data`. This option is experimental and subject to change or removal.**[1]** |
+
+**[1]**: NOTE: The exporters which adhere
+to `otel.java.experimental.exporter.memory_mode=reusable_data`
+are `OtlpGrpcMetricExporter`, `OtlpHttpMetricExporter`, and `PrometheusHttpServer`. Support for
+additional exporters may be added in the future.
+
 
 #### OTLP exporter (span, metric, and log exporters)
 
