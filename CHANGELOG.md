@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 1.37.0 (2024-04-05)
 
 **NOTICE:** This release contains a significant restructuring of the experimental event API and the API incubator artifact. Please read the notes in the `API -> Incubator` section carefully.
 
