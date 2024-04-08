@@ -7,7 +7,7 @@
     {
       "matchPackageNames": [
         "io.opentelemetry.proto:opentelemetry-proto",
-        "io.opentelemetry.semconv:opentelemetry-semconv"
+        "io.opentelemetry.semconv:opentelemetry-semconv-incubating"
       ],
       // Renovate's default behavior is only to update from unstable -> unstable if it's for the
       // major.minor.patch, under the assumption that you would want to update to the stable version
