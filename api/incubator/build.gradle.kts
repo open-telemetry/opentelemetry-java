@@ -16,7 +16,7 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
 
-  testImplementation("io.opentelemetry.semconv:opentelemetry-semconv")
+  testImplementation("io.opentelemetry.semconv:opentelemetry-semconv-incubating")
 
   testImplementation("com.google.guava:guava")
 }
