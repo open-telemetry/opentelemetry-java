@@ -1,7 +1,2 @@
 Comparing source compatibility of  against 
-***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.export.LogRecordExporter getLogRecordExporter()
-***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.export.LogRecordExporter getLogRecordExporter()
+No changes.
