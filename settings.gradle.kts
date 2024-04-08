@@ -1,7 +1,7 @@
 pluginManagement {
   plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("com.gradle.enterprise") version "3.17"
+    id("com.gradle.develocity") version "3.17"
     id("de.undercouch.download") version "5.6.0"
     id("org.jsonschema2pojo") version "1.2.1"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
@@ -10,7 +10,7 @@ pluginManagement {
 }
 
 plugins {
-  id("com.gradle.enterprise")
+  id("com.gradle.develocity")
 }
 
 dependencyResolutionManagement {
@@ -71,30 +71,29 @@ val geAccessKey = System.getenv("GRADLE_ENTERPRISE_ACCESS_KEY") ?: ""
 val useScansGradleCom = isCI && geAccessKey.isEmpty()
 
 if (useScansGradleCom) {
-  gradleEnterprise {
+  develocity {
     buildScan {
-      termsOfServiceUrl = "https://gradle.com/terms-of-service"
-      termsOfServiceAgree = "yes"
-      isUploadInBackground = !isCI
-      publishAlways()
+      termsOfUseUrl.set("https://gradle.com/terms-of-service")
+      termsOfUseAgree.set("yes")
+      uploadInBackground.set(!isCI)
+      publishing.onlyIf { true }
 
       capture {
-        isTaskInputFiles = true
+        fileFingerprints.set(true)
       }
     }
   }
 } else {
-  gradleEnterprise {
+  develocity {
     server = gradleEnterpriseServer
     buildScan {
-      isUploadInBackground = !isCI
-
-      this as com.gradle.enterprise.gradleplugin.internal.extension.BuildScanExtensionWithHiddenFeatures
-      publishIfAuthenticated()
-      publishAlways()
+      uploadInBackground.set(!isCI)
+      publishing.onlyIf {
+        it.isAuthenticated
+      }
 
       capture {
-        isTaskInputFiles = true
+        fileFingerprints.set(true)
       }
 
       gradle.startParameter.projectProperties["testJavaVersion"]?.let { tag(it) }
