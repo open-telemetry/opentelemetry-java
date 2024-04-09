@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 /**
  * {@link SpanExporter} SPI implementation for {@link OtlpGrpcSpanExporter} and {@link
@@ -39,39 +40,51 @@ public class OtlpSpanExporterProvider
   public SpanExporter createExporter(ConfigProperties config) {
     String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_TRACES, config);
     if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
-      OtlpHttpSpanExporterBuilder builder = httpBuilder();
-
-      OtlpConfigUtil.configureOtlpExporterBuilder(
-          DATA_TYPE_TRACES,
-          config,
-          builder::setEndpoint,
-          builder::addHeader,
-          builder::setCompression,
-          builder::setTimeout,
-          builder::setTrustedCertificates,
-          builder::setClientTls,
-          builder::setRetryPolicy);
-      builder.setMeterProvider(meterProviderRef::get);
-
-      return builder.build();
+      return createHttpProtobufExporter(config, c -> {});
     } else if (protocol.equals(PROTOCOL_GRPC)) {
-      OtlpGrpcSpanExporterBuilder builder = grpcBuilder();
-
-      OtlpConfigUtil.configureOtlpExporterBuilder(
-          DATA_TYPE_TRACES,
-          config,
-          builder::setEndpoint,
-          builder::addHeader,
-          builder::setCompression,
-          builder::setTimeout,
-          builder::setTrustedCertificates,
-          builder::setClientTls,
-          builder::setRetryPolicy);
-      builder.setMeterProvider(meterProviderRef::get);
-
-      return builder.build();
+      return createGrpcExporter(config, c -> {});
     }
     throw new ConfigurationException("Unsupported OTLP traces protocol: " + protocol);
+  }
+
+  protected SpanExporter createHttpProtobufExporter(ConfigProperties config, Consumer<OtlpHttpSpanExporterBuilder> configurator) {
+    OtlpHttpSpanExporterBuilder builder = httpBuilder();
+
+    OtlpConfigUtil.configureOtlpExporterBuilder(
+        DATA_TYPE_TRACES,
+        config,
+        builder::setEndpoint,
+        builder::addHeader,
+        builder::setCompression,
+        builder::setTimeout,
+        builder::setTrustedCertificates,
+        builder::setClientTls,
+        builder::setRetryPolicy);
+    builder.setMeterProvider(meterProviderRef::get);
+
+    configurator.accept(builder);
+
+    return builder.build();
+  }
+
+  protected SpanExporter createGrpcExporter(ConfigProperties config, Consumer<OtlpGrpcSpanExporterBuilder> configurator) {
+    OtlpGrpcSpanExporterBuilder builder = grpcBuilder();
+
+    OtlpConfigUtil.configureOtlpExporterBuilder(
+        DATA_TYPE_TRACES,
+        config,
+        builder::setEndpoint,
+        builder::addHeader,
+        builder::setCompression,
+        builder::setTimeout,
+        builder::setTrustedCertificates,
+        builder::setClientTls,
+        builder::setRetryPolicy);
+    builder.setMeterProvider(meterProviderRef::get);
+
+    configurator.accept(builder);
+
+    return builder.build();
   }
 
   @Override
