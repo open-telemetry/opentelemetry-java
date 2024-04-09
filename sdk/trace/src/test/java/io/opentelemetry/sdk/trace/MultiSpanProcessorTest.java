@@ -35,10 +35,12 @@ class MultiSpanProcessorTest {
   @BeforeEach
   void setUp() {
     when(spanProcessor1.isStartRequired()).thenReturn(true);
+    when(spanProcessor1.isBeforeEndRequired()).thenReturn(true);
     when(spanProcessor1.isEndRequired()).thenReturn(true);
     when(spanProcessor1.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
     when(spanProcessor1.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     when(spanProcessor2.isStartRequired()).thenReturn(true);
+    when(spanProcessor2.isBeforeEndRequired()).thenReturn(true);
     when(spanProcessor2.isEndRequired()).thenReturn(true);
     when(spanProcessor2.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
     when(spanProcessor2.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
@@ -67,6 +69,10 @@ class MultiSpanProcessorTest {
     verify(spanProcessor1).onStart(same(Context.root()), same(readWriteSpan));
     verify(spanProcessor2).onStart(same(Context.root()), same(readWriteSpan));
 
+    multiSpanProcessor.beforeEnd(readWriteSpan);
+    verify(spanProcessor1).beforeEnd(same(readWriteSpan));
+    verify(spanProcessor2).beforeEnd(same(readWriteSpan));
+
     multiSpanProcessor.onEnd(readableSpan);
     verify(spanProcessor1).onEnd(same(readableSpan));
     verify(spanProcessor2).onEnd(same(readableSpan));
@@ -83,6 +89,7 @@ class MultiSpanProcessorTest {
   @Test
   void twoSpanProcessor_DifferentRequirements() {
     when(spanProcessor1.isEndRequired()).thenReturn(false);
+    when(spanProcessor2.isBeforeEndRequired()).thenReturn(false);
     when(spanProcessor2.isStartRequired()).thenReturn(false);
     SpanProcessor multiSpanProcessor =
         SpanProcessor.composite(Arrays.asList(spanProcessor1, spanProcessor2));
@@ -93,6 +100,10 @@ class MultiSpanProcessorTest {
     multiSpanProcessor.onStart(Context.root(), readWriteSpan);
     verify(spanProcessor1).onStart(same(Context.root()), same(readWriteSpan));
     verify(spanProcessor2, times(0)).onStart(any(Context.class), any(ReadWriteSpan.class));
+
+    multiSpanProcessor.beforeEnd(readWriteSpan);
+    verify(spanProcessor1).beforeEnd(same(readWriteSpan));
+    verify(spanProcessor2, times(0)).beforeEnd(any(ReadWriteSpan.class));
 
     multiSpanProcessor.onEnd(readableSpan);
     verify(spanProcessor1, times(0)).onEnd(any(ReadableSpan.class));

@@ -85,6 +85,26 @@ public interface SpanProcessor extends Closeable {
    */
   boolean isEndRequired();
 
+
+  /**
+   * Called just before a {@link io.opentelemetry.api.trace.Span} is ended, if the {@link
+   * Span#isRecording()} returns true. This means that the span will still be mutable
+   *
+   * <p>This method is called synchronously on the execution thread, should not throw or block the
+   * execution thread.
+   *
+   * @param span the {@code Span} that is just about to be ended.
+   */
+  default void beforeEnd(ReadWriteSpan span) {
+  }
+
+  /**
+   * Returns {@code true} if this {@link SpanProcessor} requires before-end events.
+   */
+  default boolean isBeforeEndRequired() {
+    return false;
+  }
+
   /**
    * Processes all span events that have not yet been processed and closes used resources.
    *
