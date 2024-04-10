@@ -8,13 +8,13 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.MeterConfig;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -27,18 +27,18 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class MeterProviderSharedState {
 
-  private final AtomicReference<Function<InstrumentationScopeInfo, MeterConfig>>
-      meterConfigProviderRef = new AtomicReference<>();
+  private final AtomicReference<ScopeConfigurator<MeterConfig>> meterConfigProviderRef =
+      new AtomicReference<>();
 
   public static MeterProviderSharedState create(
       Clock clock,
       Resource resource,
       ExemplarFilter exemplarFilter,
       long startEpochNanos,
-      Function<InstrumentationScopeInfo, MeterConfig> meterConfigProvider) {
+      ScopeConfigurator<MeterConfig> meterConfigurator) {
     MeterProviderSharedState sharedState =
         new AutoValue_MeterProviderSharedState(clock, resource, startEpochNanos, exemplarFilter);
-    sharedState.meterConfigProviderRef.set(meterConfigProvider);
+    sharedState.meterConfigProviderRef.set(meterConfigurator);
     return sharedState;
   }
 
@@ -57,9 +57,8 @@ public abstract class MeterProviderSharedState {
   abstract ExemplarFilter getExemplarFilter();
 
   public MeterConfig getMeterConfig(InstrumentationScopeInfo instrumentationScopeInfo) {
-    Function<InstrumentationScopeInfo, MeterConfig> meterConfigProvider =
-        Objects.requireNonNull(meterConfigProviderRef.get());
-    MeterConfig meterConfig = meterConfigProvider.apply(instrumentationScopeInfo);
+    MeterConfig meterConfig =
+        Objects.requireNonNull(meterConfigProviderRef.get()).apply(instrumentationScopeInfo);
     return meterConfig == null ? MeterConfig.defaultConfig() : meterConfig;
   }
 }

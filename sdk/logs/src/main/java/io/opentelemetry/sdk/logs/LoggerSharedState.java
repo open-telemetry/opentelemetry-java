@@ -8,8 +8,8 @@ package io.opentelemetry.sdk.logs;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.ScopeConfigurator;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -23,7 +23,7 @@ final class LoggerSharedState {
   private final Supplier<LogLimits> logLimitsSupplier;
   private final LogRecordProcessor logRecordProcessor;
   private final Clock clock;
-  private final Function<InstrumentationScopeInfo, LoggerConfig> loggerConfigProvider;
+  private final ScopeConfigurator<LoggerConfig> loggerConfigurator;
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
   LoggerSharedState(
@@ -31,12 +31,12 @@ final class LoggerSharedState {
       Supplier<LogLimits> logLimitsSupplier,
       LogRecordProcessor logRecordProcessor,
       Clock clock,
-      Function<InstrumentationScopeInfo, LoggerConfig> loggerConfigProvider) {
+      ScopeConfigurator<LoggerConfig> loggerConfigurator) {
     this.resource = resource;
     this.logLimitsSupplier = logLimitsSupplier;
     this.logRecordProcessor = logRecordProcessor;
     this.clock = clock;
-    this.loggerConfigProvider = loggerConfigProvider;
+    this.loggerConfigurator = loggerConfigurator;
   }
 
   Resource getResource() {
@@ -56,7 +56,7 @@ final class LoggerSharedState {
   }
 
   LoggerConfig getLoggerConfig(InstrumentationScopeInfo instrumentationScopeInfo) {
-    LoggerConfig loggerConfig = loggerConfigProvider.apply(instrumentationScopeInfo);
+    LoggerConfig loggerConfig = loggerConfigurator.apply(instrumentationScopeInfo);
     return loggerConfig == null ? LoggerConfig.defaultConfig() : loggerConfig;
   }
 

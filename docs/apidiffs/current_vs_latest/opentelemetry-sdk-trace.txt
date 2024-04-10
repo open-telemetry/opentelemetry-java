@@ -1,10 +1,13 @@
 Comparing source compatibility of  against 
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.trace.SdkTracerProviderBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.SdkTracerProviderBuilder addScopeConfig(io.opentelemetry.sdk.common.ScopeSelector, io.opentelemetry.sdk.trace.TracerConfig)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.SdkTracerProviderBuilder addTracerConfiguratorMatcher(java.util.function.Predicate<io.opentelemetry.sdk.common.InstrumentationScopeInfo>, io.opentelemetry.sdk.trace.TracerConfig)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.SdkTracerProviderBuilder setTracerConfigurator(io.opentelemetry.sdk.common.ScopeConfigurator<io.opentelemetry.sdk.trace.TracerConfig>)
 +++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.trace.TracerConfig  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.ScopeConfiguratorBuilder<io.opentelemetry.sdk.trace.TracerConfig> configuratorBuilder()
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.trace.TracerConfig defaultConfig()
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.trace.TracerConfig disabled()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.trace.TracerConfig enabled()
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean isEnabled()

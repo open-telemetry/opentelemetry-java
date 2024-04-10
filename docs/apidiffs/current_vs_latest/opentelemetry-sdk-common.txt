@@ -1,10 +1,19 @@
 Comparing source compatibility of  against 
-+++* NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.common.ScopeConfig  (not serializable)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.ScopeConfigurator  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW INTERFACE: java.util.function.Function
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++* NEW METHOD: PUBLIC(+) STATIC(+) java.util.function.Function<io.opentelemetry.sdk.common.InstrumentationScopeInfo,T> applyToMatching(java.util.function.Predicate<io.opentelemetry.sdk.common.InstrumentationScopeInfo>, java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.ScopeConfiguratorBuilder<T> builder()
 		GENERIC TEMPLATES: +++ T:java.lang.Object
-	+++* NEW METHOD: PUBLIC(+) STATIC(+) java.util.function.Function<io.opentelemetry.sdk.common.InstrumentationScopeInfo,T> applyToMatching(java.util.function.Predicate<io.opentelemetry.sdk.common.InstrumentationScopeInfo>, java.lang.Object, java.lang.Object)
-		GENERIC TEMPLATES: +++ T:java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) java.util.function.Predicate<io.opentelemetry.sdk.common.InstrumentationScopeInfo> scopeNameEquals(java.lang.String)
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) java.util.function.Predicate<io.opentelemetry.sdk.common.InstrumentationScopeInfo> scopeNameMatches(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.ScopeConfiguratorBuilder<T> toBuilder()
+	+++  NEW ANNOTATION: java.lang.FunctionalInterface
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.common.ScopeConfiguratorBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.ScopeConfiguratorBuilder<T> addCondition(java.util.function.Predicate<io.opentelemetry.sdk.common.InstrumentationScopeInfo>, java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.ScopeConfigurator<T> build()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) java.util.function.Predicate<io.opentelemetry.sdk.common.InstrumentationScopeInfo> nameEquals(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) java.util.function.Predicate<io.opentelemetry.sdk.common.InstrumentationScopeInfo> nameMatchesGlob(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.ScopeConfiguratorBuilder<T> setDefault(java.lang.Object)

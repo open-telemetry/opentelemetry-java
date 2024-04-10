@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.ScopeConfigurator;
+import io.opentelemetry.sdk.common.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
@@ -19,7 +21,7 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Builder class for the {@link SdkMeterProvider}.
@@ -42,8 +44,8 @@ public final class SdkMeterProviderBuilder {
   private final List<MetricProducer> metricProducers = new ArrayList<>();
   private final List<RegisteredView> registeredViews = new ArrayList<>();
   private ExemplarFilter exemplarFilter = DEFAULT_EXEMPLAR_FILTER;
-  private Function<InstrumentationScopeInfo, MeterConfig> meterConfigProvider =
-      unused -> MeterConfig.defaultConfig();
+  private ScopeConfiguratorBuilder<MeterConfig> meterConfiguratorBuilder =
+      MeterConfig.configuratorBuilder();
 
   SdkMeterProviderBuilder() {}
 
@@ -154,9 +156,37 @@ public final class SdkMeterProviderBuilder {
     return this;
   }
 
-  public SdkMeterProviderBuilder setMeterConfigProvider(
-      Function<InstrumentationScopeInfo, MeterConfig> meterConfigProvider) {
-    this.meterConfigProvider = meterConfigProvider;
+  /**
+   * Set the meter configurator, which computes {@link MeterConfig} for each {@link
+   * InstrumentationScopeInfo}.
+   *
+   * <p>Overrides any matchers added via {@link #addMeterConfiguratorMatcher(Predicate,
+   * MeterConfig)}.
+   *
+   * @see MeterConfig#configuratorBuilder()
+   */
+  public SdkMeterProviderBuilder setMeterConfigurator(
+      ScopeConfigurator<MeterConfig> meterConfigurator) {
+    this.meterConfiguratorBuilder = meterConfigurator.toBuilder();
+    return this;
+  }
+
+  /**
+   * Adds a condition to the meter configurator, which computes {@link MeterConfig} for each {@link
+   * InstrumentationScopeInfo}.
+   *
+   * <p>Applies after any previously added conditions.
+   *
+   * <p>If {@link #setMeterConfigurator(ScopeConfigurator)} was previously called, this condition
+   * will only be applied if the {@link ScopeConfigurator#apply(Object)} returns null for the
+   * matched {@link InstrumentationScopeInfo}(s).
+   *
+   * @see ScopeConfiguratorBuilder#nameEquals(String)
+   * @see ScopeConfiguratorBuilder#nameMatchesGlob(String)
+   */
+  public SdkMeterProviderBuilder addMeterConfiguratorMatcher(
+      Predicate<InstrumentationScopeInfo> scopeMatcher, MeterConfig meterConfig) {
+    this.meterConfiguratorBuilder.addCondition(scopeMatcher, meterConfig);
     return this;
   }
 
@@ -169,6 +199,6 @@ public final class SdkMeterProviderBuilder {
         clock,
         resource,
         exemplarFilter,
-        meterConfigProvider);
+        meterConfiguratorBuilder.build());
   }
 }

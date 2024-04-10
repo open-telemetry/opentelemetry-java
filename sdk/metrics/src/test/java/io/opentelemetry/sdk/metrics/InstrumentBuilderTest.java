@@ -15,7 +15,6 @@ import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import org.junit.jupiter.api.Test;
 
 class InstrumentBuilderTest {
@@ -26,7 +25,7 @@ class InstrumentBuilderTest {
           Resource.getDefault(),
           ExemplarFilter.alwaysOff(),
           0,
-          new LinkedHashMap<>());
+          MeterConfig.configuratorBuilder().build());
   static final InstrumentationScopeInfo SCOPE = InstrumentationScopeInfo.create("scope-name");
   public static final MeterSharedState METER_SHARED_STATE =
       MeterSharedState.create(SCOPE, Collections.emptyList());

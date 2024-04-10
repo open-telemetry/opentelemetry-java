@@ -5,8 +5,7 @@
 
 package io.opentelemetry.sdk;
 
-import static io.opentelemetry.sdk.common.ScopeConfig.applyToMatching;
-import static io.opentelemetry.sdk.common.ScopeConfig.scopeNameEquals;
+import static io.opentelemetry.sdk.common.ScopeConfiguratorBuilder.nameEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.OpenTelemetry;
@@ -35,15 +34,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
-class ScopeConfigTest {
+class ScopeConfiguratorTest {
 
   private final InMemoryLogRecordExporter logRecordExporter = InMemoryLogRecordExporter.create();
   private final InMemoryMetricReader metricReader = InMemoryMetricReader.create();
   private final InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
 
-  /**
-   * Disable "scopeB". All other scopes are enabled by default.
-   */
+  /** Disable "scopeB". All other scopes are enabled by default. */
   @Test
   void disableScopeB() {
     OpenTelemetrySdk sdk =
@@ -51,20 +48,17 @@ class ScopeConfigTest {
             .setTracerProvider(
                 SdkTracerProvider.builder()
                     .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
-                    .setTracerConfigProvider(
-                        applyToMatching(scopeNameEquals("scopeB"), TracerConfig.disabled()))
+                    .addTracerConfiguratorMatcher(nameEquals("scopeB"), TracerConfig.disabled())
                     .build())
             .setMeterProvider(
                 SdkMeterProvider.builder()
                     .registerMetricReader(metricReader)
-                    .setMeterConfigProvider(
-                        applyToMatching(scopeNameEquals("scopeB"), MeterConfig.disabled()))
+                    .addMeterConfiguratorMatcher(nameEquals("scopeB"), MeterConfig.disabled())
                     .build())
             .setLoggerProvider(
                 SdkLoggerProvider.builder()
                     .addLogRecordProcessor(SimpleLogRecordProcessor.create(logRecordExporter))
-                    .setLoggerConfigProvider(
-                        applyToMatching(scopeNameEquals("scopeB"), LoggerConfig.disabled()))
+                    .addLoggerConfiguratorMatcher(nameEquals("scopeB"), LoggerConfig.disabled())
                     .build())
             .build();
 
@@ -104,9 +98,7 @@ class ScopeConfigTest {
             });
   }
 
-  /**
-   * Disable all scopes by default and enable a single scope.
-   */
+  /** Disable all scopes by default and enable a single scope. */
   @Test
   void disableAllScopesExceptB() {
     OpenTelemetrySdk sdk =
@@ -114,26 +106,36 @@ class ScopeConfigTest {
             .setTracerProvider(
                 SdkTracerProvider.builder()
                     .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
-                    .setTracerConfigProvider(
-                        applyToMatching(scopeNameEquals("scopeB"), TracerConfig.enabled(), TracerConfig.disabled()))
+                    .setTracerConfigurator(
+                        TracerConfig.configuratorBuilder()
+                            .setDefault(TracerConfig.disabled())
+                            .addCondition(nameEquals("scopeB"), TracerConfig.enabled())
+                            .build())
                     .build())
             .setMeterProvider(
                 SdkMeterProvider.builder()
                     .registerMetricReader(metricReader)
-                    .setMeterConfigProvider(
-                        applyToMatching(scopeNameEquals("scopeB"), MeterConfig.enabled(), MeterConfig.disabled()))
+                    .setMeterConfigurator(
+                        MeterConfig.configuratorBuilder()
+                            .setDefault(MeterConfig.disabled())
+                            .addCondition(nameEquals("scopeB"), MeterConfig.enabled())
+                            .build())
                     .build())
             .setLoggerProvider(
                 SdkLoggerProvider.builder()
                     .addLogRecordProcessor(SimpleLogRecordProcessor.create(logRecordExporter))
-                    .setLoggerConfigProvider(
-                        applyToMatching(scopeNameEquals("scopeB"), LoggerConfig.enabled(), LoggerConfig.disabled()))
+                    .setLoggerConfigurator(
+                        LoggerConfig.configuratorBuilder()
+                            .setDefault(LoggerConfig.disabled())
+                            .addCondition(nameEquals("scopeB"), LoggerConfig.enabled())
+                            .build())
                     .build())
             .build();
 
     simulateInstrumentation(sdk);
 
-    // Collect all the telemetry. Ensure we only see telemetry from scopeB, since other scopes have been disabled by default.
+    // Collect all the telemetry. Ensure we only see telemetry from scopeB, since other scopes have
+    // been disabled by default.
     assertThat(spanExporter.getFinishedSpanItems())
         .satisfies(
             spans -> {
@@ -165,7 +167,6 @@ class ScopeConfigTest {
               assertThat(logsByScope.get(InstrumentationScopeInfo.create("scopeC"))).isNull();
             });
   }
-
 
   /**
    * Emit spans, metrics and logs in a hierarchy of 3 scopes: scopeA -> scopeB -> scopeC. Exercise
