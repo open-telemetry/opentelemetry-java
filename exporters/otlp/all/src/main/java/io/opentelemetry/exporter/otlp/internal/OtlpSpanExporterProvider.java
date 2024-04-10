@@ -36,6 +36,26 @@ public class OtlpSpanExporterProvider
   private final AtomicReference<MeterProvider> meterProviderRef =
       new AtomicReference<>(MeterProvider.noop());
 
+  public static OtlpSpanExporterProvider createHttpProtobufExporter(
+      Consumer<OtlpHttpSpanExporterBuilder> configurator) {
+    return new OtlpSpanExporterProvider() {
+      @Override
+      public SpanExporter createExporter(ConfigProperties config) {
+        return createHttpProtobufExporter(config, configurator);
+      }
+    };
+  }
+
+  public static OtlpSpanExporterProvider createGrpcExporter(
+      Consumer<OtlpGrpcSpanExporterBuilder> configurator) {
+    return new OtlpSpanExporterProvider() {
+      @Override
+      public SpanExporter createExporter(ConfigProperties config) {
+        return createGrpcExporter(config, configurator);
+      }
+    };
+  }
+
   @Override
   public SpanExporter createExporter(ConfigProperties config) {
     String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_TRACES, config);
@@ -47,7 +67,8 @@ public class OtlpSpanExporterProvider
     throw new ConfigurationException("Unsupported OTLP traces protocol: " + protocol);
   }
 
-  protected SpanExporter createHttpProtobufExporter(ConfigProperties config, Consumer<OtlpHttpSpanExporterBuilder> configurator) {
+  SpanExporter createHttpProtobufExporter(
+      ConfigProperties config, Consumer<OtlpHttpSpanExporterBuilder> configurator) {
     OtlpHttpSpanExporterBuilder builder = httpBuilder();
 
     OtlpConfigUtil.configureOtlpExporterBuilder(
@@ -67,7 +88,8 @@ public class OtlpSpanExporterProvider
     return builder.build();
   }
 
-  protected SpanExporter createGrpcExporter(ConfigProperties config, Consumer<OtlpGrpcSpanExporterBuilder> configurator) {
+  SpanExporter createGrpcExporter(
+      ConfigProperties config, Consumer<OtlpGrpcSpanExporterBuilder> configurator) {
     OtlpGrpcSpanExporterBuilder builder = grpcBuilder();
 
     OtlpConfigUtil.configureOtlpExporterBuilder(
