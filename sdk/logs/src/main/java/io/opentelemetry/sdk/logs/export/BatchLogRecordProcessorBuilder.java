@@ -21,6 +21,7 @@ public final class BatchLogRecordProcessorBuilder {
 
   // Visible for testing
   static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 1000;
+  static final int DEFAULT_MAX_CONCURRENT_EXPORT = 1;
   // Visible for testing
   static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
   // Visible for testing
@@ -30,6 +31,7 @@ public final class BatchLogRecordProcessorBuilder {
 
   private final LogRecordExporter logRecordExporter;
   private long scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_SCHEDULE_DELAY_MILLIS);
+  private int maxConcurrentExport = DEFAULT_MAX_CONCURRENT_EXPORT;
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
@@ -62,6 +64,20 @@ public final class BatchLogRecordProcessorBuilder {
   // Visible for testing
   long getScheduleDelayNanos() {
     return scheduleDelayNanos;
+  }
+
+  /**
+   * Sets the max numbers for concurrent export. If unset, defaults to {@value
+   * DEFAULT_MAX_CONCURRENT_EXPORT
+   */
+  public BatchLogRecordProcessorBuilder setMaxConcurrentExport(int maxConcurrentExport) {
+    checkArgument(maxConcurrentExport > 0, "maxConcurrentExport must be non-negative");
+    this.maxConcurrentExport = maxConcurrentExport;
+    return this;
+  }
+
+  int getMaxConcurrentExport() {
+    return maxConcurrentExport;
   }
 
   /**
@@ -152,6 +168,7 @@ public final class BatchLogRecordProcessorBuilder {
         logRecordExporter,
         meterProvider,
         scheduleDelayNanos,
+        maxConcurrentExport,
         maxQueueSize,
         maxExportBatchSize,
         exporterTimeoutNanos);
