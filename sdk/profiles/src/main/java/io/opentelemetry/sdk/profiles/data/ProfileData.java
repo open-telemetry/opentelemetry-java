@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.profiles.data;
 
 import io.opentelemetry.api.common.Attributes;
-import javax.annotation.concurrent.Immutable;
 import java.util.List;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Represents a complete profile, including sample types, samples,

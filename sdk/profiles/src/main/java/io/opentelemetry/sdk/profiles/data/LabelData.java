@@ -16,7 +16,7 @@ import javax.annotation.concurrent.Immutable;
 public interface LabelData {
 
   /**
-   * Index into string table
+   * Index into string table.
    */
   long getKeyIndex();
 

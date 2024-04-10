@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.profiles.data;
 
-import javax.annotation.concurrent.Immutable;
 import java.util.List;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Describes the mapping of a binary in memory.
