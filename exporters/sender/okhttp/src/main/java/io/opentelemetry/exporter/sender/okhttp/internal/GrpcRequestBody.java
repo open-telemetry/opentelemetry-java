@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
+import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import java.io.IOException;
 import javax.annotation.Nullable;
@@ -12,7 +13,6 @@ import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.Buffer;
 import okio.BufferedSink;
-import okio.GzipSink;
 import okio.Okio;
 
 /**
@@ -33,15 +33,15 @@ public final class GrpcRequestBody extends RequestBody {
   private final Marshaler marshaler;
   private final int messageSize;
   private final int contentLength;
-  private final boolean compressed;
+  @Nullable private final Compressor compressor;
 
   /** Creates a new {@link GrpcRequestBody}. */
-  public GrpcRequestBody(Marshaler marshaler, boolean compressed) {
+  public GrpcRequestBody(Marshaler marshaler, @Nullable Compressor compressor) {
     this.marshaler = marshaler;
-    this.compressed = compressed;
+    this.compressor = compressor;
 
     messageSize = marshaler.getBinarySerializedSize();
-    if (compressed) {
+    if (compressor != null) {
       // Content length not known since we want to compress on the I/O thread.
       contentLength = -1;
     } else {
@@ -62,14 +62,15 @@ public final class GrpcRequestBody extends RequestBody {
 
   @Override
   public void writeTo(BufferedSink sink) throws IOException {
-    if (!compressed) {
+    if (compressor == null) {
       sink.writeByte(UNCOMPRESSED_FLAG);
       sink.writeInt(messageSize);
       marshaler.writeBinaryTo(sink.outputStream());
     } else {
       try (Buffer compressedBody = new Buffer()) {
-        try (BufferedSink gzipSink = Okio.buffer(new GzipSink(compressedBody))) {
-          marshaler.writeBinaryTo(gzipSink.outputStream());
+        try (BufferedSink compressedSink =
+            Okio.buffer(Okio.sink(compressor.compress(compressedBody.outputStream())))) {
+          marshaler.writeBinaryTo(compressedSink.outputStream());
         }
         sink.writeByte(COMPRESSED_FLAG);
         int compressedBytes = (int) compressedBody.size();

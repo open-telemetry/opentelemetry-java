@@ -21,12 +21,16 @@ import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
 final class LoggerProviderConfiguration {
+
+  private static final List<String> simpleProcessorExporterNames =
+      Arrays.asList("console", "logging");
 
   static void configureLoggerProvider(
       SdkLoggerProviderBuilder loggerProviderBuilder,
@@ -64,11 +68,13 @@ final class LoggerProviderConfiguration {
     Map<String, LogRecordExporter> exportersByNameCopy = new HashMap<>(exportersByName);
     List<LogRecordProcessor> logRecordProcessors = new ArrayList<>();
 
-    LogRecordExporter exporter = exportersByNameCopy.remove("logging");
-    if (exporter != null) {
-      LogRecordProcessor logRecordProcessor = SimpleLogRecordProcessor.create(exporter);
-      closeables.add(logRecordProcessor);
-      logRecordProcessors.add(logRecordProcessor);
+    for (String simpleProcessorExporterName : simpleProcessorExporterNames) {
+      LogRecordExporter exporter = exportersByNameCopy.remove(simpleProcessorExporterName);
+      if (exporter != null) {
+        LogRecordProcessor logRecordProcessor = SimpleLogRecordProcessor.create(exporter);
+        closeables.add(logRecordProcessor);
+        logRecordProcessors.add(logRecordProcessor);
+      }
     }
 
     if (!exportersByNameCopy.isEmpty()) {

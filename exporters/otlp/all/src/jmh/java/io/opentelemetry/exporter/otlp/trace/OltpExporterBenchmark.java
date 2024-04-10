@@ -98,7 +98,8 @@ public class OltpExporterBenchmark {
                 URI.create("http://localhost:" + server.activeLocalPort())
                     .resolve(OtlpGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH)
                     .toString(),
-                /* compressionEnabled= */ false,
+                null,
+                10,
                 10,
                 Collections::emptyMap,
                 null,

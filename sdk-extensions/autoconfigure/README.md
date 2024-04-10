@@ -72,11 +72,18 @@ The OpenTelemetry SDK can be disabled entirely. If disabled, `AutoConfiguredOpen
 
 The following configuration properties are common to all exporters:
 
-| System property       | Environment variable  | Purpose                                                                                                                    |
-|-----------------------|-----------------------|----------------------------------------------------------------------------------------------------------------------------|
-| otel.traces.exporter  | OTEL_TRACES_EXPORTER  | List of exporters to be used for tracing, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter. |
-| otel.metrics.exporter | OTEL_METRICS_EXPORTER | List of exporters to be used for metrics, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter. |
-| otel.logs.exporter    | OTEL_LOGS_EXPORTER    | List of exporters to be used for logging, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter. |
+| System property                             | Environment variable                        | Purpose                                                                                                                                                                                                  |
+|---------------------------------------------|---------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| otel.traces.exporter                        | OTEL_TRACES_EXPORTER                        | List of exporters to be used for tracing, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter.                                                                               |
+| otel.metrics.exporter                       | OTEL_METRICS_EXPORTER                       | List of exporters to be used for metrics, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter.                                                                               |
+| otel.logs.exporter                          | OTEL_LOGS_EXPORTER                          | List of exporters to be used for logging, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter.                                                                               |
+| otel.java.experimental.exporter.memory_mode | OTEL_JAVA_EXPERIMENTAL_EXPORTER_MEMORY_MODE | If `reusable_data`, enable reusable memory mode (on exporters which support it) to reduce allocations. Default is `immutable_data`. This option is experimental and subject to change or removal.**[1]** |
+
+**[1]**: NOTE: The exporters which adhere
+to `otel.java.experimental.exporter.memory_mode=reusable_data`
+are `OtlpGrpcMetricExporter`, `OtlpHttpMetricExporter`, and `PrometheusHttpServer`. Support for
+additional exporters may be added in the future.
+
 
 #### OTLP exporter (span, metric, and log exporters)
 
@@ -143,9 +150,14 @@ The logging exporter prints the name of the span along with its attributes to st
 
 | System property               | Environment variable          | Description                                                          |
 |-------------------------------|-------------------------------|----------------------------------------------------------------------|
-| otel.traces.exporter=logging  | OTEL_TRACES_EXPORTER=logging  | Select the logging exporter for tracing                              |
-| otel.metrics.exporter=logging | OTEL_METRICS_EXPORTER=logging | Select the logging exporter for metrics                              |
-| otel.logs.exporter=logging    | OTEL_LOGS_EXPORTER=logging    | Select the logging exporter for logs                                 |
+| otel.traces.exporter=console  | OTEL_TRACES_EXPORTER=console  | Select the logging exporter for tracing                              |
+| otel.metrics.exporter=console | OTEL_METRICS_EXPORTER=console | Select the logging exporter for metrics                              |
+| otel.logs.exporter=console    | OTEL_LOGS_EXPORTER=console    | Select the logging exporter for logs                                 |
+
+The logging exporter is also set when `otel.traces.exporter`, `otel.metrics.exporter`,
+or `otel.logs.exporter` is set to `logging`. `logging` is a deprecated alias for `console`, the
+preferred value
+as [defined in the specification](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/sdk-environment-variables.md#exporter-selection).
 
 #### Logging OTLP JSON exporter
 
@@ -192,6 +204,7 @@ your own ResourceProvider, or optionally use an artifact that includes built-in 
 * [io.opentelemetry.contrib:opentelemetry-aws-resources](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-resources)
   includes providers
   for [common AWS resources](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-resources/src/main/java/io/opentelemetry/contrib/aws/resource)
+* [io.opentelemetry.contrib:opentelemetry-gcp-resources](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/gcp-resources) includes providers for [common GCP resources](https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/gcp-resources/src/main/java/io/opentelemetry/contrib/gcp/resource)
 
 #### Disabling Automatic ResourceProviders
 
@@ -248,13 +261,9 @@ The following exporters are only available for the trace signal. See [exporters]
 
 #### Jaeger exporter
 
-The [Jaeger](https://www.jaegertracing.io/docs/1.21/apis/#protobuf-via-grpc-stable) exporter. This exporter uses gRPC for its communications protocol.
+The Jaeger exporters (artifacts `opentelemetry-exporter-jaeger` and `opentelemetry-exporter-jaeger-thrift`) were removed in the [1.35.0](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v1.35.0) release (last published in `1.34.0`) and are no longer available in later versions of autoconfigure.
 
-| System property                   | Environment variable              | Description                                                                                        |
-|-----------------------------------|-----------------------------------|----------------------------------------------------------------------------------------------------|
-| otel.traces.exporter=jaeger       | OTEL_TRACES_EXPORTER=jaeger       | Select the Jaeger exporter                                                                         |
-| otel.exporter.jaeger.endpoint     | OTEL_EXPORTER_JAEGER_ENDPOINT     | The Jaeger gRPC endpoint to connect to. Default is `http://localhost:14250`.                       |
-| otel.exporter.jaeger.timeout      | OTEL_EXPORTER_JAEGER_TIMEOUT      | The maximum waiting time, in milliseconds, allowed to send each batch. Default is `10000`.         |
+Jaeger now has [native support for OTLP](https://opentelemetry.io/blog/2022/jaeger-native-otlp/), and users should export to jaeger using [OTLP](https://opentelemetry.io/docs/instrumentation/java/exporters/#otlp-dependencies) instead.
 
 #### Zipkin exporter
 
@@ -329,11 +338,11 @@ The following exporters are only available for the metric signal. See [exporters
 
 The [Prometheus](https://github.com/prometheus/docs/blob/master/content/docs/instrumenting/exposition_formats.md) exporter.
 
-| System property                  | Environment variable             | Description                                                                        |
-|----------------------------------|----------------------------------|------------------------------------------------------------------------------------|
-| otel.metrics.exporter=prometheus | OTEL_METRICS_EXPORTER=prometheus | Select the Prometheus exporter                                                     |
-| otel.exporter.prometheus.port    | OTEL_EXPORTER_PROMETHEUS_PORT    | The local port used to bind the prometheus metric server. Default is `9464`.       |
-| otel.exporter.prometheus.host    | OTEL_EXPORTER_PROMETHEUS_HOST    | The local address used to bind the prometheus metric server. Default is `0.0.0.0`. |
+| System property                                         | Environment variable                                    | Description                                                                                                                          |
+|---------------------------------------------------------|---------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| otel.metrics.exporter=prometheus                        | OTEL_METRICS_EXPORTER=prometheus                        | Select the Prometheus exporter                                                                                                       |
+| otel.exporter.prometheus.port                           | OTEL_EXPORTER_PROMETHEUS_PORT                           | The local port used to bind the prometheus metric server. Default is `9464`.                                                         |
+| otel.exporter.prometheus.host                           | OTEL_EXPORTER_PROMETHEUS_HOST                           | The local address used to bind the prometheus metric server. Default is `0.0.0.0`.                                                   |
 
 Note that this is a pull exporter - it opens up a server on the local process listening on the specified host and port, which
 a Prometheus server scrapes from.

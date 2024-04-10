@@ -7,13 +7,17 @@ package io.opentelemetry.exporter.sender.grpc.managedchannel.internal;
 
 import io.grpc.Channel;
 import io.grpc.Codec;
+import io.grpc.CompressorRegistry;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcSender;
 import io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +39,9 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
   public <T extends Marshaler> GrpcSender<T> createSender(
       URI endpoint,
       String endpointPath,
-      boolean compressionEnabled,
+      @Nullable Compressor compressor,
       long timeoutNanos,
+      long connectTimeoutNanos,
       Supplier<Map<String, List<String>>> headersSupplier,
       @Nullable Object managedChannel,
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
@@ -60,12 +65,29 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
       }
     }
 
-    Codec codec = compressionEnabled ? new Codec.Gzip() : Codec.Identity.NONE;
+    String compression = Codec.Identity.NONE.getMessageEncoding();
+    if (compressor != null) {
+      CompressorRegistry.getDefaultInstance()
+          .register(
+              new io.grpc.Compressor() {
+                @Override
+                public String getMessageEncoding() {
+                  return compressor.getEncoding();
+                }
+
+                @Override
+                public OutputStream compress(OutputStream os) throws IOException {
+                  return compressor.compress(os);
+                }
+              });
+      compression = compressor.getEncoding();
+    }
+
     MarshalerServiceStub<T, ?, ?> stub =
         stubFactory
             .get()
             .apply((Channel) managedChannel, authorityOverride)
-            .withCompression(codec.getMessageEncoding());
+            .withCompression(compression);
 
     return new UpstreamGrpcSender<>(stub, shutdownChannel, timeoutNanos, headersSupplier);
   }

@@ -5,13 +5,21 @@ plugins {
   id("com.diffplug.spotless") version "6.25.0"
 }
 
-if (!JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
+if (!hasLauncherForJavaVersion(17)) {
   throw GradleException(
-    "JDK 17 or higher is required to build. " +
-      "One option is to download it from https://adoptium.net/. If you believe you already " +
-      "have it, please check that the JAVA_HOME environment variable is pointing at the " +
-      "JDK 17 installation.",
+    "JDK 17 is required to build and gradle was unable to detect it on the system.  " +
+        "Please install it and see https://docs.gradle.org/current/userguide/toolchains.html#sec:auto_detection " +
+        "for details on how gradle detects java toolchains."
   )
+}
+
+fun hasLauncherForJavaVersion(version: Int): Boolean {
+  return try {
+    javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(version) }.get()
+    true
+  } catch (e: Exception) {
+    false
+  }
 }
 
 spotless {
@@ -42,12 +50,12 @@ repositories {
 }
 
 dependencies {
-  implementation(enforcedPlatform("com.squareup.wire:wire-bom:4.9.4"))
+  implementation(enforcedPlatform("com.squareup.wire:wire-bom:4.9.9"))
   implementation("com.google.auto.value:auto-value-annotations:1.10.4")
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:6.25.0")
   // Needed for japicmp but not automatically brought in for some reason.
-  implementation("com.google.guava:guava:33.0.0-jre")
+  implementation("com.google.guava:guava:33.1.0-jre")
   implementation("com.squareup:javapoet:1.13.0")
   implementation("com.squareup.wire:wire-compiler")
   implementation("com.squareup.wire:wire-gradle-plugin")
@@ -56,9 +64,9 @@ dependencies {
   implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.2")
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.2")
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.1.0")
-  implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.6.0")
-  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
-  implementation("org.owasp:dependency-check-gradle:9.0.9")
+  implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.0.0")
+  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.23")
+  implementation("org.owasp:dependency-check-gradle:9.1.0")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:1.7.1")
 }
 

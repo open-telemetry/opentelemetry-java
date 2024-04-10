@@ -135,6 +135,15 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     return CompletableResultCode.ofAll(pendingExports);
   }
 
+  /**
+   * Return the processor's configured {@link SpanExporter}.
+   *
+   * @since 1.37.0
+   */
+  public SpanExporter getSpanExporter() {
+    return spanExporter;
+  }
+
   @Override
   public String toString() {
     return "SimpleSpanProcessor{"

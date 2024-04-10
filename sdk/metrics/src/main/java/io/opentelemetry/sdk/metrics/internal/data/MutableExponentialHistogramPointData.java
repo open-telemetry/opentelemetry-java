@@ -192,22 +192,22 @@ public final class MutableExponentialHistogramPointData implements ExponentialHi
     if (o == this) {
       return true;
     }
-    if (o instanceof MutableExponentialHistogramPointData) {
-      MutableExponentialHistogramPointData that = (MutableExponentialHistogramPointData) o;
-      return this.startEpochNanos == that.startEpochNanos
-          && this.epochNanos == that.epochNanos
-          && this.attributes.equals(that.attributes)
-          && this.scale == that.scale
-          && Double.doubleToLongBits(this.sum) == Double.doubleToLongBits(that.sum)
-          && this.count == that.count
-          && this.zeroCount == that.zeroCount
-          && this.hasMin == that.hasMin
-          && Double.doubleToLongBits(this.min) == Double.doubleToLongBits(that.min)
-          && this.hasMax == that.hasMax
-          && Double.doubleToLongBits(this.max) == Double.doubleToLongBits(that.max)
-          && this.positiveBuckets.equals(that.positiveBuckets)
-          && this.negativeBuckets.equals(that.negativeBuckets)
-          && this.exemplars.equals(that.exemplars);
+    if (o instanceof ExponentialHistogramPointData) {
+      ExponentialHistogramPointData that = (ExponentialHistogramPointData) o;
+      return this.startEpochNanos == that.getStartEpochNanos()
+          && this.epochNanos == that.getEpochNanos()
+          && this.attributes.equals(that.getAttributes())
+          && this.scale == that.getScale()
+          && Double.doubleToLongBits(this.sum) == Double.doubleToLongBits(that.getSum())
+          && this.count == that.getCount()
+          && this.zeroCount == that.getZeroCount()
+          && this.hasMin == that.hasMin()
+          && Double.doubleToLongBits(this.min) == Double.doubleToLongBits(that.getMin())
+          && this.hasMax == that.hasMax()
+          && Double.doubleToLongBits(this.max) == Double.doubleToLongBits(that.getMax())
+          && this.positiveBuckets.equals(that.getPositiveBuckets())
+          && this.negativeBuckets.equals(that.getNegativeBuckets())
+          && this.exemplars.equals(that.getExemplars());
     }
     return false;
   }

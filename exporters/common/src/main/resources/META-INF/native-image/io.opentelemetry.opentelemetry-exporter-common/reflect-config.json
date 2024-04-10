@@ -6,5 +6,9 @@
   {
     "name":"io.opentelemetry.sdk.common.export.RetryPolicy",
     "queryAllDeclaredMethods":true
+  },
+  {
+    "name":"io.opentelemetry.exporter.internal.compression.Compressor",
+    "queryAllDeclaredMethods":true
   }
 ]

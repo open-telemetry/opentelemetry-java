@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -21,11 +22,16 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import java.io.Closeable;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -49,11 +55,53 @@ class MetricExporterConfigurationTest {
 
     MetricReader reader =
         MetricExporterConfiguration.configureReader(
-            "prometheus", CONFIG_PROPERTIES, spiHelper, (a, b) -> a, closeables);
+            "prometheus", CONFIG_PROPERTIES, spiHelper, (a, b) -> a, (a, b) -> a, closeables);
     cleanup.addCloseables(closeables);
 
     assertThat(reader).isInstanceOf(PrometheusHttpServer.class);
     assertThat(closeables).hasSize(1);
+  }
+
+  @Test
+  void configureReader_customizeReader_prometheus() {
+    List<Closeable> closeables = new ArrayList<>();
+
+    int port = FreePortFinder.getFreePort();
+    BiFunction<MetricReader, ConfigProperties, MetricReader> readerCustomizer =
+        (existingReader, config) -> PrometheusHttpServer.builder().setPort(port).build();
+    MetricReader reader =
+        MetricExporterConfiguration.configureReader(
+            "prometheus", CONFIG_PROPERTIES, spiHelper, readerCustomizer, (a, b) -> a, closeables);
+    cleanup.addCloseables(closeables);
+
+    assertThat(reader).isInstanceOf(PrometheusHttpServer.class);
+    assertThat(closeables).hasSize(2);
+    PrometheusHttpServer prometheusHttpServer = (PrometheusHttpServer) reader;
+    assertThat(prometheusHttpServer)
+        .extracting("httpServer", as(InstanceOfAssertFactories.type(HTTPServer.class)))
+        .satisfies(httpServer -> assertThat(httpServer.getPort()).isEqualTo(port));
+  }
+
+  @Test
+  void configureReader_customizeReader_otlp() {
+    List<Closeable> closeables = new ArrayList<>();
+
+    BiFunction<MetricReader, ConfigProperties, MetricReader> readerCustomizer =
+        (existingReader, config) ->
+            PeriodicMetricReader.builder(OtlpGrpcMetricExporter.builder().build())
+                .setInterval(Duration.ofSeconds(123))
+                .build();
+    MetricReader reader =
+        MetricExporterConfiguration.configureReader(
+            "otlp", CONFIG_PROPERTIES, spiHelper, readerCustomizer, (a, b) -> a, closeables);
+    cleanup.addCloseables(closeables);
+
+    assertThat(reader).isInstanceOf(PeriodicMetricReader.class);
+    assertThat(closeables).hasSize(3);
+    PeriodicMetricReader periodicMetricReader = (PeriodicMetricReader) reader;
+    assertThat(periodicMetricReader)
+        .extracting("intervalNanos")
+        .isEqualTo(Duration.ofSeconds(123).toNanos());
   }
 
   @ParameterizedTest

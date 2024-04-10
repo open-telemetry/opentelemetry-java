@@ -17,6 +17,7 @@ import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
@@ -148,6 +149,12 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
     requireNonNull(channelBuilder, "channel");
     channelBuilder.defaultServiceConfig(
         ManagedChannelUtil.toServiceConfig(grpcServiceName, retryPolicy));
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<T> setProxyOptions(ProxyOptions proxyOptions) {
+    delegate.setProxyOptions(proxyOptions);
     return this;
   }
 

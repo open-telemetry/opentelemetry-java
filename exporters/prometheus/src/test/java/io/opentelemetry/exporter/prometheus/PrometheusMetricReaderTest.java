@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.prometheus;
 
-import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
@@ -37,14 +36,18 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings({"resource", "ConcatenationWithEmptyString"})
 class PrometheusMetricReaderTest {
 
   private final TestClock testClock = TestClock.create();
@@ -53,11 +56,12 @@ class PrometheusMetricReaderTest {
   private Meter meter;
   private Tracer tracer;
 
+  @SuppressWarnings("resource")
   @BeforeEach
   void setUp() {
     this.testClock.setTime(Instant.ofEpochMilli((System.currentTimeMillis() / 100) * 100));
     this.createdTimestamp = convertTimestamp(testClock.now());
-    this.reader = new PrometheusMetricReader(true);
+    this.reader = new PrometheusMetricReader(true, /* allowedResourceAttributesFilter= */ null);
     this.meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
@@ -85,13 +89,13 @@ class PrometheusMetricReaderTest {
             .setUnit("By")
             .build();
     Span span1 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span1.makeCurrent()) {
+    try (Scope ignored = span1.makeCurrent()) {
       counter.add(3, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     Span span2 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span2.makeCurrent()) {
+    try (Scope ignored = span2.makeCurrent()) {
       counter.add(2, Attributes.builder().put("animal", "mouse").build());
     } finally {
       span2.end();
@@ -109,13 +113,13 @@ class PrometheusMetricReaderTest {
             .ofDoubles()
             .build();
     Span span1 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span1.makeCurrent()) {
+    try (Scope ignored = span1.makeCurrent()) {
       counter.add(3.0, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     Span span2 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span2.makeCurrent()) {
+    try (Scope ignored = span2.makeCurrent()) {
       counter.add(2.0, Attributes.builder().put("animal", "mouse").build());
     } finally {
       span2.end();
@@ -189,13 +193,13 @@ class PrometheusMetricReaderTest {
             .setUnit("By")
             .build();
     Span span1 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span1.makeCurrent()) {
+    try (Scope ignored = span1.makeCurrent()) {
       counter.add(3, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     Span span2 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span2.makeCurrent()) {
+    try (Scope ignored = span2.makeCurrent()) {
       counter.add(2, Attributes.builder().put("animal", "mouse").build());
     } finally {
       span2.end();
@@ -213,13 +217,13 @@ class PrometheusMetricReaderTest {
             .ofDoubles()
             .build();
     Span span1 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span1.makeCurrent()) {
+    try (Scope ignored = span1.makeCurrent()) {
       counter.add(3.0, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     Span span2 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span2.makeCurrent()) {
+    try (Scope ignored = span2.makeCurrent()) {
       counter.add(2.0, Attributes.builder().put("animal", "mouse").build());
     } finally {
       span2.end();
@@ -351,19 +355,19 @@ class PrometheusMetricReaderTest {
             .ofLongs()
             .build();
     Span span1 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span1.makeCurrent()) {
+    try (Scope ignored = span1.makeCurrent()) {
       histogram.record(173, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     Span span2 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span2.makeCurrent()) {
+    try (Scope ignored = span2.makeCurrent()) {
       histogram.record(400, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     Span span3 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span3.makeCurrent()) {
+    try (Scope ignored = span3.makeCurrent()) {
       histogram.record(204, Attributes.builder().put("animal", "mouse").build());
     } finally {
       span3.end();
@@ -380,19 +384,19 @@ class PrometheusMetricReaderTest {
             .setUnit("By")
             .build();
     Span span1 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span1.makeCurrent()) {
+    try (Scope ignored = span1.makeCurrent()) {
       histogram.record(173.0, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     Span span2 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span2.makeCurrent()) {
+    try (Scope ignored = span2.makeCurrent()) {
       histogram.record(400.0, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     Span span3 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span3.makeCurrent()) {
+    try (Scope ignored = span3.makeCurrent()) {
       histogram.record(204.0, Attributes.builder().put("animal", "mouse").build());
     } finally {
       span3.end();
@@ -431,7 +435,11 @@ class PrometheusMetricReaderTest {
             + "request_size_bytes_bucket{animal=\"bear\",otel_scope_name=\"test\",le=\"7500.0\"} 2\n"
             + "request_size_bytes_bucket{animal=\"bear\",otel_scope_name=\"test\",le=\"10000.0\"} 2\n"
             + "request_size_bytes_bucket{animal=\"bear\",otel_scope_name=\"test\",le=\"+Inf\"} 2\n"
-            + "request_size_bytes_count{animal=\"bear\",otel_scope_name=\"test\"} 2\n"
+            + "request_size_bytes_count{animal=\"bear\",otel_scope_name=\"test\"} 2 # {span_id=\""
+            + "<spanId>"
+            + "\",trace_id=\""
+            + "<traceId>"
+            + "\"} <measurement> <timestamp>\n"
             + "request_size_bytes_sum{animal=\"bear\",otel_scope_name=\"test\"} 573.0\n"
             + "request_size_bytes_created{animal=\"bear\",otel_scope_name=\"test\"} "
             + createdTimestamp
@@ -456,7 +464,11 @@ class PrometheusMetricReaderTest {
             + "request_size_bytes_bucket{animal=\"mouse\",otel_scope_name=\"test\",le=\"7500.0\"} 1\n"
             + "request_size_bytes_bucket{animal=\"mouse\",otel_scope_name=\"test\",le=\"10000.0\"} 1\n"
             + "request_size_bytes_bucket{animal=\"mouse\",otel_scope_name=\"test\",le=\"+Inf\"} 1\n"
-            + "request_size_bytes_count{animal=\"mouse\",otel_scope_name=\"test\"} 1\n"
+            + "request_size_bytes_count{animal=\"mouse\",otel_scope_name=\"test\"} 1 # {span_id=\""
+            + span3.getSpanContext().getSpanId()
+            + "\",trace_id=\""
+            + span3.getSpanContext().getTraceId()
+            + "\"} 204.0 <timestamp>\n"
             + "request_size_bytes_sum{animal=\"mouse\",otel_scope_name=\"test\"} 204.0\n"
             + "request_size_bytes_created{animal=\"mouse\",otel_scope_name=\"test\"} "
             + createdTimestamp
@@ -518,7 +530,7 @@ class PrometheusMetricReaderTest {
 
   @Test
   @Disabled("disabled until #6010 is fixed")
-  void exponentialLongHistogramComplete() throws IOException {
+  void exponentialLongHistogramComplete() {
     LongHistogram histogram =
         meter
             .histogramBuilder("my.exponential.histogram")
@@ -527,14 +539,14 @@ class PrometheusMetricReaderTest {
             .ofLongs()
             .build();
     Span span1 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span1.makeCurrent()) {
+    try (Scope ignored = span1.makeCurrent()) {
       histogram.record(7, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     histogram.record(0, Attributes.builder().put("animal", "bear").build());
     Span span2 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span2.makeCurrent()) {
+    try (Scope ignored = span2.makeCurrent()) {
       histogram.record(3, Attributes.builder().put("animal", "mouse").build());
     } finally {
       span2.end();
@@ -543,7 +555,7 @@ class PrometheusMetricReaderTest {
   }
 
   @Test
-  void exponentialDoubleHistogramComplete() throws IOException {
+  void exponentialDoubleHistogramComplete() {
     DoubleHistogram histogram =
         meter
             .histogramBuilder("my.exponential.histogram")
@@ -551,14 +563,14 @@ class PrometheusMetricReaderTest {
             .setUnit("By")
             .build();
     Span span1 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span1.makeCurrent()) {
+    try (Scope ignored = span1.makeCurrent()) {
       histogram.record(7.0, Attributes.builder().put("animal", "bear").build());
     } finally {
       span1.end();
     }
     histogram.record(0.0, Attributes.builder().put("animal", "bear").build());
     Span span2 = tracer.spanBuilder("test").startSpan();
-    try (Scope scope = span2.makeCurrent()) {
+    try (Scope ignored = span2.makeCurrent()) {
       histogram.record(3.0, Attributes.builder().put("animal", "mouse").build());
     } finally {
       span2.end();
@@ -690,14 +702,14 @@ class PrometheusMetricReaderTest {
   }
 
   @Test
-  void exponentialLongHistogramMinimal() throws IOException {
+  void exponentialLongHistogramMinimal() {
     LongHistogram histogram = meter.histogramBuilder("my.exponential.histogram").ofLongs().build();
     histogram.record(1, Attributes.builder().put("animal", "bear").build());
     assertExponentialHistogramMinimal(reader.collect());
   }
 
   @Test
-  void exponentialDoubleHistogramMinimal() throws IOException {
+  void exponentialDoubleHistogramMinimal() {
     DoubleHistogram histogram = meter.histogramBuilder("my.exponential.histogram").build();
     histogram.record(1.0, Attributes.builder().put("animal", "bear").build());
     assertExponentialHistogramMinimal(reader.collect());
@@ -763,7 +775,8 @@ class PrometheusMetricReaderTest {
     for (int i = 0; i < 100_000; i++) {
       int otelScale = random.nextInt(24) - 4;
       int prometheusScale = Math.min(otelScale, 8);
-      PrometheusMetricReader reader = new PrometheusMetricReader(true);
+      PrometheusMetricReader reader =
+          new PrometheusMetricReader(true, /* allowedResourceAttributesFilter= */ null);
       Meter meter =
           SdkMeterProvider.builder()
               .registerMetricReader(reader)
@@ -798,7 +811,7 @@ class PrometheusMetricReaderTest {
   }
 
   @Test
-  void exponentialLongHistogramScaleDown() throws IOException {
+  void exponentialLongHistogramScaleDown() {
     // The following histogram will have the default scale, which is 20.
     DoubleHistogram histogram = meter.histogramBuilder("my.exponential.histogram").build();
     double base = Math.pow(2, Math.pow(2, -20));
@@ -1015,7 +1028,8 @@ class PrometheusMetricReaderTest {
 
   @Test
   void otelScopeDisabled() throws IOException {
-    PrometheusMetricReader reader = new PrometheusMetricReader(false);
+    PrometheusMetricReader reader =
+        new PrometheusMetricReader(false, /* allowedResourceAttributesFilter= */ null);
     Meter meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
@@ -1041,19 +1055,90 @@ class PrometheusMetricReaderTest {
     assertThat(toOpenMetrics(reader.collect())).isEqualTo(expected);
   }
 
+  @SuppressWarnings("resource")
+  @Test
+  void addResourceAttributesWorks() throws IOException {
+    PrometheusMetricReader reader =
+        new PrometheusMetricReader(
+            true, /* allowedResourceAttributesFilter= */ Predicates.is("cluster"));
+    Meter meter =
+        SdkMeterProvider.builder()
+            .setClock(testClock)
+            .registerMetricReader(reader)
+            .setResource(
+                Resource.getDefault().toBuilder()
+                    .put("cluster", "my.cluster")
+                    .put("telemetry.sdk.version", "1.x.x")
+                    .build())
+            .build()
+            .meterBuilder("test-scope")
+            .setInstrumentationVersion("a.b.c")
+            .build();
+    LongCounter counter = meter.counterBuilder("test.count").build();
+    counter.add(1);
+    String expected =
+        ""
+            + "# TYPE target info\n"
+            + "target_info{cluster=\"my.cluster\",service_name=\"unknown_service:java\",telemetry_sdk_language=\"java\",telemetry_sdk_name=\"opentelemetry\",telemetry_sdk_version=\"1.x.x\"} 1\n"
+            + "# TYPE test_count counter\n"
+
+            // In both those metrics we expect the "cluster" label to exist
+            + "test_count_total{cluster=\"my.cluster\",otel_scope_name=\"test-scope\",otel_scope_version=\"a.b.c\"} 1.0\n"
+            + "test_count_created{cluster=\"my.cluster\",otel_scope_name=\"test-scope\",otel_scope_version=\"a.b.c\"} "
+            + createdTimestamp
+            + "\n"
+            + "# EOF\n";
+    assertThat(toOpenMetrics(reader.collect())).isEqualTo(expected);
+  }
+
   /**
    * Unfortunately there is no easy way to use {@link TestClock} for Exemplar timestamps. Test if
    * {@code expected} equals {@code actual} but {@code <timestamp>} matches arbitrary timestamps.
    */
   private static void assertMatches(String expected, String actual) {
-    String[] parts = expected.split(Pattern.quote("<timestamp>"));
-    String timestampRegex = "[0-9]+(\\.[0-9]+)?";
-
-    String regex = Arrays.stream(parts).map(Pattern::quote).collect(joining(timestampRegex));
-
+    String regex = toPattern(expected);
     assertThat(actual)
         .as("Expected: " + expected + "\nActual: " + actual)
         .matches(Pattern.compile(regex));
+  }
+
+  /**
+   * Replace non-deterministic portions of {@code expected} with regex patterns. Other portions are
+   * quoted such that must match exactly. The following sequences are replaced:
+   *
+   * <ul>
+   *   <li>{@code <timestamp>}
+   *   <li>{@code <spanId>}
+   *   <li>{@code <traceId>}
+   *   <li>{@code <measurement>}
+   * </ul>
+   */
+  private static String toPattern(String expected) {
+    Map<String, String> replacePatterns = new HashMap<>();
+    replacePatterns.put("timestamp", "[0-9]+(\\.[0-9]+)?");
+    replacePatterns.put("spanId", "[a-z0-9]*");
+    replacePatterns.put("traceId", "[a-z0-9]*");
+    replacePatterns.put("measurement", "[0-9\\.]*");
+
+    Matcher matcher = Pattern.compile("\\<([a-zA-Z]*)\\>").matcher(expected);
+    if (!matcher.find()) {
+      return Pattern.quote(expected);
+    }
+    int offset = 0;
+    StringBuilder regexBuilder = new StringBuilder();
+    do {
+      MatchResult matchResult = matcher.toMatchResult();
+      String key = matchResult.group(1);
+      String pattern = replacePatterns.getOrDefault(key, key);
+      regexBuilder
+          .append(Pattern.quote(expected.substring(offset, matchResult.start())))
+          .append(pattern);
+      offset = matchResult.end();
+    } while (matcher.find());
+    if (offset != expected.length()) {
+      regexBuilder.append(Pattern.quote(expected.substring(offset)));
+    }
+    return regexBuilder.toString();
   }
 
   private static String toOpenMetrics(MetricSnapshots snapshots) throws IOException {

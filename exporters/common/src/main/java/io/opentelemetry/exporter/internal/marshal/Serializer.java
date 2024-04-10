@@ -128,6 +128,14 @@ public abstract class Serializer implements AutoCloseable {
 
   protected abstract void writeUInt64Value(long value) throws IOException;
 
+  /**
+   * Serializes a byte as a protobuf {@code fixed32} field. Ensures that there is no sign
+   * propagation if the high bit in the byte is set.
+   */
+  public void serializeByteAsFixed32(ProtoFieldInfo field, byte value) throws IOException {
+    serializeFixed32(field, ((int) value) & 0xff);
+  }
+
   /** Serializes a protobuf {@code fixed32} field. */
   public void serializeFixed32(ProtoFieldInfo field, int value) throws IOException {
     if (value == 0) {

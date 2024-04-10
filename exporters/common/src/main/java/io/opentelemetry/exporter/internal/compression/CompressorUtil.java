@@ -5,11 +5,14 @@
 
 package io.opentelemetry.exporter.internal.compression;
 
-import java.util.Collections;
+import static io.opentelemetry.api.internal.Utils.checkArgument;
+import static java.util.stream.Collectors.joining;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 /**
  * Utilities for resolving SPI {@link Compressor}s.
@@ -25,23 +28,20 @@ public final class CompressorUtil {
 
   private CompressorUtil() {}
 
-  /** Get list of loaded compressors, named according to {@link Compressor#getEncoding()}. */
-  public static Set<String> supportedCompressors() {
-    return Collections.unmodifiableSet(compressorRegistry.keySet());
-  }
-
   /**
-   * Resolve the {@link Compressor} with the {@link Compressor#getEncoding()} equal to the {@code
-   * encoding}.
+   * Validate that the {@code compressionMethod} is "none" or matches a registered compressor.
    *
+   * @return {@code null} if {@code compressionMethod} is "none" or the registered compressor
    * @throws IllegalArgumentException if no match is found
    */
-  public static Compressor resolveCompressor(String encoding) {
-    Compressor compressor = compressorRegistry.get(encoding);
-    if (compressor == null) {
-      throw new IllegalArgumentException(
-          "Could not resolve compressor for encoding \"" + encoding + "\".");
-    }
+  @Nullable
+  public static Compressor validateAndResolveCompressor(String compressionMethod) {
+    Set<String> supportedEncodings = compressorRegistry.keySet();
+    Compressor compressor = compressorRegistry.get(compressionMethod);
+    checkArgument(
+        "none".equals(compressionMethod) || compressor != null,
+        "Unsupported compressionMethod. Compression method must be \"none\" or one of: "
+            + supportedEncodings.stream().collect(joining(",", "[", "]")));
     return compressor;
   }
 

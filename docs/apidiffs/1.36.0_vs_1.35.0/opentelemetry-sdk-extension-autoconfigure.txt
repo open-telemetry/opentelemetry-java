@@ -1,0 +1,5 @@
+Comparing source compatibility of  against 
+**** MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	===* UNCHANGED METHOD: PUBLIC SYNTHETIC (<- NON_SYNTHETIC) BRIDGE (<- NON_BRIDGE) io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer addLogRecordProcessorCustomizer(java.util.function.BiFunction(<- <? super io.opentelemetry.sdk.logs.LogRecordProcessor,io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties,? extends io.opentelemetry.sdk.logs.LogRecordProcessor>))
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder addMetricReaderCustomizer(java.util.function.BiFunction<? super io.opentelemetry.sdk.metrics.export.MetricReader,io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties,? extends io.opentelemetry.sdk.metrics.export.MetricReader>)

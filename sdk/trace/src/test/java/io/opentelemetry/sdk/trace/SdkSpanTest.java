@@ -46,6 +46,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -802,6 +803,89 @@ class SdkSpanTest {
   }
 
   @Test
+  void addLink() {
+    int maxLinks = 3;
+    int maxNumberOfAttributes = 4;
+    int maxAttributeLength = 5;
+    SdkSpan span =
+        createTestSpan(
+            SpanKind.INTERNAL,
+            SpanLimits.builder()
+                .setMaxNumberOfLinks(maxLinks)
+                .setMaxNumberOfAttributesPerLink(maxNumberOfAttributes)
+                .setMaxAttributeValueLength(maxAttributeLength)
+                .build(),
+            parentSpanId,
+            null,
+            null);
+    try {
+      Span span1 = createTestSpan(SpanKind.INTERNAL);
+      Span span2 = createTestSpan(SpanKind.INTERNAL);
+      Span span3 = createTestSpan(SpanKind.INTERNAL);
+      Span span4 = createTestSpan(SpanKind.INTERNAL);
+
+      span.addLink(span1.getSpanContext());
+
+      Attributes span2LinkAttributes =
+          Attributes.builder()
+              .put("key1", true)
+              .put("key2", true)
+              .put("key3", true)
+              .put(
+                  "key4",
+                  IntStream.range(0, maxAttributeLength + 1).mapToObj(i -> "a").collect(joining()))
+              .build();
+      span.addLink(span2.getSpanContext(), span2LinkAttributes);
+
+      Attributes span3LinkAttributes =
+          Attributes.builder()
+              .put("key1", true)
+              .put("key2", true)
+              .put("key3", true)
+              .put("key4", true)
+              .put("key5", true)
+              .build();
+      span.addLink(span3.getSpanContext(), span3LinkAttributes);
+
+      span.addLink(span4.getSpanContext());
+
+      SpanData spanData = span.toSpanData();
+      // 1 link added during span construction via createTestSpan, 4 links added after span start
+      assertThat(spanData.getTotalRecordedLinks()).isEqualTo(4);
+      assertThat(spanData.getLinks())
+          .satisfiesExactly(
+              link -> {
+                assertThat(link.getSpanContext()).isEqualTo(span1.getSpanContext());
+                assertThat(link.getAttributes()).isEqualTo(Attributes.empty());
+              },
+              link -> {
+                assertThat(link.getSpanContext()).isEqualTo(span2.getSpanContext());
+                assertThat(link.getAttributes())
+                    .isEqualTo(
+                        Attributes.builder()
+                            .put("key1", true)
+                            .put("key2", true)
+                            .put("key3", true)
+                            // Should be truncated to max attribute length
+                            .put(
+                                "key4",
+                                IntStream.range(0, maxAttributeLength)
+                                    .mapToObj(i -> "a")
+                                    .collect(joining()))
+                            .build());
+              },
+              link -> {
+                assertThat(link.getSpanContext()).isEqualTo(span2.getSpanContext());
+                // The 5th attribute key should be omitted due to attribute limits. Can't predict
+                // which of the 5 is dropped.
+                assertThat(link.getAttributes().size()).isEqualTo(4);
+              });
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
   void droppingAttributes() {
     int maxNumberOfAttributes = 8;
     SpanLimits spanLimits =
@@ -1082,6 +1166,17 @@ class SdkSpanTest {
     verify(spanProcessor, never()).onEnd(any());
   }
 
+  @Test
+  void setStatusCannotOverrideStatusOK() {
+    SdkSpan testSpan = createTestRootSpan();
+    testSpan.setStatus(StatusCode.OK);
+    assertThat(testSpan.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.OK);
+    testSpan.setStatus(StatusCode.ERROR);
+    assertThat(testSpan.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.OK);
+    testSpan.setStatus(StatusCode.UNSET);
+    assertThat(testSpan.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.OK);
+  }
+
   private SdkSpan createTestSpanWithAttributes(Map<AttributeKey, Object> attributes) {
     SpanLimits spanLimits = SpanLimits.getDefault();
     AttributesMap attributesMap =
@@ -1120,7 +1215,8 @@ class SdkSpanTest {
       SpanLimits config,
       @Nullable String parentSpanId,
       @Nullable AttributesMap attributes,
-      List<LinkData> links) {
+      @Nullable List<LinkData> links) {
+    List<LinkData> linksCopy = links == null ? new ArrayList<>() : new ArrayList<>(links);
 
     SdkSpan span =
         SdkSpan.startSpan(
@@ -1139,8 +1235,8 @@ class SdkSpanTest {
             testClock,
             resource,
             attributes,
-            links,
-            1,
+            linksCopy,
+            linksCopy.size(),
             0);
     Mockito.verify(spanProcessor, Mockito.times(1)).onStart(Context.root(), span);
     return span;

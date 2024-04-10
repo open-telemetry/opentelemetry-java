@@ -1,0 +1,4 @@
+Comparing source compatibility of  against 
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer addMetricReaderCustomizer(java.util.function.BiFunction<? super io.opentelemetry.sdk.metrics.export.MetricReader,io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties,? extends io.opentelemetry.sdk.metrics.export.MetricReader>)

@@ -275,4 +275,10 @@ class SimpleSpanProcessorTest {
     simpleSampledSpansProcessor.close();
     verify(spanExporter).shutdown();
   }
+
+  @Test
+  void getSpanExporter() {
+    assertThat(((SimpleSpanProcessor) SimpleSpanProcessor.create(spanExporter)).getSpanExporter())
+        .isSameAs(spanExporter);
+  }
 }

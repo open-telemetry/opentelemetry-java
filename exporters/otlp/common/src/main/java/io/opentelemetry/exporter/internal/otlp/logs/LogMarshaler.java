@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp.logs;
 
+import io.opentelemetry.api.incubator.logs.AnyValue;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -16,7 +17,6 @@ import io.opentelemetry.exporter.internal.marshal.ProtoEnumInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.otlp.AnyValueMarshaler;
 import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
-import io.opentelemetry.extension.incubator.logs.AnyValue;
 import io.opentelemetry.proto.logs.v1.internal.LogRecord;
 import io.opentelemetry.proto.logs.v1.internal.SeverityNumber;
 import io.opentelemetry.sdk.logs.data.Body;
@@ -125,7 +125,7 @@ final class LogMarshaler extends MarshalerWithSize {
     output.serializeRepeatedMessage(LogRecord.ATTRIBUTES, attributeMarshalers);
     output.serializeUInt32(LogRecord.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
 
-    output.serializeFixed32(LogRecord.FLAGS, toUnsignedInt(traceFlags.asByte()));
+    output.serializeByteAsFixed32(LogRecord.FLAGS, traceFlags.asByte());
     output.serializeTraceId(LogRecord.TRACE_ID, traceId);
     output.serializeSpanId(LogRecord.SPAN_ID, spanId);
   }
@@ -155,7 +155,7 @@ final class LogMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeRepeatedMessage(LogRecord.ATTRIBUTES, attributeMarshalers);
     size += MarshalerUtil.sizeUInt32(LogRecord.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
 
-    size += MarshalerUtil.sizeFixed32(LogRecord.FLAGS, toUnsignedInt(traceFlags.asByte()));
+    size += MarshalerUtil.sizeByteAsFixed32(LogRecord.FLAGS, traceFlags.asByte());
     size += MarshalerUtil.sizeTraceId(LogRecord.TRACE_ID, traceId);
     size += MarshalerUtil.sizeSpanId(LogRecord.SPAN_ID, spanId);
     return size;
@@ -217,10 +217,5 @@ final class LogMarshaler extends MarshalerWithSize {
     }
     // NB: Should not be possible with aligned versions.
     return SeverityNumber.SEVERITY_NUMBER_UNSPECIFIED;
-  }
-
-  /** Vendored {@link Byte#toUnsignedInt(byte)} to support Android. */
-  private static int toUnsignedInt(byte x) {
-    return ((int) x) & 0xff;
   }
 }

@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
@@ -102,6 +103,12 @@ public class HttpSpanExporterBuilderWrapper implements TelemetryExporterBuilder<
   @Override
   public TelemetryExporterBuilder<SpanData> setRetryPolicy(RetryPolicy retryPolicy) {
     builder.setRetryPolicy(retryPolicy);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<SpanData> setProxyOptions(ProxyOptions proxyOptions) {
+    builder.setProxy(proxyOptions);
     return this;
   }
 

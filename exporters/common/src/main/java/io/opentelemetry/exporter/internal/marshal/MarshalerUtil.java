@@ -257,6 +257,11 @@ public final class MarshalerUtil {
     return field.getTagSize() + CodedOutputStream.computeFixed64SizeNoTag(value);
   }
 
+  /** Returns the size of a byte field when propagated to a fixed32. */
+  public static int sizeByteAsFixed32(ProtoFieldInfo field, byte message) {
+    return sizeFixed32(field, ((int) message) & 0xff);
+  }
+
   /** Returns the size of a fixed32 field. */
   public static int sizeFixed32(ProtoFieldInfo field, int message) {
     if (message == 0L) {

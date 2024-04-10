@@ -2,6 +2,179 @@
 
 ## Unreleased
 
+## Version 1.37.0 (2024-04-05)
+
+**NOTICE:** This release contains a significant restructuring of the experimental event API and the API incubator artifact. Please read the notes in the `API -> Incubator` section carefully.
+
+### API
+
+* Promote `Span#addLink` to stable API
+  ([#6317](https://github.com/open-telemetry/opentelemetry-java/pull/6317))
+
+#### Incubator
+
+* BREAKING: Rename `opentelemetry-extension-incubator` to `opentelemetry-api-incubator`,
+  merge `opentelemetry-api-events` into `opentelemetry-api-incubator`.
+  ([#6289](https://github.com/open-telemetry/opentelemetry-java/pull/6289))
+* BREAKING: Remove domain from event api. `EventEmitterProvider#setEventDomain` has been removed.
+  The `event.name` field should now be namespaced to avoid collisions.
+  See [Semantic Conventions for Event Attributes](https://opentelemetry.io/docs/specs/semconv/general/events/)
+  for more details.
+  ([#6253](https://github.com/open-telemetry/opentelemetry-java/pull/6253))
+* BREAKING: Rename `EventEmitter` and related classes to `EventLogger`.
+  ([#6316](https://github.com/open-telemetry/opentelemetry-java/pull/6316))
+* BREAKING: Refactor Event API to reflect spec changes. Restructure API to put fields in
+  the `AnyValue` log record body. Add setters for timestamp, context, and severity. Set default
+  severity to `INFO=9`.
+  ([#6318](https://github.com/open-telemetry/opentelemetry-java/pull/6318))
+
+### SDK
+
+* Add `get{Signal}Exporter` methods to `Simple{Signal}Processor`, `Batch{Signal}Processor`.
+  ([#6078](https://github.com/open-telemetry/opentelemetry-java/pull/6078))
+
+#### Metrics
+
+* Use synchronized instead of reentrant lock in explicit bucket histogram
+  ([#6309](https://github.com/open-telemetry/opentelemetry-java/pull/6309))
+
+#### Exporters
+
+* Fix typo in OTLP javadoc
+  ([#6311](https://github.com/open-telemetry/opentelemetry-java/pull/6311))
+* Add `PrometheusHttpServer#toBuilder()`
+  ([#6333](https://github.com/open-telemetry/opentelemetry-java/pull/6333))
+* Bugfix: Use `getPrometheusName` for Otel2PrometheusConverter map keys to avoid metric name
+  conflicts
+  ([#6308](https://github.com/open-telemetry/opentelemetry-java/pull/6308))
+
+#### Extensions
+
+* Add Metric exporter REUSABLE_DATA memory mode configuration options, including autoconfigure
+  support via env var `OTEL_JAVA_EXPERIMENTAL_EXPORTER_MEMORY_MODE=REUSABLE_DATA`.
+  ([#6304](https://github.com/open-telemetry/opentelemetry-java/pull/6304))
+* Add autoconfigure console alias for logging exporter
+  ([#6027](https://github.com/open-telemetry/opentelemetry-java/pull/6027))
+* Update jaeger autoconfigure docs to point to OTLP
+  ([#6307](https://github.com/open-telemetry/opentelemetry-java/pull/6307))
+* Add `ServiceInstanceIdResourceProvider` implementation for generating `service.instance.id` UUID
+  if not already provided by user. Included in `opentelemetry-sdk-extension-incubator`.
+  ([#6226](https://github.com/open-telemetry/opentelemetry-java/pull/6226))
+* Add GCP resource detector to list of resource providers in autoconfigure docs
+  ([#6336](https://github.com/open-telemetry/opentelemetry-java/pull/6336))
+
+### Tooling
+
+* Check for Java 17 toolchain and fail if not found
+  ([#6303](https://github.com/open-telemetry/opentelemetry-java/pull/6303))
+
+## Version 1.36.0 (2024-03-08)
+
+### SDK
+
+#### Traces
+
+* Lazily initialize the container for events in the SDK Span implementation
+  ([#6244](https://github.com/open-telemetry/opentelemetry-java/pull/6244))
+
+#### Exporters
+
+* Add basic proxy configuration to OtlpHttp{Signal}Exporters
+  ([#6270](https://github.com/open-telemetry/opentelemetry-java/pull/6270))
+* Add connectTimeout configuration option OtlpGrpc{Signal}Exporters
+  ([#6079](https://github.com/open-telemetry/opentelemetry-java/pull/6079))
+
+#### Extensions
+
+* Add ComponentLoader to autoconfigure support more scenarios
+  ([#6217](https://github.com/open-telemetry/opentelemetry-java/pull/6217))
+* Added MetricReader customizer for AutoConfiguredOpenTelemetrySdkBuilder
+  ([#6231](https://github.com/open-telemetry/opentelemetry-java/pull/6231))
+* Return AutoConfiguredOpenTelemetrySdkBuilder instead of the base type
+  ([#6248](https://github.com/open-telemetry/opentelemetry-java/pull/6248))
+
+### Tooling
+
+* Add note about draft PRs to CONTRIBUTING.md
+  ([#6247](https://github.com/open-telemetry/opentelemetry-java/pull/6247))
+
+## Version 1.35.0 (2024-02-09)
+
+**NOTE:** The `opentelemetry-exporter-jaeger` and `opentelemetry-exporter-jaeger-thift` artifacts
+have stopped being published. Jaeger
+has [native support for OTLP](https://opentelemetry.io/blog/2022/jaeger-native-otlp/), and users
+should export to jaeger
+using [OTLP](https://opentelemetry.io/docs/instrumentation/java/exporters/#otlp-dependencies)
+instead.
+
+### API
+
+#### Incubator
+
+* Add Span#addLink, for adding a link after span start
+  ([#6084](https://github.com/open-telemetry/opentelemetry-java/pull/6084))
+
+### SDK
+
+#### Traces
+
+* Bugfix: Ensure span status cannot be updated after set to StatusCode.OK
+  ([#6209](https://github.com/open-telemetry/opentelemetry-java/pull/6209)
+
+#### Metrics
+
+* Reusable memory Mode: Adding support for exponential histogram aggregation
+  ([#6058](https://github.com/open-telemetry/opentelemetry-java/pull/6058),
+   [#6136](https://github.com/open-telemetry/opentelemetry-java/pull/6136))
+* Reusable memory mode: Adding support for explicit histogram aggregation
+  ([#6153](https://github.com/open-telemetry/opentelemetry-java/pull/6153))
+* Reusable memory mode: Adding support for sum aggregation
+  ([#6182](https://github.com/open-telemetry/opentelemetry-java/pull/6182))
+* Reusable memory mode: Adding support for last value aggregation
+  ([#6196](https://github.com/open-telemetry/opentelemetry-java/pull/6196))
+
+#### Exporters
+
+* Recreate / fix graal issue detecting RetryPolicy class
+  ([#6139](https://github.com/open-telemetry/opentelemetry-java/pull/6139),
+   [#6134](https://github.com/open-telemetry/opentelemetry-java/pull/6134))
+* Restore prometheus metric name mapper tests, fix regressions
+  ([#6138](https://github.com/open-telemetry/opentelemetry-java/pull/6138))
+* WARNING: Remove jaeger exporters
+  ([#6119](https://github.com/open-telemetry/opentelemetry-java/pull/6119))
+* Update dependency `io.zipkin.reporter2:zipkin-reporter-bom` to 3.2.1.
+  Note: `ZipkinSpanExporterBuilder#setEncoder(zipkin2.codec.BytesEncoder)` has been deprecated in
+  favor of `ZipkinSpanExporterBuilder#setEncoder(zipkin2.reporter.BytesEncoder)`.
+  `ZipkinSpanExporterBuilder#setSender(zipkin2.reporter.Sender)` has been deprecated in favor
+  of `ZipkinSpanExporterBuilder#setSender(zipkin2.reporter.BytesMessageSender)`.
+  ([#6129](https://github.com/open-telemetry/opentelemetry-java/pull/6129),
+  [#6151](https://github.com/open-telemetry/opentelemetry-java/pull/6151))
+* Include trace flags in otlp marshaller
+  ([#6167](https://github.com/open-telemetry/opentelemetry-java/pull/6167))
+* Add Compressor SPI support to OtlpGrpc{Signal}Exporters
+  ([#6103](https://github.com/open-telemetry/opentelemetry-java/pull/6103))
+* Allow Prometheus exporter to add resource attributes to metric attributes
+  ([#6179](https://github.com/open-telemetry/opentelemetry-java/pull/6179))
+
+#### Extension
+
+* Autoconfigure accepts encoded header values for OTLP exporters
+  ([#6164](https://github.com/open-telemetry/opentelemetry-java/pull/6164))
+* Return implementation type from `AutoConfiguredOpenTelemetrySdkBuilder.addLogRecordProcessorCustomizer`
+  ([#6248](https://github.com/open-telemetry/opentelemetry-java/pull/6248))
+
+#### Incubator
+
+* Align file configuration with latest changes to spec
+  ([#6088](https://github.com/open-telemetry/opentelemetry-java/pull/6088))
+
+### Tooling
+
+* Stop including old artifacts in bom
+  ([#6157](https://github.com/open-telemetry/opentelemetry-java/pull/6157))
+* Define CODECOV token
+  ([#6186](https://github.com/open-telemetry/opentelemetry-java/pull/6186))
+
 ## Version 1.34.1 (2024-01-11)
 
 * Fix prometheus exporter regressions

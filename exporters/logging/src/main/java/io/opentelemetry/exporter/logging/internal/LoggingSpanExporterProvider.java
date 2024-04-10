@@ -15,8 +15,12 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
+ *
+ * @deprecated The name {@code logging} is a deprecated alias for {@code console}, which is provided
+ *     via {@link ConsoleSpanExporterProvider}.
  */
-public class LoggingSpanExporterProvider implements ConfigurableSpanExporterProvider {
+@Deprecated
+public final class LoggingSpanExporterProvider implements ConfigurableSpanExporterProvider {
   @Override
   public SpanExporter createExporter(ConfigProperties config) {
     return LoggingSpanExporter.create();

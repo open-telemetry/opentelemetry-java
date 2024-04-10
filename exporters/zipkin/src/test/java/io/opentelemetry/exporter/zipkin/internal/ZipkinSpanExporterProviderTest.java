@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import okhttp3.HttpUrl;
 import org.junit.jupiter.api.Test;
 
 class ZipkinSpanExporterProviderTest {
@@ -32,13 +31,14 @@ class ZipkinSpanExporterProviderTest {
       assertThat(spanExporter).isInstanceOf(ZipkinSpanExporter.class);
       assertThat(spanExporter)
           .extracting("sender")
+          .extracting("delegate")
           .extracting("client")
           .extracting("readTimeoutMillis")
           .isEqualTo(10_000);
       assertThat(spanExporter)
           .extracting("sender")
           .extracting("endpoint")
-          .isEqualTo(HttpUrl.get("http://localhost:9411/api/v2/spans"));
+          .isEqualTo("http://localhost:9411/api/v2/spans");
     }
   }
 
@@ -53,13 +53,14 @@ class ZipkinSpanExporterProviderTest {
       assertThat(spanExporter).isInstanceOf(ZipkinSpanExporter.class);
       assertThat(spanExporter)
           .extracting("sender")
+          .extracting("delegate")
           .extracting("client")
           .extracting("readTimeoutMillis")
           .isEqualTo(1000);
       assertThat(spanExporter)
           .extracting("sender")
           .extracting("endpoint")
-          .isEqualTo(HttpUrl.get("http://localhost:8080/spans"));
+          .isEqualTo("http://localhost:8080/spans");
     }
   }
 }

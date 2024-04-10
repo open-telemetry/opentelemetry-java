@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -42,15 +43,17 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class DoubleLastValueAggregator
     implements Aggregator<DoublePointData, DoubleExemplarData> {
   private final Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier;
+  private final MemoryMode memoryMode;
 
   public DoubleLastValueAggregator(
-      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier) {
+      Supplier<ExemplarReservoir<DoubleExemplarData>> reservoirSupplier, MemoryMode memoryMode) {
     this.reservoirSupplier = reservoirSupplier;
+    this.memoryMode = memoryMode;
   }
 
   @Override
   public AggregatorHandle<DoublePointData, DoubleExemplarData> createHandle() {
-    return new Handle(reservoirSupplier.get());
+    return new Handle(reservoirSupplier.get(), memoryMode);
   }
 
   @Override
@@ -114,8 +117,16 @@ public final class DoubleLastValueAggregator
     @Nullable private static final Double DEFAULT_VALUE = null;
     private final AtomicReference<Double> current = new AtomicReference<>(DEFAULT_VALUE);
 
-    private Handle(ExemplarReservoir<DoubleExemplarData> reservoir) {
+    // Only used when memoryMode is REUSABLE_DATA
+    @Nullable private final MutableDoublePointData reusablePoint;
+
+    private Handle(ExemplarReservoir<DoubleExemplarData> reservoir, MemoryMode memoryMode) {
       super(reservoir);
+      if (memoryMode == MemoryMode.REUSABLE_DATA) {
+        reusablePoint = new MutableDoublePointData();
+      } else {
+        reusablePoint = null;
+      }
     }
 
     @Override
@@ -126,8 +137,14 @@ public final class DoubleLastValueAggregator
         List<DoubleExemplarData> exemplars,
         boolean reset) {
       Double value = reset ? this.current.getAndSet(DEFAULT_VALUE) : this.current.get();
-      return ImmutableDoublePointData.create(
-          startEpochNanos, epochNanos, attributes, Objects.requireNonNull(value), exemplars);
+      if (reusablePoint != null) {
+        reusablePoint.set(
+            startEpochNanos, epochNanos, attributes, Objects.requireNonNull(value), exemplars);
+        return reusablePoint;
+      } else {
+        return ImmutableDoublePointData.create(
+            startEpochNanos, epochNanos, attributes, Objects.requireNonNull(value), exemplars);
+      }
     }
 
     @Override

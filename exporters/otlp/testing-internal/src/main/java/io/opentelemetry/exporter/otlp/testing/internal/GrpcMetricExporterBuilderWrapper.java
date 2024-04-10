@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.time.Duration;
@@ -44,12 +45,14 @@ final class GrpcMetricExporterBuilderWrapper implements TelemetryExporterBuilder
 
   @Override
   public TelemetryExporterBuilder<MetricData> setConnectTimeout(long timeout, TimeUnit unit) {
-    throw new UnsupportedOperationException();
+    builder.setConnectTimeout(timeout, unit);
+    return this;
   }
 
   @Override
   public TelemetryExporterBuilder<MetricData> setConnectTimeout(Duration timeout) {
-    throw new UnsupportedOperationException();
+    builder.setConnectTimeout(timeout);
+    return this;
   }
 
   @Override
@@ -100,6 +103,11 @@ final class GrpcMetricExporterBuilderWrapper implements TelemetryExporterBuilder
   public TelemetryExporterBuilder<MetricData> setRetryPolicy(RetryPolicy retryPolicy) {
     builder.setRetryPolicy(retryPolicy);
     return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<MetricData> setProxyOptions(ProxyOptions proxyOptions) {
+    throw new UnsupportedOperationException("ProxyOptions are not supported for gRPC");
   }
 
   @Override

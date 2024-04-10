@@ -30,6 +30,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.assertj.core.api.InstanceOfAssertFactories;
@@ -137,20 +138,25 @@ class ConfigurableSpanExporterTest {
 
   @Test
   void configureSpanProcessors_simpleSpanProcessor() {
-    String exporterName = "logging";
     List<Closeable> closeables = new ArrayList<>();
+
+    Map<String, SpanExporter> exportersByName = new LinkedHashMap<>();
+    exportersByName.put("console", LoggingSpanExporter.create());
+    exportersByName.put("logging", LoggingSpanExporter.create());
 
     List<SpanProcessor> spanProcessors =
         TracerProviderConfiguration.configureSpanProcessors(
             DefaultConfigProperties.createFromMap(
-                Collections.singletonMap("otel.traces.exporter", exporterName)),
-            ImmutableMap.of(exporterName, LoggingSpanExporter.create()),
+                Collections.singletonMap("otel.traces.exporter", "console,logging")),
+            exportersByName,
             MeterProvider.noop(),
             closeables);
     cleanup.addCloseables(closeables);
 
-    assertThat(spanProcessors).hasExactlyElementsOfTypes(SimpleSpanProcessor.class);
-    assertThat(closeables).hasExactlyElementsOfTypes(SimpleSpanProcessor.class);
+    assertThat(spanProcessors)
+        .hasExactlyElementsOfTypes(SimpleSpanProcessor.class, SimpleSpanProcessor.class);
+    assertThat(closeables)
+        .hasExactlyElementsOfTypes(SimpleSpanProcessor.class, SimpleSpanProcessor.class);
   }
 
   @Test

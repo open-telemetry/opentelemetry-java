@@ -91,15 +91,15 @@ public class MutableLongPointData implements LongPointData {
     if (this == o) {
       return true;
     }
-    if (o == null || !(o instanceof MutableLongPointData)) {
+    if (!(o instanceof LongPointData)) {
       return false;
     }
-    MutableLongPointData that = (MutableLongPointData) o;
-    return value == that.value
-        && startEpochNanos == that.startEpochNanos
-        && epochNanos == that.epochNanos
-        && Objects.equals(attributes, that.attributes)
-        && Objects.equals(exemplars, that.exemplars);
+    LongPointData that = (LongPointData) o;
+    return value == that.getValue()
+        && startEpochNanos == that.getStartEpochNanos()
+        && epochNanos == that.getEpochNanos()
+        && Objects.equals(attributes, that.getAttributes())
+        && Objects.equals(exemplars, that.getExemplars());
   }
 
   @Override
