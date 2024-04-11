@@ -110,7 +110,7 @@ public final class SdkLoggerProviderBuilder {
    * Set the logger configurator, which computes {@link LoggerConfig} for each {@link
    * InstrumentationScopeInfo}.
    *
-   * <p>Overrides any matchers added via {@link #addLoggerConfiguratorMatcher(Predicate,
+   * <p>Overrides any matchers added via {@link #addLoggerConfiguratorCondition(Predicate,
    * LoggerConfig)}.
    *
    * @see LoggerConfig#configuratorBuilder()
@@ -134,7 +134,7 @@ public final class SdkLoggerProviderBuilder {
    * @see ScopeConfiguratorBuilder#nameEquals(String)
    * @see ScopeConfiguratorBuilder#nameMatchesGlob(String)
    */
-  public SdkLoggerProviderBuilder addLoggerConfiguratorMatcher(
+  public SdkLoggerProviderBuilder addLoggerConfiguratorCondition(
       Predicate<InstrumentationScopeInfo> scopeMatcher, LoggerConfig loggerConfig) {
     this.loggerConfiguratorBuilder.addCondition(scopeMatcher, loggerConfig);
     return this;

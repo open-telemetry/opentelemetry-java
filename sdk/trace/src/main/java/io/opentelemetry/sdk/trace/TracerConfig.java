@@ -17,7 +17,7 @@ import javax.annotation.concurrent.Immutable;
  * A collection of configuration options which define the behavior of a {@link Tracer}.
  *
  * @see SdkTracerProviderBuilder#setTracerConfigurator(ScopeConfigurator)
- * @see SdkTracerProviderBuilder#addTracerConfiguratorMatcher(Predicate, TracerConfig)
+ * @see SdkTracerProviderBuilder#addTracerConfiguratorCondition(Predicate, TracerConfig)
  */
 @AutoValue
 @Immutable

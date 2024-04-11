@@ -48,17 +48,17 @@ class ScopeConfiguratorTest {
             .setTracerProvider(
                 SdkTracerProvider.builder()
                     .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
-                    .addTracerConfiguratorMatcher(nameEquals("scopeB"), TracerConfig.disabled())
+                    .addTracerConfiguratorCondition(nameEquals("scopeB"), TracerConfig.disabled())
                     .build())
             .setMeterProvider(
                 SdkMeterProvider.builder()
                     .registerMetricReader(metricReader)
-                    .addMeterConfiguratorMatcher(nameEquals("scopeB"), MeterConfig.disabled())
+                    .addMeterConfiguratorCondition(nameEquals("scopeB"), MeterConfig.disabled())
                     .build())
             .setLoggerProvider(
                 SdkLoggerProvider.builder()
                     .addLogRecordProcessor(SimpleLogRecordProcessor.create(logRecordExporter))
-                    .addLoggerConfiguratorMatcher(nameEquals("scopeB"), LoggerConfig.disabled())
+                    .addLoggerConfiguratorCondition(nameEquals("scopeB"), LoggerConfig.disabled())
                     .build())
             .build();
 

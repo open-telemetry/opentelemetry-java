@@ -17,7 +17,7 @@ import javax.annotation.concurrent.Immutable;
  * A collection of configuration options which define the behavior of a {@link Meter}.
  *
  * @see SdkMeterProviderBuilder#setMeterConfigurator(ScopeConfigurator)
- * @see SdkMeterProviderBuilder#addMeterConfiguratorMatcher(Predicate, MeterConfig)
+ * @see SdkMeterProviderBuilder#addMeterConfiguratorCondition(Predicate, MeterConfig)
  */
 @AutoValue
 @Immutable

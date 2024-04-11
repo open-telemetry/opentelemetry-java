@@ -157,7 +157,7 @@ public final class SdkTracerProviderBuilder {
    * Set the tracer configurator, which computes {@link TracerConfig} for each {@link
    * InstrumentationScopeInfo}.
    *
-   * <p>Overrides any matchers added via {@link #addTracerConfiguratorMatcher(Predicate,
+   * <p>Overrides any matchers added via {@link #addTracerConfiguratorCondition(Predicate,
    * TracerConfig)}.
    *
    * @see TracerConfig#configuratorBuilder()
@@ -181,7 +181,7 @@ public final class SdkTracerProviderBuilder {
    * @see ScopeConfiguratorBuilder#nameEquals(String)
    * @see ScopeConfiguratorBuilder#nameMatchesGlob(String)
    */
-  public SdkTracerProviderBuilder addTracerConfiguratorMatcher(
+  public SdkTracerProviderBuilder addTracerConfiguratorCondition(
       Predicate<InstrumentationScopeInfo> scopeMatcher, TracerConfig tracerConfig) {
     this.tracerConfiguratorBuilder.addCondition(scopeMatcher, tracerConfig);
     return this;

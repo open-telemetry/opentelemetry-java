@@ -36,7 +36,7 @@ class TracerConfigTest {
         SdkTracerProvider.builder()
             // Disable tracerB. Since tracers are enabled by default, tracerA and tracerC are
             // enabled.
-            .addTracerConfiguratorMatcher(nameEquals("tracerB"), disabled())
+            .addTracerConfiguratorCondition(nameEquals("tracerB"), disabled())
             .addSpanProcessor(SimpleSpanProcessor.create(exporter))
             .build();
 

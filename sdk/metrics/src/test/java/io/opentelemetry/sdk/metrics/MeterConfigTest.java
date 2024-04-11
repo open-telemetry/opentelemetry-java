@@ -34,7 +34,7 @@ class MeterConfigTest {
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder()
             // Disable meterB. Since meters are enabled by default, meterA and meterC are enabled.
-            .addMeterConfiguratorMatcher(nameEquals("meterB"), disabled())
+            .addMeterConfiguratorCondition(nameEquals("meterB"), disabled())
             .registerMetricReader(reader)
             .build();
 

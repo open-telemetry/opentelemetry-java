@@ -160,7 +160,7 @@ public final class SdkMeterProviderBuilder {
    * Set the meter configurator, which computes {@link MeterConfig} for each {@link
    * InstrumentationScopeInfo}.
    *
-   * <p>Overrides any matchers added via {@link #addMeterConfiguratorMatcher(Predicate,
+   * <p>Overrides any matchers added via {@link #addMeterConfiguratorCondition(Predicate,
    * MeterConfig)}.
    *
    * @see MeterConfig#configuratorBuilder()
@@ -184,7 +184,7 @@ public final class SdkMeterProviderBuilder {
    * @see ScopeConfiguratorBuilder#nameEquals(String)
    * @see ScopeConfiguratorBuilder#nameMatchesGlob(String)
    */
-  public SdkMeterProviderBuilder addMeterConfiguratorMatcher(
+  public SdkMeterProviderBuilder addMeterConfiguratorCondition(
       Predicate<InstrumentationScopeInfo> scopeMatcher, MeterConfig meterConfig) {
     this.meterConfiguratorBuilder.addCondition(scopeMatcher, meterConfig);
     return this;

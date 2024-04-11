@@ -35,7 +35,7 @@ class LoggerConfigTest {
         SdkLoggerProvider.builder()
             // Disable loggerB. Since loggers are enabled by default, loggerA and loggerC are
             // enabled.
-            .addLoggerConfiguratorMatcher(nameEquals("loggerB"), LoggerConfig.disabled())
+            .addLoggerConfiguratorCondition(nameEquals("loggerB"), LoggerConfig.disabled())
             .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter))
             .build();
 
