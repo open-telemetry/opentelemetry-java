@@ -8,7 +8,7 @@ package io.opentelemetry.exporter.internal.otlp;
 import java.io.OutputStream;
 
 class TestOutputStream extends OutputStream {
-  private final int size;
+  private int size;
   private int count;
 
   TestOutputStream() {
@@ -25,5 +25,14 @@ class TestOutputStream extends OutputStream {
     if (size > 0 && count > size) {
       throw new IllegalStateException("max size exceeded");
     }
+  }
+
+  void reset(int size) {
+    this.size = size;
+    this.count = 0;
+  }
+
+  void reset() {
+    reset(-1);
   }
 }

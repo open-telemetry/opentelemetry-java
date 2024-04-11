@@ -41,6 +41,7 @@ public class MetricsRequestMarshalerBenchmark {
   private static final Collection<MetricData> METRICS;
   private static final LowAllocationMetricsRequestMarshaler MARSHALER =
       new LowAllocationMetricsRequestMarshaler();
+  private static final TestOutputStream OUTPUT = new TestOutputStream();
 
   static {
     InMemoryMetricReader metricReader = InMemoryMetricReader.create();
@@ -121,26 +122,26 @@ public class MetricsRequestMarshalerBenchmark {
   @Benchmark
   public TestOutputStream marshaler() throws IOException {
     MetricsRequestMarshaler marshaler = MetricsRequestMarshaler.create(METRICS);
-    TestOutputStream bos = new TestOutputStream();
-    marshaler.writeBinaryTo(bos);
-    return bos;
+    OUTPUT.reset();
+    marshaler.writeBinaryTo(OUTPUT);
+    return OUTPUT;
   }
 
   @Benchmark
   public TestOutputStream marshalerJson() throws IOException {
     MetricsRequestMarshaler marshaler = MetricsRequestMarshaler.create(METRICS);
-    TestOutputStream bos = new TestOutputStream();
-    marshaler.writeJsonTo(bos);
-    return bos;
+    OUTPUT.reset();
+    marshaler.writeJsonTo(OUTPUT);
+    return OUTPUT;
   }
 
   @Benchmark
   public TestOutputStream marshalerLowAllocation() throws IOException {
     MARSHALER.initialize(METRICS);
     try {
-      TestOutputStream bos = new TestOutputStream();
-      MARSHALER.writeBinaryTo(bos);
-      return bos;
+      OUTPUT.reset();
+      MARSHALER.writeBinaryTo(OUTPUT);
+      return OUTPUT;
     } finally {
       MARSHALER.reset();
     }
@@ -150,9 +151,9 @@ public class MetricsRequestMarshalerBenchmark {
   public TestOutputStream marshalerJsonLowAllocation() throws IOException {
     MARSHALER.initialize(METRICS);
     try {
-      TestOutputStream bos = new TestOutputStream();
-      MARSHALER.writeJsonTo(bos);
-      return bos;
+      OUTPUT.reset();
+      MARSHALER.writeJsonTo(OUTPUT);
+      return OUTPUT;
     } finally {
       MARSHALER.reset();
     }

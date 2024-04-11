@@ -27,6 +27,7 @@ public class RequestMarshalBenchmarks {
 
   private static final LowAllocationTraceRequestMarshaler MARSHALER =
       new LowAllocationTraceRequestMarshaler();
+  private static final TestOutputStream OUTPUT = new TestOutputStream();
 
   @Benchmark
   @Threads(1)
@@ -39,19 +40,18 @@ public class RequestMarshalBenchmarks {
   @Threads(1)
   public TestOutputStream marshalCustom(RequestMarshalState state) throws IOException {
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
-    TestOutputStream customOutput =
-        new TestOutputStream(requestMarshaler.getBinarySerializedSize());
-    requestMarshaler.writeBinaryTo(customOutput);
-    return customOutput;
+    OUTPUT.reset(requestMarshaler.getBinarySerializedSize());
+    requestMarshaler.writeBinaryTo(OUTPUT);
+    return OUTPUT;
   }
 
   @Benchmark
   @Threads(1)
   public TestOutputStream marshalJson(RequestMarshalState state) throws IOException {
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
-    TestOutputStream customOutput = new TestOutputStream();
-    requestMarshaler.writeJsonTo(customOutput);
-    return customOutput;
+    OUTPUT.reset();
+    requestMarshaler.writeJsonTo(OUTPUT);
+    return OUTPUT;
   }
 
   @Benchmark
@@ -72,9 +72,9 @@ public class RequestMarshalBenchmarks {
     LowAllocationTraceRequestMarshaler requestMarshaler = MARSHALER;
     requestMarshaler.initialize(state.spanDataList);
     try {
-      TestOutputStream customOutput = new TestOutputStream();
-      requestMarshaler.writeBinaryTo(customOutput);
-      return customOutput;
+      OUTPUT.reset();
+      requestMarshaler.writeBinaryTo(OUTPUT);
+      return OUTPUT;
     } finally {
       requestMarshaler.reset();
     }
@@ -86,9 +86,9 @@ public class RequestMarshalBenchmarks {
     LowAllocationTraceRequestMarshaler requestMarshaler = MARSHALER;
     requestMarshaler.initialize(state.spanDataList);
     try {
-      TestOutputStream customOutput = new TestOutputStream();
-      requestMarshaler.writeJsonTo(customOutput);
-      return customOutput;
+      OUTPUT.reset();
+      requestMarshaler.writeJsonTo(OUTPUT);
+      return OUTPUT;
     } finally {
       requestMarshaler.reset();
     }
