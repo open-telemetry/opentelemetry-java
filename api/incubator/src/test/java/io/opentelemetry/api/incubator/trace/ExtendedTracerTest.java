@@ -24,7 +24,7 @@ import io.opentelemetry.sdk.testing.assertj.SpanDataAssert;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.ClientAttributes;
-import io.opentelemetry.semconv.incubating.ExceptionIncubatingAttributes;
+import io.opentelemetry.semconv.ExceptionAttributes;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
@@ -85,16 +85,14 @@ class ExtendedTracerTest {
                                         .hasName("exception")
                                         .hasAttributesSatisfyingExactly(
                                             equalTo(
-                                                ExceptionIncubatingAttributes.EXCEPTION_TYPE,
+                                                ExceptionAttributes.EXCEPTION_TYPE,
                                                 "java.lang.IllegalStateException"),
                                             satisfies(
-                                                ExceptionIncubatingAttributes.EXCEPTION_STACKTRACE,
+                                                ExceptionAttributes.EXCEPTION_STACKTRACE,
                                                 string ->
                                                     string.contains(
                                                         "java.lang.IllegalStateException: ex")),
-                                            equalTo(
-                                                ExceptionIncubatingAttributes.EXCEPTION_MESSAGE,
-                                                "ex")))),
+                                            equalTo(ExceptionAttributes.EXCEPTION_MESSAGE, "ex")))),
             trace -> trace.hasSpansSatisfyingExactly(a -> a.hasName("another test")));
   }
 
