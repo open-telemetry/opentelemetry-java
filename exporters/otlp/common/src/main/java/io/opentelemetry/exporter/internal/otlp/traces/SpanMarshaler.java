@@ -197,7 +197,6 @@ final class SpanMarshaler extends MarshalerWithSize {
 
     size += MarshalerUtil.sizeMessage(Span.STATUS, spanStatusMarshaler);
     size += MarshalerUtil.sizeByteAsFixed32(Span.FLAGS, flags.asByte());
-
     return size;
   }
 
