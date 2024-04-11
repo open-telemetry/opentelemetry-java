@@ -556,8 +556,8 @@ public final class MarshalerUtil {
   }
 
   /** Returns the size of utf8 encoded string in bytes. */
-  public static int getUtf8Size(String string) {
-    // return string.length();
+  // Visible for testing
+  static int getUtf8Size(String string) {
     int size = 0;
     for (int i = 0; i < string.length(); i++) {
       char c = string.charAt(i);
