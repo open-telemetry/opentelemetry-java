@@ -66,9 +66,5 @@ Same settings as above for `main`, except:
 
 * `GPG_PASSWORD` - stored in OpenTelemetry-Java 1Password
 * `GPG_PRIVATE_KEY` - stored in OpenTelemetry-Java 1Password
-* `DEVELOCITY_ACCESS_KEY` - owned by [@jack-berg](https://github.com/jack-berg)
-  * Generated at https://ge.opentelemetry.io > My settings > Access keys
-  * format of env var is `ge.opentelemetry.io=<access key>`,
-    see [docs](https://docs.gradle.com/enterprise/gradle-plugin/#via_environment_variable)
 * `SONATYPE_KEY` - owned by [@jack-berg](https://github.com/jack-berg)
 * `SONATYPE_USER` - owned by [@jack-berg](https://github.com/jack-berg)
