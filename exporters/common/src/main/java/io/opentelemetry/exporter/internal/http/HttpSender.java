@@ -7,7 +7,9 @@ package io.opentelemetry.exporter.internal.http;
 
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import javax.annotation.Nullable;
 import java.io.IOException;
+import java.net.URI;
 import java.util.function.Consumer;
 
 /**
@@ -37,6 +39,11 @@ public interface HttpSender {
       int contentLength,
       Consumer<Response> onResponse,
       Consumer<Throwable> onError);
+
+  @Nullable
+  default URI endpoint() {
+    return null;
+  }
 
   /** Shutdown the sender. */
   CompletableResultCode shutdown();

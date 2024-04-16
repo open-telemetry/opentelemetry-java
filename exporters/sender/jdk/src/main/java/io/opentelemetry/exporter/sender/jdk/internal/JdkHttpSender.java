@@ -108,6 +108,12 @@ public final class JdkHttpSender implements HttpSender {
         retryPolicy);
   }
 
+  @Nullable
+  @Override
+  public URI endpoint() {
+    return uri;
+  }
+
   private static HttpClient configureClient(
       @Nullable SSLContext sslContext,
       long connectionTimeoutNanos,

@@ -12,6 +12,7 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
+import java.net.URI;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -86,7 +87,9 @@ public final class HttpExporter<T extends Marshaler> {
               Level.WARNING,
               "Failed to export "
                   + type
-                  + "s. Server responded with HTTP status code "
+                  + "s to "
+                  + endpoint()
+                  + ". Server responded with HTTP status code "
                   + statusCode
                   + ". Error message: "
                   + status);
@@ -98,13 +101,20 @@ public final class HttpExporter<T extends Marshaler> {
               Level.SEVERE,
               "Failed to export "
                   + type
-                  + "s. The request could not be executed. Full error message: "
+                  + "s to "
+                  + endpoint()
+                  + ". The request could not be executed. Full error message: "
                   + e.getMessage(),
               e);
           result.fail();
         });
 
     return result;
+  }
+
+  private String endpoint() {
+    URI endpoint = httpSender.endpoint();
+    return endpoint != null ? endpoint.toString() : "unknown endpoint";
   }
 
   public CompletableResultCode shutdown() {

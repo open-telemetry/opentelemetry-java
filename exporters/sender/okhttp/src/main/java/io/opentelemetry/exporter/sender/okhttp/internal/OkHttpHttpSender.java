@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
+import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -97,6 +98,12 @@ public final class OkHttpHttpSender implements HttpSender {
     this.exportAsJson = exportAsJson;
     this.mediaType = MediaType.parse(contentType);
     this.headerSupplier = headerSupplier;
+  }
+
+  @Nullable
+  @Override
+  public URI endpoint() {
+    return url.uri();
   }
 
   @Override

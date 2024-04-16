@@ -223,7 +223,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
   @BeforeAll
   void setUp() {
-    exporter = exporterBuilder().setEndpoint(server.httpUri() + path).build();
+    exporter = exporterBuilder().setEndpoint(getEndpoint()).build();
 
     // Sanity check that TLS files are in PEM format.
     assertThat(certificate.certificateFile())
@@ -242,6 +242,10 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         .binaryContent()
         .asString(StandardCharsets.UTF_8)
         .startsWith("-----BEGIN PRIVATE KEY-----");
+  }
+
+  private String getEndpoint() {
+    return server.httpUri() + path;
   }
 
   @AfterAll
@@ -287,7 +291,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @Test
   void compressionWithNone() {
     TelemetryExporter<T> exporter =
-        exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("none").build();
+        exporterBuilder().setEndpoint(getEndpoint()).setCompression("none").build();
     assertThat(exporter.unwrap()).extracting("delegate.httpSender.compressor").isNull();
     try {
       CompletableResultCode result =
@@ -304,7 +308,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @Test
   void compressionWithGzip() {
     TelemetryExporter<T> exporter =
-        exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("gzip").build();
+        exporterBuilder().setEndpoint(getEndpoint()).setCompression("gzip").build();
     assertThat(exporter.unwrap())
         .extracting("delegate.httpSender.compressor")
         .isEqualTo(GzipCompressor.getInstance());
@@ -323,7 +327,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @Test
   void compressionWithSpiCompressor() {
     TelemetryExporter<T> exporter =
-        exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("base64").build();
+        exporterBuilder().setEndpoint(getEndpoint()).setCompression("base64").build();
     assertThat(exporter.unwrap())
         .extracting("delegate.httpSender.compressor")
         .isEqualTo(Base64Compressor.getInstance());
@@ -359,7 +363,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     AtomicInteger count = new AtomicInteger();
     TelemetryExporter<T> exporter =
         exporterBuilder()
-            .setEndpoint(server.httpUri() + path)
+            .setEndpoint(getEndpoint())
             .addHeader("key1", "value1")
             .setHeaders(() -> Collections.singletonMap("key2", "value" + count.incrementAndGet()))
             .build();
@@ -392,7 +396,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
     TelemetryExporter<T> exporter =
         exporterBuilder()
-            .setEndpoint(server.httpUri() + path)
+            .setEndpoint(getEndpoint())
             .setAuthenticator(() -> Collections.singletonMap("key", "value"))
             .build();
 
@@ -535,10 +539,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @Test
   void deadlineSetPerExport() throws InterruptedException {
     TelemetryExporter<T> exporter =
-        exporterBuilder()
-            .setEndpoint(server.httpUri() + path)
-            .setTimeout(Duration.ofMillis(1500))
-            .build();
+        exporterBuilder().setEndpoint(getEndpoint()).setTimeout(Duration.ofMillis(1500)).build();
     try {
       TimeUnit.MILLISECONDS.sleep(2000);
       CompletableResultCode result =
@@ -552,7 +553,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(HttpExporter.class)
   void exportAfterShutdown() {
-    TelemetryExporter<T> exporter = exporterBuilder().setEndpoint(server.httpUri() + path).build();
+    TelemetryExporter<T> exporter = exporterBuilder().setEndpoint(getEndpoint()).build();
     exporter.shutdown();
     assertThat(
             exporter
@@ -567,7 +568,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @SuppressLogger(HttpExporter.class)
   void doubleShutdown() {
     int logsSizeBefore = logs.getEvents().size();
-    TelemetryExporter<T> exporter = exporterBuilder().setEndpoint(server.httpUri() + path).build();
+    TelemetryExporter<T> exporter = exporterBuilder().setEndpoint(getEndpoint()).build();
     assertThat(exporter.shutdown().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
     assertThat(logs.getEvents()).hasSize(logsSizeBefore);
     logs.assertDoesNotContain("Calling shutdown() multiple times.");
@@ -589,7 +590,9 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         logs.assertContains(
             "Failed to export "
                 + type
-                + "s. Server responded with HTTP status code 500. Error message:");
+                + "s to "
+                + getEndpoint()
+                + ". Server responded with HTTP status code 500. Error message:");
     assertThat(log.getLevel()).isEqualTo(Level.WARN);
   }
 
@@ -669,7 +672,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
           exporterBuilder()
               // Configure exporter with server endpoint, and proxy options to route through
               // mockserver proxy
-              .setEndpoint(server.httpUri() + path)
+              .setEndpoint(getEndpoint())
               .setProxyOptions(
                   ProxyOptions.create(
                       InetSocketAddress.createUnresolved("localhost", clientAndServer.getPort())))
@@ -943,7 +946,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
   private TelemetryExporter<T> retryingExporter() {
     return exporterBuilder()
-        .setEndpoint(server.httpUri() + path)
+        .setEndpoint(getEndpoint())
         .setRetryPolicy(
             RetryPolicy.builder()
                 .setMaxAttempts(2)
