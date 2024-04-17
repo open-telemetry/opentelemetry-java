@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.trace;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,8 +37,10 @@ class MultiSpanProcessorTest {
   void setUp() {
     when(spanProcessor1.isStartRequired()).thenReturn(true);
     when(spanProcessor1.isEndRequired()).thenReturn(true);
+    doCallRealMethod().when(spanProcessor1).onEnd(any(), any());
     when(spanProcessor1.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
     when(spanProcessor1.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    doCallRealMethod().when(spanProcessor2).onEnd(any(), any());
     when(spanProcessor2.isStartRequired()).thenReturn(true);
     when(spanProcessor2.isEndRequired()).thenReturn(true);
     when(spanProcessor2.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());

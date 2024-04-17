@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Implementation of the {@code SpanProcessor} that simply forwards all received events to a list of
@@ -19,6 +21,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 final class MultiSpanProcessor implements SpanProcessor {
   private final List<SpanProcessor> spanProcessorsStart;
   private final List<SpanProcessor> spanProcessorsEnd;
+
+  /**
+   * Will invoke {@link SpanProcessor#onEnd(ReadableSpan, Consumer)} of all processors from {@link #spanProcessorsEnd}
+   * in order. The output from the first processor is passed to the second, the output form the second to the third ans so on.
+   * The output of the last processor is passed to the {@link Consumer} provided as second argument to this biconsumer.
+   */
+  private BiConsumer<ReadableSpan, Consumer<ReadableSpan>> processorsEndInvoker;
   private final List<SpanProcessor> spanProcessorsAll;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
@@ -46,11 +55,15 @@ final class MultiSpanProcessor implements SpanProcessor {
     return !spanProcessorsStart.isEmpty();
   }
 
+
+  @Override
+  public void onEnd(ReadableSpan span, Consumer<ReadableSpan> spanOutput) {
+    processorsEndInvoker.accept(span, spanOutput);
+  }
+
   @Override
   public void onEnd(ReadableSpan readableSpan) {
-    for (SpanProcessor spanProcessor : spanProcessorsEnd) {
-      spanProcessor.onEnd(readableSpan);
-    }
+    onEnd(readableSpan, span -> {});
   }
 
   @Override
@@ -90,6 +103,13 @@ final class MultiSpanProcessor implements SpanProcessor {
       if (spanProcessor.isEndRequired()) {
         spanProcessorsEnd.add(spanProcessor);
       }
+    }
+    processorsEndInvoker = (span, drain) -> drain.accept(span);
+    for (int i=spanProcessorsEnd.size() - 1; i>=0; i--) {
+      BiConsumer<ReadableSpan, Consumer<ReadableSpan>> nextStage = processorsEndInvoker;
+      SpanProcessor processor = spanProcessorsEnd.get(i);
+      processorsEndInvoker = (span, finalOutput) ->
+        processor.onEnd(span, outputSpan -> nextStage.accept(outputSpan, finalOutput));
     }
   }
 
