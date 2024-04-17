@@ -527,7 +527,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
   @Nullable
   private static AutoConfiguredOpenTelemetrySdk maybeConfigureFromFile(ConfigProperties config) {
-    String configurationFile = config.getString("otel.config.file");
+    String configurationFile = config.getString("otel.experimental.config.file");
     if (configurationFile == null || configurationFile.isEmpty()) {
       return null;
     }

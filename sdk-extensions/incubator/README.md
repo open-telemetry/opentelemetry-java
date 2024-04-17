@@ -20,7 +20,7 @@ try (FileInputStream yamlConfigFileInputStream = new FileInputStream("/path/to/c
 Notes:
 * Environment variable substitution is supported as [defined in the spec](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/file-configuration.md#environment-variable-substitution)
 * Currently, there is no support for the SPIs defined in [opentelemetry-sdk-extension-autoconfigure-spi](../autoconfigure-spi). Only built in samplers, processors, exporters, etc can be configured.
-* You can use file configuration with [autoconfigure](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure#file-configuration) to specify a configuration file via environment variable, e.g. `OTEL_CONFIG_FILE=/path/to/config.yaml`.
+* You can use file configuration with [autoconfigure](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure#file-configuration) to specify a configuration file via environment variable, e.g. `OTEL_EXPERIMENTAL_CONFIG_FILE=/path/to/config.yaml`.
 
 ## View File Configuration
 
