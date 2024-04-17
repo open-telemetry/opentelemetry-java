@@ -9,5 +9,5 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean isEnabled()
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder addMeterConfiguratorMatcher(java.util.function.Predicate<io.opentelemetry.sdk.common.InstrumentationScopeInfo>, io.opentelemetry.sdk.metrics.MeterConfig)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder addMeterConfiguratorCondition(java.util.function.Predicate<io.opentelemetry.sdk.common.InstrumentationScopeInfo>, io.opentelemetry.sdk.metrics.MeterConfig)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder setMeterConfigurator(io.opentelemetry.sdk.common.ScopeConfigurator<io.opentelemetry.sdk.metrics.MeterConfig>)

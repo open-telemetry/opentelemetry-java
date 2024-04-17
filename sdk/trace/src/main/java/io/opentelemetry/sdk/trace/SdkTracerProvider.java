@@ -10,6 +10,7 @@ import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.resources.Resource;
@@ -28,6 +29,7 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   static final String DEFAULT_TRACER_NAME = "";
   private final TracerSharedState sharedState;
   private final ComponentRegistry<SdkTracer> tracerSdkComponentRegistry;
+  private final ScopeConfigurator<TracerConfig> tracerConfigurator;
 
   /**
    * Returns a new {@link SdkTracerProviderBuilder} for {@link SdkTracerProvider}.
@@ -49,16 +51,20 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
       ScopeConfigurator<TracerConfig> tracerConfigurator) {
     this.sharedState =
         new TracerSharedState(
-            clock,
-            idsGenerator,
-            resource,
-            spanLimitsSupplier,
-            sampler,
-            spanProcessors,
-            tracerConfigurator);
+            clock, idsGenerator, resource, spanLimitsSupplier, sampler, spanProcessors);
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
-            instrumentationScopeInfo -> new SdkTracer(sharedState, instrumentationScopeInfo));
+            instrumentationScopeInfo ->
+                new SdkTracer(
+                    sharedState,
+                    instrumentationScopeInfo,
+                    getTracerConfig(instrumentationScopeInfo)));
+    this.tracerConfigurator = tracerConfigurator;
+  }
+
+  private TracerConfig getTracerConfig(InstrumentationScopeInfo instrumentationScopeInfo) {
+    TracerConfig tracerConfig = tracerConfigurator.apply(instrumentationScopeInfo);
+    return tracerConfig == null ? TracerConfig.defaultConfig() : tracerConfig;
   }
 
   @Override

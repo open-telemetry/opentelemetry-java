@@ -7,8 +7,6 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.ScopeConfigurator;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.List;
@@ -28,7 +26,6 @@ final class TracerSharedState {
   private final Supplier<SpanLimits> spanLimitsSupplier;
   private final Sampler sampler;
   private final SpanProcessor activeSpanProcessor;
-  private final ScopeConfigurator<TracerConfig> tracerConfigurator;
 
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
@@ -39,8 +36,7 @@ final class TracerSharedState {
       Resource resource,
       Supplier<SpanLimits> spanLimitsSupplier,
       Sampler sampler,
-      List<SpanProcessor> spanProcessors,
-      ScopeConfigurator<TracerConfig> tracerConfigurator) {
+      List<SpanProcessor> spanProcessors) {
     this.clock = clock;
     this.idGenerator = idGenerator;
     this.idGeneratorSafeToSkipIdValidation = idGenerator instanceof RandomIdGenerator;
@@ -48,7 +44,6 @@ final class TracerSharedState {
     this.spanLimitsSupplier = spanLimitsSupplier;
     this.sampler = sampler;
     activeSpanProcessor = SpanProcessor.composite(spanProcessors);
-    this.tracerConfigurator = tracerConfigurator;
   }
 
   Clock getClock() {
@@ -84,11 +79,6 @@ final class TracerSharedState {
    */
   SpanProcessor getActiveSpanProcessor() {
     return activeSpanProcessor;
-  }
-
-  TracerConfig getTracerConfig(InstrumentationScopeInfo instrumentationScopeInfo) {
-    TracerConfig tracerConfig = tracerConfigurator.apply(instrumentationScopeInfo);
-    return tracerConfig == null ? TracerConfig.defaultConfig() : tracerConfig;
   }
 
   /**

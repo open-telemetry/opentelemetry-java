@@ -40,6 +40,10 @@ class ScopeConfiguratorTest {
   private final InMemoryMetricReader metricReader = InMemoryMetricReader.create();
   private final InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
 
+  private static final InstrumentationScopeInfo scopeA = InstrumentationScopeInfo.create("scopeA");
+  private static final InstrumentationScopeInfo scopeB = InstrumentationScopeInfo.create("scopeB");
+  private static final InstrumentationScopeInfo scopeC = InstrumentationScopeInfo.create("scopeC");
+
   /** Disable "scopeB". All other scopes are enabled by default. */
   @Test
   void disableScopeB() {
@@ -48,17 +52,20 @@ class ScopeConfiguratorTest {
             .setTracerProvider(
                 SdkTracerProvider.builder()
                     .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
-                    .addTracerConfiguratorCondition(nameEquals("scopeB"), TracerConfig.disabled())
+                    .addTracerConfiguratorCondition(
+                        nameEquals(scopeB.getName()), TracerConfig.disabled())
                     .build())
             .setMeterProvider(
                 SdkMeterProvider.builder()
                     .registerMetricReader(metricReader)
-                    .addMeterConfiguratorCondition(nameEquals("scopeB"), MeterConfig.disabled())
+                    .addMeterConfiguratorCondition(
+                        nameEquals(scopeB.getName()), MeterConfig.disabled())
                     .build())
             .setLoggerProvider(
                 SdkLoggerProvider.builder()
                     .addLogRecordProcessor(SimpleLogRecordProcessor.create(logRecordExporter))
-                    .addLoggerConfiguratorCondition(nameEquals("scopeB"), LoggerConfig.disabled())
+                    .addLoggerConfiguratorCondition(
+                        nameEquals(scopeB.getName()), LoggerConfig.disabled())
                     .build())
             .build();
 
@@ -72,9 +79,9 @@ class ScopeConfiguratorTest {
               Map<InstrumentationScopeInfo, List<SpanData>> spansByScope =
                   spans.stream()
                       .collect(Collectors.groupingBy(SpanData::getInstrumentationScopeInfo));
-              assertThat(spansByScope.get(InstrumentationScopeInfo.create("scopeA"))).hasSize(1);
-              assertThat(spansByScope.get(InstrumentationScopeInfo.create("scopeB"))).isNull();
-              assertThat(spansByScope.get(InstrumentationScopeInfo.create("scopeC"))).hasSize(1);
+              assertThat(spansByScope.get(scopeA)).hasSize(1);
+              assertThat(spansByScope.get(scopeB)).isNull();
+              assertThat(spansByScope.get(scopeC)).hasSize(1);
             });
     assertThat(metricReader.collectAllMetrics())
         .satisfies(
@@ -82,9 +89,9 @@ class ScopeConfiguratorTest {
               Map<InstrumentationScopeInfo, List<MetricData>> metricsByScope =
                   metrics.stream()
                       .collect(Collectors.groupingBy(MetricData::getInstrumentationScopeInfo));
-              assertThat(metricsByScope.get(InstrumentationScopeInfo.create("scopeA"))).hasSize(1);
-              assertThat(metricsByScope.get(InstrumentationScopeInfo.create("scopeB"))).isNull();
-              assertThat(metricsByScope.get(InstrumentationScopeInfo.create("scopeC"))).hasSize(1);
+              assertThat(metricsByScope.get(scopeA)).hasSize(1);
+              assertThat(metricsByScope.get(scopeB)).isNull();
+              assertThat(metricsByScope.get(scopeC)).hasSize(1);
             });
     assertThat(logRecordExporter.getFinishedLogRecordItems())
         .satisfies(
@@ -92,9 +99,9 @@ class ScopeConfiguratorTest {
               Map<InstrumentationScopeInfo, List<LogRecordData>> logsByScope =
                   logs.stream()
                       .collect(Collectors.groupingBy(LogRecordData::getInstrumentationScopeInfo));
-              assertThat(logsByScope.get(InstrumentationScopeInfo.create("scopeA"))).hasSize(1);
-              assertThat(logsByScope.get(InstrumentationScopeInfo.create("scopeB"))).isNull();
-              assertThat(logsByScope.get(InstrumentationScopeInfo.create("scopeC"))).hasSize(1);
+              assertThat(logsByScope.get(scopeA)).hasSize(1);
+              assertThat(logsByScope.get(scopeB)).isNull();
+              assertThat(logsByScope.get(scopeC)).hasSize(1);
             });
   }
 
@@ -109,7 +116,7 @@ class ScopeConfiguratorTest {
                     .setTracerConfigurator(
                         TracerConfig.configuratorBuilder()
                             .setDefault(TracerConfig.disabled())
-                            .addCondition(nameEquals("scopeB"), TracerConfig.enabled())
+                            .addCondition(nameEquals(scopeB.getName()), TracerConfig.enabled())
                             .build())
                     .build())
             .setMeterProvider(
@@ -118,7 +125,7 @@ class ScopeConfiguratorTest {
                     .setMeterConfigurator(
                         MeterConfig.configuratorBuilder()
                             .setDefault(MeterConfig.disabled())
-                            .addCondition(nameEquals("scopeB"), MeterConfig.enabled())
+                            .addCondition(nameEquals(scopeB.getName()), MeterConfig.enabled())
                             .build())
                     .build())
             .setLoggerProvider(
@@ -127,7 +134,7 @@ class ScopeConfiguratorTest {
                     .setLoggerConfigurator(
                         LoggerConfig.configuratorBuilder()
                             .setDefault(LoggerConfig.disabled())
-                            .addCondition(nameEquals("scopeB"), LoggerConfig.enabled())
+                            .addCondition(nameEquals(scopeB.getName()), LoggerConfig.enabled())
                             .build())
                     .build())
             .build();
@@ -142,9 +149,9 @@ class ScopeConfiguratorTest {
               Map<InstrumentationScopeInfo, List<SpanData>> spansByScope =
                   spans.stream()
                       .collect(Collectors.groupingBy(SpanData::getInstrumentationScopeInfo));
-              assertThat(spansByScope.get(InstrumentationScopeInfo.create("scopeA"))).isNull();
-              assertThat(spansByScope.get(InstrumentationScopeInfo.create("scopeB"))).hasSize(1);
-              assertThat(spansByScope.get(InstrumentationScopeInfo.create("scopeC"))).isNull();
+              assertThat(spansByScope.get(scopeA)).isNull();
+              assertThat(spansByScope.get(scopeB)).hasSize(1);
+              assertThat(spansByScope.get(scopeC)).isNull();
             });
     assertThat(metricReader.collectAllMetrics())
         .satisfies(
@@ -152,9 +159,9 @@ class ScopeConfiguratorTest {
               Map<InstrumentationScopeInfo, List<MetricData>> metricsByScope =
                   metrics.stream()
                       .collect(Collectors.groupingBy(MetricData::getInstrumentationScopeInfo));
-              assertThat(metricsByScope.get(InstrumentationScopeInfo.create("scopeA"))).isNull();
-              assertThat(metricsByScope.get(InstrumentationScopeInfo.create("scopeB"))).hasSize(1);
-              assertThat(metricsByScope.get(InstrumentationScopeInfo.create("scopeC"))).isNull();
+              assertThat(metricsByScope.get(scopeA)).isNull();
+              assertThat(metricsByScope.get(scopeB)).hasSize(1);
+              assertThat(metricsByScope.get(scopeC)).isNull();
             });
     assertThat(logRecordExporter.getFinishedLogRecordItems())
         .satisfies(
@@ -162,9 +169,9 @@ class ScopeConfiguratorTest {
               Map<InstrumentationScopeInfo, List<LogRecordData>> logsByScope =
                   logs.stream()
                       .collect(Collectors.groupingBy(LogRecordData::getInstrumentationScopeInfo));
-              assertThat(logsByScope.get(InstrumentationScopeInfo.create("scopeA"))).isNull();
-              assertThat(logsByScope.get(InstrumentationScopeInfo.create("scopeB"))).hasSize(1);
-              assertThat(logsByScope.get(InstrumentationScopeInfo.create("scopeC"))).isNull();
+              assertThat(logsByScope.get(scopeA)).isNull();
+              assertThat(logsByScope.get(scopeB)).hasSize(1);
+              assertThat(logsByScope.get(scopeC)).isNull();
             });
   }
 
@@ -174,25 +181,25 @@ class ScopeConfiguratorTest {
    */
   private static void simulateInstrumentation(OpenTelemetry openTelemetry) {
     // Start scopeA
-    Tracer scopeATracer = openTelemetry.getTracer("scopeA");
-    Meter scopeAMeter = openTelemetry.getMeter("scopeA");
-    Logger scopeALogger = openTelemetry.getLogsBridge().get("scopeA");
+    Tracer scopeATracer = openTelemetry.getTracer(scopeA.getName());
+    Meter scopeAMeter = openTelemetry.getMeter(scopeA.getName());
+    Logger scopeALogger = openTelemetry.getLogsBridge().get(scopeA.getName());
     Span spanA = scopeATracer.spanBuilder("spanA").startSpan();
     try (Scope spanAScope = spanA.makeCurrent()) {
       scopeALogger.logRecordBuilder().setBody("scopeA log message").emit();
 
       // Start scopeB
-      Tracer scopeBTracer = openTelemetry.getTracer("scopeB");
-      Meter scopeBMeter = openTelemetry.getMeter("scopeB");
-      Logger scopeBLogger = openTelemetry.getLogsBridge().get("scopeB");
+      Tracer scopeBTracer = openTelemetry.getTracer(scopeB.getName());
+      Meter scopeBMeter = openTelemetry.getMeter(scopeB.getName());
+      Logger scopeBLogger = openTelemetry.getLogsBridge().get(scopeB.getName());
       Span spanB = scopeBTracer.spanBuilder("spanB").startSpan();
       try (Scope spanBScope = spanB.makeCurrent()) {
         scopeBLogger.logRecordBuilder().setBody("scopeB log message").emit();
 
         // Start scopeC
-        Tracer scopeCTracer = openTelemetry.getTracer("scopeC");
-        Meter scopeCMeter = openTelemetry.getMeter("scopeC");
-        Logger scopeCLogger = openTelemetry.getLogsBridge().get("scopeC");
+        Tracer scopeCTracer = openTelemetry.getTracer(scopeC.getName());
+        Meter scopeCMeter = openTelemetry.getMeter(scopeC.getName());
+        Logger scopeCLogger = openTelemetry.getLogsBridge().get(scopeC.getName());
         Span spanC = scopeCTracer.spanBuilder("spanC").startSpan();
         try (Scope spanCScope = spanB.makeCurrent()) {
           scopeCLogger.logRecordBuilder().setBody("scopeC log message").emit();

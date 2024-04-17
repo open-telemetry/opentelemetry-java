@@ -19,10 +19,13 @@ final class SdkTracer implements Tracer {
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final TracerConfig tracerConfig;
 
-  SdkTracer(TracerSharedState sharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
+  SdkTracer(
+      TracerSharedState sharedState,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      TracerConfig tracerConfig) {
     this.sharedState = sharedState;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
-    this.tracerConfig = sharedState.getTracerConfig(instrumentationScopeInfo);
+    this.tracerConfig = tracerConfig;
   }
 
   @Override

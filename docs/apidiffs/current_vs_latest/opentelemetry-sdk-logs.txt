@@ -9,5 +9,5 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean isEnabled()
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder addLoggerConfiguratorMatcher(java.util.function.Predicate<io.opentelemetry.sdk.common.InstrumentationScopeInfo>, io.opentelemetry.sdk.logs.LoggerConfig)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder addLoggerConfiguratorCondition(java.util.function.Predicate<io.opentelemetry.sdk.common.InstrumentationScopeInfo>, io.opentelemetry.sdk.logs.LoggerConfig)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder setLoggerConfigurator(io.opentelemetry.sdk.common.ScopeConfigurator<io.opentelemetry.sdk.logs.LoggerConfig>)

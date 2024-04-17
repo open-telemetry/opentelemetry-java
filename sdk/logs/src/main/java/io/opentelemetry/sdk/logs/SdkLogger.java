@@ -20,18 +20,20 @@ final class SdkLogger implements Logger {
   private final LoggerConfig loggerConfig;
 
   SdkLogger(
-      LoggerSharedState loggerSharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
+      LoggerSharedState loggerSharedState,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      LoggerConfig loggerConfig) {
     this.loggerSharedState = loggerSharedState;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
-    this.loggerConfig = loggerSharedState.getLoggerConfig(instrumentationScopeInfo);
+    this.loggerConfig = loggerConfig;
   }
 
   @Override
   public LogRecordBuilder logRecordBuilder() {
-    if (!loggerConfig.isEnabled()) {
-      return NOOP_LOGGER.logRecordBuilder();
+    if (loggerConfig.isEnabled()) {
+      return new SdkLogRecordBuilder(loggerSharedState, instrumentationScopeInfo);
     }
-    return new SdkLogRecordBuilder(loggerSharedState, instrumentationScopeInfo);
+    return NOOP_LOGGER.logRecordBuilder();
   }
 
   // VisibleForTesting
