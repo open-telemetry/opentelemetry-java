@@ -29,7 +29,6 @@ final class TracerSharedState {
 
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
-  @SuppressWarnings("NonApiType")
   TracerSharedState(
       Clock clock,
       IdGenerator idGenerator,
