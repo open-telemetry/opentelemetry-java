@@ -340,6 +340,32 @@ class SdkSpanTest {
   }
 
   @Test
+  void getAttributes() {
+    SdkSpan span = createTestSpanWithAttributes(attributes);
+    try {
+      assertThat(span.getAttributes())
+          .isEqualTo(
+              Attributes.builder()
+                  .put("MyBooleanAttributeKey", false)
+                  .put("MyStringAttributeKey", "MyStringAttributeValue")
+                  .put("MyLongAttributeKey", 123L)
+                  .build());
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void getAttributes_Empty() {
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
+    try {
+      assertThat(span.getAttributes()).isEqualTo(Attributes.empty());
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
   @SuppressWarnings("deprecation") // Testing deprecated code
   void getInstrumentationLibraryInfo() {
     SdkSpan span = createTestSpan(SpanKind.CLIENT);
