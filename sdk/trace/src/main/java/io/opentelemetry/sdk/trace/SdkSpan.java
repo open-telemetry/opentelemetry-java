@@ -233,6 +233,13 @@ final class SdkSpan implements ReadWriteSpan {
   }
 
   @Override
+  public Attributes getAttributes() {
+    synchronized (lock) {
+      return attributes == null ? Attributes.empty() : attributes.immutableCopy();
+    }
+  }
+
+  @Override
   public boolean hasEnded() {
     synchronized (lock) {
       return hasEnded;

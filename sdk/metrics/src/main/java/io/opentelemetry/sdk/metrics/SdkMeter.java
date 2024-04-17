@@ -167,7 +167,7 @@ final class SdkMeter implements Meter {
           Level.WARNING,
           "Instrument name \""
               + name
-              + "\" is invalid, returning noop instrument. Instrument names must consist of 255 or fewer characters including alphanumeric, _, ., -, and start with a letter.",
+              + "\" is invalid, returning noop instrument. Instrument names must consist of 255 or fewer characters including alphanumeric, _, ., -, /, and start with a letter.",
           new AssertionError());
     }
 
