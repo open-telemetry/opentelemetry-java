@@ -23,11 +23,13 @@ final class MultiSpanProcessor implements SpanProcessor {
   private final List<SpanProcessor> spanProcessorsEnd;
 
   /**
-   * Will invoke {@link SpanProcessor#onEnd(ReadableSpan, Consumer)} of all processors from {@link #spanProcessorsEnd}
-   * in order. The output from the first processor is passed to the second, the output form the second to the third ans so on.
-   * The output of the last processor is passed to the {@link Consumer} provided as second argument to this biconsumer.
+   * Will invoke {@link SpanProcessor#onEnd(ReadableSpan, Consumer)} of all processors from {@link
+   * #spanProcessorsEnd} in order. The output from the first processor is passed to the second, the
+   * output from the second to the third and so on. The output of the last processor is passed to
+   * the {@link Consumer} provided as second argument to this biconsumer.
    */
   private BiConsumer<ReadableSpan, Consumer<ReadableSpan>> processorsEndInvoker;
+
   private final List<SpanProcessor> spanProcessorsAll;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
@@ -54,7 +56,6 @@ final class MultiSpanProcessor implements SpanProcessor {
   public boolean isStartRequired() {
     return !spanProcessorsStart.isEmpty();
   }
-
 
   @Override
   public void onEnd(ReadableSpan span, Consumer<ReadableSpan> spanOutput) {
@@ -105,11 +106,12 @@ final class MultiSpanProcessor implements SpanProcessor {
       }
     }
     processorsEndInvoker = (span, drain) -> drain.accept(span);
-    for (int i=spanProcessorsEnd.size() - 1; i>=0; i--) {
+    for (int i = spanProcessorsEnd.size() - 1; i >= 0; i--) {
       BiConsumer<ReadableSpan, Consumer<ReadableSpan>> nextStage = processorsEndInvoker;
       SpanProcessor processor = spanProcessorsEnd.get(i);
-      processorsEndInvoker = (span, finalOutput) ->
-        processor.onEnd(span, outputSpan -> nextStage.accept(outputSpan, finalOutput));
+      processorsEndInvoker =
+          (span, finalOutput) ->
+              processor.onEnd(span, outputSpan -> nextStage.accept(outputSpan, finalOutput));
     }
   }
 
