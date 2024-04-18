@@ -3,21 +3,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metrics.internal;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.ScopeConfigurator;
-import io.opentelemetry.sdk.common.ScopeConfiguratorBuilder;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import java.util.function.Predicate;
 import javax.annotation.concurrent.Immutable;
 
 /**
  * A collection of configuration options which define the behavior of a {@link Meter}.
  *
- * @see SdkMeterProviderBuilder#setMeterConfigurator(ScopeConfigurator)
- * @see SdkMeterProviderBuilder#addMeterConfiguratorCondition(Predicate, MeterConfig)
+ * @see SdkMeterProviderUtil#setMeterConfigurator(SdkMeterProviderBuilder, ScopeConfigurator)
+ * @see SdkMeterProviderUtil#addMeterConfiguratorCondition(SdkMeterProviderBuilder, Predicate,
+ *     MeterConfig)
  */
 @AutoValue
 @Immutable
@@ -38,9 +40,8 @@ public abstract class MeterConfig {
   }
 
   /**
-   * Returns the default {@link MeterConfig}, which is used when no {@link
-   * SdkMeterProviderBuilder#setMeterConfigurator(ScopeConfigurator)} is set or when the meter
-   * configurator returns {@code null} for a {@link InstrumentationScopeInfo}.
+   * Returns the default {@link MeterConfig}, which is used when no configurator is set or when the
+   * meter configurator returns {@code null} for a {@link InstrumentationScopeInfo}.
    */
   public static MeterConfig defaultConfig() {
     return DEFAULT_CONFIG;
@@ -48,7 +49,7 @@ public abstract class MeterConfig {
 
   /**
    * Create a {@link ScopeConfiguratorBuilder} for configuring {@link
-   * SdkMeterProviderBuilder#setMeterConfigurator(ScopeConfigurator)}.
+   * SdkMeterProviderUtil#setMeterConfigurator(SdkMeterProviderBuilder, ScopeConfigurator)}.
    */
   public static ScopeConfiguratorBuilder<MeterConfig> configuratorBuilder() {
     return ScopeConfigurator.builder();

@@ -7,10 +7,11 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.ScopeConfigurator;
-import io.opentelemetry.sdk.common.ScopeConfiguratorBuilder;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
@@ -165,8 +166,7 @@ public final class SdkMeterProviderBuilder {
    *
    * @see MeterConfig#configuratorBuilder()
    */
-  public SdkMeterProviderBuilder setMeterConfigurator(
-      ScopeConfigurator<MeterConfig> meterConfigurator) {
+  SdkMeterProviderBuilder setMeterConfigurator(ScopeConfigurator<MeterConfig> meterConfigurator) {
     this.meterConfiguratorBuilder = meterConfigurator.toBuilder();
     return this;
   }
@@ -184,7 +184,7 @@ public final class SdkMeterProviderBuilder {
    * @see ScopeConfiguratorBuilder#nameEquals(String)
    * @see ScopeConfiguratorBuilder#nameMatchesGlob(String)
    */
-  public SdkMeterProviderBuilder addMeterConfiguratorCondition(
+  SdkMeterProviderBuilder addMeterConfiguratorCondition(
       Predicate<InstrumentationScopeInfo> scopeMatcher, MeterConfig meterConfig) {
     this.meterConfiguratorBuilder.addCondition(scopeMatcher, meterConfig);
     return this;

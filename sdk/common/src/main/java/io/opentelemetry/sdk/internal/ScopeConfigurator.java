@@ -3,12 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.common;
+package io.opentelemetry.sdk.internal;
 
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import java.util.function.Function;
 
 /**
  * A {@link ScopeConfigurator} computes configuration for a given {@link InstrumentationScopeInfo}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 @FunctionalInterface
 public interface ScopeConfigurator<T> extends Function<InstrumentationScopeInfo, T> {

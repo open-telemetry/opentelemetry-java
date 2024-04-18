@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.common;
+package io.opentelemetry.sdk.internal;
 
-import io.opentelemetry.sdk.internal.GlobUtil;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -13,6 +13,9 @@ import javax.annotation.Nullable;
 
 /**
  * Builder for {@link ScopeConfigurator}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  *
  * @param <T> The scope configuration object, e.g. {@code TracerConfig}, {@code LoggerConfig},
  *     {@code MeterConfig}.

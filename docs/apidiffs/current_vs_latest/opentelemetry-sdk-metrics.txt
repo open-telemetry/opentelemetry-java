@@ -1,13 +1,2 @@
 Comparing source compatibility of  against 
-+++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.MeterConfig  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.ScopeConfiguratorBuilder<io.opentelemetry.sdk.metrics.MeterConfig> configuratorBuilder()
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.MeterConfig defaultConfig()
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.MeterConfig disabled()
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.MeterConfig enabled()
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean isEnabled()
-***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder addMeterConfiguratorCondition(java.util.function.Predicate<io.opentelemetry.sdk.common.InstrumentationScopeInfo>, io.opentelemetry.sdk.metrics.MeterConfig)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder setMeterConfigurator(io.opentelemetry.sdk.common.ScopeConfigurator<io.opentelemetry.sdk.metrics.MeterConfig>)
+No changes.

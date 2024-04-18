@@ -24,6 +24,7 @@ import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;

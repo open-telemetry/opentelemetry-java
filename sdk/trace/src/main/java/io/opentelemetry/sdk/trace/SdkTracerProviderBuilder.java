@@ -9,9 +9,10 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.ScopeConfigurator;
-import io.opentelemetry.sdk.common.ScopeConfiguratorBuilder;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
 import java.util.List;
@@ -162,7 +163,7 @@ public final class SdkTracerProviderBuilder {
    *
    * @see TracerConfig#configuratorBuilder()
    */
-  public SdkTracerProviderBuilder setTracerConfigurator(
+  SdkTracerProviderBuilder setTracerConfigurator(
       ScopeConfigurator<TracerConfig> tracerConfigurator) {
     this.tracerConfiguratorBuilder = tracerConfigurator.toBuilder();
     return this;
@@ -181,7 +182,7 @@ public final class SdkTracerProviderBuilder {
    * @see ScopeConfiguratorBuilder#nameEquals(String)
    * @see ScopeConfiguratorBuilder#nameMatchesGlob(String)
    */
-  public SdkTracerProviderBuilder addTracerConfiguratorCondition(
+  SdkTracerProviderBuilder addTracerConfiguratorCondition(
       Predicate<InstrumentationScopeInfo> scopeMatcher, TracerConfig tracerConfig) {
     this.tracerConfiguratorBuilder.addCondition(scopeMatcher, tracerConfig);
     return this;

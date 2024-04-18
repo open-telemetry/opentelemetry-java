@@ -5,17 +5,18 @@
 
 package io.opentelemetry.sdk.logs;
 
-import static io.opentelemetry.sdk.common.ScopeConfiguratorBuilder.nameEquals;
-import static io.opentelemetry.sdk.common.ScopeConfiguratorBuilder.nameMatchesGlob;
-import static io.opentelemetry.sdk.logs.LoggerConfig.defaultConfig;
-import static io.opentelemetry.sdk.logs.LoggerConfig.enabled;
+import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameEquals;
+import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameMatchesGlob;
+import static io.opentelemetry.sdk.logs.internal.LoggerConfig.defaultConfig;
+import static io.opentelemetry.sdk.logs.internal.LoggerConfig.enabled;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.ScopeConfigurator;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
+import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import java.util.List;
 import java.util.Map;

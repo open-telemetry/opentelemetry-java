@@ -9,6 +9,7 @@ import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 
 /** SDK implementation of {@link Logger}. */
 final class SdkLogger implements Logger {

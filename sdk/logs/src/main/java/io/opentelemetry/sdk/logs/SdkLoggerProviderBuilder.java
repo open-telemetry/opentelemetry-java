@@ -12,9 +12,10 @@ import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.ScopeConfigurator;
-import io.opentelemetry.sdk.common.ScopeConfiguratorBuilder;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -115,7 +116,7 @@ public final class SdkLoggerProviderBuilder {
    *
    * @see LoggerConfig#configuratorBuilder()
    */
-  public SdkLoggerProviderBuilder setLoggerConfigurator(
+  SdkLoggerProviderBuilder setLoggerConfigurator(
       ScopeConfigurator<LoggerConfig> loggerConfigurator) {
     this.loggerConfiguratorBuilder = loggerConfigurator.toBuilder();
     return this;
@@ -134,7 +135,7 @@ public final class SdkLoggerProviderBuilder {
    * @see ScopeConfiguratorBuilder#nameEquals(String)
    * @see ScopeConfiguratorBuilder#nameMatchesGlob(String)
    */
-  public SdkLoggerProviderBuilder addLoggerConfiguratorCondition(
+  SdkLoggerProviderBuilder addLoggerConfiguratorCondition(
       Predicate<InstrumentationScopeInfo> scopeMatcher, LoggerConfig loggerConfig) {
     this.loggerConfiguratorBuilder.addCondition(scopeMatcher, loggerConfig);
     return this;

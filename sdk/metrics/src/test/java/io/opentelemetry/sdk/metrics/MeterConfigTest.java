@@ -5,17 +5,18 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static io.opentelemetry.sdk.common.ScopeConfiguratorBuilder.nameEquals;
-import static io.opentelemetry.sdk.common.ScopeConfiguratorBuilder.nameMatchesGlob;
-import static io.opentelemetry.sdk.metrics.MeterConfig.defaultConfig;
-import static io.opentelemetry.sdk.metrics.MeterConfig.disabled;
-import static io.opentelemetry.sdk.metrics.MeterConfig.enabled;
+import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameEquals;
+import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameMatchesGlob;
+import static io.opentelemetry.sdk.metrics.internal.MeterConfig.defaultConfig;
+import static io.opentelemetry.sdk.metrics.internal.MeterConfig.disabled;
+import static io.opentelemetry.sdk.metrics.internal.MeterConfig.enabled;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.ScopeConfigurator;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.util.List;
 import java.util.Map;

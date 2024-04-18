@@ -3,21 +3,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.logs;
+package io.opentelemetry.sdk.logs.internal;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.common.ScopeConfigurator;
-import io.opentelemetry.sdk.common.ScopeConfiguratorBuilder;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
+import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import java.util.function.Predicate;
 import javax.annotation.concurrent.Immutable;
 
 /**
  * A collection of configuration options which define the behavior of a {@link Logger}.
  *
- * @see SdkLoggerProviderBuilder#setLoggerConfigurator(ScopeConfigurator)
- * @see SdkLoggerProviderBuilder#addLoggerConfiguratorCondition(Predicate, LoggerConfig)
+ * @see SdkLoggerProviderUtil#setLoggerConfigurator(SdkLoggerProviderBuilder, ScopeConfigurator)
+ * @see SdkLoggerProviderUtil#addLoggerConfiguratorCondition(SdkLoggerProviderBuilder, Predicate,
+ *     LoggerConfig)
  */
 @AutoValue
 @Immutable
@@ -39,9 +41,8 @@ public abstract class LoggerConfig {
   }
 
   /**
-   * Returns the default {@link LoggerConfig}, which is used when no {@link
-   * SdkLoggerProviderBuilder#setLoggerConfigurator(ScopeConfigurator)} is set or when the logger
-   * configurator returns {@code null} for a {@link InstrumentationScopeInfo}.
+   * Returns the default {@link LoggerConfig}, which is used when no configurator is set or when the
+   * logger configurator returns {@code null} for a {@link InstrumentationScopeInfo}.
    */
   public static LoggerConfig defaultConfig() {
     return DEFAULT_CONFIG;
@@ -49,7 +50,7 @@ public abstract class LoggerConfig {
 
   /**
    * Create a {@link ScopeConfiguratorBuilder} for configuring {@link
-   * SdkLoggerProviderBuilder#setLoggerConfigurator(ScopeConfigurator)}.
+   * SdkLoggerProviderUtil#setLoggerConfigurator(SdkLoggerProviderBuilder, ScopeConfigurator)}.
    */
   public static ScopeConfiguratorBuilder<LoggerConfig> configuratorBuilder() {
     return ScopeConfigurator.builder();

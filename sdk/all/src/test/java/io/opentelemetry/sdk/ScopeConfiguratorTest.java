@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk;
 
-import static io.opentelemetry.sdk.common.ScopeConfiguratorBuilder.nameEquals;
+import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.OpenTelemetry;
@@ -15,20 +15,26 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.logs.LoggerConfig;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
-import io.opentelemetry.sdk.metrics.MeterConfig;
+import io.opentelemetry.sdk.logs.internal.LoggerConfig;
+import io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.MeterConfig;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.TracerConfig;
+import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
+import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -47,25 +53,27 @@ class ScopeConfiguratorTest {
   /** Disable "scopeB". All other scopes are enabled by default. */
   @Test
   void disableScopeB() {
+    // Configuration ergonomics will improve after APIs stabilize
+    SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
+    SdkTracerProviderUtil.addTracerConfiguratorCondition(
+        tracerProviderBuilder, nameEquals(scopeB.getName()), TracerConfig.disabled());
+    SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
+    SdkMeterProviderUtil.addMeterConfiguratorCondition(
+        meterProviderBuilder, nameEquals(scopeB.getName()), MeterConfig.disabled());
+    SdkLoggerProviderBuilder loggerProviderBuilder = SdkLoggerProvider.builder();
+    SdkLoggerProviderUtil.addLoggerConfiguratorCondition(
+        loggerProviderBuilder, nameEquals(scopeB.getName()), LoggerConfig.disabled());
+
     OpenTelemetrySdk sdk =
         OpenTelemetrySdk.builder()
             .setTracerProvider(
-                SdkTracerProvider.builder()
+                tracerProviderBuilder
                     .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
-                    .addTracerConfiguratorCondition(
-                        nameEquals(scopeB.getName()), TracerConfig.disabled())
                     .build())
-            .setMeterProvider(
-                SdkMeterProvider.builder()
-                    .registerMetricReader(metricReader)
-                    .addMeterConfiguratorCondition(
-                        nameEquals(scopeB.getName()), MeterConfig.disabled())
-                    .build())
+            .setMeterProvider(meterProviderBuilder.registerMetricReader(metricReader).build())
             .setLoggerProvider(
-                SdkLoggerProvider.builder()
+                loggerProviderBuilder
                     .addLogRecordProcessor(SimpleLogRecordProcessor.create(logRecordExporter))
-                    .addLoggerConfiguratorCondition(
-                        nameEquals(scopeB.getName()), LoggerConfig.disabled())
                     .build())
             .build();
 
@@ -108,34 +116,39 @@ class ScopeConfiguratorTest {
   /** Disable all scopes by default and enable a single scope. */
   @Test
   void disableAllScopesExceptB() {
+    // Configuration ergonomics will improve after APIs stabilize
+    SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
+    SdkTracerProviderUtil.setTracerConfigurator(
+        tracerProviderBuilder,
+        TracerConfig.configuratorBuilder()
+            .setDefault(TracerConfig.disabled())
+            .addCondition(nameEquals(scopeB.getName()), TracerConfig.enabled())
+            .build());
+    SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
+    SdkMeterProviderUtil.setMeterConfigurator(
+        meterProviderBuilder,
+        MeterConfig.configuratorBuilder()
+            .setDefault(MeterConfig.disabled())
+            .addCondition(nameEquals(scopeB.getName()), MeterConfig.enabled())
+            .build());
+    SdkLoggerProviderBuilder loggerProviderBuilder = SdkLoggerProvider.builder();
+    SdkLoggerProviderUtil.setLoggerConfigurator(
+        loggerProviderBuilder,
+        LoggerConfig.configuratorBuilder()
+            .setDefault(LoggerConfig.disabled())
+            .addCondition(nameEquals(scopeB.getName()), LoggerConfig.enabled())
+            .build());
+
     OpenTelemetrySdk sdk =
         OpenTelemetrySdk.builder()
             .setTracerProvider(
-                SdkTracerProvider.builder()
+                tracerProviderBuilder
                     .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
-                    .setTracerConfigurator(
-                        TracerConfig.configuratorBuilder()
-                            .setDefault(TracerConfig.disabled())
-                            .addCondition(nameEquals(scopeB.getName()), TracerConfig.enabled())
-                            .build())
                     .build())
-            .setMeterProvider(
-                SdkMeterProvider.builder()
-                    .registerMetricReader(metricReader)
-                    .setMeterConfigurator(
-                        MeterConfig.configuratorBuilder()
-                            .setDefault(MeterConfig.disabled())
-                            .addCondition(nameEquals(scopeB.getName()), MeterConfig.enabled())
-                            .build())
-                    .build())
+            .setMeterProvider(meterProviderBuilder.registerMetricReader(metricReader).build())
             .setLoggerProvider(
-                SdkLoggerProvider.builder()
+                loggerProviderBuilder
                     .addLogRecordProcessor(SimpleLogRecordProcessor.create(logRecordExporter))
-                    .setLoggerConfigurator(
-                        LoggerConfig.configuratorBuilder()
-                            .setDefault(LoggerConfig.disabled())
-                            .addCondition(nameEquals(scopeB.getName()), LoggerConfig.enabled())
-                            .build())
                     .build())
             .build();
 
