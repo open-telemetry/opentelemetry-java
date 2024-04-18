@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal;
 
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.ViewBuilder;
@@ -18,8 +20,11 @@ import java.lang.reflect.Method;
 import java.util.function.Predicate;
 
 /**
- * This class is internal and is hence not for public use. Its APIs are unstable and can change at
- * any time.
+ * A collection of methods that allow use of experimental features prior to availability in public
+ * APIs.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 public final class SdkMeterProviderUtil {
 
@@ -63,6 +68,39 @@ public final class SdkMeterProviderUtil {
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       throw new IllegalStateException(
           "Error calling addMetricReader on SdkMeterProviderBuilder", e);
+    }
+  }
+
+  /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkMeterProviderBuilder}. */
+  public static void setMeterConfigurator(
+      SdkMeterProviderBuilder sdkMeterProviderBuilder,
+      ScopeConfigurator<MeterConfig> meterConfigurator) {
+    try {
+      Method method =
+          SdkMeterProviderBuilder.class.getDeclaredMethod(
+              "setMeterConfigurator", ScopeConfigurator.class);
+      method.setAccessible(true);
+      method.invoke(sdkMeterProviderBuilder, meterConfigurator);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setMeterConfigurator on SdkMeterProviderBuilder", e);
+    }
+  }
+
+  /** Reflectively add a tracer configurator condition to the {@link SdkMeterProviderBuilder}. */
+  public static void addMeterConfiguratorCondition(
+      SdkMeterProviderBuilder sdkMeterProviderBuilder,
+      Predicate<InstrumentationScopeInfo> scopeMatcher,
+      MeterConfig meterConfig) {
+    try {
+      Method method =
+          SdkMeterProviderBuilder.class.getDeclaredMethod(
+              "addMeterConfiguratorCondition", Predicate.class, MeterConfig.class);
+      method.setAccessible(true);
+      method.invoke(sdkMeterProviderBuilder, scopeMatcher, meterConfig);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling addMeterConfiguratorCondition on SdkMeterProviderBuilder", e);
     }
   }
 

@@ -8,11 +8,16 @@ package io.opentelemetry.sdk.trace;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /** Builder of {@link SdkTracerProvider}. */
@@ -26,6 +31,8 @@ public final class SdkTracerProviderBuilder {
   private Resource resource = Resource.getDefault();
   private Supplier<SpanLimits> spanLimitsSupplier = SpanLimits::getDefault;
   private Sampler sampler = DEFAULT_SAMPLER;
+  private ScopeConfiguratorBuilder<TracerConfig> tracerConfiguratorBuilder =
+      TracerConfig.configuratorBuilder();
 
   /**
    * Assign a {@link Clock}. {@link Clock} will be used each time a {@link
@@ -148,13 +155,53 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
+   * Set the tracer configurator, which computes {@link TracerConfig} for each {@link
+   * InstrumentationScopeInfo}.
+   *
+   * <p>Overrides any matchers added via {@link #addTracerConfiguratorCondition(Predicate,
+   * TracerConfig)}.
+   *
+   * @see TracerConfig#configuratorBuilder()
+   */
+  SdkTracerProviderBuilder setTracerConfigurator(
+      ScopeConfigurator<TracerConfig> tracerConfigurator) {
+    this.tracerConfiguratorBuilder = tracerConfigurator.toBuilder();
+    return this;
+  }
+
+  /**
+   * Adds a condition to the tracer configurator, which computes {@link TracerConfig} for each
+   * {@link InstrumentationScopeInfo}.
+   *
+   * <p>Applies after any previously added conditions.
+   *
+   * <p>If {@link #setTracerConfigurator(ScopeConfigurator)} was previously called, this condition
+   * will only be applied if the {@link ScopeConfigurator#apply(Object)} returns null for the
+   * matched {@link InstrumentationScopeInfo}(s).
+   *
+   * @see ScopeConfiguratorBuilder#nameEquals(String)
+   * @see ScopeConfiguratorBuilder#nameMatchesGlob(String)
+   */
+  SdkTracerProviderBuilder addTracerConfiguratorCondition(
+      Predicate<InstrumentationScopeInfo> scopeMatcher, TracerConfig tracerConfig) {
+    this.tracerConfiguratorBuilder.addCondition(scopeMatcher, tracerConfig);
+    return this;
+  }
+
+  /**
    * Create a new {@link SdkTracerProvider} instance with the configuration.
    *
    * @return The instance.
    */
   public SdkTracerProvider build() {
     return new SdkTracerProvider(
-        clock, idsGenerator, resource, spanLimitsSupplier, sampler, spanProcessors);
+        clock,
+        idsGenerator,
+        resource,
+        spanLimitsSupplier,
+        sampler,
+        spanProcessors,
+        tracerConfiguratorBuilder.build());
   }
 
   SdkTracerProviderBuilder() {}
