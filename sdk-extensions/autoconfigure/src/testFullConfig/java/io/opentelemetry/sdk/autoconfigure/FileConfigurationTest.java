@@ -78,7 +78,7 @@ class FileConfigurationTest {
   void configFile_Valid() {
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
-            Collections.singletonMap("otel.config.file", configFilePath.toString()));
+            Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
     OpenTelemetrySdk expectedSdk =
         OpenTelemetrySdk.builder()
             .setTracerProvider(
@@ -116,7 +116,7 @@ class FileConfigurationTest {
   void configFile_NoShutdownHook() {
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
-            Collections.singletonMap("otel.config.file", configFilePath.toString()));
+            Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
     AutoConfiguredOpenTelemetrySdkBuilder builder = spy(AutoConfiguredOpenTelemetrySdk.builder());
 
     AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
@@ -131,7 +131,7 @@ class FileConfigurationTest {
     GlobalOpenTelemetry.set(OpenTelemetry.noop());
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
-            Collections.singletonMap("otel.config.file", configFilePath.toString()));
+            Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
 
     AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
         AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).build();
@@ -147,7 +147,7 @@ class FileConfigurationTest {
   void configFile_setResultAsGlobalTrue() {
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
-            Collections.singletonMap("otel.config.file", configFilePath.toString()));
+            Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
 
     AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
         AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).setResultAsGlobal().build();
@@ -177,7 +177,7 @@ class FileConfigurationTest {
     Files.write(path, yaml.getBytes(StandardCharsets.UTF_8));
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
-            Collections.singletonMap("otel.config.file", path.toString()));
+            Collections.singletonMap("otel.experimental.config.file", path.toString()));
 
     assertThatThrownBy(() -> AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).build())
         .isInstanceOf(ConfigurationException.class)
