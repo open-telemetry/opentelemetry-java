@@ -5,6 +5,9 @@
 
 package io.opentelemetry.api.incubator.events;
 
+import static java.util.stream.Collectors.toList;
+
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.logs.AnyValue;
 import io.opentelemetry.api.logs.Severity;
@@ -73,6 +76,44 @@ public interface EventBuilder {
     return put(key, AnyValue.of(values));
   }
 
+  /**
+   * Put the given key and value in the payload.
+   *
+   * <p>NOTE: The key value pair is NOT added to the event attributes. Setting event attributes is
+   * less common than adding entries to the event payload. Use {@link #setAttributes(Attributes)} if
+   * intending the data to be set in attributes instead of the payload.
+   */
+  @SuppressWarnings("unchecked")
+  default <T> EventBuilder put(AttributeKey<T> key, T value) {
+    switch (key.getType()) {
+      case STRING:
+        return put(key.getKey(), (String) value);
+      case BOOLEAN:
+        return put(key.getKey(), (boolean) value);
+      case LONG:
+        return put(key.getKey(), (long) value);
+      case DOUBLE:
+        return put(key.getKey(), (double) value);
+      case STRING_ARRAY:
+        return put(
+            key.getKey(),
+            AnyValue.of(((List<String>) value).stream().map(AnyValue::of).collect(toList())));
+      case BOOLEAN_ARRAY:
+        return put(
+            key.getKey(),
+            AnyValue.of(((List<Boolean>) value).stream().map(AnyValue::of).collect(toList())));
+      case LONG_ARRAY:
+        return put(
+            key.getKey(),
+            AnyValue.of(((List<Long>) value).stream().map(AnyValue::of).collect(toList())));
+      case DOUBLE_ARRAY:
+        return put(
+            key.getKey(),
+            AnyValue.of(((List<Double>) value).stream().map(AnyValue::of).collect(toList())));
+    }
+    return this;
+  }
+
   /** Put the given {@code key} and {@code value} in the payload. */
   EventBuilder put(String key, AnyValue<?> value);
 
@@ -102,7 +143,9 @@ public interface EventBuilder {
    * Set the attributes.
    *
    * <p>Event {@link io.opentelemetry.api.common.Attributes} provide additional details about the
-   * Event which are not part of the well-defined {@link AnyValue} {@code payload}.
+   * Event which are not part of the well-defined {@link AnyValue} payload. Setting event attributes
+   * is less common than adding entries to the event payload. Most users will want to call one of
+   * the {@code #put(String, ?)} methods instead.
    */
   EventBuilder setAttributes(Attributes attributes);
 
