@@ -13,6 +13,8 @@ import io.opentelemetry.api.trace.TraceFlags;
  * specified in the proto definition</a>
  */
 public final class SpanFlags {
+  // As defined at:
+  // https://github.com/open-telemetry/opentelemetry-proto/blob/342e1d4c3a1fe43312823ffb53bd38327f263059/opentelemetry/proto/trace/v1/trace.proto#L351-L352
   static final int CONTEXT_HAS_IS_REMOTE_BIT = 0x00000100;
   static final int CONTEXT_IS_REMOTE_BIT = 0x00000200;
   static final int CONTEXT_IS_REMOTE_MASK = CONTEXT_HAS_IS_REMOTE_BIT | CONTEXT_IS_REMOTE_BIT;
