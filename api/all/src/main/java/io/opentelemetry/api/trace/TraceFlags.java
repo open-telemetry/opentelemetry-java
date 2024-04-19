@@ -45,28 +45,6 @@ public interface TraceFlags {
   }
 
   /**
-   * Returns the int (fixed32) representation of the 4 bytes flags with the
-   * has_parent_context_is_remote flag bit on.
-   *
-   * @return the int (fixed32) representation of the 4 bytes flags with the *
-   *     has_parent_context_is_remote flag bit on.
-   */
-  static int getHasParentIsRemote() {
-    return ImmutableTraceFlags.CONTEXT_HAS_IS_REMOTE_BIT;
-  }
-
-  /**
-   * Returns the int (fixed32) representation of the 4 bytes flags with the
-   * has_parent_context_is_remote and parent_context_is_remote flag bits on.
-   *
-   * @return the int (fixed32) representation of the 4 bytes flags with the
-   *     has_parent_context_is_remote and parent_context_is_remote flag bits on.
-   */
-  static int getParentIsRemote() {
-    return ImmutableTraceFlags.CONTEXT_IS_REMOTE_MASK;
-  }
-
-  /**
    * Returns the {@link TraceFlags} converted from the given lowercase hex (base16) representation.
    *
    * <p>This may throw runtime exceptions if the input is invalid.
@@ -111,14 +89,4 @@ public interface TraceFlags {
    * @return the byte representation of the {@link TraceFlags}.
    */
   byte asByte();
-
-  /**
-   * Returns the int (fixed32) representation of this {@link TraceFlags} enriched with the flags
-   * indicating a remote parent.
-   *
-   * @param isParentRemote indicates whether the parent context is remote
-   * @return the int (fixed32) representation of this {@link TraceFlags} enriched with the flags
-   *     indicating a remote parent.
-   */
-  int withParentIsRemoteFlags(boolean isParentRemote);
 }

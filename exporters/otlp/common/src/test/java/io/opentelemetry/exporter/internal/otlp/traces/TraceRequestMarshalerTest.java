@@ -153,9 +153,10 @@ class TraceRequestMarshalerTest {
 
     assertThat(protoSpan.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(protoSpan.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
-    assertThat(protoSpan.getFlags())
-        .isEqualTo(
-            (SPAN_CONTEXT.getTraceFlags().asByte() & 0xff) | TraceFlags.getHasParentIsRemote());
+    assertThat(protoSpan.getFlags() & 0xff)
+        .isEqualTo((SPAN_CONTEXT.getTraceFlags().asByte() & 0xff));
+    assertThat(SpanFlags.isKnownWhetherParentIsRemote(protoSpan.getFlags())).isTrue();
+    assertThat(SpanFlags.isParentRemote(protoSpan.getFlags())).isFalse();
     assertThat(protoSpan.getTraceState()).isEqualTo(TRACE_STATE_VALUE);
     assertThat(protoSpan.getParentSpanId().toByteArray()).isEqualTo(new byte[] {});
     assertThat(protoSpan.getName()).isEqualTo("GET /api/endpoint");
@@ -236,7 +237,7 @@ class TraceRequestMarshalerTest {
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
                 .setFlags(
                     (SPAN_CONTEXT.getTraceFlags().asByte() & 0xff)
-                        | TraceFlags.getHasParentIsRemote())
+                        | SpanFlags.getHasParentIsRemoteMask())
                 .setTraceState(encodeTraceState(SPAN_CONTEXT.getTraceState()))
                 .build());
     assertThat(protoSpan.getDroppedLinksCount()).isEqualTo(1); // 2 - 1
@@ -263,8 +264,10 @@ class TraceRequestMarshalerTest {
 
     assertThat(protoSpan.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(protoSpan.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
-    assertThat(protoSpan.getFlags())
-        .isEqualTo((SPAN_CONTEXT.getTraceFlags().asByte() & 0xff) | TraceFlags.getParentIsRemote());
+    assertThat(protoSpan.getFlags() & 0xff)
+        .isEqualTo((SPAN_CONTEXT.getTraceFlags().asByte() & 0xff));
+    assertThat(SpanFlags.isKnownWhetherParentIsRemote(protoSpan.getFlags())).isTrue();
+    assertThat(SpanFlags.isParentRemote(protoSpan.getFlags())).isTrue();
     assertThat(protoSpan.getTraceState()).isEqualTo(TRACE_STATE_VALUE);
     assertThat(protoSpan.getParentSpanId().toByteArray()).isEqualTo(PARENT_SPAN_ID_BYTES);
     assertThat(protoSpan.getName()).isEqualTo("GET /api/endpoint");
@@ -360,7 +363,7 @@ class TraceRequestMarshalerTest {
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
                 .setFlags(
                     (SPAN_CONTEXT.getTraceFlags().asByte() & 0xff)
-                        | TraceFlags.getHasParentIsRemote())
+                        | SpanFlags.getHasParentIsRemoteMask())
                 .setTraceState(TRACE_STATE_VALUE)
                 .build());
   }
@@ -376,7 +379,8 @@ class TraceRequestMarshalerTest {
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
                 .setSpanId(ByteString.copyFrom(PARENT_SPAN_ID_BYTES))
                 .setFlags(
-                    (SPAN_CONTEXT.getTraceFlags().asByte() & 0xff) | TraceFlags.getParentIsRemote())
+                    (SPAN_CONTEXT.getTraceFlags().asByte() & 0xff)
+                        | SpanFlags.getParentIsRemoteMask())
                 .build());
   }
 
@@ -394,7 +398,7 @@ class TraceRequestMarshalerTest {
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
                 .setFlags(
                     (SPAN_CONTEXT.getTraceFlags().asByte() & 0xff)
-                        | TraceFlags.getHasParentIsRemote())
+                        | SpanFlags.getHasParentIsRemoteMask())
                 .setTraceState(TRACE_STATE_VALUE)
                 .addAttributes(
                     KeyValue.newBuilder()

@@ -14,9 +14,6 @@ final class ImmutableTraceFlags implements TraceFlags {
   private static final ImmutableTraceFlags[] INSTANCES = buildInstances();
   // Bit to represent whether trace is sampled or not.
   private static final byte SAMPLED_BIT = 0x01;
-  static final int CONTEXT_HAS_IS_REMOTE_BIT = 0x00000100;
-  static final int CONTEXT_IS_REMOTE_BIT = 0x00000200;
-  static final int CONTEXT_IS_REMOTE_MASK = CONTEXT_HAS_IS_REMOTE_BIT | CONTEXT_IS_REMOTE_BIT;
 
   static final ImmutableTraceFlags DEFAULT = fromByte((byte) 0x00);
   static final ImmutableTraceFlags SAMPLED = fromByte(SAMPLED_BIT);
@@ -66,15 +63,6 @@ final class ImmutableTraceFlags implements TraceFlags {
   @Override
   public byte asByte() {
     return this.byteRep;
-  }
-
-  @Override
-  public int withParentIsRemoteFlags(boolean isParentRemote) {
-    if (isParentRemote) {
-      return (this.byteRep & 0xff) | CONTEXT_IS_REMOTE_MASK;
-    } else {
-      return (this.byteRep & 0xff) | CONTEXT_HAS_IS_REMOTE_BIT;
-    }
   }
 
   @Override

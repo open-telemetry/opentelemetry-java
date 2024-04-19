@@ -43,17 +43,4 @@ class TraceFlagsTest {
       assertThat(TraceFlags.fromByte((byte) i).asByte()).isEqualTo((byte) i);
     }
   }
-
-  @Test
-  void withParentIsRemoteFlags() {
-    assertThat(TraceFlags.fromByte((byte) 0xff).withParentIsRemoteFlags(false)).isEqualTo(0x1ff);
-    assertThat(TraceFlags.fromByte((byte) 0x01).withParentIsRemoteFlags(false)).isEqualTo(0x101);
-    assertThat(TraceFlags.fromByte((byte) 0x05).withParentIsRemoteFlags(false)).isEqualTo(0x105);
-    assertThat(TraceFlags.fromByte((byte) 0x00).withParentIsRemoteFlags(false)).isEqualTo(0x100);
-
-    assertThat(TraceFlags.fromByte((byte) 0xff).withParentIsRemoteFlags(true)).isEqualTo(0x3ff);
-    assertThat(TraceFlags.fromByte((byte) 0x01).withParentIsRemoteFlags(true)).isEqualTo(0x301);
-    assertThat(TraceFlags.fromByte((byte) 0x05).withParentIsRemoteFlags(true)).isEqualTo(0x305);
-    assertThat(TraceFlags.fromByte((byte) 0x00).withParentIsRemoteFlags(true)).isEqualTo(0x300);
-  }
 }
