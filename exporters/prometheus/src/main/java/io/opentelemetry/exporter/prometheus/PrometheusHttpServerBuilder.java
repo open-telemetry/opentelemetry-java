@@ -11,6 +11,7 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
@@ -93,7 +94,13 @@ public final class PrometheusHttpServerBuilder {
     return this;
   }
 
-  /** Set the {@link MemoryMode}. */
+  /**
+   * Set the {@link MemoryMode}.
+   *
+   * <p>If set to {@link MemoryMode#REUSABLE_DATA}, requests are served sequentially which is
+   * accomplished by overriding {@link #setExecutor(ExecutorService)} to {@link
+   * Executors#newSingleThreadExecutor()}.
+   */
   public PrometheusHttpServerBuilder setMemoryMode(MemoryMode memoryMode) {
     requireNonNull(memoryMode, "memoryMode");
     this.memoryMode = memoryMode;

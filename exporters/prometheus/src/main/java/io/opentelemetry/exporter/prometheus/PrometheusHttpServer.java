@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -70,6 +71,12 @@ public final class PrometheusHttpServer implements MetricReader {
     this.memoryMode = memoryMode;
     this.prometheusRegistry = prometheusRegistry;
     prometheusRegistry.register(prometheusMetricReader);
+    // When memory mode is REUSABLE_DATA, concurrent reads lead to data corruption. To prevent this,
+    // we configure prometheus with a single thread executor such that requests are handled
+    // sequentially.
+    if (memoryMode == MemoryMode.REUSABLE_DATA) {
+      executor = Executors.newSingleThreadExecutor();
+    }
     try {
       this.httpServer =
           HTTPServer.builder()
