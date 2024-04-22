@@ -9,6 +9,8 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
+import java.util.StringJoiner;
 
 /**
  * A functional interface that selects default {@link Aggregation} based on {@link InstrumentType}.
@@ -58,4 +60,19 @@ public interface DefaultAggregationSelector {
    * <p>The default aggregation is used when an instrument does not match any views.
    */
   Aggregation getDefaultAggregation(InstrumentType instrumentType);
+
+  /**
+   * Returns a string representation of this selector, for using in {@link Object#toString()}
+   * implementations.
+   */
+  static String asString(DefaultAggregationSelector selector) {
+    StringJoiner joiner = new StringJoiner(", ", "DefaultAggregationSelector{", "}");
+    for (InstrumentType type : InstrumentType.values()) {
+      joiner.add(
+          type.name()
+              + "="
+              + AggregationUtil.aggregationName(selector.getDefaultAggregation(type)));
+    }
+    return joiner.toString();
+  }
 }

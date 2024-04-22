@@ -872,7 +872,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + ", "
                   + "compressorEncoding=null, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
-                  + ".*" // Maybe additional grpcChannel field
+                  + ".*" // Maybe additional grpcChannel field, signal specific fields
                   + "\\}");
     } finally {
       telemetryExporter.shutdown();
@@ -914,7 +914,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + "compressorEncoding=gzip, "
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
                   + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3\\}"
-                  + ".*" // Maybe additional grpcChannel field
+                  + ".*" // Maybe additional grpcChannel field, signal specific fields
                   + "\\}");
     } finally {
       telemetryExporter.shutdown();

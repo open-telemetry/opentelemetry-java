@@ -63,4 +63,32 @@ class AggregationTemporalitySelectorTest {
     assertThat(selector.getAggregationTemporality(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
   }
+
+  @Test
+  void stringRepresentation() {
+    assertThat(
+            AggregationTemporalitySelector.asString(
+                AggregationTemporalitySelector.alwaysCumulative()))
+        .isEqualTo(
+            "AggregationTemporalitySelector{"
+                + "COUNTER=CUMULATIVE, "
+                + "UP_DOWN_COUNTER=CUMULATIVE, "
+                + "HISTOGRAM=CUMULATIVE, "
+                + "OBSERVABLE_COUNTER=CUMULATIVE, "
+                + "OBSERVABLE_UP_DOWN_COUNTER=CUMULATIVE, "
+                + "OBSERVABLE_GAUGE=CUMULATIVE"
+                + "}");
+    assertThat(
+            AggregationTemporalitySelector.asString(
+                AggregationTemporalitySelector.deltaPreferred()))
+        .isEqualTo(
+            "AggregationTemporalitySelector{"
+                + "COUNTER=DELTA, "
+                + "UP_DOWN_COUNTER=CUMULATIVE, "
+                + "HISTOGRAM=DELTA, "
+                + "OBSERVABLE_COUNTER=DELTA, "
+                + "OBSERVABLE_UP_DOWN_COUNTER=CUMULATIVE, "
+                + "OBSERVABLE_GAUGE=DELTA"
+                + "}");
+  }
 }

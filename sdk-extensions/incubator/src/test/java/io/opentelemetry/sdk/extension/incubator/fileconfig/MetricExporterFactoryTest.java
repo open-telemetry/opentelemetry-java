@@ -28,6 +28,10 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Header
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric.DefaultHistogramAggregation;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Prometheus;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.Closeable;
 import java.io.IOException;
@@ -118,6 +122,10 @@ class MetricExporterFactoryTest {
             .addHeader("key2", "value2")
             .setTimeout(Duration.ofSeconds(15))
             .setCompression("gzip")
+            .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred())
+            .setDefaultAggregationSelector(
+                DefaultAggregationSelector.getDefault()
+                    .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()))
             .build();
     cleanup.addCloseable(expectedExporter);
 
