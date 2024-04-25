@@ -213,7 +213,7 @@ public abstract class CodedOutputStream {
   }
 
   /** Compute the number of bytes that would be needed to encode a {@code uint32} field. */
-  public static int computeUInt32SizeNoTag(final int value) {
+  static int computeUInt32SizeNoTag(final int value) {
     if ((value & (~0 << 7)) == 0) {
       return 1;
     }
@@ -329,7 +329,7 @@ public abstract class CodedOutputStream {
     return computeLengthDelimitedFieldSize(value.length);
   }
 
-  public static int computeLengthDelimitedFieldSize(int fieldLength) {
+  static int computeLengthDelimitedFieldSize(int fieldLength) {
     return computeUInt32SizeNoTag(fieldLength) + fieldLength;
   }
 
