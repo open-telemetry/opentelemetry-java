@@ -32,7 +32,10 @@ final class SpanLinkStatelessMarshaler implements StatelessMarshaler<LinkData> {
         Span.Link.ATTRIBUTES, link.getAttributes(), KeyValueStatelessMarshaler.INSTANCE, context);
     int droppedAttributesCount = link.getTotalAttributeCount() - link.getAttributes().size();
     output.serializeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
-    output.serializeByteAsFixed32(Span.Link.FLAGS, link.getSpanContext().getTraceFlags().asByte());
+    output.serializeFixed32(
+        Span.Link.FLAGS,
+        SpanFlags.withParentIsRemoteFlags(
+            link.getSpanContext().getTraceFlags(), link.getSpanContext().isRemote()));
   }
 
   @Override
@@ -57,8 +60,10 @@ final class SpanLinkStatelessMarshaler implements StatelessMarshaler<LinkData> {
     int droppedAttributesCount = link.getTotalAttributeCount() - link.getAttributes().size();
     size += MarshalerUtil.sizeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
     size +=
-        MarshalerUtil.sizeByteAsFixed32(
-            Span.Link.FLAGS, link.getSpanContext().getTraceFlags().asByte());
+        MarshalerUtil.sizeFixed32(
+            Span.Link.FLAGS,
+            SpanFlags.withParentIsRemoteFlags(
+                link.getSpanContext().getTraceFlags(), link.getSpanContext().isRemote()));
 
     return size;
   }

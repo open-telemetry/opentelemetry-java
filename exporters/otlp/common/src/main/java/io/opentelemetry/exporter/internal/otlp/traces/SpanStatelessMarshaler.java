@@ -59,7 +59,10 @@ final class SpanStatelessMarshaler implements StatelessMarshaler<SpanData> {
     output.serializeMessage(
         Span.STATUS, span.getStatus(), SpanStatusStatelessMarshaler.INSTANCE, context);
 
-    output.serializeByteAsFixed32(Span.FLAGS, span.getSpanContext().getTraceFlags().asByte());
+    output.serializeFixed32(
+        Span.FLAGS,
+        SpanFlags.withParentIsRemoteFlags(
+            span.getSpanContext().getTraceFlags(), span.getParentSpanContext().isRemote()));
   }
 
   @Override
@@ -109,7 +112,10 @@ final class SpanStatelessMarshaler implements StatelessMarshaler<SpanData> {
             Span.STATUS, span.getStatus(), SpanStatusStatelessMarshaler.INSTANCE, context);
 
     size +=
-        MarshalerUtil.sizeByteAsFixed32(Span.FLAGS, span.getSpanContext().getTraceFlags().asByte());
+        MarshalerUtil.sizeFixed32(
+            Span.FLAGS,
+            SpanFlags.withParentIsRemoteFlags(
+                span.getSpanContext().getTraceFlags(), span.getParentSpanContext().isRemote()));
 
     return size;
   }
