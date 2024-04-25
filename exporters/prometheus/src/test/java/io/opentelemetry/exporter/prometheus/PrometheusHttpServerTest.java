@@ -24,6 +24,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
@@ -39,6 +40,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -47,6 +49,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.zip.GZIPInputStream;
@@ -127,6 +130,68 @@ class PrometheusHttpServerTest {
                 + "http_name_unit_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
                 + "# TYPE target_info gauge\n"
                 + "target_info{kr=\"vr\"} 1\n");
+  }
+
+  @Test
+  void fetch_ReusableMemoryMode() throws InterruptedException {
+    try (PrometheusHttpServer prometheusServer =
+        PrometheusHttpServer.builder()
+            .setHost("localhost")
+            .setPort(0)
+            .setMemoryMode(MemoryMode.REUSABLE_DATA)
+            .build()) {
+      AtomicBoolean collectInProgress = new AtomicBoolean();
+      AtomicBoolean concurrentRead = new AtomicBoolean();
+      prometheusServer.register(
+          new CollectionRegistration() {
+            @Override
+            public Collection<MetricData> collectAllMetrics() {
+              if (!collectInProgress.compareAndSet(false, true)) {
+                concurrentRead.set(true);
+              }
+              Collection<MetricData> response = metricData.get();
+              try {
+                Thread.sleep(1);
+              } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+              }
+              if (!collectInProgress.compareAndSet(true, false)) {
+                concurrentRead.set(true);
+              }
+              return response;
+            }
+          });
+
+      WebClient client =
+          WebClient.builder("http://localhost:" + prometheusServer.getAddress().getPort())
+              .decorator(RetryingClient.newDecorator(RetryRule.failsafe()))
+              .build();
+
+      // Spin up 4 threads calling /metrics simultaneously. If concurrent read happens,
+      // collectAllMetrics will set concurrentRead to true and the test will fail.
+      List<Thread> threads = new ArrayList<>();
+      for (int i = 0; i < 4; i++) {
+        Thread thread =
+            new Thread(
+                () -> {
+                  for (int j = 0; j < 10; j++) {
+                    AggregatedHttpResponse response = client.get("/metrics").aggregate().join();
+                    assertThat(response.status()).isEqualTo(HttpStatus.OK);
+                  }
+                });
+        thread.setDaemon(true);
+        thread.start();
+        threads.add(thread);
+      }
+
+      // Wait for threads to complete
+      for (Thread thread : threads) {
+        thread.join();
+      }
+
+      // Confirm no concurrent reads took place
+      assertThat(concurrentRead.get()).isFalse();
+    }
   }
 
   @Test

@@ -94,7 +94,7 @@ class SdkMeterTest {
   void checkValidInstrumentName_InvalidNameLogs() {
     assertThat(checkValidInstrumentName("1")).isFalse();
     sdkMeterLogs.assertContains(
-        "Instrument name \"1\" is invalid, returning noop instrument. Instrument names must consist of 255 or fewer characters including alphanumeric, _, ., -, and start with a letter.");
+        "Instrument name \"1\" is invalid, returning noop instrument. Instrument names must consist of 255 or fewer characters including alphanumeric, _, ., -, /, and start with a letter.");
   }
 
   @Test

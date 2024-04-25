@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
+import java.util.StringJoiner;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -128,6 +129,15 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
   @Override
   public String toString() {
-    return "OtlpGrpcMetricExporter{" + builder.toString(false) + "}";
+    StringJoiner joiner = new StringJoiner(", ", "OtlpGrpcMetricExporter{", "}");
+    joiner.add(builder.toString(false));
+    joiner.add(
+        "aggregationTemporalitySelector="
+            + AggregationTemporalitySelector.asString(aggregationTemporalitySelector));
+    joiner.add(
+        "defaultAggregationSelector="
+            + DefaultAggregationSelector.asString(defaultAggregationSelector));
+    joiner.add("memoryMode=" + memoryMode);
+    return joiner.toString();
   }
 }

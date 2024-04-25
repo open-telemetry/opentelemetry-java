@@ -28,6 +28,7 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
   private final KeyValueMarshaler[] attributeMarshalers;
   private final int droppedAttributesCount;
   private final TraceFlags traceFlags;
+  private final boolean isLinkContextRemote;
 
   static SpanLinkMarshaler[] createRepeated(List<LinkData> links) {
     if (links.isEmpty()) {
@@ -50,13 +51,15 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
         traceState.isEmpty()
             ? EMPTY_BYTES
             : encodeTraceState(traceState).getBytes(StandardCharsets.UTF_8);
+
     return new SpanLinkMarshaler(
         link.getSpanContext().getTraceId(),
         link.getSpanContext().getSpanId(),
         link.getSpanContext().getTraceFlags(),
         traceStateUtf8,
         KeyValueMarshaler.createForAttributes(link.getAttributes()),
-        link.getTotalAttributeCount() - link.getAttributes().size());
+        link.getTotalAttributeCount() - link.getAttributes().size(),
+        link.getSpanContext().isRemote());
   }
 
   private SpanLinkMarshaler(
@@ -65,7 +68,8 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
       TraceFlags traceFlags,
       byte[] traceStateUtf8,
       KeyValueMarshaler[] attributeMarshalers,
-      int droppedAttributesCount) {
+      int droppedAttributesCount,
+      boolean isLinkContextRemote) {
     super(
         calculateSize(
             traceId,
@@ -73,13 +77,15 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
             traceFlags,
             traceStateUtf8,
             attributeMarshalers,
-            droppedAttributesCount));
+            droppedAttributesCount,
+            isLinkContextRemote));
     this.traceId = traceId;
     this.spanId = spanId;
     this.traceFlags = traceFlags;
     this.traceStateUtf8 = traceStateUtf8;
     this.attributeMarshalers = attributeMarshalers;
     this.droppedAttributesCount = droppedAttributesCount;
+    this.isLinkContextRemote = isLinkContextRemote;
   }
 
   @Override
@@ -89,7 +95,8 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
     output.serializeString(Span.Link.TRACE_STATE, traceStateUtf8);
     output.serializeRepeatedMessage(Span.Link.ATTRIBUTES, attributeMarshalers);
     output.serializeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
-    output.serializeByteAsFixed32(Span.Link.FLAGS, traceFlags.asByte());
+    output.serializeFixed32(
+        Span.Link.FLAGS, SpanFlags.withParentIsRemoteFlags(traceFlags, isLinkContextRemote));
   }
 
   private static int calculateSize(
@@ -98,14 +105,17 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
       TraceFlags flags,
       byte[] traceStateUtf8,
       KeyValueMarshaler[] attributeMarshalers,
-      int droppedAttributesCount) {
+      int droppedAttributesCount,
+      boolean isLinkContextRemote) {
     int size = 0;
     size += MarshalerUtil.sizeTraceId(Span.Link.TRACE_ID, traceId);
     size += MarshalerUtil.sizeSpanId(Span.Link.SPAN_ID, spanId);
     size += MarshalerUtil.sizeBytes(Span.Link.TRACE_STATE, traceStateUtf8);
     size += MarshalerUtil.sizeRepeatedMessage(Span.Link.ATTRIBUTES, attributeMarshalers);
     size += MarshalerUtil.sizeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
-    size += MarshalerUtil.sizeByteAsFixed32(Span.Link.FLAGS, flags.asByte());
+    size +=
+        MarshalerUtil.sizeFixed32(
+            Span.Link.FLAGS, SpanFlags.withParentIsRemoteFlags(flags, isLinkContextRemote));
     return size;
   }
 }

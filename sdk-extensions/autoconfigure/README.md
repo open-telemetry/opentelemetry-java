@@ -383,9 +383,9 @@ and [file configuration](https://github.com/open-telemetry/opentelemetry-specifi
 To use, include `io.opentelemetry:opentelemetry-sdk-extension:incubator:<version>` and specify the
 path to the config file as described in the table below.
 
-| System property  | Environment variable | Purpose                                                    |
-|------------------|----------------------|------------------------------------------------------------|
-| otel.config.file | OTEL_CONFIG_FILE     | The path to the SDK configuration file. Defaults to unset. |
+| System property               | Environment variable          | Purpose                                                    |
+|-------------------------------|-------------------------------|------------------------------------------------------------|
+| otel.experimental.config.file | OTEL_EXPERIMENTAL_CONFIG_FILE | The path to the SDK configuration file. Defaults to unset. |
 
 NOTE: When a config file is specified, other environment variables described in this document along
 with SPI [customizations](#customizing-the-opentelemetry-sdk) are ignored. The contents of the file

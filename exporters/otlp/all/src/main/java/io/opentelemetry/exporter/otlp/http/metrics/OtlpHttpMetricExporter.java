@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.StringJoiner;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -147,6 +148,15 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
 
   @Override
   public String toString() {
-    return "OtlpHttpMetricExporter{" + builder.toString(false) + "}";
+    StringJoiner joiner = new StringJoiner(", ", "OtlpHttpMetricExporter{", "}");
+    joiner.add(builder.toString(false));
+    joiner.add(
+        "aggregationTemporalitySelector="
+            + AggregationTemporalitySelector.asString(aggregationTemporalitySelector));
+    joiner.add(
+        "defaultAggregationSelector="
+            + DefaultAggregationSelector.asString(defaultAggregationSelector));
+    joiner.add("memoryMode=" + memoryMode);
+    return joiner.toString();
   }
 }

@@ -26,11 +26,11 @@ jobs:
           - 8
           - 11
           - 17
-          - 20
+          - 21
         # Collect coverage on latest LTS
         include:
           - os: ubuntu-20.04
-            test-java-version: 17
+            test-java-version: 21
             coverage: true
             jmh-based-tests: true
     steps:

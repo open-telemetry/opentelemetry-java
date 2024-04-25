@@ -24,6 +24,7 @@ import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -44,7 +45,7 @@ class SdkLoggerTest {
     when(state.getLogRecordProcessor()).thenReturn(logRecordProcessor);
     when(state.getClock()).thenReturn(clock);
 
-    SdkLogger logger = new SdkLogger(state, info);
+    SdkLogger logger = new SdkLogger(state, info, LoggerConfig.defaultConfig());
     LogRecordBuilder logRecordBuilder = logger.logRecordBuilder();
     logRecordBuilder.setBody("foo");
 

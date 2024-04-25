@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.events.EventLogger;
 import io.opentelemetry.api.incubator.logs.AnyValue;
@@ -97,6 +98,15 @@ class SdkEventLoggerProviderTest {
                 ImmutableMap.of(
                     "childKey1", AnyValue.of("value"),
                     "childKey2", AnyValue.of("value"))))
+        // Helper methods to set AttributeKey<T> types
+        .put(AttributeKey.stringKey("attrStringKey"), "value")
+        .put(AttributeKey.longKey("attrLongKey"), 1L)
+        .put(AttributeKey.doubleKey("attrDoubleKey"), 1.0)
+        .put(AttributeKey.booleanKey("attrBoolKey"), true)
+        .put(AttributeKey.stringArrayKey("attrStringArrKey"), Arrays.asList("value1", "value2"))
+        .put(AttributeKey.longArrayKey("attrLongArrKey"), Arrays.asList(1L, 2L))
+        .put(AttributeKey.doubleArrayKey("attrDoubleArrKey"), Arrays.asList(1.0, 2.0))
+        .put(AttributeKey.booleanArrayKey("attrBoolArrKey"), Arrays.asList(true, false))
         .emit();
 
     Map<String, AnyValue<?>> expectedPayload = new HashMap<>();
@@ -117,6 +127,19 @@ class SdkEventLoggerProviderTest {
             ImmutableMap.of(
                 "childKey1", AnyValue.of("value"),
                 "childKey2", AnyValue.of("value"))));
+    expectedPayload.put("attrStringKey", AnyValue.of("value"));
+    expectedPayload.put("attrLongKey", AnyValue.of(1L));
+    expectedPayload.put("attrDoubleKey", AnyValue.of(1.0));
+    expectedPayload.put("attrBoolKey", AnyValue.of(true));
+    expectedPayload.put(
+        "attrStringArrKey",
+        AnyValue.of(Arrays.asList(AnyValue.of("value1"), AnyValue.of("value2"))));
+    expectedPayload.put(
+        "attrLongArrKey", AnyValue.of(Arrays.asList(AnyValue.of(1L), AnyValue.of(2L))));
+    expectedPayload.put(
+        "attrDoubleArrKey", AnyValue.of(Arrays.asList(AnyValue.of(1.0), AnyValue.of(2.0))));
+    expectedPayload.put(
+        "attrBoolArrKey", AnyValue.of(Arrays.asList(AnyValue.of(true), AnyValue.of(false))));
     assertThat(((AnyValueBody) seenLog.get().toLogRecordData().getBody()).asAnyValue())
         .isEqualTo(AnyValue.of(expectedPayload));
   }

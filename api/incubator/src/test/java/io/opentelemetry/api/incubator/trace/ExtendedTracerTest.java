@@ -23,7 +23,8 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.testing.assertj.SpanDataAssert;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.SemanticAttributes;
+import io.opentelemetry.semconv.ClientAttributes;
+import io.opentelemetry.semconv.ExceptionAttributes;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
@@ -84,14 +85,14 @@ class ExtendedTracerTest {
                                         .hasName("exception")
                                         .hasAttributesSatisfyingExactly(
                                             equalTo(
-                                                SemanticAttributes.EXCEPTION_TYPE,
+                                                ExceptionAttributes.EXCEPTION_TYPE,
                                                 "java.lang.IllegalStateException"),
                                             satisfies(
-                                                SemanticAttributes.EXCEPTION_STACKTRACE,
+                                                ExceptionAttributes.EXCEPTION_STACKTRACE,
                                                 string ->
                                                     string.contains(
                                                         "java.lang.IllegalStateException: ex")),
-                                            equalTo(SemanticAttributes.EXCEPTION_MESSAGE, "ex")))),
+                                            equalTo(ExceptionAttributes.EXCEPTION_MESSAGE, "ex")))),
             trace -> trace.hasSpansSatisfyingExactly(a -> a.hasName("another test")));
   }
 
@@ -123,7 +124,7 @@ class ExtendedTracerTest {
                     .setAttribute("key2", 0)
                     .setAttribute("key3", 0.0)
                     .setAttribute("key4", false)
-                    .setAttribute(SemanticAttributes.CLIENT_PORT, 1234L)
+                    .setAttribute(ClientAttributes.CLIENT_PORT, 1234L)
                     .addLink(invalid.getSpanContext())
                     .addLink(invalid.getSpanContext(), Attributes.empty())
                     .setAllAttributes(Attributes.empty())
