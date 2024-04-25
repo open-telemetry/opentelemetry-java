@@ -78,26 +78,6 @@ public final class ResourceSpansMarshaler extends MarshalerWithSize {
     output.serializeString(ResourceSpans.SCHEMA_URL, schemaUrlUtf8);
   }
 
-  /*
-  public static void writeTo(
-      Serializer output,
-      Map<InstrumentationScopeInfo, List<SpanData>> scopeMap,
-      MarshalerContext context)
-      throws IOException {
-    ResourceMarshaler resourceMarshaler = context.getObject(ResourceMarshaler.class);
-    output.serializeMessage(ResourceSpans.RESOURCE, resourceMarshaler);
-
-    ScopeSpanListWriter scopeSpanListWriter =
-        context.getInstance(ScopeSpanListWriter.class, ScopeSpanListWriter::new);
-    scopeSpanListWriter.initialize(output, ResourceSpans.SCOPE_SPANS, context);
-    scopeMap.forEach(scopeSpanListWriter);
-
-    byte[] schemaUrlUtf8 = context.getByteArray();
-    output.serializeString(ResourceSpans.SCHEMA_URL, schemaUrlUtf8);
-  }
-
-   */
-
   private static int calculateSize(
       ResourceMarshaler resourceMarshaler,
       byte[] schemaUrlUtf8,
@@ -108,39 +88,8 @@ public final class ResourceSpansMarshaler extends MarshalerWithSize {
     size +=
         MarshalerUtil.sizeRepeatedMessage(
             ResourceSpans.SCOPE_SPANS, instrumentationScopeSpansMarshalers);
-
     return size;
   }
-
-  /*
-  public static int calculateSize(
-      MarshalerContext context,
-      Resource resource,
-      Map<InstrumentationScopeInfo, List<SpanData>> scopeMap) {
-
-    int size = 0;
-    int sizeIndex = context.addSize();
-
-    ResourceMarshaler resourceMarshaler = ResourceMarshaler.create(resource);
-    context.addData(resourceMarshaler);
-    size += MarshalerUtil.sizeMessage(ResourceSpans.RESOURCE, resourceMarshaler);
-
-    ScopeSpanListSizeCalculator scopeSpanListSizeCalculator =
-        context.getInstance(ScopeSpanListSizeCalculator.class, ScopeSpanListSizeCalculator::new);
-    scopeSpanListSizeCalculator.initialize(ResourceSpans.SCOPE_SPANS, context);
-    scopeMap.forEach(scopeSpanListSizeCalculator);
-    size += scopeSpanListSizeCalculator.getSize();
-
-    byte[] schemaUrlUtf8 = MarshalerUtil.toBytes(resource.getSchemaUrl());
-    context.addData(schemaUrlUtf8);
-    size += MarshalerUtil.sizeBytes(ResourceSpans.SCHEMA_URL, schemaUrlUtf8);
-
-    context.setSize(sizeIndex, size);
-
-    return size;
-  }
-
-   */
 
   private static Map<Resource, Map<InstrumentationScopeInfo, List<SpanMarshaler>>>
       groupByResourceAndScope(Collection<SpanData> spanDataList) {
