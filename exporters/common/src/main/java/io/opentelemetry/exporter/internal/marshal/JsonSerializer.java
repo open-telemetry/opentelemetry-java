@@ -109,7 +109,9 @@ final class JsonSerializer extends Serializer {
   }
 
   @Override
-  public void writeString(ProtoFieldInfo field, String string, int utf8Length) throws IOException {
+  public void writeString(
+      ProtoFieldInfo field, String string, int utf8Length, MarshalerContext context)
+      throws IOException {
     generator.writeFieldName(field.getJsonName());
     generator.writeString(string);
   }

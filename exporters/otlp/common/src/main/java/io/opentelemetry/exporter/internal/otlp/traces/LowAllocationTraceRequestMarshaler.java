@@ -27,8 +27,9 @@ import java.util.Map;
  */
 @SuppressWarnings({"UnusedNestedClass", "UnusedVariable", "CheckedExceptionNotThrown"})
 public final class LowAllocationTraceRequestMarshaler extends Marshaler {
-  private static final Object RESOURCE_SPAN_SIZE_CALCULATOR_KEY = new Object();
-  private static final Object RESOURCE_SPAN_WRITER_KEY = new Object();
+  private static final MarshalerContext.Key RESOURCE_SPAN_SIZE_CALCULATOR_KEY =
+      MarshalerContext.key();
+  private static final MarshalerContext.Key RESOURCE_SPAN_WRITER_KEY = MarshalerContext.key();
 
   private final MarshalerContext context = new MarshalerContext();
 

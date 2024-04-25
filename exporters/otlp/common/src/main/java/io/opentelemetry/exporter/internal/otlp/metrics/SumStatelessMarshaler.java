@@ -16,8 +16,8 @@ import java.io.IOException;
 
 final class SumStatelessMarshaler implements StatelessMarshaler<SumData<? extends PointData>> {
   static final SumStatelessMarshaler INSTANCE = new SumStatelessMarshaler();
-  private static final Object DATA_POINT_SIZE_CALCULATOR_KEY = new Object();
-  private static final Object DATA_POINT_WRITER_KEY = new Object();
+  private static final MarshalerContext.Key DATA_POINT_SIZE_CALCULATOR_KEY = MarshalerContext.key();
+  private static final MarshalerContext.Key DATA_POINT_WRITER_KEY = MarshalerContext.key();
 
   @Override
   public void writeTo(Serializer output, SumData<? extends PointData> sum, MarshalerContext context)

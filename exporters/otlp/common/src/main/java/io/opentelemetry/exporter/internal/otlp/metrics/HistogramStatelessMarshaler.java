@@ -15,8 +15,8 @@ import java.io.IOException;
 
 final class HistogramStatelessMarshaler implements StatelessMarshaler<HistogramData> {
   static final HistogramStatelessMarshaler INSTANCE = new HistogramStatelessMarshaler();
-  private static final Object DATA_POINT_SIZE_CALCULATOR_KEY = new Object();
-  private static final Object DATA_POINT_WRITER_KEY = new Object();
+  private static final MarshalerContext.Key DATA_POINT_SIZE_CALCULATOR_KEY = MarshalerContext.key();
+  private static final MarshalerContext.Key DATA_POINT_WRITER_KEY = MarshalerContext.key();
 
   @Override
   public void writeTo(Serializer output, HistogramData histogram, MarshalerContext context)

@@ -22,12 +22,13 @@ import io.opentelemetry.proto.metrics.v1.internal.Metric;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 final class MetricStatelessMarshaler implements StatelessMarshaler<MetricData> {
   static final MetricStatelessMarshaler INSTANCE = new MetricStatelessMarshaler();
-  private static final Map<MetricDataType, DataHandler> DATA_HANDLERS = new HashMap<>();
+  private static final Map<MetricDataType, DataHandler> DATA_HANDLERS =
+      new EnumMap<>(MetricDataType.class);
 
   static {
     DATA_HANDLERS.put(

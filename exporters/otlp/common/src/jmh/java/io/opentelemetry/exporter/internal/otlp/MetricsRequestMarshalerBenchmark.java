@@ -120,40 +120,40 @@ public class MetricsRequestMarshalerBenchmark {
   }
 
   @Benchmark
-  public TestOutputStream marshaler() throws IOException {
+  public int marshaler() throws IOException {
     MetricsRequestMarshaler marshaler = MetricsRequestMarshaler.create(METRICS);
     OUTPUT.reset();
     marshaler.writeBinaryTo(OUTPUT);
-    return OUTPUT;
+    return OUTPUT.getCount();
   }
 
   @Benchmark
-  public TestOutputStream marshalerJson() throws IOException {
+  public int marshalerJson() throws IOException {
     MetricsRequestMarshaler marshaler = MetricsRequestMarshaler.create(METRICS);
     OUTPUT.reset();
     marshaler.writeJsonTo(OUTPUT);
-    return OUTPUT;
+    return OUTPUT.getCount();
   }
 
   @Benchmark
-  public TestOutputStream marshalerLowAllocation() throws IOException {
+  public int marshalerLowAllocation() throws IOException {
     MARSHALER.initialize(METRICS);
     try {
       OUTPUT.reset();
       MARSHALER.writeBinaryTo(OUTPUT);
-      return OUTPUT;
+      return OUTPUT.getCount();
     } finally {
       MARSHALER.reset();
     }
   }
 
   @Benchmark
-  public TestOutputStream marshalerJsonLowAllocation() throws IOException {
+  public int marshalerJsonLowAllocation() throws IOException {
     MARSHALER.initialize(METRICS);
     try {
       OUTPUT.reset();
       MARSHALER.writeJsonTo(OUTPUT);
-      return OUTPUT;
+      return OUTPUT.getCount();
     } finally {
       MARSHALER.reset();
     }

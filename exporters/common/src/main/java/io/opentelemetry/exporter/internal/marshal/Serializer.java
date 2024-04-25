@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
  * at any time.
  */
 public abstract class Serializer implements AutoCloseable {
-  private static final Object ATTRIBUTES_WRITER_KEY = new Object();
+  private static final MarshalerContext.Key ATTRIBUTES_WRITER_KEY = MarshalerContext.key();
 
   Serializer() {}
 
@@ -212,21 +212,13 @@ public abstract class Serializer implements AutoCloseable {
    * Serializes a protobuf {@code string} field. {@code string} is the value to be serialized and
    * {@code utf8Length} is the length of the string after it is encoded in UTF8.
    */
-  public void serializeString(ProtoFieldInfo field, String string, int utf8Length)
-      throws IOException {
-    if (string.isEmpty()) {
-      return;
-    }
-    writeString(field, string, utf8Length);
-  }
-
   public void serializeString(
       ProtoFieldInfo field, @Nullable String string, MarshalerContext context) throws IOException {
     if (string == null || string.isEmpty()) {
       return;
     }
     if (context.marshalStringNoAllocation()) {
-      writeString(field, string, context.getSize());
+      writeString(field, string, context.getSize(), context);
     } else {
       byte[] valueUtf8 = context.getData(byte[].class);
       writeString(field, valueUtf8);
@@ -236,7 +228,8 @@ public abstract class Serializer implements AutoCloseable {
   /** Writes a protobuf {@code string} field, even if it matches the default value. */
   public abstract void writeString(ProtoFieldInfo field, byte[] utf8Bytes) throws IOException;
 
-  public abstract void writeString(ProtoFieldInfo field, String string, int utf8Length)
+  public abstract void writeString(
+      ProtoFieldInfo field, String string, int utf8Length, MarshalerContext context)
       throws IOException;
 
   /** Serializes a protobuf {@code bytes} field. */
@@ -392,13 +385,19 @@ public abstract class Serializer implements AutoCloseable {
       MarshalerContext context)
       throws IOException;
 
+  @SuppressWarnings("unchecked")
   public <T> void serializeRepeatedMessage(
       ProtoFieldInfo field,
       Collection<? extends T> messages,
       StatelessMarshaler<T> marshaler,
       MarshalerContext context,
-      Object key)
+      MarshalerContext.Key key)
       throws IOException {
+    if (messages instanceof List) {
+      serializeRepeatedMessage(field, (List<T>) messages, marshaler, context);
+      return;
+    }
+
     writeStartRepeated(field);
 
     if (!messages.isEmpty()) {
@@ -415,7 +414,7 @@ public abstract class Serializer implements AutoCloseable {
       Map<K, V> messages,
       StatelessMarshaler2<K, V> marshaler,
       MarshalerContext context,
-      Object key)
+      MarshalerContext.Key key)
       throws IOException {
     writeStartRepeated(field);
 

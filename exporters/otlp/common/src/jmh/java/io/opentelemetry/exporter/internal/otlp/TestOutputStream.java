@@ -35,4 +35,8 @@ class TestOutputStream extends OutputStream {
   void reset() {
     reset(-1);
   }
+
+  int getCount() {
+    return count;
+  }
 }

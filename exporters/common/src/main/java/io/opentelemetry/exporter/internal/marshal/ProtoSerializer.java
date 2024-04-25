@@ -147,11 +147,13 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   }
 
   @Override
-  public void writeString(ProtoFieldInfo field, String string, int utf8Length) throws IOException {
+  public void writeString(
+      ProtoFieldInfo field, String string, int utf8Length, MarshalerContext context)
+      throws IOException {
     output.writeUInt32NoTag(field.getTag());
     output.writeUInt32NoTag(utf8Length);
 
-    MarshalerUtil.writeUtf8(output, string);
+    MarshalerUtil.writeUtf8(output, string, utf8Length, context);
   }
 
   @Override

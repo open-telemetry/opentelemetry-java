@@ -17,8 +17,8 @@ final class ExponentialHistogramStatelessMarshaler
     implements StatelessMarshaler<ExponentialHistogramData> {
   static final ExponentialHistogramStatelessMarshaler INSTANCE =
       new ExponentialHistogramStatelessMarshaler();
-  private static final Object DATA_POINT_SIZE_CALCULATOR_KEY = new Object();
-  private static final Object DATA_POINT_WRITER_KEY = new Object();
+  private static final MarshalerContext.Key DATA_POINT_SIZE_CALCULATOR_KEY = MarshalerContext.key();
+  private static final MarshalerContext.Key DATA_POINT_WRITER_KEY = MarshalerContext.key();
 
   @Override
   public void writeTo(

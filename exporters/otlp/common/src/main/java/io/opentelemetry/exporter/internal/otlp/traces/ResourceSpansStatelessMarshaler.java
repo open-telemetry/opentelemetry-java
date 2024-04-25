@@ -27,8 +27,8 @@ import java.util.Map;
 public final class ResourceSpansStatelessMarshaler
     implements StatelessMarshaler2<Resource, Map<InstrumentationScopeInfo, List<SpanData>>> {
   static final ResourceSpansStatelessMarshaler INSTANCE = new ResourceSpansStatelessMarshaler();
-  private static final Object SCOPE_SPAN_WRITER_KEY = new Object();
-  private static final Object SCOPE_SPAN_SIZE_CALCULATOR_KEY = new Object();
+  private static final MarshalerContext.Key SCOPE_SPAN_WRITER_KEY = MarshalerContext.key();
+  private static final MarshalerContext.Key SCOPE_SPAN_SIZE_CALCULATOR_KEY = MarshalerContext.key();
 
   @Override
   public void writeTo(

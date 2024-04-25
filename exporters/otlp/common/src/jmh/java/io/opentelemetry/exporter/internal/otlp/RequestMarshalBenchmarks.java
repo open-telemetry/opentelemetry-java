@@ -38,20 +38,20 @@ public class RequestMarshalBenchmarks {
 
   @Benchmark
   @Threads(1)
-  public TestOutputStream marshalCustom(RequestMarshalState state) throws IOException {
+  public int marshalCustom(RequestMarshalState state) throws IOException {
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
     OUTPUT.reset(requestMarshaler.getBinarySerializedSize());
     requestMarshaler.writeBinaryTo(OUTPUT);
-    return OUTPUT;
+    return OUTPUT.getCount();
   }
 
   @Benchmark
   @Threads(1)
-  public TestOutputStream marshalJson(RequestMarshalState state) throws IOException {
+  public int marshalJson(RequestMarshalState state) throws IOException {
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
     OUTPUT.reset();
     requestMarshaler.writeJsonTo(OUTPUT);
-    return OUTPUT;
+    return OUTPUT.getCount();
   }
 
   @Benchmark
@@ -68,13 +68,13 @@ public class RequestMarshalBenchmarks {
 
   @Benchmark
   @Threads(1)
-  public TestOutputStream marshalCustomLowAllocation(RequestMarshalState state) throws IOException {
+  public int marshalCustomLowAllocation(RequestMarshalState state) throws IOException {
     LowAllocationTraceRequestMarshaler requestMarshaler = MARSHALER;
     requestMarshaler.initialize(state.spanDataList);
     try {
       OUTPUT.reset();
       requestMarshaler.writeBinaryTo(OUTPUT);
-      return OUTPUT;
+      return OUTPUT.getCount();
     } finally {
       requestMarshaler.reset();
     }
@@ -82,13 +82,13 @@ public class RequestMarshalBenchmarks {
 
   @Benchmark
   @Threads(1)
-  public TestOutputStream marshalJsonLowAllocation(RequestMarshalState state) throws IOException {
+  public int marshalJsonLowAllocation(RequestMarshalState state) throws IOException {
     LowAllocationTraceRequestMarshaler requestMarshaler = MARSHALER;
     requestMarshaler.initialize(state.spanDataList);
     try {
       OUTPUT.reset();
       requestMarshaler.writeJsonTo(OUTPUT);
-      return OUTPUT;
+      return OUTPUT.getCount();
     } finally {
       requestMarshaler.reset();
     }

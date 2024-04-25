@@ -8,10 +8,10 @@ package io.opentelemetry.exporter.internal.marshal;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -23,7 +23,8 @@ import javax.annotation.Nullable;
  * for objects that can be reused between marshalling attempts.
  */
 public final class MarshalerContext {
-  public static final boolean MARSHAL_STRING_NO_ALLOCATION = true;
+  private final boolean marshalStringNoAllocation;
+  private final boolean marshalStringUnsafe;
 
   private int[] sizes = new int[16];
   private int sizeReadIndex;
@@ -32,8 +33,22 @@ public final class MarshalerContext {
   private int dataReadIndex;
   private int dataWriteIndex;
 
+  @SuppressWarnings("BooleanParameter")
+  public MarshalerContext() {
+    this(true, true);
+  }
+
+  public MarshalerContext(boolean marshalStringNoAllocation, boolean marshalStringUnsafe) {
+    this.marshalStringNoAllocation = marshalStringNoAllocation;
+    this.marshalStringUnsafe = marshalStringUnsafe;
+  }
+
   public boolean marshalStringNoAllocation() {
-    return MARSHAL_STRING_NO_ALLOCATION;
+    return marshalStringNoAllocation;
+  }
+
+  public boolean marshalStringUnsafe() {
+    return marshalStringUnsafe;
   }
 
   public void addSize(int size) {
@@ -187,15 +202,30 @@ public final class MarshalerContext {
     listPool.reset();
   }
 
-  private final Map<Object, Object> instanceMap = new HashMap<>();
+  private static final AtomicInteger KEY_INDEX = new AtomicInteger();
 
-  /** Returns cached instance produced by the given supplier. */
+  public static class Key {
+    final int index = KEY_INDEX.getAndIncrement();
+  }
+
+  public static Key key() {
+    return new Key();
+  }
+
+  private Object[] instances = new Object[16];
+
   @SuppressWarnings("unchecked")
-  public <T> T getInstance(Object key, Supplier<T> supplier) {
-    T result = (T) instanceMap.get(key);
+  public <T> T getInstance(Key key, Supplier<T> supplier) {
+    if (key.index >= instances.length) {
+      Object[] newData = new Object[instances.length * 2];
+      System.arraycopy(instances, 0, newData, 0, instances.length);
+      instances = newData;
+    }
+
+    T result = (T) instances[key.index];
     if (result == null) {
       result = supplier.get();
-      instanceMap.put(key, result);
+      instances[key.index] = result;
     }
     return result;
   }

@@ -37,7 +37,8 @@ public final class MarshalerUtil {
       CodedOutputStream.computeLengthDelimitedFieldSize(TraceId.getLength() / 2);
   private static final int SPAN_ID_VALUE_SIZE =
       CodedOutputStream.computeLengthDelimitedFieldSize(SpanId.getLength() / 2);
-  private static final Object ATTRIBUTES_SIZE_CALCULATOR_KEY = new Object();
+  private static final MarshalerContext.Key GROUPER_KEY = MarshalerContext.key();
+  private static final MarshalerContext.Key ATTRIBUTES_SIZE_CALCULATOR_KEY = MarshalerContext.key();
 
   private static final boolean JSON_AVAILABLE;
 
@@ -83,7 +84,7 @@ public final class MarshalerUtil {
       MarshalerContext context) {
     Map<Resource, Map<InstrumentationScopeInfo, List<T>>> result = context.getIdentityMap();
 
-    Grouper<T> grouper = context.getInstance(Grouper.class, Grouper::new);
+    Grouper<T> grouper = context.getInstance(GROUPER_KEY, Grouper::new);
     grouper.initialize(result, getResource, getInstrumentationScope, context);
     dataList.forEach(grouper);
 
@@ -270,12 +271,17 @@ public final class MarshalerUtil {
   }
 
   /** Returns the size of a repeated message field. */
+  @SuppressWarnings("unchecked")
   public static <T> int sizeRepeatedMessage(
       ProtoFieldInfo field,
       Collection<? extends T> messages,
       StatelessMarshaler<T> marshaler,
       MarshalerContext context,
-      Object key) {
+      MarshalerContext.Key key) {
+    if (messages instanceof List) {
+      return sizeRepeatedMessage(field, (List<T>) messages, marshaler, context);
+    }
+
     if (messages.isEmpty()) {
       return 0;
     }
@@ -294,7 +300,7 @@ public final class MarshalerUtil {
       Map<K, V> messages,
       StatelessMarshaler2<K, V> marshaler,
       MarshalerContext context,
-      Object key) {
+      MarshalerContext.Key key) {
     if (messages.isEmpty()) {
       return 0;
     }
@@ -537,11 +543,11 @@ public final class MarshalerUtil {
       return sizeBytes(field, 0);
     }
     if (context.marshalStringNoAllocation()) {
-      int utf8Size = MarshalerUtil.getUtf8Size(value);
+      int utf8Size = getUtf8Size(value, context);
       context.addSize(utf8Size);
       return sizeBytes(field, utf8Size);
     } else {
-      byte[] valueUtf8 = MarshalerUtil.toBytes(value);
+      byte[] valueUtf8 = toBytes(value);
       context.addData(valueUtf8);
       return sizeBytes(field, valueUtf8.length);
     }
@@ -556,72 +562,179 @@ public final class MarshalerUtil {
   }
 
   /** Returns the size of utf8 encoded string in bytes. */
+  private static int getUtf8Size(String string, MarshalerContext context) {
+    return getUtf8Size(string, context.marshalStringUnsafe());
+  }
+
   // Visible for testing
-  static int getUtf8Size(String string) {
-    int size = 0;
-    for (int i = 0; i < string.length(); i++) {
-      char c = string.charAt(i);
-      if (c < 0x80) {
-        // 1 byte, 7 bits
-        size += 1;
-      } else if (c < 0x800) {
-        // 2 bytes, 11 bits
-        size += 2;
-      } else if (!Character.isSurrogate(c)) {
-        // 3 bytes, 16 bits
-        size += 3;
-      } else {
-        // 4 bytes, 21 bits
-        if (Character.isHighSurrogate(c) && i + 1 < string.length()) {
-          char d = string.charAt(i + 1);
-          if (Character.isLowSurrogate(d)) {
-            i += 1;
-            size += 4;
-            continue;
-          }
-        }
-        // invalid characters are replaced with ?
-        size += 1;
+  static int getUtf8Size(String string, boolean useUnsafe) {
+    if (useUnsafe && UnsafeString.isAvailable() && UnsafeString.isLatin1(string)) {
+      byte[] bytes = UnsafeString.getBytes(string);
+      // latin1 bytes with negative value (most significant bit set) are encoded as 2 bytes in utf8
+      return string.length() + countNegative(bytes);
+    }
+
+    return encodedUtf8Length(string);
+  }
+
+  private static int countNegative(byte[] bytes) {
+    int count = 0;
+    int offset = 0;
+    // We are processing one long (8 bytes) at a time. In the inner loop we are keeping counts in a
+    // long where each byte in the long is a separate counter. Due to this the inner loop can
+    // process a maximum of 8*255 bytes at a time without overflow.
+    for (int i = 1; i <= bytes.length / (8 * 255) + 1; i++) {
+      long tmp = 0; // each byte in this long is a separate counter
+      int limit = Math.min(i * 8 * 255, bytes.length & ~7);
+      for (; offset < limit; offset += 8) {
+        long value = UnsafeString.getLong(bytes, offset);
+        // Mask the value keeping only the most significant bit in each byte and then shift this bit
+        // to the position of the least significant bit in each byte. If the input byte was not
+        // negative then after this transformation it will be zero, if it was negative then it will
+        // be one.
+        tmp += (value & 0x8080808080808080L) >>> 7;
+      }
+      // sum up counts
+      for (int j = 0; j < 8; j++) {
+        count += (int) (tmp & 0xff);
+        tmp = tmp >>> 8;
       }
     }
 
-    return size;
+    // handle remaining bytes
+    for (int i = offset; i < bytes.length; i++) {
+      // same as if (bytes[i] < 0) count++;
+      count += bytes[i] >>> 31;
+    }
+    return count;
+  }
+
+  // adapted from
+  // https://github.com/protocolbuffers/protobuf/blob/b618f6750aed641a23d5f26fbbaf654668846d24/java/core/src/main/java/com/google/protobuf/Utf8.java#L217
+  private static int encodedUtf8Length(String string) {
+    // Warning to maintainers: this implementation is highly optimized.
+    int utf16Length = string.length();
+    int utf8Length = utf16Length;
+    int i = 0;
+
+    // This loop optimizes for pure ASCII.
+    while (i < utf16Length && string.charAt(i) < 0x80) {
+      i++;
+    }
+
+    // This loop optimizes for chars less than 0x800.
+    for (; i < utf16Length; i++) {
+      char c = string.charAt(i);
+      if (c < 0x800) {
+        utf8Length += ((0x7f - c) >>> 31); // branch free!
+      } else {
+        utf8Length += encodedUtf8LengthGeneral(string, i);
+        break;
+      }
+    }
+
+    if (utf8Length < utf16Length) {
+      // Necessary and sufficient condition for overflow because of maximum 3x expansion
+      throw new IllegalArgumentException(
+          "UTF-8 length does not fit in int: " + (utf8Length + (1L << 32)));
+    }
+
+    return utf8Length;
+  }
+
+  // adapted from
+  // https://github.com/protocolbuffers/protobuf/blob/b618f6750aed641a23d5f26fbbaf654668846d24/java/core/src/main/java/com/google/protobuf/Utf8.java#L247
+  private static int encodedUtf8LengthGeneral(String string, int start) {
+    int utf16Length = string.length();
+    int utf8Length = 0;
+    for (int i = start; i < utf16Length; i++) {
+      char c = string.charAt(i);
+      if (c < 0x800) {
+        utf8Length += (0x7f - c) >>> 31; // branch free!
+      } else {
+        utf8Length += 2;
+        if (Character.isSurrogate(c)) {
+          // Check that we have a well-formed surrogate pair.
+          if (Character.codePointAt(string, i) != c) {
+            i++;
+          } else {
+            // invalid sequence
+            // At this point we have accumulated 3 byes of length (2 in this method and 1 in caller)
+            // for current character, reduce the length to 1 bytes as we are going to encode the
+            // invalid character as ?
+            utf8Length -= 2;
+          }
+        }
+      }
+    }
+
+    return utf8Length;
   }
 
   /** Write utf8 encoded string to output stream. */
-  public static void writeUtf8(CodedOutputStream output, String string) throws IOException {
-    for (int i = 0; i < string.length(); i++) {
-      char c = string.charAt(i);
+  static void writeUtf8(
+      CodedOutputStream output, String string, int utf8Length, MarshalerContext context)
+      throws IOException {
+    writeUtf8(output, string, utf8Length, context.marshalStringUnsafe());
+  }
+
+  // Visible for testing
+  static void writeUtf8(CodedOutputStream output, String string, int utf8Length, boolean useUnsafe)
+      throws IOException {
+    // if the length of the latin1 string and the utf8 output are the same then the string must be
+    // composed of only 7bit characters and can be directly copied to the output
+    if (useUnsafe
+        && UnsafeString.isAvailable()
+        && string.length() == utf8Length
+        && UnsafeString.isLatin1(string)) {
+      byte[] bytes = UnsafeString.getBytes(string);
+      output.write(bytes, 0, bytes.length);
+    } else {
+      encodeUtf8(output, string);
+    }
+  }
+
+  // encode utf8 the same way as length is computed in encodedUtf8Length
+  // adapted from
+  // https://github.com/protocolbuffers/protobuf/blob/b618f6750aed641a23d5f26fbbaf654668846d24/java/core/src/main/java/com/google/protobuf/Utf8.java#L1016
+  private static void encodeUtf8(CodedOutputStream output, String in) throws IOException {
+    int utf16Length = in.length();
+    int i = 0;
+    // Designed to take advantage of
+    // https://wiki.openjdk.java.net/display/HotSpotInternals/RangeCheckElimination
+    for (char c; i < utf16Length && (c = in.charAt(i)) < 0x80; i++) {
+      output.write((byte) c);
+    }
+    if (i == utf16Length) {
+      return;
+    }
+
+    for (char c; i < utf16Length; i++) {
+      c = in.charAt(i);
       if (c < 0x80) {
         // 1 byte, 7 bits
         output.write((byte) c);
-      } else if (c < 0x800) {
-        // 2 bytes, 11 bits
-        output.write((byte) (0xc0 | (c >> 6)));
-        output.write((byte) (0x80 | (c & 0x3f)));
+      } else if (c < 0x800) { // 11 bits, two UTF-8 bytes
+        output.write((byte) ((0xF << 6) | (c >>> 6)));
+        output.write((byte) (0x80 | (0x3F & c)));
       } else if (!Character.isSurrogate(c)) {
-        // 3 bytes, 16 bits
-        output.write((byte) (0xe0 | (c >> 12)));
-        output.write((byte) (0x80 | ((c >> 6) & 0x3f)));
-        output.write((byte) (0x80 | (c & 0x3f)));
+        // Maximum single-char code point is 0xFFFF, 16 bits, three UTF-8 bytes
+        output.write((byte) ((0xF << 5) | (c >>> 12)));
+        output.write((byte) (0x80 | (0x3F & (c >>> 6))));
+        output.write((byte) (0x80 | (0x3F & c)));
       } else {
-        // 4 bytes, 21 bits
-        int codePoint = -1;
-        if (Character.isHighSurrogate(c) && i + 1 < string.length()) {
-          char d = string.charAt(i + 1);
-          if (Character.isLowSurrogate(d)) {
-            codePoint = Character.toCodePoint(c, d);
-          }
-        }
-        // invalid character
-        if (codePoint == -1) {
-          output.write((byte) '?');
-        } else {
-          output.write((byte) (0xf0 | (codePoint >> 18)));
-          output.write((byte) (0x80 | ((codePoint >> 12) & 0x3f)));
-          output.write((byte) (0x80 | ((codePoint >> 6) & 0x3f)));
-          output.write((byte) (0x80 | (codePoint & 0x3f)));
+        // Minimum code point represented by a surrogate pair is 0x10000, 17 bits,
+        // four UTF-8 bytes
+        int codePoint = Character.codePointAt(in, i);
+        if (codePoint != c) {
+          output.write((byte) ((0xF << 4) | (codePoint >>> 18)));
+          output.write((byte) (0x80 | (0x3F & (codePoint >>> 12))));
+          output.write((byte) (0x80 | (0x3F & (codePoint >>> 6))));
+          output.write((byte) (0x80 | (0x3F & codePoint)));
           i++;
+        } else {
+          // invalid sequence
+          output.write((byte) '?');
         }
       }
     }
