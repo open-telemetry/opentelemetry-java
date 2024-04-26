@@ -41,10 +41,34 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   }
 
   @Override
+  protected void writeTraceId(ProtoFieldInfo field, String traceId, MarshalerContext context)
+      throws IOException {
+    byte[] traceIdBytes = idCache.get(traceId);
+    if (traceIdBytes == null) {
+      traceIdBytes = context.getTraceIdBuffer();
+      OtelEncodingUtils.bytesFromBase16(traceId, TraceId.getLength(), traceIdBytes);
+      idCache.put(traceId, traceIdBytes);
+    }
+    writeBytes(field, traceIdBytes);
+  }
+
+  @Override
   protected void writeSpanId(ProtoFieldInfo field, String spanId) throws IOException {
     byte[] spanIdBytes =
         idCache.computeIfAbsent(
             spanId, id -> OtelEncodingUtils.bytesFromBase16(id, SpanId.getLength()));
+    writeBytes(field, spanIdBytes);
+  }
+
+  @Override
+  protected void writeSpanId(ProtoFieldInfo field, String spanId, MarshalerContext context)
+      throws IOException {
+    byte[] spanIdBytes = idCache.get(spanId);
+    if (spanIdBytes == null) {
+      spanIdBytes = context.getSpanIdBuffer();
+      OtelEncodingUtils.bytesFromBase16(spanId, SpanId.getLength(), spanIdBytes);
+      idCache.put(spanId, spanIdBytes);
+    }
     writeBytes(field, spanIdBytes);
   }
 
@@ -123,6 +147,16 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   }
 
   @Override
+  public void writeString(
+      ProtoFieldInfo field, String string, int utf8Length, MarshalerContext context)
+      throws IOException {
+    output.writeUInt32NoTag(field.getTag());
+    output.writeUInt32NoTag(utf8Length);
+
+    MarshalerUtil.writeUtf8(output, string, utf8Length, context);
+  }
+
+  @Override
   public void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
     output.writeUInt32NoTag(field.getTag());
     output.writeByteArrayNoTag(value);
@@ -177,6 +211,42 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
     for (Marshaler message : repeatedMessage) {
       serializeMessage(field, message);
     }
+  }
+
+  @Override
+  public <T> void serializeRepeatedMessage(
+      ProtoFieldInfo field,
+      List<? extends T> messages,
+      StatelessMarshaler<T> marshaler,
+      MarshalerContext context)
+      throws IOException {
+    for (int i = 0; i < messages.size(); i++) {
+      T message = messages.get(i);
+      writeStartMessage(field, context.getSize());
+      marshaler.writeTo(this, message, context);
+      writeEndMessage();
+    }
+  }
+
+  @Override
+  protected void writeStartRepeated(ProtoFieldInfo field) {
+    // Do nothing
+  }
+
+  @Override
+  protected void writeEndRepeated() {
+    // Do nothing
+  }
+
+  @Override
+  protected void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
+      throws IOException {
+    writeStartMessage(field, protoMessageSize);
+  }
+
+  @Override
+  protected void writeEndRepeatedElement() {
+    writeEndMessage();
   }
 
   @Override

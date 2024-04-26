@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
+import io.opentelemetry.exporter.internal.otlp.traces.LowAllocationTraceRequestMarshaler;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -24,29 +25,72 @@ import org.openjdk.jmh.annotations.Warmup;
 @Fork(1)
 public class RequestMarshalBenchmarks {
 
+  private static final LowAllocationTraceRequestMarshaler MARSHALER =
+      new LowAllocationTraceRequestMarshaler();
+  private static final TestOutputStream OUTPUT = new TestOutputStream();
+
   @Benchmark
   @Threads(1)
-  public TestOutputStream createCustomMarshal(RequestMarshalState state) {
+  public int createCustomMarshal(RequestMarshalState state) {
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
-    return new TestOutputStream(requestMarshaler.getBinarySerializedSize());
+    return requestMarshaler.getBinarySerializedSize();
   }
 
   @Benchmark
   @Threads(1)
-  public TestOutputStream marshalCustom(RequestMarshalState state) throws IOException {
+  public int marshalCustom(RequestMarshalState state) throws IOException {
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
-    TestOutputStream customOutput =
-        new TestOutputStream(requestMarshaler.getBinarySerializedSize());
-    requestMarshaler.writeBinaryTo(customOutput);
-    return customOutput;
+    OUTPUT.reset(requestMarshaler.getBinarySerializedSize());
+    requestMarshaler.writeBinaryTo(OUTPUT);
+    return OUTPUT.getCount();
   }
 
   @Benchmark
   @Threads(1)
-  public TestOutputStream marshalJson(RequestMarshalState state) throws IOException {
+  public int marshalJson(RequestMarshalState state) throws IOException {
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
-    TestOutputStream customOutput = new TestOutputStream();
-    requestMarshaler.writeJsonTo(customOutput);
-    return customOutput;
+    OUTPUT.reset();
+    requestMarshaler.writeJsonTo(OUTPUT);
+    return OUTPUT.getCount();
+  }
+
+  @Benchmark
+  @Threads(1)
+  public int createCustomMarshalLowAllocation(RequestMarshalState state) {
+    LowAllocationTraceRequestMarshaler requestMarshaler = MARSHALER;
+    requestMarshaler.initialize(state.spanDataList);
+    try {
+      return requestMarshaler.getBinarySerializedSize();
+    } finally {
+      requestMarshaler.reset();
+    }
+  }
+
+  @Benchmark
+  @Threads(1)
+  public int marshalCustomLowAllocation(RequestMarshalState state) throws IOException {
+    LowAllocationTraceRequestMarshaler requestMarshaler = MARSHALER;
+    requestMarshaler.initialize(state.spanDataList);
+    try {
+      OUTPUT.reset();
+      requestMarshaler.writeBinaryTo(OUTPUT);
+      return OUTPUT.getCount();
+    } finally {
+      requestMarshaler.reset();
+    }
+  }
+
+  @Benchmark
+  @Threads(1)
+  public int marshalJsonLowAllocation(RequestMarshalState state) throws IOException {
+    LowAllocationTraceRequestMarshaler requestMarshaler = MARSHALER;
+    requestMarshaler.initialize(state.spanDataList);
+    try {
+      OUTPUT.reset();
+      requestMarshaler.writeJsonTo(OUTPUT);
+      return OUTPUT.getCount();
+    } finally {
+      requestMarshaler.reset();
+    }
   }
 }

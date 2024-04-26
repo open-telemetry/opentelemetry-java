@@ -109,6 +109,14 @@ final class JsonSerializer extends Serializer {
   }
 
   @Override
+  public void writeString(
+      ProtoFieldInfo field, String string, int utf8Length, MarshalerContext context)
+      throws IOException {
+    generator.writeFieldName(field.getJsonName());
+    generator.writeString(string);
+  }
+
+  @Override
   public void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
     generator.writeBinaryField(field.getJsonName(), value);
   }
@@ -163,6 +171,44 @@ final class JsonSerializer extends Serializer {
       writeMessageValue(marshaler);
     }
     generator.writeEndArray();
+  }
+
+  @Override
+  public <T> void serializeRepeatedMessage(
+      ProtoFieldInfo field,
+      List<? extends T> messages,
+      StatelessMarshaler<T> marshaler,
+      MarshalerContext context)
+      throws IOException {
+    generator.writeArrayFieldStart(field.getJsonName());
+    for (int i = 0; i < messages.size(); i++) {
+      T message = messages.get(i);
+      generator.writeStartObject();
+      marshaler.writeTo(this, message, context);
+      generator.writeEndObject();
+    }
+    generator.writeEndArray();
+  }
+
+  @Override
+  protected void writeStartRepeated(ProtoFieldInfo field) throws IOException {
+    generator.writeArrayFieldStart(field.getJsonName());
+  }
+
+  @Override
+  protected void writeEndRepeated() throws IOException {
+    generator.writeEndArray();
+  }
+
+  @Override
+  protected void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
+      throws IOException {
+    generator.writeStartObject();
+  }
+
+  @Override
+  protected void writeEndRepeatedElement() throws IOException {
+    generator.writeEndObject();
   }
 
   // Not a field.

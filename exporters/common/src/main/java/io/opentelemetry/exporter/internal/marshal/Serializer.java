@@ -5,9 +5,15 @@
 
 package io.opentelemetry.exporter.internal.marshal;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 /**
@@ -23,6 +29,7 @@ import javax.annotation.Nullable;
  * at any time.
  */
 public abstract class Serializer implements AutoCloseable {
+  private static final MarshalerContext.Key ATTRIBUTES_WRITER_KEY = MarshalerContext.key();
 
   Serializer() {}
 
@@ -34,7 +41,20 @@ public abstract class Serializer implements AutoCloseable {
     writeTraceId(field, traceId);
   }
 
+  public void serializeTraceId(
+      ProtoFieldInfo field, @Nullable String traceId, MarshalerContext context) throws IOException {
+    if (traceId == null) {
+      return;
+    }
+    writeTraceId(field, traceId, context);
+  }
+
   protected abstract void writeTraceId(ProtoFieldInfo field, String traceId) throws IOException;
+
+  protected void writeTraceId(ProtoFieldInfo field, String traceId, MarshalerContext context)
+      throws IOException {
+    writeTraceId(field, traceId);
+  }
 
   /** Serializes a span ID field. */
   public void serializeSpanId(ProtoFieldInfo field, @Nullable String spanId) throws IOException {
@@ -44,7 +64,20 @@ public abstract class Serializer implements AutoCloseable {
     writeSpanId(field, spanId);
   }
 
+  public void serializeSpanId(
+      ProtoFieldInfo field, @Nullable String spanId, MarshalerContext context) throws IOException {
+    if (spanId == null) {
+      return;
+    }
+    writeSpanId(field, spanId, context);
+  }
+
   protected abstract void writeSpanId(ProtoFieldInfo field, String spanId) throws IOException;
+
+  protected void writeSpanId(ProtoFieldInfo field, String spanId, MarshalerContext context)
+      throws IOException {
+    writeSpanId(field, spanId);
+  }
 
   /** Serializes a protobuf {@code bool} field. */
   public void serializeBool(ProtoFieldInfo field, boolean value) throws IOException {
@@ -175,8 +208,29 @@ public abstract class Serializer implements AutoCloseable {
     writeString(field, utf8Bytes);
   }
 
+  /**
+   * Serializes a protobuf {@code string} field. {@code string} is the value to be serialized and
+   * {@code utf8Length} is the length of the string after it is encoded in UTF8.
+   */
+  public void serializeString(
+      ProtoFieldInfo field, @Nullable String string, MarshalerContext context) throws IOException {
+    if (string == null || string.isEmpty()) {
+      return;
+    }
+    if (context.marshalStringNoAllocation()) {
+      writeString(field, string, context.getSize(), context);
+    } else {
+      byte[] valueUtf8 = context.getData(byte[].class);
+      writeString(field, valueUtf8);
+    }
+  }
+
   /** Writes a protobuf {@code string} field, even if it matches the default value. */
   public abstract void writeString(ProtoFieldInfo field, byte[] utf8Bytes) throws IOException;
+
+  public abstract void writeString(
+      ProtoFieldInfo field, String string, int utf8Length, MarshalerContext context)
+      throws IOException;
 
   /** Serializes a protobuf {@code bytes} field. */
   public void serializeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
@@ -200,6 +254,26 @@ public abstract class Serializer implements AutoCloseable {
     writeEndMessage();
   }
 
+  public <T> void serializeMessage(
+      ProtoFieldInfo field, T message, StatelessMarshaler<T> marshaler, MarshalerContext context)
+      throws IOException {
+    writeStartMessage(field, context.getSize());
+    marshaler.writeTo(this, message, context);
+    writeEndMessage();
+  }
+
+  public <K, V> void serializeMessage(
+      ProtoFieldInfo field,
+      K key,
+      V value,
+      StatelessMarshaler2<K, V> marshaler,
+      MarshalerContext context)
+      throws IOException {
+    writeStartMessage(field, context.getSize());
+    marshaler.writeTo(this, key, value, context);
+    writeEndMessage();
+  }
+
   @SuppressWarnings("SameParameterValue")
   protected abstract void writeStartRepeatedPrimitive(
       ProtoFieldInfo field, int protoSizePerElement, int numElements) throws IOException;
@@ -217,7 +291,8 @@ public abstract class Serializer implements AutoCloseable {
       return;
     }
     writeStartRepeatedPrimitive(field, WireFormat.FIXED64_SIZE, values.size());
-    for (long value : values) {
+    for (int i = 0; i < values.size(); i++) {
+      Long value = values.get(i);
       writeFixed64Value(value);
     }
     writeEndRepeatedPrimitive();
@@ -286,7 +361,8 @@ public abstract class Serializer implements AutoCloseable {
       return;
     }
     writeStartRepeatedPrimitive(field, WireFormat.FIXED64_SIZE, values.size());
-    for (double value : values) {
+    for (int i = 0; i < values.size(); i++) {
+      Double value = values.get(i);
       writeDoubleValue(value);
     }
     writeEndRepeatedPrimitive();
@@ -300,6 +376,160 @@ public abstract class Serializer implements AutoCloseable {
   /** Serializes {@code repeated message} field. */
   public abstract void serializeRepeatedMessage(
       ProtoFieldInfo field, List<? extends Marshaler> repeatedMessage) throws IOException;
+
+  /** Serializes {@code repeated message} field. */
+  public abstract <T> void serializeRepeatedMessage(
+      ProtoFieldInfo field,
+      List<? extends T> messages,
+      StatelessMarshaler<T> marshaler,
+      MarshalerContext context)
+      throws IOException;
+
+  @SuppressWarnings("unchecked")
+  public <T> void serializeRepeatedMessage(
+      ProtoFieldInfo field,
+      Collection<? extends T> messages,
+      StatelessMarshaler<T> marshaler,
+      MarshalerContext context,
+      MarshalerContext.Key key)
+      throws IOException {
+    if (messages instanceof List) {
+      serializeRepeatedMessage(field, (List<T>) messages, marshaler, context);
+      return;
+    }
+
+    writeStartRepeated(field);
+
+    if (!messages.isEmpty()) {
+      RepeatedElementWriter<T> writer = context.getInstance(key, RepeatedElementWriter::new);
+      writer.initialize(field, this, marshaler, context);
+      messages.forEach(writer);
+    }
+
+    writeEndRepeated();
+  }
+
+  public <K, V> void serializeRepeatedMessage(
+      ProtoFieldInfo field,
+      Map<K, V> messages,
+      StatelessMarshaler2<K, V> marshaler,
+      MarshalerContext context,
+      MarshalerContext.Key key)
+      throws IOException {
+    writeStartRepeated(field);
+
+    if (!messages.isEmpty()) {
+      RepeatedElementPairWriter<K, V> writer =
+          context.getInstance(key, RepeatedElementPairWriter::new);
+      writer.initialize(field, this, marshaler, context);
+      messages.forEach(writer);
+    }
+
+    writeEndRepeated();
+  }
+
+  public void serializeRepeatedMessage(
+      ProtoFieldInfo field,
+      Attributes attributes,
+      StatelessMarshaler2<AttributeKey<?>, Object> marshaler,
+      MarshalerContext context)
+      throws IOException {
+    writeStartRepeated(field);
+
+    if (!attributes.isEmpty()) {
+      RepeatedElementPairWriter<AttributeKey<?>, Object> writer =
+          context.getInstance(ATTRIBUTES_WRITER_KEY, RepeatedElementPairWriter::new);
+      writer.initialize(field, this, marshaler, context);
+      attributes.forEach(writer);
+    }
+
+    writeEndRepeated();
+  }
+
+  private static class RepeatedElementWriter<T> implements Consumer<T> {
+    @SuppressWarnings("NullAway")
+    private ProtoFieldInfo field;
+
+    @SuppressWarnings("NullAway")
+    private Serializer output;
+
+    @SuppressWarnings("NullAway")
+    private StatelessMarshaler<T> marshaler;
+
+    @SuppressWarnings("NullAway")
+    private MarshalerContext context;
+
+    void initialize(
+        ProtoFieldInfo field,
+        Serializer output,
+        StatelessMarshaler<T> marshaler,
+        MarshalerContext context) {
+      this.field = field;
+      this.output = output;
+      this.marshaler = marshaler;
+      this.context = context;
+    }
+
+    @Override
+    public void accept(T element) {
+      try {
+        output.writeStartRepeatedElement(field, context.getSize());
+        marshaler.writeTo(output, element, context);
+        output.writeEndRepeatedElement();
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+  }
+
+  private static class RepeatedElementPairWriter<K, V> implements BiConsumer<K, V> {
+    @SuppressWarnings("NullAway")
+    private ProtoFieldInfo field;
+
+    @SuppressWarnings("NullAway")
+    private Serializer output;
+
+    @SuppressWarnings("NullAway")
+    private StatelessMarshaler2<K, V> marshaler;
+
+    @SuppressWarnings("NullAway")
+    private MarshalerContext context;
+
+    void initialize(
+        ProtoFieldInfo field,
+        Serializer output,
+        StatelessMarshaler2<K, V> marshaler,
+        MarshalerContext context) {
+      this.field = field;
+      this.output = output;
+      this.marshaler = marshaler;
+      this.context = context;
+    }
+
+    @Override
+    public void accept(K key, V value) {
+      try {
+        output.writeStartRepeatedElement(field, context.getSize());
+        marshaler.writeTo(output, key, value, context);
+        output.writeEndRepeatedElement();
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+  }
+
+  /** Writes start of repeated messages. */
+  protected abstract void writeStartRepeated(ProtoFieldInfo field) throws IOException;
+
+  /** Writes end of repeated messages. */
+  protected abstract void writeEndRepeated() throws IOException;
+
+  /** Writes start of a repeated message element. */
+  protected abstract void writeStartRepeatedElement(ProtoFieldInfo field, int protoMessageSize)
+      throws IOException;
+
+  /** Writes end of a repeated message element. */
+  protected abstract void writeEndRepeatedElement() throws IOException;
 
   /** Writes the value for a message field that has been pre-serialized. */
   public abstract void writeSerializedMessage(byte[] protoSerialized, String jsonSerialized)
