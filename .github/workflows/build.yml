@@ -34,15 +34,15 @@ jobs:
             test-java-version: 21
             coverage: true
             jmh-based-tests: true
-    exclude:
-      - os: macos-latest
-        test-java-version: 8
-      - os: macos-13
-        test-java-version: 11
-      - os: macos-13
-        test-java-version: 17
-      - os: macos-13
-        test-java-version: 21
+        exclude:
+          - os: macos-latest
+            test-java-version: 8
+          - os: macos-13
+            test-java-version: 11
+          - os: macos-13
+            test-java-version: 17
+          - os: macos-13
+            test-java-version: 21
     steps:
       - uses: actions/checkout@v4
 
