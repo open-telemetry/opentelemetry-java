@@ -34,6 +34,7 @@ jobs:
             test-java-version: 21
             coverage: true
             jmh-based-tests: true
+        # macos-latest drops support for java 8 temurin. Run java 8 on macos-13. Run java 11, 17, 21 on macos-latest.
         exclude:
           - os: macos-latest
             test-java-version: 8
