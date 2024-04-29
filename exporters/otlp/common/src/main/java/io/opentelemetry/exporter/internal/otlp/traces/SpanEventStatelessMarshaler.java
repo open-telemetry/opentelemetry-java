@@ -23,8 +23,8 @@ final class SpanEventStatelessMarshaler implements StatelessMarshaler<EventData>
   public void writeTo(Serializer output, EventData event, MarshalerContext context)
       throws IOException {
     output.serializeFixed64(Span.Event.TIME_UNIX_NANO, event.getEpochNanos());
-    output.serializeString(Span.Event.NAME, event.getName(), context);
-    output.serializeRepeatedMessage(
+    output.serializeStringWithContext(Span.Event.NAME, event.getName(), context);
+    output.serializeRepeatedMessageWithContext(
         Span.Event.ATTRIBUTES, event.getAttributes(), KeyValueStatelessMarshaler.INSTANCE, context);
     int droppedAttributesCount = event.getTotalAttributeCount() - event.getAttributes().size();
     output.serializeUInt32(Span.Event.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
@@ -34,9 +34,9 @@ final class SpanEventStatelessMarshaler implements StatelessMarshaler<EventData>
   public int getBinarySerializedSize(EventData event, MarshalerContext context) {
     int size = 0;
     size += MarshalerUtil.sizeFixed64(Span.Event.TIME_UNIX_NANO, event.getEpochNanos());
-    size += StatelessMarshalerUtil.sizeString(Span.Event.NAME, event.getName(), context);
+    size += StatelessMarshalerUtil.sizeStringWithContext(Span.Event.NAME, event.getName(), context);
     size +=
-        StatelessMarshalerUtil.sizeRepeatedMessage(
+        StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
             Span.Event.ATTRIBUTES,
             event.getAttributes(),
             KeyValueStatelessMarshaler.INSTANCE,

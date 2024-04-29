@@ -56,7 +56,7 @@ public final class LowAllocationTraceRequestMarshaler extends Marshaler {
   public void writeTo(Serializer output) throws IOException {
     // serializing can be retried, reset the indexes, so we could call writeTo multiple times
     context.resetReadIndex();
-    output.serializeRepeatedMessage(
+    output.serializeRepeatedMessageWithContext(
         ExportTraceServiceRequest.RESOURCE_SPANS,
         resourceAndScopeMap,
         ResourceSpansStatelessMarshaler.INSTANCE,
@@ -67,7 +67,7 @@ public final class LowAllocationTraceRequestMarshaler extends Marshaler {
   private static int calculateSize(
       MarshalerContext context,
       Map<Resource, Map<InstrumentationScopeInfo, List<SpanData>>> resourceAndScopeMap) {
-    return StatelessMarshalerUtil.sizeRepeatedMessage(
+    return StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
         ExportTraceServiceRequest.RESOURCE_SPANS,
         resourceAndScopeMap,
         ResourceSpansStatelessMarshaler.INSTANCE,

@@ -39,9 +39,9 @@ public final class KeyValueStatelessMarshaler
       byte[] keyUtf8 = ((InternalAttributeKeyImpl<?>) attributeKey).getKeyUtf8();
       output.serializeString(KeyValue.KEY, keyUtf8);
     } else {
-      output.serializeString(KeyValue.KEY, attributeKey.getKey(), context);
+      output.serializeStringWithContext(KeyValue.KEY, attributeKey.getKey(), context);
     }
-    output.serializeMessage(
+    output.serializeMessageWithContext(
         KeyValue.VALUE, attributeKey, value, ValueStatelessMarshaler.INSTANCE, context);
   }
 
@@ -54,11 +54,12 @@ public final class KeyValueStatelessMarshaler
         byte[] keyUtf8 = ((InternalAttributeKeyImpl<?>) attributeKey).getKeyUtf8();
         size += MarshalerUtil.sizeBytes(KeyValue.KEY, keyUtf8);
       } else {
-        return StatelessMarshalerUtil.sizeString(KeyValue.KEY, attributeKey.getKey(), context);
+        return StatelessMarshalerUtil.sizeStringWithContext(
+            KeyValue.KEY, attributeKey.getKey(), context);
       }
     }
     size +=
-        StatelessMarshalerUtil.sizeMessage(
+        StatelessMarshalerUtil.sizeMessageWithContext(
             KeyValue.VALUE, attributeKey, value, ValueStatelessMarshaler.INSTANCE, context);
 
     return size;
@@ -90,7 +91,7 @@ public final class KeyValueStatelessMarshaler
         case LONG_ARRAY:
         case BOOLEAN_ARRAY:
         case DOUBLE_ARRAY:
-          return StatelessMarshalerUtil.sizeMessage(
+          return StatelessMarshalerUtil.sizeMessageWithContext(
               AnyValue.ARRAY_VALUE,
               attributeType,
               (List<Object>) value,
@@ -125,7 +126,7 @@ public final class KeyValueStatelessMarshaler
         case LONG_ARRAY:
         case BOOLEAN_ARRAY:
         case DOUBLE_ARRAY:
-          output.serializeMessage(
+          output.serializeMessageWithContext(
               AnyValue.ARRAY_VALUE,
               attributeType,
               (List<Object>) value,

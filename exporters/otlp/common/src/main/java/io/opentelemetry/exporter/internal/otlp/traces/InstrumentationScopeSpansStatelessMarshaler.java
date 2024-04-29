@@ -34,9 +34,10 @@ final class InstrumentationScopeSpansStatelessMarshaler
         context.getData(InstrumentationScopeMarshaler.class);
 
     output.serializeMessage(ScopeSpans.SCOPE, instrumentationScopeMarshaler);
-    output.serializeRepeatedMessage(
+    output.serializeRepeatedMessageWithContext(
         ScopeSpans.SPANS, spans, SpanStatelessMarshaler.INSTANCE, context);
-    output.serializeString(ScopeSpans.SCHEMA_URL, instrumentationScope.getSchemaUrl(), context);
+    output.serializeStringWithContext(
+        ScopeSpans.SCHEMA_URL, instrumentationScope.getSchemaUrl(), context);
   }
 
   @Override
@@ -51,10 +52,10 @@ final class InstrumentationScopeSpansStatelessMarshaler
     int size = 0;
     size += MarshalerUtil.sizeMessage(ScopeSpans.SCOPE, instrumentationScopeMarshaler);
     size +=
-        StatelessMarshalerUtil.sizeRepeatedMessage(
+        StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
             ScopeSpans.SPANS, spans, SpanStatelessMarshaler.INSTANCE, context);
     size +=
-        StatelessMarshalerUtil.sizeString(
+        StatelessMarshalerUtil.sizeStringWithContext(
             ScopeSpans.SCHEMA_URL, instrumentationScope.getSchemaUrl(), context);
 
     return size;

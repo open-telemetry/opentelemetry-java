@@ -41,14 +41,14 @@ public final class ResourceSpansStatelessMarshaler
     ResourceMarshaler resourceMarshaler = context.getData(ResourceMarshaler.class);
     output.serializeMessage(ResourceSpans.RESOURCE, resourceMarshaler);
 
-    output.serializeRepeatedMessage(
+    output.serializeRepeatedMessageWithContext(
         ResourceSpans.SCOPE_SPANS,
         scopeMap,
         InstrumentationScopeSpansStatelessMarshaler.INSTANCE,
         context,
         SCOPE_SPAN_WRITER_KEY);
 
-    output.serializeString(ResourceSpans.SCHEMA_URL, resource.getSchemaUrl(), context);
+    output.serializeStringWithContext(ResourceSpans.SCHEMA_URL, resource.getSchemaUrl(), context);
   }
 
   @Override
@@ -64,7 +64,7 @@ public final class ResourceSpansStatelessMarshaler
     size += MarshalerUtil.sizeMessage(ResourceSpans.RESOURCE, resourceMarshaler);
 
     size +=
-        StatelessMarshalerUtil.sizeRepeatedMessage(
+        StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
             ResourceSpans.SCOPE_SPANS,
             scopeMap,
             InstrumentationScopeSpansStatelessMarshaler.INSTANCE,
@@ -72,7 +72,7 @@ public final class ResourceSpansStatelessMarshaler
             SCOPE_SPAN_SIZE_CALCULATOR_KEY);
 
     size +=
-        StatelessMarshalerUtil.sizeString(
+        StatelessMarshalerUtil.sizeStringWithContext(
             ResourceSpans.SCHEMA_URL, resource.getSchemaUrl(), context);
 
     return size;

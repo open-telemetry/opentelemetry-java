@@ -85,8 +85,11 @@ public final class StatelessMarshalerUtil {
     }
   }
 
-  /** Returns the size of a string field. */
-  public static int sizeString(
+  /**
+   * Returns the size of a string field. This method adds elements to context, use together with
+   * {@link Serializer#serializeStringWithContext(ProtoFieldInfo, String, MarshalerContext)}.
+   */
+  public static int sizeStringWithContext(
       ProtoFieldInfo field, @Nullable String value, MarshalerContext context) {
     if (value == null || value.isEmpty()) {
       return sizeBytes(field, 0);
@@ -103,15 +106,19 @@ public final class StatelessMarshalerUtil {
   }
 
   /** Returns the size of a bytes field. */
-  public static int sizeBytes(ProtoFieldInfo field, int length) {
+  private static int sizeBytes(ProtoFieldInfo field, int length) {
     if (length == 0) {
       return 0;
     }
     return field.getTagSize() + CodedOutputStream.computeLengthDelimitedFieldSize(length);
   }
 
-  /** Returns the size of a repeated message field. */
-  public static <T> int sizeRepeatedMessage(
+  /**
+   * Returns the size of a repeated message field. This method adds elements to context, use
+   * together with {@link Serializer#serializeRepeatedMessageWithContext(ProtoFieldInfo, List,
+   * StatelessMarshaler, MarshalerContext)}.
+   */
+  public static <T> int sizeRepeatedMessageWithContext(
       ProtoFieldInfo field,
       List<? extends T> messages,
       StatelessMarshaler<T> marshaler,
@@ -132,16 +139,20 @@ public final class StatelessMarshalerUtil {
     return size;
   }
 
-  /** Returns the size of a repeated message field. */
+  /**
+   * Returns the size of a repeated message field. This method adds elements to context, use
+   * together with {@link Serializer#serializeRepeatedMessageWithContext(ProtoFieldInfo, Collection,
+   * StatelessMarshaler, MarshalerContext, MarshalerContext.Key)}.
+   */
   @SuppressWarnings("unchecked")
-  public static <T> int sizeRepeatedMessage(
+  public static <T> int sizeRepeatedMessageWithContext(
       ProtoFieldInfo field,
       Collection<? extends T> messages,
       StatelessMarshaler<T> marshaler,
       MarshalerContext context,
       MarshalerContext.Key key) {
     if (messages instanceof List) {
-      return sizeRepeatedMessage(field, (List<T>) messages, marshaler, context);
+      return sizeRepeatedMessageWithContext(field, (List<T>) messages, marshaler, context);
     }
 
     if (messages.isEmpty()) {
@@ -156,8 +167,12 @@ public final class StatelessMarshalerUtil {
     return sizeCalculator.size;
   }
 
-  /** Returns the size of a repeated message field. */
-  public static <K, V> int sizeRepeatedMessage(
+  /**
+   * Returns the size of a repeated message field. This method adds elements to context, use
+   * together with {@link Serializer#serializeRepeatedMessageWithContext(ProtoFieldInfo, Map,
+   * StatelessMarshaler2, MarshalerContext, MarshalerContext.Key)}.
+   */
+  public static <K, V> int sizeRepeatedMessageWithContext(
       ProtoFieldInfo field,
       Map<K, V> messages,
       StatelessMarshaler2<K, V> marshaler,
@@ -175,8 +190,12 @@ public final class StatelessMarshalerUtil {
     return sizeCalculator.size;
   }
 
-  /** Returns the size of a repeated message field. */
-  public static int sizeRepeatedMessage(
+  /**
+   * Returns the size of a repeated message field. This method adds elements to context, use
+   * together with {@link Serializer#serializeRepeatedMessageWithContext(ProtoFieldInfo, Attributes,
+   * StatelessMarshaler2, MarshalerContext)}.
+   */
+  public static int sizeRepeatedMessageWithContext(
       ProtoFieldInfo field,
       Attributes attributes,
       StatelessMarshaler2<AttributeKey<?>, Object> marshaler,
@@ -247,8 +266,12 @@ public final class StatelessMarshalerUtil {
     }
   }
 
-  /** Returns the size of a message field. */
-  public static <T> int sizeMessage(
+  /**
+   * Returns the size of a message field. This method adds elements to context, use together with
+   * {@link Serializer#serializeMessageWithContext(ProtoFieldInfo, Object, StatelessMarshaler,
+   * MarshalerContext)}.
+   */
+  public static <T> int sizeMessageWithContext(
       ProtoFieldInfo field, T element, StatelessMarshaler<T> marshaler, MarshalerContext context) {
     int sizeIndex = context.addSize();
     int fieldSize = marshaler.getBinarySerializedSize(element, context);
@@ -257,8 +280,12 @@ public final class StatelessMarshalerUtil {
     return size;
   }
 
-  /** Returns the size of a message field. */
-  public static <K, V> int sizeMessage(
+  /**
+   * Returns the size of a message field. This method adds elements to context, use together with
+   * {@link Serializer#serializeMessageWithContext(ProtoFieldInfo, Object, Object,
+   * StatelessMarshaler2, MarshalerContext)}.
+   */
+  public static <K, V> int sizeMessageWithContext(
       ProtoFieldInfo field,
       K key,
       V value,

@@ -15,7 +15,7 @@ import java.util.Random;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
-class MarshalerUtilTest {
+class StatelessMarshalerUtilTest {
 
   @Test
   @SuppressWarnings("AvoidEscapedUnicodeCharacters")

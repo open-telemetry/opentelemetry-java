@@ -210,9 +210,11 @@ public abstract class Serializer implements AutoCloseable {
 
   /**
    * Serializes a protobuf {@code string} field. {@code string} is the value to be serialized and
-   * {@code utf8Length} is the length of the string after it is encoded in UTF8.
+   * {@code utf8Length} is the length of the string after it is encoded in UTF8. This method reads
+   * elements from context, use together with {@link
+   * StatelessMarshalerUtil#sizeStringWithContext(ProtoFieldInfo, String, MarshalerContext)}.
    */
-  public void serializeString(
+  public void serializeStringWithContext(
       ProtoFieldInfo field, @Nullable String string, MarshalerContext context) throws IOException {
     if (string == null || string.isEmpty()) {
       return;
@@ -254,7 +256,12 @@ public abstract class Serializer implements AutoCloseable {
     writeEndMessage();
   }
 
-  public <T> void serializeMessage(
+  /**
+   * Serializes a protobuf embedded {@code message}. This method adds elements to context, use
+   * together with {@link StatelessMarshalerUtil#sizeMessageWithContext(ProtoFieldInfo, Object,
+   * StatelessMarshaler, MarshalerContext)}.
+   */
+  public <T> void serializeMessageWithContext(
       ProtoFieldInfo field, T message, StatelessMarshaler<T> marshaler, MarshalerContext context)
       throws IOException {
     writeStartMessage(field, context.getSize());
@@ -262,7 +269,12 @@ public abstract class Serializer implements AutoCloseable {
     writeEndMessage();
   }
 
-  public <K, V> void serializeMessage(
+  /**
+   * Serializes a protobuf embedded {@code message}. This method adds elements to context, use
+   * together with {@link StatelessMarshalerUtil#sizeMessageWithContext(ProtoFieldInfo, Object,
+   * Object, StatelessMarshaler2, MarshalerContext)}.
+   */
+  public <K, V> void serializeMessageWithContext(
       ProtoFieldInfo field,
       K key,
       V value,
@@ -377,16 +389,25 @@ public abstract class Serializer implements AutoCloseable {
   public abstract void serializeRepeatedMessage(
       ProtoFieldInfo field, List<? extends Marshaler> repeatedMessage) throws IOException;
 
-  /** Serializes {@code repeated message} field. */
-  public abstract <T> void serializeRepeatedMessage(
+  /**
+   * Serializes {@code repeated message} field. This method reads elements from context, use
+   * together with {@link StatelessMarshalerUtil#sizeRepeatedMessageWithContext(ProtoFieldInfo,
+   * List, StatelessMarshaler, MarshalerContext)}.
+   */
+  public abstract <T> void serializeRepeatedMessageWithContext(
       ProtoFieldInfo field,
       List<? extends T> messages,
       StatelessMarshaler<T> marshaler,
       MarshalerContext context)
       throws IOException;
 
+  /**
+   * Serializes {@code repeated message} field. This method reads elements from context, use
+   * together with {@link StatelessMarshalerUtil#sizeRepeatedMessageWithContext(ProtoFieldInfo,
+   * Collection, StatelessMarshaler, MarshalerContext, MarshalerContext.Key)}.
+   */
   @SuppressWarnings("unchecked")
-  public <T> void serializeRepeatedMessage(
+  public <T> void serializeRepeatedMessageWithContext(
       ProtoFieldInfo field,
       Collection<? extends T> messages,
       StatelessMarshaler<T> marshaler,
@@ -394,7 +415,7 @@ public abstract class Serializer implements AutoCloseable {
       MarshalerContext.Key key)
       throws IOException {
     if (messages instanceof List) {
-      serializeRepeatedMessage(field, (List<T>) messages, marshaler, context);
+      serializeRepeatedMessageWithContext(field, (List<T>) messages, marshaler, context);
       return;
     }
 
@@ -409,7 +430,12 @@ public abstract class Serializer implements AutoCloseable {
     writeEndRepeated();
   }
 
-  public <K, V> void serializeRepeatedMessage(
+  /**
+   * Serializes {@code repeated message} field. This method reads elements from context, use
+   * together with {@link StatelessMarshalerUtil#sizeRepeatedMessageWithContext(ProtoFieldInfo, Map,
+   * StatelessMarshaler2, MarshalerContext, MarshalerContext.Key)}.
+   */
+  public <K, V> void serializeRepeatedMessageWithContext(
       ProtoFieldInfo field,
       Map<K, V> messages,
       StatelessMarshaler2<K, V> marshaler,
@@ -428,7 +454,12 @@ public abstract class Serializer implements AutoCloseable {
     writeEndRepeated();
   }
 
-  public void serializeRepeatedMessage(
+  /**
+   * Serializes {@code repeated message} field. This method reads elements from context, use
+   * together with {@link StatelessMarshalerUtil#sizeRepeatedMessageWithContext(ProtoFieldInfo,
+   * Attributes, StatelessMarshaler2, MarshalerContext)}.
+   */
+  public void serializeRepeatedMessageWithContext(
       ProtoFieldInfo field,
       Attributes attributes,
       StatelessMarshaler2<AttributeKey<?>, Object> marshaler,

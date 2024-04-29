@@ -214,7 +214,7 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   }
 
   @Override
-  public <T> void serializeRepeatedMessage(
+  public <T> void serializeRepeatedMessageWithContext(
       ProtoFieldInfo field,
       List<? extends T> messages,
       StatelessMarshaler<T> marshaler,

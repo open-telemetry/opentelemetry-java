@@ -34,28 +34,28 @@ final class SpanStatelessMarshaler implements StatelessMarshaler<SpanData> {
         span.getParentSpanContext().isValid() ? span.getParentSpanContext().getSpanId() : null;
     output.serializeSpanId(Span.PARENT_SPAN_ID, parentSpanId, context);
 
-    output.serializeString(Span.NAME, span.getName(), context);
+    output.serializeStringWithContext(Span.NAME, span.getName(), context);
     output.serializeEnum(Span.KIND, toProtoSpanKind(span.getKind()));
 
     output.serializeFixed64(Span.START_TIME_UNIX_NANO, span.getStartEpochNanos());
     output.serializeFixed64(Span.END_TIME_UNIX_NANO, span.getEndEpochNanos());
 
-    output.serializeRepeatedMessage(
+    output.serializeRepeatedMessageWithContext(
         Span.ATTRIBUTES, span.getAttributes(), KeyValueStatelessMarshaler.INSTANCE, context);
     int droppedAttributesCount = span.getTotalAttributeCount() - span.getAttributes().size();
     output.serializeUInt32(Span.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
 
-    output.serializeRepeatedMessage(
+    output.serializeRepeatedMessageWithContext(
         Span.EVENTS, span.getEvents(), SpanEventStatelessMarshaler.INSTANCE, context);
     int droppedEventsCount = span.getTotalRecordedEvents() - span.getEvents().size();
     output.serializeUInt32(Span.DROPPED_EVENTS_COUNT, droppedEventsCount);
 
-    output.serializeRepeatedMessage(
+    output.serializeRepeatedMessageWithContext(
         Span.LINKS, span.getLinks(), SpanLinkStatelessMarshaler.INSTANCE, context);
     int droppedLinksCount = span.getTotalRecordedLinks() - span.getLinks().size();
     output.serializeUInt32(Span.DROPPED_LINKS_COUNT, droppedLinksCount);
 
-    output.serializeMessage(
+    output.serializeMessageWithContext(
         Span.STATUS, span.getStatus(), SpanStatusStatelessMarshaler.INSTANCE, context);
 
     output.serializeFixed32(
@@ -78,32 +78,32 @@ final class SpanStatelessMarshaler implements StatelessMarshaler<SpanData> {
         span.getParentSpanContext().isValid() ? span.getParentSpanContext().getSpanId() : null;
     size += MarshalerUtil.sizeSpanId(Span.PARENT_SPAN_ID, parentSpanId);
 
-    size += StatelessMarshalerUtil.sizeString(Span.NAME, span.getName(), context);
+    size += StatelessMarshalerUtil.sizeStringWithContext(Span.NAME, span.getName(), context);
     size += MarshalerUtil.sizeEnum(Span.KIND, toProtoSpanKind(span.getKind()));
 
     size += MarshalerUtil.sizeFixed64(Span.START_TIME_UNIX_NANO, span.getStartEpochNanos());
     size += MarshalerUtil.sizeFixed64(Span.END_TIME_UNIX_NANO, span.getEndEpochNanos());
 
     size +=
-        StatelessMarshalerUtil.sizeRepeatedMessage(
+        StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
             Span.ATTRIBUTES, span.getAttributes(), KeyValueStatelessMarshaler.INSTANCE, context);
     int droppedAttributesCount = span.getTotalAttributeCount() - span.getAttributes().size();
     size += MarshalerUtil.sizeUInt32(Span.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
 
     size +=
-        StatelessMarshalerUtil.sizeRepeatedMessage(
+        StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
             Span.EVENTS, span.getEvents(), SpanEventStatelessMarshaler.INSTANCE, context);
     int droppedEventsCount = span.getTotalRecordedEvents() - span.getEvents().size();
     size += MarshalerUtil.sizeUInt32(Span.DROPPED_EVENTS_COUNT, droppedEventsCount);
 
     size +=
-        StatelessMarshalerUtil.sizeRepeatedMessage(
+        StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
             Span.LINKS, span.getLinks(), SpanLinkStatelessMarshaler.INSTANCE, context);
     int droppedLinksCount = span.getTotalRecordedLinks() - span.getLinks().size();
     size += MarshalerUtil.sizeUInt32(Span.DROPPED_LINKS_COUNT, droppedLinksCount);
 
     size +=
-        StatelessMarshalerUtil.sizeMessage(
+        StatelessMarshalerUtil.sizeMessageWithContext(
             Span.STATUS, span.getStatus(), SpanStatusStatelessMarshaler.INSTANCE, context);
 
     size +=

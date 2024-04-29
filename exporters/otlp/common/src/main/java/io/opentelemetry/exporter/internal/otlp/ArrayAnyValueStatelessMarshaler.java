@@ -27,25 +27,25 @@ final class ArrayAnyValueStatelessMarshaler<T>
       throws IOException {
     switch (type) {
       case STRING_ARRAY:
-        output.serializeRepeatedMessage(
+        output.serializeRepeatedMessageWithContext(
             ArrayValue.VALUES,
             (List<String>) list,
             StringAnyValueStatelessMarshaler.INSTANCE,
             context);
         return;
       case LONG_ARRAY:
-        output.serializeRepeatedMessage(
+        output.serializeRepeatedMessageWithContext(
             ArrayValue.VALUES, (List<Long>) list, IntAnyValueStatelessMarshaler.INSTANCE, context);
         return;
       case BOOLEAN_ARRAY:
-        output.serializeRepeatedMessage(
+        output.serializeRepeatedMessageWithContext(
             ArrayValue.VALUES,
             (List<Boolean>) list,
             BoolAnyValueStatelessMarshaler.INSTANCE,
             context);
         return;
       case DOUBLE_ARRAY:
-        output.serializeRepeatedMessage(
+        output.serializeRepeatedMessageWithContext(
             ArrayValue.VALUES,
             (List<Double>) list,
             DoubleAnyValueStatelessMarshaler.INSTANCE,
@@ -61,22 +61,22 @@ final class ArrayAnyValueStatelessMarshaler<T>
   public int getBinarySerializedSize(AttributeType type, List<T> list, MarshalerContext context) {
     switch (type) {
       case STRING_ARRAY:
-        return StatelessMarshalerUtil.sizeRepeatedMessage(
+        return StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
             ArrayValue.VALUES,
             (List<String>) list,
             StringAnyValueStatelessMarshaler.INSTANCE,
             context);
       case LONG_ARRAY:
-        return StatelessMarshalerUtil.sizeRepeatedMessage(
+        return StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
             ArrayValue.VALUES, (List<Long>) list, IntAnyValueStatelessMarshaler.INSTANCE, context);
       case BOOLEAN_ARRAY:
-        return StatelessMarshalerUtil.sizeRepeatedMessage(
+        return StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
             ArrayValue.VALUES,
             (List<Boolean>) list,
             BoolAnyValueStatelessMarshaler.INSTANCE,
             context);
       case DOUBLE_ARRAY:
-        return StatelessMarshalerUtil.sizeRepeatedMessage(
+        return StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
             ArrayValue.VALUES,
             (List<Double>) list,
             DoubleAnyValueStatelessMarshaler.INSTANCE,

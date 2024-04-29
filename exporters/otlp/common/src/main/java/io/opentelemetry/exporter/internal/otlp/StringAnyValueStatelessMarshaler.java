@@ -24,11 +24,11 @@ final class StringAnyValueStatelessMarshaler implements StatelessMarshaler<Strin
   @Override
   public void writeTo(Serializer output, String value, MarshalerContext context)
       throws IOException {
-    output.serializeString(AnyValue.STRING_VALUE, value, context);
+    output.serializeStringWithContext(AnyValue.STRING_VALUE, value, context);
   }
 
   @Override
   public int getBinarySerializedSize(String value, MarshalerContext context) {
-    return StatelessMarshalerUtil.sizeString(AnyValue.STRING_VALUE, value, context);
+    return StatelessMarshalerUtil.sizeStringWithContext(AnyValue.STRING_VALUE, value, context);
   }
 }
