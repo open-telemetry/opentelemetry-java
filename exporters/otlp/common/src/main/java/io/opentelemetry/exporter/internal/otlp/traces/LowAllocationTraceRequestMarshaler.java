@@ -23,6 +23,20 @@ import java.util.Map;
  * {@link Marshaler} to convert SDK {@link SpanData} to OTLP ExportTraceServiceRequest. See {@link
  * TraceRequestMarshaler}.
  *
+ * <p>Example usage:
+ *
+ * <pre>{@code
+ * void marshal(LowAllocationTraceRequestMarshaler requestMarshaler, OutputStream output,
+ *     List<SpanData> spanList) throws IOException {
+ *   requestMarshaler.initialize(spanList);
+ *   try {
+ *     requestMarshaler.writeBinaryTo(output);
+ *   } finally {
+ *     requestMarshaler.reset();
+ *   }
+ * }
+ * }</pre>
+ *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
