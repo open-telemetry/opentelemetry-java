@@ -164,7 +164,11 @@ final class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
       otelSpanBuilder.setParent(Context.current().with((OpenTelemetrySpanImpl) ocParent));
     }
     if (ocRemoteParentSpanContext != null) {
-      otelSpanBuilder.addLink(SpanConverter.mapSpanContext(ocRemoteParentSpanContext));
+      io.opentelemetry.api.trace.SpanContext spanContext =
+          SpanConverter.mapSpanContext(ocRemoteParentSpanContext, /* isRemoteParent= */ true);
+      otelSpanBuilder.setParent(
+          Context.current().with(io.opentelemetry.api.trace.Span.wrap(spanContext)));
+      otelSpanBuilder.addLink(spanContext);
     }
     if (otelKind != null) {
       otelSpanBuilder.setSpanKind(otelKind);
