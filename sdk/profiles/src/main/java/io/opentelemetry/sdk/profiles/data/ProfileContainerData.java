@@ -38,14 +38,14 @@ public interface ProfileContainerData {
    * UTC on 1 January 1970. This field is semantically required and it is expected that end_time >=
    * start_time.
    */
-  long getStartTimeUnixNano();
+  long getStartEpochNanos();
 
   /**
    * Returns the end time of the profile. Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC
    * on 1 January 1970. This field is semantically required and it is expected that end_time >=
    * start_time.
    */
-  long getEndTimeUnixNano();
+  long getEndEpochNanos();
 
   /**
    * Returns profile-wide attributes. Attribute keys MUST be unique (it is not allowed to have more
@@ -57,11 +57,12 @@ public interface ProfileContainerData {
   Attributes getAttributes();
 
   /**
-   * Returns the number of attributes that were discarded. Attributes can be discarded because their
-   * keys are too long, or because there are too many attributes. If this value is 0, then no
-   * attributes were dropped.
+   * Returns the total number of attributes that were recorded on this profile container.
+   *
+   * <p>This number may be larger than the number of attributes that are attached to this profile
+   * container, if the total number recorded was greater than the configured maximum value.
    */
-  int getDroppedAttributesCount();
+  int getTotalAttributeCount();
 
   /**
    * Returns the format of the original payload. Common values are defined in semantic conventions.
