@@ -7,13 +7,15 @@ package io.opentelemetry.exporter.internal.otlp;
 
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
-import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler2;
+import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
 import io.opentelemetry.proto.common.v1.internal.ArrayValue;
 import java.io.IOException;
 import java.util.List;
 
+/** See {@link ArrayAnyValueMarshaler}. */
+// TODO: add support for List<io.opentelemetry.api.incubator.logs.AnyValue<?>>
 final class ArrayAnyValueStatelessMarshaler<T>
     implements StatelessMarshaler2<AttributeType, List<T>> {
   static final ArrayAnyValueStatelessMarshaler<Object> INSTANCE =
@@ -59,22 +61,22 @@ final class ArrayAnyValueStatelessMarshaler<T>
   public int getBinarySerializedSize(AttributeType type, List<T> list, MarshalerContext context) {
     switch (type) {
       case STRING_ARRAY:
-        return MarshalerUtil.sizeRepeatedMessage(
+        return StatelessMarshalerUtil.sizeRepeatedMessage(
             ArrayValue.VALUES,
             (List<String>) list,
             StringAnyValueStatelessMarshaler.INSTANCE,
             context);
       case LONG_ARRAY:
-        return MarshalerUtil.sizeRepeatedMessage(
+        return StatelessMarshalerUtil.sizeRepeatedMessage(
             ArrayValue.VALUES, (List<Long>) list, IntAnyValueStatelessMarshaler.INSTANCE, context);
       case BOOLEAN_ARRAY:
-        return MarshalerUtil.sizeRepeatedMessage(
+        return StatelessMarshalerUtil.sizeRepeatedMessage(
             ArrayValue.VALUES,
             (List<Boolean>) list,
             BoolAnyValueStatelessMarshaler.INSTANCE,
             context);
       case DOUBLE_ARRAY:
-        return MarshalerUtil.sizeRepeatedMessage(
+        return StatelessMarshalerUtil.sizeRepeatedMessage(
             ArrayValue.VALUES,
             (List<Double>) list,
             DoubleAnyValueStatelessMarshaler.INSTANCE,

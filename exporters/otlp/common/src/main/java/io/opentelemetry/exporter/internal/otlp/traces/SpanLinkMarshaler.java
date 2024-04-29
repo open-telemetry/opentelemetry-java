@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp.traces;
 
-import static io.opentelemetry.api.trace.propagation.internal.W3CTraceContextEncoding.encodeTraceState;
+import static io.opentelemetry.exporter.internal.otlp.traces.SpanMarshaler.encodeTraceState;
 
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
@@ -16,12 +16,11 @@ import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
 import io.opentelemetry.proto.trace.v1.internal.Span;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 final class SpanLinkMarshaler extends MarshalerWithSize {
   private static final SpanLinkMarshaler[] EMPTY = new SpanLinkMarshaler[0];
-  private static final byte[] EMPTY_BYTES = new byte[0];
+
   private final String traceId;
   private final String spanId;
   private final byte[] traceStateUtf8;
@@ -46,11 +45,7 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
 
   // Visible for testing
   static SpanLinkMarshaler create(LinkData link) {
-    TraceState traceState = link.getSpanContext().getTraceState();
-    byte[] traceStateUtf8 =
-        traceState.isEmpty()
-            ? EMPTY_BYTES
-            : encodeTraceState(traceState).getBytes(StandardCharsets.UTF_8);
+    byte[] traceStateUtf8 = encodeSpanLinkTraceState(link);
 
     return new SpanLinkMarshaler(
         link.getSpanContext().getTraceId(),
@@ -117,5 +112,10 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
         MarshalerUtil.sizeFixed32(
             Span.Link.FLAGS, SpanFlags.withParentIsRemoteFlags(flags, isLinkContextRemote));
     return size;
+  }
+
+  static byte[] encodeSpanLinkTraceState(LinkData link) {
+    TraceState traceState = link.getSpanContext().getTraceState();
+    return encodeTraceState(traceState);
   }
 }

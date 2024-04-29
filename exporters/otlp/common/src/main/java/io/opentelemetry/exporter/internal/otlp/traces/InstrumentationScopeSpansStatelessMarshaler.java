@@ -9,6 +9,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler2;
+import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
 import io.opentelemetry.exporter.internal.otlp.InstrumentationScopeMarshaler;
 import io.opentelemetry.proto.trace.v1.internal.ScopeSpans;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -16,6 +17,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
 import java.util.List;
 
+/** See {@link InstrumentationScopeSpansMarshaler}. */
 final class InstrumentationScopeSpansStatelessMarshaler
     implements StatelessMarshaler2<InstrumentationScopeInfo, List<SpanData>> {
   static final InstrumentationScopeSpansStatelessMarshaler INSTANCE =
@@ -49,10 +51,10 @@ final class InstrumentationScopeSpansStatelessMarshaler
     int size = 0;
     size += MarshalerUtil.sizeMessage(ScopeSpans.SCOPE, instrumentationScopeMarshaler);
     size +=
-        MarshalerUtil.sizeRepeatedMessage(
+        StatelessMarshalerUtil.sizeRepeatedMessage(
             ScopeSpans.SPANS, spans, SpanStatelessMarshaler.INSTANCE, context);
     size +=
-        MarshalerUtil.sizeString(
+        StatelessMarshalerUtil.sizeString(
             ScopeSpans.SCHEMA_URL, instrumentationScope.getSchemaUrl(), context);
 
     return size;

@@ -5,22 +5,21 @@
 
 package io.opentelemetry.exporter.internal.otlp.traces;
 
-import static io.opentelemetry.api.trace.propagation.internal.W3CTraceContextEncoding.encodeTraceState;
+import static io.opentelemetry.exporter.internal.otlp.traces.SpanLinkMarshaler.encodeSpanLinkTraceState;
 
-import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
+import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
 import io.opentelemetry.exporter.internal.otlp.KeyValueStatelessMarshaler;
 import io.opentelemetry.proto.trace.v1.internal.Span;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
+/** See {@link SpanLinkMarshaler}. */
 final class SpanLinkStatelessMarshaler implements StatelessMarshaler<LinkData> {
   static final SpanLinkStatelessMarshaler INSTANCE = new SpanLinkStatelessMarshaler();
-  private static final byte[] EMPTY_BYTES = new byte[0];
 
   @Override
   public void writeTo(Serializer output, LinkData link, MarshalerContext context)
@@ -40,11 +39,7 @@ final class SpanLinkStatelessMarshaler implements StatelessMarshaler<LinkData> {
 
   @Override
   public int getBinarySerializedSize(LinkData link, MarshalerContext context) {
-    TraceState traceState = link.getSpanContext().getTraceState();
-    byte[] traceStateUtf8 =
-        traceState.isEmpty()
-            ? EMPTY_BYTES
-            : encodeTraceState(traceState).getBytes(StandardCharsets.UTF_8);
+    byte[] traceStateUtf8 = encodeSpanLinkTraceState(link);
     context.addData(traceStateUtf8);
 
     int size = 0;
@@ -52,7 +47,7 @@ final class SpanLinkStatelessMarshaler implements StatelessMarshaler<LinkData> {
     size += MarshalerUtil.sizeSpanId(Span.Link.SPAN_ID, link.getSpanContext().getSpanId());
     size += MarshalerUtil.sizeBytes(Span.Link.TRACE_STATE, traceStateUtf8);
     size +=
-        MarshalerUtil.sizeRepeatedMessage(
+        StatelessMarshalerUtil.sizeRepeatedMessage(
             Span.Link.ATTRIBUTES,
             link.getAttributes(),
             KeyValueStatelessMarshaler.INSTANCE,

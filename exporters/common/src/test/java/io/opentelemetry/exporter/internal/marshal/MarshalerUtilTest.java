@@ -5,8 +5,8 @@
 
 package io.opentelemetry.exporter.internal.marshal;
 
-import static io.opentelemetry.exporter.internal.marshal.MarshalerUtil.getUtf8Size;
-import static io.opentelemetry.exporter.internal.marshal.MarshalerUtil.writeUtf8;
+import static io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil.getUtf8Size;
+import static io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil.writeUtf8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayOutputStream;

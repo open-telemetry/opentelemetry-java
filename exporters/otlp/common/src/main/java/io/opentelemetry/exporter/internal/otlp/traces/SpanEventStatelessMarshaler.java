@@ -9,11 +9,13 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
+import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
 import io.opentelemetry.exporter.internal.otlp.KeyValueStatelessMarshaler;
 import io.opentelemetry.proto.trace.v1.internal.Span;
 import io.opentelemetry.sdk.trace.data.EventData;
 import java.io.IOException;
 
+/** See {@link SpanEventMarshaler}. */
 final class SpanEventStatelessMarshaler implements StatelessMarshaler<EventData> {
   static final SpanEventStatelessMarshaler INSTANCE = new SpanEventStatelessMarshaler();
 
@@ -32,9 +34,9 @@ final class SpanEventStatelessMarshaler implements StatelessMarshaler<EventData>
   public int getBinarySerializedSize(EventData event, MarshalerContext context) {
     int size = 0;
     size += MarshalerUtil.sizeFixed64(Span.Event.TIME_UNIX_NANO, event.getEpochNanos());
-    size += MarshalerUtil.sizeString(Span.Event.NAME, event.getName(), context);
+    size += StatelessMarshalerUtil.sizeString(Span.Event.NAME, event.getName(), context);
     size +=
-        MarshalerUtil.sizeRepeatedMessage(
+        StatelessMarshalerUtil.sizeRepeatedMessage(
             Span.Event.ATTRIBUTES,
             event.getAttributes(),
             KeyValueStatelessMarshaler.INSTANCE,

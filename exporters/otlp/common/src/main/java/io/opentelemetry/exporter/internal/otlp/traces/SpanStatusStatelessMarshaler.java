@@ -5,7 +5,8 @@
 
 package io.opentelemetry.exporter.internal.otlp.traces;
 
-import io.opentelemetry.api.trace.StatusCode;
+import static io.opentelemetry.exporter.internal.otlp.traces.SpanStatusMarshaler.toProtoSpanStatus;
+
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.ProtoEnumInfo;
@@ -15,19 +16,14 @@ import io.opentelemetry.proto.trace.v1.internal.Status;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.io.IOException;
 
+/** See {@link SpanStatusMarshaler}. */
 final class SpanStatusStatelessMarshaler implements StatelessMarshaler<StatusData> {
   static final SpanStatusStatelessMarshaler INSTANCE = new SpanStatusStatelessMarshaler();
 
   @Override
   public void writeTo(Serializer output, StatusData status, MarshalerContext context)
       throws IOException {
-    ProtoEnumInfo protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET;
-    if (status.getStatusCode() == StatusCode.OK) {
-      protoStatusCode = Status.StatusCode.STATUS_CODE_OK;
-    } else if (status.getStatusCode() == StatusCode.ERROR) {
-      protoStatusCode = Status.StatusCode.STATUS_CODE_ERROR;
-    }
-
+    ProtoEnumInfo protoStatusCode = toProtoSpanStatus(status);
     byte[] descriptionUtf8 = context.getData(byte[].class);
 
     output.serializeString(Status.MESSAGE, descriptionUtf8);
@@ -36,12 +32,7 @@ final class SpanStatusStatelessMarshaler implements StatelessMarshaler<StatusDat
 
   @Override
   public int getBinarySerializedSize(StatusData status, MarshalerContext context) {
-    ProtoEnumInfo protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET;
-    if (status.getStatusCode() == StatusCode.OK) {
-      protoStatusCode = Status.StatusCode.STATUS_CODE_OK;
-    } else if (status.getStatusCode() == StatusCode.ERROR) {
-      protoStatusCode = Status.StatusCode.STATUS_CODE_ERROR;
-    }
+    ProtoEnumInfo protoStatusCode = toProtoSpanStatus(status);
     byte[] descriptionUtf8 = MarshalerUtil.toBytes(status.getDescription());
     context.addData(descriptionUtf8);
 

@@ -12,13 +12,14 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler2;
+import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
 import io.opentelemetry.proto.common.v1.internal.AnyValue;
 import io.opentelemetry.proto.common.v1.internal.KeyValue;
 import java.io.IOException;
 import java.util.List;
 
 /**
- * A Marshaler of key value pairs.
+ * A Marshaler of key value pairs. See {@link KeyValueMarshaler}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
@@ -53,11 +54,11 @@ public final class KeyValueStatelessMarshaler
         byte[] keyUtf8 = ((InternalAttributeKeyImpl<?>) attributeKey).getKeyUtf8();
         size += MarshalerUtil.sizeBytes(KeyValue.KEY, keyUtf8);
       } else {
-        return MarshalerUtil.sizeString(KeyValue.KEY, attributeKey.getKey(), context);
+        return StatelessMarshalerUtil.sizeString(KeyValue.KEY, attributeKey.getKey(), context);
       }
     }
     size +=
-        MarshalerUtil.sizeMessage(
+        StatelessMarshalerUtil.sizeMessage(
             KeyValue.VALUE, attributeKey, value, ValueStatelessMarshaler.INSTANCE, context);
 
     return size;
@@ -89,7 +90,7 @@ public final class KeyValueStatelessMarshaler
         case LONG_ARRAY:
         case BOOLEAN_ARRAY:
         case DOUBLE_ARRAY:
-          return MarshalerUtil.sizeMessage(
+          return StatelessMarshalerUtil.sizeMessage(
               AnyValue.ARRAY_VALUE,
               attributeType,
               (List<Object>) value,

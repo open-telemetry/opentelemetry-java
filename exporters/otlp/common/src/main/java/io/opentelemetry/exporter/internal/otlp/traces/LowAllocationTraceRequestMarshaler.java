@@ -7,8 +7,8 @@ package io.opentelemetry.exporter.internal.otlp.traces;
 
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
-import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
+import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
 import io.opentelemetry.proto.collector.trace.v1.internal.ExportTraceServiceRequest;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -20,12 +20,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * {@link Marshaler} to convert SDK {@link SpanData} to OTLP ExportTraceServiceRequest.
+ * {@link Marshaler} to convert SDK {@link SpanData} to OTLP ExportTraceServiceRequest. See {@link
+ * TraceRequestMarshaler}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-@SuppressWarnings({"UnusedNestedClass", "UnusedVariable", "CheckedExceptionNotThrown"})
 public final class LowAllocationTraceRequestMarshaler extends Marshaler {
   private static final MarshalerContext.Key RESOURCE_SPAN_SIZE_CALCULATOR_KEY =
       MarshalerContext.key();
@@ -67,7 +67,7 @@ public final class LowAllocationTraceRequestMarshaler extends Marshaler {
   private static int calculateSize(
       MarshalerContext context,
       Map<Resource, Map<InstrumentationScopeInfo, List<SpanData>>> resourceAndScopeMap) {
-    return MarshalerUtil.sizeRepeatedMessage(
+    return StatelessMarshalerUtil.sizeRepeatedMessage(
         ExportTraceServiceRequest.RESOURCE_SPANS,
         resourceAndScopeMap,
         ResourceSpansStatelessMarshaler.INSTANCE,
@@ -82,7 +82,7 @@ public final class LowAllocationTraceRequestMarshaler extends Marshaler {
       return Collections.emptyMap();
     }
 
-    return MarshalerUtil.groupByResourceAndScope(
+    return StatelessMarshalerUtil.groupByResourceAndScope(
         spanDataList,
         // TODO(anuraaga): Replace with an internal SdkData type of interface that exposes these
         // two.

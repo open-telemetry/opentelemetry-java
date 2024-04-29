@@ -5,11 +5,10 @@
 
 package io.opentelemetry.exporter.internal.otlp.traces;
 
-import static io.opentelemetry.api.trace.propagation.internal.W3CTraceContextEncoding.encodeTraceState;
-
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.api.trace.propagation.internal.W3CTraceContextEncoding;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.ProtoEnumInfo;
@@ -54,11 +53,7 @@ final class SpanMarshaler extends MarshalerWithSize {
             ? spanData.getParentSpanContext().getSpanId()
             : null;
 
-    TraceState traceState = spanData.getSpanContext().getTraceState();
-    byte[] traceStateUtf8 =
-        traceState.isEmpty()
-            ? EMPTY_BYTES
-            : encodeTraceState(traceState).getBytes(StandardCharsets.UTF_8);
+    byte[] traceStateUtf8 = encodeSpanTraceState(spanData);
 
     return new SpanMarshaler(
         spanData.getSpanContext().getTraceId(),
@@ -225,5 +220,16 @@ final class SpanMarshaler extends MarshalerWithSize {
     }
     // NB: Should not be possible with aligned versions.
     return Span.SpanKind.SPAN_KIND_UNSPECIFIED;
+  }
+
+  static byte[] encodeSpanTraceState(SpanData span) {
+    TraceState traceState = span.getSpanContext().getTraceState();
+    return encodeTraceState(traceState);
+  }
+
+  static byte[] encodeTraceState(TraceState traceState) {
+    return traceState.isEmpty()
+        ? EMPTY_BYTES
+        : W3CTraceContextEncoding.encodeTraceState(traceState).getBytes(StandardCharsets.UTF_8);
   }
 }

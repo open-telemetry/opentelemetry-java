@@ -12,6 +12,7 @@ import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
 import io.opentelemetry.proto.common.v1.internal.AnyValue;
 import java.io.IOException;
 
+/** See {@link DoubleAnyValueMarshaler}. */
 final class DoubleAnyValueStatelessMarshaler implements StatelessMarshaler<Double> {
   static final DoubleAnyValueStatelessMarshaler INSTANCE = new DoubleAnyValueStatelessMarshaler();
 

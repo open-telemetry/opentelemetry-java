@@ -31,14 +31,14 @@ public class RequestMarshalBenchmarks {
 
   @Benchmark
   @Threads(1)
-  public int createCustomMarshal(RequestMarshalState state) {
+  public int createStatefulMarshaler(RequestMarshalState state) {
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
     return requestMarshaler.getBinarySerializedSize();
   }
 
   @Benchmark
   @Threads(1)
-  public int marshalCustom(RequestMarshalState state) throws IOException {
+  public int marshalStatefulBinary(RequestMarshalState state) throws IOException {
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
     OUTPUT.reset(requestMarshaler.getBinarySerializedSize());
     requestMarshaler.writeBinaryTo(OUTPUT);
@@ -47,7 +47,7 @@ public class RequestMarshalBenchmarks {
 
   @Benchmark
   @Threads(1)
-  public int marshalJson(RequestMarshalState state) throws IOException {
+  public int marshalStatefulJson(RequestMarshalState state) throws IOException {
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
     OUTPUT.reset();
     requestMarshaler.writeJsonTo(OUTPUT);
@@ -56,7 +56,7 @@ public class RequestMarshalBenchmarks {
 
   @Benchmark
   @Threads(1)
-  public int createCustomMarshalLowAllocation(RequestMarshalState state) {
+  public int createStatelessMarshaler(RequestMarshalState state) {
     LowAllocationTraceRequestMarshaler requestMarshaler = MARSHALER;
     requestMarshaler.initialize(state.spanDataList);
     try {
@@ -68,7 +68,7 @@ public class RequestMarshalBenchmarks {
 
   @Benchmark
   @Threads(1)
-  public int marshalCustomLowAllocation(RequestMarshalState state) throws IOException {
+  public int marshalStatelessBinary(RequestMarshalState state) throws IOException {
     LowAllocationTraceRequestMarshaler requestMarshaler = MARSHALER;
     requestMarshaler.initialize(state.spanDataList);
     try {
@@ -82,7 +82,7 @@ public class RequestMarshalBenchmarks {
 
   @Benchmark
   @Threads(1)
-  public int marshalJsonLowAllocation(RequestMarshalState state) throws IOException {
+  public int marshalStatelessJson(RequestMarshalState state) throws IOException {
     LowAllocationTraceRequestMarshaler requestMarshaler = MARSHALER;
     requestMarshaler.initialize(state.spanDataList);
     try {
