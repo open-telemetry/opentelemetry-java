@@ -195,6 +195,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
           return result;
         };
 
+    boolean isPlainHttp = "http".equals(endpoint.getScheme());
     GrpcSenderProvider grpcSenderProvider = resolveGrpcSenderProvider();
     GrpcSender<T> grpcSender =
         grpcSenderProvider.createSender(
@@ -207,8 +208,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
             grpcChannel,
             grpcStubFactory,
             retryPolicy,
-            tlsConfigHelper.getSslContext(),
-            tlsConfigHelper.getTrustManager());
+            isPlainHttp ? null : tlsConfigHelper.getSslContext(),
+            isPlainHttp ? null : tlsConfigHelper.getTrustManager());
     LOGGER.log(Level.FINE, "Using GrpcSender: " + grpcSender.getClass().getName());
 
     return new GrpcExporter<>(exporterName, type, grpcSender, meterProviderSupplier);
