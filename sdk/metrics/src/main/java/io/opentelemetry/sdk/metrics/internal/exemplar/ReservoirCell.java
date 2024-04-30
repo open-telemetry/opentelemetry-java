@@ -68,8 +68,8 @@ class ReservoirCell {
 
   private void offerMeasurement(Attributes attributes, Context context) {
     this.attributes = attributes;
-    // Note: It may make sense in the future to attempt to pull this from an active span.
-    this.recordTime = clock.now();
+    // High precision time is not worth the additional performance expense it incurs for exemplars
+    this.recordTime = clock.now(/* highPrecision= */ false);
     Span current = Span.fromContext(context);
     if (current.getSpanContext().isValid()) {
       this.spanContext = current.getSpanContext();
