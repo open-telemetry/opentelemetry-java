@@ -282,8 +282,8 @@ class AutoConfiguredOpenTelemetrySdkTest {
   void builder_addSpanProcessorCustomizer() {
     SpanProcessor mockProcessor1 = Mockito.mock(SpanProcessor.class);
     SpanProcessor mockProcessor2 = Mockito.mock(SpanProcessor.class);
-    doReturn(true).when(mockProcessor2).isStartRequired();
-    doReturn(true).when(mockProcessor2).isEndRequired();
+    when(mockProcessor2.isStartRequired()).thenReturn(true);
+    when(mockProcessor2.isEndRequired()).thenReturn(true);
     Mockito.lenient().doReturn(CompletableResultCode.ofSuccess()).when(mockProcessor2).shutdown();
     Mockito.lenient().when(spanExporter1.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
 
