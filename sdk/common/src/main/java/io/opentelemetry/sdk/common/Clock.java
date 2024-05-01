@@ -46,10 +46,10 @@ public interface Clock {
    * whether the implementation should attempt to resolve higher precision at the potential expense
    * of performance. For example, in java 9+ its sometimes possible to resolve ns precision higher
    * than the ms precision of {@link System#currentTimeMillis()}, but doing so incurs a performance
-   * penalty which some callers may wish to avoid. In contrast, we don't currently know of resolving
-   * ns precision in java 8, regardless of the value of {@code highPrecision}.
+   * penalty which some callers may wish to avoid. In contrast, we don't currently know if resolving
+   * ns precision is possible in java 8, regardless of the value of {@code highPrecision}.
    *
-   * <p>See {@link #now()} javadoc for details on usage
+   * <p>See {@link #now()} javadoc for details on usage.
    */
   default long now(boolean highPrecision) {
     return now();

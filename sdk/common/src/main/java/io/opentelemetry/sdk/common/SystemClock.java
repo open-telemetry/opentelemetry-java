@@ -27,7 +27,7 @@ final class SystemClock implements Clock {
 
   @Override
   public long now() {
-    return JavaVersionSpecific.get().currentTimeNanos();
+    return now(true);
   }
 
   @Override
