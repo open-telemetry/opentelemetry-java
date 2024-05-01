@@ -25,7 +25,7 @@ val DEPENDENCY_BOMS = listOf(
 )
 
 val autoValueVersion = "1.10.4"
-val errorProneVersion = "2.27.0"
+val errorProneVersion = "2.27.1"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
