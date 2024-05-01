@@ -65,4 +65,17 @@ public interface DoubleGaugeBuilder {
   default ObservableDoubleMeasurement buildObserver() {
     return DefaultMeter.getInstance().gaugeBuilder("noop").buildObserver();
   }
+
+  /**
+   * Builds and returns a DoubleGauge instrument with the configuration.
+   *
+   * <p>NOTE: This produces a synchronous gauge which records gauge values as they occur. Most users
+   * will want to instead register an {@link #buildWithCallback(Consumer)} to asynchronously observe
+   * the value of the gauge when metrics are collected.
+   *
+   * @return The DoubleGauge instrument.
+   */
+  default DoubleGauge build() {
+    return DefaultMeter.getInstance().gaugeBuilder("noop").build();
+  }
 }

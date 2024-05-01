@@ -62,4 +62,17 @@ public interface LongGaugeBuilder {
   default ObservableLongMeasurement buildObserver() {
     return DefaultMeter.getInstance().gaugeBuilder("noop").ofLongs().buildObserver();
   }
+
+  /**
+   * Builds and returns a LongGauge instrument with the configuration.
+   *
+   * <p>NOTE: This produces a synchronous gauge which records gauge values as they occur. Most users
+   * will want to instead register an {@link #buildWithCallback(Consumer)} to asynchronously observe
+   * the value of the gauge when metrics are collected.
+   *
+   * @return The LongGauge instrument.
+   */
+  default LongGauge build() {
+    return DefaultMeter.getInstance().gaugeBuilder("noop").ofLongs().build();
+  }
 }

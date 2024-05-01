@@ -28,6 +28,8 @@ class AggregationTemporalitySelectorTest {
         .isEqualTo(AggregationTemporality.CUMULATIVE);
     assertThat(selector.getAggregationTemporality(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
+    assertThat(selector.getAggregationTemporality(InstrumentType.GAUGE))
+        .isEqualTo(AggregationTemporality.CUMULATIVE);
   }
 
   @Test
@@ -45,6 +47,8 @@ class AggregationTemporalitySelectorTest {
         .isEqualTo(AggregationTemporality.CUMULATIVE);
     assertThat(selector.getAggregationTemporality(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
+    assertThat(selector.getAggregationTemporality(InstrumentType.GAUGE))
+        .isEqualTo(AggregationTemporality.DELTA);
   }
 
   @Test
@@ -62,6 +66,8 @@ class AggregationTemporalitySelectorTest {
         .isEqualTo(AggregationTemporality.CUMULATIVE);
     assertThat(selector.getAggregationTemporality(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER))
         .isEqualTo(AggregationTemporality.CUMULATIVE);
+    assertThat(selector.getAggregationTemporality(InstrumentType.GAUGE))
+        .isEqualTo(AggregationTemporality.DELTA);
   }
 
   @Test
@@ -76,7 +82,8 @@ class AggregationTemporalitySelectorTest {
                 + "HISTOGRAM=CUMULATIVE, "
                 + "OBSERVABLE_COUNTER=CUMULATIVE, "
                 + "OBSERVABLE_UP_DOWN_COUNTER=CUMULATIVE, "
-                + "OBSERVABLE_GAUGE=CUMULATIVE"
+                + "OBSERVABLE_GAUGE=CUMULATIVE, "
+                + "GAUGE=CUMULATIVE"
                 + "}");
     assertThat(
             AggregationTemporalitySelector.asString(
@@ -88,7 +95,8 @@ class AggregationTemporalitySelectorTest {
                 + "HISTOGRAM=DELTA, "
                 + "OBSERVABLE_COUNTER=DELTA, "
                 + "OBSERVABLE_UP_DOWN_COUNTER=CUMULATIVE, "
-                + "OBSERVABLE_GAUGE=DELTA"
+                + "OBSERVABLE_GAUGE=DELTA, "
+                + "GAUGE=DELTA"
                 + "}");
   }
 }

@@ -5,3 +5,6 @@ Comparing source compatibility of  against
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) java.lang.String asString(io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector)
+***  MODIFIED ENUM: PUBLIC FINAL io.opentelemetry.sdk.metrics.InstrumentType  (compatible)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.metrics.InstrumentType GAUGE
