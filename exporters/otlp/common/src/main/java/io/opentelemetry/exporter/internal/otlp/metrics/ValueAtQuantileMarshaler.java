@@ -42,7 +42,7 @@ final class ValueAtQuantileMarshaler extends MarshalerWithSize {
     output.serializeDouble(SummaryDataPoint.ValueAtQuantile.VALUE, value);
   }
 
-  private static int calculateSize(double quantile, double value) {
+  static int calculateSize(double quantile, double value) {
     int size = 0;
     size += MarshalerUtil.sizeDouble(SummaryDataPoint.ValueAtQuantile.QUANTILE, quantile);
     size += MarshalerUtil.sizeDouble(SummaryDataPoint.ValueAtQuantile.VALUE, value);

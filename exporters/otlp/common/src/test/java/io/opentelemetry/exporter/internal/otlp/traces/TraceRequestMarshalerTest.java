@@ -536,7 +536,7 @@ class TraceRequestMarshalerTest {
   }
 
   private enum MarshalerSource {
-    MARSHALER {
+    STATEFUL_MARSHALER {
       @Override
       Marshaler create(SpanData spanData) {
         return SpanMarshaler.create(spanData);
@@ -557,7 +557,7 @@ class TraceRequestMarshalerTest {
         return SpanLinkMarshaler.create(linkData);
       }
     },
-    LOW_ALLOCATION_MARSHALER {
+    STATELESS_MARSHALER {
       @Override
       Marshaler create(SpanData spanData) {
         return createMarshaler(SpanStatelessMarshaler.INSTANCE, spanData);
