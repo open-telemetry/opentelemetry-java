@@ -12,6 +12,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.ProtoEnumInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
+import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
 import io.opentelemetry.proto.trace.v1.internal.Status;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.io.IOException;
@@ -24,20 +25,19 @@ final class SpanStatusStatelessMarshaler implements StatelessMarshaler<StatusDat
   public void writeTo(Serializer output, StatusData status, MarshalerContext context)
       throws IOException {
     ProtoEnumInfo protoStatusCode = toProtoSpanStatus(status);
-    byte[] descriptionUtf8 = context.getData(byte[].class);
 
-    output.serializeString(Status.MESSAGE, descriptionUtf8);
+    output.serializeStringWithContext(Status.MESSAGE, status.getDescription(), context);
     output.serializeEnum(Status.CODE, protoStatusCode);
   }
 
   @Override
   public int getBinarySerializedSize(StatusData status, MarshalerContext context) {
     ProtoEnumInfo protoStatusCode = toProtoSpanStatus(status);
-    byte[] descriptionUtf8 = MarshalerUtil.toBytes(status.getDescription());
-    context.addData(descriptionUtf8);
 
     int size = 0;
-    size += MarshalerUtil.sizeBytes(Status.MESSAGE, descriptionUtf8);
+    size +=
+        StatelessMarshalerUtil.sizeStringWithContext(
+            Status.MESSAGE, status.getDescription(), context);
     size += MarshalerUtil.sizeEnum(Status.CODE, protoStatusCode);
 
     return size;
