@@ -127,7 +127,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
    * @return whether the name is valid.
    */
   private static boolean isValidBaggageKey(String name) {
-    return name != null && !name.isEmpty() && StringUtils.isPrintableString(name);
+    return name != null && !name.trim().isEmpty() && StringUtils.isPrintableString(name);
   }
 
   /**
