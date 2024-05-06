@@ -299,14 +299,54 @@ public final class StatelessMarshalerUtil {
   }
 
   /** Returns the size of utf8 encoded string in bytes. */
-  @SuppressWarnings("UnusedVariable")
   private static int getUtf8Size(String string, MarshalerContext context) {
-    return getUtf8Size(string);
+    return getUtf8Size(string, context.marshalStringUnsafe());
   }
 
   // Visible for testing
-  static int getUtf8Size(String string) {
+  static int getUtf8Size(String string, boolean useUnsafe) {
+    if (useUnsafe && UnsafeString.isAvailable() && UnsafeString.isLatin1(string)) {
+      byte[] bytes = UnsafeString.getBytes(string);
+      // latin1 bytes with negative value (most significant bit set) are encoded as 2 bytes in utf8
+      return string.length() + countNegative(bytes);
+    }
+
     return encodedUtf8Length(string);
+  }
+
+  /** Returns the count of bytes with negative value. */
+  private static int countNegative(byte[] bytes) {
+    int count = 0;
+    int offset = 0;
+    // We are processing one long (8 bytes) at a time. In the inner loop we are keeping counts in a
+    // long where each byte in the long is a separate counter. Due to this the inner loop can
+    // process a maximum of 8*255 bytes at a time without overflow.
+    for (int i = 1; i <= bytes.length / (8 * 255) + 1; i++) {
+      long tmp = 0; // each byte in this long is a separate counter
+      int limit = Math.min(i * 8 * 255, bytes.length & ~7);
+      for (; offset < limit; offset += 8) {
+        long value = UnsafeString.getLong(bytes, offset);
+        // Mask the value keeping only the most significant bit in each byte and then shift this bit
+        // to the position of the least significant bit in each byte. If the input byte was not
+        // negative then after this transformation it will be zero, if it was negative then it will
+        // be one.
+        tmp += (value & 0x8080808080808080L) >>> 7;
+      }
+      // sum up counts
+      if (tmp != 0) {
+        for (int j = 0; j < 8; j++) {
+          count += (int) (tmp & 0xff);
+          tmp = tmp >>> 8;
+        }
+      }
+    }
+
+    // handle remaining bytes
+    for (int i = offset; i < bytes.length; i++) {
+      // same as if (bytes[i] < 0) count++;
+      count += bytes[i] >>> 31;
+    }
+    return count;
   }
 
   // adapted from
@@ -376,14 +416,24 @@ public final class StatelessMarshalerUtil {
   static void writeUtf8(
       CodedOutputStream output, String string, int utf8Length, MarshalerContext context)
       throws IOException {
-    writeUtf8(output, string, utf8Length);
+    writeUtf8(output, string, utf8Length, context.marshalStringUnsafe());
   }
 
   // Visible for testing
   @SuppressWarnings("UnusedVariable") // utf8Length argument is added for future use
-  static void writeUtf8(CodedOutputStream output, String string, int utf8Length)
+  static void writeUtf8(CodedOutputStream output, String string, int utf8Length, boolean useUnsafe)
       throws IOException {
-    encodeUtf8(output, string);
+    // if the length of the latin1 string and the utf8 output are the same then the string must be
+    // composed of only 7bit characters and can be directly copied to the output
+    if (useUnsafe
+        && UnsafeString.isAvailable()
+        && string.length() == utf8Length
+        && UnsafeString.isLatin1(string)) {
+      byte[] bytes = UnsafeString.getBytes(string);
+      output.write(bytes, 0, bytes.length);
+    } else {
+      encodeUtf8(output, string);
+    }
   }
 
   // encode utf8 the same way as length is computed in encodedUtf8Length

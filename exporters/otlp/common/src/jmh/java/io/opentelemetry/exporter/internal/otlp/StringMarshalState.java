@@ -13,7 +13,7 @@ import org.openjdk.jmh.annotations.State;
 @State(Scope.Benchmark)
 public class StringMarshalState {
 
-  @Param({"16", "512"})
+  @Param("512")
   int stringSize;
 
   String asciiString;

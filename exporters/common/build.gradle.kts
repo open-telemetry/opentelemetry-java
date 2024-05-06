@@ -14,6 +14,7 @@ dependencies {
   api(project(":sdk-extensions:autoconfigure-spi"))
 
   compileOnly(project(":sdk:common"))
+  compileOnly(project(":exporters:common:compile-stub"))
 
   compileOnly("org.codehaus.mojo:animal-sniffer-annotations")
 
