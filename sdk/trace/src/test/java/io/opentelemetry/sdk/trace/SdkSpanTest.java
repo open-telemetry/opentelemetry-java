@@ -15,6 +15,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -913,7 +914,7 @@ class SdkSpanTest {
 
   @Test
   void addLink_InvalidArgs() {
-    ExtendedSpan span = createTestSpan(SpanKind.INTERNAL);
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
     assertThatCode(() -> span.addLink(null)).doesNotThrowAnyException();
     assertThatCode(() -> span.addLink(SpanContext.getInvalid())).doesNotThrowAnyException();
     assertThatCode(() -> span.addLink(null, null)).doesNotThrowAnyException();
@@ -939,7 +940,7 @@ class SdkSpanTest {
             null, // exercises the fault-in path
             0,
             0);
-    ExtendedSpan linkedSpan = createTestSpan(SpanKind.INTERNAL);
+    SdkSpan linkedSpan = createTestSpan(SpanKind.INTERNAL);
     span.addLink(linkedSpan.getSpanContext());
 
     SpanData spanData = span.toSpanData();
