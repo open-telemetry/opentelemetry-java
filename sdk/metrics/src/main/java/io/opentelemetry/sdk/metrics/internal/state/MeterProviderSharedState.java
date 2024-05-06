@@ -21,9 +21,12 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @Immutable
 public abstract class MeterProviderSharedState {
+
   public static MeterProviderSharedState create(
       Clock clock, Resource resource, ExemplarFilter exemplarFilter, long startEpochNanos) {
-    return new AutoValue_MeterProviderSharedState(clock, resource, startEpochNanos, exemplarFilter);
+    MeterProviderSharedState sharedState =
+        new AutoValue_MeterProviderSharedState(clock, resource, startEpochNanos, exemplarFilter);
+    return sharedState;
   }
 
   MeterProviderSharedState() {}

@@ -550,7 +550,7 @@ final class Otel2PrometheusConverter {
 
   private static void putOrMerge(
       Map<String, MetricSnapshot> snapshotsByName, MetricSnapshot snapshot) {
-    String name = snapshot.getMetadata().getName();
+    String name = snapshot.getMetadata().getPrometheusName();
     if (snapshotsByName.containsKey(name)) {
       MetricSnapshot merged = merge(snapshotsByName.get(name), snapshot);
       if (merged != null) {

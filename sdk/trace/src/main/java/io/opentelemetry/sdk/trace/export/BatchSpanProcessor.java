@@ -122,6 +122,15 @@ public final class BatchSpanProcessor implements SpanProcessor {
     return worker.forceFlush();
   }
 
+  /**
+   * Return the processor's configured {@link SpanExporter}.
+   *
+   * @since 1.37.0
+   */
+  public SpanExporter getSpanExporter() {
+    return worker.spanExporter;
+  }
+
   // Visible for testing
   List<SpanData> getBatch() {
     return worker.batch;

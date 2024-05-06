@@ -5,11 +5,11 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
+import io.opentelemetry.api.incubator.logs.KeyAnyValue;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.extension.incubator.logs.KeyAnyValue;
 import io.opentelemetry.proto.common.v1.internal.AnyValue;
 import io.opentelemetry.proto.common.v1.internal.KeyValueList;
 import java.io.IOException;

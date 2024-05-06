@@ -14,6 +14,7 @@ import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import java.io.IOException;
@@ -57,6 +58,7 @@ class PrometheusMetricReaderProviderTest {
                 assertThat(server.getAddress().getHostName()).isEqualTo("0:0:0:0:0:0:0:0");
                 assertThat(server.getAddress().getPort()).isEqualTo(9464);
               });
+      assertThat(metricReader.getMemoryMode()).isEqualTo(MemoryMode.IMMUTABLE_DATA);
     }
   }
 
@@ -73,6 +75,7 @@ class PrometheusMetricReaderProviderTest {
     Map<String, String> config = new HashMap<>();
     config.put("otel.exporter.prometheus.host", "localhost");
     config.put("otel.exporter.prometheus.port", String.valueOf(port));
+    config.put("otel.java.experimental.exporter.memory_mode", "reusable_data");
 
     when(configProperties.getInt(any())).thenReturn(null);
     when(configProperties.getString(any())).thenReturn(null);
@@ -87,6 +90,7 @@ class PrometheusMetricReaderProviderTest {
                 assertThat(server.getAddress().getHostName()).isEqualTo("localhost");
                 assertThat(server.getAddress().getPort()).isEqualTo(port);
               });
+      assertThat(metricReader.getMemoryMode()).isEqualTo(MemoryMode.REUSABLE_DATA);
     }
   }
 }

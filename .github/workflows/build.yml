@@ -21,18 +21,29 @@ jobs:
       matrix:
         os:
           - macos-latest
+          - macos-13
           - ubuntu-latest
         test-java-version:
           - 8
           - 11
           - 17
-          - 20
+          - 21
         # Collect coverage on latest LTS
         include:
           - os: ubuntu-20.04
-            test-java-version: 17
+            test-java-version: 21
             coverage: true
             jmh-based-tests: true
+        # macos-latest drops support for java 8 temurin. Run java 8 on macos-13. Run java 11, 17, 21 on macos-latest.
+        exclude:
+          - os: macos-latest
+            test-java-version: 8
+          - os: macos-13
+            test-java-version: 11
+          - os: macos-13
+            test-java-version: 17
+          - os: macos-13
+            test-java-version: 21
     steps:
       - uses: actions/checkout@v4
 
@@ -50,7 +61,7 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v3
+      - uses: gradle/actions/setup-gradle@v3
         with:
           arguments: |
             build
@@ -123,7 +134,7 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v3
+      - uses: gradle/actions/setup-gradle@v3
         # skipping release branches because the versions in those branches are not snapshots
         # (also this skips pull requests)
         if: ${{ github.ref_name == 'main' && github.repository == 'open-telemetry/opentelemetry-java' }}

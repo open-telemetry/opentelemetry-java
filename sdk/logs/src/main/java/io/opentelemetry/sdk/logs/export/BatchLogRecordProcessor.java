@@ -105,6 +105,15 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     return worker.forceFlush();
   }
 
+  /**
+   * Return the processor's configured {@link LogRecordExporter}.
+   *
+   * @since 1.37.0
+   */
+  public LogRecordExporter getLogRecordExporter() {
+    return worker.logRecordExporter;
+  }
+
   // Visible for testing
   List<LogRecordData> getBatch() {
     return worker.batch;

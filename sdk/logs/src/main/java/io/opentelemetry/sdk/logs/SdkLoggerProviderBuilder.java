@@ -11,11 +11,16 @@ import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -29,6 +34,8 @@ public final class SdkLoggerProviderBuilder {
   private Resource resource = Resource.getDefault();
   private Supplier<LogLimits> logLimitsSupplier = LogLimits::getDefault;
   private Clock clock = Clock.getDefault();
+  private ScopeConfiguratorBuilder<LoggerConfig> loggerConfiguratorBuilder =
+      LoggerConfig.configuratorBuilder();
 
   SdkLoggerProviderBuilder() {}
 
@@ -101,11 +108,46 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
+   * Set the logger configurator, which computes {@link LoggerConfig} for each {@link
+   * InstrumentationScopeInfo}.
+   *
+   * <p>Overrides any matchers added via {@link #addLoggerConfiguratorCondition(Predicate,
+   * LoggerConfig)}.
+   *
+   * @see LoggerConfig#configuratorBuilder()
+   */
+  SdkLoggerProviderBuilder setLoggerConfigurator(
+      ScopeConfigurator<LoggerConfig> loggerConfigurator) {
+    this.loggerConfiguratorBuilder = loggerConfigurator.toBuilder();
+    return this;
+  }
+
+  /**
+   * Adds a condition to the logger configurator, which computes {@link LoggerConfig} for each
+   * {@link InstrumentationScopeInfo}.
+   *
+   * <p>Applies after any previously added conditions.
+   *
+   * <p>If {@link #setLoggerConfigurator(ScopeConfigurator)} was previously called, this condition
+   * will only be applied if the {@link ScopeConfigurator#apply(Object)} returns null for the
+   * matched {@link InstrumentationScopeInfo}(s).
+   *
+   * @see ScopeConfiguratorBuilder#nameEquals(String)
+   * @see ScopeConfiguratorBuilder#nameMatchesGlob(String)
+   */
+  SdkLoggerProviderBuilder addLoggerConfiguratorCondition(
+      Predicate<InstrumentationScopeInfo> scopeMatcher, LoggerConfig loggerConfig) {
+    this.loggerConfiguratorBuilder.addCondition(scopeMatcher, loggerConfig);
+    return this;
+  }
+
+  /**
    * Create a {@link SdkLoggerProvider} instance.
    *
    * @return an instance configured with the provided options
    */
   public SdkLoggerProvider build() {
-    return new SdkLoggerProvider(resource, logLimitsSupplier, logRecordProcessors, clock);
+    return new SdkLoggerProvider(
+        resource, logLimitsSupplier, logRecordProcessors, clock, loggerConfiguratorBuilder.build());
   }
 }

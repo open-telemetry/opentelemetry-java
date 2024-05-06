@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
@@ -111,4 +112,20 @@ public interface ReadableSpan {
    */
   @Nullable
   <T> T getAttribute(AttributeKey<T> key);
+
+  /**
+   * Returns the Span attributes.
+   *
+   * <p>Attributes can be changed during the lifetime of the Span by using {@link
+   * Span#setAttribute}} so this value cannot be cached.
+   *
+   * <p>Note: the implementation of this method performs locking and returns an immutable copy to
+   * ensure thread-safe behavior. If you only need a single attribute it is better to call {@link
+   * #getAttribute(AttributeKey)}.
+   *
+   * @return the Span attributes, or {@link Attributes#empty()} if the span has no attributes.
+   */
+  default Attributes getAttributes() {
+    return Attributes.empty();
+  }
 }

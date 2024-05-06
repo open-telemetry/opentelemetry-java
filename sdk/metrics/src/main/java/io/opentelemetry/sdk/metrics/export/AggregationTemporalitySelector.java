@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import java.util.StringJoiner;
 
 /**
  * A functional interface that selects {@link AggregationTemporality} based on {@link
@@ -76,4 +77,16 @@ public interface AggregationTemporalitySelector {
 
   /** Return the aggregation temporality for the {@link InstrumentType}. */
   AggregationTemporality getAggregationTemporality(InstrumentType instrumentType);
+
+  /**
+   * Returns a string representation of this selector, for using in {@link Object#toString()}
+   * implementations.
+   */
+  static String asString(AggregationTemporalitySelector selector) {
+    StringJoiner joiner = new StringJoiner(", ", "AggregationTemporalitySelector{", "}");
+    for (InstrumentType type : InstrumentType.values()) {
+      joiner.add(type.name() + "=" + selector.getAggregationTemporality(type).name());
+    }
+    return joiner.toString();
+  }
 }

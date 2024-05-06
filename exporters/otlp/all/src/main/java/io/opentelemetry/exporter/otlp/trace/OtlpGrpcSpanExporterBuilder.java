@@ -100,6 +100,8 @@ public final class OtlpGrpcSpanExporterBuilder {
   /**
    * Sets the maximum time to wait for new connections to be established. If unset, defaults to
    * {@value GrpcExporterBuilder#DEFAULT_CONNECT_TIMEOUT_SECS}s.
+   *
+   * @since 1.36.0
    */
   public OtlpGrpcSpanExporterBuilder setConnectTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
@@ -111,6 +113,8 @@ public final class OtlpGrpcSpanExporterBuilder {
   /**
    * Sets the maximum time to wait for new connections to be established. If unset, defaults to
    * {@value GrpcExporterBuilder#DEFAULT_CONNECT_TIMEOUT_SECS}s.
+   *
+   * @since 1.36.0
    */
   public OtlpGrpcSpanExporterBuilder setConnectTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");

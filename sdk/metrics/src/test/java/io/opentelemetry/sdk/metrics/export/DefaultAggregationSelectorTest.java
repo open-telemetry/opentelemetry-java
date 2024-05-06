@@ -61,4 +61,31 @@ class DefaultAggregationSelectorTest {
     assertThat(selector2.getDefaultAggregation(InstrumentType.OBSERVABLE_GAUGE))
         .isEqualTo(Aggregation.defaultAggregation());
   }
+
+  @Test
+  void stringRepresentation() {
+    assertThat(DefaultAggregationSelector.asString(DefaultAggregationSelector.getDefault()))
+        .isEqualTo(
+            "DefaultAggregationSelector{"
+                + "COUNTER=default, "
+                + "UP_DOWN_COUNTER=default, "
+                + "HISTOGRAM=default, "
+                + "OBSERVABLE_COUNTER=default, "
+                + "OBSERVABLE_UP_DOWN_COUNTER=default, "
+                + "OBSERVABLE_GAUGE=default"
+                + "}");
+    assertThat(
+            DefaultAggregationSelector.asString(
+                DefaultAggregationSelector.getDefault()
+                    .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram())))
+        .isEqualTo(
+            "DefaultAggregationSelector{"
+                + "COUNTER=default, "
+                + "UP_DOWN_COUNTER=default, "
+                + "HISTOGRAM=base2_exponential_bucket_histogram, "
+                + "OBSERVABLE_COUNTER=default, "
+                + "OBSERVABLE_UP_DOWN_COUNTER=default, "
+                + "OBSERVABLE_GAUGE=default"
+                + "}");
+  }
 }

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp.logs;
 
+import io.opentelemetry.api.incubator.logs.AnyValue;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -16,7 +17,6 @@ import io.opentelemetry.exporter.internal.marshal.ProtoEnumInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.otlp.AnyValueMarshaler;
 import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
-import io.opentelemetry.extension.incubator.logs.AnyValue;
 import io.opentelemetry.proto.logs.v1.internal.LogRecord;
 import io.opentelemetry.proto.logs.v1.internal.SeverityNumber;
 import io.opentelemetry.sdk.logs.data.Body;

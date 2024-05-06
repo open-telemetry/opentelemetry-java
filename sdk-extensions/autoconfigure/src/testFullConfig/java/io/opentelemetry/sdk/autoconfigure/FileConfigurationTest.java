@@ -19,7 +19,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
-import io.opentelemetry.api.events.GlobalEventEmitterProvider;
+import io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -29,7 +29,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.logs.internal.SdkEventEmitterProvider;
+import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -71,14 +71,14 @@ class FileConfigurationTest {
     configFilePath = tempDir.resolve("otel-config.yaml");
     Files.write(configFilePath, yaml.getBytes(StandardCharsets.UTF_8));
     GlobalOpenTelemetry.resetForTest();
-    GlobalEventEmitterProvider.resetForTest();
+    GlobalEventLoggerProvider.resetForTest();
   }
 
   @Test
   void configFile_Valid() {
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
-            Collections.singletonMap("otel.config.file", configFilePath.toString()));
+            Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
     OpenTelemetrySdk expectedSdk =
         OpenTelemetrySdk.builder()
             .setTracerProvider(
@@ -116,7 +116,7 @@ class FileConfigurationTest {
   void configFile_NoShutdownHook() {
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
-            Collections.singletonMap("otel.config.file", configFilePath.toString()));
+            Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
     AutoConfiguredOpenTelemetrySdkBuilder builder = spy(AutoConfiguredOpenTelemetrySdk.builder());
 
     AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
@@ -131,7 +131,7 @@ class FileConfigurationTest {
     GlobalOpenTelemetry.set(OpenTelemetry.noop());
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
-            Collections.singletonMap("otel.config.file", configFilePath.toString()));
+            Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
 
     AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
         AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).build();
@@ -139,7 +139,7 @@ class FileConfigurationTest {
     cleanup.addCloseable(openTelemetrySdk);
 
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isNotSameAs(openTelemetrySdk);
-    assertThat(GlobalEventEmitterProvider.get())
+    assertThat(GlobalEventLoggerProvider.get())
         .isNotSameAs(openTelemetrySdk.getSdkLoggerProvider());
   }
 
@@ -147,7 +147,7 @@ class FileConfigurationTest {
   void configFile_setResultAsGlobalTrue() {
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
-            Collections.singletonMap("otel.config.file", configFilePath.toString()));
+            Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
 
     AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
         AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).setResultAsGlobal().build();
@@ -155,8 +155,8 @@ class FileConfigurationTest {
     cleanup.addCloseable(openTelemetrySdk);
 
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(openTelemetrySdk);
-    assertThat(GlobalEventEmitterProvider.get())
-        .isInstanceOf(SdkEventEmitterProvider.class)
+    assertThat(GlobalEventLoggerProvider.get())
+        .isInstanceOf(SdkEventLoggerProvider.class)
         .extracting("delegateLoggerProvider")
         .isSameAs(openTelemetrySdk.getSdkLoggerProvider());
   }
@@ -177,7 +177,7 @@ class FileConfigurationTest {
     Files.write(path, yaml.getBytes(StandardCharsets.UTF_8));
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
-            Collections.singletonMap("otel.config.file", path.toString()));
+            Collections.singletonMap("otel.experimental.config.file", path.toString()));
 
     assertThatThrownBy(() -> AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).build())
         .isInstanceOf(ConfigurationException.class)

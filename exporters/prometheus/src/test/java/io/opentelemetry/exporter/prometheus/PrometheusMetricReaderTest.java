@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.prometheus;
 
-import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
@@ -37,9 +36,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -433,7 +435,11 @@ class PrometheusMetricReaderTest {
             + "request_size_bytes_bucket{animal=\"bear\",otel_scope_name=\"test\",le=\"7500.0\"} 2\n"
             + "request_size_bytes_bucket{animal=\"bear\",otel_scope_name=\"test\",le=\"10000.0\"} 2\n"
             + "request_size_bytes_bucket{animal=\"bear\",otel_scope_name=\"test\",le=\"+Inf\"} 2\n"
-            + "request_size_bytes_count{animal=\"bear\",otel_scope_name=\"test\"} 2\n"
+            + "request_size_bytes_count{animal=\"bear\",otel_scope_name=\"test\"} 2 # {span_id=\""
+            + "<spanId>"
+            + "\",trace_id=\""
+            + "<traceId>"
+            + "\"} <measurement> <timestamp>\n"
             + "request_size_bytes_sum{animal=\"bear\",otel_scope_name=\"test\"} 573.0\n"
             + "request_size_bytes_created{animal=\"bear\",otel_scope_name=\"test\"} "
             + createdTimestamp
@@ -458,7 +464,11 @@ class PrometheusMetricReaderTest {
             + "request_size_bytes_bucket{animal=\"mouse\",otel_scope_name=\"test\",le=\"7500.0\"} 1\n"
             + "request_size_bytes_bucket{animal=\"mouse\",otel_scope_name=\"test\",le=\"10000.0\"} 1\n"
             + "request_size_bytes_bucket{animal=\"mouse\",otel_scope_name=\"test\",le=\"+Inf\"} 1\n"
-            + "request_size_bytes_count{animal=\"mouse\",otel_scope_name=\"test\"} 1\n"
+            + "request_size_bytes_count{animal=\"mouse\",otel_scope_name=\"test\"} 1 # {span_id=\""
+            + span3.getSpanContext().getSpanId()
+            + "\",trace_id=\""
+            + span3.getSpanContext().getTraceId()
+            + "\"} 204.0 <timestamp>\n"
             + "request_size_bytes_sum{animal=\"mouse\",otel_scope_name=\"test\"} 204.0\n"
             + "request_size_bytes_created{animal=\"mouse\",otel_scope_name=\"test\"} "
             + createdTimestamp
@@ -1086,14 +1096,49 @@ class PrometheusMetricReaderTest {
    * {@code expected} equals {@code actual} but {@code <timestamp>} matches arbitrary timestamps.
    */
   private static void assertMatches(String expected, String actual) {
-    String[] parts = expected.split(Pattern.quote("<timestamp>"));
-    String timestampRegex = "[0-9]+(\\.[0-9]+)?";
-
-    String regex = Arrays.stream(parts).map(Pattern::quote).collect(joining(timestampRegex));
-
+    String regex = toPattern(expected);
     assertThat(actual)
         .as("Expected: " + expected + "\nActual: " + actual)
         .matches(Pattern.compile(regex));
+  }
+
+  /**
+   * Replace non-deterministic portions of {@code expected} with regex patterns. Other portions are
+   * quoted such that must match exactly. The following sequences are replaced:
+   *
+   * <ul>
+   *   <li>{@code <timestamp>}
+   *   <li>{@code <spanId>}
+   *   <li>{@code <traceId>}
+   *   <li>{@code <measurement>}
+   * </ul>
+   */
+  private static String toPattern(String expected) {
+    Map<String, String> replacePatterns = new HashMap<>();
+    replacePatterns.put("timestamp", "[0-9]+(\\.[0-9]+)?");
+    replacePatterns.put("spanId", "[a-z0-9]*");
+    replacePatterns.put("traceId", "[a-z0-9]*");
+    replacePatterns.put("measurement", "[0-9\\.]*");
+
+    Matcher matcher = Pattern.compile("\\<([a-zA-Z]*)\\>").matcher(expected);
+    if (!matcher.find()) {
+      return Pattern.quote(expected);
+    }
+    int offset = 0;
+    StringBuilder regexBuilder = new StringBuilder();
+    do {
+      MatchResult matchResult = matcher.toMatchResult();
+      String key = matchResult.group(1);
+      String pattern = replacePatterns.getOrDefault(key, key);
+      regexBuilder
+          .append(Pattern.quote(expected.substring(offset, matchResult.start())))
+          .append(pattern);
+      offset = matchResult.end();
+    } while (matcher.find());
+    if (offset != expected.length()) {
+      regexBuilder.append(Pattern.quote(expected.substring(offset)));
+    }
+    return regexBuilder.toString();
   }
 
   private static String toOpenMetrics(MetricSnapshots snapshots) throws IOException {

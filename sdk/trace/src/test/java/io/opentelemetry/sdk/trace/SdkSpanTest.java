@@ -15,7 +15,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -33,7 +32,6 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.extension.incubator.trace.ExtendedSpan;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
@@ -336,6 +334,32 @@ class SdkSpanTest {
     SdkSpan span = createTestSpanWithAttributes(attributes);
     try {
       assertThat(span.getAttribute(longKey("MyLongAttributeKey"))).isEqualTo(123L);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void getAttributes() {
+    SdkSpan span = createTestSpanWithAttributes(attributes);
+    try {
+      assertThat(span.getAttributes())
+          .isEqualTo(
+              Attributes.builder()
+                  .put("MyBooleanAttributeKey", false)
+                  .put("MyStringAttributeKey", "MyStringAttributeValue")
+                  .put("MyLongAttributeKey", 123L)
+                  .build());
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void getAttributes_Empty() {
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
+    try {
+      assertThat(span.getAttributes()).isEqualTo(Attributes.empty());
     } finally {
       span.end();
     }
@@ -821,10 +845,10 @@ class SdkSpanTest {
             null,
             null);
     try {
-      ExtendedSpan span1 = createTestSpan(SpanKind.INTERNAL);
-      ExtendedSpan span2 = createTestSpan(SpanKind.INTERNAL);
-      ExtendedSpan span3 = createTestSpan(SpanKind.INTERNAL);
-      ExtendedSpan span4 = createTestSpan(SpanKind.INTERNAL);
+      Span span1 = createTestSpan(SpanKind.INTERNAL);
+      Span span2 = createTestSpan(SpanKind.INTERNAL);
+      Span span3 = createTestSpan(SpanKind.INTERNAL);
+      Span span4 = createTestSpan(SpanKind.INTERNAL);
 
       span.addLink(span1.getSpanContext());
 

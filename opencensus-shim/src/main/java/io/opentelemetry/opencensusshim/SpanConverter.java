@@ -57,13 +57,22 @@ final class SpanConverter {
   }
 
   static io.opentelemetry.api.trace.SpanContext mapSpanContext(SpanContext ocSpanContext) {
-    return io.opentelemetry.api.trace.SpanContext.create(
-        ocSpanContext.getTraceId().toLowerBase16(),
-        ocSpanContext.getSpanId().toLowerBase16(),
+    return mapSpanContext(ocSpanContext, /* isRemoteParent= */ false);
+  }
+
+  static io.opentelemetry.api.trace.SpanContext mapSpanContext(
+      SpanContext ocSpanContext, boolean isRemoteParent) {
+    String traceId = ocSpanContext.getTraceId().toLowerBase16();
+    String spanId = ocSpanContext.getSpanId().toLowerBase16();
+    TraceFlags traceFlags =
         ocSpanContext.getTraceOptions().isSampled()
             ? TraceFlags.getSampled()
-            : TraceFlags.getDefault(),
-        mapTracestate(ocSpanContext.getTracestate()));
+            : TraceFlags.getDefault();
+    TraceState traceState = mapTracestate(ocSpanContext.getTracestate());
+    return isRemoteParent
+        ? io.opentelemetry.api.trace.SpanContext.createFromRemoteParent(
+            traceId, spanId, traceFlags, traceState)
+        : io.opentelemetry.api.trace.SpanContext.create(traceId, spanId, traceFlags, traceState);
   }
 
   private static TraceState mapTracestate(Tracestate tracestate) {

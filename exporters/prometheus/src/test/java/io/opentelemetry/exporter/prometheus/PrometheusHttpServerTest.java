@@ -24,6 +24,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
@@ -34,18 +35,23 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
+import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import java.util.zip.GZIPInputStream;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.AfterAll;
@@ -124,6 +130,68 @@ class PrometheusHttpServerTest {
                 + "http_name_unit_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
                 + "# TYPE target_info gauge\n"
                 + "target_info{kr=\"vr\"} 1\n");
+  }
+
+  @Test
+  void fetch_ReusableMemoryMode() throws InterruptedException {
+    try (PrometheusHttpServer prometheusServer =
+        PrometheusHttpServer.builder()
+            .setHost("localhost")
+            .setPort(0)
+            .setMemoryMode(MemoryMode.REUSABLE_DATA)
+            .build()) {
+      AtomicBoolean collectInProgress = new AtomicBoolean();
+      AtomicBoolean concurrentRead = new AtomicBoolean();
+      prometheusServer.register(
+          new CollectionRegistration() {
+            @Override
+            public Collection<MetricData> collectAllMetrics() {
+              if (!collectInProgress.compareAndSet(false, true)) {
+                concurrentRead.set(true);
+              }
+              Collection<MetricData> response = metricData.get();
+              try {
+                Thread.sleep(1);
+              } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+              }
+              if (!collectInProgress.compareAndSet(true, false)) {
+                concurrentRead.set(true);
+              }
+              return response;
+            }
+          });
+
+      WebClient client =
+          WebClient.builder("http://localhost:" + prometheusServer.getAddress().getPort())
+              .decorator(RetryingClient.newDecorator(RetryRule.failsafe()))
+              .build();
+
+      // Spin up 4 threads calling /metrics simultaneously. If concurrent read happens,
+      // collectAllMetrics will set concurrentRead to true and the test will fail.
+      List<Thread> threads = new ArrayList<>();
+      for (int i = 0; i < 4; i++) {
+        Thread thread =
+            new Thread(
+                () -> {
+                  for (int j = 0; j < 10; j++) {
+                    AggregatedHttpResponse response = client.get("/metrics").aggregate().join();
+                    assertThat(response.status()).isEqualTo(HttpStatus.OK);
+                  }
+                });
+        thread.setDaemon(true);
+        thread.start();
+        threads.add(thread);
+      }
+
+      // Wait for threads to complete
+      for (Thread thread : threads) {
+        thread.join();
+      }
+
+      // Confirm no concurrent reads took place
+      assertThat(concurrentRead.get()).isFalse();
+    }
   }
 
   @Test
@@ -386,5 +454,34 @@ class PrometheusHttpServerTest {
                 Collections.singletonList(
                     ImmutableDoublePointData.create(
                         123, 456, Attributes.of(stringKey("kp"), "vp"), 3.5)))));
+  }
+
+  @Test
+  void toBuilder() {
+    PrometheusHttpServerBuilder builder = PrometheusHttpServer.builder();
+    builder.setHost("localhost");
+    builder.setPort(1234);
+    builder.setOtelScopeEnabled(false);
+
+    Predicate<String> resourceAttributesFilter = s -> false;
+    builder.setAllowedResourceAttributesFilter(resourceAttributesFilter);
+
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    builder.setExecutor(executor);
+
+    PrometheusRegistry prometheusRegistry = new PrometheusRegistry();
+    builder.setPrometheusRegistry(prometheusRegistry);
+
+    PrometheusHttpServer httpServer = builder.build();
+    PrometheusHttpServerBuilder fromOriginalBuilder = httpServer.toBuilder();
+    httpServer.close();
+    assertThat(fromOriginalBuilder)
+        .isInstanceOf(PrometheusHttpServerBuilder.class)
+        .hasFieldOrPropertyWithValue("host", "localhost")
+        .hasFieldOrPropertyWithValue("port", 1234)
+        .hasFieldOrPropertyWithValue("otelScopeEnabled", false)
+        .hasFieldOrPropertyWithValue("allowedResourceAttributesFilter", resourceAttributesFilter)
+        .hasFieldOrPropertyWithValue("executor", executor)
+        .hasFieldOrPropertyWithValue("prometheusRegistry", prometheusRegistry);
   }
 }

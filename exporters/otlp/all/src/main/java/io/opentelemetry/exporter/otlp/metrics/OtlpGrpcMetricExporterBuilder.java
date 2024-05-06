@@ -16,6 +16,7 @@ import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -46,6 +47,7 @@ public final class OtlpGrpcMetricExporterBuilder {
   private static final long DEFAULT_TIMEOUT_SECS = 10;
   private static final AggregationTemporalitySelector DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR =
       AggregationTemporalitySelector.alwaysCumulative();
+  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
 
   // Visible for testing
   final GrpcExporterBuilder<MetricsRequestMarshaler> delegate;
@@ -55,9 +57,12 @@ public final class OtlpGrpcMetricExporterBuilder {
 
   private DefaultAggregationSelector defaultAggregationSelector =
       DefaultAggregationSelector.getDefault();
+  private MemoryMode memoryMode;
 
-  OtlpGrpcMetricExporterBuilder(GrpcExporterBuilder<MetricsRequestMarshaler> delegate) {
+  OtlpGrpcMetricExporterBuilder(
+      GrpcExporterBuilder<MetricsRequestMarshaler> delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
+    this.memoryMode = memoryMode;
     delegate.setMeterProvider(MeterProvider::noop);
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeader);
   }
@@ -70,7 +75,8 @@ public final class OtlpGrpcMetricExporterBuilder {
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerMetricsServiceGrpc::newFutureStub,
-            GRPC_ENDPOINT_PATH));
+            GRPC_ENDPOINT_PATH),
+        DEFAULT_MEMORY_MODE);
   }
 
   /**
@@ -116,6 +122,8 @@ public final class OtlpGrpcMetricExporterBuilder {
   /**
    * Sets the maximum time to wait for new connections to be established. If unset, defaults to
    * {@value GrpcExporterBuilder#DEFAULT_CONNECT_TIMEOUT_SECS}s.
+   *
+   * @since 1.36.0
    */
   public OtlpGrpcMetricExporterBuilder setConnectTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
@@ -127,6 +135,8 @@ public final class OtlpGrpcMetricExporterBuilder {
   /**
    * Sets the maximum time to wait for new connections to be established. If unset, defaults to
    * {@value GrpcExporterBuilder#DEFAULT_CONNECT_TIMEOUT_SECS}s.
+   *
+   * @since 1.36.0
    */
   public OtlpGrpcMetricExporterBuilder setConnectTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
@@ -255,6 +265,13 @@ public final class OtlpGrpcMetricExporterBuilder {
     return this;
   }
 
+  /** Set the {@link MemoryMode}. */
+  OtlpGrpcMetricExporterBuilder setMemoryMode(MemoryMode memoryMode) {
+    requireNonNull(memoryMode, "memoryMode");
+    this.memoryMode = memoryMode;
+    return this;
+  }
+
   /**
    * Constructs a new instance of the exporter based on the builder's values.
    *
@@ -262,6 +279,10 @@ public final class OtlpGrpcMetricExporterBuilder {
    */
   public OtlpGrpcMetricExporter build() {
     return new OtlpGrpcMetricExporter(
-        delegate, delegate.build(), aggregationTemporalitySelector, defaultAggregationSelector);
+        delegate,
+        delegate.build(),
+        aggregationTemporalitySelector,
+        defaultAggregationSelector,
+        memoryMode);
   }
 }

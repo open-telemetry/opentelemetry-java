@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -28,11 +29,11 @@ public class SpiHelperTest {
 
   @Test
   public void canRetrieveByName() {
-    SpiHelper.SpiFinder mockFinder = mock(SpiHelper.SpiFinder.class);
-    when(mockFinder.load(any(), any()))
+    ComponentLoader mockLoader = spy(ComponentLoader.class);
+    when(mockLoader.load(any()))
         .thenReturn(Collections.singletonList(new SpiExampleProviderImplementation()));
 
-    SpiHelper spiHelper = new SpiHelper(SpiHelperTest.class.getClassLoader(), mockFinder);
+    SpiHelper spiHelper = SpiHelper.create(mockLoader);
 
     NamedSpiManager<SpiExample> spiProvider =
         spiHelper.loadConfigurable(
@@ -49,10 +50,10 @@ public class SpiHelperTest {
   public void instantiatesImplementationsLazily() {
     SpiExampleProvider mockProvider = mock(SpiExampleProvider.class);
     when(mockProvider.getName()).thenReturn("lazy-init-example");
-    SpiHelper.SpiFinder mockFinder = mock(SpiHelper.SpiFinder.class);
-    when(mockFinder.load(any(), any())).thenReturn(Collections.singletonList(mockProvider));
+    ComponentLoader mockLoader = spy(ComponentLoader.class);
+    when(mockLoader.load(any())).thenReturn(Collections.singletonList(mockProvider));
 
-    SpiHelper spiHelper = new SpiHelper(SpiHelperTest.class.getClassLoader(), mockFinder);
+    SpiHelper spiHelper = SpiHelper.create(mockLoader);
 
     NamedSpiManager<SpiExample> spiProvider =
         spiHelper.loadConfigurable(
@@ -68,11 +69,11 @@ public class SpiHelperTest {
 
   @Test
   public void onlyInstantiatesOnce() {
-    SpiHelper.SpiFinder mockFinder = mock(SpiHelper.SpiFinder.class);
-    when(mockFinder.load(any(), any()))
+    ComponentLoader mockLoader = mock(ComponentLoader.class);
+    when(mockLoader.load(any()))
         .thenReturn(Collections.singletonList(new SpiExampleProviderImplementation()));
 
-    SpiHelper spiHelper = new SpiHelper(SpiHelperTest.class.getClassLoader(), mockFinder);
+    SpiHelper spiHelper = SpiHelper.create(mockLoader);
 
     NamedSpiManager<SpiExample> spiProvider =
         spiHelper.loadConfigurable(
@@ -93,10 +94,10 @@ public class SpiHelperTest {
     when(mockProvider.getName()).thenReturn("init-failure-example");
     when(mockProvider.createSpiExample(any())).thenThrow(new RuntimeException());
 
-    SpiHelper.SpiFinder mockFinder = mock(SpiHelper.SpiFinder.class);
-    when(mockFinder.load(any(), any())).thenReturn(Collections.singletonList(mockProvider));
+    ComponentLoader mockLoader = spy(ComponentLoader.class);
+    when(mockLoader.load(any())).thenReturn(Collections.singletonList(mockProvider));
 
-    SpiHelper spiHelper = new SpiHelper(SpiHelperTest.class.getClassLoader(), mockFinder);
+    SpiHelper spiHelper = SpiHelper.create(mockLoader);
 
     NamedSpiManager<SpiExample> spiProvider =
         spiHelper.loadConfigurable(
@@ -120,11 +121,10 @@ public class SpiHelperTest {
     when(spi2.order()).thenReturn(0);
     when(spi3.order()).thenReturn(1);
 
-    SpiHelper.SpiFinder mockFinder = mock(SpiHelper.SpiFinder.class);
-    when(mockFinder.load(ResourceProvider.class, SpiHelper.class.getClassLoader()))
-        .thenReturn(asList(spi1, spi2, spi3));
+    ComponentLoader mockLoader = spy(ComponentLoader.class);
+    when(mockLoader.load(ResourceProvider.class)).thenReturn(asList(spi1, spi2, spi3));
 
-    SpiHelper spiHelper = new SpiHelper(SpiHelperTest.class.getClassLoader(), mockFinder);
+    SpiHelper spiHelper = SpiHelper.create(mockLoader);
 
     List<ResourceProvider> loadedSpi = spiHelper.loadOrdered(ResourceProvider.class);
 

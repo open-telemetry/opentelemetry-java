@@ -16,6 +16,7 @@ import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.time.Duration;
 import java.util.Map;
@@ -168,6 +169,17 @@ public final class OtlpHttpLogRecordExporterBuilder {
   public OtlpHttpLogRecordExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
     requireNonNull(retryPolicy, "retryPolicy");
     delegate.setRetryPolicy(retryPolicy);
+    return this;
+  }
+
+  /**
+   * Sets the proxy options. Proxying is disabled by default.
+   *
+   * @since 1.36.0
+   */
+  public OtlpHttpLogRecordExporterBuilder setProxyOptions(ProxyOptions proxyOptions) {
+    requireNonNull(proxyOptions, "proxyOptions");
+    delegate.setProxyOptions(proxyOptions);
     return this;
   }
 

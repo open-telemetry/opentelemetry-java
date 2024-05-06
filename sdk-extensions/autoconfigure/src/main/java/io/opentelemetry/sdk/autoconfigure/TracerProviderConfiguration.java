@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,8 @@ final class TracerProviderConfiguration {
 
   private static final double DEFAULT_TRACEIDRATIO_SAMPLE_RATIO = 1.0d;
   private static final String PARENTBASED_ALWAYS_ON = "parentbased_always_on";
+  private static final List<String> simpleProcessorExporterNames =
+      Arrays.asList("console", "logging");
 
   static void configureTracerProvider(
       SdkTracerProviderBuilder tracerProviderBuilder,
@@ -74,11 +77,13 @@ final class TracerProviderConfiguration {
     Map<String, SpanExporter> exportersByNameCopy = new HashMap<>(exportersByName);
     List<SpanProcessor> spanProcessors = new ArrayList<>();
 
-    SpanExporter exporter = exportersByNameCopy.remove("logging");
-    if (exporter != null) {
-      SpanProcessor spanProcessor = SimpleSpanProcessor.create(exporter);
-      closeables.add(spanProcessor);
-      spanProcessors.add(spanProcessor);
+    for (String simpleProcessorExporterNames : simpleProcessorExporterNames) {
+      SpanExporter exporter = exportersByNameCopy.remove(simpleProcessorExporterNames);
+      if (exporter != null) {
+        SpanProcessor spanProcessor = SimpleSpanProcessor.create(exporter);
+        closeables.add(spanProcessor);
+        spanProcessors.add(spanProcessor);
+      }
     }
 
     if (!exportersByNameCopy.isEmpty()) {
@@ -173,21 +178,13 @@ final class TracerProviderConfiguration {
       case "always_off":
         return Sampler.alwaysOff();
       case "traceidratio":
-        {
-          double ratio =
-              config.getDouble("otel.traces.sampler.arg", DEFAULT_TRACEIDRATIO_SAMPLE_RATIO);
-          return Sampler.traceIdRatioBased(ratio);
-        }
+        return ratioSampler(config);
       case PARENTBASED_ALWAYS_ON:
         return Sampler.parentBased(Sampler.alwaysOn());
       case "parentbased_always_off":
         return Sampler.parentBased(Sampler.alwaysOff());
       case "parentbased_traceidratio":
-        {
-          double ratio =
-              config.getDouble("otel.traces.sampler.arg", DEFAULT_TRACEIDRATIO_SAMPLE_RATIO);
-          return Sampler.parentBased(Sampler.traceIdRatioBased(ratio));
-        }
+        return Sampler.parentBased(ratioSampler(config));
       case "parentbased_jaeger_remote":
         Sampler jaegerRemote = spiSamplersManager.getByName("jaeger_remote");
         if (jaegerRemote == null) {
@@ -203,6 +200,11 @@ final class TracerProviderConfiguration {
         }
         return spiSampler;
     }
+  }
+
+  private static Sampler ratioSampler(ConfigProperties config) {
+    double ratio = config.getDouble("otel.traces.sampler.arg", DEFAULT_TRACEIDRATIO_SAMPLE_RATIO);
+    return Sampler.traceIdRatioBased(ratio);
   }
 
   private TracerProviderConfiguration() {}

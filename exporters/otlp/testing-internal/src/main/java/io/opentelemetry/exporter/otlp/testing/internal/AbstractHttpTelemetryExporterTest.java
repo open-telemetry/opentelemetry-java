@@ -39,12 +39,14 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.cert.CertificateEncodingException;
@@ -84,6 +86,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockserver.integration.ClientAndServer;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
 
@@ -656,6 +659,39 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  void proxy() {
+    // configure mockserver to proxy to the local OTLP server
+    InetSocketAddress serverSocketAddress = server.httpSocketAddress();
+    try (ClientAndServer clientAndServer =
+        ClientAndServer.startClientAndServer(
+            serverSocketAddress.getHostName(), serverSocketAddress.getPort())) {
+      TelemetryExporter<T> exporter =
+          exporterBuilder()
+              // Configure exporter with server endpoint, and proxy options to route through
+              // mockserver proxy
+              .setEndpoint(server.httpUri() + path)
+              .setProxyOptions(
+                  ProxyOptions.create(
+                      InetSocketAddress.createUnresolved("localhost", clientAndServer.getPort())))
+              .build();
+
+      try {
+        List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
+
+        assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+        // assert that mock server received request
+        assertThat(clientAndServer.retrieveRecordedRequests(new org.mockserver.model.HttpRequest()))
+            .hasSize(1);
+        // assert that server received telemetry from proxy, and is as expected
+        List<U> expectedResourceTelemetry = toProto(telemetry);
+        assertThat(exportedResourceTelemetry).containsExactlyElementsOf(expectedResourceTelemetry);
+      } finally {
+        exporter.shutdown();
+      }
+    }
+  }
+
+  @Test
   @SuppressWarnings("PreferJavaTimeOverload")
   void validConfig() {
     assertThatCode(() -> exporterBuilder().setTimeout(0, TimeUnit.MILLISECONDS))
@@ -815,12 +851,14 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
                   + ", "
+                  + "proxyOptions=null, "
                   + "compressorEncoding=null, "
                   + "connectTimeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
                   + ", "
                   + "exportAsJson=false, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
+                  + ".*" // Maybe additional signal specific fields
                   + "\\}");
     } finally {
       telemetryExporter.shutdown();
@@ -855,6 +893,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(5)
                   + ", "
+                  + "proxyOptions=null, "
                   + "compressorEncoding=gzip, "
                   + "connectTimeoutNanos="
                   + TimeUnit.SECONDS.toNanos(4)
@@ -862,6 +901,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + "exportAsJson=false, "
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
                   + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3\\}"
+                  + ".*" // Maybe additional signal specific fields
                   + "\\}");
     } finally {
       telemetryExporter.shutdown();

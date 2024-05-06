@@ -11,6 +11,7 @@
 package io.opentelemetry.exporter.prometheus;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -32,10 +34,12 @@ import javax.annotation.Nullable;
  */
 public final class PrometheusHttpServer implements MetricReader {
 
+  private final PrometheusHttpServerBuilder builder;
   private final HTTPServer httpServer;
   private final PrometheusMetricReader prometheusMetricReader;
   private final PrometheusRegistry prometheusRegistry;
   private final String host;
+  private final MemoryMode memoryMode;
 
   /**
    * Returns a new {@link PrometheusHttpServer} which can be registered to an {@link
@@ -52,17 +56,27 @@ public final class PrometheusHttpServer implements MetricReader {
   }
 
   PrometheusHttpServer(
+      PrometheusHttpServerBuilder builder,
       String host,
       int port,
       @Nullable ExecutorService executor,
       PrometheusRegistry prometheusRegistry,
       boolean otelScopeEnabled,
-      @Nullable Predicate<String> allowedResourceAttributesFilter) {
+      @Nullable Predicate<String> allowedResourceAttributesFilter,
+      MemoryMode memoryMode) {
+    this.builder = builder;
     this.prometheusMetricReader =
         new PrometheusMetricReader(otelScopeEnabled, allowedResourceAttributesFilter);
     this.host = host;
+    this.memoryMode = memoryMode;
     this.prometheusRegistry = prometheusRegistry;
     prometheusRegistry.register(prometheusMetricReader);
+    // When memory mode is REUSABLE_DATA, concurrent reads lead to data corruption. To prevent this,
+    // we configure prometheus with a single thread executor such that requests are handled
+    // sequentially.
+    if (memoryMode == MemoryMode.REUSABLE_DATA) {
+      executor = Executors.newSingleThreadExecutor();
+    }
     try {
       this.httpServer =
           HTTPServer.builder()
@@ -80,6 +94,11 @@ public final class PrometheusHttpServer implements MetricReader {
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
     return prometheusMetricReader.getAggregationTemporality(instrumentType);
+  }
+
+  @Override
+  public MemoryMode getMemoryMode() {
+    return memoryMode;
   }
 
   @Override
@@ -119,6 +138,13 @@ public final class PrometheusHttpServer implements MetricReader {
   @Override
   public String toString() {
     return "PrometheusHttpServer{address=" + getAddress() + "}";
+  }
+
+  /**
+   * Returns a new {@link PrometheusHttpServerBuilder} with the same configuration as this instance.
+   */
+  public PrometheusHttpServerBuilder toBuilder() {
+    return new PrometheusHttpServerBuilder(builder);
   }
 
   // Visible for testing.
