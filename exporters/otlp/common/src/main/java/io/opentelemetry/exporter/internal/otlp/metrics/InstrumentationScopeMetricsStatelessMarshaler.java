@@ -24,6 +24,8 @@ final class InstrumentationScopeMetricsStatelessMarshaler
   static final InstrumentationScopeMetricsStatelessMarshaler INSTANCE =
       new InstrumentationScopeMetricsStatelessMarshaler();
 
+  private InstrumentationScopeMetricsStatelessMarshaler() {}
+
   @Override
   public void writeTo(
       Serializer output,

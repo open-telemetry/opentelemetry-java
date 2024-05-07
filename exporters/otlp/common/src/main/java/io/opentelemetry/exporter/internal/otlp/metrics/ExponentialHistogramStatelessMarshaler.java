@@ -22,6 +22,8 @@ final class ExponentialHistogramStatelessMarshaler
   private static final MarshalerContext.Key DATA_POINT_SIZE_CALCULATOR_KEY = MarshalerContext.key();
   private static final MarshalerContext.Key DATA_POINT_WRITER_KEY = MarshalerContext.key();
 
+  private ExponentialHistogramStatelessMarshaler() {}
+
   @Override
   public void writeTo(
       Serializer output, ExponentialHistogramData histogram, MarshalerContext context)

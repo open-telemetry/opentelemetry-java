@@ -28,7 +28,7 @@ import java.util.Map;
  * <pre>{@code
  * void marshal(LowAllocationMetricsRequestMarshaler requestMarshaler, OutputStream output,
  *     Collection<MetricData> metricDataList) throws IOException {
- *   requestMarshaler.initialize(spanList);
+ *   requestMarshaler.initialize(metricDataList);
  *   try {
  *     requestMarshaler.writeBinaryTo(output);
  *   } finally {

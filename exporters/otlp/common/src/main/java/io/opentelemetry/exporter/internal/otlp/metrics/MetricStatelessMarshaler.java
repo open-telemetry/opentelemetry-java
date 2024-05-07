@@ -14,7 +14,6 @@ import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.SUMMARY;
 
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
-import io.opentelemetry.exporter.internal.marshal.ProtoFieldInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
@@ -28,17 +27,17 @@ import java.util.Map;
 /** See {@link MetricMarshaler}. */
 final class MetricStatelessMarshaler implements StatelessMarshaler<MetricData> {
   static final MetricStatelessMarshaler INSTANCE = new MetricStatelessMarshaler();
-  private static final Map<MetricDataType, DataHandler> DATA_HANDLERS =
+  private static final Map<MetricDataType, StatelessMarshaler<MetricData>> METRIC_MARSHALERS =
       new EnumMap<>(MetricDataType.class);
 
   static {
-    DATA_HANDLERS.put(
+    METRIC_MARSHALERS.put(
         LONG_GAUGE,
-        new DataHandler(Metric.GAUGE) {
+        new StatelessMarshaler<MetricData>() {
           @Override
-          public int calculateSize(MetricData metricData, MarshalerContext context) {
+          public int getBinarySerializedSize(MetricData metricData, MarshalerContext context) {
             return StatelessMarshalerUtil.sizeMessageWithContext(
-                dataField,
+                Metric.GAUGE,
                 metricData.getLongGaugeData(),
                 GaugeStatelessMarshaler.INSTANCE,
                 context);
@@ -51,13 +50,13 @@ final class MetricStatelessMarshaler implements StatelessMarshaler<MetricData> {
                 Metric.GAUGE, metric.getLongGaugeData(), GaugeStatelessMarshaler.INSTANCE, context);
           }
         });
-    DATA_HANDLERS.put(
+    METRIC_MARSHALERS.put(
         DOUBLE_GAUGE,
-        new DataHandler(Metric.GAUGE) {
+        new StatelessMarshaler<MetricData>() {
           @Override
-          public int calculateSize(MetricData metricData, MarshalerContext context) {
+          public int getBinarySerializedSize(MetricData metricData, MarshalerContext context) {
             return StatelessMarshalerUtil.sizeMessageWithContext(
-                dataField,
+                Metric.GAUGE,
                 metricData.getDoubleGaugeData(),
                 GaugeStatelessMarshaler.INSTANCE,
                 context);
@@ -73,13 +72,13 @@ final class MetricStatelessMarshaler implements StatelessMarshaler<MetricData> {
                 context);
           }
         });
-    DATA_HANDLERS.put(
+    METRIC_MARSHALERS.put(
         LONG_SUM,
-        new DataHandler(Metric.SUM) {
+        new StatelessMarshaler<MetricData>() {
           @Override
-          public int calculateSize(MetricData metricData, MarshalerContext context) {
+          public int getBinarySerializedSize(MetricData metricData, MarshalerContext context) {
             return StatelessMarshalerUtil.sizeMessageWithContext(
-                dataField, metricData.getLongSumData(), SumStatelessMarshaler.INSTANCE, context);
+                Metric.SUM, metricData.getLongSumData(), SumStatelessMarshaler.INSTANCE, context);
           }
 
           @Override
@@ -89,13 +88,13 @@ final class MetricStatelessMarshaler implements StatelessMarshaler<MetricData> {
                 Metric.SUM, metric.getLongSumData(), SumStatelessMarshaler.INSTANCE, context);
           }
         });
-    DATA_HANDLERS.put(
+    METRIC_MARSHALERS.put(
         DOUBLE_SUM,
-        new DataHandler(Metric.SUM) {
+        new StatelessMarshaler<MetricData>() {
           @Override
-          public int calculateSize(MetricData metricData, MarshalerContext context) {
+          public int getBinarySerializedSize(MetricData metricData, MarshalerContext context) {
             return StatelessMarshalerUtil.sizeMessageWithContext(
-                dataField, metricData.getDoubleSumData(), SumStatelessMarshaler.INSTANCE, context);
+                Metric.SUM, metricData.getDoubleSumData(), SumStatelessMarshaler.INSTANCE, context);
           }
 
           @Override
@@ -105,13 +104,13 @@ final class MetricStatelessMarshaler implements StatelessMarshaler<MetricData> {
                 Metric.SUM, metric.getDoubleSumData(), SumStatelessMarshaler.INSTANCE, context);
           }
         });
-    DATA_HANDLERS.put(
+    METRIC_MARSHALERS.put(
         SUMMARY,
-        new DataHandler(Metric.SUMMARY) {
+        new StatelessMarshaler<MetricData>() {
           @Override
-          public int calculateSize(MetricData metricData, MarshalerContext context) {
+          public int getBinarySerializedSize(MetricData metricData, MarshalerContext context) {
             return StatelessMarshalerUtil.sizeMessageWithContext(
-                dataField,
+                Metric.SUMMARY,
                 metricData.getSummaryData(),
                 SummaryStatelessMarshaler.INSTANCE,
                 context);
@@ -127,13 +126,13 @@ final class MetricStatelessMarshaler implements StatelessMarshaler<MetricData> {
                 context);
           }
         });
-    DATA_HANDLERS.put(
+    METRIC_MARSHALERS.put(
         HISTOGRAM,
-        new DataHandler(Metric.HISTOGRAM) {
+        new StatelessMarshaler<MetricData>() {
           @Override
-          public int calculateSize(MetricData metricData, MarshalerContext context) {
+          public int getBinarySerializedSize(MetricData metricData, MarshalerContext context) {
             return StatelessMarshalerUtil.sizeMessageWithContext(
-                dataField,
+                Metric.HISTOGRAM,
                 metricData.getHistogramData(),
                 HistogramStatelessMarshaler.INSTANCE,
                 context);
@@ -149,13 +148,13 @@ final class MetricStatelessMarshaler implements StatelessMarshaler<MetricData> {
                 context);
           }
         });
-    DATA_HANDLERS.put(
+    METRIC_MARSHALERS.put(
         EXPONENTIAL_HISTOGRAM,
-        new DataHandler(Metric.EXPONENTIAL_HISTOGRAM) {
+        new StatelessMarshaler<MetricData>() {
           @Override
-          public int calculateSize(MetricData metricData, MarshalerContext context) {
+          public int getBinarySerializedSize(MetricData metricData, MarshalerContext context) {
             return StatelessMarshalerUtil.sizeMessageWithContext(
-                dataField,
+                Metric.EXPONENTIAL_HISTOGRAM,
                 metricData.getExponentialHistogramData(),
                 ExponentialHistogramStatelessMarshaler.INSTANCE,
                 context);
@@ -173,11 +172,13 @@ final class MetricStatelessMarshaler implements StatelessMarshaler<MetricData> {
         });
   }
 
+  private MetricStatelessMarshaler() {}
+
   @Override
   public void writeTo(Serializer output, MetricData metric, MarshalerContext context)
       throws IOException {
-    DataHandler dataHandler = DATA_HANDLERS.get(metric.getType());
-    if (dataHandler == null) {
+    StatelessMarshaler<MetricData> metricMarshaler = METRIC_MARSHALERS.get(metric.getType());
+    if (metricMarshaler == null) {
       // Someone not using BOM to align versions as we require. Just skip the metric.
       return;
     }
@@ -186,13 +187,13 @@ final class MetricStatelessMarshaler implements StatelessMarshaler<MetricData> {
     output.serializeStringWithContext(Metric.DESCRIPTION, metric.getDescription(), context);
     output.serializeStringWithContext(Metric.UNIT, metric.getUnit(), context);
 
-    dataHandler.writeTo(output, metric, context);
+    metricMarshaler.writeTo(output, metric, context);
   }
 
   @Override
   public int getBinarySerializedSize(MetricData metric, MarshalerContext context) {
-    DataHandler dataHandler = DATA_HANDLERS.get(metric.getType());
-    if (dataHandler == null) {
+    StatelessMarshaler<MetricData> metricMarshaler = METRIC_MARSHALERS.get(metric.getType());
+    if (metricMarshaler == null) {
       // Someone not using BOM to align versions as we require. Just skip the metric.
       return 0;
     }
@@ -204,21 +205,8 @@ final class MetricStatelessMarshaler implements StatelessMarshaler<MetricData> {
             Metric.DESCRIPTION, metric.getDescription(), context);
     size += StatelessMarshalerUtil.sizeStringWithContext(Metric.UNIT, metric.getUnit(), context);
 
-    size += dataHandler.calculateSize(metric, context);
+    size += metricMarshaler.getBinarySerializedSize(metric, context);
 
     return size;
-  }
-
-  private abstract static class DataHandler {
-    final ProtoFieldInfo dataField;
-
-    DataHandler(ProtoFieldInfo dataField) {
-      this.dataField = dataField;
-    }
-
-    abstract int calculateSize(MetricData metricData, MarshalerContext context);
-
-    abstract void writeTo(Serializer output, MetricData metricData, MarshalerContext context)
-        throws IOException;
   }
 }

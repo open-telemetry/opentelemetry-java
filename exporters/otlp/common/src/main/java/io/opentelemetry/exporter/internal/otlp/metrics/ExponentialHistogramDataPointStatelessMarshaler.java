@@ -21,6 +21,8 @@ final class ExponentialHistogramDataPointStatelessMarshaler
   static final ExponentialHistogramDataPointStatelessMarshaler INSTANCE =
       new ExponentialHistogramDataPointStatelessMarshaler();
 
+  private ExponentialHistogramDataPointStatelessMarshaler() {}
+
   @Override
   public void writeTo(
       Serializer output, ExponentialHistogramPointData point, MarshalerContext context)

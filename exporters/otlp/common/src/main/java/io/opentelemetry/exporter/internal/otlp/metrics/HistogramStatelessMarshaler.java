@@ -20,6 +20,8 @@ final class HistogramStatelessMarshaler implements StatelessMarshaler<HistogramD
   private static final MarshalerContext.Key DATA_POINT_SIZE_CALCULATOR_KEY = MarshalerContext.key();
   private static final MarshalerContext.Key DATA_POINT_WRITER_KEY = MarshalerContext.key();
 
+  private HistogramStatelessMarshaler() {}
+
   @Override
   public void writeTo(Serializer output, HistogramData histogram, MarshalerContext context)
       throws IOException {

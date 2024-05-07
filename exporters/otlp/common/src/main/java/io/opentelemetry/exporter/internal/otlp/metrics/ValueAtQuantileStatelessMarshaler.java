@@ -16,6 +16,8 @@ import java.io.IOException;
 final class ValueAtQuantileStatelessMarshaler implements StatelessMarshaler<ValueAtQuantile> {
   static final ValueAtQuantileStatelessMarshaler INSTANCE = new ValueAtQuantileStatelessMarshaler();
 
+  private ValueAtQuantileStatelessMarshaler() {}
+
   @Override
   public void writeTo(Serializer output, ValueAtQuantile value, MarshalerContext context)
       throws IOException {

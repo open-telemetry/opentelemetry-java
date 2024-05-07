@@ -24,6 +24,8 @@ import java.io.IOException;
 final class NumberDataPointStatelessMarshaler implements StatelessMarshaler<PointData> {
   static final NumberDataPointStatelessMarshaler INSTANCE = new NumberDataPointStatelessMarshaler();
 
+  private NumberDataPointStatelessMarshaler() {}
+
   @Override
   public void writeTo(Serializer output, PointData point, MarshalerContext context)
       throws IOException {

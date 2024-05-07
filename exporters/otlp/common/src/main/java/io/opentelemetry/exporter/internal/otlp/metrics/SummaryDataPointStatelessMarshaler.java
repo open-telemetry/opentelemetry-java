@@ -20,13 +20,15 @@ final class SummaryDataPointStatelessMarshaler implements StatelessMarshaler<Sum
   static final SummaryDataPointStatelessMarshaler INSTANCE =
       new SummaryDataPointStatelessMarshaler();
 
+  private SummaryDataPointStatelessMarshaler() {}
+
   @Override
   public void writeTo(Serializer output, SummaryPointData point, MarshalerContext context)
       throws IOException {
     output.serializeFixed64(SummaryDataPoint.START_TIME_UNIX_NANO, point.getStartEpochNanos());
     output.serializeFixed64(SummaryDataPoint.TIME_UNIX_NANO, point.getEpochNanos());
     output.serializeFixed64(SummaryDataPoint.COUNT, point.getCount());
-    output.serializeDoubleOptional(SummaryDataPoint.SUM, point.getSum());
+    output.serializeDouble(SummaryDataPoint.SUM, point.getSum());
     output.serializeRepeatedMessageWithContext(
         SummaryDataPoint.QUANTILE_VALUES,
         point.getValues(),
@@ -47,7 +49,7 @@ final class SummaryDataPointStatelessMarshaler implements StatelessMarshaler<Sum
             SummaryDataPoint.START_TIME_UNIX_NANO, point.getStartEpochNanos());
     size += MarshalerUtil.sizeFixed64(SummaryDataPoint.TIME_UNIX_NANO, point.getEpochNanos());
     size += MarshalerUtil.sizeFixed64(SummaryDataPoint.COUNT, point.getCount());
-    size += MarshalerUtil.sizeDoubleOptional(SummaryDataPoint.SUM, point.getSum());
+    size += MarshalerUtil.sizeDouble(SummaryDataPoint.SUM, point.getSum());
     size +=
         StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
             SummaryDataPoint.QUANTILE_VALUES,

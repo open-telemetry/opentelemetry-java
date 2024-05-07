@@ -20,6 +20,8 @@ final class HistogramDataPointStatelessMarshaler implements StatelessMarshaler<H
   static final HistogramDataPointStatelessMarshaler INSTANCE =
       new HistogramDataPointStatelessMarshaler();
 
+  private HistogramDataPointStatelessMarshaler() {}
+
   @Override
   public void writeTo(Serializer output, HistogramPointData point, MarshalerContext context)
       throws IOException {

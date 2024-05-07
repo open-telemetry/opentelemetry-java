@@ -19,6 +19,8 @@ final class SummaryStatelessMarshaler implements StatelessMarshaler<SummaryData>
   private static final MarshalerContext.Key DATA_POINT_SIZE_CALCULATOR_KEY = MarshalerContext.key();
   private static final MarshalerContext.Key DATA_POINT_WRITER_KEY = MarshalerContext.key();
 
+  private SummaryStatelessMarshaler() {}
+
   @Override
   public void writeTo(Serializer output, SummaryData summary, MarshalerContext context)
       throws IOException {
@@ -32,14 +34,11 @@ final class SummaryStatelessMarshaler implements StatelessMarshaler<SummaryData>
 
   @Override
   public int getBinarySerializedSize(SummaryData summary, MarshalerContext context) {
-    int size = 0;
-    size +=
-        StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
-            Summary.DATA_POINTS,
-            summary.getPoints(),
-            SummaryDataPointStatelessMarshaler.INSTANCE,
-            context,
-            DATA_POINT_SIZE_CALCULATOR_KEY);
-    return size;
+    return StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
+        Summary.DATA_POINTS,
+        summary.getPoints(),
+        SummaryDataPointStatelessMarshaler.INSTANCE,
+        context,
+        DATA_POINT_SIZE_CALCULATOR_KEY);
   }
 }

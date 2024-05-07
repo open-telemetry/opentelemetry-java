@@ -20,6 +20,8 @@ final class GaugeStatelessMarshaler implements StatelessMarshaler<GaugeData<? ex
   private static final MarshalerContext.Key DATA_POINT_SIZE_CALCULATOR_KEY = MarshalerContext.key();
   private static final MarshalerContext.Key DATA_POINT_WRITER_KEY = MarshalerContext.key();
 
+  private GaugeStatelessMarshaler() {}
+
   @Override
   public void writeTo(
       Serializer output, GaugeData<? extends PointData> gauge, MarshalerContext context)
@@ -35,14 +37,11 @@ final class GaugeStatelessMarshaler implements StatelessMarshaler<GaugeData<? ex
   @Override
   public int getBinarySerializedSize(
       GaugeData<? extends PointData> gauge, MarshalerContext context) {
-    int size = 0;
-    size +=
-        StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
-            Gauge.DATA_POINTS,
-            gauge.getPoints(),
-            NumberDataPointStatelessMarshaler.INSTANCE,
-            context,
-            DATA_POINT_SIZE_CALCULATOR_KEY);
-    return size;
+    return StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
+        Gauge.DATA_POINTS,
+        gauge.getPoints(),
+        NumberDataPointStatelessMarshaler.INSTANCE,
+        context,
+        DATA_POINT_SIZE_CALCULATOR_KEY);
   }
 }

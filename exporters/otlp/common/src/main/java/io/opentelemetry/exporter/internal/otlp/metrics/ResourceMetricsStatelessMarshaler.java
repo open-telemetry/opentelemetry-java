@@ -28,8 +28,11 @@ import java.util.Map;
 public final class ResourceMetricsStatelessMarshaler
     implements StatelessMarshaler2<Resource, Map<InstrumentationScopeInfo, List<MetricData>>> {
   static final ResourceMetricsStatelessMarshaler INSTANCE = new ResourceMetricsStatelessMarshaler();
-  private static final MarshalerContext.Key SCOPE_SPAN_WRITER_KEY = MarshalerContext.key();
-  private static final MarshalerContext.Key SCOPE_SPAN_SIZE_CALCULATOR_KEY = MarshalerContext.key();
+  private static final MarshalerContext.Key SCOPE_METRIC_WRITER_KEY = MarshalerContext.key();
+  private static final MarshalerContext.Key SCOPE_METRIC_SIZE_CALCULATOR_KEY =
+      MarshalerContext.key();
+
+  private ResourceMetricsStatelessMarshaler() {}
 
   @Override
   public void writeTo(
@@ -46,7 +49,7 @@ public final class ResourceMetricsStatelessMarshaler
         scopeMap,
         InstrumentationScopeMetricsStatelessMarshaler.INSTANCE,
         context,
-        SCOPE_SPAN_WRITER_KEY);
+        SCOPE_METRIC_WRITER_KEY);
 
     output.serializeStringWithContext(ResourceMetrics.SCHEMA_URL, resource.getSchemaUrl(), context);
   }
@@ -69,7 +72,7 @@ public final class ResourceMetricsStatelessMarshaler
             scopeMap,
             InstrumentationScopeMetricsStatelessMarshaler.INSTANCE,
             context,
-            SCOPE_SPAN_SIZE_CALCULATOR_KEY);
+            SCOPE_METRIC_SIZE_CALCULATOR_KEY);
 
     size +=
         StatelessMarshalerUtil.sizeStringWithContext(
