@@ -16,6 +16,8 @@ import java.io.IOException;
 final class BoolAnyValueStatelessMarshaler implements StatelessMarshaler<Boolean> {
   static final BoolAnyValueStatelessMarshaler INSTANCE = new BoolAnyValueStatelessMarshaler();
 
+  private BoolAnyValueStatelessMarshaler() {}
+
   @Override
   public void writeTo(Serializer output, Boolean value, MarshalerContext context)
       throws IOException {

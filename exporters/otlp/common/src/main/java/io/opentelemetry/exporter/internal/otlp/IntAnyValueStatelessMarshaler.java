@@ -16,6 +16,8 @@ import java.io.IOException;
 final class IntAnyValueStatelessMarshaler implements StatelessMarshaler<Long> {
   static final IntAnyValueStatelessMarshaler INSTANCE = new IntAnyValueStatelessMarshaler();
 
+  private IntAnyValueStatelessMarshaler() {}
+
   @Override
   public void writeTo(Serializer output, Long value, MarshalerContext context) throws IOException {
     output.writeInt64(AnyValue.INT_VALUE, value);

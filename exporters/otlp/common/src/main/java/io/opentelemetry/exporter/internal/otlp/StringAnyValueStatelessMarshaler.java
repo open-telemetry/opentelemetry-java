@@ -21,6 +21,8 @@ import java.io.IOException;
 final class StringAnyValueStatelessMarshaler implements StatelessMarshaler<String> {
   static final StringAnyValueStatelessMarshaler INSTANCE = new StringAnyValueStatelessMarshaler();
 
+  private StringAnyValueStatelessMarshaler() {}
+
   @Override
   public void writeTo(Serializer output, String value, MarshalerContext context)
       throws IOException {

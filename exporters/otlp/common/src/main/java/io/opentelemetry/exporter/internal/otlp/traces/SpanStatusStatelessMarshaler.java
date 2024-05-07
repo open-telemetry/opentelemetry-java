@@ -21,6 +21,8 @@ import java.io.IOException;
 final class SpanStatusStatelessMarshaler implements StatelessMarshaler<StatusData> {
   static final SpanStatusStatelessMarshaler INSTANCE = new SpanStatusStatelessMarshaler();
 
+  private SpanStatusStatelessMarshaler() {}
+
   @Override
   public void writeTo(Serializer output, StatusData status, MarshalerContext context)
       throws IOException {
