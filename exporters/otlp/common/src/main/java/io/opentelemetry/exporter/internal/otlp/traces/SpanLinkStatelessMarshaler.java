@@ -21,6 +21,8 @@ import java.io.IOException;
 final class SpanLinkStatelessMarshaler implements StatelessMarshaler<LinkData> {
   static final SpanLinkStatelessMarshaler INSTANCE = new SpanLinkStatelessMarshaler();
 
+  private SpanLinkStatelessMarshaler() {}
+
   @Override
   public void writeTo(Serializer output, LinkData link, MarshalerContext context)
       throws IOException {

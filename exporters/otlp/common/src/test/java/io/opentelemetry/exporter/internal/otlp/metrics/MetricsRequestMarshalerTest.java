@@ -22,6 +22,9 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
+import io.opentelemetry.exporter.internal.marshal.Serializer;
+import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.InstrumentationScope;
@@ -75,7 +78,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 // Fill deprecated APIs before removing them after users get a chance to migrate.
 class MetricsRequestMarshalerTest {
@@ -86,10 +90,12 @@ class MetricsRequestMarshalerTest {
     return AnyValue.newBuilder().setStringValue(v).build();
   }
 
-  @Test
-  void dataPoint_withDefaultValues() {
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void dataPoint_withDefaultValues(MarshalerSource marshalerSource) {
     assertThat(
             toNumberDataPoints(
+                marshalerSource,
                 singletonList(
                     ImmutableLongPointData.create(
                         123,
@@ -132,6 +138,7 @@ class MetricsRequestMarshalerTest {
 
     assertThat(
             toNumberDataPoints(
+                marshalerSource,
                 singletonList(
                     ImmutableDoublePointData.create(
                         123,
@@ -173,11 +180,13 @@ class MetricsRequestMarshalerTest {
                 .build());
   }
 
-  @Test
-  void longDataPoints() {
-    assertThat(toNumberDataPoints(Collections.emptyList())).isEmpty();
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void longDataPoints(MarshalerSource marshalerSource) {
+    assertThat(toNumberDataPoints(marshalerSource, Collections.emptyList())).isEmpty();
     assertThat(
             toNumberDataPoints(
+                marshalerSource,
                 singletonList(
                     ImmutableLongPointData.create(
                         123,
@@ -219,6 +228,7 @@ class MetricsRequestMarshalerTest {
                 .build());
     assertThat(
             toNumberDataPoints(
+                marshalerSource,
                 ImmutableList.of(
                     ImmutableLongPointData.create(123, 456, Attributes.empty(), 5),
                     ImmutableLongPointData.create(321, 654, KV_ATTR, 7))))
@@ -238,11 +248,13 @@ class MetricsRequestMarshalerTest {
                 .build());
   }
 
-  @Test
-  void doubleDataPoints() {
-    assertThat(toNumberDataPoints(Collections.emptyList())).isEmpty();
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void doubleDataPoints(MarshalerSource marshalerSource) {
+    assertThat(toNumberDataPoints(marshalerSource, Collections.emptyList())).isEmpty();
     assertThat(
             toNumberDataPoints(
+                marshalerSource,
                 singletonList(ImmutableDoublePointData.create(123, 456, KV_ATTR, 5.1))))
         .containsExactly(
             NumberDataPoint.newBuilder()
@@ -255,6 +267,7 @@ class MetricsRequestMarshalerTest {
                 .build());
     assertThat(
             toNumberDataPoints(
+                marshalerSource,
                 ImmutableList.of(
                     ImmutableDoublePointData.create(123, 456, Attributes.empty(), 5.1),
                     ImmutableDoublePointData.create(321, 654, KV_ATTR, 7.1))))
@@ -274,10 +287,12 @@ class MetricsRequestMarshalerTest {
                 .build());
   }
 
-  @Test
-  void summaryDataPoints() {
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void summaryDataPoints(MarshalerSource marshalerSource) {
     assertThat(
             toSummaryDataPoints(
+                marshalerSource,
                 singletonList(
                     ImmutableSummaryPointData.create(
                         123,
@@ -303,6 +318,7 @@ class MetricsRequestMarshalerTest {
                 .build());
     assertThat(
             toSummaryDataPoints(
+                marshalerSource,
                 ImmutableList.of(
                     ImmutableSummaryPointData.create(
                         123, 456, Attributes.empty(), 7, 15.3, Collections.emptyList()),
@@ -343,10 +359,12 @@ class MetricsRequestMarshalerTest {
                 .build());
   }
 
-  @Test
-  void histogramDataPoints() {
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void histogramDataPoints(MarshalerSource marshalerSource) {
     assertThat(
             toHistogramDataPoints(
+                marshalerSource,
                 ImmutableList.of(
                     ImmutableHistogramPointData.create(
                         123,
@@ -418,10 +436,12 @@ class MetricsRequestMarshalerTest {
                 .build());
   }
 
-  @Test
-  void exponentialHistogramDataPoints() {
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void exponentialHistogramDataPoints(MarshalerSource marshalerSource) {
     assertThat(
             toExponentialHistogramDataPoints(
+                marshalerSource,
                 ImmutableList.of(
                     ImmutableExponentialHistogramPointData.create(
                         0,
@@ -512,10 +532,12 @@ class MetricsRequestMarshalerTest {
   }
 
   @SuppressWarnings("PointlessArithmeticExpression")
-  @Test
-  void exponentialHistogramReusableDataPoints() {
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void exponentialHistogramReusableDataPoints(MarshalerSource marshalerSource) {
     assertThat(
             toExponentialHistogramDataPoints(
+                marshalerSource,
                 ImmutableList.of(
                     new MutableExponentialHistogramPointData()
                         .set(
@@ -610,10 +632,12 @@ class MetricsRequestMarshalerTest {
                 .build());
   }
 
-  @Test
-  void toProtoMetric_monotonic() {
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void toProtoMetric_monotonic(MarshalerSource marshalerSource) {
     assertThat(
             toProtoMetric(
+                marshalerSource,
                 ImmutableMetricData.createLongSum(
                     Resource.empty(),
                     InstrumentationScopeInfo.empty(),
@@ -649,6 +673,7 @@ class MetricsRequestMarshalerTest {
                 .build());
     assertThat(
             toProtoMetric(
+                marshalerSource,
                 ImmutableMetricData.createDoubleSum(
                     Resource.empty(),
                     InstrumentationScopeInfo.empty(),
@@ -684,10 +709,12 @@ class MetricsRequestMarshalerTest {
                 .build());
   }
 
-  @Test
-  void toProtoMetric_nonMonotonic() {
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void toProtoMetric_nonMonotonic(MarshalerSource marshalerSource) {
     assertThat(
             toProtoMetric(
+                marshalerSource,
                 ImmutableMetricData.createLongSum(
                     Resource.empty(),
                     InstrumentationScopeInfo.empty(),
@@ -723,6 +750,7 @@ class MetricsRequestMarshalerTest {
                 .build());
     assertThat(
             toProtoMetric(
+                marshalerSource,
                 ImmutableMetricData.createDoubleSum(
                     Resource.empty(),
                     InstrumentationScopeInfo.empty(),
@@ -758,10 +786,12 @@ class MetricsRequestMarshalerTest {
                 .build());
   }
 
-  @Test
-  void toProtoMetric_gauges() {
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void toProtoMetric_gauges(MarshalerSource marshalerSource) {
     assertThat(
             toProtoMetric(
+                marshalerSource,
                 ImmutableMetricData.createLongGauge(
                     Resource.empty(),
                     InstrumentationScopeInfo.empty(),
@@ -793,6 +823,7 @@ class MetricsRequestMarshalerTest {
                 .build());
     assertThat(
             toProtoMetric(
+                marshalerSource,
                 ImmutableMetricData.createDoubleGauge(
                     Resource.empty(),
                     InstrumentationScopeInfo.empty(),
@@ -824,10 +855,12 @@ class MetricsRequestMarshalerTest {
                 .build());
   }
 
-  @Test
-  void toProtoMetric_summary() {
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void toProtoMetric_summary(MarshalerSource marshalerSource) {
     assertThat(
             toProtoMetric(
+                marshalerSource,
                 ImmutableMetricData.createDoubleSummary(
                     Resource.empty(),
                     InstrumentationScopeInfo.empty(),
@@ -879,10 +912,12 @@ class MetricsRequestMarshalerTest {
                 .build());
   }
 
-  @Test
-  void toProtoMetric_histogram() {
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void toProtoMetric_histogram(MarshalerSource marshalerSource) {
     assertThat(
             toProtoMetric(
+                marshalerSource,
                 ImmutableMetricData.createDoubleHistogram(
                     Resource.empty(),
                     InstrumentationScopeInfo.empty(),
@@ -931,10 +966,12 @@ class MetricsRequestMarshalerTest {
                 .build());
   }
 
-  @Test
-  void toProtoMetric_exponentialHistogram() {
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void toProtoMetric_exponentialHistogram(MarshalerSource marshalerSource) {
     assertThat(
             toProtoMetric(
+                marshalerSource,
                 ImmutableMetricData.createExponentialHistogram(
                     Resource.empty(),
                     InstrumentationScopeInfo.empty(),
@@ -1001,8 +1038,9 @@ class MetricsRequestMarshalerTest {
                 .build());
   }
 
-  @Test
-  void protoResourceMetrics() {
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void protoResourceMetrics(MarshalerSource marshalerSource) {
     Resource resource =
         Resource.create(Attributes.of(stringKey("ka"), "va"), "http://resource.url");
     io.opentelemetry.proto.resource.v1.Resource resourceProto =
@@ -1057,6 +1095,7 @@ class MetricsRequestMarshalerTest {
 
     assertThat(
             toProtoResourceMetrics(
+                marshalerSource,
                 ImmutableList.of(
                     ImmutableMetricData.createDoubleSum(
                         resource,
@@ -1130,55 +1169,48 @@ class MetricsRequestMarshalerTest {
             });
   }
 
-  private static List<NumberDataPoint> toNumberDataPoints(Collection<? extends PointData> points) {
+  private static List<NumberDataPoint> toNumberDataPoints(
+      MarshalerSource marshalerSource, Collection<? extends PointData> points) {
     return points.stream()
-        .map(
-            point ->
-                parse(NumberDataPoint.getDefaultInstance(), NumberDataPointMarshaler.create(point)))
+        .map(point -> parse(NumberDataPoint.getDefaultInstance(), marshalerSource.create(point)))
         .collect(Collectors.toList());
   }
 
-  private static List<SummaryDataPoint> toSummaryDataPoints(Collection<SummaryPointData> points) {
+  private static List<SummaryDataPoint> toSummaryDataPoints(
+      MarshalerSource marshalerSource, Collection<SummaryPointData> points) {
     return points.stream()
-        .map(
-            point ->
-                parse(
-                    SummaryDataPoint.getDefaultInstance(), SummaryDataPointMarshaler.create(point)))
+        .map(point -> parse(SummaryDataPoint.getDefaultInstance(), marshalerSource.create(point)))
         .collect(Collectors.toList());
   }
 
   private static List<HistogramDataPoint> toHistogramDataPoints(
-      Collection<HistogramPointData> points) {
+      MarshalerSource marshalerSource, Collection<HistogramPointData> points) {
     return points.stream()
-        .map(
-            point ->
-                parse(
-                    HistogramDataPoint.getDefaultInstance(),
-                    HistogramDataPointMarshaler.create(point)))
+        .map(point -> parse(HistogramDataPoint.getDefaultInstance(), marshalerSource.create(point)))
         .collect(Collectors.toList());
   }
 
   private static List<ExponentialHistogramDataPoint> toExponentialHistogramDataPoints(
-      Collection<ExponentialHistogramPointData> points) {
+      MarshalerSource marshalerSource, Collection<ExponentialHistogramPointData> points) {
     return points.stream()
         .map(
             point ->
                 parse(
                     ExponentialHistogramDataPoint.getDefaultInstance(),
-                    ExponentialHistogramDataPointMarshaler.create(point)))
+                    marshalerSource.create(point)))
         .collect(Collectors.toList());
   }
 
-  private static Metric toProtoMetric(MetricData metricData) {
-    return parse(Metric.getDefaultInstance(), MetricMarshaler.create(metricData));
+  private static Metric toProtoMetric(MarshalerSource marshalerSource, MetricData metricData) {
+    return parse(Metric.getDefaultInstance(), marshalerSource.create(metricData));
   }
 
   private static List<ResourceMetrics> toProtoResourceMetrics(
-      Collection<MetricData> metricDataList) {
+      MarshalerSource marshalerSource, Collection<MetricData> metricDataList) {
     ExportMetricsServiceRequest exportRequest =
         parse(
             ExportMetricsServiceRequest.getDefaultInstance(),
-            MetricsRequestMarshaler.create(metricDataList));
+            marshalerSource.create(metricDataList));
     return exportRequest.getResourceMetricsList();
   }
 
@@ -1263,5 +1295,102 @@ class MetricsRequestMarshalerTest {
       throw new UncheckedIOException(e);
     }
     return new String(bos.toByteArray(), StandardCharsets.UTF_8);
+  }
+
+  private static <T> Marshaler createMarshaler(StatelessMarshaler<T> marshaler, T data) {
+    return new Marshaler() {
+      private final MarshalerContext context = new MarshalerContext();
+      private final int size = marshaler.getBinarySerializedSize(data, context);
+
+      @Override
+      public int getBinarySerializedSize() {
+        return size;
+      }
+
+      @Override
+      protected void writeTo(Serializer output) throws IOException {
+        context.resetReadIndex();
+        marshaler.writeTo(output, data, context);
+      }
+    };
+  }
+
+  private enum MarshalerSource {
+    STATEFUL_MARSHALER {
+      @Override
+      Marshaler create(PointData point) {
+        return NumberDataPointMarshaler.create(point);
+      }
+
+      @Override
+      Marshaler create(SummaryPointData point) {
+        return SummaryDataPointMarshaler.create(point);
+      }
+
+      @Override
+      Marshaler create(HistogramPointData point) {
+        return HistogramDataPointMarshaler.create(point);
+      }
+
+      @Override
+      Marshaler create(ExponentialHistogramPointData point) {
+        return ExponentialHistogramDataPointMarshaler.create(point);
+      }
+
+      @Override
+      Marshaler create(MetricData metric) {
+        return MetricMarshaler.create(metric);
+      }
+
+      @Override
+      Marshaler create(Collection<MetricData> metricDataList) {
+        return MetricsRequestMarshaler.create(metricDataList);
+      }
+    },
+    STATELESS_MARSHALER {
+      @Override
+      Marshaler create(PointData point) {
+        return createMarshaler(NumberDataPointStatelessMarshaler.INSTANCE, point);
+      }
+
+      @Override
+      Marshaler create(SummaryPointData point) {
+        return createMarshaler(SummaryDataPointStatelessMarshaler.INSTANCE, point);
+      }
+
+      @Override
+      Marshaler create(HistogramPointData point) {
+        return createMarshaler(HistogramDataPointStatelessMarshaler.INSTANCE, point);
+      }
+
+      @Override
+      Marshaler create(ExponentialHistogramPointData point) {
+        return createMarshaler(ExponentialHistogramDataPointStatelessMarshaler.INSTANCE, point);
+      }
+
+      @Override
+      Marshaler create(MetricData metric) {
+        return createMarshaler(MetricStatelessMarshaler.INSTANCE, metric);
+      }
+
+      @Override
+      Marshaler create(Collection<MetricData> metricDataList) {
+        LowAllocationMetricsRequestMarshaler marshaler = new LowAllocationMetricsRequestMarshaler();
+        marshaler.initialize(metricDataList);
+        return marshaler;
+      }
+    };
+
+    abstract Marshaler create(PointData point);
+
+    abstract Marshaler create(SummaryPointData point);
+
+    abstract Marshaler create(HistogramPointData point);
+
+    abstract Marshaler create(ExponentialHistogramPointData point);
+
+    abstract Marshaler create(MetricData metric);
+
+    abstract Marshaler create(Collection<MetricData> metricDataList);
   }
 }

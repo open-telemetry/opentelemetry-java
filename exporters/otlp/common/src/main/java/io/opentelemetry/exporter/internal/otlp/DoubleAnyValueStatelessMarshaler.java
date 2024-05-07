@@ -16,6 +16,8 @@ import java.io.IOException;
 final class DoubleAnyValueStatelessMarshaler implements StatelessMarshaler<Double> {
   static final DoubleAnyValueStatelessMarshaler INSTANCE = new DoubleAnyValueStatelessMarshaler();
 
+  private DoubleAnyValueStatelessMarshaler() {}
+
   @Override
   public void writeTo(Serializer output, Double value, MarshalerContext context)
       throws IOException {
