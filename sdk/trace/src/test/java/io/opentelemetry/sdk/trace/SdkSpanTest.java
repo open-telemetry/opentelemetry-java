@@ -15,6 +15,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -909,6 +910,46 @@ class SdkSpanTest {
     } finally {
       span.end();
     }
+  }
+
+  @Test
+  void addLink_InvalidArgs() {
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
+    assertThatCode(() -> span.addLink(null)).doesNotThrowAnyException();
+    assertThatCode(() -> span.addLink(SpanContext.getInvalid())).doesNotThrowAnyException();
+    assertThatCode(() -> span.addLink(null, null)).doesNotThrowAnyException();
+    assertThatCode(() -> span.addLink(SpanContext.getInvalid(), Attributes.empty()))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void addLink_FaultIn() {
+    SdkSpan span =
+        SdkSpan.startSpan(
+            spanContext,
+            SPAN_NAME,
+            instrumentationScopeInfo,
+            SpanKind.INTERNAL,
+            Span.getInvalid(),
+            Context.root(),
+            SpanLimits.getDefault(),
+            spanProcessor,
+            testClock,
+            resource,
+            null,
+            null, // exercises the fault-in path
+            0,
+            0);
+    SdkSpan linkedSpan = createTestSpan(SpanKind.INTERNAL);
+    span.addLink(linkedSpan.getSpanContext());
+
+    SpanData spanData = span.toSpanData();
+    assertThat(spanData.getTotalRecordedLinks()).isEqualTo(1);
+    assertThat(spanData.getLinks())
+        .satisfiesExactly(
+            link -> {
+              assertThat(link.getSpanContext()).isEqualTo(linkedSpan.getSpanContext());
+            });
   }
 
   @Test
