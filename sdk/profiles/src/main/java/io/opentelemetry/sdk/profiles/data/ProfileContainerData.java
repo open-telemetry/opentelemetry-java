@@ -6,8 +6,10 @@
 package io.opentelemetry.sdk.profiles.data;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import java.nio.ByteBuffer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -27,11 +29,18 @@ public interface ProfileContainerData {
   InstrumentationScopeInfo getInstrumentationScopeInfo();
 
   /**
-   * Returns a globally unique identifier for a profile. The ID is a 16-byte array. An ID with all
-   * zeroes is considered invalid. This field is required.
+   * Returns a globally unique identifier for a profile, as 32 character lowercase hex String. An ID
+   * with all zeroes is considered invalid. This field is required.
    */
-  @SuppressWarnings("mutable")
-  byte[] getProfileId();
+  String getProfileId();
+
+  /**
+   * Returns a globally unique identifier for a profile, as a 16 bytes array. An ID with all zeroes
+   * is considered invalid. This field is required.
+   */
+  default byte[] getProfileIdBytes() {
+    return OtelEncodingUtils.bytesFromBase16(getProfileId(), 32);
+  }
 
   /**
    * Returns the start time of the profile. Value is UNIX Epoch time in nanoseconds since 00:00:00
@@ -76,9 +85,7 @@ public interface ProfileContainerData {
    * should be to not include the original payload. If the original payload is in pprof format, it
    * SHOULD not be included in this field.
    */
-  @SuppressWarnings("mutable")
-  @Nullable
-  byte[] getOriginalPayload();
+  ByteBuffer getOriginalPayload();
 
   /** Returns an extended pprof profile. Required, even when originalPayload is also present. */
   ProfileData getProfile();
