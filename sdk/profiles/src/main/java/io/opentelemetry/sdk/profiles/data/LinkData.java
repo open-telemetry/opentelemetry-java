@@ -5,6 +5,9 @@
 
 package io.opentelemetry.sdk.profiles.data;
 
+import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -15,11 +18,22 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface LinkData {
 
-  /** A unique identifier of a trace that this linked span is part of. The ID is a 16-byte array. */
-  @SuppressWarnings("mutable")
-  byte[] getTraceId();
+  /**
+   * Returns a unique identifier of a trace that this linked span is part of as 32 character
+   * lowercase hex String.
+   */
+  String getTraceId();
 
-  /** A unique identifier for the linked span. The ID is an 8-byte array. */
-  @SuppressWarnings("mutable")
-  byte[] getSpanId();
+  /** Returns the trace identifier as 16-byte array. */
+  default byte[] getTraceIdBytes() {
+    return OtelEncodingUtils.bytesFromBase16(getTraceId(), TraceId.getLength());
+  }
+
+  /** Returns a unique identifier for the linked span, as 16 character lowercase hex String. */
+  String getSpanId();
+
+  /** Returns a unique identifier for the linked span, as an 8-byte array. */
+  default byte[] getSpanIdBytes() {
+    return OtelEncodingUtils.bytesFromBase16(getSpanId(), SpanId.getLength());
+  }
 }
