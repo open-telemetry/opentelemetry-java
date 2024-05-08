@@ -388,6 +388,25 @@ class FileConfigurationParseTest {
   }
 
   @ParameterizedTest
+  @MethodSource("coreSchemaValuesArgs")
+  void coreSchemaValues(String rawYaml, Object expectedYamlResult) {
+    Object yaml =
+        FileConfiguration.loadYaml(
+            new ByteArrayInputStream(rawYaml.getBytes(StandardCharsets.UTF_8)),
+            Collections.emptyMap());
+    assertThat(yaml).isEqualTo(expectedYamlResult);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static java.util.stream.Stream<Arguments> coreSchemaValuesArgs() {
+    return java.util.stream.Stream.of(
+        Arguments.of("key1: 0o123\n", mapOf(entry("key1", 83))),
+        Arguments.of("key1: 0123\n", mapOf(entry("key1", 123))),
+        Arguments.of("key1: 0xdeadbeef\n", mapOf(entry("key1", 3735928559L))),
+        Arguments.of("key1: \"0xdeadbeef\"\n", mapOf(entry("key1", "0xdeadbeef"))));
+  }
+
+  @ParameterizedTest
   @MethodSource("envVarSubstitutionArgs")
   void envSubstituteAndLoadYaml(String rawYaml, Object expectedYamlResult) {
     Map<String, String> environmentVariables = new HashMap<>();
@@ -396,6 +415,7 @@ class FileConfigurationParseTest {
     environmentVariables.put("BOOL", "true");
     environmentVariables.put("INT", "1");
     environmentVariables.put("FLOAT", "1.1");
+    environmentVariables.put("HEX", "0xdeadbeef");
 
     Object yaml =
         FileConfiguration.loadYaml(
@@ -412,6 +432,7 @@ class FileConfigurationParseTest {
         Arguments.of("key1: ${BOOL}\n", mapOf(entry("key1", true))),
         Arguments.of("key1: ${INT}\n", mapOf(entry("key1", 1))),
         Arguments.of("key1: ${FLOAT}\n", mapOf(entry("key1", 1.1))),
+        Arguments.of("key1: ${HEX}\n", mapOf(entry("key1", 3735928559L))),
         Arguments.of(
             "key1: ${STR_1}\n" + "key2: value2\n",
             mapOf(entry("key1", "value1"), entry("key2", "value2"))),
@@ -432,7 +453,13 @@ class FileConfigurationParseTest {
             "key1:\n  ${STR_1}: value1\n",
             mapOf(entry("key1", mapOf(entry("${STR_1}", "value1"))))),
         Arguments.of(
-            "key1:\n - ${STR_1}\n", mapOf(entry("key1", Collections.singletonList("${STR_1}")))));
+            "key1:\n - ${STR_1}\n", mapOf(entry("key1", Collections.singletonList("${STR_1}")))),
+        // Quoted environment variables
+        Arguments.of("key1: \"${HEX}\"\n", mapOf(entry("key1", "0xdeadbeef"))),
+        Arguments.of("key1: \"${STR_1}\"\n", mapOf(entry("key1", "value1"))),
+        Arguments.of("key1: \"${BOOL}\"\n", mapOf(entry("key1", "true"))),
+        Arguments.of("key1: \"${INT}\"\n", mapOf(entry("key1", "1"))),
+        Arguments.of("key1: \"${FLOAT}\"\n", mapOf(entry("key1", "1.1"))));
   }
 
   private static <K, V> Map.Entry<K, V> entry(K key, @Nullable V value) {

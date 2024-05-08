@@ -24,9 +24,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.snakeyaml.engine.v2.api.Load;
 import org.snakeyaml.engine.v2.api.LoadSettings;
+import org.snakeyaml.engine.v2.common.ScalarStyle;
 import org.snakeyaml.engine.v2.constructor.StandardConstructor;
+import org.snakeyaml.engine.v2.exceptions.ConstructorException;
+import org.snakeyaml.engine.v2.exceptions.YamlEngineException;
 import org.snakeyaml.engine.v2.nodes.MappingNode;
-import org.yaml.snakeyaml.Yaml;
+import org.snakeyaml.engine.v2.nodes.Node;
+import org.snakeyaml.engine.v2.nodes.NodeTuple;
+import org.snakeyaml.engine.v2.nodes.ScalarNode;
+import org.snakeyaml.engine.v2.schema.CoreSchema;
 
 /**
  * Configure {@link OpenTelemetrySdk} from YAML configuration files conforming to the schema in <a
@@ -127,7 +133,7 @@ public final class FileConfiguration {
 
   // Visible for testing
   static Object loadYaml(InputStream inputStream, Map<String, String> environmentVariables) {
-    LoadSettings settings = LoadSettings.builder().build();
+    LoadSettings settings = LoadSettings.builder().setSchema(new CoreSchema()).build();
     Load yaml = new Load(settings, new EnvSubstitutionConstructor(settings, environmentVariables));
     return yaml.loadFromInputStream(inputStream);
   }
@@ -146,51 +152,93 @@ public final class FileConfiguration {
   private static final class EnvSubstitutionConstructor extends StandardConstructor {
 
     // Yaml is not thread safe but this instance is always used on the same thread
-    private final Yaml yaml = new Yaml();
+    private final Load load;
     private final Map<String, String> environmentVariables;
 
     private EnvSubstitutionConstructor(
         LoadSettings loadSettings, Map<String, String> environmentVariables) {
       super(loadSettings);
+      load = new Load(loadSettings);
       this.environmentVariables = environmentVariables;
     }
 
+    /**
+     * Implementation is same as {@link
+     * org.snakeyaml.engine.v2.constructor.BaseConstructor#constructMapping(MappingNode)} except we
+     * override the resolution of values with our custom {@link #constructValueObject(Node)}, which
+     * performs environment variable substitution.
+     */
     @Override
+    @SuppressWarnings({"ReturnValueIgnored", "CatchingUnchecked"})
     protected Map<Object, Object> constructMapping(MappingNode node) {
-      // First call the super to construct mapping from MappingNode as usual
-      Map<Object, Object> result = super.constructMapping(node);
-
-      // Iterate through the map entries, and:
-      // 1. Identify entries which are scalar strings eligible for environment variable substitution
-      // 2. Apply environment variable substitution
-      // 3. Re-parse substituted value so it has correct type (i.e. yaml.load(newVal))
-      for (Map.Entry<Object, Object> entry : result.entrySet()) {
-        Object value = entry.getValue();
-        if (!(value instanceof String)) {
-          continue;
+      Map<Object, Object> mapping = settings.getDefaultMap().apply(node.getValue().size());
+      List<NodeTuple> nodeValue = node.getValue();
+      for (NodeTuple tuple : nodeValue) {
+        Node keyNode = tuple.getKeyNode();
+        Node valueNode = tuple.getValueNode();
+        Object key = constructObject(keyNode);
+        if (key != null) {
+          try {
+            key.hashCode(); // check circular dependencies
+          } catch (Exception e) {
+            throw new ConstructorException(
+                "while constructing a mapping",
+                node.getStartMark(),
+                "found unacceptable key " + key,
+                tuple.getKeyNode().getStartMark(),
+                e);
+          }
         }
-
-        String val = (String) value;
-        Matcher matcher = ENV_VARIABLE_REFERENCE.matcher(val);
-        if (!matcher.find()) {
-          continue;
+        Object value = constructValueObject(valueNode);
+        if (keyNode.isRecursive()) {
+          if (settings.getAllowRecursiveKeys()) {
+            postponeMapFilling(mapping, key, value);
+          } else {
+            throw new YamlEngineException(
+                "Recursive key for mapping is detected but it is not configured to be allowed.");
+          }
+        } else {
+          mapping.put(key, value);
         }
-
-        int offset = 0;
-        StringBuilder newVal = new StringBuilder();
-        do {
-          MatchResult matchResult = matcher.toMatchResult();
-          String replacement = environmentVariables.getOrDefault(matcher.group(1), "");
-          newVal.append(val, offset, matchResult.start()).append(replacement);
-          offset = matchResult.end();
-        } while (matcher.find());
-        if (offset != val.length()) {
-          newVal.append(val, offset, val.length());
-        }
-        entry.setValue(yaml.load(newVal.toString()));
       }
 
-      return result;
+      return mapping;
+    }
+
+    private Object constructValueObject(Node node) {
+      if (!(node instanceof ScalarNode)) {
+        return super.constructObject(node);
+      }
+      Object value = super.constructObject(node);
+      if (!(value instanceof String)) {
+        return value;
+      }
+
+      String val = (String) value;
+      Matcher matcher = ENV_VARIABLE_REFERENCE.matcher(val);
+      if (!matcher.find()) {
+        return value;
+      }
+
+      int offset = 0;
+      StringBuilder newVal = new StringBuilder();
+      ScalarStyle scalarStyle = ((ScalarNode) node).getScalarStyle();
+      do {
+        MatchResult matchResult = matcher.toMatchResult();
+        String replacement = environmentVariables.getOrDefault(matcher.group(1), "");
+        newVal.append(val, offset, matchResult.start()).append(replacement);
+        offset = matchResult.end();
+      } while (matcher.find());
+      if (offset != val.length()) {
+        newVal.append(val, offset, val.length());
+      }
+      // If the value was double quoted, retain the double quotes so we don't change a value
+      // intended to be a string to a different type after environment variable substitution
+      if (scalarStyle == ScalarStyle.DOUBLE_QUOTED && newVal.length() != 0) {
+        newVal.insert(0, "\"");
+        newVal.append("\"");
+      }
+      return load.loadFromString(newVal.toString());
     }
   }
 }
