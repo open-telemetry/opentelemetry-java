@@ -14,7 +14,7 @@ import io.opentelemetry.exporter.internal.marshal.ProtoFieldInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
-import io.opentelemetry.exporter.internal.otlp.KeyValueStatelessMarshaler;
+import io.opentelemetry.exporter.internal.otlp.AttributeKeyValueStatelessMarshaler;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongExemplarData;
@@ -52,7 +52,7 @@ final class ExemplarStatelessMarshaler implements StatelessMarshaler<ExemplarDat
     output.serializeRepeatedMessageWithContext(
         io.opentelemetry.proto.metrics.v1.internal.Exemplar.FILTERED_ATTRIBUTES,
         exemplar.getFilteredAttributes(),
-        KeyValueStatelessMarshaler.INSTANCE,
+        AttributeKeyValueStatelessMarshaler.INSTANCE,
         context);
   }
 
@@ -85,7 +85,7 @@ final class ExemplarStatelessMarshaler implements StatelessMarshaler<ExemplarDat
         StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
             io.opentelemetry.proto.metrics.v1.internal.Exemplar.FILTERED_ATTRIBUTES,
             exemplar.getFilteredAttributes(),
-            KeyValueStatelessMarshaler.INSTANCE,
+            AttributeKeyValueStatelessMarshaler.INSTANCE,
             context);
 
     return size;

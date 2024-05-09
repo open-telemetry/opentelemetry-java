@@ -212,6 +212,7 @@ class OtlpSpanExporterProviderTest {
       verify(httpBuilder, never()).setTrustedCertificates(any());
       verify(httpBuilder, never()).setClientTls(any(), any());
       assertThat(httpBuilder).extracting("delegate").extracting("retryPolicy").isNull();
+      assertThat(exporter).extracting("memoryMode").isEqualTo(MemoryMode.IMMUTABLE_DATA);
     }
     Mockito.verifyNoInteractions(grpcBuilder);
   }

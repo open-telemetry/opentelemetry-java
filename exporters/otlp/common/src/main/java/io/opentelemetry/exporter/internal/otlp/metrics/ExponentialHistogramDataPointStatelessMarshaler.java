@@ -10,7 +10,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
-import io.opentelemetry.exporter.internal.otlp.KeyValueStatelessMarshaler;
+import io.opentelemetry.exporter.internal.otlp.AttributeKeyValueStatelessMarshaler;
 import io.opentelemetry.proto.metrics.v1.internal.ExponentialHistogramDataPoint;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import java.io.IOException;
@@ -58,7 +58,7 @@ final class ExponentialHistogramDataPointStatelessMarshaler
     output.serializeRepeatedMessageWithContext(
         ExponentialHistogramDataPoint.ATTRIBUTES,
         point.getAttributes(),
-        KeyValueStatelessMarshaler.INSTANCE,
+        AttributeKeyValueStatelessMarshaler.INSTANCE,
         context);
   }
 
@@ -105,7 +105,7 @@ final class ExponentialHistogramDataPointStatelessMarshaler
         StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
             ExponentialHistogramDataPoint.ATTRIBUTES,
             point.getAttributes(),
-            KeyValueStatelessMarshaler.INSTANCE,
+            AttributeKeyValueStatelessMarshaler.INSTANCE,
             context);
 
     return size;

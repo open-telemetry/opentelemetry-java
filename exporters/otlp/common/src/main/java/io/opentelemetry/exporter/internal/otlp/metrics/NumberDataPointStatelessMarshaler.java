@@ -13,7 +13,7 @@ import io.opentelemetry.exporter.internal.marshal.ProtoFieldInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
-import io.opentelemetry.exporter.internal.otlp.KeyValueStatelessMarshaler;
+import io.opentelemetry.exporter.internal.otlp.AttributeKeyValueStatelessMarshaler;
 import io.opentelemetry.proto.metrics.v1.internal.NumberDataPoint;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -45,7 +45,7 @@ final class NumberDataPointStatelessMarshaler implements StatelessMarshaler<Poin
     output.serializeRepeatedMessageWithContext(
         NumberDataPoint.ATTRIBUTES,
         point.getAttributes(),
-        KeyValueStatelessMarshaler.INSTANCE,
+        AttributeKeyValueStatelessMarshaler.INSTANCE,
         context);
   }
 
@@ -71,7 +71,7 @@ final class NumberDataPointStatelessMarshaler implements StatelessMarshaler<Poin
         StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
             NumberDataPoint.ATTRIBUTES,
             point.getAttributes(),
-            KeyValueStatelessMarshaler.INSTANCE,
+            AttributeKeyValueStatelessMarshaler.INSTANCE,
             context);
     return size;
   }

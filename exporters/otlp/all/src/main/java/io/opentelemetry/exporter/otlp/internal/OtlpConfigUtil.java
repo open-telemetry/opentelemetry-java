@@ -7,8 +7,10 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import static io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram;
 
+import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -255,6 +257,26 @@ public final class OtlpConfigUtil {
       } else if (builder instanceof OtlpHttpSpanExporterBuilder) {
         Method method =
             OtlpHttpSpanExporterBuilder.class.getDeclaredMethod("setMemoryMode", MemoryMode.class);
+        method.setAccessible(true);
+        method.invoke(builder, memoryMode);
+      } else if (builder instanceof OtlpGrpcLogRecordExporterBuilder) {
+        // Calling getDeclaredMethod causes all private methods to be read, which causes a
+        // ClassNotFoundException when running with the OkHttHttpProvider as the private
+        // setManagedChanel(io.grpc.ManagedChannel) is reached and io.grpc.ManagedChannel is not on
+        // the classpath. io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogUtil provides a layer
+        // of indirection which avoids scanning the OtlpGrpcLogRecordExporterBuilder private
+        // methods.
+        Class<?> otlpGrpcMetricUtil =
+            Class.forName("io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogUtil");
+        Method method =
+            otlpGrpcMetricUtil.getDeclaredMethod(
+                "setMemoryMode", OtlpGrpcLogRecordExporterBuilder.class, MemoryMode.class);
+        method.setAccessible(true);
+        method.invoke(null, builder, memoryMode);
+      } else if (builder instanceof OtlpHttpLogRecordExporterBuilder) {
+        Method method =
+            OtlpHttpLogRecordExporterBuilder.class.getDeclaredMethod(
+                "setMemoryMode", MemoryMode.class);
         method.setAccessible(true);
         method.invoke(builder, memoryMode);
       } else {
