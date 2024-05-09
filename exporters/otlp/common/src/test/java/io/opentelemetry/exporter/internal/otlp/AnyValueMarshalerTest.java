@@ -15,7 +15,10 @@ import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.incubator.logs.KeyAnyValue;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
+import io.opentelemetry.exporter.internal.marshal.Serializer;
+import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.ArrayValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
@@ -35,9 +38,18 @@ class AnyValueMarshalerTest {
 
   @ParameterizedTest
   @MethodSource("serializeAnyValueArgs")
-  void anyValueString(
+  void anyValueString_StatefulMarshaler(
       io.opentelemetry.api.incubator.logs.AnyValue<?> anyValue, AnyValue expectedSerializedValue) {
     MarshalerWithSize marshaler = AnyValueMarshaler.create(anyValue);
+    AnyValue serializedValue = parse(AnyValue.getDefaultInstance(), marshaler);
+    assertThat(serializedValue).isEqualTo(expectedSerializedValue);
+  }
+
+  @ParameterizedTest
+  @MethodSource("serializeAnyValueArgs")
+  void anyValueString_StatelessMarshaler(
+      io.opentelemetry.api.incubator.logs.AnyValue<?> anyValue, AnyValue expectedSerializedValue) {
+    Marshaler marshaler = createMarshaler(AnyValueStatelessMarshaler.INSTANCE, anyValue);
     AnyValue serializedValue = parse(AnyValue.getDefaultInstance(), marshaler);
     assertThat(serializedValue).isEqualTo(expectedSerializedValue);
   }
@@ -166,5 +178,23 @@ class AnyValueMarshalerTest {
       throw new UncheckedIOException(e);
     }
     return new String(bos.toByteArray(), StandardCharsets.UTF_8);
+  }
+
+  private static <T> Marshaler createMarshaler(StatelessMarshaler<T> marshaler, T data) {
+    return new Marshaler() {
+      private final MarshalerContext context = new MarshalerContext();
+      private final int size = marshaler.getBinarySerializedSize(data, context);
+
+      @Override
+      public int getBinarySerializedSize() {
+        return size;
+      }
+
+      @Override
+      protected void writeTo(Serializer output) throws IOException {
+        context.resetReadIndex();
+        marshaler.writeTo(output, data, context);
+      }
+    };
   }
 }
