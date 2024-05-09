@@ -2,6 +2,89 @@
 
 ## Unreleased
 
+### API
+
+* Stabilize synchronous gauge
+  ([#6419](https://github.com/open-telemetry/opentelemetry-java/pull/6419))
+
+#### Incubator
+
+* Add put(AttributeKey<T>, T) overload to EventBuilder
+  ([#6331](https://github.com/open-telemetry/opentelemetry-java/pull/6331))
+
+#### Baggage
+
+* Baggage filters space-only keys
+  ([#6431](https://github.com/open-telemetry/opentelemetry-java/pull/6431))
+
+### SDK
+
+* Add experimental scope config to enable / disable scopes (i.e. meter, logger, tracer)
+  ([#6375](https://github.com/open-telemetry/opentelemetry-java/pull/6375))
+
+#### Traces
+
+* Add ReadableSpan#getAttributes
+  ([#6382](https://github.com/open-telemetry/opentelemetry-java/pull/6382))
+* Use standard ArrayList size rather than max number of links for initial span links allocation
+  ([#6252](https://github.com/open-telemetry/opentelemetry-java/pull/6252))
+
+#### Metrics
+
+* Use low precision Clock#now when computing timestamp for exemplars
+  ([#6417](https://github.com/open-telemetry/opentelemetry-java/pull/6417))
+* Update invalid instrument name log message to indicate that forward slash `/`
+  ([#6343](https://github.com/open-telemetry/opentelemetry-java/pull/6343))
+
+#### Exporters
+
+* Introduce low allocation OTLP marshalers. If using autoconfigure, opt in
+  via `OTEL_JAVA_EXPERIMENTAL_EXPORTER_MEMORY_MODE=REUSABLE_DATA`.
+  * Low allocation OTLP logs marshaler
+    ([#6429](https://github.com/open-telemetry/opentelemetry-java/pull/6429))
+  * Low allocation OTLP metrics marshaler
+    ([#6422](https://github.com/open-telemetry/opentelemetry-java/pull/6422))
+  * Low allocation OTLP trace marshaler
+    ([#6410](https://github.com/open-telemetry/opentelemetry-java/pull/6410))
+  * Add memory mode support to OTLP exporters
+    ([#6430](https://github.com/open-telemetry/opentelemetry-java/pull/6430))
+  * Marshal span status description without allocation
+    ([#6423](https://github.com/open-telemetry/opentelemetry-java/pull/6423))
+  * Add private constructors for stateless marshalers
+    ([#6434](https://github.com/open-telemetry/opentelemetry-java/pull/6434))
+* Mark opentelemetry-exporter-sender-jdk stable
+  ([#6357](https://github.com/open-telemetry/opentelemetry-java/pull/6357))
+* PrometheusHttpServer prevent concurrent reads when reusable memory mode
+  ([#6371](https://github.com/open-telemetry/opentelemetry-java/pull/6371))
+* Ignore TLS components (SSLContext, TrustManager, KeyManager) if plain HTTP protocol is used for
+  exporting
+  ([#6329](https://github.com/open-telemetry/opentelemetry-java/pull/6329))
+* Add is_remote_parent span flags to OTLP exported Spans and SpanLinks
+  ([#6388](https://github.com/open-telemetry/opentelemetry-java/pull/6388))
+* Add missing fields to OTLP metric exporters `toString()`
+  ([#6402](https://github.com/open-telemetry/opentelemetry-java/pull/6402))
+
+#### Extensions
+
+* Rename otel.config.file to otel.experimental.config.file for autoconfigure
+  ([#6396](https://github.com/open-telemetry/opentelemetry-java/pull/6396))
+
+### OpenCensus Shim
+
+* Fix opencensus shim spanBuilderWithRemoteParent behavior
+  ([#6415](https://github.com/open-telemetry/opentelemetry-java/pull/6415))
+
+### Tooling
+
+* Add additional API incubator docs
+  ([#6356](https://github.com/open-telemetry/opentelemetry-java/pull/6356))
+* Run build on java 21
+  ([#6370](https://github.com/open-telemetry/opentelemetry-java/pull/6370))
+* Fix running tests with java 8 on macos
+  ([#6411](https://github.com/open-telemetry/opentelemetry-java/pull/6411))
+* Move away from deprecated gradle enterprise APIs
+  ([#6363](https://github.com/open-telemetry/opentelemetry-java/pull/6363))
+
 ## Version 1.37.0 (2024-04-05)
 
 **NOTICE:** This release contains a significant restructuring of the experimental event API and the API incubator artifact. Please read the notes in the `API -> Incubator` section carefully.
