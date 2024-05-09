@@ -9,7 +9,11 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** A gauge instrument that synchronously records {@code long} values. */
+/**
+ * A gauge instrument that synchronously records {@code long} values.
+ *
+ * @since 1.38.0
+ */
 @ThreadSafe
 public interface LongGauge {
   /**

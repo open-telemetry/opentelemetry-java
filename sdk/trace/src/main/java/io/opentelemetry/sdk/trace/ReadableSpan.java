@@ -124,6 +124,7 @@ public interface ReadableSpan {
    * #getAttribute(AttributeKey)}.
    *
    * @return the Span attributes, or {@link Attributes#empty()} if the span has no attributes.
+   * @since 1.38.0
    */
   default Attributes getAttributes() {
     return Attributes.empty();

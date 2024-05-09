@@ -64,6 +64,8 @@ public interface DefaultAggregationSelector {
   /**
    * Returns a string representation of this selector, for using in {@link Object#toString()}
    * implementations.
+   *
+   * @since 1.38.0
    */
   static String asString(DefaultAggregationSelector selector) {
     StringJoiner joiner = new StringJoiner(", ", "DefaultAggregationSelector{", "}");
