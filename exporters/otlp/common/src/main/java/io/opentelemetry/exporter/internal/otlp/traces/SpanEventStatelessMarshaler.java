@@ -10,7 +10,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
-import io.opentelemetry.exporter.internal.otlp.KeyValueStatelessMarshaler;
+import io.opentelemetry.exporter.internal.otlp.AttributeKeyValueStatelessMarshaler;
 import io.opentelemetry.proto.trace.v1.internal.Span;
 import io.opentelemetry.sdk.trace.data.EventData;
 import java.io.IOException;
@@ -19,13 +19,18 @@ import java.io.IOException;
 final class SpanEventStatelessMarshaler implements StatelessMarshaler<EventData> {
   static final SpanEventStatelessMarshaler INSTANCE = new SpanEventStatelessMarshaler();
 
+  private SpanEventStatelessMarshaler() {}
+
   @Override
   public void writeTo(Serializer output, EventData event, MarshalerContext context)
       throws IOException {
     output.serializeFixed64(Span.Event.TIME_UNIX_NANO, event.getEpochNanos());
     output.serializeStringWithContext(Span.Event.NAME, event.getName(), context);
     output.serializeRepeatedMessageWithContext(
-        Span.Event.ATTRIBUTES, event.getAttributes(), KeyValueStatelessMarshaler.INSTANCE, context);
+        Span.Event.ATTRIBUTES,
+        event.getAttributes(),
+        AttributeKeyValueStatelessMarshaler.INSTANCE,
+        context);
     int droppedAttributesCount = event.getTotalAttributeCount() - event.getAttributes().size();
     output.serializeUInt32(Span.Event.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
   }
@@ -39,7 +44,7 @@ final class SpanEventStatelessMarshaler implements StatelessMarshaler<EventData>
         StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
             Span.Event.ATTRIBUTES,
             event.getAttributes(),
-            KeyValueStatelessMarshaler.INSTANCE,
+            AttributeKeyValueStatelessMarshaler.INSTANCE,
             context);
     int droppedAttributesCount = event.getTotalAttributeCount() - event.getAttributes().size();
     size += MarshalerUtil.sizeUInt32(Span.Event.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);

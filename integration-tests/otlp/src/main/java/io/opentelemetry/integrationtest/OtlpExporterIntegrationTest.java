@@ -350,7 +350,7 @@ abstract class OtlpExporterIntegrationTest {
   @EnumSource(MemoryMode.class)
   void testOtlpGrpcMetricExport_memoryMode(MemoryMode memoryMode) {
     OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder();
-    OtlpConfigUtil.setMemoryModeOnOtlpMetricExporterBuilder(builder, memoryMode);
+    OtlpConfigUtil.setMemoryModeOnOtlpExporterBuilder(builder, memoryMode);
 
     MetricExporter exporter =
         builder
@@ -403,7 +403,7 @@ abstract class OtlpExporterIntegrationTest {
   @EnumSource(MemoryMode.class)
   void testOtlpHttpMetricExport_memoryMode(MemoryMode memoryMode) {
     OtlpHttpMetricExporterBuilder builder = OtlpHttpMetricExporter.builder();
-    OtlpConfigUtil.setMemoryModeOnOtlpMetricExporterBuilder(builder, memoryMode);
+    OtlpConfigUtil.setMemoryModeOnOtlpExporterBuilder(builder, memoryMode);
 
     MetricExporter exporter =
         builder

@@ -14,8 +14,9 @@ import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
-import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.time.Duration;
@@ -33,16 +34,19 @@ import javax.net.ssl.X509TrustManager;
 public final class OtlpHttpSpanExporterBuilder {
 
   private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/traces";
+  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
 
-  private final HttpExporterBuilder<TraceRequestMarshaler> delegate;
+  private final HttpExporterBuilder<Marshaler> delegate;
+  private MemoryMode memoryMode;
 
-  OtlpHttpSpanExporterBuilder(HttpExporterBuilder<TraceRequestMarshaler> delegate) {
+  OtlpHttpSpanExporterBuilder(HttpExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
+    this.memoryMode = memoryMode;
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeaders);
   }
 
   OtlpHttpSpanExporterBuilder() {
-    this(new HttpExporterBuilder<>("otlp", "span", DEFAULT_ENDPOINT));
+    this(new HttpExporterBuilder<>("otlp", "span", DEFAULT_ENDPOINT), DEFAULT_MEMORY_MODE);
   }
 
   /**
@@ -207,12 +211,19 @@ public final class OtlpHttpSpanExporterBuilder {
     return this;
   }
 
+  /** Set the {@link MemoryMode}. */
+  OtlpHttpSpanExporterBuilder setMemoryMode(MemoryMode memoryMode) {
+    requireNonNull(memoryMode, "memoryMode");
+    this.memoryMode = memoryMode;
+    return this;
+  }
+
   /**
    * Constructs a new instance of the exporter based on the builder's values.
    *
    * @return a new exporter's instance
    */
   public OtlpHttpSpanExporter build() {
-    return new OtlpHttpSpanExporter(delegate, delegate.build());
+    return new OtlpHttpSpanExporter(delegate, delegate.build(), memoryMode);
   }
 }

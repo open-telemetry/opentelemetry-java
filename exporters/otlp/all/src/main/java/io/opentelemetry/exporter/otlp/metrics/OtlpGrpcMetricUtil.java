@@ -12,7 +12,7 @@ final class OtlpGrpcMetricUtil {
 
   private OtlpGrpcMetricUtil() {}
 
-  /** See {@link OtlpConfigUtil#setMemoryModeOnOtlpMetricExporterBuilder(Object, MemoryMode)}. */
+  /** See {@link OtlpConfigUtil#setMemoryModeOnOtlpExporterBuilder(Object, MemoryMode)}. */
   static void setMemoryMode(OtlpGrpcMetricExporterBuilder builder, MemoryMode memoryMode) {
     builder.setMemoryMode(memoryMode);
   }

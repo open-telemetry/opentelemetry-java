@@ -8,8 +8,8 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.17.0",
-  "com.google.guava:guava-bom:33.1.0-jre",
+  "com.fasterxml.jackson:jackson-bom:2.17.1",
+  "com.google.guava:guava-bom:33.2.0-jre",
   "com.google.protobuf:protobuf-bom:3.25.3",
   "com.linecorp.armeria:armeria-bom:1.28.4",
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
@@ -20,12 +20,12 @@ val DEPENDENCY_BOMS = listOf(
   "io.zipkin.reporter2:zipkin-reporter-bom:3.4.0",
   "org.assertj:assertj-bom:3.25.3",
   "org.junit:junit-bom:5.10.2",
-  "org.testcontainers:testcontainers-bom:1.19.7",
+  "org.testcontainers:testcontainers-bom:1.19.8",
   "org.snakeyaml:snakeyaml-engine:2.7"
 )
 
 val autoValueVersion = "1.10.4"
-val errorProneVersion = "2.26.1"
+val errorProneVersion = "2.27.1"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
@@ -55,12 +55,12 @@ val DEPENDENCIES = listOf(
   "io.prometheus:simpleclient_httpserver:${prometheusClientVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.38.0",
+  "com.google.api.grpc:proto-google-common-protos:2.39.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit5:1.3.0",
-  "com.uber.nullaway:nullaway:0.10.25",
+  "com.uber.nullaway:nullaway:0.10.26",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",

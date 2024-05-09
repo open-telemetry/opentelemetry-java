@@ -13,7 +13,7 @@ import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
-import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
@@ -42,7 +42,7 @@ public final class OtlpHttpMetricExporterBuilder {
       AggregationTemporalitySelector.alwaysCumulative();
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
 
-  private final HttpExporterBuilder<MetricsRequestMarshaler> delegate;
+  private final HttpExporterBuilder<Marshaler> delegate;
   private AggregationTemporalitySelector aggregationTemporalitySelector =
       DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR;
 
@@ -50,8 +50,7 @@ public final class OtlpHttpMetricExporterBuilder {
       DefaultAggregationSelector.getDefault();
   private MemoryMode memoryMode;
 
-  OtlpHttpMetricExporterBuilder(
-      HttpExporterBuilder<MetricsRequestMarshaler> delegate, MemoryMode memoryMode) {
+  OtlpHttpMetricExporterBuilder(HttpExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
     this.memoryMode = memoryMode;
     delegate.setMeterProvider(MeterProvider::noop);

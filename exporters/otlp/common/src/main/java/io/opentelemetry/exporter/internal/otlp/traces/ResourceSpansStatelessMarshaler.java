@@ -31,6 +31,8 @@ public final class ResourceSpansStatelessMarshaler
   private static final MarshalerContext.Key SCOPE_SPAN_WRITER_KEY = MarshalerContext.key();
   private static final MarshalerContext.Key SCOPE_SPAN_SIZE_CALCULATOR_KEY = MarshalerContext.key();
 
+  private ResourceSpansStatelessMarshaler() {}
+
   @Override
   public void writeTo(
       Serializer output,
