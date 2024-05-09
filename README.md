@@ -304,6 +304,7 @@ Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemet
 
 - [Jason Plumb](https://github.com/breedx-splk), Splunk
 - [Josh Suereth](https://github.com/jsuereth), Google
+- [Lauri Tulmin](https://github.com/laurit), Splunk
 - [Trask Stalnaker](https://github.com/trask), Microsoft
 
 *Find more about the approver role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#approver).*
