@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -25,6 +26,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.ConnectionSpec;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -88,9 +90,14 @@ public final class OkHttpHttpSender implements HttpSender {
     if (retryPolicy != null) {
       builder.addInterceptor(new RetryInterceptor(retryPolicy, OkHttpHttpSender::isRetryable));
     }
-    if (sslContext != null && trustManager != null) {
+
+    boolean isPlainHttp = endpoint.startsWith("http://");
+    if (isPlainHttp) {
+      builder.connectionSpecs(Collections.singletonList(ConnectionSpec.CLEARTEXT));
+    } else if (sslContext != null && trustManager != null) {
       builder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
     }
+
     this.client = builder.build();
     this.url = HttpUrl.get(endpoint);
     this.compressor = compressor;

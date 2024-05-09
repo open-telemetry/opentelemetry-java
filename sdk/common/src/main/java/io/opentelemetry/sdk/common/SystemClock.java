@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.common;
 
 import io.opentelemetry.sdk.internal.JavaVersionSpecific;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -26,7 +27,15 @@ final class SystemClock implements Clock {
 
   @Override
   public long now() {
-    return JavaVersionSpecific.get().currentTimeNanos();
+    return now(true);
+  }
+
+  @Override
+  public long now(boolean highPrecision) {
+    if (highPrecision) {
+      return JavaVersionSpecific.get().currentTimeNanos();
+    }
+    return TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
   }
 
   @Override

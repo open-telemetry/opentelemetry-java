@@ -45,7 +45,7 @@ public class ExponentialHistogramBucketsMarshaler extends MarshalerWithSize {
     }
   }
 
-  private static int calculateSize(int offset, List<Long> counts) {
+  static int calculateSize(int offset, List<Long> counts) {
     int size = 0;
     size += MarshalerUtil.sizeSInt32(ExponentialHistogramDataPoint.Buckets.OFFSET, offset);
     if (counts instanceof DynamicPrimitiveLongList) {
