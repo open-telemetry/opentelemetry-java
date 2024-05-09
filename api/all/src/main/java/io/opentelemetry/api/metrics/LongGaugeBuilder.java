@@ -70,6 +70,9 @@ public interface LongGaugeBuilder {
    * will want to instead register an {@link #buildWithCallback(Consumer)} to asynchronously observe
    * the value of the gauge when metrics are collected.
    *
+   * <p>If using the OpenTelemetry SDK, by default gauges use last value aggregation, such that only
+   * the value of the last recorded measurement is exported.
+   *
    * @return The LongGauge instrument.
    */
   default LongGauge build() {
