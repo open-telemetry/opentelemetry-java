@@ -24,48 +24,6 @@ import org.junit.jupiter.api.Test;
 class ExtendedMetricsApiUsageTest {
 
   @Test
-  void synchronousGaugeUsage() {
-    // Setup SdkMeterProvider
-    InMemoryMetricReader reader = InMemoryMetricReader.create();
-    SdkMeterProvider meterProvider =
-        SdkMeterProvider.builder()
-            // Default resource used for demonstration purposes
-            .setResource(Resource.getDefault())
-            // In-memory reader used for demonstration purposes
-            .registerMetricReader(reader)
-            .build();
-
-    // Get a Meter for a scope
-    Meter meter = meterProvider.get("org.foo.my-scope");
-
-    // Cast GaugeBuilder to ExtendedDoubleGaugeBuilder
-    DoubleGauge gauge = ((ExtendedDoubleGaugeBuilder) meter.gaugeBuilder("my-gauge")).build();
-
-    // Call set synchronously to set the value
-    gauge.set(1.0, Attributes.builder().put("key", "value1").build());
-    gauge.set(2.0, Attributes.builder().put("key", "value2").build());
-
-    assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metricData ->
-                assertThat(metricData)
-                    .hasName("my-gauge")
-                    .hasDoubleGaugeSatisfying(
-                        gaugeAssert ->
-                            gaugeAssert.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(1.0)
-                                        .hasAttributes(
-                                            Attributes.builder().put("key", "value1").build()),
-                                point ->
-                                    point
-                                        .hasValue(2.0)
-                                        .hasAttributes(
-                                            Attributes.builder().put("key", "value2").build()))));
-  }
-
-  @Test
   void attributesAdvice() {
     // Setup SdkMeterProvider
     InMemoryMetricReader reader = InMemoryMetricReader.create();

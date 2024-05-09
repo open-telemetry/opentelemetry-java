@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.incubator.metrics;
+package io.opentelemetry.api.metrics;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.Context;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** A gauge instrument that synchronously records {@code double} values. */
@@ -26,5 +27,12 @@ public interface DoubleGauge {
    */
   void set(double value, Attributes attributes);
 
-  // TODO(jack-berg): should we add overload with Context argument?
+  /**
+   * Records a value with a set of attributes.
+   *
+   * @param value The current gauge value.
+   * @param attributes A set of attributes to associate with the value.
+   * @param context The explicit context to associate with this measurement.
+   */
+  void set(double value, Attributes attributes, Context context);
 }

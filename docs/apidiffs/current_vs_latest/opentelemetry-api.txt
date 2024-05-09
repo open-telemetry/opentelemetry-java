@@ -1,2 +1,19 @@
 Comparing source compatibility of  against 
-No changes.
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.DoubleGauge  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void set(double)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void set(double, io.opentelemetry.api.common.Attributes)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void set(double, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.DoubleGaugeBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.DoubleGauge build()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.metrics.LongGauge  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void set(long)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void set(long, io.opentelemetry.api.common.Attributes)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void set(long, io.opentelemetry.api.common.Attributes, io.opentelemetry.context.Context)
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.metrics.LongGaugeBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.metrics.LongGauge build()

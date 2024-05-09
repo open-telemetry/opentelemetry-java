@@ -50,6 +50,7 @@ public final class DefaultAggregation implements Aggregation, AggregatorFactory 
         }
         return ExplicitBucketHistogramAggregation.getDefault();
       case OBSERVABLE_GAUGE:
+      case GAUGE:
         return LastValueAggregation.getInstance();
     }
     logger.log(Level.WARNING, "Unable to find default aggregation for instrument: " + instrument);
