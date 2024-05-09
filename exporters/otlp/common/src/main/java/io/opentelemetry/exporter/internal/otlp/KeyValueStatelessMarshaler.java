@@ -14,9 +14,9 @@ import io.opentelemetry.proto.common.v1.internal.KeyValue;
 import java.io.IOException;
 
 /** A Marshaler of key value pairs. See {@link AnyValueMarshaler}. */
-final class KeyValueStatelessMarshaler implements StatelessMarshaler<KeyAnyValue> {
+public final class KeyValueStatelessMarshaler implements StatelessMarshaler<KeyAnyValue> {
 
-  static final KeyValueStatelessMarshaler INSTANCE = new KeyValueStatelessMarshaler();
+  public static final KeyValueStatelessMarshaler INSTANCE = new KeyValueStatelessMarshaler();
   private static final byte[] EMPTY_BYTES = new byte[0];
 
   private KeyValueStatelessMarshaler() {}

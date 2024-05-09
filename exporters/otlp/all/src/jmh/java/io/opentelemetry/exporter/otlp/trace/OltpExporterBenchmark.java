@@ -15,6 +15,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
 import io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSender;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
@@ -67,7 +68,7 @@ public class OltpExporterBenchmark {
 
   private static ManagedChannel defaultGrpcChannel;
 
-  private static GrpcExporter<TraceRequestMarshaler> upstreamGrpcExporter;
+  private static GrpcExporter<Marshaler> upstreamGrpcExporter;
   private static GrpcExporter<TraceRequestMarshaler> okhttpGrpcSender;
   private static HttpExporter<TraceRequestMarshaler> httpExporter;
 

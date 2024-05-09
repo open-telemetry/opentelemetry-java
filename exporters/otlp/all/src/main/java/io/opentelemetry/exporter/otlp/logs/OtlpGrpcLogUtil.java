@@ -3,17 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.metrics;
+package io.opentelemetry.exporter.otlp.logs;
 
 import io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 
-final class OtlpGrpcMetricUtil {
+final class OtlpGrpcLogUtil {
 
-  private OtlpGrpcMetricUtil() {}
+  private OtlpGrpcLogUtil() {}
 
   /** See {@link OtlpConfigUtil#setMemoryModeOnOtlpExporterBuilder(Object, MemoryMode)}. */
-  static void setMemoryMode(OtlpGrpcMetricExporterBuilder builder, MemoryMode memoryMode) {
+  static void setMemoryMode(OtlpGrpcLogRecordExporterBuilder builder, MemoryMode memoryMode) {
     builder.setMemoryMode(memoryMode);
   }
 }

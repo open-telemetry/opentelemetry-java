@@ -7,8 +7,12 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import static io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram;
 
+import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -212,12 +216,12 @@ public final class OtlpConfigUtil {
   }
 
   /**
-   * Calls {@code #setMemoryMode} on the {@code Otlp{Protocol}MetricExporterBuilder} with the {@code
-   * memoryMode}.
+   * Calls {@code #setMemoryMode} on the {@code Otlp{Protocol}{Signal}ExporterBuilder} with the
+   * {@code memoryMode}.
    */
-  public static void setMemoryModeOnOtlpMetricExporterBuilder(
-      Object builder, MemoryMode memoryMode) {
+  public static void setMemoryModeOnOtlpExporterBuilder(Object builder, MemoryMode memoryMode) {
     try {
+      // Metrics
       if (builder instanceof OtlpGrpcMetricExporterBuilder) {
         // Calling getDeclaredMethod causes all private methods to be read, which causes a
         // ClassNotFoundException when running with the OkHttHttpProvider as the private
@@ -237,9 +241,47 @@ public final class OtlpConfigUtil {
                 "setMemoryMode", MemoryMode.class);
         method.setAccessible(true);
         method.invoke(builder, memoryMode);
+      } else if (builder instanceof OtlpGrpcSpanExporterBuilder) {
+        // Calling getDeclaredMethod causes all private methods to be read, which causes a
+        // ClassNotFoundException when running with the OkHttHttpProvider as the private
+        // setManagedChanel(io.grpc.ManagedChannel) is reached and io.grpc.ManagedChannel is not on
+        // the classpath. io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanUtil provides a layer
+        // of indirection which avoids scanning the OtlpGrpcSpanExporterBuilder private methods.
+        Class<?> otlpGrpcMetricUtil =
+            Class.forName("io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanUtil");
+        Method method =
+            otlpGrpcMetricUtil.getDeclaredMethod(
+                "setMemoryMode", OtlpGrpcSpanExporterBuilder.class, MemoryMode.class);
+        method.setAccessible(true);
+        method.invoke(null, builder, memoryMode);
+      } else if (builder instanceof OtlpHttpSpanExporterBuilder) {
+        Method method =
+            OtlpHttpSpanExporterBuilder.class.getDeclaredMethod("setMemoryMode", MemoryMode.class);
+        method.setAccessible(true);
+        method.invoke(builder, memoryMode);
+      } else if (builder instanceof OtlpGrpcLogRecordExporterBuilder) {
+        // Calling getDeclaredMethod causes all private methods to be read, which causes a
+        // ClassNotFoundException when running with the OkHttHttpProvider as the private
+        // setManagedChanel(io.grpc.ManagedChannel) is reached and io.grpc.ManagedChannel is not on
+        // the classpath. io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogUtil provides a layer
+        // of indirection which avoids scanning the OtlpGrpcLogRecordExporterBuilder private
+        // methods.
+        Class<?> otlpGrpcMetricUtil =
+            Class.forName("io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogUtil");
+        Method method =
+            otlpGrpcMetricUtil.getDeclaredMethod(
+                "setMemoryMode", OtlpGrpcLogRecordExporterBuilder.class, MemoryMode.class);
+        method.setAccessible(true);
+        method.invoke(null, builder, memoryMode);
+      } else if (builder instanceof OtlpHttpLogRecordExporterBuilder) {
+        Method method =
+            OtlpHttpLogRecordExporterBuilder.class.getDeclaredMethod(
+                "setMemoryMode", MemoryMode.class);
+        method.setAccessible(true);
+        method.invoke(builder, memoryMode);
       } else {
         throw new IllegalArgumentException(
-            "Can only set memory mode on OtlpHttpMetricExporterBuilder and OtlpGrpcMetricExporterBuilder.");
+            "Cannot set memory mode. Unrecognized OTLP exporter builder");
       }
     } catch (NoSuchMethodException
         | InvocationTargetException

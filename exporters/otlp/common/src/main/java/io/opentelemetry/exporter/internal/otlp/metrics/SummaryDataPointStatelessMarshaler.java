@@ -10,7 +10,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
-import io.opentelemetry.exporter.internal.otlp.KeyValueStatelessMarshaler;
+import io.opentelemetry.exporter.internal.otlp.AttributeKeyValueStatelessMarshaler;
 import io.opentelemetry.proto.metrics.v1.internal.SummaryDataPoint;
 import io.opentelemetry.sdk.metrics.data.SummaryPointData;
 import java.io.IOException;
@@ -37,7 +37,7 @@ final class SummaryDataPointStatelessMarshaler implements StatelessMarshaler<Sum
     output.serializeRepeatedMessageWithContext(
         SummaryDataPoint.ATTRIBUTES,
         point.getAttributes(),
-        KeyValueStatelessMarshaler.INSTANCE,
+        AttributeKeyValueStatelessMarshaler.INSTANCE,
         context);
   }
 
@@ -60,7 +60,7 @@ final class SummaryDataPointStatelessMarshaler implements StatelessMarshaler<Sum
         StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
             SummaryDataPoint.ATTRIBUTES,
             point.getAttributes(),
-            KeyValueStatelessMarshaler.INSTANCE,
+            AttributeKeyValueStatelessMarshaler.INSTANCE,
             context);
     return size;
   }

@@ -10,7 +10,7 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
 import io.grpc.MethodDescriptor;
 import io.opentelemetry.exporter.internal.grpc.MarshalerInputStream;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
-import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import java.io.InputStream;
 import javax.annotation.Nullable;
 
@@ -19,15 +19,15 @@ final class MarshalerTraceServiceGrpc {
 
   private static final String SERVICE_NAME = "opentelemetry.proto.collector.trace.v1.TraceService";
 
-  private static final MethodDescriptor.Marshaller<TraceRequestMarshaler> REQUEST_MARSHALLER =
-      new MethodDescriptor.Marshaller<TraceRequestMarshaler>() {
+  private static final MethodDescriptor.Marshaller<Marshaler> REQUEST_MARSHALLER =
+      new MethodDescriptor.Marshaller<Marshaler>() {
         @Override
-        public InputStream stream(TraceRequestMarshaler value) {
+        public InputStream stream(Marshaler value) {
           return new MarshalerInputStream(value);
         }
 
         @Override
-        public TraceRequestMarshaler parse(InputStream stream) {
+        public Marshaler parse(InputStream stream) {
           throw new UnsupportedOperationException("Only for serializing");
         }
       };
@@ -45,9 +45,9 @@ final class MarshalerTraceServiceGrpc {
         }
       };
 
-  private static final io.grpc.MethodDescriptor<TraceRequestMarshaler, ExportTraceServiceResponse>
+  private static final io.grpc.MethodDescriptor<Marshaler, ExportTraceServiceResponse>
       getExportMethod =
-          io.grpc.MethodDescriptor.<TraceRequestMarshaler, ExportTraceServiceResponse>newBuilder()
+          io.grpc.MethodDescriptor.<Marshaler, ExportTraceServiceResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Export"))
               .setRequestMarshaller(REQUEST_MARSHALLER)
@@ -62,8 +62,7 @@ final class MarshalerTraceServiceGrpc {
   }
 
   static final class TraceServiceFutureStub
-      extends MarshalerServiceStub<
-          TraceRequestMarshaler, ExportTraceServiceResponse, TraceServiceFutureStub> {
+      extends MarshalerServiceStub<Marshaler, ExportTraceServiceResponse, TraceServiceFutureStub> {
     private TraceServiceFutureStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
@@ -76,7 +75,7 @@ final class MarshalerTraceServiceGrpc {
 
     @Override
     public com.google.common.util.concurrent.ListenableFuture<ExportTraceServiceResponse> export(
-        TraceRequestMarshaler request) {
+        Marshaler request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getExportMethod, getCallOptions()), request);
     }
