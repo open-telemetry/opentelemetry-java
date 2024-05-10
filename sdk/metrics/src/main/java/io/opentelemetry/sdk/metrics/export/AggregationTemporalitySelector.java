@@ -81,6 +81,8 @@ public interface AggregationTemporalitySelector {
   /**
    * Returns a string representation of this selector, for using in {@link Object#toString()}
    * implementations.
+   *
+   * @since 1.38.0
    */
   static String asString(AggregationTemporalitySelector selector) {
     StringJoiner joiner = new StringJoiner(", ", "AggregationTemporalitySelector{", "}");

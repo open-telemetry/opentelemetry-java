@@ -77,6 +77,7 @@ public interface DoubleGaugeBuilder {
    * the value of the last recorded measurement is exported.
    *
    * @return The DoubleGauge instrument.
+   * @since 1.38.0
    */
   default DoubleGauge build() {
     return DefaultMeter.getInstance().gaugeBuilder("noop").build();

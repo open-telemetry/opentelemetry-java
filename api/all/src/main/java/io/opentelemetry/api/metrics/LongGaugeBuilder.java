@@ -74,6 +74,7 @@ public interface LongGaugeBuilder {
    * the value of the last recorded measurement is exported.
    *
    * @return The LongGauge instrument.
+   * @since 1.38.0
    */
   default LongGauge build() {
     return DefaultMeter.getInstance().gaugeBuilder("noop").ofLongs().build();
