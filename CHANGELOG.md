@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.38.0 (2024-05-10)
+
 ### API
 
 * Stabilize synchronous gauge
