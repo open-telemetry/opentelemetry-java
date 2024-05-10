@@ -20,6 +20,12 @@ jobs:
       - prereqs
     steps:
       - uses: actions/checkout@v4
+      - id: setup-java
+        name: Set up Java for build
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
 
       - name: Set environment variables
         run: |
