@@ -33,7 +33,7 @@
 
 * Use low precision Clock#now when computing timestamp for exemplars
   ([#6417](https://github.com/open-telemetry/opentelemetry-java/pull/6417))
-* Update invalid instrument name log message to indicate that forward slash `/`
+* Update invalid instrument name log message now that forward slash `/` is valid
   ([#6343](https://github.com/open-telemetry/opentelemetry-java/pull/6343))
 
 #### Exporters
