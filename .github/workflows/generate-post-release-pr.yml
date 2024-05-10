@@ -61,6 +61,7 @@ jobs:
           branch="opentelemetrybot/post-release-for-${PRIOR_VERSION}"
 
           git checkout -b $branch
+          git add docs/apidiffs
           git commit -a -m "$message"
           git push --set-upstream origin $branch
           gh pr create --title "$message" \
