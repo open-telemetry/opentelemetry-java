@@ -5,6 +5,6 @@
 
 /** The data format to model profiles for export. */
 @ParametersAreNonnullByDefault
-package io.opentelemetry.sdk.profiles.data;
+package io.opentelemetry.exporter.oltp.data;
 
 import javax.annotation.ParametersAreNonnullByDefault;

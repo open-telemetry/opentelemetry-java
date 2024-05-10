@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.profiles.data;
+package io.opentelemetry.exporter.oltp.data;
 
 /**
  * Indicates the semantics of the build_id field.
