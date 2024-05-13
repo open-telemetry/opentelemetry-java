@@ -259,7 +259,7 @@ public class OtlpPipelineStressTest {
     // set up the span exporter and wire it into the SDK
     OtlpGrpcSpanExporter spanExporter =
         OtlpGrpcSpanExporter.builder()
-            .setMeterProvider(meterProvider)
+            .setMeterProvider(() -> meterProvider)
             .setEndpoint(
                 "http://"
                     + toxiproxyContainer.getHost()

@@ -13,12 +13,12 @@ import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.exporter.internal.otlp.metrics.LowAllocationMetricsRequestMarshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,6 +39,9 @@ import org.openjdk.jmh.annotations.Warmup;
 public class MetricsRequestMarshalerBenchmark {
 
   private static final Collection<MetricData> METRICS;
+  private static final LowAllocationMetricsRequestMarshaler MARSHALER =
+      new LowAllocationMetricsRequestMarshaler();
+  private static final TestOutputStream OUTPUT = new TestOutputStream();
 
   static {
     InMemoryMetricReader metricReader = InMemoryMetricReader.create();
@@ -117,10 +120,42 @@ public class MetricsRequestMarshalerBenchmark {
   }
 
   @Benchmark
-  public ByteArrayOutputStream marshaler() throws IOException {
+  public int marshalStateful() throws IOException {
     MetricsRequestMarshaler marshaler = MetricsRequestMarshaler.create(METRICS);
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    marshaler.writeBinaryTo(bos);
-    return bos;
+    OUTPUT.reset();
+    marshaler.writeBinaryTo(OUTPUT);
+    return OUTPUT.getCount();
+  }
+
+  @Benchmark
+  public int marshalStatefulJson() throws IOException {
+    MetricsRequestMarshaler marshaler = MetricsRequestMarshaler.create(METRICS);
+    OUTPUT.reset();
+    marshaler.writeJsonTo(OUTPUT);
+    return OUTPUT.getCount();
+  }
+
+  @Benchmark
+  public int marshalStateless() throws IOException {
+    MARSHALER.initialize(METRICS);
+    try {
+      OUTPUT.reset();
+      MARSHALER.writeBinaryTo(OUTPUT);
+      return OUTPUT.getCount();
+    } finally {
+      MARSHALER.reset();
+    }
+  }
+
+  @Benchmark
+  public int marshalStatelessJson() throws IOException {
+    MARSHALER.initialize(METRICS);
+    try {
+      OUTPUT.reset();
+      MARSHALER.writeJsonTo(OUTPUT);
+      return OUTPUT.getCount();
+    } finally {
+      MARSHALER.reset();
+    }
   }
 }

@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
@@ -30,6 +31,7 @@ class OpenTelemetryExtensionTest {
 
   private final Tracer tracer = otelTesting.getOpenTelemetry().getTracer("test");
   private final Meter meter = otelTesting.getOpenTelemetry().getMeter("test");
+  private final Logger logger = otelTesting.getOpenTelemetry().getLogsBridge().get("test");
 
   @Test
   public void getSpans() {
@@ -173,6 +175,37 @@ class OpenTelemetryExtensionTest {
                     .hasName("counter")
                     .hasLongSumSatisfying(
                         sum -> sum.hasPointsSatisfying(point -> point.hasValue(1))));
+  }
+
+  @Test
+  public void getLogRecords() {
+    logger.logRecordBuilder().setBody("body").emit();
+
+    assertThat(otelTesting.getLogRecords())
+        .singleElement()
+        .satisfies(
+            logRecordData -> assertThat(logRecordData.getBody().asString()).isEqualTo("body"));
+    // Logs cleared between tests, not when retrieving
+    assertThat(otelTesting.getLogRecords())
+        .singleElement()
+        .satisfies(
+            logRecordData -> assertThat(logRecordData.getBody().asString()).isEqualTo("body"));
+  }
+
+  // We have two tests to verify spans get cleared up between tests.
+  @Test
+  public void getLogRecordsAgain() {
+    logger.logRecordBuilder().setBody("body").emit();
+
+    assertThat(otelTesting.getLogRecords())
+        .singleElement()
+        .satisfies(
+            logRecordData -> assertThat(logRecordData.getBody().asString()).isEqualTo("body"));
+    // Logs cleared between tests, not when retrieving
+    assertThat(otelTesting.getLogRecords())
+        .singleElement()
+        .satisfies(
+            logRecordData -> assertThat(logRecordData.getBody().asString()).isEqualTo("body"));
   }
 
   @Test

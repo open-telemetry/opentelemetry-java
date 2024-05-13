@@ -6,12 +6,15 @@
 package io.opentelemetry.sdk.autoconfigure.spi;
 
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Map;
@@ -61,6 +64,24 @@ public interface AutoConfigurationCustomizer {
   AutoConfigurationCustomizer addSpanExporterCustomizer(
       BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
           exporterCustomizer);
+
+  /**
+   * Adds a {@link BiFunction} to invoke for all autoconfigured {@link
+   * io.opentelemetry.sdk.trace.SpanProcessor}. The return value of the {@link BiFunction} will
+   * replace the passed-in argument. In contrast to {@link #addSpanExporterCustomizer(BiFunction)}
+   * this allows modifications to happen before batching occurs. As a result, it is possible to
+   * efficiently filter spans, add artificial spans or delay spans for enhancing them with external,
+   * delayed data.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   *
+   * @since 1.33.0
+   */
+  default AutoConfigurationCustomizer addSpanProcessorCustomizer(
+      BiFunction<? super SpanProcessor, ConfigProperties, ? extends SpanProcessor>
+          spanProcessorCustomizer) {
+    return this;
+  }
 
   /**
    * Adds a {@link Supplier} of a map of property names and values to use as defaults for the {@link
@@ -130,9 +151,24 @@ public interface AutoConfigurationCustomizer {
    *
    * <p>Multiple calls will execute the customizers in order.
    */
+  @SuppressWarnings("UnusedReturnValue")
   default AutoConfigurationCustomizer addMetricExporterCustomizer(
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
           exporterCustomizer) {
+    return this;
+  }
+
+  /**
+   * Adds a {@link BiFunction} to invoke with the autoconfigured {@link MetricReader} to allow
+   * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   *
+   * @since 1.36.0
+   */
+  @SuppressWarnings("UnusedReturnValue")
+  default AutoConfigurationCustomizer addMetricReaderCustomizer(
+      BiFunction<? super MetricReader, ConfigProperties, ? extends MetricReader> readerCustomizer) {
     return this;
   }
 
@@ -162,6 +198,24 @@ public interface AutoConfigurationCustomizer {
   default AutoConfigurationCustomizer addLogRecordExporterCustomizer(
       BiFunction<? super LogRecordExporter, ConfigProperties, ? extends LogRecordExporter>
           exporterCustomizer) {
+    return this;
+  }
+
+  /**
+   * Adds a {@link BiFunction} to invoke for all autoconfigured {@link
+   * io.opentelemetry.sdk.logs.LogRecordProcessor}s. The return value of the {@link BiFunction} will
+   * replace the passed-in argument. In contrast to {@link
+   * #addLogRecordExporterCustomizer(BiFunction)} (BiFunction)} this allows modifications to happen
+   * before batching occurs. As a result, it is possible to efficiently filter logs, add artificial
+   * logs or delay logs for enhancing them with external, delayed data.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   *
+   * @since 1.33.0
+   */
+  default AutoConfigurationCustomizer addLogRecordProcessorCustomizer(
+      BiFunction<? super LogRecordProcessor, ConfigProperties, ? extends LogRecordProcessor>
+          logRecordProcessorCustomizer) {
     return this;
   }
 }

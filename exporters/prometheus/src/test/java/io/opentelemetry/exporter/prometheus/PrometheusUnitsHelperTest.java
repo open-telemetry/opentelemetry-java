@@ -6,7 +6,9 @@
 package io.opentelemetry.exporter.prometheus;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
+import io.prometheus.metrics.model.snapshots.Unit;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -16,8 +18,13 @@ class PrometheusUnitsHelperTest {
 
   @ParameterizedTest
   @MethodSource("providePrometheusOTelUnitEquivalentPairs")
-  public void testPrometheusUnitEquivalency(String otlpUnit, String prometheusUnit) {
-    assertEquals(prometheusUnit, PrometheusUnitsHelper.getEquivalentPrometheusUnit(otlpUnit));
+  public void testPrometheusUnitEquivalency(String otlpUnit, String expectedPrometheusUnit) {
+    Unit actualPrometheusUnit = PrometheusUnitsHelper.convertUnit(otlpUnit);
+    if (expectedPrometheusUnit == null) {
+      assertNull(actualPrometheusUnit);
+    } else {
+      assertEquals(expectedPrometheusUnit, actualPrometheusUnit.toString());
+    }
   }
 
   private static Stream<Arguments> providePrometheusOTelUnitEquivalentPairs() {
@@ -63,46 +70,34 @@ class PrometheusUnitsHelperTest {
         // Unit not found - Case sensitive
         Arguments.of("S", "S"),
         // Special case - 1
-        Arguments.of("1", ""),
+        Arguments.of("1", "ratio"),
         // Special Case - Drop metric units in {}
-        Arguments.of("{packets}", ""),
+        Arguments.of("{packets}", null),
         // Special Case - Dropped metric units only in {}
         Arguments.of("{packets}V", "volts"),
         // Special Case - Dropped metric units with 'per' unit handling applicable
-        Arguments.of("{scanned}/{returned}", ""),
+        Arguments.of("{scanned}/{returned}", null),
         // Special Case - Dropped metric units with 'per' unit handling applicable
         Arguments.of("{objects}/s", "per_second"),
         // Units expressing rate - 'per' units, both units expanded
         Arguments.of("m/s", "meters_per_second"),
         // Units expressing rate - per minute
-        Arguments.of("m/m", "meters_per_minute"),
+        Arguments.of("m/min", "meters_per_minute"),
         // Units expressing rate - per day
         Arguments.of("A/d", "amperes_per_day"),
         // Units expressing rate - per week
-        Arguments.of("W/w", "watts_per_week"),
+        Arguments.of("W/wk", "watts_per_week"),
         // Units expressing rate - per month
         Arguments.of("J/mo", "joules_per_month"),
         // Units expressing rate - per year
-        Arguments.of("TBy/y", "terabytes_per_year"),
+        Arguments.of("TBy/a", "terabytes_per_year"),
         // Units expressing rate - 'per' units, both units unknown
         Arguments.of("v/v", "v_per_v"),
         // Units expressing rate - 'per' units, first unit unknown
         Arguments.of("km/h", "km_per_hour"),
         // Units expressing rate - 'per' units, 'per' unit unknown
-        Arguments.of("g/g", "grams_per_g"),
+        Arguments.of("g/x", "grams_per_x"),
         // Misc - unit containing known abbreviations improperly formatted
-        Arguments.of("watts_W", "watts_W"),
-        // Unsupported symbols
-        Arguments.of("°F", "F"),
-        // Unsupported symbols - multiple
-        Arguments.of("unit+=.:,!* & #unused", "unit_unused"),
-        // Unsupported symbols - 'per' units
-        Arguments.of("__test $/°C", "test_per_C"),
-        // Unsupported symbols - whitespace
-        Arguments.of("\t", ""),
-        // Null unit
-        Arguments.of(null, null),
-        // Misc - unit cleanup - no case match special char
-        Arguments.of("$1000", "1000"));
+        Arguments.of("watts_W", "watts_W"));
   }
 }

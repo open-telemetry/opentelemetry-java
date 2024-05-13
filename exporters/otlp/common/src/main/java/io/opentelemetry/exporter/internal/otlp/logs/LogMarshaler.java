@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp.logs;
 
+import io.opentelemetry.api.incubator.logs.AnyValue;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -14,17 +15,21 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.ProtoEnumInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
+import io.opentelemetry.exporter.internal.otlp.AnyValueMarshaler;
 import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
-import io.opentelemetry.exporter.internal.otlp.StringAnyValueMarshaler;
 import io.opentelemetry.proto.logs.v1.internal.LogRecord;
 import io.opentelemetry.proto.logs.v1.internal.SeverityNumber;
+import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.internal.AnyValueBody;
 import java.io.IOException;
 import javax.annotation.Nullable;
 
 final class LogMarshaler extends MarshalerWithSize {
   private static final String INVALID_TRACE_ID = TraceId.getInvalid();
   private static final String INVALID_SPAN_ID = SpanId.getInvalid();
+  private static final MarshalerWithSize EMPTY_BODY_MARSHALER =
+      AnyValueMarshaler.create(AnyValue.of(""));
 
   private final long timeUnixNano;
   private final long observedTimeUnixNano;
@@ -39,11 +44,9 @@ final class LogMarshaler extends MarshalerWithSize {
 
   static LogMarshaler create(LogRecordData logRecordData) {
     KeyValueMarshaler[] attributeMarshalers =
-        KeyValueMarshaler.createRepeated(logRecordData.getAttributes());
+        KeyValueMarshaler.createForAttributes(logRecordData.getAttributes());
 
-    // For now, map all the bodies to String AnyValue.
-    StringAnyValueMarshaler anyValueMarshaler =
-        new StringAnyValueMarshaler(MarshalerUtil.toBytes(logRecordData.getBody().asString()));
+    MarshalerWithSize bodyMarshaler = body(logRecordData.getBody());
 
     SpanContext spanContext = logRecordData.getSpanContext();
     return new LogMarshaler(
@@ -51,12 +54,25 @@ final class LogMarshaler extends MarshalerWithSize {
         logRecordData.getObservedTimestampEpochNanos(),
         toProtoSeverityNumber(logRecordData.getSeverity()),
         MarshalerUtil.toBytes(logRecordData.getSeverityText()),
-        anyValueMarshaler,
+        bodyMarshaler,
         attributeMarshalers,
         logRecordData.getTotalAttributeCount() - logRecordData.getAttributes().size(),
         spanContext.getTraceFlags(),
         spanContext.getTraceId().equals(INVALID_TRACE_ID) ? null : spanContext.getTraceId(),
         spanContext.getSpanId().equals(INVALID_SPAN_ID) ? null : spanContext.getSpanId());
+  }
+
+  private static MarshalerWithSize body(Body body) {
+    if (body instanceof AnyValueBody) {
+      return AnyValueMarshaler.create(((AnyValueBody) body).asAnyValue());
+    }
+    switch (body.getType()) {
+      case STRING:
+        return AnyValueMarshaler.create(AnyValue.of(body.asString()));
+      case EMPTY:
+        return EMPTY_BODY_MARSHALER;
+    }
+    throw new IllegalStateException("Unsupported Body type: " + body.getType());
   }
 
   private LogMarshaler(
@@ -109,7 +125,7 @@ final class LogMarshaler extends MarshalerWithSize {
     output.serializeRepeatedMessage(LogRecord.ATTRIBUTES, attributeMarshalers);
     output.serializeUInt32(LogRecord.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
 
-    output.serializeFixed32(LogRecord.FLAGS, toUnsignedInt(traceFlags.asByte()));
+    output.serializeByteAsFixed32(LogRecord.FLAGS, traceFlags.asByte());
     output.serializeTraceId(LogRecord.TRACE_ID, traceId);
     output.serializeSpanId(LogRecord.SPAN_ID, spanId);
   }
@@ -139,7 +155,7 @@ final class LogMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeRepeatedMessage(LogRecord.ATTRIBUTES, attributeMarshalers);
     size += MarshalerUtil.sizeUInt32(LogRecord.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
 
-    size += MarshalerUtil.sizeFixed32(LogRecord.FLAGS, toUnsignedInt(traceFlags.asByte()));
+    size += MarshalerUtil.sizeByteAsFixed32(LogRecord.FLAGS, traceFlags.asByte());
     size += MarshalerUtil.sizeTraceId(LogRecord.TRACE_ID, traceId);
     size += MarshalerUtil.sizeSpanId(LogRecord.SPAN_ID, spanId);
     return size;
@@ -201,10 +217,5 @@ final class LogMarshaler extends MarshalerWithSize {
     }
     // NB: Should not be possible with aligned versions.
     return SeverityNumber.SEVERITY_NUMBER_UNSPECIFIED;
-  }
-
-  /** Vendored {@link Byte#toUnsignedInt(byte)} to support Android. */
-  private static int toUnsignedInt(byte x) {
-    return ((int) x) & 0xff;
   }
 }

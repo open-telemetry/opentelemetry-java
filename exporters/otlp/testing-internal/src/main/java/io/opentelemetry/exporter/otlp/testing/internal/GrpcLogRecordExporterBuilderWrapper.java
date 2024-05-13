@@ -8,10 +8,13 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
@@ -41,6 +44,18 @@ final class GrpcLogRecordExporterBuilderWrapper implements TelemetryExporterBuil
   }
 
   @Override
+  public TelemetryExporterBuilder<LogRecordData> setConnectTimeout(long timeout, TimeUnit unit) {
+    builder.setConnectTimeout(timeout, unit);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<LogRecordData> setConnectTimeout(Duration timeout) {
+    builder.setConnectTimeout(timeout);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<LogRecordData> setCompression(String compression) {
     builder.setCompression(compression);
     return this;
@@ -49,6 +64,13 @@ final class GrpcLogRecordExporterBuilderWrapper implements TelemetryExporterBuil
   @Override
   public TelemetryExporterBuilder<LogRecordData> addHeader(String key, String value) {
     builder.addHeader(key, value);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<LogRecordData> setHeaders(
+      Supplier<Map<String, String>> headerSupplier) {
+    builder.setHeaders(headerSupplier);
     return this;
   }
 
@@ -81,6 +103,11 @@ final class GrpcLogRecordExporterBuilderWrapper implements TelemetryExporterBuil
   public TelemetryExporterBuilder<LogRecordData> setRetryPolicy(RetryPolicy retryPolicy) {
     builder.setRetryPolicy(retryPolicy);
     return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<LogRecordData> setProxyOptions(ProxyOptions proxyOptions) {
+    throw new UnsupportedOperationException("ProxyOptions are not supported for gRPC");
   }
 
   @Override

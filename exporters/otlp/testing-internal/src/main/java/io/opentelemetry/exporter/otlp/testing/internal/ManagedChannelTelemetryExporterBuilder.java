@@ -17,11 +17,14 @@ import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -77,6 +80,18 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   }
 
   @Override
+  public TelemetryExporterBuilder<T> setConnectTimeout(long timeout, TimeUnit unit) {
+    delegate.setConnectTimeout(timeout, unit);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<T> setConnectTimeout(Duration timeout) {
+    delegate.setConnectTimeout(timeout);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<T> setCompression(String compression) {
     delegate.setCompression(compression);
     return this;
@@ -85,6 +100,12 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   @Override
   public TelemetryExporterBuilder<T> addHeader(String key, String value) {
     delegate.addHeader(key, value);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<T> setHeaders(Supplier<Map<String, String>> headerSupplier) {
+    delegate.setHeaders(headerSupplier);
     return this;
   }
 
@@ -132,22 +153,33 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   }
 
   @Override
+  public TelemetryExporterBuilder<T> setProxyOptions(ProxyOptions proxyOptions) {
+    delegate.setProxyOptions(proxyOptions);
+    return this;
+  }
+
+  @Override
   public TelemetryExporterBuilder<T> setChannel(Object channel) {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public TelemetryExporter<T> build() {
-    requireNonNull(channelBuilder, "channel");
+    Runnable shutdownCallback;
+    if (channelBuilder != null) {
+      try {
+        setSslContext(channelBuilder, tlsConfigHelper);
+      } catch (SSLException e) {
+        throw new IllegalStateException(e);
+      }
 
-    try {
-      setSslContext(channelBuilder, tlsConfigHelper);
-    } catch (SSLException e) {
-      throw new IllegalStateException(e);
+      ManagedChannel channel = channelBuilder.build();
+      delegate.setChannel(channel);
+      shutdownCallback = channel::shutdownNow;
+    } else {
+      shutdownCallback = () -> {};
     }
 
-    ManagedChannel channel = channelBuilder.build();
-    delegate.setChannel(channel);
     TelemetryExporter<T> delegateExporter = delegate.build();
     return new TelemetryExporter<T>() {
       @Override
@@ -162,7 +194,7 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
 
       @Override
       public CompletableResultCode shutdown() {
-        channel.shutdownNow();
+        shutdownCallback.run();
         return delegateExporter.shutdown();
       }
     };

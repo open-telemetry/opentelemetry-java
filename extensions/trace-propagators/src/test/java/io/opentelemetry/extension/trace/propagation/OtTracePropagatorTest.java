@@ -20,6 +20,7 @@ import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
@@ -53,6 +54,18 @@ class OtTracePropagatorTest {
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
     return context.with(Span.wrap(spanContext));
+  }
+
+  private static String capitalizeFirstLetter(String input, String delimiter) {
+    String[] words = input.split(delimiter);
+
+    for (int i = 0; i < words.length; i++) {
+      String firstLetter = words[i].substring(0, 1).toUpperCase(Locale.ROOT);
+      String restOfWord = words[i].substring(1).toLowerCase(Locale.ROOT);
+      words[i] = firstLetter + restOfWord;
+    }
+
+    return String.join(delimiter, words);
   }
 
   @Test
@@ -310,6 +323,22 @@ class OtTracePropagatorTest {
     Context context = propagator.extract(Context.current(), carrier, getter);
 
     Baggage expectedBaggage = Baggage.builder().put("foo", "bar").put("key", "value").build();
+    assertThat(Baggage.fromContext(context)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_Baggage_CapitalizedHeaders() {
+    String capitalizedBaggageHeader =
+        capitalizeFirstLetter(OtTracePropagator.PREFIX_BAGGAGE_HEADER + "some-key", "-");
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID);
+    carrier.put(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
+    carrier.put(OtTracePropagator.SAMPLED_HEADER, Common.TRUE_INT);
+    carrier.put(capitalizedBaggageHeader, "value");
+
+    Context context = propagator.extract(Context.current(), carrier, getter);
+
+    Baggage expectedBaggage = Baggage.builder().put("some-key", "value").build();
     assertThat(Baggage.fromContext(context)).isEqualTo(expectedBaggage);
   }
 

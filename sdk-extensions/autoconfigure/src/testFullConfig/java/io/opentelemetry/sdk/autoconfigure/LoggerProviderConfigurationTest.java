@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
@@ -18,12 +17,14 @@ import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.trace.internal.JcTools;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -46,6 +47,7 @@ class LoggerProviderConfigurationTest {
         DefaultConfigProperties.createFromMap(Collections.emptyMap()),
         SpiHelper.create(LoggerProviderConfiguration.class.getClassLoader()),
         MeterProvider.noop(),
+        (a, unused) -> a,
         (a, unused) -> a,
         closeables);
     cleanup.addCloseables(closeables);
@@ -84,26 +86,31 @@ class LoggerProviderConfigurationTest {
   void configureLogRecordProcessors_multipleExportersWithLogging() {
     List<Closeable> closeables = new ArrayList<>();
 
+    Map<String, LogRecordExporter> exportersByName = new LinkedHashMap<>();
+    exportersByName.put("console", SystemOutLogRecordExporter.create());
+    exportersByName.put("logging", SystemOutLogRecordExporter.create());
+    exportersByName.put("otlp", OtlpGrpcLogRecordExporter.builder().build());
+
     List<LogRecordProcessor> logRecordProcessors =
         LoggerProviderConfiguration.configureLogRecordProcessors(
             DefaultConfigProperties.createFromMap(Collections.emptyMap()),
-            ImmutableMap.of(
-                "logging",
-                SystemOutLogRecordExporter.create(),
-                "otlp",
-                OtlpGrpcLogRecordExporter.builder().build()),
+            exportersByName,
             MeterProvider.noop(),
             closeables);
     cleanup.addCloseables(closeables);
 
     assertThat(logRecordProcessors)
-        .hasSize(2)
-        .hasAtLeastOneElementOfType(SimpleLogRecordProcessor.class)
-        .hasAtLeastOneElementOfType(BatchLogRecordProcessor.class);
+        .hasSize(3)
+        .hasExactlyElementsOfTypes(
+            SimpleLogRecordProcessor.class,
+            SimpleLogRecordProcessor.class,
+            BatchLogRecordProcessor.class);
     assertThat(closeables)
-        .hasSize(2)
-        .hasAtLeastOneElementOfType(SimpleLogRecordProcessor.class)
-        .hasAtLeastOneElementOfType(BatchLogRecordProcessor.class);
+        .hasSize(3)
+        .hasExactlyElementsOfTypes(
+            SimpleLogRecordProcessor.class,
+            SimpleLogRecordProcessor.class,
+            BatchLogRecordProcessor.class);
   }
 
   @Test

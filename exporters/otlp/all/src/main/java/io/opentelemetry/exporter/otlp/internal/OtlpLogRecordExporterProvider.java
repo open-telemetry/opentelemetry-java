@@ -9,14 +9,19 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_L
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * {@link LogRecordExporter} SPI implementation for {@link OtlpGrpcLogRecordExporter} and {@link
@@ -25,7 +30,12 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class OtlpLogRecordExporterProvider implements ConfigurableLogRecordExporterProvider {
+public class OtlpLogRecordExporterProvider
+    implements ConfigurableLogRecordExporterProvider, AutoConfigureListener {
+
+  private final AtomicReference<MeterProvider> meterProviderRef =
+      new AtomicReference<>(MeterProvider.noop());
+
   @Override
   public LogRecordExporter createExporter(ConfigProperties config) {
     String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_LOGS, config);
@@ -43,6 +53,10 @@ public class OtlpLogRecordExporterProvider implements ConfigurableLogRecordExpor
           builder::setTrustedCertificates,
           builder::setClientTls,
           builder::setRetryPolicy);
+      builder.setMeterProvider(meterProviderRef::get);
+      ExporterBuilderUtil.configureExporterMemoryMode(
+          config,
+          memoryMode -> OtlpConfigUtil.setMemoryModeOnOtlpExporterBuilder(builder, memoryMode));
 
       return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
@@ -58,6 +72,10 @@ public class OtlpLogRecordExporterProvider implements ConfigurableLogRecordExpor
           builder::setTrustedCertificates,
           builder::setClientTls,
           builder::setRetryPolicy);
+      builder.setMeterProvider(meterProviderRef::get);
+      ExporterBuilderUtil.configureExporterMemoryMode(
+          config,
+          memoryMode -> OtlpConfigUtil.setMemoryModeOnOtlpExporterBuilder(builder, memoryMode));
 
       return builder.build();
     }
@@ -77,5 +95,10 @@ public class OtlpLogRecordExporterProvider implements ConfigurableLogRecordExpor
   // Visible for testing
   OtlpGrpcLogRecordExporterBuilder grpcBuilder() {
     return OtlpGrpcLogRecordExporter.builder();
+  }
+
+  @Override
+  public void afterAutoConfigure(OpenTelemetrySdk sdk) {
+    meterProviderRef.set(sdk.getMeterProvider());
   }
 }

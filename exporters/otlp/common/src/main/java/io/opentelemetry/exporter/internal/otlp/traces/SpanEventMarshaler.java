@@ -40,7 +40,7 @@ final class SpanEventMarshaler extends MarshalerWithSize {
     return new SpanEventMarshaler(
         event.getEpochNanos(),
         MarshalerUtil.toBytes(event.getName()),
-        KeyValueMarshaler.createRepeated(event.getAttributes()),
+        KeyValueMarshaler.createForAttributes(event.getAttributes()),
         event.getTotalAttributeCount() - event.getAttributes().size());
   }
 

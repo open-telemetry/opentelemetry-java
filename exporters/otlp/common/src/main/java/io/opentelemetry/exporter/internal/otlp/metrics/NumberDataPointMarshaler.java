@@ -40,21 +40,13 @@ final class NumberDataPointMarshaler extends MarshalerWithSize {
   static NumberDataPointMarshaler create(PointData point) {
     ExemplarMarshaler[] exemplarMarshalers = ExemplarMarshaler.createRepeated(point.getExemplars());
     KeyValueMarshaler[] attributeMarshalers =
-        KeyValueMarshaler.createRepeated(point.getAttributes());
-
-    ProtoFieldInfo valueField;
-    if (point instanceof LongPointData) {
-      valueField = NumberDataPoint.AS_INT;
-    } else {
-      assert point instanceof DoublePointData;
-      valueField = NumberDataPoint.AS_DOUBLE;
-    }
+        KeyValueMarshaler.createForAttributes(point.getAttributes());
 
     return new NumberDataPointMarshaler(
         point.getStartEpochNanos(),
         point.getEpochNanos(),
         point,
-        valueField,
+        toProtoPointValueType(point),
         exemplarMarshalers,
         attributeMarshalers);
   }
@@ -106,5 +98,14 @@ final class NumberDataPointMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeRepeatedMessage(NumberDataPoint.EXEMPLARS, exemplars);
     size += MarshalerUtil.sizeRepeatedMessage(NumberDataPoint.ATTRIBUTES, attributes);
     return size;
+  }
+
+  static ProtoFieldInfo toProtoPointValueType(PointData pointData) {
+    if (pointData instanceof LongPointData) {
+      return NumberDataPoint.AS_INT;
+    } else {
+      assert pointData instanceof DoublePointData;
+      return NumberDataPoint.AS_DOUBLE;
+    }
   }
 }

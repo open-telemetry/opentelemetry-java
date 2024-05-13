@@ -10,7 +10,7 @@ dependencies {
   api(project(":sdk:all"))
   api(project(":sdk-extensions:autoconfigure-spi"))
 
-  implementation(project(":api:events"))
+  implementation(project(":api:incubator"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 
@@ -47,13 +47,13 @@ testing {
     }
     register<JvmTestSuite>("testFullConfig") {
       dependencies {
-        implementation(project(":api:events"))
+        implementation(project(":api:incubator"))
         implementation(project(":extensions:trace-propagators"))
-        implementation(project(":exporters:jaeger"))
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:logging-otlp"))
         implementation(project(":exporters:otlp:all"))
         implementation(project(":exporters:prometheus"))
+        implementation("io.prometheus:prometheus-metrics-exporter-httpserver")
         implementation(project(":exporters:zipkin"))
         implementation(project(":sdk:testing"))
         implementation(project(":sdk:trace-shaded-deps"))

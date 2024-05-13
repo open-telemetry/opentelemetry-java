@@ -7,17 +7,19 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.metrics.ExtendedDoubleHistogramBuilder;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.extension.incubator.metrics.ExtendedDoubleHistogramBuilder;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -97,6 +99,13 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
     @Override
     public ExtendedDoubleHistogramBuilder setExplicitBucketBoundariesAdvice(
         List<Double> bucketBoundaries) {
+      try {
+        Objects.requireNonNull(bucketBoundaries, "bucketBoundaries must not be null");
+        ExplicitBucketHistogramUtils.validateBucketBoundaries(bucketBoundaries);
+      } catch (IllegalArgumentException | NullPointerException e) {
+        logger.warning("Error setting explicit bucket boundaries advice: " + e.getMessage());
+        return this;
+      }
       builder.setExplicitBucketBoundaries(bucketBoundaries);
       return this;
     }

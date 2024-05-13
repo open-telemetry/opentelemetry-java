@@ -27,8 +27,10 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.exporter.internal.TlsUtil;
+import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.otlp.testing.internal.compressor.Base64Compressor;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
@@ -37,18 +39,21 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -66,6 +71,7 @@ import javax.net.ssl.X509TrustManager;
 import okio.Buffer;
 import okio.GzipSource;
 import okio.Okio;
+import okio.Source;
 import org.assertj.core.api.iterable.ThrowingExtractor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -80,6 +86,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockserver.integration.ClientAndServer;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
 
@@ -163,8 +170,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   aggReq -> {
                     T request;
                     try {
-                      byte[] requestBody =
-                          maybeGzipInflate(aggReq.headers(), aggReq.content().array());
+                      byte[] requestBody = maybeInflate(aggReq.headers(), aggReq.content().array());
                       request = parse.extractThrows(requestBody);
                     } catch (IOException e) {
                       throw new UncheckedIOException(e);
@@ -181,15 +187,22 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
       return HttpResponse.of(responseFuture);
     }
 
-    private static byte[] maybeGzipInflate(RequestHeaders requestHeaders, byte[] content)
+    private static byte[] maybeInflate(RequestHeaders requestHeaders, byte[] content)
         throws IOException {
-      if (!requestHeaders.contains("content-encoding", "gzip")) {
-        return content;
+      if (requestHeaders.contains("content-encoding", "gzip")) {
+        Buffer buffer = new Buffer();
+        GzipSource gzipSource = new GzipSource(Okio.source(new ByteArrayInputStream(content)));
+        gzipSource.read(buffer, Integer.MAX_VALUE);
+        return buffer.readByteArray();
       }
-      Buffer buffer = new Buffer();
-      GzipSource gzipSource = new GzipSource(Okio.source(new ByteArrayInputStream(content)));
-      gzipSource.read(buffer, Integer.MAX_VALUE);
-      return buffer.readByteArray();
+      if (requestHeaders.contains("content-encoding", "base64")) {
+        Buffer buffer = new Buffer();
+        Source base64Source =
+            Okio.source(Base64.getDecoder().wrap(new ByteArrayInputStream(content)));
+        base64Source.read(buffer, Integer.MAX_VALUE);
+        return buffer.readByteArray();
+      }
+      return content;
     }
   }
 
@@ -275,9 +288,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   void compressionWithNone() {
     TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("none").build();
-    assertThat(exporter.unwrap())
-        .extracting("delegate.httpSender.compressionEnabled")
-        .isEqualTo(false);
+    assertThat(exporter.unwrap()).extracting("delegate.httpSender.compressor").isNull();
     try {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
@@ -295,8 +306,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     TelemetryExporter<T> exporter =
         exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("gzip").build();
     assertThat(exporter.unwrap())
-        .extracting("delegate.httpSender.compressionEnabled")
-        .isEqualTo(true);
+        .extracting("delegate.httpSender.compressor")
+        .isEqualTo(GzipCompressor.getInstance());
     try {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
@@ -304,6 +315,25 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
       assertThat(httpRequests)
           .singleElement()
           .satisfies(req -> assertThat(req.headers().get("content-encoding")).isEqualTo("gzip"));
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  void compressionWithSpiCompressor() {
+    TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpUri() + path).setCompression("base64").build();
+    assertThat(exporter.unwrap())
+        .extracting("delegate.httpSender.compressor")
+        .isEqualTo(Base64Compressor.getInstance());
+    try {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(httpRequests)
+          .singleElement()
+          .satisfies(req -> assertThat(req.headers().get("content-encoding")).isEqualTo("base64"));
     } finally {
       exporter.shutdown();
     }
@@ -326,15 +356,31 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
   @Test
   void withHeaders() {
+    AtomicInteger count = new AtomicInteger();
     TelemetryExporter<T> exporter =
-        exporterBuilder().setEndpoint(server.httpUri() + path).addHeader("key", "value").build();
+        exporterBuilder()
+            .setEndpoint(server.httpUri() + path)
+            .addHeader("key1", "value1")
+            .setHeaders(() -> Collections.singletonMap("key2", "value" + count.incrementAndGet()))
+            .build();
     try {
+      // Export twice to ensure header supplier gets invoked twice
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      result = exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+
       assertThat(httpRequests)
-          .singleElement()
-          .satisfies(req -> assertThat(req.headers().get("key")).isEqualTo("value"));
+          .satisfiesExactly(
+              req -> {
+                assertThat(req.headers().get("key1")).isEqualTo("value1");
+                assertThat(req.headers().get("key2")).isEqualTo("value" + (count.get() - 1));
+              },
+              req -> {
+                assertThat(req.headers().get("key1")).isEqualTo("value1");
+                assertThat(req.headers().get("key2")).isEqualTo("value" + count.get());
+              });
     } finally {
       exporter.shutdown();
     }
@@ -465,6 +511,28 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  @SuppressLogger(HttpExporter.class)
+  void connectTimeout() {
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            // Connecting to a non-routable IP address to trigger connection error
+            .setEndpoint("http://10.255.255.1")
+            .setConnectTimeout(Duration.ofMillis(1))
+            .build();
+    try {
+      long startTimeMillis = System.currentTimeMillis();
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+      // Assert that the export request fails well before the default connect timeout of 10s
+      assertThat(System.currentTimeMillis() - startTimeMillis)
+          .isLessThan(TimeUnit.SECONDS.toMillis(1));
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
   void deadlineSetPerExport() throws InterruptedException {
     TelemetryExporter<T> exporter =
         exporterBuilder()
@@ -591,6 +659,39 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  void proxy() {
+    // configure mockserver to proxy to the local OTLP server
+    InetSocketAddress serverSocketAddress = server.httpSocketAddress();
+    try (ClientAndServer clientAndServer =
+        ClientAndServer.startClientAndServer(
+            serverSocketAddress.getHostName(), serverSocketAddress.getPort())) {
+      TelemetryExporter<T> exporter =
+          exporterBuilder()
+              // Configure exporter with server endpoint, and proxy options to route through
+              // mockserver proxy
+              .setEndpoint(server.httpUri() + path)
+              .setProxyOptions(
+                  ProxyOptions.create(
+                      InetSocketAddress.createUnresolved("localhost", clientAndServer.getPort())))
+              .build();
+
+      try {
+        List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
+
+        assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+        // assert that mock server received request
+        assertThat(clientAndServer.retrieveRecordedRequests(new org.mockserver.model.HttpRequest()))
+            .hasSize(1);
+        // assert that server received telemetry from proxy, and is as expected
+        List<U> expectedResourceTelemetry = toProto(telemetry);
+        assertThat(exportedResourceTelemetry).containsExactlyElementsOf(expectedResourceTelemetry);
+      } finally {
+        exporter.shutdown();
+      }
+    }
+  }
+
+  @Test
   @SuppressWarnings("PreferJavaTimeOverload")
   void validConfig() {
     assertThatCode(() -> exporterBuilder().setTimeout(0, TimeUnit.MILLISECONDS))
@@ -600,6 +701,15 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThatCode(() -> exporterBuilder().setTimeout(10, TimeUnit.MILLISECONDS))
         .doesNotThrowAnyException();
     assertThatCode(() -> exporterBuilder().setTimeout(Duration.ofMillis(10)))
+        .doesNotThrowAnyException();
+
+    assertThatCode(() -> exporterBuilder().setConnectTimeout(0, TimeUnit.MILLISECONDS))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> exporterBuilder().setConnectTimeout(Duration.ofMillis(0)))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> exporterBuilder().setConnectTimeout(10, TimeUnit.MILLISECONDS))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> exporterBuilder().setConnectTimeout(Duration.ofMillis(10)))
         .doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().setEndpoint("http://localhost:4318"))
@@ -612,6 +722,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         .doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().setCompression("gzip")).doesNotThrowAnyException();
+    // SPI compressor available for this test but not packaged with OTLP exporter
+    assertThatCode(() -> exporterBuilder().setCompression("base64")).doesNotThrowAnyException();
     assertThatCode(() -> exporterBuilder().setCompression("none")).doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().addHeader("foo", "bar").addHeader("baz", "qux"))
@@ -635,6 +747,16 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
 
+    assertThatThrownBy(() -> exporterBuilder().setConnectTimeout(-1, TimeUnit.MILLISECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("timeout must be non-negative");
+    assertThatThrownBy(() -> exporterBuilder().setConnectTimeout(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
+    assertThatThrownBy(() -> exporterBuilder().setConnectTimeout(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("timeout");
+
     assertThatThrownBy(() -> exporterBuilder().setEndpoint(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("endpoint");
@@ -654,7 +776,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThatThrownBy(() -> exporterBuilder().setCompression("foo"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
-            "Unsupported compression method. Supported compression methods include: gzip, none.");
+            "Unsupported compressionMethod. Compression method must be \"none\" or one of: [base64,gzip]");
   }
 
   @Test
@@ -666,6 +788,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     TelemetryExporter<T> exporter =
         exporterBuilder()
             .setTimeout(Duration.ofSeconds(5))
+            .setConnectTimeout(Duration.ofSeconds(4))
             .setEndpoint("http://localhost:4318")
             .setCompression("gzip")
             .addHeader("foo", "bar")
@@ -728,9 +851,14 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
                   + ", "
-                  + "compressionEnabled=false, "
+                  + "proxyOptions=null, "
+                  + "compressorEncoding=null, "
+                  + "connectTimeoutNanos="
+                  + TimeUnit.SECONDS.toNanos(10)
+                  + ", "
                   + "exportAsJson=false, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
+                  + ".*" // Maybe additional signal specific fields
                   + "\\}");
     } finally {
       telemetryExporter.shutdown();
@@ -739,6 +867,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     telemetryExporter =
         exporterBuilder()
             .setTimeout(Duration.ofSeconds(5))
+            .setConnectTimeout(Duration.ofSeconds(4))
             .setEndpoint("http://example:4318/v1/logs")
             .setCompression("gzip")
             .addHeader("foo", "bar")
@@ -764,10 +893,15 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(5)
                   + ", "
-                  + "compressionEnabled=true, "
+                  + "proxyOptions=null, "
+                  + "compressorEncoding=gzip, "
+                  + "connectTimeoutNanos="
+                  + TimeUnit.SECONDS.toNanos(4)
+                  + ", "
                   + "exportAsJson=false, "
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
                   + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3\\}"
+                  + ".*" // Maybe additional signal specific fields
                   + "\\}");
     } finally {
       telemetryExporter.shutdown();

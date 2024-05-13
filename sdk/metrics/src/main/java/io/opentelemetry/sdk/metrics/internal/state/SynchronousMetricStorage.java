@@ -46,7 +46,8 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
         MetricDescriptor.create(view, registeredView.getViewSourceInfo(), instrumentDescriptor);
     Aggregator<T, U> aggregator =
         ((AggregatorFactory) view.getAggregation())
-            .createAggregator(instrumentDescriptor, exemplarFilter);
+            .createAggregator(
+                instrumentDescriptor, exemplarFilter, registeredReader.getReader().getMemoryMode());
     // We won't be storing this metric.
     if (Aggregator.drop() == aggregator) {
       return empty();

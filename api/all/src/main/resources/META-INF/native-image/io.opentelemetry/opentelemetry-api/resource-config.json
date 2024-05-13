@@ -1,0 +1,10 @@
+{
+  "resources": {
+    "includes": [
+      {
+        "pattern":"\\Qio/opentelemetry/api/version.properties\\E"
+      }
+    ]
+  },
+  "bundles": []
+}

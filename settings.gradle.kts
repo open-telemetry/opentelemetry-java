@@ -1,21 +1,22 @@
 pluginManagement {
   plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("com.gradle.enterprise") version "3.15.1"
-    id("de.undercouch.download") version "5.5.0"
+    id("com.gradle.develocity") version "3.17.3"
+    id("de.undercouch.download") version "5.6.0"
     id("org.jsonschema2pojo") version "1.2.1"
-    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
-    id("org.graalvm.buildtools.native") version "0.9.25"
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
+    id("org.graalvm.buildtools.native") version "0.10.1"
   }
 }
 
 plugins {
-  id("com.gradle.enterprise")
+  id("com.gradle.develocity")
 }
 
 dependencyResolutionManagement {
   repositories {
     mavenCentral()
+    google()
     mavenLocal()
   }
 }
@@ -23,21 +24,17 @@ dependencyResolutionManagement {
 rootProject.name = "opentelemetry-java"
 include(":all")
 include(":api:all")
-include(":api:events")
+include(":api:incubator")
 include(":bom")
 include(":bom-alpha")
 include(":context")
 include(":dependencyManagement")
-include(":extensions:incubator")
 include(":extensions:kotlin")
 include(":extensions:trace-propagators")
 include(":exporters:common")
 include(":exporters:sender:grpc-managed-channel")
 include(":exporters:sender:jdk")
 include(":exporters:sender:okhttp")
-include(":exporters:jaeger")
-include(":exporters:jaeger-proto")
-include(":exporters:jaeger-thrift")
 include(":exporters:logging")
 include(":exporters:logging-otlp")
 include(":exporters:otlp:all")
@@ -64,6 +61,7 @@ include(":sdk-extensions:autoconfigure-spi")
 include(":sdk-extensions:incubator")
 include(":sdk-extensions:jaeger-remote-sampler")
 include(":testing-internal")
+include(":animal-sniffer-signature")
 
 val gradleEnterpriseServer = "https://ge.opentelemetry.io"
 val isCI = System.getenv("CI") != null
@@ -73,30 +71,29 @@ val geAccessKey = System.getenv("GRADLE_ENTERPRISE_ACCESS_KEY") ?: ""
 val useScansGradleCom = isCI && geAccessKey.isEmpty()
 
 if (useScansGradleCom) {
-  gradleEnterprise {
+  develocity {
     buildScan {
-      termsOfServiceUrl = "https://gradle.com/terms-of-service"
-      termsOfServiceAgree = "yes"
-      isUploadInBackground = !isCI
-      publishAlways()
+      termsOfUseUrl.set("https://gradle.com/terms-of-service")
+      termsOfUseAgree.set("yes")
+      uploadInBackground.set(!isCI)
+      publishing.onlyIf { true }
 
       capture {
-        isTaskInputFiles = true
+        fileFingerprints.set(true)
       }
     }
   }
 } else {
-  gradleEnterprise {
+  develocity {
     server = gradleEnterpriseServer
     buildScan {
-      isUploadInBackground = !isCI
-
-      this as com.gradle.enterprise.gradleplugin.internal.extension.BuildScanExtensionWithHiddenFeatures
-      publishIfAuthenticated()
-      publishAlways()
+      uploadInBackground.set(!isCI)
+      publishing.onlyIf {
+        it.isAuthenticated
+      }
 
       capture {
-        isTaskInputFiles = true
+        fileFingerprints.set(true)
       }
 
       gradle.startParameter.projectProperties["testJavaVersion"]?.let { tag(it) }

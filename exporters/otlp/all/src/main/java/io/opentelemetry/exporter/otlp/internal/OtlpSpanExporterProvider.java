@@ -9,14 +9,19 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_T
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * {@link SpanExporter} SPI implementation for {@link OtlpGrpcSpanExporter} and {@link
@@ -25,7 +30,12 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class OtlpSpanExporterProvider implements ConfigurableSpanExporterProvider {
+public class OtlpSpanExporterProvider
+    implements ConfigurableSpanExporterProvider, AutoConfigureListener {
+
+  private final AtomicReference<MeterProvider> meterProviderRef =
+      new AtomicReference<>(MeterProvider.noop());
+
   @Override
   public SpanExporter createExporter(ConfigProperties config) {
     String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_TRACES, config);
@@ -42,7 +52,10 @@ public class OtlpSpanExporterProvider implements ConfigurableSpanExporterProvide
           builder::setTrustedCertificates,
           builder::setClientTls,
           builder::setRetryPolicy);
-
+      builder.setMeterProvider(meterProviderRef::get);
+      ExporterBuilderUtil.configureExporterMemoryMode(
+          config,
+          memoryMode -> OtlpConfigUtil.setMemoryModeOnOtlpExporterBuilder(builder, memoryMode));
       return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
       OtlpGrpcSpanExporterBuilder builder = grpcBuilder();
@@ -57,6 +70,10 @@ public class OtlpSpanExporterProvider implements ConfigurableSpanExporterProvide
           builder::setTrustedCertificates,
           builder::setClientTls,
           builder::setRetryPolicy);
+      builder.setMeterProvider(meterProviderRef::get);
+      ExporterBuilderUtil.configureExporterMemoryMode(
+          config,
+          memoryMode -> OtlpConfigUtil.setMemoryModeOnOtlpExporterBuilder(builder, memoryMode));
 
       return builder.build();
     }
@@ -76,5 +93,10 @@ public class OtlpSpanExporterProvider implements ConfigurableSpanExporterProvide
   // Visible for testing
   OtlpGrpcSpanExporterBuilder grpcBuilder() {
     return OtlpGrpcSpanExporter.builder();
+  }
+
+  @Override
+  public void afterAutoConfigure(OpenTelemetrySdk sdk) {
+    meterProviderRef.set(sdk.getMeterProvider());
   }
 }

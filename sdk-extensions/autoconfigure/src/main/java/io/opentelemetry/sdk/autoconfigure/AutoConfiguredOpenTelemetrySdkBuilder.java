@@ -8,28 +8,33 @@ package io.opentelemetry.sdk.autoconfigure;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.events.GlobalEventEmitterProvider;
+import io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
+import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedConfigProperties;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
-import io.opentelemetry.sdk.logs.internal.SdkEventEmitterProvider;
+import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
@@ -71,6 +76,9 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       propagatorCustomizer = (a, unused) -> a;
   private BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
       spanExporterCustomizer = (a, unused) -> a;
+
+  private BiFunction<? super SpanProcessor, ConfigProperties, ? extends SpanProcessor>
+      spanProcessorCustomizer = (a, unused) -> a;
   private BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer =
       (a, unused) -> a;
 
@@ -78,11 +86,15 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       meterProviderCustomizer = (a, unused) -> a;
   private BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
       metricExporterCustomizer = (a, unused) -> a;
+  private BiFunction<? super MetricReader, ConfigProperties, ? extends MetricReader>
+      metricReaderCustomizer = (a, unused) -> a;
 
   private BiFunction<SdkLoggerProviderBuilder, ConfigProperties, SdkLoggerProviderBuilder>
       loggerProviderCustomizer = (a, unused) -> a;
   private BiFunction<? super LogRecordExporter, ConfigProperties, ? extends LogRecordExporter>
       logRecordExporterCustomizer = (a, unused) -> a;
+  private BiFunction<? super LogRecordProcessor, ConfigProperties, ? extends LogRecordProcessor>
+      logRecordProcessorCustomizer = (a, unused) -> a;
 
   private BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer =
       (a, unused) -> a;
@@ -91,6 +103,9 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
   private final List<Function<ConfigProperties, Map<String, String>>> propertiesCustomizers =
       new ArrayList<>();
+
+  private Function<ConfigProperties, ConfigProperties> configPropertiesCustomizer =
+      Function.identity();
 
   private SpiHelper spiHelper =
       SpiHelper.create(AutoConfiguredOpenTelemetrySdk.class.getClassLoader());
@@ -192,6 +207,26 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   /**
+   * Adds a {@link BiFunction} to invoke for all autoconfigured {@link
+   * io.opentelemetry.sdk.trace.SpanProcessor}. The return value of the {@link BiFunction} will
+   * replace the passed-in argument. In contrast to {@link #addSpanExporterCustomizer(BiFunction)}
+   * this allows modifications to happen before batching occurs. As a result, it is possible to
+   * efficiently filter spans, add artificial spans or delay spans for enhancing them with external,
+   * delayed data.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  @Override
+  public AutoConfiguredOpenTelemetrySdkBuilder addSpanProcessorCustomizer(
+      BiFunction<? super SpanProcessor, ConfigProperties, ? extends SpanProcessor>
+          spanProcessorCustomizer) {
+    requireNonNull(spanProcessorCustomizer, "spanProcessorCustomizer");
+    this.spanProcessorCustomizer =
+        mergeCustomizer(this.spanProcessorCustomizer, spanProcessorCustomizer);
+    return this;
+  }
+
+  /**
    * Adds a {@link Supplier} of a map of property names and values to use as defaults for the {@link
    * ConfigProperties} used during auto-configuration. The order of precedence of properties is
    * system properties > environment variables > the suppliers registered with this method.
@@ -220,6 +255,21 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       Function<ConfigProperties, Map<String, String>> propertiesCustomizer) {
     requireNonNull(propertiesCustomizer, "propertiesCustomizer");
     this.propertiesCustomizers.add(propertiesCustomizer);
+    return this;
+  }
+
+  /**
+   * Adds a {@link Function} to invoke the with the {@link ConfigProperties} to allow customization.
+   *
+   * <p>The argument to the function is the {@link ConfigProperties}, with the {@link
+   * #addPropertiesCustomizer(Function)} already applied.
+   *
+   * <p>The return value of the {@link Function} replace the {@link ConfigProperties} to be used.
+   */
+  AutoConfiguredOpenTelemetrySdkBuilder setConfigPropertiesCustomizer(
+      Function<ConfigProperties, ConfigProperties> configPropertiesCustomizer) {
+    requireNonNull(configPropertiesCustomizer, "configPropertiesCustomizer");
+    this.configPropertiesCustomizer = configPropertiesCustomizer;
     return this;
   }
 
@@ -257,6 +307,20 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   /**
+   * Adds a {@link BiFunction} to invoke with the autoconfigured {@link MetricReader} to allow
+   * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  @Override
+  public AutoConfiguredOpenTelemetrySdkBuilder addMetricReaderCustomizer(
+      BiFunction<? super MetricReader, ConfigProperties, ? extends MetricReader> readerCustomizer) {
+    requireNonNull(readerCustomizer, "readerCustomizer");
+    this.metricReaderCustomizer = mergeCustomizer(this.metricReaderCustomizer, readerCustomizer);
+    return this;
+  }
+
+  /**
    * Adds a {@link BiFunction} to invoke the with the {@link SdkLoggerProviderBuilder} to allow
    * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
    *
@@ -290,6 +354,26 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   /**
+   * Adds a {@link BiFunction} to invoke for all autoconfigured {@link
+   * io.opentelemetry.sdk.logs.LogRecordProcessor}s. The return value of the {@link BiFunction} will
+   * replace the passed-in argument. In contrast to {@link
+   * #addLogRecordExporterCustomizer(BiFunction)} (BiFunction)} this allows modifications to happen
+   * before batching occurs. As a result, it is possible to efficiently filter logs, add artificial
+   * logs or delay logs for enhancing them with external, delayed data.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
+  @Override
+  public AutoConfiguredOpenTelemetrySdkBuilder addLogRecordProcessorCustomizer(
+      BiFunction<? super LogRecordProcessor, ConfigProperties, ? extends LogRecordProcessor>
+          logRecordProcessorCustomizer) {
+    requireNonNull(logRecordProcessorCustomizer, "logRecordProcessorCustomizer");
+    this.logRecordProcessorCustomizer =
+        mergeCustomizer(this.logRecordProcessorCustomizer, logRecordProcessorCustomizer);
+    return this;
+  }
+
+  /**
    * Disable the registration of a shutdown hook to shut down the SDK when appropriate. By default,
    * the shutdown hook is registered.
    *
@@ -318,6 +402,13 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       ClassLoader serviceClassLoader) {
     requireNonNull(serviceClassLoader, "serviceClassLoader");
     this.spiHelper = SpiHelper.create(serviceClassLoader);
+    return this;
+  }
+
+  /** Sets the {@link ComponentLoader} to be used to load SPI implementations. */
+  AutoConfiguredOpenTelemetrySdkBuilder setComponentLoader(ComponentLoader componentLoader) {
+    requireNonNull(componentLoader, "componentLoader");
+    this.spiHelper = SpiHelper.create(componentLoader);
     return this;
   }
 
@@ -359,7 +450,12 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
         meterProviderBuilder.setResource(resource);
         MeterProviderConfiguration.configureMeterProvider(
-            meterProviderBuilder, config, spiHelper, metricExporterCustomizer, closeables);
+            meterProviderBuilder,
+            config,
+            spiHelper,
+            metricReaderCustomizer,
+            metricExporterCustomizer,
+            closeables);
         meterProviderBuilder = meterProviderCustomizer.apply(meterProviderBuilder, config);
         SdkMeterProvider meterProvider = meterProviderBuilder.build();
         closeables.add(meterProvider);
@@ -372,6 +468,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
             spiHelper,
             meterProvider,
             spanExporterCustomizer,
+            spanProcessorCustomizer,
             samplerCustomizer,
             closeables);
         tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
@@ -386,6 +483,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
             spiHelper,
             meterProvider,
             logRecordExporterCustomizer,
+            logRecordProcessorCustomizer,
             closeables);
         loggerProviderBuilder = loggerProviderCustomizer.apply(loggerProviderBuilder, config);
         SdkLoggerProvider loggerProvider = loggerProviderBuilder.build();
@@ -406,6 +504,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
       maybeRegisterShutdownHook(openTelemetrySdk);
       maybeSetAsGlobal(openTelemetrySdk);
+      callAutoConfigureListeners(spiHelper, openTelemetrySdk);
 
       return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
     } catch (RuntimeException e) {
@@ -429,10 +528,16 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
   @Nullable
   private static AutoConfiguredOpenTelemetrySdk maybeConfigureFromFile(ConfigProperties config) {
-    String configurationFile = config.getString("OTEL_CONFIG_FILE");
+    String otelConfigFile = config.getString("otel.config.file");
+    if (otelConfigFile != null && !otelConfigFile.isEmpty()) {
+      logger.warning(
+          "otel.config.file was set, but has been replaced with otel.experimental.config.file");
+    }
+    String configurationFile = config.getString("otel.experimental.config.file");
     if (configurationFile == null || configurationFile.isEmpty()) {
       return null;
     }
+    logger.fine("Autoconfiguring from configuration file: " + configurationFile);
     FileInputStream fis;
     try {
       fis = new FileInputStream(configurationFile);
@@ -441,14 +546,14 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     }
     try {
       Class<?> configurationFactory =
-          Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.ConfigurationFactory");
+          Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfiguration");
       Method parse = configurationFactory.getMethod("parse", InputStream.class);
       Object model = parse.invoke(null, fis);
       Class<?> openTelemetryConfiguration =
           Class.forName(
               "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration");
-      Method interpret = configurationFactory.getMethod("interpret", openTelemetryConfiguration);
-      OpenTelemetrySdk sdk = (OpenTelemetrySdk) interpret.invoke(null, model);
+      Method create = configurationFactory.getMethod("create", openTelemetryConfiguration);
+      OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model);
       Method toConfigProperties =
           configurationFactory.getMethod("toConfigProperties", openTelemetryConfiguration);
       ExtendedConfigProperties configProperties =
@@ -481,10 +586,22 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       return;
     }
     GlobalOpenTelemetry.set(openTelemetrySdk);
-    GlobalEventEmitterProvider.set(
-        SdkEventEmitterProvider.create(openTelemetrySdk.getSdkLoggerProvider()));
+    GlobalEventLoggerProvider.set(
+        SdkEventLoggerProvider.create(openTelemetrySdk.getSdkLoggerProvider()));
     logger.log(
         Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetrySdk);
+  }
+
+  // Visible for testing
+  void callAutoConfigureListeners(SpiHelper spiHelper, OpenTelemetrySdk openTelemetrySdk) {
+    for (AutoConfigureListener listener : spiHelper.getListeners()) {
+      try {
+        listener.afterAutoConfigure(openTelemetrySdk);
+      } catch (Throwable throwable) {
+        logger.log(
+            Level.WARNING, "Error invoking listener " + listener.getClass().getName(), throwable);
+      }
+    }
   }
 
   @SuppressWarnings("deprecation") // Support deprecated SdkTracerProviderConfigurer
@@ -514,7 +631,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       Map<String, String> overrides = customizer.apply(properties);
       properties = properties.withOverrides(overrides);
     }
-    return properties;
+    return configPropertiesCustomizer.apply(properties);
   }
 
   // Visible for testing

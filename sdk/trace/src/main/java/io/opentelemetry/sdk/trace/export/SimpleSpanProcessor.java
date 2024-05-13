@@ -36,7 +36,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
   private static final Logger logger = Logger.getLogger(SimpleSpanProcessor.class.getName());
 
   private final SpanExporter spanExporter;
-  private final boolean sampled;
+  private final boolean exportUnsampledSpans;
   private final Set<CompletableResultCode> pendingExports =
       Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
@@ -53,12 +53,22 @@ public final class SimpleSpanProcessor implements SpanProcessor {
    */
   public static SpanProcessor create(SpanExporter exporter) {
     requireNonNull(exporter, "exporter");
-    return new SimpleSpanProcessor(exporter, /* sampled= */ true);
+    return builder(exporter).build();
   }
 
-  SimpleSpanProcessor(SpanExporter spanExporter, boolean sampled) {
+  /**
+   * Returns a new Builder for {@link SimpleSpanProcessor}.
+   *
+   * @since 1.34.0
+   */
+  public static SimpleSpanProcessorBuilder builder(SpanExporter exporter) {
+    requireNonNull(exporter, "exporter");
+    return new SimpleSpanProcessorBuilder(exporter);
+  }
+
+  SimpleSpanProcessor(SpanExporter spanExporter, boolean exportUnsampledSpans) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
-    this.sampled = sampled;
+    this.exportUnsampledSpans = exportUnsampledSpans;
   }
 
   @Override
@@ -73,22 +83,21 @@ public final class SimpleSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    if (sampled && !span.getSpanContext().isSampled()) {
-      return;
-    }
-    try {
-      List<SpanData> spans = Collections.singletonList(span.toSpanData());
-      CompletableResultCode result = spanExporter.export(spans);
-      pendingExports.add(result);
-      result.whenComplete(
-          () -> {
-            pendingExports.remove(result);
-            if (!result.isSuccess()) {
-              logger.log(Level.FINE, "Exporter failed");
-            }
-          });
-    } catch (RuntimeException e) {
-      logger.log(Level.WARNING, "Exporter threw an Exception", e);
+    if (span != null && (exportUnsampledSpans || span.getSpanContext().isSampled())) {
+      try {
+        List<SpanData> spans = Collections.singletonList(span.toSpanData());
+        CompletableResultCode result = spanExporter.export(spans);
+        pendingExports.add(result);
+        result.whenComplete(
+            () -> {
+              pendingExports.remove(result);
+              if (!result.isSuccess()) {
+                logger.log(Level.FINE, "Exporter failed");
+              }
+            });
+      } catch (RuntimeException e) {
+        logger.log(Level.WARNING, "Exporter threw an Exception", e);
+      }
     }
   }
 
@@ -126,8 +135,22 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     return CompletableResultCode.ofAll(pendingExports);
   }
 
+  /**
+   * Return the processor's configured {@link SpanExporter}.
+   *
+   * @since 1.37.0
+   */
+  public SpanExporter getSpanExporter() {
+    return spanExporter;
+  }
+
   @Override
   public String toString() {
-    return "SimpleSpanProcessor{" + "spanExporter=" + spanExporter + '}';
+    return "SimpleSpanProcessor{"
+        + "spanExporter="
+        + spanExporter
+        + ", exportUnsampledSpans="
+        + exportUnsampledSpans
+        + '}';
   }
 }

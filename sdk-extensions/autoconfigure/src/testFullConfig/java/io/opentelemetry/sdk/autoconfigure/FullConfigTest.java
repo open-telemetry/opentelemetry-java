@@ -18,8 +18,8 @@ import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.events.EventEmitter;
-import io.opentelemetry.api.events.GlobalEventEmitterProvider;
+import io.opentelemetry.api.incubator.events.EventLogger;
+import io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.Meter;
@@ -38,9 +38,8 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.logs.v1.SeverityNumber;
 import io.opentelemetry.proto.metrics.v1.Metric;
-import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
-import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -161,7 +160,7 @@ class FullConfigTest {
 
     // Initialize here so we can shutdown when done
     GlobalOpenTelemetry.resetForTest();
-    GlobalEventEmitterProvider.resetForTest();
+    GlobalEventLoggerProvider.resetForTest();
     openTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
   }
 
@@ -169,7 +168,7 @@ class FullConfigTest {
   void afterEach() {
     openTelemetrySdk.close();
     GlobalOpenTelemetry.resetForTest();
-    GlobalEventEmitterProvider.resetForTest();
+    GlobalEventLoggerProvider.resetForTest();
   }
 
   @Test
@@ -208,16 +207,13 @@ class FullConfigTest {
     logger.logRecordBuilder().setBody("debug log message").setSeverity(Severity.DEBUG).emit();
     logger.logRecordBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
 
-    EventEmitter eventEmitter =
-        GlobalEventEmitterProvider.get()
-            .eventEmitterBuilder("test")
-            .setEventDomain("test-domain")
-            .build();
-    eventEmitter.emit("test-name", Attributes.builder().put("cow", "moo").build());
+    EventLogger eventLogger = GlobalEventLoggerProvider.get().eventLoggerBuilder("test").build();
+    eventLogger.builder("namespace.test-name").put("cow", "moo").emit();
+    ;
 
     openTelemetrySdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
-    openTelemetrySdk.getSdkMeterProvider().forceFlush().join(10, TimeUnit.SECONDS);
     openTelemetrySdk.getSdkLoggerProvider().forceFlush().join(10, TimeUnit.SECONDS);
+    openTelemetrySdk.getSdkMeterProvider().forceFlush().join(10, TimeUnit.SECONDS);
 
     await().untilAsserted(() -> assertThat(otlpTraceRequests).hasSize(1));
 
@@ -257,38 +253,61 @@ class FullConfigTest {
         .untilAsserted(
             () -> {
               ExportMetricsServiceRequest metricRequest = otlpMetricsRequests.take();
-              assertThat(metricRequest.getResourceMetrics(0).getResource().getAttributesList())
-                  .contains(
-                      KeyValue.newBuilder()
-                          .setKey("service.name")
-                          .setValue(AnyValue.newBuilder().setStringValue("test").build())
-                          .build(),
-                      KeyValue.newBuilder()
-                          .setKey("cat")
-                          .setValue(AnyValue.newBuilder().setStringValue("meow").build())
-                          .build());
 
-              for (ResourceMetrics resourceMetrics : metricRequest.getResourceMetricsList()) {
-                assertThat(resourceMetrics.getScopeMetricsList())
-                    .anySatisfy(ilm -> assertThat(ilm.getScope().getName()).isEqualTo("test"));
-                for (ScopeMetrics instrumentationLibraryMetrics :
-                    resourceMetrics.getScopeMetricsList()) {
-                  for (Metric metric : instrumentationLibraryMetrics.getMetricsList()) {
-                    // SPI was loaded
-                    // MetricExporterCustomizer filters metrics not named my-metric
-                    assertThat(metric.getName()).isEqualTo("my-metric");
-                    // TestMeterProviderConfigurer configures a view that only passes on attribute
-                    // named allowed
-                    // configured-test
-                    assertThat(getFirstDataPointLabels(metric))
-                        .contains(
-                            KeyValue.newBuilder()
-                                .setKey("allowed")
-                                .setValue(AnyValue.newBuilder().setStringValue("bear").build())
-                                .build());
-                  }
-                }
-              }
+              assertThat(metricRequest.getResourceMetricsList())
+                  .satisfiesExactly(
+                      resourceMetrics -> {
+                        assertThat(resourceMetrics.getResource().getAttributesList())
+                            .contains(
+                                KeyValue.newBuilder()
+                                    .setKey("service.name")
+                                    .setValue(AnyValue.newBuilder().setStringValue("test").build())
+                                    .build(),
+                                KeyValue.newBuilder()
+                                    .setKey("cat")
+                                    .setValue(AnyValue.newBuilder().setStringValue("meow").build())
+                                    .build());
+                        assertThat(resourceMetrics.getScopeMetricsList())
+                            .anySatisfy(
+                                scopeMetrics -> {
+                                  assertThat(scopeMetrics.getScope().getName()).isEqualTo("test");
+                                  assertThat(scopeMetrics.getMetricsList())
+                                      .satisfiesExactly(
+                                          metric -> {
+                                            // SPI was loaded
+                                            assertThat(metric.getName()).isEqualTo("my-metric");
+                                            // TestMeterProviderConfigurer configures a view that
+                                            // only passes on attribute
+                                            // named allowed
+                                            // configured-test
+                                            assertThat(getFirstDataPointLabels(metric))
+                                                .contains(
+                                                    KeyValue.newBuilder()
+                                                        .setKey("allowed")
+                                                        .setValue(
+                                                            AnyValue.newBuilder()
+                                                                .setStringValue("bear")
+                                                                .build())
+                                                        .build());
+                                          });
+                                })
+                            // This verifies that AutoConfigureListener was invoked and the OTLP
+                            // span / log exporters received the autoconfigured OpenTelemetrySdk
+                            // instance
+                            .anySatisfy(
+                                scopeMetrics -> {
+                                  assertThat(scopeMetrics.getScope().getName())
+                                      .isEqualTo("io.opentelemetry.exporters.otlp-grpc");
+                                  assertThat(scopeMetrics.getMetricsList())
+                                      .satisfiesExactlyInAnyOrder(
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo("otlp.exporter.seen"),
+                                          metric ->
+                                              assertThat(metric.getName())
+                                                  .isEqualTo("otlp.exporter.exported"));
+                                });
+                      });
             });
 
     await().untilAsserted(() -> assertThat(otlpLogsRequests).hasSize(1));
@@ -312,21 +331,23 @@ class FullConfigTest {
               assertThat(logRecord.getSeverityNumberValue())
                   .isEqualTo(Severity.INFO.getSeverityNumber());
             },
-            logRecord ->
-                assertThat(logRecord.getAttributesList())
-                    .containsExactlyInAnyOrder(
-                        KeyValue.newBuilder()
-                            .setKey("event.domain")
-                            .setValue(AnyValue.newBuilder().setStringValue("test-domain").build())
-                            .build(),
-                        KeyValue.newBuilder()
-                            .setKey("event.name")
-                            .setValue(AnyValue.newBuilder().setStringValue("test-name").build())
-                            .build(),
-                        KeyValue.newBuilder()
-                            .setKey("cow")
-                            .setValue(AnyValue.newBuilder().setStringValue("moo").build())
-                            .build()));
+            logRecord -> {
+              assertThat(logRecord.getBody().getKvlistValue().getValuesList())
+                  .containsExactlyInAnyOrder(
+                      KeyValue.newBuilder()
+                          .setKey("cow")
+                          .setValue(AnyValue.newBuilder().setStringValue("moo").build())
+                          .build());
+              assertThat(logRecord.getSeverityNumber())
+                  .isEqualTo(SeverityNumber.SEVERITY_NUMBER_INFO);
+              assertThat(logRecord.getAttributesList())
+                  .containsExactlyInAnyOrder(
+                      KeyValue.newBuilder()
+                          .setKey("event.name")
+                          .setValue(
+                              AnyValue.newBuilder().setStringValue("namespace.test-name").build())
+                          .build());
+            });
   }
 
   private static List<KeyValue> getFirstDataPointLabels(Metric metric) {

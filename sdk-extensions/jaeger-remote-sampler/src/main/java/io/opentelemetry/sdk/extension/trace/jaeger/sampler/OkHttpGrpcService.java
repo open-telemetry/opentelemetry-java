@@ -53,7 +53,7 @@ final class OkHttpGrpcService implements GrpcService {
       SamplingStrategyResponseUnMarshaler responseUnmarshaller) {
     Request.Builder requestBuilder = new Request.Builder().url(url).headers(headers);
 
-    RequestBody requestBody = new GrpcRequestBody(exportRequest, false);
+    RequestBody requestBody = new GrpcRequestBody(exportRequest, null);
     requestBuilder.post(requestBody);
 
     try {

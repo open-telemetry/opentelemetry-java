@@ -12,11 +12,15 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.testing.assertj.TracesAssert;
+import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -73,27 +77,38 @@ public final class OpenTelemetryExtension
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().registerMetricReader(metricReader).build();
 
+    InMemoryLogRecordExporter logRecordExporter = InMemoryLogRecordExporter.create();
+
+    SdkLoggerProvider loggerProvider =
+        SdkLoggerProvider.builder()
+            .addLogRecordProcessor(SimpleLogRecordProcessor.create(logRecordExporter))
+            .build();
+
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
             .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
             .setTracerProvider(tracerProvider)
             .setMeterProvider(meterProvider)
+            .setLoggerProvider(loggerProvider)
             .build();
 
-    return new OpenTelemetryExtension(openTelemetry, spanExporter, metricReader);
+    return new OpenTelemetryExtension(openTelemetry, spanExporter, metricReader, logRecordExporter);
   }
 
   private final OpenTelemetrySdk openTelemetry;
   private final InMemorySpanExporter spanExporter;
   private final InMemoryMetricReader metricReader;
+  private final InMemoryLogRecordExporter logRecordExporter;
 
   private OpenTelemetryExtension(
       OpenTelemetrySdk openTelemetry,
       InMemorySpanExporter spanExporter,
-      InMemoryMetricReader metricReader) {
+      InMemoryMetricReader metricReader,
+      InMemoryLogRecordExporter logRecordExporter) {
     this.openTelemetry = openTelemetry;
     this.spanExporter = spanExporter;
     this.metricReader = metricReader;
+    this.logRecordExporter = logRecordExporter;
   }
 
   /** Returns the {@link OpenTelemetrySdk} created by this extension. */
@@ -113,6 +128,15 @@ public final class OpenTelemetryExtension
    */
   public List<MetricData> getMetrics() {
     return new ArrayList<>(metricReader.collectAllMetrics());
+  }
+
+  /**
+   * Returns all the exported {@link LogRecordData} so far.
+   *
+   * @since 1.32.0
+   */
+  public List<LogRecordData> getLogRecords() {
+    return new ArrayList<>(logRecordExporter.getFinishedLogRecordItems());
   }
 
   /**
@@ -140,10 +164,21 @@ public final class OpenTelemetryExtension
     SdkMeterProviderUtil.resetForTest(openTelemetry.getSdkMeterProvider());
   }
 
+  /**
+   * Clears the collected exported {@link LogRecordData}. Consider making your test smaller instead
+   * of manually clearing state using this method.
+   *
+   * @since 1.32.0
+   */
+  public void clearLogRecords() {
+    logRecordExporter.reset();
+  }
+
   @Override
   public void beforeEach(ExtensionContext context) {
     clearSpans();
     clearMetrics();
+    clearLogRecords();
   }
 
   @Override

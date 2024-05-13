@@ -5,14 +5,17 @@
 
 package io.opentelemetry.sdk.autoconfigure.provider;
 
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
 
-public class TestConfigurableSpanExporterProvider implements ConfigurableSpanExporterProvider {
+public class TestConfigurableSpanExporterProvider
+    implements ConfigurableSpanExporterProvider, AutoConfigureListener {
   @Override
   public SpanExporter createExporter(ConfigProperties config) {
     return new TestSpanExporter(config);
@@ -22,6 +25,9 @@ public class TestConfigurableSpanExporterProvider implements ConfigurableSpanExp
   public String getName() {
     return "testExporter";
   }
+
+  @Override
+  public void afterAutoConfigure(OpenTelemetrySdk sdk) {}
 
   public static class TestSpanExporter implements SpanExporter {
 

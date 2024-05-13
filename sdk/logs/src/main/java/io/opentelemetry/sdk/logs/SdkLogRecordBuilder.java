@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.incubator.logs.AnyValue;
+import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
@@ -13,12 +15,13 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.logs.data.Body;
+import io.opentelemetry.sdk.logs.internal.AnyValueBody;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 /** SDK implementation of {@link LogRecordBuilder}. */
-final class SdkLogRecordBuilder implements LogRecordBuilder {
+final class SdkLogRecordBuilder implements ExtendedLogRecordBuilder {
 
   private final LoggerSharedState loggerSharedState;
   private final LogLimits logLimits;
@@ -85,7 +88,13 @@ final class SdkLogRecordBuilder implements LogRecordBuilder {
 
   @Override
   public SdkLogRecordBuilder setBody(String body) {
-    this.body = Body.string(body);
+    this.body = AnyValueBody.create(AnyValue.of(body));
+    return this;
+  }
+
+  @Override
+  public LogRecordBuilder setBody(AnyValue<?> value) {
+    this.body = AnyValueBody.create(value);
     return this;
   }
 

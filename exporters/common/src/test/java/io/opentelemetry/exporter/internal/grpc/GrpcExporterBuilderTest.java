@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.internal.grpc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import java.net.URI;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,27 +26,27 @@ class GrpcExporterBuilderTest {
 
   @Test
   void compressionDefault() {
-    assertThat(builder).extracting("compressionEnabled").isEqualTo(false);
+    assertThat(builder).extracting("compressor").isNull();
   }
 
   @Test
   void compressionNone() {
-    builder.setCompression("none");
+    builder.setCompression(null);
 
-    assertThat(builder).extracting("compressionEnabled").isEqualTo(false);
+    assertThat(builder).extracting("compressor").isNull();
   }
 
   @Test
   void compressionGzip() {
-    builder.setCompression("gzip");
+    builder.setCompression(GzipCompressor.getInstance());
 
-    assertThat(builder).extracting("compressionEnabled").isEqualTo(true);
+    assertThat(builder).extracting("compressor").isEqualTo(GzipCompressor.getInstance());
   }
 
   @Test
   void compressionEnabledAndDisabled() {
-    builder.setCompression("gzip").setCompression("none");
+    builder.setCompression(GzipCompressor.getInstance()).setCompression(null);
 
-    assertThat(builder).extracting("compressionEnabled").isEqualTo(false);
+    assertThat(builder).extracting("compressor").isNull();
   }
 }

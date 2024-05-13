@@ -14,11 +14,15 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -433,6 +437,97 @@ class SdkLongHistogramTest {
     assertThat(reader.collectAllMetrics()).hasSize(0);
     logs.assertContains(
         "Histograms can only record non-negative values. Instrument testHistogram has recorded a negative value.");
+  }
+
+  @Test
+  void collectMetrics_ExemplarsWithExponentialHistogram() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder()
+            .setClock(testClock)
+            .setResource(RESOURCE)
+            .registerView(
+                InstrumentSelector.builder().setType(InstrumentType.HISTOGRAM).build(),
+                View.builder()
+                    .setAggregation(Aggregation.base2ExponentialBucketHistogram())
+                    .setAttributeFilter(Collections.emptySet())
+                    .build())
+            .registerMetricReader(reader)
+            .build();
+    Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
+    LongHistogram histogram = sdkMeter.histogramBuilder("testHistogram").ofLongs().build();
+
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
+    Tracer tracer = tracerProvider.get("foo");
+
+    Span span = tracer.spanBuilder("span").startSpan();
+    try (Scope unused = span.makeCurrent()) {
+      histogram.record(10, Attributes.builder().put("key", "value").build());
+    }
+
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasExponentialHistogramSatisfying(
+                        exponentialHistogram ->
+                            exponentialHistogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasSum(10.0)
+                                        .hasAttributes(Attributes.empty())
+                                        .hasExemplarsSatisfying(
+                                            exemplar ->
+                                                exemplar
+                                                    .hasValue(10.0)
+                                                    .hasFilteredAttributes(
+                                                        Attributes.builder()
+                                                            .put("key", "value")
+                                                            .build())))));
+  }
+
+  @Test
+  void collectMetrics_ExemplarsWithExplicitBucketHistogram() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder()
+            .setClock(testClock)
+            .setResource(RESOURCE)
+            .registerView(
+                InstrumentSelector.builder().setName("*").build(),
+                View.builder().setAttributeFilter(Collections.emptySet()).build())
+            .registerMetricReader(reader)
+            .build();
+    Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
+    LongHistogram histogram = sdkMeter.histogramBuilder("testHistogram").ofLongs().build();
+
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
+    Tracer tracer = tracerProvider.get("foo");
+
+    Span span = tracer.spanBuilder("span").startSpan();
+    try (Scope unused = span.makeCurrent()) {
+      histogram.record(10, Attributes.builder().put("key", "value").build());
+    }
+
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasHistogramSatisfying(
+                        explicitHistogram ->
+                            explicitHistogram.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasSum(10)
+                                        .hasAttributes(Attributes.empty())
+                                        .hasExemplarsSatisfying(
+                                            exemplar ->
+                                                exemplar
+                                                    .hasValue(10.0)
+                                                    .hasFilteredAttributes(
+                                                        Attributes.builder()
+                                                            .put("key", "value")
+                                                            .build())))));
   }
 
   @Test

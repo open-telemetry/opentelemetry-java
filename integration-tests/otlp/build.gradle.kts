@@ -9,7 +9,7 @@ dependencies {
   api("org.testcontainers:junit-jupiter")
 
   implementation(project(":exporters:otlp:all"))
-  implementation(project(":api:events"))
+  implementation(project(":api:incubator"))
 
   compileOnly("com.google.errorprone:error_prone_annotations")
 

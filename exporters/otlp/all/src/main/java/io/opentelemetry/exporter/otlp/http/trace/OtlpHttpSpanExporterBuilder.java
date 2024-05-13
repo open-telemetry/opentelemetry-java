@@ -10,12 +10,19 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.internal.compression.Compressor;
+import io.opentelemetry.exporter.internal.compression.CompressorProvider;
+import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
-import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
@@ -27,16 +34,19 @@ import javax.net.ssl.X509TrustManager;
 public final class OtlpHttpSpanExporterBuilder {
 
   private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/traces";
+  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
 
-  private final HttpExporterBuilder<TraceRequestMarshaler> delegate;
+  private final HttpExporterBuilder<Marshaler> delegate;
+  private MemoryMode memoryMode;
 
-  OtlpHttpSpanExporterBuilder(HttpExporterBuilder<TraceRequestMarshaler> delegate) {
+  OtlpHttpSpanExporterBuilder(HttpExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
-    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+    this.memoryMode = memoryMode;
+    OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeaders);
   }
 
   OtlpHttpSpanExporterBuilder() {
-    this(new HttpExporterBuilder<>("otlp", "span", DEFAULT_ENDPOINT));
+    this(new HttpExporterBuilder<>("otlp", "span", DEFAULT_ENDPOINT), DEFAULT_MEMORY_MODE);
   }
 
   /**
@@ -60,6 +70,30 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /**
+   * Sets the maximum time to wait for new connections to be established. If unset, defaults to
+   * {@value HttpExporterBuilder#DEFAULT_CONNECT_TIMEOUT_SECS}s.
+   *
+   * @since 1.33.0
+   */
+  public OtlpHttpSpanExporterBuilder setConnectTimeout(long timeout, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(timeout >= 0, "timeout must be non-negative");
+    delegate.setConnectTimeout(timeout, unit);
+    return this;
+  }
+
+  /**
+   * Sets the maximum time to wait for new connections to be established. If unset, defaults to
+   * {@value HttpExporterBuilder#DEFAULT_CONNECT_TIMEOUT_SECS}s.
+   *
+   * @since 1.33.0
+   */
+  public OtlpHttpSpanExporterBuilder setConnectTimeout(Duration timeout) {
+    requireNonNull(timeout, "timeout");
+    return setConnectTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+  }
+
+  /**
    * Sets the OTLP endpoint to connect to. If unset, defaults to {@value DEFAULT_ENDPOINT}. The
    * endpoint must start with either http:// or https://, and include the full HTTP path.
    */
@@ -70,21 +104,34 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /**
-   * Sets the method used to compress payloads. If unset, compression is disabled. Currently
-   * supported compression methods include "gzip" and "none".
+   * Sets the method used to compress payloads. If unset, compression is disabled. Compression
+   * method "gzip" and "none" are supported out of the box. Support for additional compression
+   * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
    */
   public OtlpHttpSpanExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
-    checkArgument(
-        compressionMethod.equals("gzip") || compressionMethod.equals("none"),
-        "Unsupported compression method. Supported compression methods include: gzip, none.");
-    delegate.setCompression(compressionMethod);
+    Compressor compressor = CompressorUtil.validateAndResolveCompressor(compressionMethod);
+    delegate.setCompression(compressor);
     return this;
   }
 
-  /** Add header to requests. */
+  /**
+   * Add a constant header to requests. If the {@code key} collides with another constant header
+   * name or a one from {@link #setHeaders(Supplier)}, the values from both are included.
+   */
   public OtlpHttpSpanExporterBuilder addHeader(String key, String value) {
-    delegate.addHeader(key, value);
+    delegate.addConstantHeaders(key, value);
+    return this;
+  }
+
+  /**
+   * Set the supplier of headers to add to requests. If a key from the map collides with a constant
+   * from {@link #addHeader(String, String)}, the values from both are included.
+   *
+   * @since 1.33.0
+   */
+  public OtlpHttpSpanExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
+    delegate.setHeadersSupplier(headerSupplier);
     return this;
   }
 
@@ -131,12 +178,43 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /**
+   * Sets the proxy options. Proxying is disabled by default.
+   *
+   * @since 1.36.0
+   */
+  public OtlpHttpSpanExporterBuilder setProxy(ProxyOptions proxyOptions) {
+    requireNonNull(proxyOptions, "proxyOptions");
+    delegate.setProxyOptions(proxyOptions);
+    return this;
+  }
+
+  /**
    * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
    * {@link GlobalOpenTelemetry#getMeterProvider()}.
    */
   public OtlpHttpSpanExporterBuilder setMeterProvider(MeterProvider meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
-    delegate.setMeterProvider(meterProvider);
+    setMeterProvider(() -> meterProvider);
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} supplier to use to collect metrics related to export. If not
+   * set, uses {@link GlobalOpenTelemetry#getMeterProvider()}.
+   *
+   * @since 1.32.0
+   */
+  public OtlpHttpSpanExporterBuilder setMeterProvider(
+      Supplier<MeterProvider> meterProviderSupplier) {
+    requireNonNull(meterProviderSupplier, "meterProviderSupplier");
+    delegate.setMeterProvider(meterProviderSupplier);
+    return this;
+  }
+
+  /** Set the {@link MemoryMode}. */
+  OtlpHttpSpanExporterBuilder setMemoryMode(MemoryMode memoryMode) {
+    requireNonNull(memoryMode, "memoryMode");
+    this.memoryMode = memoryMode;
     return this;
   }
 
@@ -146,6 +224,6 @@ public final class OtlpHttpSpanExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpHttpSpanExporter build() {
-    return new OtlpHttpSpanExporter(delegate, delegate.build());
+    return new OtlpHttpSpanExporter(delegate, delegate.build(), memoryMode);
   }
 }

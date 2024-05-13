@@ -35,20 +35,25 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "10.12.4"
+  toolVersion = "10.16.0"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
 
 dependencyCheck {
-  skipConfigurations = listOf(
+  skipConfigurations = mutableListOf(
     "errorprone",
     "checkstyle",
     "annotationProcessor",
+    "java9AnnotationProcessor",
+    "moduleAnnotationProcessor",
+    "testAnnotationProcessor",
+    "testJpmsAnnotationProcessor",
     "animalsniffer",
-    "spotless865457264", // spotless865457264 is a weird configuration that's only added in jaeger-proto, jaeger-remote-sampler
+    "spotless996155815", // spotless996155815 is a weird configuration that's only added in jaeger-proto, jaeger-remote-sampler
     "js2p",
     "jmhAnnotationProcessor",
+    "jmhBasedTestAnnotationProcessor",
     "jmhCompileClasspath",
     "jmhRuntimeClasspath",
     "jmhRuntimeOnly")

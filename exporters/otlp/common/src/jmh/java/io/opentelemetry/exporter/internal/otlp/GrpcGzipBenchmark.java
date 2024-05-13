@@ -141,8 +141,8 @@ public class GrpcGzipBenchmark {
   }
 
   @Benchmark
-  public ByteArrayOutputStream gzipCompressor() throws IOException {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+  public TestOutputStream gzipCompressor() throws IOException {
+    TestOutputStream baos = new TestOutputStream();
     OutputStream gzos = GZIP_CODEC.compress(baos);
     METRICS_REQUEST.writeTo(gzos);
     gzos.close();
@@ -150,8 +150,8 @@ public class GrpcGzipBenchmark {
   }
 
   @Benchmark
-  public ByteArrayOutputStream identityCompressor() throws IOException {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+  public TestOutputStream identityCompressor() throws IOException {
+    TestOutputStream baos = new TestOutputStream();
     OutputStream gzos = IDENTITY_CODEC.compress(baos);
     METRICS_REQUEST.writeTo(gzos);
     gzos.close();

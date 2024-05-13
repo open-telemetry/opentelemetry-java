@@ -5,7 +5,9 @@
 
 package io.opentelemetry.sdk.autoconfigure.provider;
 
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -14,7 +16,8 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
 
-public class TestConfigurableMetricExporterProvider implements ConfigurableMetricExporterProvider {
+public class TestConfigurableMetricExporterProvider
+    implements ConfigurableMetricExporterProvider, AutoConfigureListener {
 
   @Override
   public MetricExporter createExporter(ConfigProperties config) {
@@ -25,6 +28,9 @@ public class TestConfigurableMetricExporterProvider implements ConfigurableMetri
   public String getName() {
     return "testExporter";
   }
+
+  @Override
+  public void afterAutoConfigure(OpenTelemetrySdk sdk) {}
 
   public static class TestMetricExporter implements MetricExporter {
     private final ConfigProperties config;

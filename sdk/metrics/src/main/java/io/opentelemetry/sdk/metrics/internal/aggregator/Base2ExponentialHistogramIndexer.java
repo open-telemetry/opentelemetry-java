@@ -43,7 +43,7 @@ final class Base2ExponentialHistogramIndexer {
 
   /** Get an indexer for the given scale. Indexers are cached and reused for performance. */
   static Base2ExponentialHistogramIndexer get(int scale) {
-    return cache.computeIfAbsent(scale, unused -> new Base2ExponentialHistogramIndexer(scale));
+    return cache.computeIfAbsent(scale, Base2ExponentialHistogramIndexer::new);
   }
 
   /**

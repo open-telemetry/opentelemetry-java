@@ -21,12 +21,16 @@ import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
 final class LoggerProviderConfiguration {
+
+  private static final List<String> simpleProcessorExporterNames =
+      Arrays.asList("console", "logging");
 
   static void configureLoggerProvider(
       SdkLoggerProviderBuilder loggerProviderBuilder,
@@ -35,6 +39,8 @@ final class LoggerProviderConfiguration {
       MeterProvider meterProvider,
       BiFunction<? super LogRecordExporter, ConfigProperties, ? extends LogRecordExporter>
           logRecordExporterCustomizer,
+      BiFunction<? super LogRecordProcessor, ConfigProperties, ? extends LogRecordProcessor>
+          logRecordProcessorCustomizer,
       List<Closeable> closeables) {
 
     loggerProviderBuilder.setLogLimits(() -> configureLogLimits(config));
@@ -42,8 +48,15 @@ final class LoggerProviderConfiguration {
     Map<String, LogRecordExporter> exportersByName =
         configureLogRecordExporters(config, spiHelper, logRecordExporterCustomizer, closeables);
 
-    configureLogRecordProcessors(config, exportersByName, meterProvider, closeables)
-        .forEach(loggerProviderBuilder::addLogRecordProcessor);
+    List<LogRecordProcessor> processors =
+        configureLogRecordProcessors(config, exportersByName, meterProvider, closeables);
+    for (LogRecordProcessor processor : processors) {
+      LogRecordProcessor wrapped = logRecordProcessorCustomizer.apply(processor, config);
+      if (wrapped != processor) {
+        closeables.add(wrapped);
+      }
+      loggerProviderBuilder.addLogRecordProcessor(wrapped);
+    }
   }
 
   // Visible for testing
@@ -55,11 +68,13 @@ final class LoggerProviderConfiguration {
     Map<String, LogRecordExporter> exportersByNameCopy = new HashMap<>(exportersByName);
     List<LogRecordProcessor> logRecordProcessors = new ArrayList<>();
 
-    LogRecordExporter exporter = exportersByNameCopy.remove("logging");
-    if (exporter != null) {
-      LogRecordProcessor logRecordProcessor = SimpleLogRecordProcessor.create(exporter);
-      closeables.add(logRecordProcessor);
-      logRecordProcessors.add(logRecordProcessor);
+    for (String simpleProcessorExporterName : simpleProcessorExporterNames) {
+      LogRecordExporter exporter = exportersByNameCopy.remove(simpleProcessorExporterName);
+      if (exporter != null) {
+        LogRecordProcessor logRecordProcessor = SimpleLogRecordProcessor.create(exporter);
+        closeables.add(logRecordProcessor);
+        logRecordProcessors.add(logRecordProcessor);
+      }
     }
 
     if (!exportersByNameCopy.isEmpty()) {

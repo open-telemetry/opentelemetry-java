@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
+import io.opentelemetry.exporter.otlp.internal.OtlpSpanExporterProvider;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
@@ -29,6 +30,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.assertj.core.api.InstanceOfAssertFactories;
@@ -63,6 +65,11 @@ class ConfigurableSpanExporterTest {
         .isSameAs(config);
     assertThat(closeables)
         .hasExactlyElementsOfTypes(TestConfigurableSpanExporterProvider.TestSpanExporter.class);
+    assertThat(spiHelper.getListeners())
+        .satisfiesExactlyInAnyOrder(
+            listener ->
+                assertThat(listener).isInstanceOf(TestConfigurableSpanExporterProvider.class),
+            listener -> assertThat(listener).isInstanceOf(OtlpSpanExporterProvider.class));
   }
 
   @Test
@@ -83,6 +90,7 @@ class ConfigurableSpanExporterTest {
         .hasMessageContaining("testExporter");
     cleanup.addCloseables(closeables);
     assertThat(closeables).isEmpty();
+    assertThat(spiHelper.getListeners()).isEmpty();
   }
 
   @Test
@@ -130,20 +138,25 @@ class ConfigurableSpanExporterTest {
 
   @Test
   void configureSpanProcessors_simpleSpanProcessor() {
-    String exporterName = "logging";
     List<Closeable> closeables = new ArrayList<>();
+
+    Map<String, SpanExporter> exportersByName = new LinkedHashMap<>();
+    exportersByName.put("console", LoggingSpanExporter.create());
+    exportersByName.put("logging", LoggingSpanExporter.create());
 
     List<SpanProcessor> spanProcessors =
         TracerProviderConfiguration.configureSpanProcessors(
             DefaultConfigProperties.createFromMap(
-                Collections.singletonMap("otel.traces.exporter", exporterName)),
-            ImmutableMap.of(exporterName, LoggingSpanExporter.create()),
+                Collections.singletonMap("otel.traces.exporter", "console,logging")),
+            exportersByName,
             MeterProvider.noop(),
             closeables);
     cleanup.addCloseables(closeables);
 
-    assertThat(spanProcessors).hasExactlyElementsOfTypes(SimpleSpanProcessor.class);
-    assertThat(closeables).hasExactlyElementsOfTypes(SimpleSpanProcessor.class);
+    assertThat(spanProcessors)
+        .hasExactlyElementsOfTypes(SimpleSpanProcessor.class, SimpleSpanProcessor.class);
+    assertThat(closeables)
+        .hasExactlyElementsOfTypes(SimpleSpanProcessor.class, SimpleSpanProcessor.class);
   }
 
   @Test

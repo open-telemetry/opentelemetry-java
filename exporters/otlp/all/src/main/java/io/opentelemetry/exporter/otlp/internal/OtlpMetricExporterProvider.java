@@ -9,6 +9,7 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_M
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
+import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
@@ -26,6 +27,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
  * at any time.
  */
 public class OtlpMetricExporterProvider implements ConfigurableMetricExporterProvider {
+
   @Override
   public MetricExporter createExporter(ConfigProperties config) {
     String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_METRICS, config);
@@ -47,6 +49,9 @@ public class OtlpMetricExporterProvider implements ConfigurableMetricExporterPro
           config, builder::setAggregationTemporalitySelector);
       OtlpConfigUtil.configureOtlpHistogramDefaultAggregation(
           config, builder::setDefaultAggregationSelector);
+      ExporterBuilderUtil.configureExporterMemoryMode(
+          config,
+          memoryMode -> OtlpConfigUtil.setMemoryModeOnOtlpExporterBuilder(builder, memoryMode));
 
       return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
@@ -66,6 +71,9 @@ public class OtlpMetricExporterProvider implements ConfigurableMetricExporterPro
           config, builder::setAggregationTemporalitySelector);
       OtlpConfigUtil.configureOtlpHistogramDefaultAggregation(
           config, builder::setDefaultAggregationSelector);
+      ExporterBuilderUtil.configureExporterMemoryMode(
+          config,
+          memoryMode -> OtlpConfigUtil.setMemoryModeOnOtlpExporterBuilder(builder, memoryMode));
 
       return builder.build();
     }

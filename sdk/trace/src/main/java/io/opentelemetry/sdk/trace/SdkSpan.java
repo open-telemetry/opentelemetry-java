@@ -47,11 +47,6 @@ final class SdkSpan implements ReadWriteSpan {
   private final SpanContext parentSpanContext;
   // Handler called when the span starts and ends.
   private final SpanProcessor spanProcessor;
-  // The displayed name of the span.
-  // List of recorded links to parent and child spans.
-  private final List<LinkData> links;
-  // Number of links recorded.
-  private final int totalRecordedLinks;
   // The kind of the span.
   private final SpanKind kind;
   // The clock used to get the time.
@@ -75,11 +70,22 @@ final class SdkSpan implements ReadWriteSpan {
 
   // List of recorded events.
   @GuardedBy("lock")
-  private final List<EventData> events;
+  @Nullable
+  private List<EventData> events;
 
   // Number of events recorded.
   @GuardedBy("lock")
   private int totalRecordedEvents = 0;
+
+  // The displayed name of the span.
+  // List of recorded links to parent and child spans.
+  @GuardedBy("lock")
+  @Nullable
+  List<LinkData> links;
+
+  // Number of links recorded.
+  @GuardedBy("lock")
+  private int totalRecordedLinks;
 
   // The status of the span.
   @GuardedBy("lock")
@@ -104,7 +110,7 @@ final class SdkSpan implements ReadWriteSpan {
       AnchoredClock clock,
       Resource resource,
       @Nullable AttributesMap attributes,
-      List<LinkData> links,
+      @Nullable List<LinkData> links,
       int totalRecordedLinks,
       long startEpochNanos) {
     this.context = context;
@@ -120,7 +126,6 @@ final class SdkSpan implements ReadWriteSpan {
     this.clock = clock;
     this.startEpochNanos = startEpochNanos;
     this.attributes = attributes;
-    this.events = new ArrayList<>();
     this.spanLimits = spanLimits;
   }
 
@@ -151,7 +156,7 @@ final class SdkSpan implements ReadWriteSpan {
       Clock tracerClock,
       Resource resource,
       @Nullable AttributesMap attributes,
-      List<LinkData> links,
+      @Nullable List<LinkData> links,
       int totalRecordedLinks,
       long userStartEpochNanos) {
     boolean createdAnchoredClock;
@@ -194,7 +199,9 @@ final class SdkSpan implements ReadWriteSpan {
             startEpochNanos);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
-    spanProcessor.onStart(parentContext, span);
+    if (spanProcessor.isStartRequired()) {
+      spanProcessor.onStart(parentContext, span);
+    }
     return span;
   }
 
@@ -204,11 +211,12 @@ final class SdkSpan implements ReadWriteSpan {
     synchronized (lock) {
       return SpanWrapper.create(
           this,
-          links,
+          getImmutableLinks(),
           getImmutableTimedEvents(),
           getImmutableAttributes(),
           (attributes == null) ? 0 : attributes.getTotalAddedValues(),
           totalRecordedEvents,
+          totalRecordedLinks,
           status,
           name,
           endEpochNanos,
@@ -221,6 +229,13 @@ final class SdkSpan implements ReadWriteSpan {
   public <T> T getAttribute(AttributeKey<T> key) {
     synchronized (lock) {
       return attributes == null ? null : attributes.get(key);
+    }
+  }
+
+  @Override
+  public Attributes getAttributes() {
+    synchronized (lock) {
+      return attributes == null ? Attributes.empty() : attributes.immutableCopy();
     }
   }
 
@@ -369,6 +384,9 @@ final class SdkSpan implements ReadWriteSpan {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
         return;
       }
+      if (events == null) {
+        events = new ArrayList<>();
+      }
       if (events.size() < spanLimits.getMaxNumberOfEvents()) {
         events.add(timedEvent);
       }
@@ -384,6 +402,9 @@ final class SdkSpan implements ReadWriteSpan {
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
+        return this;
+      } else if (this.status.getStatusCode() == StatusCode.OK) {
+        logger.log(Level.FINE, "Calling setStatus() on a Span that is already set to OK.");
         return this;
       }
       this.status = StatusData.create(statusCode, description);
@@ -427,6 +448,37 @@ final class SdkSpan implements ReadWriteSpan {
   }
 
   @Override
+  public Span addLink(SpanContext spanContext, Attributes attributes) {
+    if (spanContext == null || !spanContext.isValid()) {
+      return this;
+    }
+    if (attributes == null) {
+      attributes = Attributes.empty();
+    }
+    LinkData link =
+        LinkData.create(
+            spanContext,
+            AttributeUtil.applyAttributesLimit(
+                attributes,
+                spanLimits.getMaxNumberOfAttributesPerLink(),
+                spanLimits.getMaxAttributeValueLength()));
+    synchronized (lock) {
+      if (hasEnded) {
+        logger.log(Level.FINE, "Calling addLink() on an ended Span.");
+        return this;
+      }
+      if (links == null) {
+        links = new ArrayList<>();
+      }
+      if (links.size() < spanLimits.getMaxNumberOfLinks()) {
+        links.add(link);
+      }
+      totalRecordedLinks++;
+    }
+    return this;
+  }
+
+  @Override
   public void end() {
     endInternal(clock.now());
   }
@@ -448,7 +500,9 @@ final class SdkSpan implements ReadWriteSpan {
       this.endEpochNanos = endEpochNanos;
       hasEnded = true;
     }
-    spanProcessor.onEnd(this);
+    if (spanProcessor.isEndRequired()) {
+      spanProcessor.onEnd(this);
+    }
   }
 
   @Override
@@ -471,13 +525,9 @@ final class SdkSpan implements ReadWriteSpan {
     return startEpochNanos;
   }
 
-  int getTotalRecordedLinks() {
-    return totalRecordedLinks;
-  }
-
   @GuardedBy("lock")
   private List<EventData> getImmutableTimedEvents() {
-    if (events.isEmpty()) {
+    if (events == null) {
       return Collections.emptyList();
     }
 
@@ -504,6 +554,14 @@ final class SdkSpan implements ReadWriteSpan {
     return attributes.immutableCopy();
   }
 
+  @GuardedBy("lock")
+  private List<LinkData> getImmutableLinks() {
+    if (links == null || links.isEmpty()) {
+      return Collections.emptyList();
+    }
+    return Collections.unmodifiableList(links);
+  }
+
   @Override
   public String toString() {
     String name;
@@ -511,12 +569,14 @@ final class SdkSpan implements ReadWriteSpan {
     String status;
     long totalRecordedEvents;
     long endEpochNanos;
+    long totalRecordedLinks;
     synchronized (lock) {
       name = this.name;
       attributes = String.valueOf(this.attributes);
       status = String.valueOf(this.status);
       totalRecordedEvents = this.totalRecordedEvents;
       endEpochNanos = this.endEpochNanos;
+      totalRecordedLinks = this.totalRecordedLinks;
     }
     return "SdkSpan{traceId="
         + context.getTraceId()

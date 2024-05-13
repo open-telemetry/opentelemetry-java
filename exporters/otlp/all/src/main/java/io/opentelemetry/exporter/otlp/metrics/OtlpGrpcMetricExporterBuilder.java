@@ -10,9 +10,13 @@ import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.internal.compression.Compressor;
+import io.opentelemetry.exporter.internal.compression.CompressorProvider;
+import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
-import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -20,7 +24,9 @@ import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.net.URI;
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
@@ -41,20 +47,23 @@ public final class OtlpGrpcMetricExporterBuilder {
   private static final long DEFAULT_TIMEOUT_SECS = 10;
   private static final AggregationTemporalitySelector DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR =
       AggregationTemporalitySelector.alwaysCumulative();
+  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
 
   // Visible for testing
-  final GrpcExporterBuilder<MetricsRequestMarshaler> delegate;
+  final GrpcExporterBuilder<Marshaler> delegate;
 
   private AggregationTemporalitySelector aggregationTemporalitySelector =
       DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR;
 
   private DefaultAggregationSelector defaultAggregationSelector =
       DefaultAggregationSelector.getDefault();
+  private MemoryMode memoryMode;
 
-  OtlpGrpcMetricExporterBuilder(GrpcExporterBuilder<MetricsRequestMarshaler> delegate) {
+  OtlpGrpcMetricExporterBuilder(GrpcExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
-    delegate.setMeterProvider(MeterProvider.noop());
-    OtlpUserAgent.addUserAgentHeader(delegate::addHeader);
+    this.memoryMode = memoryMode;
+    delegate.setMeterProvider(MeterProvider::noop);
+    OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeader);
   }
 
   OtlpGrpcMetricExporterBuilder() {
@@ -65,7 +74,8 @@ public final class OtlpGrpcMetricExporterBuilder {
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerMetricsServiceGrpc::newFutureStub,
-            GRPC_ENDPOINT_PATH));
+            GRPC_ENDPOINT_PATH),
+        DEFAULT_MEMORY_MODE);
   }
 
   /**
@@ -109,6 +119,30 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
+   * Sets the maximum time to wait for new connections to be established. If unset, defaults to
+   * {@value GrpcExporterBuilder#DEFAULT_CONNECT_TIMEOUT_SECS}s.
+   *
+   * @since 1.36.0
+   */
+  public OtlpGrpcMetricExporterBuilder setConnectTimeout(long timeout, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(timeout >= 0, "timeout must be non-negative");
+    delegate.setConnectTimeout(timeout, unit);
+    return this;
+  }
+
+  /**
+   * Sets the maximum time to wait for new connections to be established. If unset, defaults to
+   * {@value GrpcExporterBuilder#DEFAULT_CONNECT_TIMEOUT_SECS}s.
+   *
+   * @since 1.36.0
+   */
+  public OtlpGrpcMetricExporterBuilder setConnectTimeout(Duration timeout) {
+    requireNonNull(timeout, "timeout");
+    return setConnectTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+  }
+
+  /**
    * Sets the OTLP endpoint to connect to. If unset, defaults to {@value DEFAULT_ENDPOINT_URL}. The
    * endpoint must start with either http:// or https://.
    */
@@ -119,15 +153,14 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
-   * Sets the method used to compress payloads. If unset, compression is disabled. Currently
-   * supported compression methods include "gzip" and "none".
+   * Sets the method used to compress payloads. If unset, compression is disabled. Compression
+   * method "gzip" and "none" are supported out of the box. Support for additional compression
+   * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
    */
   public OtlpGrpcMetricExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
-    checkArgument(
-        compressionMethod.equals("gzip") || compressionMethod.equals("none"),
-        "Unsupported compression method. Supported compression methods include: gzip, none.");
-    delegate.setCompression(compressionMethod);
+    Compressor compressor = CompressorUtil.validateAndResolveCompressor(compressionMethod);
+    delegate.setCompression(compressor);
     return this;
   }
 
@@ -163,15 +196,29 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
-   * Add header to request. Optional. Applicable only if {@link
-   * OtlpGrpcMetricExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
+   * Add a constant header to requests. If the {@code key} collides with another constant header
+   * name or a one from {@link #setHeaders(Supplier)}, the values from both are included. Applicable
+   * only if {@link OtlpGrpcMetricExporterBuilder#setChannel(ManagedChannel)} is not used to set
+   * channel.
    *
    * @param key header key
    * @param value header value
    * @return this builder's instance
    */
   public OtlpGrpcMetricExporterBuilder addHeader(String key, String value) {
-    delegate.addHeader(key, value);
+    delegate.addConstantHeader(key, value);
+    return this;
+  }
+
+  /**
+   * Set the supplier of headers to add to requests. If a key from the map collides with a constant
+   * from {@link #addHeader(String, String)}, the values from both are included. Applicable only if
+   * {@link OtlpGrpcMetricExporterBuilder#setChannel(ManagedChannel)} is not used to set channel.
+   *
+   * @since 1.33.0
+   */
+  public OtlpGrpcMetricExporterBuilder setHeaders(Supplier<Map<String, String>> headerSupplier) {
+    delegate.setHeadersSupplier(headerSupplier);
     return this;
   }
 
@@ -217,6 +264,13 @@ public final class OtlpGrpcMetricExporterBuilder {
     return this;
   }
 
+  /** Set the {@link MemoryMode}. */
+  OtlpGrpcMetricExporterBuilder setMemoryMode(MemoryMode memoryMode) {
+    requireNonNull(memoryMode, "memoryMode");
+    this.memoryMode = memoryMode;
+    return this;
+  }
+
   /**
    * Constructs a new instance of the exporter based on the builder's values.
    *
@@ -224,6 +278,10 @@ public final class OtlpGrpcMetricExporterBuilder {
    */
   public OtlpGrpcMetricExporter build() {
     return new OtlpGrpcMetricExporter(
-        delegate, delegate.build(), aggregationTemporalitySelector, defaultAggregationSelector);
+        delegate,
+        delegate.build(),
+        aggregationTemporalitySelector,
+        defaultAggregationSelector,
+        memoryMode);
   }
 }

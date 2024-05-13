@@ -79,6 +79,7 @@ class TracerProviderConfigurationTest {
         MeterProvider.noop(),
         (a, unused) -> a,
         (a, unused) -> a,
+        (a, unused) -> a,
         closeables);
 
     try (SdkTracerProvider tracerProvider = tracerProviderBuilder.build()) {

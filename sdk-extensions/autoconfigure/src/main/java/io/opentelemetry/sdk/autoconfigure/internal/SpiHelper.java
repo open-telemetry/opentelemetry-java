@@ -7,12 +7,16 @@ package io.opentelemetry.sdk.autoconfigure.internal;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -23,18 +27,22 @@ import java.util.function.Supplier;
  */
 public final class SpiHelper {
 
-  private final ClassLoader classLoader;
-  private final SpiFinder spiFinder;
+  private final ComponentLoader componentLoader;
+  private final Set<AutoConfigureListener> listeners =
+      Collections.newSetFromMap(new IdentityHashMap<>());
 
-  // Visible for testing
-  SpiHelper(ClassLoader classLoader, SpiFinder spiFinder) {
-    this.classLoader = classLoader;
-    this.spiFinder = spiFinder;
+  private SpiHelper(ComponentLoader componentLoader) {
+    this.componentLoader = componentLoader;
   }
 
   /** Create a {@link SpiHelper} which loads SPIs using the {@code classLoader}. */
   public static SpiHelper create(ClassLoader classLoader) {
-    return new SpiHelper(classLoader, ServiceLoader::load);
+    return new SpiHelper(new ServiceLoaderComponentLoader(classLoader));
+  }
+
+  /** Create a {@link SpiHelper} which loads SPIs using the {@code componentLoader}. */
+  public static SpiHelper create(ComponentLoader componentLoader) {
+    return new SpiHelper(componentLoader);
   }
 
   /**
@@ -57,7 +65,13 @@ public final class SpiHelper {
     Map<String, Supplier<T>> nameToProvider = new HashMap<>();
     for (S provider : load(spiClass)) {
       String name = getName.apply(provider);
-      nameToProvider.put(name, () -> getConfigurable.apply(provider, config));
+      nameToProvider.put(
+          name,
+          () -> {
+            T result = getConfigurable.apply(provider, config);
+            maybeAddListener(result);
+            return result;
+          });
     }
     return NamedSpiManager.create(nameToProvider);
   }
@@ -84,14 +98,34 @@ public final class SpiHelper {
    */
   public <T> List<T> load(Class<T> spiClass) {
     List<T> result = new ArrayList<>();
-    for (T service : spiFinder.load(spiClass, classLoader)) {
+    for (T service : componentLoader.load(spiClass)) {
+      maybeAddListener(service);
       result.add(service);
     }
     return result;
   }
 
-  // Visible for testing
-  interface SpiFinder {
-    <T> Iterable<T> load(Class<T> spiClass, ClassLoader classLoader);
+  private void maybeAddListener(Object object) {
+    if (object instanceof AutoConfigureListener) {
+      listeners.add((AutoConfigureListener) object);
+    }
+  }
+
+  /** Return the set of SPIs loaded which implement {@link AutoConfigureListener}. */
+  public Set<AutoConfigureListener> getListeners() {
+    return Collections.unmodifiableSet(listeners);
+  }
+
+  private static class ServiceLoaderComponentLoader implements ComponentLoader {
+    private final ClassLoader classLoader;
+
+    private ServiceLoaderComponentLoader(ClassLoader classLoader) {
+      this.classLoader = classLoader;
+    }
+
+    @Override
+    public <T> Iterable<T> load(Class<T> spiClass) {
+      return ServiceLoader.load(spiClass, classLoader);
+    }
   }
 }

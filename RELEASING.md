@@ -77,14 +77,14 @@ Create a PR against the main branch with the changes.
 
 ## Credentials
 
-The following credentials are required for publishing (and automatically set in Github Actions):
+The following credentials are required for building or publishing (and automatically set in Github Actions):
 
 * `GPG_PRIVATE_KEY` and `GPG_PASSWORD`: GPG private key and password for signing.
 * `SONATYPE_USER` and `SONATYPE_KEY`: Sonatype username and password.
   * Each maintainer will have their own set of Sonotype credentials with permission to publish to
     the `io.opentelemetry` group prefix.
-  * Request [publishing permissions](https://central.sonatype.org/publish/manage-permissions/) by
-    commenting on [OSSRH-63768](https://issues.sonatype.org/browse/OSSRH-63768) with confirmation
+  * [Register to publish](https://central.sonatype.org/register/central-portal/#and-publishing-is-easy)
+    and comment on [OSSRH-63768](https://issues.sonatype.org/browse/OSSRH-63768) with confirmation
     from another maintainer.
   * To obtain `SONATYPE_USER` and `SONATYPE_KEY` for your account, login
     to [oss.sonatype.org](https://oss.sonatype.org/) and navigate to Profile -> User Token -> Access

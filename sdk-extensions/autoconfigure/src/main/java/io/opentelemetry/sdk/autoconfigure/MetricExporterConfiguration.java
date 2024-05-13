@@ -30,6 +30,7 @@ final class MetricExporterConfiguration {
 
   static {
     EXPORTER_ARTIFACT_ID_BY_NAME = new HashMap<>();
+    EXPORTER_ARTIFACT_ID_BY_NAME.put("console", "opentelemetry-exporter-logging");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging", "opentelemetry-exporter-logging");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging-otlp", "opentelemetry-exporter-logging-otlp");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("otlp", "opentelemetry-exporter-otlp");
@@ -42,6 +43,8 @@ final class MetricExporterConfiguration {
       String name,
       ConfigProperties config,
       SpiHelper spiHelper,
+      BiFunction<? super MetricReader, ConfigProperties, ? extends MetricReader>
+          metricReaderCustomizer,
       BiFunction<? super MetricExporter, ConfigProperties, ? extends MetricExporter>
           metricExporterCustomizer,
       List<Closeable> closeables) {
@@ -56,7 +59,14 @@ final class MetricExporterConfiguration {
       MetricReader metricReader = configureMetricReader(name, spiMetricReadersManager);
       if (metricReader != null) {
         closeables.add(metricReader);
-        return metricReader;
+
+        // Customize metric reader
+        MetricReader customizedMetricReader = metricReaderCustomizer.apply(metricReader, config);
+        if (customizedMetricReader != metricReader) {
+          closeables.add(customizedMetricReader);
+        }
+
+        return customizedMetricReader;
       }
       // No exporter or reader with the name
       throw new ConfigurationException("Unrecognized value for otel.metrics.exporter: " + name);
@@ -74,7 +84,11 @@ final class MetricExporterConfiguration {
             .setInterval(config.getDuration("otel.metric.export.interval", DEFAULT_EXPORT_INTERVAL))
             .build();
     closeables.add(reader);
-    return reader;
+    MetricReader customizedMetricReader = metricReaderCustomizer.apply(reader, config);
+    if (customizedMetricReader != reader) {
+      closeables.add(customizedMetricReader);
+    }
+    return customizedMetricReader;
   }
 
   // Visible for testing

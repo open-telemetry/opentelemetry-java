@@ -57,9 +57,9 @@ class FileConfigPropertiesTest {
   @BeforeEach
   void setup() {
     OpenTelemetryConfiguration configuration =
-        ConfigurationFactory.parse(
+        FileConfiguration.parse(
             new ByteArrayInputStream(extendedSchema.getBytes(StandardCharsets.UTF_8)));
-    extendedConfigProps = ConfigurationFactory.toConfigProperties(configuration);
+    extendedConfigProps = FileConfiguration.toConfigProperties(configuration);
   }
 
   @Test

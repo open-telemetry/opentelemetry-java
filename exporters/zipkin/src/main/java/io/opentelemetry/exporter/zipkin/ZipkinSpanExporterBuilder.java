@@ -17,16 +17,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import zipkin2.Span;
-import zipkin2.codec.BytesEncoder;
-import zipkin2.codec.SpanBytesEncoder;
-import zipkin2.reporter.Sender;
+import zipkin2.reporter.BytesEncoder;
+import zipkin2.reporter.BytesMessageSender;
+import zipkin2.reporter.SpanBytesEncoder;
 import zipkin2.reporter.okhttp3.OkHttpSender;
 
 /** Builder class for {@link ZipkinSpanExporter}. */
 public final class ZipkinSpanExporterBuilder {
   private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
   private Supplier<InetAddress> localIpAddressSupplier = LocalInetAddressSupplier.getInstance();
-  @Nullable private Sender sender;
+  @Nullable private BytesMessageSender sender;
   private String endpoint = ZipkinSpanExporter.DEFAULT_ENDPOINT;
   // compression is enabled by default, because this is the default of OkHttpSender,
   // which is created when no custom sender is set (see OkHttpSender.Builder)
@@ -38,24 +38,56 @@ public final class ZipkinSpanExporterBuilder {
    * Sets the Zipkin sender. Implements the client side of the span transport. An {@link
    * OkHttpSender} is a good default.
    *
-   * <p>The {@link Sender#close()} method will be called when the exporter is shut down.
+   * <p>The {@link BytesMessageSender#close()} method will be called when the exporter is shut down.
    *
    * @param sender the Zipkin sender implementation.
    * @return this.
+   * @deprecated Use {@link #setSender(BytesMessageSender)} insteead.
    */
-  public ZipkinSpanExporterBuilder setSender(Sender sender) {
+  @Deprecated
+  public ZipkinSpanExporterBuilder setSender(zipkin2.reporter.Sender sender) {
+    return setSender((BytesMessageSender) sender);
+  }
+
+  /**
+   * Sets the Zipkin sender. Implements the client side of the span transport. An {@link
+   * OkHttpSender} is a good default.
+   *
+   * <p>The {@link BytesMessageSender#close()} method will be called when the exporter is shut down.
+   *
+   * @param sender the Zipkin sender implementation.
+   * @return this.
+   * @since 1.35.0
+   */
+  public ZipkinSpanExporterBuilder setSender(BytesMessageSender sender) {
     requireNonNull(sender, "sender");
     this.sender = sender;
     return this;
   }
 
   /**
-   * Sets the {@link BytesEncoder}, which controls the format used by the {@link Sender}. Defaults
-   * to the {@link SpanBytesEncoder#JSON_V2}.
+   * Sets the {@link zipkin2.codec.BytesEncoder}, which controls the format used by the {@link
+   * BytesMessageSender}. Defaults to the {@link zipkin2.codec.SpanBytesEncoder#JSON_V2}.
+   *
+   * @param encoder the {@code BytesEncoder} to use.
+   * @return this.
+   * @see zipkin2.codec.SpanBytesEncoder
+   * @deprecated Use {@link #setEncoder(BytesEncoder)} instead.
+   */
+  @Deprecated
+  public ZipkinSpanExporterBuilder setEncoder(zipkin2.codec.BytesEncoder<Span> encoder) {
+    requireNonNull(encoder, "encoder");
+    return setEncoder(new BytesEncoderAdapter(encoder));
+  }
+
+  /**
+   * Sets the {@link BytesEncoder}, which controls the format used by the {@link
+   * BytesMessageSender}. Defaults to the {@link SpanBytesEncoder#JSON_V2}.
    *
    * @param encoder the {@code BytesEncoder} to use.
    * @return this.
    * @see SpanBytesEncoder
+   * @since 1.35.0
    */
   public ZipkinSpanExporterBuilder setEncoder(BytesEncoder<Span> encoder) {
     requireNonNull(encoder, "encoder");
@@ -99,7 +131,7 @@ public final class ZipkinSpanExporterBuilder {
    * supported compression methods include "gzip" and "none".
    *
    * <p>The compression method is ignored when a custom Zipkin sender is set via {@link
-   * #setSender(Sender)}.
+   * #setSender(BytesMessageSender)}.
    *
    * @param compressionMethod The compression method, ex. "gzip".
    * @return this.
@@ -174,7 +206,7 @@ public final class ZipkinSpanExporterBuilder {
    * @return a {@code ZipkinSpanExporter}.
    */
   public ZipkinSpanExporter build() {
-    Sender sender = this.sender;
+    BytesMessageSender sender = this.sender;
     if (sender == null) {
       sender =
           OkHttpSender.newBuilder()

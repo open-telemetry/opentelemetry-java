@@ -7,17 +7,19 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.metrics.ExtendedLongHistogramBuilder;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.extension.incubator.metrics.ExtendedLongHistogramBuilder;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -99,9 +101,16 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
     @Override
     public ExtendedLongHistogramBuilder setExplicitBucketBoundariesAdvice(
         List<Long> bucketBoundaries) {
-      List<Double> doubleBoundaries =
-          bucketBoundaries.stream().map(Long::doubleValue).collect(Collectors.toList());
-      builder.setExplicitBucketBoundaries(doubleBoundaries);
+      List<Double> boundaries;
+      try {
+        Objects.requireNonNull(bucketBoundaries, "bucketBoundaries must not be null");
+        boundaries = bucketBoundaries.stream().map(Long::doubleValue).collect(Collectors.toList());
+        ExplicitBucketHistogramUtils.validateBucketBoundaries(boundaries);
+      } catch (IllegalArgumentException | NullPointerException e) {
+        logger.warning("Error setting explicit bucket boundaries advice: " + e.getMessage());
+        return this;
+      }
+      builder.setExplicitBucketBoundaries(boundaries);
       return this;
     }
 

@@ -5,20 +5,24 @@
 
 package io.opentelemetry.exporter.sender.jdk.internal;
 
+import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.http.HttpSender;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.net.http.HttpTimeoutException;
 import java.nio.ByteBuffer;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -29,9 +33,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 
 /**
  * {@link HttpSender} which is backed by JDK {@link HttpClient}.
@@ -51,20 +55,22 @@ public final class JdkHttpSender implements HttpSender {
   private final ExecutorService executorService = Executors.newFixedThreadPool(5);
   private final HttpClient client;
   private final URI uri;
-  private final boolean compressionEnabled;
+  @Nullable private final Compressor compressor;
+  private final boolean exportAsJson;
   private final String contentType;
   private final long timeoutNanos;
-  private final Supplier<Map<String, String>> headerSupplier;
+  private final Supplier<Map<String, List<String>>> headerSupplier;
   @Nullable private final RetryPolicy retryPolicy;
 
   // Visible for testing
   JdkHttpSender(
       HttpClient client,
       String endpoint,
-      boolean compressionEnabled,
+      @Nullable Compressor compressor,
+      boolean exportAsJson,
       String contentType,
       long timeoutNanos,
-      Supplier<Map<String, String>> headerSupplier,
+      Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable RetryPolicy retryPolicy) {
     this.client = client;
     try {
@@ -72,7 +78,8 @@ public final class JdkHttpSender implements HttpSender {
     } catch (URISyntaxException e) {
       throw new IllegalArgumentException(e);
     }
-    this.compressionEnabled = compressionEnabled;
+    this.compressor = compressor;
+    this.exportAsJson = exportAsJson;
     this.contentType = contentType;
     this.timeoutNanos = timeoutNanos;
     this.headerSupplier = headerSupplier;
@@ -81,37 +88,44 @@ public final class JdkHttpSender implements HttpSender {
 
   JdkHttpSender(
       String endpoint,
-      boolean compressionEnabled,
+      @Nullable Compressor compressor,
+      boolean exportAsJson,
       String contentType,
       long timeoutNanos,
-      Supplier<Map<String, String>> headerSupplier,
+      long connectTimeoutNanos,
+      Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable RetryPolicy retryPolicy,
+      @Nullable ProxyOptions proxyOptions,
       @Nullable SSLContext sslContext) {
     this(
-        configureClient(sslContext),
+        configureClient(sslContext, connectTimeoutNanos, proxyOptions),
         endpoint,
-        compressionEnabled,
+        compressor,
+        exportAsJson,
         contentType,
         timeoutNanos,
         headerSupplier,
         retryPolicy);
   }
 
-  private static HttpClient configureClient(@Nullable SSLContext sslContext) {
+  private static HttpClient configureClient(
+      @Nullable SSLContext sslContext,
+      long connectionTimeoutNanos,
+      @Nullable ProxyOptions proxyOptions) {
     HttpClient.Builder builder =
-        HttpClient.newBuilder()
-            // Aligned with OkHttpClient default connect timeout
-            // TODO (jack-berg): Consider making connect timeout configurable
-            .connectTimeout(Duration.ofSeconds(10));
+        HttpClient.newBuilder().connectTimeout(Duration.ofNanos(connectionTimeoutNanos));
     if (sslContext != null) {
       builder.sslContext(sslContext);
+    }
+    if (proxyOptions != null) {
+      builder.proxy(proxyOptions.getProxySelector());
     }
     return builder.build();
   }
 
   @Override
   public void send(
-      Consumer<OutputStream> marshaler,
+      Marshaler marshaler,
       int contentLength,
       Consumer<Response> onResponse,
       Consumer<Throwable> onError) {
@@ -121,7 +135,7 @@ public final class JdkHttpSender implements HttpSender {
                   try {
                     return sendInternal(marshaler);
                   } catch (IOException e) {
-                    throw new IllegalStateException(e);
+                    throw new UncheckedIOException(e);
                   }
                 },
                 executorService)
@@ -136,24 +150,27 @@ public final class JdkHttpSender implements HttpSender {
   }
 
   // Visible for testing
-  HttpResponse<byte[]> sendInternal(Consumer<OutputStream> marshaler) throws IOException {
+  HttpResponse<byte[]> sendInternal(Marshaler marshaler) throws IOException {
     long startTimeNanos = System.nanoTime();
     HttpRequest.Builder requestBuilder =
         HttpRequest.newBuilder().uri(uri).timeout(Duration.ofNanos(timeoutNanos));
-    headerSupplier.get().forEach(requestBuilder::setHeader);
+    Map<String, List<String>> headers = headerSupplier.get();
+    if (headers != null) {
+      headers.forEach((key, values) -> values.forEach(value -> requestBuilder.header(key, value)));
+    }
     requestBuilder.header("Content-Type", contentType);
 
     NoCopyByteArrayOutputStream os = threadLocalBaos.get();
     os.reset();
-    if (compressionEnabled) {
-      requestBuilder.header("Content-Encoding", "gzip");
-      try (GZIPOutputStream gzos = new GZIPOutputStream(os)) {
-        marshaler.accept(gzos);
+    if (compressor != null) {
+      requestBuilder.header("Content-Encoding", compressor.getEncoding());
+      try (OutputStream compressed = compressor.compress(os)) {
+        write(marshaler, compressed);
       } catch (IOException e) {
         throw new IllegalStateException(e);
       }
     } else {
-      marshaler.accept(os);
+      write(marshaler, os);
     }
 
     ByteBufferPool byteBufferPool = threadLocalByteBufPool.get();
@@ -208,6 +225,14 @@ public final class JdkHttpSender implements HttpSender {
     throw exception;
   }
 
+  private void write(Marshaler marshaler, OutputStream os) throws IOException {
+    if (exportAsJson) {
+      marshaler.writeJsonTo(os);
+    } else {
+      marshaler.writeBinaryTo(os);
+    }
+  }
+
   private HttpResponse<byte[]> sendRequest(
       HttpRequest.Builder requestBuilder, ByteBufferPool byteBufferPool) throws IOException {
     try {
@@ -221,7 +246,13 @@ public final class JdkHttpSender implements HttpSender {
   }
 
   private static boolean isRetryableException(IOException throwable) {
-    return throwable instanceof HttpTimeoutException;
+    // Almost all IOExceptions we've encountered are transient retryable, so we opt out of specific
+    // IOExceptions that are unlikely to resolve rather than opting in.
+    // Known retryable IOException messages: "Connection reset", "/{remote ip}:{remote port} GOAWAY
+    // received"
+    // Known retryable HttpTimeoutException messages: "request timed out"
+    // Known retryable HttpConnectTimeoutException messages: "HTTP connect timed out"
+    return !(throwable instanceof SSLException);
   }
 
   private static class NoCopyByteArrayOutputStream extends ByteArrayOutputStream {

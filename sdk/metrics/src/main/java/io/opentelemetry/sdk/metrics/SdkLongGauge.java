@@ -7,12 +7,12 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.metrics.ExtendedLongGaugeBuilder;
+import io.opentelemetry.api.metrics.LongGauge;
 import io.opentelemetry.api.metrics.LongGaugeBuilder;
 import io.opentelemetry.api.metrics.ObservableLongGauge;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.extension.incubator.metrics.ExtendedLongGaugeBuilder;
-import io.opentelemetry.extension.incubator.metrics.LongGauge;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
@@ -31,8 +31,13 @@ final class SdkLongGauge extends AbstractInstrument implements LongGauge {
   }
 
   @Override
-  public void set(long increment, Attributes attributes) {
-    storage.recordLong(increment, attributes, Context.root());
+  public void set(long value, Attributes attributes) {
+    storage.recordLong(value, attributes, Context.current());
+  }
+
+  @Override
+  public void set(long value, Attributes attributes, Context context) {
+    storage.recordLong(value, attributes, context);
   }
 
   @Override
@@ -52,11 +57,10 @@ final class SdkLongGauge extends AbstractInstrument implements LongGauge {
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
 
-      // TODO: use InstrumentType.GAUGE when available
       builder =
           new InstrumentBuilder(
                   name,
-                  InstrumentType.OBSERVABLE_GAUGE,
+                  InstrumentType.GAUGE,
                   InstrumentValueType.LONG,
                   meterProviderSharedState,
                   sharedState)
@@ -90,13 +94,11 @@ final class SdkLongGauge extends AbstractInstrument implements LongGauge {
 
     @Override
     public ObservableLongGauge buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
-      // TODO: use InstrumentType.GAUGE when available
       return builder.buildLongAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
     }
 
     @Override
     public ObservableLongMeasurement buildObserver() {
-      // TODO: use InstrumentType.GAUGE when available
       return builder.buildObservableMeasurement(InstrumentType.OBSERVABLE_GAUGE);
     }
 
