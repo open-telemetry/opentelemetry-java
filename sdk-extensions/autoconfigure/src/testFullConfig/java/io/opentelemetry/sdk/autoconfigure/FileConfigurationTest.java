@@ -28,7 +28,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -200,13 +200,12 @@ class FileConfigurationTest {
     cleanup.addCloseable(openTelemetrySdk);
 
     // getConfig() should return ExtendedConfigProperties generic representation of the config file
-    ConfigProperties config1 = autoConfiguredOpenTelemetrySdk.getConfig();
-    assertThat(config1).isInstanceOf(ExtendedConfigProperties.class);
-    ExtendedConfigProperties extendedConfigProps = (ExtendedConfigProperties) config1;
-    ExtendedConfigProperties otherProps = extendedConfigProps.getConfigProperties("other");
+    StructuredConfigProperties structuredConfigProps =
+        autoConfiguredOpenTelemetrySdk.getStructuredConfig();
+    StructuredConfigProperties otherProps = structuredConfigProps.getStructured("other");
     assertThat(otherProps).isNotNull();
     assertThat(otherProps.getString("str_key")).isEqualTo("str_value");
-    ExtendedConfigProperties otherMapKeyProps = otherProps.getConfigProperties("map_key");
+    StructuredConfigProperties otherMapKeyProps = otherProps.getStructured("map_key");
     assertThat(otherMapKeyProps).isNotNull();
     assertThat(otherMapKeyProps.getString("str_key1")).isEqualTo("str_value1");
   }

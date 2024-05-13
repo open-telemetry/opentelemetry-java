@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class DefaultConfigProperties implements ExtendedConfigProperties {
+public final class DefaultConfigProperties implements ConfigProperties {
 
   private final Map<String, String> config;
 
@@ -230,16 +230,6 @@ public final class DefaultConfigProperties implements ExtendedConfigProperties {
         .collect(
             Collectors.toMap(
                 Map.Entry::getKey, Map.Entry::getValue, (first, next) -> next, LinkedHashMap::new));
-  }
-
-  @Nullable
-  @Override
-  public ExtendedConfigProperties getConfigProperties(String name) {
-    Map<String, String> mapProperties = getMap(name);
-    if (mapProperties.isEmpty()) {
-      return null;
-    }
-    return DefaultConfigProperties.createFromMap(mapProperties);
   }
 
   /**

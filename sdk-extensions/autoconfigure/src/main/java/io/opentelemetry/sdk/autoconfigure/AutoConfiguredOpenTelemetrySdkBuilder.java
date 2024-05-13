@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
@@ -506,7 +506,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       maybeSetAsGlobal(openTelemetrySdk);
       callAutoConfigureListeners(spiHelper, openTelemetrySdk);
 
-      return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
+      return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config, null);
     } catch (RuntimeException e) {
       logger.info(
           "Error encountered during autoconfiguration. Closing partially configured components.");
@@ -556,11 +556,12 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model);
       Method toConfigProperties =
           configurationFactory.getMethod("toConfigProperties", openTelemetryConfiguration);
-      ExtendedConfigProperties configProperties =
-          (ExtendedConfigProperties) toConfigProperties.invoke(null, model);
+      StructuredConfigProperties structuredConfigProperties =
+          (StructuredConfigProperties) toConfigProperties.invoke(null, model);
       // Note: can't access file configuration resource without reflection so setting a dummy
       // resource
-      return AutoConfiguredOpenTelemetrySdk.create(sdk, Resource.getDefault(), configProperties);
+      return AutoConfiguredOpenTelemetrySdk.create(
+          sdk, Resource.getDefault(), null, structuredConfigProperties);
     } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
       throw new ConfigurationException(
           "Error configuring from file. Is opentelemetry-sdk-extension-incubator on the classpath?",

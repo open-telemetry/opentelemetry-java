@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.autoconfigure.internal;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.Function;
@@ -30,6 +31,19 @@ public final class AutoConfigureUtil {
     } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
       throw new IllegalStateException(
           "Error calling getConfig on AutoConfiguredOpenTelemetrySdk", e);
+    }
+  }
+
+  /** Returns the {@link StructuredConfigProperties} used for auto-configuration. */
+  public static StructuredConfigProperties getStructuredConfig(
+      AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk) {
+    try {
+      Method method = AutoConfiguredOpenTelemetrySdk.class.getDeclaredMethod("getStructuredConfig");
+      method.setAccessible(true);
+      return (StructuredConfigProperties) method.invoke(autoConfiguredOpenTelemetrySdk);
+    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+      throw new IllegalStateException(
+          "Error calling getStructuredConfig on AutoConfiguredOpenTelemetrySdk", e);
     }
   }
 

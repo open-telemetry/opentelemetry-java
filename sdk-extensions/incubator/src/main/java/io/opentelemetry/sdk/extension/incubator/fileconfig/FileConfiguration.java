@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ExtendedConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
 import java.io.Closeable;
 import java.io.IOException;
@@ -135,13 +135,13 @@ public final class FileConfiguration {
   }
 
   /**
-   * Convert the {@code model} to a generic {@link ExtendedConfigProperties}, which can be used to
+   * Convert the {@code model} to a generic {@link StructuredConfigProperties}, which can be used to
    * read configuration not part of the model.
    *
    * @param model the configuration model
-   * @return a generic {@link ExtendedConfigProperties} representation of the model
+   * @return a generic {@link StructuredConfigProperties} representation of the model
    */
-  public static ExtendedConfigProperties toConfigProperties(OpenTelemetryConfiguration model) {
+  public static StructuredConfigProperties toConfigProperties(OpenTelemetryConfiguration model) {
     Map<String, Object> configurationMap =
         MAPPER.convertValue(model, new TypeReference<Map<String, Object>>() {});
     return new FileConfigProperties(configurationMap);

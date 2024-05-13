@@ -38,13 +38,6 @@ class ConfigPropertiesTest {
             entry("dog", "bark"),
             entry("bear", "growl"),
             entry("number", "1"));
-    ExtendedConfigProperties testMapConfig = config.getConfigProperties("test.map");
-    assertThat(testMapConfig.getString("cat")).isEqualTo("meow");
-    assertThat(testMapConfig.getString("dog")).isEqualTo("bark");
-    assertThat(testMapConfig.getString("bear")).isEqualTo("growl");
-    assertThat(testMapConfig.getString("number")).isEqualTo("1");
-    assertThat(testMapConfig.getInt("number")).isEqualTo(1);
-    assertThat(config.getDuration("test.duration")).isEqualTo(Duration.ofSeconds(1));
   }
 
   @Test
@@ -75,7 +68,6 @@ class ConfigPropertiesTest {
     assertThat(config.getDouble("test.double")).isNull();
     assertThat(config.getList("test.list")).isEmpty();
     assertThat(config.getMap("test.map")).isEmpty();
-    assertThat(config.getConfigProperties("test.map")).isNull();
     assertThat(config.getDuration("test.duration")).isNull();
   }
 
@@ -97,7 +89,6 @@ class ConfigPropertiesTest {
     assertThat(config.getDouble("test.double")).isNull();
     assertThat(config.getList("test.list")).isEmpty();
     assertThat(config.getMap("test.map")).isEmpty();
-    assertThat(config.getConfigProperties("test.map")).isNull();
     assertThat(config.getDuration("test.duration")).isNull();
   }
 
