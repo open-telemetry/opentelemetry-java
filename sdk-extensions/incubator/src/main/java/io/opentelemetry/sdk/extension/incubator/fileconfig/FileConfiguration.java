@@ -142,9 +142,13 @@ public final class FileConfiguration {
    * @return a generic {@link StructuredConfigProperties} representation of the model
    */
   public static StructuredConfigProperties toConfigProperties(OpenTelemetryConfiguration model) {
+    return toConfigProperties((Object) model);
+  }
+
+  static StructuredConfigProperties toConfigProperties(Object model) {
     Map<String, Object> configurationMap =
         MAPPER.convertValue(model, new TypeReference<Map<String, Object>>() {});
-    return new FileConfigProperties(configurationMap);
+    return new YamlStructuredConfigProperties(configurationMap);
   }
 
   /**

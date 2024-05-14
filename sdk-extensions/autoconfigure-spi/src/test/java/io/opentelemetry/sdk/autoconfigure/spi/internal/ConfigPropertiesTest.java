@@ -26,18 +26,15 @@ class ConfigPropertiesTest {
   void allValid() {
     Map<String, String> properties = makeTestProps();
 
-    DefaultConfigProperties config = DefaultConfigProperties.createFromMap(properties);
+    ConfigProperties config = DefaultConfigProperties.createFromMap(properties);
     assertThat(config.getString("test.string")).isEqualTo("str");
     assertThat(config.getInt("test.int")).isEqualTo(10);
     assertThat(config.getLong("test.long")).isEqualTo(20);
     assertThat(config.getDouble("test.double")).isEqualTo(5.4);
     assertThat(config.getList("test.list")).containsExactly("cat", "dog", "bear");
     assertThat(config.getMap("test.map"))
-        .containsExactly(
-            entry("cat", "meow"),
-            entry("dog", "bark"),
-            entry("bear", "growl"),
-            entry("number", "1"));
+        .containsExactly(entry("cat", "meow"), entry("dog", "bark"), entry("bear", "growl"));
+    assertThat(config.getDuration("test.duration")).isEqualTo(Duration.ofSeconds(1));
   }
 
   @Test
@@ -51,17 +48,13 @@ class ConfigPropertiesTest {
     assertThat(config.getDouble("test-double")).isEqualTo(5.4);
     assertThat(config.getList("test-list")).containsExactly("cat", "dog", "bear");
     assertThat(config.getMap("test-map"))
-        .containsExactly(
-            entry("cat", "meow"),
-            entry("dog", "bark"),
-            entry("bear", "growl"),
-            entry("number", "1"));
+        .containsExactly(entry("cat", "meow"), entry("dog", "bark"), entry("bear", "growl"));
     assertThat(config.getDuration("test-duration")).isEqualTo(Duration.ofSeconds(1));
   }
 
   @Test
   void allMissing() {
-    DefaultConfigProperties config = DefaultConfigProperties.createFromMap(emptyMap());
+    ConfigProperties config = DefaultConfigProperties.createFromMap(emptyMap());
     assertThat(config.getString("test.string")).isNull();
     assertThat(config.getInt("test.int")).isNull();
     assertThat(config.getLong("test.long")).isNull();
@@ -82,7 +75,7 @@ class ConfigPropertiesTest {
     properties.put("test.map", "");
     properties.put("test.duration", "");
 
-    DefaultConfigProperties config = DefaultConfigProperties.createFromMap(properties);
+    ConfigProperties config = DefaultConfigProperties.createFromMap(properties);
     assertThat(config.getString("test.string")).isEmpty();
     assertThat(config.getInt("test.int")).isNull();
     assertThat(config.getLong("test.long")).isNull();
@@ -282,7 +275,7 @@ class ConfigPropertiesTest {
     properties.put("test.double", "5.4");
     properties.put("test.boolean", "true");
     properties.put("test.list", "cat,dog,bear");
-    properties.put("test.map", "cat=meow,dog=bark,bear=growl,bird=,number=1");
+    properties.put("test.map", "cat=meow,dog=bark,bear=growl,bird=");
     properties.put("test.duration", "1s");
     return properties;
   }

@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigPropertie
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.Function;
+import javax.annotation.Nullable;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
@@ -21,7 +22,12 @@ public final class AutoConfigureUtil {
 
   private AutoConfigureUtil() {}
 
-  /** Returns the {@link ConfigProperties} used for auto-configuration. */
+  /**
+   * Returns the {@link ConfigProperties} used for auto-configuration.
+   *
+   * @return the config properties, or {@code null} if file based configuration is used
+   */
+  @Nullable
   public static ConfigProperties getConfig(
       AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk) {
     try {
@@ -34,7 +40,13 @@ public final class AutoConfigureUtil {
     }
   }
 
-  /** Returns the {@link StructuredConfigProperties} used for auto-configuration. */
+  /**
+   * Returns the {@link StructuredConfigProperties} used for auto-configuration when file based
+   * configuration is used.
+   *
+   * @return the config properties, or {@code null} if file based configuration is NOT used
+   */
+  @Nullable
   public static StructuredConfigProperties getStructuredConfig(
       AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk) {
     try {

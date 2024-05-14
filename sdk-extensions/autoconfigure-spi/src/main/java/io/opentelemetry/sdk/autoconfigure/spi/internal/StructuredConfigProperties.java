@@ -13,19 +13,21 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 /**
- * An interface from accessing structured configuration data.
+ * An interface for accessing structured configuration data.
  *
- * <p>In addition to accessors for reading primitive properties which are direct children, {@link
- * StructuredConfigProperties} has {@link #getStructured(String)} and {@link
- * #getStructuredList(String)} for reading complex children which are themselves structured.
+ * <p>An instance of {@link StructuredConfigProperties} is equivalent to a <a
+ * href="https://yaml.org/spec/1.2.2/#3211-nodes">YAML mapping node</a>. It has accessors for
+ * reading scalar properties, {@link #getStructured(String)} for reading children which are
+ * themselves mappings, and {@link #getStructuredList(String)} for reading children which are
+ * sequences of mappings.
  */
 public interface StructuredConfigProperties {
 
   /**
    * Returns a {@link String} configuration property.
    *
-   * @return null if the property has not been configured.
-   * @throws ConfigurationException if the property is not a valid string.
+   * @return null if the property has not been configured
+   * @throws ConfigurationException if the property is not a valid scalar string
    */
   @Nullable
   String getString(String name);
@@ -34,9 +36,8 @@ public interface StructuredConfigProperties {
    * Returns a {@link String} configuration property.
    *
    * @return a {@link String} configuration property or {@code defaultValue} if a property with
-   *     {@code name} has not been configured.
-   * @throws ConfigurationException if the property is not a valid string.
-   * @since 1.15.0
+   *     {@code name} has not been configured
+   * @throws ConfigurationException if the property is not a valid scalar string
    */
   default String getString(String name, String defaultValue) {
     return defaultIfNull(getString(name), defaultValue);
@@ -46,8 +47,8 @@ public interface StructuredConfigProperties {
    * Returns a {@link Boolean} configuration property. Implementations should use the same rules as
    * {@link Boolean#parseBoolean(String)} for handling the values.
    *
-   * @return null if the property has not been configured.
-   * @throws ConfigurationException if the property is not a valid boolean.
+   * @return null if the property has not been configured
+   * @throws ConfigurationException if the property is not a valid scalar boolean
    */
   @Nullable
   Boolean getBoolean(String name);
@@ -56,18 +57,38 @@ public interface StructuredConfigProperties {
    * Returns a {@link Boolean} configuration property.
    *
    * @return a {@link Boolean} configuration property or {@code defaultValue} if a property with
-   *     {@code name} has not been configured.
-   * @throws ConfigurationException if the property is not a valid string.
+   *     {@code name} has not been configured
+   * @throws ConfigurationException if the property is not a valid scalar boolean
    */
   default boolean getBoolean(String name, boolean defaultValue) {
     return defaultIfNull(getBoolean(name), defaultValue);
   }
 
   /**
+   * Returns a {@link Integer} configuration property.
+   *
+   * @return null if the property has not been configured
+   * @throws ConfigurationException if the property is not a valid scalar integer
+   */
+  @Nullable
+  Integer getInt(String name);
+
+  /**
+   * Returns a {@link Integer} configuration property.
+   *
+   * @return a {@link Integer} configuration property or {@code defaultValue} if a property with
+   *     {@code name} has not been configured
+   * @throws ConfigurationException if the property is not a valid scalar integer
+   */
+  default int getInt(String name, int defaultValue) {
+    return defaultIfNull(getInt(name), defaultValue);
+  }
+
+  /**
    * Returns a {@link Long} configuration property.
    *
-   * @return null if the property has not been configured.
-   * @throws ConfigurationException if the property is not a valid long.
+   * @return null if the property has not been configured
+   * @throws ConfigurationException if the property is not a valid scalar long
    */
   @Nullable
   Long getLong(String name);
@@ -76,8 +97,8 @@ public interface StructuredConfigProperties {
    * Returns a {@link Long} configuration property.
    *
    * @return a {@link Long} configuration property or {@code defaultValue} if a property with {@code
-   *     name} has not been configured.
-   * @throws ConfigurationException if the property is not a valid string.
+   *     name} has not been configured
+   * @throws ConfigurationException if the property is not a valid scalar long
    */
   default long getLong(String name, long defaultValue) {
     return defaultIfNull(getLong(name), defaultValue);
@@ -86,8 +107,8 @@ public interface StructuredConfigProperties {
   /**
    * Returns a {@link Double} configuration property.
    *
-   * @return null if the property has not been configured.
-   * @throws ConfigurationException if the property is not a valid double.
+   * @return null if the property has not been configured
+   * @throws ConfigurationException if the property is not a valid scalar double
    */
   @Nullable
   Double getDouble(String name);
@@ -96,8 +117,8 @@ public interface StructuredConfigProperties {
    * Returns a {@link Double} configuration property.
    *
    * @return a {@link Double} configuration property or {@code defaultValue} if a property with
-   *     {@code name} has not been configured.
-   * @throws ConfigurationException if the property is not a valid double.
+   *     {@code name} has not been configured
+   * @throws ConfigurationException if the property is not a valid scalar double
    */
   default double getDouble(String name, double defaultValue) {
     return defaultIfNull(getDouble(name), defaultValue);
@@ -107,44 +128,41 @@ public interface StructuredConfigProperties {
    * Returns a {@link List} configuration property. Empty values will be removed. Entries which are
    * not strings are converted to their string representation.
    *
-   * @return an empty list if the property has not been configured.
-   * @throws ConfigurationException if the property is not a valid comma-separated list.
+   * @return a {@link List} configuration property, or null if the property has not been configured
+   * @throws ConfigurationException if the property is not a valid sequence of scalars
    */
-  // TODO(jack-berg): Should we differentiate between empty and null?
-  List<String> getPrimitiveList(String name);
+  @Nullable
+  List<String> getScalarList(String name);
 
   /**
-   * Returns a {@link List} value configuration property. Entries which are not strings are
-   * converted to their string representation.
+   * Returns a {@link List} configuration property. Entries which are not strings are converted to
+   * their string representation.
    *
    * @see ConfigProperties#getList(String name)
-   * @return a List configuration property or {@code defaultValue} if a property with {@code name}
-   *     has not been configured.
-   * @throws ConfigurationException if the property is not a valid string.
+   * @return a {@link List} configuration property or {@code defaultValue} if a property with {@code
+   *     name} has not been configured
+   * @throws ConfigurationException if the property is not a valid sequence of scalars
    */
-  default List<String> getPrimitiveList(String name, List<String> defaultValue) {
-    List<String> value = getPrimitiveList(name);
-    return value.isEmpty() ? defaultValue : value;
+  default List<String> getScalarList(String name, List<String> defaultValue) {
+    return defaultIfNull(getScalarList(name), defaultValue);
   }
 
   /**
-   * Returns the {@link StructuredConfigProperties} for the given property {@code name}.
+   * Returns a {@link StructuredConfigProperties} configuration property.
    *
    * @return a map-valued configuration property, or {@code null} if {@code name} has not been
-   *     configured.
-   * @throws io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException if the property is not a
-   *     map
+   *     configured
+   * @throws ConfigurationException if the property is not a mapping
    */
   @Nullable
   StructuredConfigProperties getStructured(String name);
 
   /**
-   * Returns a list of {@link StructuredConfigProperties} for the given property.
+   * Returns a list of {@link StructuredConfigProperties} configuration property.
    *
    * @return a list of map-valued configuration property, or {@code null} if {@code name} has not
-   *     been configured.
-   * @throws io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException if the property is not a
-   *     list of maps
+   *     been configured
+   * @throws ConfigurationException if the property is not a sequence of mappings
    */
   @Nullable
   List<StructuredConfigProperties> getStructuredList(String name);

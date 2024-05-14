@@ -5,12 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ConfigurableMetricReaderProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporter;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReader;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Prometheus;
@@ -19,9 +15,7 @@ import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
 import java.io.Closeable;
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nullable;
 
 final class MetricReaderFactory
@@ -77,39 +71,15 @@ final class MetricReaderFactory
       }
       Prometheus prometheusModel = exporterModel.getPrometheus();
       if (prometheusModel != null) {
-        // Translate from file configuration scheme to environment variable scheme. This is
-        // ultimately
-        // interpreted by PrometheusMetricReaderProvider, but we want to avoid the dependency on
-        // opentelemetry-exporter-prometheus
-        Map<String, String> properties = new HashMap<>();
-        if (prometheusModel.getHost() != null) {
-          properties.put("otel.exporter.prometheus.host", prometheusModel.getHost());
-        }
-        if (prometheusModel.getPort() != null) {
-          properties.put(
-              "otel.exporter.prometheus.port", String.valueOf(prometheusModel.getPort()));
-        }
-
-        ConfigProperties configProperties = DefaultConfigProperties.createFromMap(properties);
-        return FileConfigUtil.addAndReturn(
-            closeables,
-            FileConfigUtil.assertNotNull(
-                metricReaderSpiManager(configProperties, spiHelper).getByName("prometheus"),
-                "prometheus reader"));
+        MetricReader metricReader =
+            FileConfigUtil.loadComponent(
+                spiHelper, MetricReader.class, "prometheus", prometheusModel);
+        return FileConfigUtil.addAndReturn(closeables, metricReader);
       }
 
       throw new ConfigurationException("prometheus is the only currently supported pull reader");
     }
 
     return null;
-  }
-
-  private static NamedSpiManager<io.opentelemetry.sdk.metrics.export.MetricReader>
-      metricReaderSpiManager(ConfigProperties config, SpiHelper spiHelper) {
-    return spiHelper.loadConfigurable(
-        ConfigurableMetricReaderProvider.class,
-        ConfigurableMetricReaderProvider::getName,
-        ConfigurableMetricReaderProvider::createMetricReader,
-        config);
   }
 }

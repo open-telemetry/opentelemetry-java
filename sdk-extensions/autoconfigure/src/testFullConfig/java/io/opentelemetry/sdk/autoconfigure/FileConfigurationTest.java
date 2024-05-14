@@ -46,7 +46,7 @@ import org.slf4j.event.Level;
 
 class FileConfigurationTest {
 
-  @RegisterExtension static final CleanupExtension cleanup = new CleanupExtension();
+  @RegisterExtension private static final CleanupExtension cleanup = new CleanupExtension();
 
   @RegisterExtension
   static final LogCapturer logCapturer =
@@ -189,7 +189,7 @@ class FileConfigurationTest {
   }
 
   @Test
-  void configFile_ExtendedConfigProperties() {
+  void configFile_StructuredConfigProperties() {
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
             Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
@@ -202,6 +202,7 @@ class FileConfigurationTest {
     // getConfig() should return ExtendedConfigProperties generic representation of the config file
     StructuredConfigProperties structuredConfigProps =
         autoConfiguredOpenTelemetrySdk.getStructuredConfig();
+    assertThat(structuredConfigProps).isNotNull();
     StructuredConfigProperties otherProps = structuredConfigProps.getStructured("other");
     assertThat(otherProps).isNotNull();
     assertThat(otherProps.getString("str_key")).isEqualTo("str_value");

@@ -9,8 +9,6 @@ import static java.util.stream.Collectors.toList;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,26 +16,23 @@ import java.util.StringJoiner;
 import javax.annotation.Nullable;
 
 /**
- * Implementation of {@link StructuredConfigProperties} which uses the file {@link
- * OpenTelemetryConfiguration} model as a source.
+ * Implementation of {@link StructuredConfigProperties} which uses a file configuration model as a
+ * source.
  *
  * @see #getStructured(String) Accessing nested maps
  * @see #getStructuredList(String) Accessing lists of maps
- * @see FileConfiguration#toConfigProperties(OpenTelemetryConfiguration) Converting configuration
- *     model to properties
+ * @see FileConfiguration#toConfigProperties(Object) Converting configuration model to properties
  */
-final class FileConfigProperties implements StructuredConfigProperties {
+final class YamlStructuredConfigProperties implements StructuredConfigProperties {
 
-  /**
-   * Values are {@link #isPrimitive(Object)}, {@code List<String>}, or {@code Map<String, String>}.
-   */
+  /** Values are {@link #isPrimitive(Object)}, {@link List} of scalars. */
   private final Map<String, Object> simpleEntries = new HashMap<>();
 
   private final Map<String, List<StructuredConfigProperties>> listEntries = new HashMap<>();
   private final Map<String, StructuredConfigProperties> mapEntries = new HashMap<>();
 
   @SuppressWarnings("unchecked")
-  FileConfigProperties(Map<String, Object> properties) {
+  YamlStructuredConfigProperties(Map<String, Object> properties) {
     for (Map.Entry<String, Object> entry : properties.entrySet()) {
       String key = entry.getKey();
       Object value = entry.getValue();
@@ -52,13 +47,13 @@ final class FileConfigProperties implements StructuredConfigProperties {
       if (isListOfMaps(value)) {
         List<StructuredConfigProperties> list =
             ((List<Map<String, Object>>) value)
-                .stream().map(FileConfigProperties::new).collect(toList());
+                .stream().map(YamlStructuredConfigProperties::new).collect(toList());
         listEntries.put(key, list);
         continue;
       }
       if (isMap(value)) {
-        FileConfigProperties configProperties =
-            new FileConfigProperties((Map<String, Object>) value);
+        YamlStructuredConfigProperties configProperties =
+            new YamlStructuredConfigProperties((Map<String, Object>) value);
         mapEntries.put(key, configProperties);
         continue;
       }
@@ -73,7 +68,7 @@ final class FileConfigProperties implements StructuredConfigProperties {
   private static boolean isPrimitiveList(Object object) {
     if (object instanceof List) {
       List<?> list = (List<?>) object;
-      return list.stream().allMatch(FileConfigProperties::isPrimitive);
+      return list.stream().allMatch(YamlStructuredConfigProperties::isPrimitive);
     }
     return false;
   }
@@ -130,6 +125,19 @@ final class FileConfigProperties implements StructuredConfigProperties {
 
   @Nullable
   @Override
+  public Integer getInt(String name) {
+    Object value = simpleEntries.get(name);
+    if (value instanceof Integer) {
+      return (Integer) value;
+    }
+    if (value instanceof Long) {
+      return ((Long) value).intValue();
+    }
+    return null;
+  }
+
+  @Nullable
+  @Override
   public Long getLong(String name) {
     Object value = simpleEntries.get(name);
     if (value instanceof Integer) {
@@ -154,14 +162,15 @@ final class FileConfigProperties implements StructuredConfigProperties {
     return null;
   }
 
+  @Nullable
   @Override
-  @SuppressWarnings({"unchecked", "NullAway"})
-  public List<String> getPrimitiveList(String name) {
+  @SuppressWarnings("unchecked")
+  public List<String> getScalarList(String name) {
     Object value = simpleEntries.get(name);
     if (value instanceof List) {
       return (List<String>) value;
     }
-    return Collections.emptyList();
+    return null;
   }
 
   @Nullable
@@ -183,7 +192,7 @@ final class FileConfigProperties implements StructuredConfigProperties {
 
   @Override
   public String toString() {
-    StringJoiner joiner = new StringJoiner(", ", "FileConfigProperties{", "}");
+    StringJoiner joiner = new StringJoiner(", ", "YamlStructuredConfigProperties{", "}");
     simpleEntries.forEach((key, value) -> joiner.add(key + "=" + value));
     listEntries.forEach((key, value) -> joiner.add(key + "=" + value));
     mapEntries.forEach((key, value) -> joiner.add(key + "=" + value));
