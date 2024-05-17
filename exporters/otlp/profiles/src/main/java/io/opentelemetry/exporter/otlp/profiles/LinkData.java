@@ -24,16 +24,6 @@ public interface LinkData {
    */
   String getTraceId();
 
-  /** Returns the trace identifier as 16-byte array. */
-  default byte[] getTraceIdBytes() {
-    return OtelEncodingUtils.bytesFromBase16(getTraceId(), TraceId.getLength());
-  }
-
   /** Returns a unique identifier for the linked span, as 16 character lowercase hex String. */
   String getSpanId();
-
-  /** Returns a unique identifier for the linked span, as an 8-byte array. */
-  default byte[] getSpanIdBytes() {
-    return OtelEncodingUtils.bytesFromBase16(getSpanId(), SpanId.getLength());
-  }
 }
