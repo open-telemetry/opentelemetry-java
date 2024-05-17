@@ -15,14 +15,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface FunctionData {
 
-  /**
-   * Unique nonzero id for the function.
-   *
-   * @deprecated retained only for pprof compatibility.
-   */
-  @Deprecated
-  long getId();
-
   /** Name of the function, in human-readable form if available. Index into string table. */
   long getNameIndex();
 

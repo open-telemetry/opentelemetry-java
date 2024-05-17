@@ -17,15 +17,6 @@ import javax.annotation.concurrent.Immutable;
 public interface LocationData {
 
   /**
-   * Unique nonzero id for the location. Could use instruction addresses or any integer sequence as
-   * ids.
-   *
-   * @deprecated retained only for pprof compatibility.
-   */
-  @Deprecated
-  long getId();
-
-  /**
    * The index of the corresponding profile.Mapping for this location. It can be unset if the
    * mapping is unknown or not applicable for this profile type.
    */

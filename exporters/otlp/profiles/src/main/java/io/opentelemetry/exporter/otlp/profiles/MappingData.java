@@ -16,14 +16,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface MappingData {
 
-  /**
-   * Unique nonzero id for the mapping.
-   *
-   * @deprecated retained only for pprof compatibility.
-   */
-  @Deprecated
-  long getId();
-
   /** Address at which the binary (or DLL) is loaded into memory. */
   long getMemoryStart();
 

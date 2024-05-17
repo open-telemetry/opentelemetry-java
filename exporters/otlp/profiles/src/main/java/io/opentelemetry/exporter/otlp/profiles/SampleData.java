@@ -19,15 +19,6 @@ import javax.annotation.concurrent.Immutable;
 public interface SampleData {
 
   /**
-   * The indices recorded here correspond to locations in Profile.location. The leaf is at
-   * location_index[0].
-   *
-   * @deprecated superseded by locations_start_index / locations_length
-   */
-  @Deprecated
-  List<Long> getLocationIndices();
-
-  /**
    * locationsStartIndex along with locationsLength refers to a slice of locations in
    * Profile.location. Supersedes locationIndices.
    */
@@ -49,10 +40,6 @@ public interface SampleData {
    * The type and unit of each value is defined by the corresponding entry in Profile.sample_type.
    */
   List<Long> getValues();
-
-  /** Additional context for this sample. It can include thread id, allocation size, etc. */
-  @Deprecated
-  List<LabelData> getLabels();
 
   /** References to attributes in Profile.attribute_table. */
   List<Long> getAttributes();
