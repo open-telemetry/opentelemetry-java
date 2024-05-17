@@ -5,9 +5,6 @@
 
 package io.opentelemetry.exporter.otlp.profiles;
 
-import io.opentelemetry.api.internal.OtelEncodingUtils;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceId;
 import javax.annotation.concurrent.Immutable;
 
 /**

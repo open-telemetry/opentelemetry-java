@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.profiles;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -21,5 +22,6 @@ public interface ValueTypeData {
   /** Index into string table. */
   long unit();
 
+  @Nullable
   AggregationTemporality aggregationTemporality();
 }

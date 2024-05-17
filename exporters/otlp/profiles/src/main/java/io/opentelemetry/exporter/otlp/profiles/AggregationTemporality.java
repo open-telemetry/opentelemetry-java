@@ -26,9 +26,6 @@ package io.opentelemetry.exporter.otlp.profiles;
  */
 public enum AggregationTemporality {
 
-  /** The default AggregationTemporality, it MUST not be used. */
-  UNSPECIFIED,
-
   /**
    * DELTA is an AggregationTemporality for a profiler which reports changes since last report time.
    */
