@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.data;
+package io.opentelemetry.exporter.otlp.profiles;
 
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
