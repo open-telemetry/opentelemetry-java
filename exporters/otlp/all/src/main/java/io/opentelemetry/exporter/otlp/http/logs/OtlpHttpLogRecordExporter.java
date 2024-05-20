@@ -7,11 +7,17 @@ package io.opentelemetry.exporter.otlp.http.logs;
 
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
+import io.opentelemetry.exporter.internal.otlp.logs.LowAllocationLogsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.Deque;
+import java.util.StringJoiner;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -22,14 +28,18 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpHttpLogRecordExporter implements LogRecordExporter {
 
-  private final HttpExporterBuilder<LogsRequestMarshaler> builder;
-  private final HttpExporter<LogsRequestMarshaler> delegate;
+  private final Deque<LowAllocationLogsRequestMarshaler> marshalerPool = new ArrayDeque<>();
+  private final HttpExporterBuilder<Marshaler> builder;
+  private final HttpExporter<Marshaler> delegate;
+  private final MemoryMode memoryMode;
 
   OtlpHttpLogRecordExporter(
-      HttpExporterBuilder<LogsRequestMarshaler> builder,
-      HttpExporter<LogsRequestMarshaler> delegate) {
+      HttpExporterBuilder<Marshaler> builder,
+      HttpExporter<Marshaler> delegate,
+      MemoryMode memoryMode) {
     this.builder = builder;
     this.delegate = delegate;
+    this.memoryMode = memoryMode;
   }
 
   /**
@@ -61,7 +71,7 @@ public final class OtlpHttpLogRecordExporter implements LogRecordExporter {
    * @since 1.29.0
    */
   public OtlpHttpLogRecordExporterBuilder toBuilder() {
-    return new OtlpHttpLogRecordExporterBuilder(builder.copy());
+    return new OtlpHttpLogRecordExporterBuilder(builder.copy(), memoryMode);
   }
 
   /**
@@ -72,8 +82,24 @@ public final class OtlpHttpLogRecordExporter implements LogRecordExporter {
    */
   @Override
   public CompletableResultCode export(Collection<LogRecordData> logs) {
-    LogsRequestMarshaler exportRequest = LogsRequestMarshaler.create(logs);
-    return delegate.export(exportRequest, logs.size());
+    if (memoryMode == MemoryMode.REUSABLE_DATA) {
+      LowAllocationLogsRequestMarshaler marshaler = marshalerPool.poll();
+      if (marshaler == null) {
+        marshaler = new LowAllocationLogsRequestMarshaler();
+      }
+      LowAllocationLogsRequestMarshaler exportMarshaler = marshaler;
+      exportMarshaler.initialize(logs);
+      return delegate
+          .export(exportMarshaler, logs.size())
+          .whenComplete(
+              () -> {
+                exportMarshaler.reset();
+                marshalerPool.add(exportMarshaler);
+              });
+    }
+    // MemoryMode == MemoryMode.IMMUTABLE_DATA
+    LogsRequestMarshaler request = LogsRequestMarshaler.create(logs);
+    return delegate.export(request, logs.size());
   }
 
   @Override
@@ -89,6 +115,9 @@ public final class OtlpHttpLogRecordExporter implements LogRecordExporter {
 
   @Override
   public String toString() {
-    return "OtlpHttpLogRecordExporter{" + builder.toString(false) + "}";
+    StringJoiner joiner = new StringJoiner(", ", "OtlpHttpLogRecordExporter{", "}");
+    joiner.add(builder.toString(false));
+    joiner.add("memoryMode=" + memoryMode);
+    return joiner.toString();
   }
 }

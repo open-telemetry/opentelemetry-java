@@ -50,6 +50,8 @@ public interface Clock {
    * ns precision is possible in java 8, regardless of the value of {@code highPrecision}.
    *
    * <p>See {@link #now()} javadoc for details on usage.
+   *
+   * @since 1.38.0
    */
   default long now(boolean highPrecision) {
     return now();

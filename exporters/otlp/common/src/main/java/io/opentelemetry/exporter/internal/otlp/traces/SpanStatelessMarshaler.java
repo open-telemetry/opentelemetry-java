@@ -13,7 +13,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
-import io.opentelemetry.exporter.internal.otlp.KeyValueStatelessMarshaler;
+import io.opentelemetry.exporter.internal.otlp.AttributeKeyValueStatelessMarshaler;
 import io.opentelemetry.proto.trace.v1.internal.Span;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
@@ -43,7 +43,10 @@ final class SpanStatelessMarshaler implements StatelessMarshaler<SpanData> {
     output.serializeFixed64(Span.END_TIME_UNIX_NANO, span.getEndEpochNanos());
 
     output.serializeRepeatedMessageWithContext(
-        Span.ATTRIBUTES, span.getAttributes(), KeyValueStatelessMarshaler.INSTANCE, context);
+        Span.ATTRIBUTES,
+        span.getAttributes(),
+        AttributeKeyValueStatelessMarshaler.INSTANCE,
+        context);
     int droppedAttributesCount = span.getTotalAttributeCount() - span.getAttributes().size();
     output.serializeUInt32(Span.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
 
@@ -88,7 +91,10 @@ final class SpanStatelessMarshaler implements StatelessMarshaler<SpanData> {
 
     size +=
         StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
-            Span.ATTRIBUTES, span.getAttributes(), KeyValueStatelessMarshaler.INSTANCE, context);
+            Span.ATTRIBUTES,
+            span.getAttributes(),
+            AttributeKeyValueStatelessMarshaler.INSTANCE,
+            context);
     int droppedAttributesCount = span.getTotalAttributeCount() - span.getAttributes().size();
     size += MarshalerUtil.sizeUInt32(Span.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
 
