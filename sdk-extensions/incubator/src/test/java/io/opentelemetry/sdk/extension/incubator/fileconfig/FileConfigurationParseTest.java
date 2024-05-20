@@ -412,6 +412,7 @@ class FileConfigurationParseTest {
     Map<String, String> environmentVariables = new HashMap<>();
     environmentVariables.put("STR_1", "value1");
     environmentVariables.put("STR_2", "value2");
+    environmentVariables.put("EMPTY_STR", "");
     environmentVariables.put("BOOL", "true");
     environmentVariables.put("INT", "1");
     environmentVariables.put("FLOAT", "1.1");
@@ -442,7 +443,8 @@ class FileConfigurationParseTest {
         // Multiple environment variables referenced
         Arguments.of("key1: ${STR_1}${STR_2}\n", mapOf(entry("key1", "value1value2"))),
         Arguments.of("key1: ${STR_1} ${STR_2}\n", mapOf(entry("key1", "value1 value2"))),
-        // Undefined environment variable
+        // Undefined / empty environment variable
+        Arguments.of("key1: ${EMPTY_STR}\n", mapOf(entry("key1", null))),
         Arguments.of("key1: ${STR_3}\n", mapOf(entry("key1", null))),
         Arguments.of("key1: ${STR_1} ${STR_3}\n", mapOf(entry("key1", "value1"))),
         // Environment variable keys must match pattern: [a-zA-Z_]+[a-zA-Z0-9_]*
@@ -457,6 +459,7 @@ class FileConfigurationParseTest {
         // Quoted environment variables
         Arguments.of("key1: \"${HEX}\"\n", mapOf(entry("key1", "0xdeadbeef"))),
         Arguments.of("key1: \"${STR_1}\"\n", mapOf(entry("key1", "value1"))),
+        Arguments.of("key1: \"${EMPTY_STR}\"\n", mapOf(entry("key1", ""))),
         Arguments.of("key1: \"${BOOL}\"\n", mapOf(entry("key1", "true"))),
         Arguments.of("key1: \"${INT}\"\n", mapOf(entry("key1", "1"))),
         Arguments.of("key1: \"${FLOAT}\"\n", mapOf(entry("key1", "1.1"))));
@@ -488,7 +491,7 @@ class FileConfigurationParseTest {
             + "    - batch:\n"
             + "        exporter:\n"
             + "          otlp:\n"
-            + "            endpoint: \"${UNSET_ENV_VAR}\"\n";
+            + "            endpoint: ${UNSET_ENV_VAR}\n";
     Map<String, String> envVars = new HashMap<>();
     envVars.put("OTEL_EXPORTER_OTLP_ENDPOINT", "http://collector:4317");
     OpenTelemetryConfiguration model =

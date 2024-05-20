@@ -151,7 +151,7 @@ public final class FileConfiguration {
    */
   private static final class EnvSubstitutionConstructor extends StandardConstructor {
 
-    // Yaml is not thread safe but this instance is always used on the same thread
+    // Load is not thread safe but this instance is always used on the same thread
     private final Load load;
     private final Map<String, String> environmentVariables;
 
@@ -175,7 +175,6 @@ public final class FileConfiguration {
       List<NodeTuple> nodeValue = node.getValue();
       for (NodeTuple tuple : nodeValue) {
         Node keyNode = tuple.getKeyNode();
-        Node valueNode = tuple.getValueNode();
         Object key = constructObject(keyNode);
         if (key != null) {
           try {
@@ -189,6 +188,7 @@ public final class FileConfiguration {
                 e);
           }
         }
+        Node valueNode = tuple.getValueNode();
         Object value = constructValueObject(valueNode);
         if (keyNode.isRecursive()) {
           if (settings.getAllowRecursiveKeys()) {
@@ -206,10 +206,10 @@ public final class FileConfiguration {
     }
 
     private Object constructValueObject(Node node) {
+      Object value = constructObject(node);
       if (!(node instanceof ScalarNode)) {
-        return super.constructObject(node);
+        return value;
       }
-      Object value = super.constructObject(node);
       if (!(value instanceof String)) {
         return value;
       }
@@ -234,7 +234,7 @@ public final class FileConfiguration {
       }
       // If the value was double quoted, retain the double quotes so we don't change a value
       // intended to be a string to a different type after environment variable substitution
-      if (scalarStyle == ScalarStyle.DOUBLE_QUOTED && newVal.length() != 0) {
+      if (scalarStyle == ScalarStyle.DOUBLE_QUOTED) {
         newVal.insert(0, "\"");
         newVal.append("\"");
       }
