@@ -67,6 +67,9 @@ public interface StructuredConfigProperties {
   /**
    * Returns a {@link Integer} configuration property.
    *
+   * <p>If the underlying config property is {@link Long}, it is converted to {@link Integer} with
+   * {@link Long#intValue()} which may result in loss of precision.
+   *
    * @return null if the property has not been configured
    * @throws ConfigurationException if the property is not a valid scalar integer
    */
@@ -75,6 +78,9 @@ public interface StructuredConfigProperties {
 
   /**
    * Returns a {@link Integer} configuration property.
+   *
+   * <p>If the underlying config property is {@link Long}, it is converted to {@link Integer} with
+   * {@link Long#intValue()} which may result in loss of precision.
    *
    * @return a {@link Integer} configuration property or {@code defaultValue} if a property with
    *     {@code name} has not been configured

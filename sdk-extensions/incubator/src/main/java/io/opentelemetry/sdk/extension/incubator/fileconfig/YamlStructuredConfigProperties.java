@@ -9,6 +9,7 @@ import static java.util.stream.Collectors.toList;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,13 +27,34 @@ import javax.annotation.Nullable;
 final class YamlStructuredConfigProperties implements StructuredConfigProperties {
 
   /** Values are {@link #isPrimitive(Object)}, {@link List} of scalars. */
-  private final Map<String, Object> simpleEntries = new HashMap<>();
+  private final Map<String, Object> simpleEntries;
 
-  private final Map<String, List<StructuredConfigProperties>> listEntries = new HashMap<>();
-  private final Map<String, StructuredConfigProperties> mapEntries = new HashMap<>();
+  private final Map<String, List<StructuredConfigProperties>> listEntries;
+  private final Map<String, StructuredConfigProperties> mapEntries;
 
+  private YamlStructuredConfigProperties(
+      Map<String, Object> simpleEntries,
+      Map<String, List<StructuredConfigProperties>> listEntries,
+      Map<String, StructuredConfigProperties> mapEntries) {
+    this.simpleEntries = simpleEntries;
+    this.listEntries = listEntries;
+    this.mapEntries = mapEntries;
+  }
+
+  /**
+   * Create a {@link YamlStructuredConfigProperties} from the {@code properties} map.
+   *
+   * <p>{@code properties} is expected to be the output of YAML parsing (i.e. with Jackson {@link
+   * com.fasterxml.jackson.databind.ObjectMapper}), and have values which are scalars, lists of
+   * scalars, lists of maps, and maps.
+   *
+   * @see FileConfiguration#toConfigProperties(OpenTelemetryConfiguration)
+   */
   @SuppressWarnings("unchecked")
-  YamlStructuredConfigProperties(Map<String, Object> properties) {
+  static YamlStructuredConfigProperties create(Map<String, Object> properties) {
+    Map<String, Object> simpleEntries = new HashMap<>();
+    Map<String, List<StructuredConfigProperties>> listEntries = new HashMap<>();
+    Map<String, StructuredConfigProperties> mapEntries = new HashMap<>();
     for (Map.Entry<String, Object> entry : properties.entrySet()) {
       String key = entry.getKey();
       Object value = entry.getValue();
@@ -47,13 +69,13 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
       if (isListOfMaps(value)) {
         List<StructuredConfigProperties> list =
             ((List<Map<String, Object>>) value)
-                .stream().map(YamlStructuredConfigProperties::new).collect(toList());
+                .stream().map(YamlStructuredConfigProperties::create).collect(toList());
         listEntries.put(key, list);
         continue;
       }
       if (isMap(value)) {
         YamlStructuredConfigProperties configProperties =
-            new YamlStructuredConfigProperties((Map<String, Object>) value);
+            YamlStructuredConfigProperties.create((Map<String, Object>) value);
         mapEntries.put(key, configProperties);
         continue;
       }
@@ -63,6 +85,7 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
               + "\" has unrecognized object type "
               + value.getClass().getName());
     }
+    return new YamlStructuredConfigProperties(simpleEntries, listEntries, mapEntries);
   }
 
   private static boolean isPrimitiveList(Object object) {

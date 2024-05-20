@@ -148,7 +148,7 @@ public final class FileConfiguration {
   static StructuredConfigProperties toConfigProperties(Object model) {
     Map<String, Object> configurationMap =
         MAPPER.convertValue(model, new TypeReference<Map<String, Object>>() {});
-    return new YamlStructuredConfigProperties(configurationMap);
+    return YamlStructuredConfigProperties.create(configurationMap);
   }
 
   /**
