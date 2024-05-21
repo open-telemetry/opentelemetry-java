@@ -240,8 +240,13 @@ public final class OtlpGrpcSpanExporterBuilder {
     return this;
   }
 
-  /** Set the {@link MemoryMode}. */
-  OtlpGrpcSpanExporterBuilder setMemoryMode(MemoryMode memoryMode) {
+  /**
+   * Set the {@link MemoryMode}. If unset, defaults to {@link #DEFAULT_MEMORY_MODE}.
+   *
+   * <p>>When memory mode is {@link MemoryMode#REUSABLE_DATA}, serialization is optimized to reduce
+   * memory allocation.
+   */
+  public OtlpGrpcSpanExporterBuilder setMemoryMode(MemoryMode memoryMode) {
     requireNonNull(memoryMode, "memoryMode");
     this.memoryMode = memoryMode;
     return this;

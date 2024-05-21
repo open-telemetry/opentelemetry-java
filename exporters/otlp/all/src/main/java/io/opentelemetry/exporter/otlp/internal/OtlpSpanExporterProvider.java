@@ -10,7 +10,6 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_GR
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
@@ -51,11 +50,10 @@ public class OtlpSpanExporterProvider
           builder::setTimeout,
           builder::setTrustedCertificates,
           builder::setClientTls,
-          builder::setRetryPolicy);
+          builder::setRetryPolicy,
+          builder::setMemoryMode);
       builder.setMeterProvider(meterProviderRef::get);
-      ExporterBuilderUtil.configureExporterMemoryMode(
-          config,
-          memoryMode -> OtlpConfigUtil.setMemoryModeOnOtlpExporterBuilder(builder, memoryMode));
+
       return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
       OtlpGrpcSpanExporterBuilder builder = grpcBuilder();
@@ -69,11 +67,9 @@ public class OtlpSpanExporterProvider
           builder::setTimeout,
           builder::setTrustedCertificates,
           builder::setClientTls,
-          builder::setRetryPolicy);
+          builder::setRetryPolicy,
+          builder::setMemoryMode);
       builder.setMeterProvider(meterProviderRef::get);
-      ExporterBuilderUtil.configureExporterMemoryMode(
-          config,
-          memoryMode -> OtlpConfigUtil.setMemoryModeOnOtlpExporterBuilder(builder, memoryMode));
 
       return builder.build();
     }
