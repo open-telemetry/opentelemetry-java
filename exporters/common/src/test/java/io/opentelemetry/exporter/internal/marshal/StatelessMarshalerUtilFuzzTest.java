@@ -41,10 +41,7 @@ class StatelessMarshalerUtilFuzzTest {
   void encodeUf8WithFuzzing() {
     Result result =
         GuidedFuzzing.run(
-            EncodeUf8.class,
-            "encodeRandomString",
-            new NoGuidance(10000, System.out),
-            System.out);
+            EncodeUf8.class, "encodeRandomString", new NoGuidance(10000, System.out), System.out);
     assertThat(result.wasSuccessful()).isTrue();
   }
 }
