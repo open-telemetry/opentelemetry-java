@@ -14,7 +14,7 @@ import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
-import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -50,7 +50,7 @@ public final class OtlpGrpcMetricExporterBuilder {
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
 
   // Visible for testing
-  final GrpcExporterBuilder<MetricsRequestMarshaler> delegate;
+  final GrpcExporterBuilder<Marshaler> delegate;
 
   private AggregationTemporalitySelector aggregationTemporalitySelector =
       DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR;
@@ -59,8 +59,7 @@ public final class OtlpGrpcMetricExporterBuilder {
       DefaultAggregationSelector.getDefault();
   private MemoryMode memoryMode;
 
-  OtlpGrpcMetricExporterBuilder(
-      GrpcExporterBuilder<MetricsRequestMarshaler> delegate, MemoryMode memoryMode) {
+  OtlpGrpcMetricExporterBuilder(GrpcExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
     this.memoryMode = memoryMode;
     delegate.setMeterProvider(MeterProvider::noop);

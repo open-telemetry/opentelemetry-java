@@ -45,6 +45,8 @@ class DefaultAggregationSelectorTest {
         .isEqualTo(Aggregation.defaultAggregation());
     assertThat(selector1.getDefaultAggregation(InstrumentType.OBSERVABLE_GAUGE))
         .isEqualTo(Aggregation.defaultAggregation());
+    assertThat(selector1.getDefaultAggregation(InstrumentType.GAUGE))
+        .isEqualTo(Aggregation.defaultAggregation());
 
     DefaultAggregationSelector selector2 =
         selector1.with(InstrumentType.COUNTER, Aggregation.drop());
@@ -60,6 +62,8 @@ class DefaultAggregationSelectorTest {
         .isEqualTo(Aggregation.defaultAggregation());
     assertThat(selector2.getDefaultAggregation(InstrumentType.OBSERVABLE_GAUGE))
         .isEqualTo(Aggregation.defaultAggregation());
+    assertThat(selector2.getDefaultAggregation(InstrumentType.GAUGE))
+        .isEqualTo(Aggregation.defaultAggregation());
   }
 
   @Test
@@ -72,7 +76,8 @@ class DefaultAggregationSelectorTest {
                 + "HISTOGRAM=default, "
                 + "OBSERVABLE_COUNTER=default, "
                 + "OBSERVABLE_UP_DOWN_COUNTER=default, "
-                + "OBSERVABLE_GAUGE=default"
+                + "OBSERVABLE_GAUGE=default, "
+                + "GAUGE=default"
                 + "}");
     assertThat(
             DefaultAggregationSelector.asString(
@@ -85,7 +90,8 @@ class DefaultAggregationSelectorTest {
                 + "HISTOGRAM=base2_exponential_bucket_histogram, "
                 + "OBSERVABLE_COUNTER=default, "
                 + "OBSERVABLE_UP_DOWN_COUNTER=default, "
-                + "OBSERVABLE_GAUGE=default"
+                + "OBSERVABLE_GAUGE=default, "
+                + "GAUGE=default"
                 + "}");
   }
 }

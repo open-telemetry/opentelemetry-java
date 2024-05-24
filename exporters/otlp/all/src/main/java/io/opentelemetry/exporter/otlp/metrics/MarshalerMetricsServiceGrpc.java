@@ -14,7 +14,7 @@ import io.grpc.MethodDescriptor;
 import io.grpc.stub.ClientCalls;
 import io.opentelemetry.exporter.internal.grpc.MarshalerInputStream;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
-import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import java.io.InputStream;
 import javax.annotation.Nullable;
 
@@ -24,15 +24,15 @@ final class MarshalerMetricsServiceGrpc {
   private static final String SERVICE_NAME =
       "opentelemetry.proto.collector.metrics.v1.MetricsService";
 
-  private static final MethodDescriptor.Marshaller<MetricsRequestMarshaler> REQUEST_MARSHALLER =
-      new MethodDescriptor.Marshaller<MetricsRequestMarshaler>() {
+  private static final MethodDescriptor.Marshaller<Marshaler> REQUEST_MARSHALLER =
+      new MethodDescriptor.Marshaller<Marshaler>() {
         @Override
-        public InputStream stream(MetricsRequestMarshaler value) {
+        public InputStream stream(Marshaler value) {
           return new MarshalerInputStream(value);
         }
 
         @Override
-        public MetricsRequestMarshaler parse(InputStream stream) {
+        public Marshaler parse(InputStream stream) {
           throw new UnsupportedOperationException("Only for serializing");
         }
       };
@@ -51,14 +51,13 @@ final class MarshalerMetricsServiceGrpc {
             }
           };
 
-  private static final MethodDescriptor<MetricsRequestMarshaler, ExportMetricsServiceResponse>
-      getExportMethod =
-          MethodDescriptor.<MetricsRequestMarshaler, ExportMetricsServiceResponse>newBuilder()
-              .setType(MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Export"))
-              .setRequestMarshaller(REQUEST_MARSHALLER)
-              .setResponseMarshaller(RESPONSE_MARSHALER)
-              .build();
+  private static final MethodDescriptor<Marshaler, ExportMetricsServiceResponse> getExportMethod =
+      MethodDescriptor.<Marshaler, ExportMetricsServiceResponse>newBuilder()
+          .setType(MethodDescriptor.MethodType.UNARY)
+          .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Export"))
+          .setRequestMarshaller(REQUEST_MARSHALLER)
+          .setResponseMarshaller(RESPONSE_MARSHALER)
+          .build();
 
   static MetricsServiceFutureStub newFutureStub(
       Channel channel, @Nullable String authorityOverride) {
@@ -69,7 +68,7 @@ final class MarshalerMetricsServiceGrpc {
 
   static final class MetricsServiceFutureStub
       extends MarshalerServiceStub<
-          MetricsRequestMarshaler, ExportMetricsServiceResponse, MetricsServiceFutureStub> {
+          Marshaler, ExportMetricsServiceResponse, MetricsServiceFutureStub> {
     private MetricsServiceFutureStub(Channel channel, CallOptions callOptions) {
       super(channel, callOptions);
     }
@@ -81,7 +80,7 @@ final class MarshalerMetricsServiceGrpc {
     }
 
     @Override
-    public ListenableFuture<ExportMetricsServiceResponse> export(MetricsRequestMarshaler request) {
+    public ListenableFuture<ExportMetricsServiceResponse> export(Marshaler request) {
       return ClientCalls.futureUnaryCall(
           getChannel().newCall(getExportMethod, getCallOptions()), request);
     }

@@ -51,8 +51,7 @@ public class OtlpMetricExporterProvider implements ConfigurableMetricExporterPro
           config, builder::setDefaultAggregationSelector);
       ExporterBuilderUtil.configureExporterMemoryMode(
           config,
-          memoryMode ->
-              OtlpConfigUtil.setMemoryModeOnOtlpMetricExporterBuilder(builder, memoryMode));
+          memoryMode -> OtlpConfigUtil.setMemoryModeOnOtlpExporterBuilder(builder, memoryMode));
 
       return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
@@ -74,8 +73,7 @@ public class OtlpMetricExporterProvider implements ConfigurableMetricExporterPro
           config, builder::setDefaultAggregationSelector);
       ExporterBuilderUtil.configureExporterMemoryMode(
           config,
-          memoryMode ->
-              OtlpConfigUtil.setMemoryModeOnOtlpMetricExporterBuilder(builder, memoryMode));
+          memoryMode -> OtlpConfigUtil.setMemoryModeOnOtlpExporterBuilder(builder, memoryMode));
 
       return builder.build();
     }

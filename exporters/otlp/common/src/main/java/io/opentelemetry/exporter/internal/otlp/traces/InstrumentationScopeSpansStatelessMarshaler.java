@@ -23,6 +23,8 @@ final class InstrumentationScopeSpansStatelessMarshaler
   static final InstrumentationScopeSpansStatelessMarshaler INSTANCE =
       new InstrumentationScopeSpansStatelessMarshaler();
 
+  private InstrumentationScopeSpansStatelessMarshaler() {}
+
   @Override
   public void writeTo(
       Serializer output,

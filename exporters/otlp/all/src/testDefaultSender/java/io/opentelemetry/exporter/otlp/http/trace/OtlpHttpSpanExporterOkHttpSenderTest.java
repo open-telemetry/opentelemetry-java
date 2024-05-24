@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.otlp.http.trace;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.traces.ResourceSpansMarshaler;
 import io.opentelemetry.exporter.otlp.testing.internal.AbstractHttpTelemetryExporterTest;
@@ -14,13 +16,41 @@ import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporter;
 import io.opentelemetry.exporter.otlp.testing.internal.TelemetryExporterBuilder;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.Test;
 
 class OtlpHttpSpanExporterOkHttpSenderTest
     extends AbstractHttpTelemetryExporterTest<SpanData, ResourceSpans> {
 
   protected OtlpHttpSpanExporterOkHttpSenderTest() {
     super("span", "/v1/traces", ResourceSpans.getDefaultInstance());
+  }
+
+  /** Test configuration specific to metric exporter. */
+  @Test
+  void stringRepresentation() {
+    try (SpanExporter spanExporter = OtlpHttpSpanExporter.builder().build()) {
+      assertThat(spanExporter.toString())
+          .matches(
+              "OtlpHttpSpanExporter\\{"
+                  + "exporterName=otlp, "
+                  + "type=span, "
+                  + "endpoint=http://localhost:4318/v1/traces, "
+                  + "timeoutNanos="
+                  + TimeUnit.SECONDS.toNanos(10)
+                  + ", "
+                  + "proxyOptions=null, "
+                  + "compressorEncoding=null, "
+                  + "connectTimeoutNanos="
+                  + TimeUnit.SECONDS.toNanos(10)
+                  + ", "
+                  + "exportAsJson=false, "
+                  + "headers=Headers\\{User-Agent=OBFUSCATED\\}, "
+                  + "memoryMode=IMMUTABLE_DATA"
+                  + "\\}");
+    }
   }
 
   @Override

@@ -12,7 +12,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
-import io.opentelemetry.exporter.internal.otlp.KeyValueStatelessMarshaler;
+import io.opentelemetry.exporter.internal.otlp.AttributeKeyValueStatelessMarshaler;
 import io.opentelemetry.proto.trace.v1.internal.Span;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.io.IOException;
@@ -21,6 +21,8 @@ import java.io.IOException;
 final class SpanLinkStatelessMarshaler implements StatelessMarshaler<LinkData> {
   static final SpanLinkStatelessMarshaler INSTANCE = new SpanLinkStatelessMarshaler();
 
+  private SpanLinkStatelessMarshaler() {}
+
   @Override
   public void writeTo(Serializer output, LinkData link, MarshalerContext context)
       throws IOException {
@@ -28,7 +30,10 @@ final class SpanLinkStatelessMarshaler implements StatelessMarshaler<LinkData> {
     output.serializeSpanId(Span.Link.SPAN_ID, link.getSpanContext().getSpanId(), context);
     output.serializeString(Span.Link.TRACE_STATE, context.getData(byte[].class));
     output.serializeRepeatedMessageWithContext(
-        Span.Link.ATTRIBUTES, link.getAttributes(), KeyValueStatelessMarshaler.INSTANCE, context);
+        Span.Link.ATTRIBUTES,
+        link.getAttributes(),
+        AttributeKeyValueStatelessMarshaler.INSTANCE,
+        context);
     int droppedAttributesCount = link.getTotalAttributeCount() - link.getAttributes().size();
     output.serializeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
     output.serializeFixed32(
@@ -50,7 +55,7 @@ final class SpanLinkStatelessMarshaler implements StatelessMarshaler<LinkData> {
         StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
             Span.Link.ATTRIBUTES,
             link.getAttributes(),
-            KeyValueStatelessMarshaler.INSTANCE,
+            AttributeKeyValueStatelessMarshaler.INSTANCE,
             context);
     int droppedAttributesCount = link.getTotalAttributeCount() - link.getAttributes().size();
     size += MarshalerUtil.sizeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);

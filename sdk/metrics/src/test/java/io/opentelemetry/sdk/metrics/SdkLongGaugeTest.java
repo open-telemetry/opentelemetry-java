@@ -11,15 +11,19 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attri
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.metrics.ExtendedLongGaugeBuilder;
-import io.opentelemetry.api.incubator.metrics.LongGauge;
+import io.opentelemetry.api.metrics.LongGauge;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableLongGauge;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.stream.IntStream;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -45,11 +49,7 @@ class SdkLongGaugeTest {
 
   @Test
   void set_PreventNullAttributes() {
-    assertThatThrownBy(
-            () ->
-                ((ExtendedLongGaugeBuilder) sdkMeter.gaugeBuilder("testGauge").ofLongs())
-                    .build()
-                    .set(1, null))
+    assertThatThrownBy(() -> sdkMeter.gaugeBuilder("testGauge").ofLongs().build().set(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("attributes");
   }
@@ -77,19 +77,18 @@ class SdkLongGaugeTest {
 
   @Test
   void collectMetrics_NoRecords() {
-    ((ExtendedLongGaugeBuilder) sdkMeter.gaugeBuilder("testGauge").ofLongs()).build();
+    sdkMeter.gaugeBuilder("testGauge").ofLongs().build();
     assertThat(cumulativeReader.collectAllMetrics()).isEmpty();
   }
 
   @Test
   void collectMetrics_WithEmptyAttributes() {
     LongGauge longGauge =
-        ((ExtendedLongGaugeBuilder)
-                sdkMeter
-                    .gaugeBuilder("testGauge")
-                    .ofLongs()
-                    .setDescription("description")
-                    .setUnit("K"))
+        sdkMeter
+            .gaugeBuilder("testGauge")
+            .ofLongs()
+            .setDescription("description")
+            .setUnit("K")
             .build();
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longGauge.set(12, Attributes.empty());
@@ -115,10 +114,63 @@ class SdkLongGaugeTest {
   }
 
   @Test
+  void collectMetrics_WithExemplars() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder()
+            .setClock(testClock)
+            .setResource(RESOURCE)
+            .registerView(
+                InstrumentSelector.builder().setName("*").build(),
+                View.builder().setAttributeFilter(Collections.emptySet()).build())
+            .registerMetricReader(reader)
+            .build();
+    Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
+    LongGauge longGauge =
+        sdkMeter
+            .gaugeBuilder("testGauge")
+            .setDescription("description")
+            .setUnit("K")
+            .ofLongs()
+            .build();
+
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
+    Tracer tracer = tracerProvider.get("foo");
+
+    Span span = tracer.spanBuilder("span").startSpan();
+    try (Scope unused = span.makeCurrent()) {
+      longGauge.set(12L, Attributes.builder().put("key", "value").build());
+    }
+
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                    .hasName("testGauge")
+                    .hasDescription("description")
+                    .hasUnit("K")
+                    .hasLongGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(12L)
+                                        .hasExemplarsSatisfying(
+                                            exemplar ->
+                                                exemplar
+                                                    .hasValue(12L)
+                                                    .hasFilteredAttributes(
+                                                        Attributes.builder()
+                                                            .put("key", "value")
+                                                            .build())))));
+  }
+
+  @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    LongGauge longGauge =
-        ((ExtendedLongGaugeBuilder) sdkMeter.gaugeBuilder("testGauge").ofLongs()).build();
+    LongGauge longGauge = sdkMeter.gaugeBuilder("testGauge").ofLongs().build();
     longGauge.set(12, Attributes.empty());
     longGauge.set(12, Attributes.builder().put("K", "V").build());
     longGauge.set(21, Attributes.empty());
@@ -216,8 +268,7 @@ class SdkLongGaugeTest {
 
   @Test
   void stressTest() {
-    LongGauge longGauge =
-        ((ExtendedLongGaugeBuilder) sdkMeter.gaugeBuilder("testGauge").ofLongs()).build();
+    LongGauge longGauge = sdkMeter.gaugeBuilder("testGauge").ofLongs().build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setCollectionIntervalMs(100);
@@ -256,8 +307,7 @@ class SdkLongGaugeTest {
   void stressTest_WithDifferentLabelSet() {
     String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    LongGauge longGauge =
-        ((ExtendedLongGaugeBuilder) sdkMeter.gaugeBuilder("testGauge").ofLongs()).build();
+    LongGauge longGauge = sdkMeter.gaugeBuilder("testGauge").ofLongs().build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setCollectionIntervalMs(100);

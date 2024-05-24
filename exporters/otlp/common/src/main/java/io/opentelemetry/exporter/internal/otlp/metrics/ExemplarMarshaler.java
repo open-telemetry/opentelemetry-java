@@ -37,22 +37,15 @@ final class ExemplarMarshaler extends MarshalerWithSize {
     return marshalers;
   }
 
-  private static ExemplarMarshaler create(ExemplarData exemplar) {
+  // Visible for testing
+  static ExemplarMarshaler create(ExemplarData exemplar) {
     KeyValueMarshaler[] attributeMarshalers =
         KeyValueMarshaler.createForAttributes(exemplar.getFilteredAttributes());
-
-    ProtoFieldInfo valueField;
-    if (exemplar instanceof LongExemplarData) {
-      valueField = io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_INT;
-    } else {
-      assert exemplar instanceof DoubleExemplarData;
-      valueField = io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_DOUBLE;
-    }
 
     return new ExemplarMarshaler(
         exemplar.getEpochNanos(),
         exemplar,
-        valueField,
+        toProtoExemplarValueType(exemplar),
         exemplar.getSpanContext(),
         attributeMarshalers);
   }
@@ -120,5 +113,14 @@ final class ExemplarMarshaler extends MarshalerWithSize {
             io.opentelemetry.proto.metrics.v1.internal.Exemplar.FILTERED_ATTRIBUTES,
             filteredAttributeMarshalers);
     return size;
+  }
+
+  static ProtoFieldInfo toProtoExemplarValueType(ExemplarData exemplar) {
+    if (exemplar instanceof LongExemplarData) {
+      return io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_INT;
+    } else {
+      assert exemplar instanceof DoubleExemplarData;
+      return io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_DOUBLE;
+    }
   }
 }
