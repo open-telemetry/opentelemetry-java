@@ -314,6 +314,12 @@ public final class StatelessMarshalerUtil {
     return encodedUtf8Length(string);
   }
 
+  // Inner loop can process at most 8 * 255 bytes without overflowing counter. To process more bytes
+  // inner loop has to be run multiple times.
+  private static final int MAX_INNER_LOOP_SIZE = 8 * 255;
+  // mask that selects only the most significant bit in every byte of the long
+  private static final long MOST_SIGNIFICANT_BIT_MASK = 0x8080808080808080L;
+
   /** Returns the count of bytes with negative value. */
   private static int countNegative(byte[] bytes) {
     int count = 0;
@@ -321,16 +327,16 @@ public final class StatelessMarshalerUtil {
     // We are processing one long (8 bytes) at a time. In the inner loop we are keeping counts in a
     // long where each byte in the long is a separate counter. Due to this the inner loop can
     // process a maximum of 8*255 bytes at a time without overflow.
-    for (int i = 1; i <= bytes.length / (8 * 255) + 1; i++) {
+    for (int i = 1; i <= bytes.length / MAX_INNER_LOOP_SIZE + 1; i++) {
       long tmp = 0; // each byte in this long is a separate counter
-      int limit = Math.min(i * 8 * 255, bytes.length & ~7);
+      int limit = Math.min(i * MAX_INNER_LOOP_SIZE, bytes.length & ~7);
       for (; offset < limit; offset += 8) {
         long value = UnsafeString.getLong(bytes, offset);
         // Mask the value keeping only the most significant bit in each byte and then shift this bit
         // to the position of the least significant bit in each byte. If the input byte was not
         // negative then after this transformation it will be zero, if it was negative then it will
         // be one.
-        tmp += (value & 0x8080808080808080L) >>> 7;
+        tmp += (value & MOST_SIGNIFICANT_BIT_MASK) >>> 7;
       }
       // sum up counts
       if (tmp != 0) {
@@ -341,7 +347,8 @@ public final class StatelessMarshalerUtil {
       }
     }
 
-    // handle remaining bytes
+    // Handle remaining bytes. Previous loop processes 8 bytes a time, if the input size is not
+    // divisible with 8 the remaining bytes are handled here.
     for (int i = offset; i < bytes.length; i++) {
       // same as if (bytes[i] < 0) count++;
       count += bytes[i] >>> 31;
