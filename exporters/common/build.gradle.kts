@@ -32,6 +32,7 @@ dependencies {
   testImplementation("org.skyscreamer:jsonassert")
   testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("io.grpc:grpc-testing")
+  testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
 }
 

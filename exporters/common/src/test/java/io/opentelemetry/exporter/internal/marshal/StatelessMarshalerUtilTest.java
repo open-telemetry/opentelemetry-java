@@ -57,7 +57,7 @@ class StatelessMarshalerUtilTest {
     assertThat(getUtf8Size(string, true)).isEqualTo(utf8Size);
   }
 
-  private static String testUtf8(String string, int utf8Length, boolean useUnsafe) {
+  static String testUtf8(String string, int utf8Length, boolean useUnsafe) {
     try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
       CodedOutputStream codedOutputStream = CodedOutputStream.newInstance(outputStream);
       writeUtf8(codedOutputStream, string, utf8Length, useUnsafe);
