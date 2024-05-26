@@ -229,7 +229,7 @@ class PrometheusHttpServerTest {
   void fetchFiltered() {
     AggregatedHttpResponse response =
         client
-            .get("/?name[]=grpc_name_unit_total&name[]=bears_total&name[]=target_info")
+            .get("/metrics?name[]=grpc_name_unit_total&name[]=bears_total&name[]=target_info")
             .aggregate()
             .join();
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
@@ -275,7 +275,7 @@ class PrometheusHttpServerTest {
   @SuppressWarnings("resource")
   @Test
   void fetchHead() {
-    AggregatedHttpResponse response = client.head("/").aggregate().join();
+    AggregatedHttpResponse response = client.head("/metrics").aggregate().join();
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
         .isEqualTo("text/plain; version=0.0.4; charset=utf-8");

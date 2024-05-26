@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
-import io.prometheus.metrics.exporter.httpserver.MetricsHandler;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -84,7 +83,6 @@ public final class PrometheusHttpServer implements MetricReader {
               .port(port)
               .executorService(executor)
               .registry(prometheusRegistry)
-              .defaultHandler(new MetricsHandler(prometheusRegistry))
               .buildAndStart();
     } catch (IOException e) {
       throw new UncheckedIOException("Could not create Prometheus HTTP server", e);
