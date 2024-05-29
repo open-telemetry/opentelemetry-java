@@ -10,6 +10,7 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
@@ -18,7 +19,6 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
-import io.prometheus.metrics.exporter.httpserver.MetricsHandler;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -64,7 +64,8 @@ public final class PrometheusHttpServer implements MetricReader {
       PrometheusRegistry prometheusRegistry,
       boolean otelScopeEnabled,
       @Nullable Predicate<String> allowedResourceAttributesFilter,
-      MemoryMode memoryMode) {
+      MemoryMode memoryMode,
+      @Nullable HttpHandler defaultHandler) {
     this.builder = builder;
     this.prometheusMetricReader =
         new PrometheusMetricReader(otelScopeEnabled, allowedResourceAttributesFilter);
@@ -86,7 +87,7 @@ public final class PrometheusHttpServer implements MetricReader {
               .port(port)
               .executorService(executor)
               .registry(prometheusRegistry)
-              .defaultHandler(new MetricsHandler(prometheusRegistry))
+              .defaultHandler(defaultHandler)
               .buildAndStart();
     } catch (IOException e) {
       throw new UncheckedIOException("Could not create Prometheus HTTP server", e);
