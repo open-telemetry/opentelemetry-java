@@ -13,6 +13,7 @@ package io.opentelemetry.exporter.prometheus;
 import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
@@ -76,7 +77,8 @@ public final class PrometheusHttpServer implements MetricReader {
     // we configure prometheus with a single thread executor such that requests are handled
     // sequentially.
     if (memoryMode == MemoryMode.REUSABLE_DATA) {
-      executor = Executors.newSingleThreadExecutor();
+      executor =
+          Executors.newSingleThreadExecutor(new DaemonThreadFactory("prometheus-http-server"));
     }
     try {
       this.httpServer =

@@ -18,7 +18,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.netty:netty-bom:4.1.110.Final",
   "io.zipkin.brave:brave-bom:6.0.3",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.4.0",
-  "org.assertj:assertj-bom:3.25.3",
+  "org.assertj:assertj-bom:3.26.0",
   "org.junit:junit-bom:5.10.2",
   "org.testcontainers:testcontainers-bom:1.19.8",
   "org.snakeyaml:snakeyaml-engine:2.7"
@@ -70,7 +70,7 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.proto:opentelemetry-proto:1.2.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
-  "io.prometheus:prometheus-metrics-exporter-httpserver:1.2.1",
+  "io.prometheus:prometheus-metrics-exporter-httpserver:1.3.1",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.16.1",
   "org.awaitility:awaitility:4.2.1",

@@ -537,8 +537,7 @@ final class Otel2PrometheusConverter {
     String help = metricData.getDescription();
     Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
     if (unit != null && !name.endsWith(unit.toString())) {
-      // Need to re-sanitize metric name since unit may contain illegal characters
-      name = sanitizeMetricName(name + "_" + unit);
+      name = name + "_" + unit;
     }
     // Repeated __ are not allowed according to spec, although this is allowed in prometheus
     while (name.contains("__")) {
