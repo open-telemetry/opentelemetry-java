@@ -38,12 +38,9 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
-import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
-import io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
@@ -213,6 +210,22 @@ abstract class OtlpExporterIntegrationTest {
     testTraceExport(exporter);
   }
 
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void testOtlpGrpcTraceExport_memoryMode(MemoryMode memoryMode) {
+    SpanExporter exporter =
+        OtlpGrpcSpanExporter.builder()
+            .setEndpoint(
+                "http://"
+                    + collector.getHost()
+                    + ":"
+                    + collector.getMappedPort(COLLECTOR_OTLP_GRPC_PORT))
+            .setMemoryMode(memoryMode)
+            .build();
+
+    testTraceExport(exporter);
+  }
+
   @Test
   void testOtlpGrpcTraceExport_mtls() throws Exception {
     SpanExporter exporter =
@@ -241,6 +254,23 @@ abstract class OtlpExporterIntegrationTest {
                     + collector.getMappedPort(COLLECTOR_OTLP_HTTP_PORT)
                     + "/v1/traces")
             .setCompression(compression)
+            .build();
+
+    testTraceExport(exporter);
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void testOtlpHttpTraceExport_memoryMode(MemoryMode memoryMode) {
+    SpanExporter exporter =
+        OtlpHttpSpanExporter.builder()
+            .setEndpoint(
+                "http://"
+                    + collector.getHost()
+                    + ":"
+                    + collector.getMappedPort(COLLECTOR_OTLP_HTTP_PORT)
+                    + "/v1/traces")
+            .setMemoryMode(memoryMode)
             .build();
 
     testTraceExport(exporter);
@@ -349,16 +379,14 @@ abstract class OtlpExporterIntegrationTest {
   @ParameterizedTest
   @EnumSource(MemoryMode.class)
   void testOtlpGrpcMetricExport_memoryMode(MemoryMode memoryMode) {
-    OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder();
-    OtlpConfigUtil.setMemoryModeOnOtlpExporterBuilder(builder, memoryMode);
-
     MetricExporter exporter =
-        builder
+        OtlpGrpcMetricExporter.builder()
             .setEndpoint(
                 "http://"
                     + collector.getHost()
                     + ":"
                     + collector.getMappedPort(COLLECTOR_OTLP_GRPC_PORT))
+            .setMemoryMode(memoryMode)
             .build();
     assertThat(exporter.getMemoryMode()).isEqualTo(memoryMode);
 
@@ -402,17 +430,15 @@ abstract class OtlpExporterIntegrationTest {
   @ParameterizedTest
   @EnumSource(MemoryMode.class)
   void testOtlpHttpMetricExport_memoryMode(MemoryMode memoryMode) {
-    OtlpHttpMetricExporterBuilder builder = OtlpHttpMetricExporter.builder();
-    OtlpConfigUtil.setMemoryModeOnOtlpExporterBuilder(builder, memoryMode);
-
     MetricExporter exporter =
-        builder
+        OtlpHttpMetricExporter.builder()
             .setEndpoint(
                 "http://"
                     + collector.getHost()
                     + ":"
                     + collector.getMappedPort(COLLECTOR_OTLP_HTTP_PORT)
                     + "/v1/metrics")
+            .setMemoryMode(memoryMode)
             .build();
     assertThat(exporter.getMemoryMode()).isEqualTo(memoryMode);
 
@@ -516,6 +542,22 @@ abstract class OtlpExporterIntegrationTest {
     testLogRecordExporter(otlpGrpcLogRecordExporter);
   }
 
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void testOtlpGrpcLogExport_memoryMode(MemoryMode memoryMode) {
+    LogRecordExporter otlpGrpcLogRecordExporter =
+        OtlpGrpcLogRecordExporter.builder()
+            .setEndpoint(
+                "http://"
+                    + collector.getHost()
+                    + ":"
+                    + collector.getMappedPort(COLLECTOR_OTLP_GRPC_PORT))
+            .setMemoryMode(memoryMode)
+            .build();
+
+    testLogRecordExporter(otlpGrpcLogRecordExporter);
+  }
+
   @Test
   void testOtlpGrpcLogExport_mtls() throws Exception {
     LogRecordExporter exporter =
@@ -544,6 +586,23 @@ abstract class OtlpExporterIntegrationTest {
                     + collector.getMappedPort(COLLECTOR_OTLP_HTTP_PORT)
                     + "/v1/logs")
             .setCompression(compression)
+            .build();
+
+    testLogRecordExporter(otlpHttpLogRecordExporter);
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void testOtlpHttpLogExport_memoryMode(MemoryMode memoryMode) {
+    LogRecordExporter otlpHttpLogRecordExporter =
+        OtlpHttpLogRecordExporter.builder()
+            .setEndpoint(
+                "http://"
+                    + collector.getHost()
+                    + ":"
+                    + collector.getMappedPort(COLLECTOR_OTLP_HTTP_PORT)
+                    + "/v1/logs")
+            .setMemoryMode(memoryMode)
             .build();
 
     testLogRecordExporter(otlpHttpLogRecordExporter);

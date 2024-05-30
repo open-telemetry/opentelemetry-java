@@ -35,6 +35,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
+import io.prometheus.metrics.exporter.httpserver.MetricsHandler;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -229,7 +230,7 @@ class PrometheusHttpServerTest {
   void fetchFiltered() {
     AggregatedHttpResponse response =
         client
-            .get("/?name[]=grpc_name_unit_total&name[]=bears_total&name[]=target_info")
+            .get("/metrics?name[]=grpc_name_unit_total&name[]=bears_total&name[]=target_info")
             .aggregate()
             .join();
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
@@ -243,6 +244,47 @@ class PrometheusHttpServerTest {
                 + "grpc_name_unit_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
                 + "# TYPE target_info gauge\n"
                 + "target_info{kr=\"vr\"} 1\n");
+  }
+
+  @Test
+  void fetchOverrideDefaultHandler() {
+    PrometheusRegistry registry = new PrometheusRegistry();
+    try (PrometheusHttpServer prometheusServer =
+        PrometheusHttpServer.builder()
+            .setHost("localhost")
+            .setPort(0)
+            .setPrometheusRegistry(registry)
+            // Set the default handler to serve metrics on /**
+            .setDefaultHandler(new MetricsHandler(registry))
+            .build()) {
+      prometheusServer.register(
+          new CollectionRegistration() {
+            @Override
+            public Collection<MetricData> collectAllMetrics() {
+              return metricData.get();
+            }
+          });
+      WebClient client =
+          WebClient.builder("http://localhost:" + prometheusServer.getAddress().getPort())
+              .decorator(RetryingClient.newDecorator(RetryRule.failsafe()))
+              .build();
+
+      // Fetch metrics from / instead of /metrics
+      AggregatedHttpResponse response = client.get("/").aggregate().join();
+      assertThat(response.status()).isEqualTo(HttpStatus.OK);
+      assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
+          .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
+      assertThat(response.contentUtf8())
+          .isEqualTo(
+              "# HELP grpc_name_unit_total long_description\n"
+                  + "# TYPE grpc_name_unit_total counter\n"
+                  + "grpc_name_unit_total{kp=\"vp\",otel_scope_name=\"grpc\",otel_scope_version=\"version\"} 5.0\n"
+                  + "# HELP http_name_unit_total double_description\n"
+                  + "# TYPE http_name_unit_total counter\n"
+                  + "http_name_unit_total{kp=\"vp\",otel_scope_name=\"http\",otel_scope_version=\"version\"} 3.5\n"
+                  + "# TYPE target_info gauge\n"
+                  + "target_info{kr=\"vr\"} 1\n");
+    }
   }
 
   @SuppressWarnings("resource")
@@ -275,7 +317,7 @@ class PrometheusHttpServerTest {
   @SuppressWarnings("resource")
   @Test
   void fetchHead() {
-    AggregatedHttpResponse response = client.head("/").aggregate().join();
+    AggregatedHttpResponse response = client.head("/metrics").aggregate().join();
     assertThat(response.status()).isEqualTo(HttpStatus.OK);
     assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
         .isEqualTo("text/plain; version=0.0.4; charset=utf-8");

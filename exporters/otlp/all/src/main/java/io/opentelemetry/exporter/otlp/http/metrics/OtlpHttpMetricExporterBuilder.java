@@ -19,10 +19,12 @@ import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -231,8 +233,18 @@ public final class OtlpHttpMetricExporterBuilder {
     return this;
   }
 
-  /** Set the {@link MemoryMode}. */
-  OtlpHttpMetricExporterBuilder setMemoryMode(MemoryMode memoryMode) {
+  /**
+   * Set the {@link MemoryMode}. If unset, defaults to {@link #DEFAULT_MEMORY_MODE}.
+   *
+   * <p>>When memory mode is {@link MemoryMode#REUSABLE_DATA}, serialization is optimized to reduce
+   * memory allocation. Additionally, the value is used for {@link MetricExporter#getMemoryMode()},
+   * which sends a signal to the metrics SDK to reuse memory when possible. This is safe and
+   * desirable for most use cases, but should be used with caution of wrapping and delegating to the
+   * exporter. It is not safe for the wrapping exporter to hold onto references to {@link
+   * MetricData} batches since the same data structures will be reused in subsequent calls to {@link
+   * MetricExporter#export(Collection)}.
+   */
+  public OtlpHttpMetricExporterBuilder setMemoryMode(MemoryMode memoryMode) {
     requireNonNull(memoryMode, "memoryMode");
     this.memoryMode = memoryMode;
     return this;

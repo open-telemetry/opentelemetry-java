@@ -210,8 +210,13 @@ public final class OtlpHttpLogRecordExporterBuilder {
     return this;
   }
 
-  /** Set the {@link MemoryMode}. */
-  OtlpHttpLogRecordExporterBuilder setMemoryMode(MemoryMode memoryMode) {
+  /**
+   * Set the {@link MemoryMode}. If unset, defaults to {@link #DEFAULT_MEMORY_MODE}.
+   *
+   * <p>>When memory mode is {@link MemoryMode#REUSABLE_DATA}, serialization is optimized to reduce
+   * memory allocation.
+   */
+  public OtlpHttpLogRecordExporterBuilder setMemoryMode(MemoryMode memoryMode) {
     requireNonNull(memoryMode, "memoryMode");
     this.memoryMode = memoryMode;
     return this;
