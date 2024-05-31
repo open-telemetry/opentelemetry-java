@@ -39,5 +39,7 @@ public interface ComponentProvider<T> {
    *     file.
    * @return an instance the SDK extension component
    */
+  // TODO (jack-berg): consider dynamic configuration use case before stabilizing in case that
+  // affects any API decisions
   T create(StructuredConfigProperties config);
 }
