@@ -8,7 +8,7 @@ package sun.misc;
 import java.lang.reflect.Field;
 
 /**
- * sun.misc.Unsafe from the JDK isn't found by the compiler, we provide out own trimmed down version
+ * sun.misc.Unsafe from the JDK isn't found by the compiler, we provide our own trimmed down version
  * that we can compile against.
  */
 public class Unsafe {

@@ -5,10 +5,12 @@
 
 package io.opentelemetry.exporter.internal.marshal;
 
+import io.opentelemetry.api.internal.ConfigUtil;
 import java.lang.reflect.Field;
 import sun.misc.Unsafe;
 
 class UnsafeAccess {
+  private static final int MAX_ENABLED_JAVA_VERSION = 22;
   private static final boolean available = checkUnsafe();
 
   static boolean isAvailable() {
@@ -16,12 +18,34 @@ class UnsafeAccess {
   }
 
   private static boolean checkUnsafe() {
+    double javaVersion = getJavaVersion();
+    boolean unsafeEnabled =
+        Boolean.parseBoolean(
+            ConfigUtil.getString(
+                "otel.java.experimental.exporter.unsafe.enabled",
+                javaVersion != -1 && javaVersion <= MAX_ENABLED_JAVA_VERSION ? "true" : "false"));
+    if (!unsafeEnabled) {
+      return false;
+    }
+
     try {
       Class.forName("sun.misc.Unsafe", false, UnsafeAccess.class.getClassLoader());
       return UnsafeHolder.UNSAFE != null;
     } catch (ClassNotFoundException e) {
       return false;
     }
+  }
+
+  private static double getJavaVersion() {
+    String specVersion = System.getProperty("java.specification.version");
+    if (specVersion != null) {
+      try {
+        return Double.parseDouble(specVersion);
+      } catch (NumberFormatException exception) {
+        // ignore
+      }
+    }
+    return -1;
   }
 
   static long objectFieldOffset(Field field) {

@@ -23,6 +23,8 @@ dependencies {
   // We include helpers shared by gRPC exporters but do not want to impose these
   // dependency on all of our consumers.
   compileOnly("com.fasterxml.jackson.core:jackson-core")
+  // sun.misc.Unsafe from the JDK isn't found by the compiler, we provide our own trimmed down
+  // version that we can compile against.
   compileOnly("io.grpc:grpc-stub")
 
   testImplementation(project(":sdk:common"))
