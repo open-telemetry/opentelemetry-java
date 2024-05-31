@@ -5,14 +5,20 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.StringJoiner;
 import javax.annotation.Nullable;
 
@@ -63,7 +69,7 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
         continue;
       }
       if (isPrimitiveList(value)) {
-        simpleEntries.put(key, ((List<?>) value).stream().map(String::valueOf).collect(toList()));
+        simpleEntries.put(key, value);
         continue;
       }
       if (isListOfMaps(value)) {
@@ -129,21 +135,13 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
   @Nullable
   @Override
   public String getString(String name) {
-    Object value = simpleEntries.get(name);
-    if (value instanceof String) {
-      return (String) value;
-    }
-    return null;
+    return stringOrNull(simpleEntries.get(name));
   }
 
   @Nullable
   @Override
   public Boolean getBoolean(String name) {
-    Object value = simpleEntries.get(name);
-    if (value instanceof Boolean) {
-      return (Boolean) value;
-    }
-    return null;
+    return booleanOrNull(simpleEntries.get(name));
   }
 
   @Nullable
@@ -162,7 +160,74 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
   @Nullable
   @Override
   public Long getLong(String name) {
+    return longOrNull(simpleEntries.get(name));
+  }
+
+  @Nullable
+  @Override
+  public Double getDouble(String name) {
+    return doubleOrNull(simpleEntries.get(name));
+  }
+
+  private static final Set<Class<?>> SUPPORTED_SCALAR_TYPES =
+      Collections.unmodifiableSet(
+          new HashSet<>(Arrays.asList(String.class, Boolean.class, Long.class, Double.class)));
+
+  @Nullable
+  @Override
+  @SuppressWarnings("unchecked")
+  public <T> List<T> getScalarList(String name, Class<T> scalarType) {
+    if (!SUPPORTED_SCALAR_TYPES.contains(scalarType)) {
+      throw new ConfigurationException(
+          "Unsupported scalar type "
+              + scalarType.getName()
+              + ". Supported types include "
+              + SUPPORTED_SCALAR_TYPES.stream()
+                  .map(Class::getName)
+                  .collect(joining(",", "[", "]")));
+    }
     Object value = simpleEntries.get(name);
+    if (value instanceof List) {
+      return (List<T>)
+          ((List<Object>) value)
+              .stream()
+                  .map(
+                      entry -> {
+                        if (scalarType == String.class) {
+                          return stringOrNull(entry);
+                        } else if (scalarType == Boolean.class) {
+                          return booleanOrNull(entry);
+                        } else if (scalarType == Long.class) {
+                          return longOrNull(entry);
+                        } else if (scalarType == Double.class) {
+                          return doubleOrNull(entry);
+                        }
+                        return null;
+                      })
+                  .filter(Objects::nonNull)
+                  .collect(toList());
+    }
+    return null;
+  }
+
+  @Nullable
+  private static String stringOrNull(@Nullable Object value) {
+    if (value instanceof String) {
+      return (String) value;
+    }
+    return null;
+  }
+
+  @Nullable
+  private static Boolean booleanOrNull(@Nullable Object value) {
+    if (value instanceof Boolean) {
+      return (Boolean) value;
+    }
+    return null;
+  }
+
+  @Nullable
+  private static Long longOrNull(@Nullable Object value) {
     if (value instanceof Integer) {
       return ((Integer) value).longValue();
     }
@@ -173,9 +238,7 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
   }
 
   @Nullable
-  @Override
-  public Double getDouble(String name) {
-    Object value = simpleEntries.get(name);
+  private static Double doubleOrNull(@Nullable Object value) {
     if (value instanceof Float) {
       return ((Float) value).doubleValue();
     }
@@ -187,19 +250,8 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
 
   @Nullable
   @Override
-  @SuppressWarnings("unchecked")
-  public List<String> getScalarList(String name) {
-    Object value = simpleEntries.get(name);
-    if (value instanceof List) {
-      return (List<String>) value;
-    }
-    return null;
-  }
-
-  @Nullable
-  @Override
   public StructuredConfigProperties getStructured(String name) {
-    return getConfigPropertiesInternal(name);
+    return mapEntries.get(name);
   }
 
   @Nullable
@@ -208,9 +260,13 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
     return listEntries.get(name);
   }
 
-  @Nullable
-  private StructuredConfigProperties getConfigPropertiesInternal(String name) {
-    return mapEntries.get(name);
+  @Override
+  public Set<String> getPropertyKeys() {
+    Set<String> keys = new HashSet<>();
+    keys.addAll(simpleEntries.keySet());
+    keys.addAll(listEntries.keySet());
+    keys.addAll(mapEntries.keySet());
+    return Collections.unmodifiableSet(keys);
   }
 
   @Override

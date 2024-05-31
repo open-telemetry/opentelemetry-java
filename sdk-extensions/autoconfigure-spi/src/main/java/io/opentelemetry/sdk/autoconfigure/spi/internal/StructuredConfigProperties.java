@@ -10,6 +10,7 @@ import static io.opentelemetry.api.internal.ConfigUtil.defaultIfNull;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Nullable;
 
 /**
@@ -131,14 +132,18 @@ public interface StructuredConfigProperties {
   }
 
   /**
-   * Returns a {@link List} configuration property. Empty values will be removed. Entries which are
-   * not strings are converted to their string representation.
+   * Returns a {@link List} configuration property. Empty values and values which do not map to the
+   * {@code scalarType} will be removed.
    *
+   * @param name the property name
+   * @param scalarType the scalar type, one of {@link String}, {@link Boolean}, {@link Long} or
+   *     {@link Double}
    * @return a {@link List} configuration property, or null if the property has not been configured
-   * @throws ConfigurationException if the property is not a valid sequence of scalars
+   * @throws ConfigurationException if the property is not a valid sequence of scalars, or if {@code
+   *     scalarType} is not supported
    */
   @Nullable
-  List<String> getScalarList(String name);
+  <T> List<T> getScalarList(String name, Class<T> scalarType);
 
   /**
    * Returns a {@link List} configuration property. Entries which are not strings are converted to
@@ -149,8 +154,8 @@ public interface StructuredConfigProperties {
    *     name} has not been configured
    * @throws ConfigurationException if the property is not a valid sequence of scalars
    */
-  default List<String> getScalarList(String name, List<String> defaultValue) {
-    return defaultIfNull(getScalarList(name), defaultValue);
+  default <T> List<T> getScalarList(String name, Class<T> scalarType, List<T> defaultValue) {
+    return defaultIfNull(getScalarList(name, scalarType), defaultValue);
   }
 
   /**
@@ -172,4 +177,11 @@ public interface StructuredConfigProperties {
    */
   @Nullable
   List<StructuredConfigProperties> getStructuredList(String name);
+
+  /**
+   * Returns a set of all configuration property keys.
+   *
+   * @return the configuration property keys
+   */
+  Set<String> getPropertyKeys();
 }
