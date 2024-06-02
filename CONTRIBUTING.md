@@ -183,6 +183,11 @@ in the guide for exceptions to the Javadoc requirement.
 * Our javadoc is available via [
   javadoc.io}(https://javadoc.io/doc/io.opentelemetry/opentelemetry-api)
 
+### SDK Configuration Documentation
+
+All changes to the SDK configuration options or autoconfigure module should be documented on
+[opentelemetry.io](https://opentelemetry.io/docs/languages/java/configuration/).
+
 ### AutoValue
 
 * Use [AutoValue](https://github.com/google/auto/tree/master/value), when possible, for any new
