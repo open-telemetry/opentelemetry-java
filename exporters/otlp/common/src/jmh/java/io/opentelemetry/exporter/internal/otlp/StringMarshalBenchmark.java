@@ -25,79 +25,90 @@ import org.openjdk.jmh.annotations.Warmup;
 @Measurement(iterations = 10, time = 1)
 @Fork(1)
 public class StringMarshalBenchmark {
-  private static final TestMarshaler MARSHALER = new TestMarshaler();
+  private static final TestMarshaler MARSHALER_SAFE = new TestMarshaler(/* useUnsafe= */ false);
+  private static final TestMarshaler MARSHALER_UNSAFE = new TestMarshaler(/* useUnsafe= */ true);
   private static final TestOutputStream OUTPUT = new TestOutputStream();
 
   @Benchmark
   @Threads(1)
-  public int marshalAsciiString(StringMarshalState state) throws IOException {
+  public int marshalAsciiStringStateful(StringMarshalState state) throws IOException {
+    return marshalStateful(state.asciiString);
+  }
+
+  @Benchmark
+  @Threads(1)
+  public int marshalLatin1StringStateful(StringMarshalState state) throws IOException {
+    return marshalStateful(state.latin1String);
+  }
+
+  @Benchmark
+  @Threads(1)
+  public int marshalUnicodeStringStateful(StringMarshalState state) throws IOException {
+    return marshalStateful(state.unicodeString);
+  }
+
+  private static int marshalStateful(String string) throws IOException {
     OUTPUT.reset();
-    Marshaler marshaler = StringAnyValueMarshaler.create(state.asciiString);
+    Marshaler marshaler = StringAnyValueMarshaler.create(string);
     marshaler.writeBinaryTo(OUTPUT);
     return OUTPUT.getCount();
   }
 
   @Benchmark
   @Threads(1)
-  public int marshalLatin1String(StringMarshalState state) throws IOException {
-    OUTPUT.reset();
-    Marshaler marshaler = StringAnyValueMarshaler.create(state.latin1String);
-    marshaler.writeBinaryTo(OUTPUT);
-    return OUTPUT.getCount();
+  public int marshalAsciiStringStatelessSafe(StringMarshalState state) throws IOException {
+    return marshalStateless(MARSHALER_SAFE, state.asciiString);
   }
 
   @Benchmark
   @Threads(1)
-  public int marshalUnicodeString(StringMarshalState state) throws IOException {
-    OUTPUT.reset();
-    Marshaler marshaler = StringAnyValueMarshaler.create(state.unicodeString);
-    marshaler.writeBinaryTo(OUTPUT);
-    return OUTPUT.getCount();
+  public int marshalAsciiStringStatelessUnsafe(StringMarshalState state) throws IOException {
+    return marshalStateless(MARSHALER_UNSAFE, state.asciiString);
   }
 
   @Benchmark
   @Threads(1)
-  public int marshalAsciiStringLowAllocation(StringMarshalState state) throws IOException {
+  public int marshalLatin1StringStatelessSafe(StringMarshalState state) throws IOException {
+    return marshalStateless(MARSHALER_SAFE, state.latin1String);
+  }
+
+  @Benchmark
+  @Threads(1)
+  public int marshalLatin1StringStatelessUnsafe(StringMarshalState state) throws IOException {
+    return marshalStateless(MARSHALER_UNSAFE, state.latin1String);
+  }
+
+  @Benchmark
+  @Threads(1)
+  public int marshalUnicodeStringStatelessSafe(StringMarshalState state) throws IOException {
+    return marshalStateless(MARSHALER_SAFE, state.unicodeString);
+  }
+
+  @Benchmark
+  @Threads(1)
+  public int marshalUnicodeStringStatelessUnsafe(StringMarshalState state) throws IOException {
+    return marshalStateless(MARSHALER_UNSAFE, state.unicodeString);
+  }
+
+  private static int marshalStateless(TestMarshaler marshaler, String string) throws IOException {
     OUTPUT.reset();
     try {
-      MARSHALER.initialize(state.asciiString);
-      MARSHALER.writeBinaryTo(OUTPUT);
+      marshaler.initialize(string);
+      marshaler.writeBinaryTo(OUTPUT);
       return OUTPUT.getCount();
     } finally {
-      MARSHALER.reset();
-    }
-  }
-
-  @Benchmark
-  @Threads(1)
-  public int marshalLatin1StringLowAllocation(StringMarshalState state) throws IOException {
-    OUTPUT.reset();
-    try {
-      MARSHALER.initialize(state.latin1String);
-      MARSHALER.writeBinaryTo(OUTPUT);
-      return OUTPUT.getCount();
-    } finally {
-      MARSHALER.reset();
-    }
-  }
-
-  @Benchmark
-  @Threads(1)
-  public int marshalUnicodeStringLowAllocation(StringMarshalState state) throws IOException {
-    OUTPUT.reset();
-    try {
-      MARSHALER.initialize(state.unicodeString);
-      MARSHALER.writeBinaryTo(OUTPUT);
-      return OUTPUT.getCount();
-    } finally {
-      MARSHALER.reset();
+      marshaler.reset();
     }
   }
 
   private static class TestMarshaler extends Marshaler {
-    private final MarshalerContext context = new MarshalerContext();
+    private final MarshalerContext context;
     private int size;
     private String value;
+
+    TestMarshaler(boolean useUnsafe) {
+      context = new MarshalerContext(/* marshalStringNoAllocation= */ true, useUnsafe);
+    }
 
     public void initialize(String string) {
       value = string;
