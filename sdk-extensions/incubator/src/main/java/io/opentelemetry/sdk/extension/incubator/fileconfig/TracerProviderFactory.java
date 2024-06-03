@@ -53,7 +53,9 @@ final class TracerProviderFactory
     Sampler sampler =
         SamplerFactory.getInstance()
             .create(tracerProviderModel.getSampler(), spiHelper, closeables);
-    builder.setSampler(sampler);
+    if (sampler != null) {
+      builder.setSampler(sampler);
+    }
 
     List<SpanProcessor> processors = tracerProviderModel.getProcessors();
     if (processors != null) {
