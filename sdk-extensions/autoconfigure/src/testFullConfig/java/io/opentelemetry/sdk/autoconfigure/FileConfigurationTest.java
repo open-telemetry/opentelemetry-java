@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -29,6 +28,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -67,7 +67,11 @@ class FileConfigurationTest {
             + "  processors:\n"
             + "    - simple:\n"
             + "        exporter:\n"
-            + "          console: {}\n";
+            + "          console: {}\n"
+            + "other:\n"
+            + "  str_key: str_value\n"
+            + "  map_key:\n"
+            + "    str_key1: str_value1\n";
     configFilePath = tempDir.resolve("otel-config.yaml");
     Files.write(configFilePath, yaml.getBytes(StandardCharsets.UTF_8));
     GlobalOpenTelemetry.resetForTest();
@@ -182,5 +186,28 @@ class FileConfigurationTest {
     assertThatThrownBy(() -> AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).build())
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Unrecognized span exporter(s): [foo]");
+  }
+
+  @Test
+  void configFile_StructuredConfigProperties() {
+    ConfigProperties config =
+        DefaultConfigProperties.createFromMap(
+            Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
+
+    AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
+        AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).setResultAsGlobal().build();
+    OpenTelemetrySdk openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
+    cleanup.addCloseable(openTelemetrySdk);
+
+    // getConfig() should return ExtendedConfigProperties generic representation of the config file
+    StructuredConfigProperties structuredConfigProps =
+        autoConfiguredOpenTelemetrySdk.getStructuredConfig();
+    assertThat(structuredConfigProps).isNotNull();
+    StructuredConfigProperties otherProps = structuredConfigProps.getStructured("other");
+    assertThat(otherProps).isNotNull();
+    assertThat(otherProps.getString("str_key")).isEqualTo("str_value");
+    StructuredConfigProperties otherMapKeyProps = otherProps.getStructured("map_key");
+    assertThat(otherMapKeyProps).isNotNull();
+    assertThat(otherMapKeyProps.getString("str_key1")).isEqualTo("str_value1");
   }
 }

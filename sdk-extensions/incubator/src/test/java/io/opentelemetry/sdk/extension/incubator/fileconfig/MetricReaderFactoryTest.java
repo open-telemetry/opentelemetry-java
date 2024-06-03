@@ -6,10 +6,7 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
@@ -18,9 +15,8 @@ import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ConfigurableMetricReaderProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporter;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReader;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric;
@@ -36,7 +32,6 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.mockito.ArgumentCaptor;
 
 class MetricReaderFactoryTest {
 
@@ -141,14 +136,8 @@ class MetricReaderFactoryTest {
     cleanup.addCloseables(closeables);
 
     assertThat(reader.toString()).isEqualTo(expectedReader.toString());
-
-    ArgumentCaptor<ConfigProperties> configCaptor = ArgumentCaptor.forClass(ConfigProperties.class);
-    verify(spiHelper)
-        .loadConfigurable(
-            eq(ConfigurableMetricReaderProvider.class), any(), any(), configCaptor.capture());
-    ConfigProperties configProperties = configCaptor.getValue();
-    assertThat(configProperties.getString("otel.exporter.prometheus.host")).isNull();
-    assertThat(configProperties.getInt("otel.exporter.prometheus.port")).isEqualTo(port);
+    // TODO(jack-berg): validate prometheus component provider was invoked with correct arguments
+    verify(spiHelper).load(ComponentProvider.class);
   }
 
   @Test
@@ -178,14 +167,8 @@ class MetricReaderFactoryTest {
     cleanup.addCloseables(closeables);
 
     assertThat(reader.toString()).isEqualTo(expectedReader.toString());
-
-    ArgumentCaptor<ConfigProperties> configCaptor = ArgumentCaptor.forClass(ConfigProperties.class);
-    verify(spiHelper)
-        .loadConfigurable(
-            eq(ConfigurableMetricReaderProvider.class), any(), any(), configCaptor.capture());
-    ConfigProperties configProperties = configCaptor.getValue();
-    assertThat(configProperties.getString("otel.exporter.prometheus.host")).isEqualTo("localhost");
-    assertThat(configProperties.getInt("otel.exporter.prometheus.port")).isEqualTo(port);
+    // TODO(jack-berg): validate prometheus component provider was invoked with correct arguments
+    verify(spiHelper).load(ComponentProvider.class);
   }
 
   @Test

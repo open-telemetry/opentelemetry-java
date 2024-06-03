@@ -7,10 +7,12 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
 import java.io.Closeable;
 import java.io.IOException;
@@ -136,6 +138,23 @@ public final class FileConfiguration {
     LoadSettings settings = LoadSettings.builder().setSchema(new CoreSchema()).build();
     Load yaml = new Load(settings, new EnvSubstitutionConstructor(settings, environmentVariables));
     return yaml.loadFromInputStream(inputStream);
+  }
+
+  /**
+   * Convert the {@code model} to a generic {@link StructuredConfigProperties}, which can be used to
+   * read configuration not part of the model.
+   *
+   * @param model the configuration model
+   * @return a generic {@link StructuredConfigProperties} representation of the model
+   */
+  public static StructuredConfigProperties toConfigProperties(OpenTelemetryConfiguration model) {
+    return toConfigProperties((Object) model);
+  }
+
+  static StructuredConfigProperties toConfigProperties(Object model) {
+    Map<String, Object> configurationMap =
+        MAPPER.convertValue(model, new TypeReference<Map<String, Object>>() {});
+    return YamlStructuredConfigProperties.create(configurationMap);
   }
 
   /**
