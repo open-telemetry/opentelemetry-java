@@ -63,7 +63,9 @@ public class AutoConfiguredOpenTelemetryTesting extends OpenTelemetryTesting {
   }
 
   /** needs org.awaitility:awaitility to be on the classpath */
-  public void assertTraces(Consumer<TraceAssert>... assertions) {
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final void assertTraces(Consumer<TraceAssert>... assertions) {
     await()
         .atMost(Duration.ofSeconds(1))
         .untilAsserted(() -> assertTraces().hasTracesSatisfyingExactly(assertions));
