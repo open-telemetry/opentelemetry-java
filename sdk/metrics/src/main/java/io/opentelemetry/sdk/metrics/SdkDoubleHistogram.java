@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.metrics.ExtendedDoubleHistogram;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleHistogramBuilder;
-import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
@@ -23,14 +23,19 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHistogram {
+final class SdkDoubleHistogram extends AbstractInstrument implements ExtendedDoubleHistogram {
   private static final Logger logger = Logger.getLogger(SdkDoubleHistogram.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
+  private final MeterSharedState meterSharedState;
   private final WriteableMetricStorage storage;
 
-  private SdkDoubleHistogram(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+  private SdkDoubleHistogram(
+      InstrumentDescriptor descriptor,
+      MeterSharedState meterSharedState,
+      WriteableMetricStorage storage) {
     super(descriptor);
+    this.meterSharedState = meterSharedState;
     this.storage = storage;
   }
 
@@ -55,6 +60,11 @@ final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHisto
   @Override
   public void record(double value) {
     record(value, Attributes.empty());
+  }
+
+  @Override
+  public boolean enabled() {
+    return meterSharedState.isMeterEnabled() && storage.isEnabled();
   }
 
   static final class SdkDoubleHistogramBuilder implements ExtendedDoubleHistogramBuilder {

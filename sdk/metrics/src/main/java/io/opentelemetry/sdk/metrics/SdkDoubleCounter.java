@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.metrics.ExtendedDoubleCounter;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleCounterBuilder;
-import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleCounter;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
@@ -24,14 +24,19 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
+final class SdkDoubleCounter extends AbstractInstrument implements ExtendedDoubleCounter {
   private static final Logger logger = Logger.getLogger(SdkDoubleCounter.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
+  private final MeterSharedState meterSharedState;
   private final WriteableMetricStorage storage;
 
-  private SdkDoubleCounter(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+  private SdkDoubleCounter(
+      InstrumentDescriptor descriptor,
+      MeterSharedState meterSharedState,
+      WriteableMetricStorage storage) {
     super(descriptor);
+    this.meterSharedState = meterSharedState;
     this.storage = storage;
   }
 
@@ -56,6 +61,11 @@ final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter
   @Override
   public void add(double increment) {
     add(increment, Attributes.empty());
+  }
+
+  @Override
+  public boolean enabled() {
+    return meterSharedState.isMeterEnabled() && storage.isEnabled();
   }
 
   static final class SdkDoubleCounterBuilder implements ExtendedDoubleCounterBuilder {

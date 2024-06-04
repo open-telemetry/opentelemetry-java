@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.metrics.ExtendedLongUpDownCounter;
 import io.opentelemetry.api.incubator.metrics.ExtendedLongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
@@ -21,12 +22,17 @@ import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.List;
 import java.util.function.Consumer;
 
-final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDownCounter {
+final class SdkLongUpDownCounter extends AbstractInstrument implements ExtendedLongUpDownCounter {
 
+  private final MeterSharedState meterSharedState;
   private final WriteableMetricStorage storage;
 
-  private SdkLongUpDownCounter(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+  private SdkLongUpDownCounter(
+      InstrumentDescriptor descriptor,
+      MeterSharedState meterSharedState,
+      WriteableMetricStorage storage) {
     super(descriptor);
+    this.meterSharedState = meterSharedState;
     this.storage = storage;
   }
 
@@ -43,6 +49,11 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDow
   @Override
   public void add(long increment) {
     add(increment, Attributes.empty());
+  }
+
+  @Override
+  public boolean enabled() {
+    return meterSharedState.isMeterEnabled() && storage.isEnabled();
   }
 
   static final class SdkLongUpDownCounterBuilder implements ExtendedLongUpDownCounterBuilder {

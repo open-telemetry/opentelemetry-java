@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.incubator.metrics;
 
+import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameEquals;
+import static io.opentelemetry.sdk.metrics.internal.MeterConfig.disabled;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -15,13 +17,67 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
+import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 /** Demonstrating usage of extended Metrics API. */
 class ExtendedMetricsApiUsageTest {
+
+  @Test
+  void meterEnabled() {
+    // Setup SdkMeterProvider
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProviderBuilder meterProviderBuilder =
+        SdkMeterProvider.builder()
+            // Default resource used for demonstration purposes
+            .setResource(Resource.getDefault())
+            // In-memory reader used for demonstration purposes
+            .registerMetricReader(reader);
+    // Disable meterB
+    SdkMeterProviderUtil.addMeterConfiguratorCondition(
+        meterProviderBuilder, nameEquals("meterB"), disabled());
+    SdkMeterProvider meterProvider = meterProviderBuilder.build();
+
+    // Create meterA and meterB, and corresponding instruments
+    Meter meterA = meterProvider.get("meterA");
+    Meter meterB = meterProvider.get("meterB");
+    ExtendedDoubleHistogram histogramA =
+        (ExtendedDoubleHistogram) meterA.histogramBuilder("histogramA").build();
+    ExtendedDoubleHistogram histogramB =
+        (ExtendedDoubleHistogram) meterB.histogramBuilder("histogramB").build();
+
+    // Check if instrument is enabled before recording measurement and avoid unnecessary computation
+    if (histogramA.enabled()) {
+      histogramA.record(1.0, Attributes.builder().put("result", flipCoin()).build());
+    }
+    if (histogramB.enabled()) {
+      histogramA.record(1.0, Attributes.builder().put("result", flipCoin()).build());
+    }
+
+    // histogramA is enabled since meterA is enabled, histogramB is disabled since meterB is
+    // disabled
+    assertThat(histogramA.enabled()).isTrue();
+    assertThat(histogramB.enabled()).isFalse();
+
+    // Collected data only consists of metrics from meterA. Note, meterB's histogramB would be
+    // omitted from the results even if values were recorded. The check if enabled simply avoids
+    // unnecessary computation.
+    assertThat(reader.collectAllMetrics())
+        .allSatisfy(
+            metric ->
+                assertThat(metric.getInstrumentationScopeInfo().getName()).isEqualTo("meterA"));
+  }
+
+  private static final Random random = new Random();
+
+  private static String flipCoin() {
+    return random.nextBoolean() ? "heads" : "tails";
+  }
 
   @Test
   void attributesAdvice() {

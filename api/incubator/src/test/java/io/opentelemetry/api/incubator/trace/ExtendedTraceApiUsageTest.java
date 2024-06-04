@@ -5,9 +5,12 @@
 
 package io.opentelemetry.api.incubator.trace;
 
+import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameEquals;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.trace.internal.TracerConfig.disabled;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -21,15 +24,72 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.function.BiConsumer;
 import org.junit.jupiter.api.Test;
 
 /** Demonstrating usage of extended Trace API. */
 class ExtendedTraceApiUsageTest {
+
+  @Test
+  void tracerEnabled() {
+    // Setup SdkTracerProvider
+    InMemorySpanExporter exporter = InMemorySpanExporter.create();
+    SdkTracerProviderBuilder tracerProviderBuilder =
+        SdkTracerProvider.builder()
+            // Default resource used for demonstration purposes
+            .setResource(Resource.getDefault())
+            // In-memory exporter used for demonstration purposes
+            .addSpanProcessor(SimpleSpanProcessor.create(exporter));
+    // Disable tracerB
+    SdkTracerProviderUtil.addTracerConfiguratorCondition(
+        tracerProviderBuilder, nameEquals("tracerB"), disabled());
+    SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
+
+    // Create tracerA and tracerB
+    ExtendedTracer tracerA = (ExtendedTracer) tracerProvider.get("tracerA");
+    ExtendedTracer tracerB = (ExtendedTracer) tracerProvider.get("tracerB");
+
+    // Check if tracer is enabled before recording span and avoid unnecessary computation
+    if (tracerA.enabled()) {
+      tracerA
+          .spanBuilder("span name")
+          .startSpan()
+          .setAllAttributes(Attributes.builder().put("result", flipCoin()).build())
+          .end();
+    }
+    if (tracerB.enabled()) {
+      tracerB
+          .spanBuilder("span name")
+          .startSpan()
+          .setAllAttributes(Attributes.builder().put("result", flipCoin()).build())
+          .end();
+    }
+
+    // tracerA is enabled, tracerB is disabled
+    assertThat(tracerA.enabled()).isTrue();
+    assertThat(tracerB.enabled()).isFalse();
+
+    // Collected data only consists of spans from tracerA. Note, tracerB's spans would be
+    // omitted from the results even if spans were recorded. The check if enabled simply avoids
+    // unnecessary computation.
+    assertThat(exporter.getFinishedSpanItems())
+        .allSatisfy(
+            spanData ->
+                assertThat(spanData.getInstrumentationScopeInfo().getName()).isEqualTo("tracerA"));
+  }
+
+  private static final Random random = new Random();
+
+  private static String flipCoin() {
+    return random.nextBoolean() ? "heads" : "tails";
+  }
 
   /** Demonstrates {@link ExtendedSpanBuilder#setParentFrom(ContextPropagators, Map)}. */
   @Test

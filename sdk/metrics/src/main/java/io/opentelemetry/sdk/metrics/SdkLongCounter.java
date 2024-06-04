@@ -7,9 +7,9 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.metrics.ExtendedLongCounter;
 import io.opentelemetry.api.incubator.metrics.ExtendedLongCounterBuilder;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
-import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
@@ -24,15 +24,20 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-final class SdkLongCounter extends AbstractInstrument implements LongCounter {
+final class SdkLongCounter extends AbstractInstrument implements ExtendedLongCounter {
 
   private static final Logger logger = Logger.getLogger(SdkLongCounter.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
+  private final MeterSharedState meterSharedState;
   private final WriteableMetricStorage storage;
 
-  private SdkLongCounter(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+  private SdkLongCounter(
+      InstrumentDescriptor descriptor,
+      MeterSharedState meterSharedState,
+      WriteableMetricStorage storage) {
     super(descriptor);
+    this.meterSharedState = meterSharedState;
     this.storage = storage;
   }
 
@@ -57,6 +62,11 @@ final class SdkLongCounter extends AbstractInstrument implements LongCounter {
   @Override
   public void add(long increment) {
     add(increment, Attributes.empty());
+  }
+
+  @Override
+  public boolean enabled() {
+    return meterSharedState.isMeterEnabled() && storage.isEnabled();
   }
 
   static final class SdkLongCounterBuilder implements ExtendedLongCounterBuilder {

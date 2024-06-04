@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.metrics.ExtendedLongHistogram;
 import io.opentelemetry.api.incubator.metrics.ExtendedLongHistogramBuilder;
-import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
@@ -24,14 +24,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-final class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
+final class SdkLongHistogram extends AbstractInstrument implements ExtendedLongHistogram {
   private static final Logger logger = Logger.getLogger(SdkLongHistogram.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
+  private final MeterSharedState meterSharedState;
   private final WriteableMetricStorage storage;
 
-  private SdkLongHistogram(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+  private SdkLongHistogram(
+      InstrumentDescriptor descriptor,
+      MeterSharedState meterSharedState,
+      WriteableMetricStorage storage) {
     super(descriptor);
+    this.meterSharedState = meterSharedState;
     this.storage = storage;
   }
 
@@ -56,6 +61,11 @@ final class SdkLongHistogram extends AbstractInstrument implements LongHistogram
   @Override
   public void record(long value) {
     record(value, Attributes.empty());
+  }
+
+  @Override
+  public boolean enabled() {
+    return meterSharedState.isMeterEnabled() && storage.isEnabled();
   }
 
   static final class SdkLongHistogramBuilder implements ExtendedLongHistogramBuilder {
