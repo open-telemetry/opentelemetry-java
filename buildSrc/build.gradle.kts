@@ -51,7 +51,7 @@ repositories {
 
 dependencies {
   implementation(enforcedPlatform("com.squareup.wire:wire-bom:4.9.9"))
-  implementation("com.google.auto.value:auto-value-annotations:1.10.4")
+  implementation("com.google.auto.value:auto-value-annotations:1.11.0")
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:6.25.0")
   // Needed for japicmp but not automatically brought in for some reason.
