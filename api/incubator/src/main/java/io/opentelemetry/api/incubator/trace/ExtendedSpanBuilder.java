@@ -6,106 +6,14 @@
 package io.opentelemetry.api.incubator.trace;
 
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.propagation.ExtendedContextPropagators;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
-import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import java.time.Instant;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
-public final class ExtendedSpanBuilder implements SpanBuilder {
-  private final SpanBuilder delegate;
-
-  ExtendedSpanBuilder(SpanBuilder delegate) {
-    this.delegate = delegate;
-  }
-
-  @Override
-  public ExtendedSpanBuilder setParent(Context context) {
-    delegate.setParent(context);
-    return this;
-  }
-
-  @Override
-  public ExtendedSpanBuilder setNoParent() {
-    delegate.setNoParent();
-    return this;
-  }
-
-  @Override
-  public ExtendedSpanBuilder addLink(SpanContext spanContext) {
-    delegate.addLink(spanContext);
-    return this;
-  }
-
-  @Override
-  public ExtendedSpanBuilder addLink(SpanContext spanContext, Attributes attributes) {
-    delegate.addLink(spanContext, attributes);
-    return this;
-  }
-
-  @Override
-  public ExtendedSpanBuilder setAttribute(String key, String value) {
-    delegate.setAttribute(key, value);
-    return this;
-  }
-
-  @Override
-  public ExtendedSpanBuilder setAttribute(String key, long value) {
-    delegate.setAttribute(key, value);
-    return this;
-  }
-
-  @Override
-  public ExtendedSpanBuilder setAttribute(String key, double value) {
-    delegate.setAttribute(key, value);
-    return this;
-  }
-
-  @Override
-  public ExtendedSpanBuilder setAttribute(String key, boolean value) {
-    delegate.setAttribute(key, value);
-    return this;
-  }
-
-  @Override
-  public <T> ExtendedSpanBuilder setAttribute(AttributeKey<T> key, T value) {
-    delegate.setAttribute(key, value);
-    return this;
-  }
-
-  @Override
-  public ExtendedSpanBuilder setAllAttributes(Attributes attributes) {
-    delegate.setAllAttributes(attributes);
-    return this;
-  }
-
-  @Override
-  public ExtendedSpanBuilder setSpanKind(SpanKind spanKind) {
-    delegate.setSpanKind(spanKind);
-    return this;
-  }
-
-  @Override
-  public ExtendedSpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit) {
-    delegate.setStartTimestamp(startTimestamp, unit);
-    return this;
-  }
-
-  @Override
-  public ExtendedSpanBuilder setStartTimestamp(Instant startTimestamp) {
-    delegate.setStartTimestamp(startTimestamp);
-    return this;
-  }
+/** Extended {@link SpanBuilder} with experimental APIs. */
+public interface ExtendedSpanBuilder extends SpanBuilder {
 
   /**
    * Extract a span context from the given carrier and set it as parent of the span for {@link
@@ -124,16 +32,7 @@ public final class ExtendedSpanBuilder implements SpanBuilder {
    * @param propagators provide the propagators from {@link OpenTelemetry#getPropagators()}
    * @param carrier the string map where to extract the span context from
    */
-  public ExtendedSpanBuilder setParentFrom(
-      ContextPropagators propagators, Map<String, String> carrier) {
-    setParent(ExtendedContextPropagators.extractTextMapPropagationContext(carrier, propagators));
-    return this;
-  }
-
-  @Override
-  public Span startSpan() {
-    return delegate.startSpan();
-  }
+  ExtendedSpanBuilder setParentFrom(ContextPropagators propagators, Map<String, String> carrier);
 
   /**
    * Runs the given {@link SpanCallable} inside of the span created by the given {@link
@@ -147,9 +46,7 @@ public final class ExtendedSpanBuilder implements SpanBuilder {
    * @param <E> the type of the exception
    * @return the result of the {@link SpanCallable}
    */
-  public <T, E extends Throwable> T startAndCall(SpanCallable<T, E> spanCallable) throws E {
-    return startAndCall(spanCallable, ExtendedSpanBuilder::setSpanError);
-  }
+  <T, E extends Throwable> T startAndCall(SpanCallable<T, E> spanCallable) throws E;
 
   /**
    * Runs the given {@link SpanCallable} inside of the span created by the given {@link
@@ -165,20 +62,8 @@ public final class ExtendedSpanBuilder implements SpanBuilder {
    * @param <E> the type of the exception
    * @return the result of the {@link SpanCallable}
    */
-  public <T, E extends Throwable> T startAndCall(
-      SpanCallable<T, E> spanCallable, BiConsumer<Span, Throwable> handleException) throws E {
-    Span span = startSpan();
-
-    //noinspection unused
-    try (Scope unused = span.makeCurrent()) {
-      return spanCallable.callInSpan();
-    } catch (Throwable e) {
-      handleException.accept(span, e);
-      throw e;
-    } finally {
-      span.end();
-    }
-  }
+  <T, E extends Throwable> T startAndCall(
+      SpanCallable<T, E> spanCallable, BiConsumer<Span, Throwable> handleException) throws E;
 
   /**
    * Runs the given {@link SpanRunnable} inside of the span created by the given {@link
@@ -190,10 +75,7 @@ public final class ExtendedSpanBuilder implements SpanBuilder {
    * @param runnable the {@link SpanRunnable} to run
    * @param <E> the type of the exception
    */
-  @SuppressWarnings("NullAway")
-  public <E extends Throwable> void startAndRun(SpanRunnable<E> runnable) throws E {
-    startAndRun(runnable, ExtendedSpanBuilder::setSpanError);
-  }
+  <E extends Throwable> void startAndRun(SpanRunnable<E> runnable) throws E;
 
   /**
    * Runs the given {@link SpanRunnable} inside of the span created by the given {@link
@@ -206,25 +88,6 @@ public final class ExtendedSpanBuilder implements SpanBuilder {
    * @param runnable the {@link SpanRunnable} to run
    * @param <E> the type of the exception
    */
-  @SuppressWarnings("NullAway")
-  public <E extends Throwable> void startAndRun(
-      SpanRunnable<E> runnable, BiConsumer<Span, Throwable> handleException) throws E {
-    startAndCall(
-        () -> {
-          runnable.runInSpan();
-          return null;
-        },
-        handleException);
-  }
-
-  /**
-   * Marks a span as error. This is the default exception handler.
-   *
-   * @param span the span
-   * @param exception the exception that caused the error
-   */
-  private static void setSpanError(Span span, Throwable exception) {
-    span.setStatus(StatusCode.ERROR);
-    span.recordException(exception);
-  }
+  <E extends Throwable> void startAndRun(
+      SpanRunnable<E> runnable, BiConsumer<Span, Throwable> handleException) throws E;
 }
