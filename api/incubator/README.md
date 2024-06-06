@@ -22,7 +22,6 @@ See [ExtendedLogsBridgeApiUsageTest](./src/test/java/io/opentelemetry/api/incuba
 
 Features:
 
-* Synchronous gauge instrument
 * Attributes advice
 
 See [ExtendedMetricsApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/metrics/ExtendedMetricsApiUsageTest.java).
