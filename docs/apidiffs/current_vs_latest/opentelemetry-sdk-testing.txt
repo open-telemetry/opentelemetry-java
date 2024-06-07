@@ -1,2 +1,39 @@
 Comparing source compatibility of  against 
-No changes.
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	***  MODIFIED SUPERCLASS: io.opentelemetry.sdk.testing.sdk.OpenTelemetryTesting (<- java.lang.Object)
+	---  REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.testing.assertj.TracesAssert assertTraces()
+	---  REMOVED METHOD: PUBLIC(-) void clearLogRecords()
+	---  REMOVED METHOD: PUBLIC(-) void clearMetrics()
+	---  REMOVED METHOD: PUBLIC(-) void clearSpans()
+	---  REMOVED METHOD: PUBLIC(-) java.util.List<io.opentelemetry.sdk.logs.data.LogRecordData> getLogRecords()
+	---  REMOVED METHOD: PUBLIC(-) java.util.List<io.opentelemetry.sdk.metrics.data.MetricData> getMetrics()
+	---  REMOVED METHOD: PUBLIC(-) io.opentelemetry.api.OpenTelemetry getOpenTelemetry()
+	---  REMOVED METHOD: PUBLIC(-) java.util.List<io.opentelemetry.sdk.trace.data.SpanData> getSpans()
++++  NEW CLASS: PUBLIC(+) io.opentelemetry.sdk.testing.sdk.AutoConfiguredOpenTelemetryTesting  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: io.opentelemetry.sdk.testing.sdk.OpenTelemetryTesting
+	+++  NEW CONSTRUCTOR: PUBLIC(+) AutoConfiguredOpenTelemetryTesting(io.opentelemetry.sdk.testing.sdk.OpenTelemetryTestSdk)
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) void assertTraces(java.util.function.Consumer[]<io.opentelemetry.sdk.testing.assertj.TraceAssert>)
+		+++  NEW ANNOTATION: java.lang.SafeVarargs
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.sdk.AutoConfiguredOpenTelemetryTesting create(java.util.Map<java.lang.String,java.lang.String>)
++++  NEW CLASS: PUBLIC(+) io.opentelemetry.sdk.testing.sdk.OpenTelemetryTesting  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW CONSTRUCTOR: PUBLIC(+) OpenTelemetryTesting(io.opentelemetry.sdk.testing.sdk.OpenTelemetryTestSdk)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.TracesAssert assertTraces()
+	+++  NEW METHOD: PUBLIC(+) void clearLogRecords()
+	+++  NEW METHOD: PUBLIC(+) void clearMetrics()
+	+++  NEW METHOD: PUBLIC(+) void clearSpans()
+	+++  NEW METHOD: PUBLIC(+) java.util.List<io.opentelemetry.sdk.logs.data.LogRecordData> getLogRecords()
+	+++  NEW METHOD: PUBLIC(+) java.util.List<io.opentelemetry.sdk.metrics.data.MetricData> getMetrics()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.OpenTelemetry getOpenTelemetry()
+	+++  NEW METHOD: PUBLIC(+) java.util.List<io.opentelemetry.sdk.trace.data.SpanData> getSpans()
++++  NEW CLASS: PUBLIC(+) io.opentelemetry.sdk.testing.sdk.OpenTelemetryTestSdk  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.sdk.OpenTelemetryTestSdk create()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter getLogRecordExporter()
+	+++  NEW METHOD: PUBLIC(+) java.util.function.Supplier<java.util.Collection<io.opentelemetry.sdk.metrics.data.MetricData>> getMetricReader()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.OpenTelemetrySdk getOpenTelemetry()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter getSpanExporter()
