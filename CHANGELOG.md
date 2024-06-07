@@ -19,13 +19,13 @@
   ([#6476](https://github.com/open-telemetry/opentelemetry-java/pull/6476))
 * Make OTLP exporter memory mode API public
   ([#6469](https://github.com/open-telemetry/opentelemetry-java/pull/6469))
-* Speed up OTLP string marshaling using unsafe
+* Speed up OTLP string marshaling using sun.misc.Unsafe
   ([#6433](https://github.com/open-telemetry/opentelemetry-java/pull/6433))
 * Add exporter data classes for experimental profiling signal type.
   ([#6374](https://github.com/open-telemetry/opentelemetry-java/pull/6374))
-* Start prometheus httpserver with daemon thread
+* Start prometheus http server with daemon thread
   ([#6472](https://github.com/open-telemetry/opentelemetry-java/pull/6472))
-* Update the Prometetheus metrics library and improve how units are included in metric names.
+* Update the Prometheus metrics library and improve how units are included in metric names.
   ([#6473](https://github.com/open-telemetry/opentelemetry-java/pull/6473))
 * Remove android animalsniffer check from prometheus exporter
   ([#6478](https://github.com/open-telemetry/opentelemetry-java/pull/6478))
