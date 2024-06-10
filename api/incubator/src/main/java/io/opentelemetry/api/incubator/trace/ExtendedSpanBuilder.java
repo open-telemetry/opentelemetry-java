@@ -6,11 +6,21 @@
 package io.opentelemetry.api.incubator.trace;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import java.time.Instant;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /** Extended {@link SpanBuilder} with experimental APIs. */
 public interface ExtendedSpanBuilder extends SpanBuilder {
@@ -90,4 +100,30 @@ public interface ExtendedSpanBuilder extends SpanBuilder {
    */
   <E extends Throwable> void startAndRun(
       SpanRunnable<E> runnable, BiConsumer<Span, Throwable> handleException) throws E;
+
+  ExtendedSpanBuilder setParent(Context context);
+
+  ExtendedSpanBuilder setNoParent();
+
+  ExtendedSpanBuilder addLink(SpanContext spanContext);
+
+  ExtendedSpanBuilder addLink(SpanContext spanContext, Attributes attributes);
+
+  ExtendedSpanBuilder setAttribute(String key, String value);
+
+  ExtendedSpanBuilder setAttribute(String key, long value);
+
+  ExtendedSpanBuilder setAttribute(String key, double value);
+
+  ExtendedSpanBuilder setAttribute(String key, boolean value);
+
+  <T> ExtendedSpanBuilder setAttribute(AttributeKey<T> key, T value);
+
+  ExtendedSpanBuilder setAllAttributes(Attributes attributes);
+
+  ExtendedSpanBuilder setSpanKind(SpanKind spanKind);
+
+  ExtendedSpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit);
+
+  ExtendedSpanBuilder setStartTimestamp(Instant startTimestamp);
 }

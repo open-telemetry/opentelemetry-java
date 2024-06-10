@@ -9,6 +9,8 @@ import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -33,6 +35,7 @@ import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -68,7 +71,7 @@ final class SdkSpanBuilder implements ExtendedSpanBuilder {
   }
 
   @Override
-  public SpanBuilder setParent(Context context) {
+  public ExtendedSpanBuilder setParent(Context context) {
     if (context == null) {
       return this;
     }
@@ -77,13 +80,13 @@ final class SdkSpanBuilder implements ExtendedSpanBuilder {
   }
 
   @Override
-  public SpanBuilder setNoParent() {
+  public ExtendedSpanBuilder setNoParent() {
     this.parent = Context.root();
     return this;
   }
 
   @Override
-  public SpanBuilder setSpanKind(SpanKind spanKind) {
+  public ExtendedSpanBuilder setSpanKind(SpanKind spanKind) {
     if (spanKind == null) {
       return this;
     }
@@ -92,7 +95,7 @@ final class SdkSpanBuilder implements ExtendedSpanBuilder {
   }
 
   @Override
-  public SpanBuilder addLink(SpanContext spanContext) {
+  public ExtendedSpanBuilder addLink(SpanContext spanContext) {
     if (spanContext == null || !spanContext.isValid()) {
       return this;
     }
@@ -101,7 +104,7 @@ final class SdkSpanBuilder implements ExtendedSpanBuilder {
   }
 
   @Override
-  public SpanBuilder addLink(SpanContext spanContext, Attributes attributes) {
+  public ExtendedSpanBuilder addLink(SpanContext spanContext, Attributes attributes) {
     if (spanContext == null || !spanContext.isValid()) {
       return this;
     }
@@ -135,27 +138,27 @@ final class SdkSpanBuilder implements ExtendedSpanBuilder {
   }
 
   @Override
-  public SpanBuilder setAttribute(String key, String value) {
+  public ExtendedSpanBuilder setAttribute(String key, String value) {
     return setAttribute(stringKey(key), value);
   }
 
   @Override
-  public SpanBuilder setAttribute(String key, long value) {
+  public ExtendedSpanBuilder setAttribute(String key, long value) {
     return setAttribute(longKey(key), value);
   }
 
   @Override
-  public SpanBuilder setAttribute(String key, double value) {
+  public ExtendedSpanBuilder setAttribute(String key, double value) {
     return setAttribute(doubleKey(key), value);
   }
 
   @Override
-  public SpanBuilder setAttribute(String key, boolean value) {
+  public ExtendedSpanBuilder setAttribute(String key, boolean value) {
     return setAttribute(booleanKey(key), value);
   }
 
   @Override
-  public <T> SpanBuilder setAttribute(AttributeKey<T> key, T value) {
+  public <T> ExtendedSpanBuilder setAttribute(AttributeKey<T> key, T value) {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
@@ -164,12 +167,31 @@ final class SdkSpanBuilder implements ExtendedSpanBuilder {
   }
 
   @Override
-  public SpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit) {
+  public ExtendedSpanBuilder setAllAttributes(Attributes attributes) {
+    if (attributes == null || attributes.isEmpty()) {
+      return this;
+    }
+    attributes.forEach(
+        (attributeKey, value) -> setAttribute((AttributeKey<Object>) attributeKey, value));
+    return this;
+  }
+
+  @Override
+  public ExtendedSpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit) {
     if (startTimestamp < 0 || unit == null) {
       return this;
     }
     startEpochNanos = unit.toNanos(startTimestamp);
     return this;
+  }
+
+  @Override
+  public ExtendedSpanBuilder setStartTimestamp(Instant startTimestamp) {
+    if (startTimestamp == null) {
+      return this;
+    }
+    return setStartTimestamp(
+        SECONDS.toNanos(startTimestamp.getEpochSecond()) + startTimestamp.getNano(), NANOSECONDS);
   }
 
   @Override
