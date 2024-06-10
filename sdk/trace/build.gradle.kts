@@ -50,6 +50,13 @@ dependencies {
   jmh(project(":exporters:otlp:common")) {
     isTransitive = false
   }
+  jmh(project(":exporters:common")) {
+    isTransitive = false
+  }
+  jmh(project(":exporters:sender:okhttp"))
+  jmh(project(":sdk-extensions:autoconfigure-spi")) {
+    isTransitive = false
+  }
   jmh("io.opentelemetry.proto:opentelemetry-proto")
 
   jmh("com.google.guava:guava")
