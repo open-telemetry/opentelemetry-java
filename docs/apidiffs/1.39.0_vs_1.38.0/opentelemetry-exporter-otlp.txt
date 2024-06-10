@@ -1,0 +1,19 @@
+Comparing source compatibility of  against 
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	***  MODIFIED METHOD: PUBLIC (<- PACKAGE_PROTECTED) io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder setMemoryMode(io.opentelemetry.sdk.common.export.MemoryMode)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	***  MODIFIED METHOD: PUBLIC (<- PACKAGE_PROTECTED) io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder setMemoryMode(io.opentelemetry.sdk.common.export.MemoryMode)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	***  MODIFIED METHOD: PUBLIC (<- PACKAGE_PROTECTED) io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder setMemoryMode(io.opentelemetry.sdk.common.export.MemoryMode)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	***  MODIFIED METHOD: PUBLIC (<- PACKAGE_PROTECTED) io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder setMemoryMode(io.opentelemetry.sdk.common.export.MemoryMode)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	***  MODIFIED METHOD: PUBLIC (<- PACKAGE_PROTECTED) io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder setMemoryMode(io.opentelemetry.sdk.common.export.MemoryMode)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	***  MODIFIED METHOD: PUBLIC (<- PACKAGE_PROTECTED) io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder setMemoryMode(io.opentelemetry.sdk.common.export.MemoryMode)
