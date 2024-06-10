@@ -19,9 +19,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
-
 /** Extended {@link SpanBuilder} with experimental APIs. */
 public interface ExtendedSpanBuilder extends SpanBuilder {
 
