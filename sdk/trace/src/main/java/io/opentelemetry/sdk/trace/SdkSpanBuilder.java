@@ -167,6 +167,7 @@ final class SdkSpanBuilder implements ExtendedSpanBuilder {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public ExtendedSpanBuilder setAllAttributes(Attributes attributes) {
     if (attributes == null || attributes.isEmpty()) {
       return this;
