@@ -101,29 +101,42 @@ public interface ExtendedSpanBuilder extends SpanBuilder {
   <E extends Throwable> void startAndRun(
       SpanRunnable<E> runnable, BiConsumer<Span, Throwable> handleException) throws E;
 
+  @Override
   ExtendedSpanBuilder setParent(Context context);
 
+  @Override
   ExtendedSpanBuilder setNoParent();
 
+  @Override
   ExtendedSpanBuilder addLink(SpanContext spanContext);
 
+  @Override
   ExtendedSpanBuilder addLink(SpanContext spanContext, Attributes attributes);
 
+  @Override
   ExtendedSpanBuilder setAttribute(String key, String value);
 
+  @Override
   ExtendedSpanBuilder setAttribute(String key, long value);
 
+  @Override
   ExtendedSpanBuilder setAttribute(String key, double value);
 
+  @Override
   ExtendedSpanBuilder setAttribute(String key, boolean value);
 
+  @Override
   <T> ExtendedSpanBuilder setAttribute(AttributeKey<T> key, T value);
 
+  @Override
   ExtendedSpanBuilder setAllAttributes(Attributes attributes);
 
+  @Override
   ExtendedSpanBuilder setSpanKind(SpanKind spanKind);
 
+  @Override
   ExtendedSpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit);
 
+  @Override
   ExtendedSpanBuilder setStartTimestamp(Instant startTimestamp);
 }
