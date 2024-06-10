@@ -5,6 +5,14 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
+import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
@@ -40,7 +48,7 @@ public class LogAssertionsTest {
   private static final String TRACE_ID = "00000000000000010000000000000002";
   private static final String SPAN_ID = "0000000000000003";
 
-  private static final AttributeKey<String> DOG = AttributeKey.stringKey("dog");
+  private static final AttributeKey<String> DOG = stringKey("dog");
   private static final Attributes ATTRIBUTES =
       Attributes.builder()
           .put("bear", "mya")
@@ -86,7 +94,7 @@ public class LogAssertionsTest {
                         attributes ->
                             assertThat(attributes)
                                 .hasSize(2)
-                                .containsEntry(AttributeKey.stringKey("dog"), "bark")
+                                .containsEntry(stringKey("dog"), "bark")
                                 .hasEntrySatisfying(DOG, value -> assertThat(value).hasSize(4))
                                 .hasEntrySatisfying(
                                     AttributeKey.booleanKey("dog is cute"),
@@ -125,14 +133,13 @@ public class LogAssertionsTest {
             attributes ->
                 OpenTelemetryAssertions.assertThat(attributes)
                     .hasSize(8)
-                    .containsEntry(AttributeKey.stringKey("bear"), "mya")
-                    .hasEntrySatisfying(
-                        AttributeKey.stringKey("bear"), value -> assertThat(value).hasSize(3))
+                    .containsEntry(stringKey("bear"), "mya")
+                    .hasEntrySatisfying(stringKey("bear"), value -> assertThat(value).hasSize(3))
                     .containsEntry("bear", "mya")
                     .containsEntry("warm", true)
                     .containsEntry("temperature", 30)
-                    .containsEntry(AttributeKey.longKey("temperature"), 30L)
-                    .containsEntry(AttributeKey.longKey("temperature"), 30)
+                    .containsEntry(longKey("temperature"), 30L)
+                    .containsEntry(longKey("temperature"), 30)
                     .containsEntry("length", 1.2)
                     .containsEntry("colors", "red", "blue")
                     .containsEntryWithStringValuesOf("colors", Arrays.asList("red", "blue"))
@@ -142,7 +149,7 @@ public class LogAssertionsTest {
                     .containsEntryWithLongValuesOf("scores", Arrays.asList(0L, 1L))
                     .containsEntry("coins", 0.01, 0.05, 0.1)
                     .containsEntryWithDoubleValuesOf("coins", Arrays.asList(0.01, 0.05, 0.1))
-                    .containsKey(AttributeKey.stringKey("bear"))
+                    .containsKey(stringKey("bear"))
                     .containsKey("bear")
                     .containsOnly(
                         attributeEntry("bear", "mya"),
@@ -154,12 +161,12 @@ public class LogAssertionsTest {
                         attributeEntry("scores", 0L, 1L),
                         attributeEntry("coins", 0.01, 0.05, 0.1)))
         .hasAttributesSatisfying(
-            equalTo(AttributeKey.stringKey("bear"), "mya"),
+            equalTo(stringKey("bear"), "mya"),
             equalTo(AttributeKey.booleanArrayKey("conditions"), Arrays.asList(false, true)))
         .hasAttributesSatisfyingExactly(
-            equalTo(AttributeKey.stringKey("bear"), "mya"),
+            equalTo(stringKey("bear"), "mya"),
             equalTo(AttributeKey.booleanKey("warm"), true),
-            equalTo(AttributeKey.longKey("temperature"), 30L),
+            equalTo(longKey("temperature"), 30L),
             equalTo(AttributeKey.doubleKey("length"), 1.2),
             equalTo(AttributeKey.stringArrayKey("colors"), Arrays.asList("red", "blue")),
             equalTo(AttributeKey.booleanArrayKey("conditions"), Arrays.asList(false, true)),
@@ -235,7 +242,7 @@ public class LogAssertionsTest {
                     .hasAttributesSatisfying(
                         attributes ->
                             OpenTelemetryAssertions.assertThat(attributes)
-                                .containsKey(AttributeKey.stringKey("cat"))))
+                                .containsKey(stringKey("cat"))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
@@ -263,21 +270,18 @@ public class LogAssertionsTest {
                         attributes ->
                             OpenTelemetryAssertions.assertThat(attributes)
                                 .hasEntrySatisfying(
-                                    AttributeKey.stringKey("bear"),
-                                    value -> assertThat(value).hasSize(2))))
+                                    stringKey("bear"), value -> assertThat(value).hasSize(2))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
-            () ->
-                assertThat(LOG_DATA)
-                    .hasAttributesSatisfying(equalTo(AttributeKey.stringKey("bear"), "moo")))
+            () -> assertThat(LOG_DATA).hasAttributesSatisfying(equalTo(stringKey("bear"), "moo")))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
                 assertThat(LOG_DATA)
                     .hasAttributesSatisfyingExactly(
-                        equalTo(AttributeKey.stringKey("bear"), "mya"),
+                        equalTo(stringKey("bear"), "mya"),
                         equalTo(AttributeKey.booleanKey("warm"), true),
-                        equalTo(AttributeKey.longKey("temperature"), 30L),
+                        equalTo(longKey("temperature"), 30L),
                         equalTo(AttributeKey.doubleKey("length"), 1.2)))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasTotalAttributeCount(11))
@@ -296,25 +300,41 @@ public class LogAssertionsTest {
         .builder("foo")
         .put("foostr", "bar")
         .put("foobool", true)
-        .put("foolong", 12)
+        .put("foolong", 12L)
         .put("foodbl", 12.0)
         .put("foostra", "bar", "baz", "buzz")
         .put("foolonga", 9, 0, 2, 1, 0)
         .put("foodbla", 9.1, 0.2, 2.3, 1.4, 0.5)
         .put("fooboola", true, true, true, false)
         .put("fooany", Value.of("grim"))
+        .put(stringKey("ak_str"), "bar")
+        .put(booleanKey("ak_bool"), true)
+        .put(longKey("ak_long"), 12L)
+        .put(doubleKey("ak_dbl"), 12.0)
+        .put(stringArrayKey("ak_stra"), Arrays.asList("bar", "baz", "buzz"))
+        .put(longArrayKey("ak_longa"), Arrays.asList(9L, 0L, 2L, 1L, 0L))
+        .put(doubleArrayKey("ak_dbla"), Arrays.asList(9.1, 0.2, 2.3, 1.4, 0.5))
+        .put(booleanArrayKey("ak_boola"), Arrays.asList(true, true, true, false))
         .emit();
     List<LogRecordData> logs = exporter.getFinishedLogRecordItems();
     assertThat(logs).hasSize(1);
     assertThat(logs.get(0))
         .hasBodyField("foostr", "bar")
         .hasBodyField("foobool", true)
-        .hasBodyField("foolong", 12)
+        .hasBodyField("foolong", 12L)
         .hasBodyField("foodbl", 12.0)
         .hasBodyField("foostra", "bar", "baz", "buzz")
         .hasBodyField("foolonga", 9, 0, 2, 1, 0)
         .hasBodyField("foodbla", 9.1, 0.2, 2.3, 1.4, 0.5)
         .hasBodyField("fooboola", true, true, true, false)
-        .hasBodyField("fooany", Value.of("grim"));
+        .hasBodyField("fooany", Value.of("grim"))
+        .hasBodyField(stringKey("ak_str"), "bar")
+        .hasBodyField(booleanKey("ak_bool"), true)
+        .hasBodyField(longKey("ak_long"), 12L)
+        .hasBodyField(doubleKey("ak_dbl"), 12.0)
+        .hasBodyField(stringArrayKey("ak_stra"), Arrays.asList("bar", "baz", "buzz"))
+        .hasBodyField(longArrayKey("ak_longa"), Arrays.asList(9L, 0L, 2L, 1L, 0L))
+        .hasBodyField(doubleArrayKey("ak_dbla"), Arrays.asList(9.1, 0.2, 2.3, 1.4, 0.5))
+        .hasBodyField(booleanArrayKey("ak_boola"), Arrays.asList(true, true, true, false));
   }
 }
