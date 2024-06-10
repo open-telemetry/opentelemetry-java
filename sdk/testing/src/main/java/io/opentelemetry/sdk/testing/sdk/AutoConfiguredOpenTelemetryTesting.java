@@ -29,7 +29,7 @@ public class AutoConfiguredOpenTelemetryTesting extends OpenTelemetryTesting {
     return new AutoConfiguredOpenTelemetryTesting(getOpenTelemetrySdk(properties));
   }
 
-  public AutoConfiguredOpenTelemetryTesting(OpenTelemetryTestSdk sdk) {
+  private AutoConfiguredOpenTelemetryTesting(OpenTelemetryTestSdk sdk) {
     super(sdk);
   }
 

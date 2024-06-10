@@ -20,4 +20,5 @@ dependencies {
 
   testImplementation("junit:junit")
   testImplementation("org.junit.vintage:junit-vintage-engine")
+  testImplementation(project(":sdk-extensions:autoconfigure"))
 }
