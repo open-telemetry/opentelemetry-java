@@ -98,42 +98,81 @@ public interface ExtendedSpanBuilder extends SpanBuilder {
   <E extends Throwable> void startAndRun(
       SpanRunnable<E> runnable, BiConsumer<Span, Throwable> handleException) throws E;
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   ExtendedSpanBuilder setParent(Context context);
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   ExtendedSpanBuilder setNoParent();
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   ExtendedSpanBuilder addLink(SpanContext spanContext);
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   ExtendedSpanBuilder addLink(SpanContext spanContext, Attributes attributes);
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   ExtendedSpanBuilder setAttribute(String key, String value);
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   ExtendedSpanBuilder setAttribute(String key, long value);
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   ExtendedSpanBuilder setAttribute(String key, double value);
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   ExtendedSpanBuilder setAttribute(String key, boolean value);
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   <T> ExtendedSpanBuilder setAttribute(AttributeKey<T> key, T value);
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   ExtendedSpanBuilder setAllAttributes(Attributes attributes);
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   ExtendedSpanBuilder setSpanKind(SpanKind spanKind);
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   ExtendedSpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit);
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   ExtendedSpanBuilder setStartTimestamp(Instant startTimestamp);
 }
