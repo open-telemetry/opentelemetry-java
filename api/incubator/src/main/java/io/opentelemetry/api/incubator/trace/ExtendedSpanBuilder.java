@@ -156,7 +156,9 @@ public interface ExtendedSpanBuilder extends SpanBuilder {
    * {@inheritDoc}
    */
   @Override
-  ExtendedSpanBuilder setAllAttributes(Attributes attributes);
+  default ExtendedSpanBuilder setAllAttributes(Attributes attributes) {
+    return (ExtendedSpanBuilder) SpanBuilder.super.setAllAttributes(attributes);
+  }
 
   /**
    * {@inheritDoc}
@@ -174,5 +176,7 @@ public interface ExtendedSpanBuilder extends SpanBuilder {
    * {@inheritDoc}
    */
   @Override
-  ExtendedSpanBuilder setStartTimestamp(Instant startTimestamp);
+  default ExtendedSpanBuilder setStartTimestamp(Instant startTimestamp) {
+    return (ExtendedSpanBuilder) SpanBuilder.super.setStartTimestamp(startTimestamp);
+  }
 }

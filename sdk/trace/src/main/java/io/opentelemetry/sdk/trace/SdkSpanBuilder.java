@@ -9,8 +9,6 @@ import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -167,32 +165,12 @@ final class SdkSpanBuilder implements ExtendedSpanBuilder {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
-  public ExtendedSpanBuilder setAllAttributes(Attributes attributes) {
-    if (attributes == null || attributes.isEmpty()) {
-      return this;
-    }
-    attributes.forEach(
-        (attributeKey, value) -> setAttribute((AttributeKey<Object>) attributeKey, value));
-    return this;
-  }
-
-  @Override
   public ExtendedSpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit) {
     if (startTimestamp < 0 || unit == null) {
       return this;
     }
     startEpochNanos = unit.toNanos(startTimestamp);
     return this;
-  }
-
-  @Override
-  public ExtendedSpanBuilder setStartTimestamp(Instant startTimestamp) {
-    if (startTimestamp == null) {
-      return this;
-    }
-    return setStartTimestamp(
-        SECONDS.toNanos(startTimestamp.getEpochSecond()) + startTimestamp.getNano(), NANOSECONDS);
   }
 
   @Override
