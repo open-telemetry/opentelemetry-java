@@ -98,83 +98,57 @@ public interface ExtendedSpanBuilder extends SpanBuilder {
   <E extends Throwable> void startAndRun(
       SpanRunnable<E> runnable, BiConsumer<Span, Throwable> handleException) throws E;
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   ExtendedSpanBuilder setParent(Context context);
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   ExtendedSpanBuilder setNoParent();
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   ExtendedSpanBuilder addLink(SpanContext spanContext);
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   ExtendedSpanBuilder addLink(SpanContext spanContext, Attributes attributes);
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   ExtendedSpanBuilder setAttribute(String key, String value);
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   ExtendedSpanBuilder setAttribute(String key, long value);
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   ExtendedSpanBuilder setAttribute(String key, double value);
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   ExtendedSpanBuilder setAttribute(String key, boolean value);
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   <T> ExtendedSpanBuilder setAttribute(AttributeKey<T> key, T value);
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   default ExtendedSpanBuilder setAllAttributes(Attributes attributes) {
     return (ExtendedSpanBuilder) SpanBuilder.super.setAllAttributes(attributes);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   ExtendedSpanBuilder setSpanKind(SpanKind spanKind);
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   ExtendedSpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit);
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   default ExtendedSpanBuilder setStartTimestamp(Instant startTimestamp) {
     return (ExtendedSpanBuilder) SpanBuilder.super.setStartTimestamp(startTimestamp);
