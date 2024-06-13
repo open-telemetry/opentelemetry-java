@@ -7,24 +7,19 @@ package io.opentelemetry.sdk.testing.junit4;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
-import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.testing.sdk.OpenTelemetryTestSdk;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 import org.junit.rules.ExternalResource;
 
 /**
@@ -63,45 +58,24 @@ public final class OpenTelemetryRule extends ExternalResource {
    * exporter and W3C trace context propagation.
    */
   public static OpenTelemetryRule create() {
-    InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
+    OpenTelemetryTestSdk testSdk = OpenTelemetryTestSdk.create();
 
-    SdkTracerProvider tracerProvider =
-        SdkTracerProvider.builder()
-            .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
-            .build();
-
-    InMemoryMetricReader metricReader = InMemoryMetricReader.create();
-
-    SdkMeterProvider meterProvider =
-        SdkMeterProvider.builder().registerMetricReader(metricReader).build();
-
-    InMemoryLogRecordExporter logRecordExporter = InMemoryLogRecordExporter.create();
-
-    SdkLoggerProvider loggerProvider =
-        SdkLoggerProvider.builder()
-            .addLogRecordProcessor(SimpleLogRecordProcessor.create(logRecordExporter))
-            .build();
-
-    OpenTelemetrySdk openTelemetry =
-        OpenTelemetrySdk.builder()
-            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-            .setTracerProvider(tracerProvider)
-            .setMeterProvider(meterProvider)
-            .setLoggerProvider(loggerProvider)
-            .build();
-
-    return new OpenTelemetryRule(openTelemetry, spanExporter, metricReader, logRecordExporter);
+    return new OpenTelemetryRule(
+        testSdk.getOpenTelemetry(),
+        testSdk.getSpanExporter(),
+        testSdk.getMetricReader(),
+        testSdk.getLogRecordExporter());
   }
 
   private final OpenTelemetrySdk openTelemetry;
   private final InMemorySpanExporter spanExporter;
-  private final InMemoryMetricReader metricReader;
+  private final Supplier<Collection<MetricData>> metricReader;
   private final InMemoryLogRecordExporter logRecordExporter;
 
   private OpenTelemetryRule(
       OpenTelemetrySdk openTelemetry,
       InMemorySpanExporter spanExporter,
-      InMemoryMetricReader metricReader,
+      Supplier<Collection<MetricData>> metricReader,
       InMemoryLogRecordExporter logRecordExporter) {
     this.openTelemetry = openTelemetry;
     this.spanExporter = spanExporter;
@@ -125,7 +99,7 @@ public final class OpenTelemetryRule extends ExternalResource {
    * @since 1.15.0
    */
   public List<MetricData> getMetrics() {
-    return new ArrayList<>(metricReader.collectAllMetrics());
+    return new ArrayList<>(metricReader.get());
   }
 
   /**

@@ -13,9 +13,12 @@ dependencies {
   compileOnly("org.assertj:assertj-core")
   compileOnly("junit:junit")
   compileOnly("org.junit.jupiter:junit-jupiter-api")
+  compileOnly(project(":sdk-extensions:autoconfigure"))
+  compileOnly("org.awaitility:awaitility")
 
   annotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation("junit:junit")
   testImplementation("org.junit.vintage:junit-vintage-engine")
+  testImplementation(project(":sdk-extensions:autoconfigure"))
 }
