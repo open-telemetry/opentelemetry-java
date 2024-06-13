@@ -22,6 +22,8 @@ dependencies {
   api(project(":api:all"))
   api(project(":sdk:common"))
 
+  implementation(project(":api:incubator"))
+
   compileOnly(project(":sdk:trace-shaded-deps"))
 
   annotationProcessor("com.google.auto.value:auto-value")
@@ -46,6 +48,13 @@ dependencies {
   }
   // explicitly adding the opentelemetry-exporter-otlp dependencies
   jmh(project(":exporters:otlp:common")) {
+    isTransitive = false
+  }
+  jmh(project(":exporters:common")) {
+    isTransitive = false
+  }
+  jmh(project(":exporters:sender:okhttp"))
+  jmh(project(":sdk-extensions:autoconfigure-spi")) {
     isTransitive = false
   }
   jmh("io.opentelemetry.proto:opentelemetry-proto")

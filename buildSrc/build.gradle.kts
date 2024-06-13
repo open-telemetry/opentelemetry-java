@@ -51,11 +51,11 @@ repositories {
 
 dependencies {
   implementation(enforcedPlatform("com.squareup.wire:wire-bom:4.9.9"))
-  implementation("com.google.auto.value:auto-value-annotations:1.10.4")
+  implementation("com.google.auto.value:auto-value-annotations:1.11.0")
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:6.25.0")
   // Needed for japicmp but not automatically brought in for some reason.
-  implementation("com.google.guava:guava:33.2.0-jre")
+  implementation("com.google.guava:guava:33.2.1-jre")
   implementation("com.squareup:javapoet:1.13.0")
   implementation("com.squareup.wire:wire-compiler")
   implementation("com.squareup.wire:wire-gradle-plugin")
@@ -63,7 +63,7 @@ dependencies {
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.6")
   implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.3")
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.2")
-  implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.1.0")
+  implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.0.0")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.0.0")
   implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0")
   implementation("org.owasp:dependency-check-gradle:9.2.0")
