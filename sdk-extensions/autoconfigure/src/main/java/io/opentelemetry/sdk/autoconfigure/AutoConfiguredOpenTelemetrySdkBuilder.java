@@ -27,8 +27,11 @@ import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.resources.Resource;
@@ -47,8 +50,10 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -448,6 +453,25 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
       if (sdkEnabled) {
         SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
+        if (config.getBoolean("otel.instrumentation.http.server.add-server-attributes", false)) {
+          Set<String> attributes = new HashSet<>();
+          attributes.add("http.route");
+          attributes.add("http.request.method");
+          attributes.add("http.response.status_code");
+          attributes.add("error.type");
+          attributes.add("network.protocol.name");
+          attributes.add("network.protocol.version");
+          attributes.add("url.scheme");
+          attributes.add("server.address");
+          attributes.add("server.port");
+          meterProviderBuilder.registerView(
+              InstrumentSelector.builder()
+                  .setName("http.server.request.duration")
+                  .setType(InstrumentType.HISTOGRAM)
+                  .build(),
+              View.builder().setAttributeFilter(attributes).build());
+        }
+
         meterProviderBuilder.setResource(resource);
         MeterProviderConfiguration.configureMeterProvider(
             meterProviderBuilder,
