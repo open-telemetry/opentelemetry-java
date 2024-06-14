@@ -15,7 +15,10 @@ class CaseInsensitiveMap extends HashMap<String, String> {
   private static final long serialVersionUID = -4202518750189126871L;
 
   CaseInsensitiveMap(Map<String, String> carrier) {
-    super(carrier);
+    //super(carrier);
+    // if someone use Constructor to build this Map, this Map's key
+    // with be not lowerCase
+    carrier.forEach(this::put);
   }
 
   @Override
