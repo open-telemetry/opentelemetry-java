@@ -44,7 +44,7 @@ public class CaseInsensitiveMapUnitTest {
 
   /** test put and get method. */
   @Test
-  void GetUsage() {
+  void getMethodUnitTest() {
     Map<String, String> map = new HashMap<>();
     map.put("KeY1", "test");
     CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap(map);
