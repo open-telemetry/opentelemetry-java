@@ -171,6 +171,8 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
     // Actually, we can't do these two checks because the body is still STRING type
     //    assertThat(actual.getBody().getType()).isNotSameAs(Body.Type.EMPTY);
     //    assertThat(actual.getBody().getType()).isNotSameAs(Body.Type.STRING);
+    // Further complicated by the choice to not allow reference to AnyValue
+    // in this class because this class is stable and AnyValue is incubating.
     // TODO: breedx-splk simplify this when ANY_VALUE is promoted with stability
   }
 
@@ -222,8 +224,9 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
     return hasBodyField(key, AnyValue.of(values));
   }
 
+  // TODO: Make this public once AnyValue is no longer incubating
   @SuppressWarnings({"unchecked"})
-  public LogRecordDataAssert hasBodyField(String key, AnyValue<?> value) {
+  LogRecordDataAssert hasBodyField(String key, AnyValue<?> value) {
     isNotNull();
     bodyIsAnyValue();
     AnyValueBody body = (AnyValueBody) actual.getBody();
