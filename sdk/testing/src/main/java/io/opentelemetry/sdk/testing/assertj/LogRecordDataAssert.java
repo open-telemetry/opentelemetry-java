@@ -172,14 +172,6 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
     return this;
   }
 
-  //  @SuppressWarnings({"MethodCanBeStatic"})
-  //  private void bodyIsAnyValue() {
-  //    // Actually, we can't do these two checks because the body is still STRING type
-  //        assertThat(actual.getBodyValue().getType()).isNotSameAs(ValueType.EMPTY);
-  //        assertThat(actual.getBodyValue().getType()).isNotSameAs(ValueType.STRING);
-  //    // TODO: breedx-splk simplify this when ANY_VALUE is promoted with stability
-  //  }
-
   public LogRecordDataAssert hasBodyField(String key, String value) {
     return hasBodyField(key, Value.of(value));
   }
@@ -228,8 +220,9 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
     return hasBodyField(key, Value.of(values));
   }
 
+  // TODO: Make this public once AnyValue is no longer incubating
   @SuppressWarnings({"unchecked"})
-  public LogRecordDataAssert hasBodyField(String key, Value<?> value) {
+  LogRecordDataAssert hasBodyField(String key, Value<?> value) {
     isNotNull();
     Value<?> bodyValue = actual.getBodyValue();
     assertNotNull(bodyValue); // Can't use assertj or nullaway complains
