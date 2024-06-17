@@ -16,6 +16,7 @@ class CaseInsensitiveMap extends HashMap<String, String> {
 
   CaseInsensitiveMap(Map<String, String> carrier) {
     super();
+    // 20240617 fix bug
     // if someone use Constructor to build this Map, this Map's key
     // with be not lowerCase
     carrier.forEach(this::put);
