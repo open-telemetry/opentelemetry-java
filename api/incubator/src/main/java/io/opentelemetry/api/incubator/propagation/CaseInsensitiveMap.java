@@ -15,7 +15,7 @@ class CaseInsensitiveMap extends HashMap<String, String> {
   private static final long serialVersionUID = -4202518750189126871L;
 
   CaseInsensitiveMap(Map<String, String> carrier) {
-    //super(carrier);
+    super();
     // if someone use Constructor to build this Map, this Map's key
     // with be not lowerCase
     carrier.forEach(this::put);
@@ -23,12 +23,16 @@ class CaseInsensitiveMap extends HashMap<String, String> {
 
   @Override
   public String put(String key, String value) {
-    return super.put(key.toLowerCase(Locale.ROOT), value);
+    return super.put(getKeyLowerCase(key), value);
+  }
+
+  protected String getKeyLowerCase(String key) {
+    return key.toLowerCase(Locale.ROOT);
   }
 
   @Override
   @Nullable
   public String get(Object key) {
-    return super.get(((String) key).toLowerCase(Locale.ROOT));
+    return super.get(getKeyLowerCase((String) key));
   }
 }
