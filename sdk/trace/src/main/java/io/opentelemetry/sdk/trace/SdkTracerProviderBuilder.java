@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
@@ -155,6 +156,9 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
+   * This method is experimental so not public. You may reflectively call it using
+   * {@link SdkTracerProviderUtil#setTracerConfigurator(SdkTracerProviderBuilder, ScopeConfigurator)}
+   * 
    * Set the tracer configurator, which computes {@link TracerConfig} for each {@link
    * InstrumentationScopeInfo}.
    *
@@ -170,6 +174,9 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
+   * This method is experimental so not public. You may reflectively call it using
+   * {@link SdkTracerProviderUtil#addTracerConfiguratorCondition(SdkTracerProviderBuilder, Predicate, TracerConfig)}
+   * 
    * Adds a condition to the tracer configurator, which computes {@link TracerConfig} for each
    * {@link InstrumentationScopeInfo}.
    *
