@@ -167,7 +167,7 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /**
-   * Ses the retry policy. Retry is disabled by default.
+   * Set the retry policy. Retry is disabled by default.
    *
    * @since 1.28.0
    */
