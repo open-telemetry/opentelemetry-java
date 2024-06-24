@@ -51,7 +51,7 @@ final class SdkDoubleGauge extends AbstractInstrument implements ExtendedDoubleG
   }
 
   @Override
-  public boolean enabled() {
+  public boolean isEnabled() {
     return meterSharedState.isMeterEnabled() && storage.isEnabled();
   }
 

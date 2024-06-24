@@ -20,7 +20,7 @@ public interface ExtendedDoubleHistogram extends DoubleHistogram {
    * call to {@link #record(double)}, {@link #record(double, Attributes)}, or {@link #record(double,
    * Attributes, Context)}.
    */
-  default boolean enabled() {
+  default boolean isEnabled() {
     return true;
   }
 }

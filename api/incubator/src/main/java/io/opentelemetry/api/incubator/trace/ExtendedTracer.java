@@ -17,7 +17,7 @@ public interface ExtendedTracer extends Tracer {
    * the response is subject to change over the application, callers should call this before each
    * call to {@link #spanBuilder(String)}.
    */
-  default boolean enabled() {
+  default boolean isEnabled() {
     return true;
   }
 }

@@ -46,14 +46,14 @@ class ExtendedLogsBridgeApiUsageTest {
     ExtendedLogger loggerB = (ExtendedLogger) loggerProvider.get("loggerB");
 
     // Check if logger is enabled before emitting log and avoid unnecessary computation
-    if (loggerA.enabled()) {
+    if (loggerA.isEnabled()) {
       loggerA
           .logRecordBuilder()
           .setBody("hello world!")
           .setAllAttributes(Attributes.builder().put("result", flipCoin()).build())
           .emit();
     }
-    if (loggerB.enabled()) {
+    if (loggerB.isEnabled()) {
       loggerB
           .logRecordBuilder()
           .setBody("hello world!")
@@ -62,8 +62,8 @@ class ExtendedLogsBridgeApiUsageTest {
     }
 
     // loggerA is enabled, loggerB is disabled
-    assertThat(loggerA.enabled()).isTrue();
-    assertThat(loggerB.enabled()).isFalse();
+    assertThat(loggerA.isEnabled()).isTrue();
+    assertThat(loggerB.isEnabled()).isFalse();
 
     // Collected data only consists of logs from loggerA. Note, loggerB's logs would be
     // omitted from the results even if logs were emitted. The check if enabled simply avoids

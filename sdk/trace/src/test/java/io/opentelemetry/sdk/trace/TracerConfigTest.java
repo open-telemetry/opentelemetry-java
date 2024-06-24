@@ -92,9 +92,9 @@ class TracerConfigTest {
                     .hasParentSpanId(parent.getSpanContext().getSpanId())
                     .hasAttributes(Attributes.builder().put("c", "1").build()));
     // tracerA and tracerC are enabled, tracerB is disabled.
-    assertThat(((ExtendedTracer) tracerA).enabled()).isTrue();
-    assertThat(((ExtendedTracer) tracerB).enabled()).isFalse();
-    assertThat(((ExtendedTracer) tracerA).enabled()).isTrue();
+    assertThat(((ExtendedTracer) tracerA).isEnabled()).isTrue();
+    assertThat(((ExtendedTracer) tracerB).isEnabled()).isFalse();
+    assertThat(((ExtendedTracer) tracerA).isEnabled()).isTrue();
   }
 
   @ParameterizedTest

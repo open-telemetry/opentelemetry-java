@@ -53,7 +53,7 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument
   }
 
   @Override
-  public boolean enabled() {
+  public boolean isEnabled() {
     return meterSharedState.isMeterEnabled() && storage.isEnabled();
   }
 

@@ -17,7 +17,7 @@ public interface ExtendedLogger extends Logger {
    * the response is subject to change over the application, callers should call this before each
    * call to {@link #logRecordBuilder()}.
    */
-  default boolean enabled() {
+  default boolean isEnabled() {
     return true;
   }
 }

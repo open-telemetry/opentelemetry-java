@@ -63,7 +63,7 @@ final class SdkDoubleHistogram extends AbstractInstrument implements ExtendedDou
   }
 
   @Override
-  public boolean enabled() {
+  public boolean isEnabled() {
     return meterSharedState.isMeterEnabled() && storage.isEnabled();
   }
 

@@ -64,7 +64,7 @@ final class SdkLongHistogram extends AbstractInstrument implements ExtendedLongH
   }
 
   @Override
-  public boolean enabled() {
+  public boolean isEnabled() {
     return meterSharedState.isMeterEnabled() && storage.isEnabled();
   }
 

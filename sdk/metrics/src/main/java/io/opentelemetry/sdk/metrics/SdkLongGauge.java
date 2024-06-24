@@ -51,7 +51,7 @@ final class SdkLongGauge extends AbstractInstrument implements ExtendedLongGauge
   }
 
   @Override
-  public boolean enabled() {
+  public boolean isEnabled() {
     return meterSharedState.isMeterEnabled() && storage.isEnabled();
   }
 

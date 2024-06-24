@@ -20,7 +20,7 @@ public interface ExtendedDoubleGauge extends DoubleGauge {
    * call to {@link #set(double)}, {@link #set(double, Attributes)}, or {@link #set(double,
    * Attributes, Context)}.
    */
-  default boolean enabled() {
+  default boolean isEnabled() {
     return true;
   }
 }

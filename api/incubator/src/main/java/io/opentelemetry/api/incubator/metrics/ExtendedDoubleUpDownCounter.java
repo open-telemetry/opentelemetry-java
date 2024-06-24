@@ -20,7 +20,7 @@ public interface ExtendedDoubleUpDownCounter extends DoubleUpDownCounter {
    * call to {@link #add(double)}, {@link #add(double, Attributes)}, or {@link #add(double,
    * Attributes, Context)}.
    */
-  default boolean enabled() {
+  default boolean isEnabled() {
     return true;
   }
 }

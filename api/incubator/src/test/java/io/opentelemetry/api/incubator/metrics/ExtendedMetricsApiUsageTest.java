@@ -52,17 +52,17 @@ class ExtendedMetricsApiUsageTest {
         (ExtendedDoubleHistogram) meterB.histogramBuilder("histogramB").build();
 
     // Check if instrument is enabled before recording measurement and avoid unnecessary computation
-    if (histogramA.enabled()) {
+    if (histogramA.isEnabled()) {
       histogramA.record(1.0, Attributes.builder().put("result", flipCoin()).build());
     }
-    if (histogramB.enabled()) {
+    if (histogramB.isEnabled()) {
       histogramA.record(1.0, Attributes.builder().put("result", flipCoin()).build());
     }
 
     // histogramA is enabled since meterA is enabled, histogramB is disabled since meterB is
     // disabled
-    assertThat(histogramA.enabled()).isTrue();
-    assertThat(histogramB.enabled()).isFalse();
+    assertThat(histogramA.isEnabled()).isTrue();
+    assertThat(histogramB.isEnabled()).isFalse();
 
     // Collected data only consists of metrics from meterA. Note, meterB's histogramB would be
     // omitted from the results even if values were recorded. The check if enabled simply avoids

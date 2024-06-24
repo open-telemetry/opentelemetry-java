@@ -151,29 +151,30 @@ class MeterConfigTest {
   private static void assertMeterInstrumentsEnabled(Meter meter, boolean expectedEnabled) {
     assertThat(
             ((ExtendedDoubleCounter) meter.counterBuilder("doubleCounter").ofDoubles().build())
-                .enabled())
+                .isEnabled())
         .isEqualTo(expectedEnabled);
-    assertThat(((ExtendedLongCounter) meter.counterBuilder("longCounter").build()).enabled())
+    assertThat(((ExtendedLongCounter) meter.counterBuilder("longCounter").build()).isEnabled())
         .isEqualTo(expectedEnabled);
     assertThat(
             ((ExtendedDoubleUpDownCounter)
                     meter.upDownCounterBuilder("doubleUpDownCounter").ofDoubles().build())
-                .enabled())
+                .isEnabled())
         .isEqualTo(expectedEnabled);
     assertThat(
             ((ExtendedLongUpDownCounter) meter.upDownCounterBuilder("longUpDownCounter").build())
-                .enabled())
+                .isEnabled())
         .isEqualTo(expectedEnabled);
     assertThat(
-            ((ExtendedDoubleHistogram) meter.histogramBuilder("doubleHistogram").build()).enabled())
+            ((ExtendedDoubleHistogram) meter.histogramBuilder("doubleHistogram").build())
+                .isEnabled())
         .isEqualTo(expectedEnabled);
     assertThat(
             ((ExtendedLongHistogram) meter.histogramBuilder("longHistogram").ofLongs().build())
-                .enabled())
+                .isEnabled())
         .isEqualTo(expectedEnabled);
-    assertThat(((ExtendedDoubleGauge) meter.gaugeBuilder("doubleGauge").build()).enabled())
+    assertThat(((ExtendedDoubleGauge) meter.gaugeBuilder("doubleGauge").build()).isEnabled())
         .isEqualTo(expectedEnabled);
-    assertThat(((ExtendedLongGauge) meter.gaugeBuilder("longGauge").ofLongs().build()).enabled())
+    assertThat(((ExtendedLongGauge) meter.gaugeBuilder("longGauge").ofLongs().build()).isEnabled())
         .isEqualTo(expectedEnabled);
   }
 

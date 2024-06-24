@@ -57,14 +57,14 @@ class ExtendedTraceApiUsageTest {
     ExtendedTracer tracerB = (ExtendedTracer) tracerProvider.get("tracerB");
 
     // Check if tracer is enabled before recording span and avoid unnecessary computation
-    if (tracerA.enabled()) {
+    if (tracerA.isEnabled()) {
       tracerA
           .spanBuilder("span name")
           .startSpan()
           .setAllAttributes(Attributes.builder().put("result", flipCoin()).build())
           .end();
     }
-    if (tracerB.enabled()) {
+    if (tracerB.isEnabled()) {
       tracerB
           .spanBuilder("span name")
           .startSpan()
@@ -73,8 +73,8 @@ class ExtendedTraceApiUsageTest {
     }
 
     // tracerA is enabled, tracerB is disabled
-    assertThat(tracerA.enabled()).isTrue();
-    assertThat(tracerB.enabled()).isFalse();
+    assertThat(tracerA.isEnabled()).isTrue();
+    assertThat(tracerB.isEnabled()).isFalse();
 
     // Collected data only consists of spans from tracerA. Note, tracerB's spans would be
     // omitted from the results even if spans were recorded. The check if enabled simply avoids

@@ -20,7 +20,7 @@ public interface ExtendedLongHistogram extends LongHistogram {
    * call to {@link #record(long)}, {@link #record(long, Attributes)}, or {@link #record(long,
    * Attributes, Context)}.
    */
-  default boolean enabled() {
+  default boolean isEnabled() {
     return true;
   }
 }

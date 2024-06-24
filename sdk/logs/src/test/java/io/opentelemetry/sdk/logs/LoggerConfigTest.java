@@ -61,9 +61,9 @@ class LoggerConfigTest {
               assertThat(logsByScope.get(InstrumentationScopeInfo.create("loggerC"))).hasSize(1);
             });
     // loggerA and loggerC are enabled, loggerB is disabled.
-    assertThat(((ExtendedLogger) loggerA).enabled()).isTrue();
-    assertThat(((ExtendedLogger) loggerB).enabled()).isFalse();
-    assertThat(((ExtendedLogger) loggerC).enabled()).isTrue();
+    assertThat(((ExtendedLogger) loggerA).isEnabled()).isTrue();
+    assertThat(((ExtendedLogger) loggerB).isEnabled()).isFalse();
+    assertThat(((ExtendedLogger) loggerC).isEnabled()).isTrue();
   }
 
   @ParameterizedTest

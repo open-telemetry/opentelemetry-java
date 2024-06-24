@@ -64,7 +64,7 @@ final class SdkDoubleCounter extends AbstractInstrument implements ExtendedDoubl
   }
 
   @Override
-  public boolean enabled() {
+  public boolean isEnabled() {
     return meterSharedState.isMeterEnabled() && storage.isEnabled();
   }
 

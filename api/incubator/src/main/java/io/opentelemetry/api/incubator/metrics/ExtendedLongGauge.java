@@ -20,7 +20,7 @@ public interface ExtendedLongGauge extends LongGauge {
    * call to {@link #set(long)}, {@link #set(long, Attributes)}, or {@link #set(long, Attributes,
    * Context)}.
    */
-  default boolean enabled() {
+  default boolean isEnabled() {
     return true;
   }
 }

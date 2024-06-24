@@ -52,7 +52,7 @@ final class SdkTracer implements ExtendedTracer {
   }
 
   @Override
-  public boolean enabled() {
+  public boolean isEnabled() {
     return tracerEnabled;
   }
 }

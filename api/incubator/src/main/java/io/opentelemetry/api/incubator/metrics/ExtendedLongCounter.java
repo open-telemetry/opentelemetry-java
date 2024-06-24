@@ -21,7 +21,7 @@ public interface ExtendedLongCounter extends LongCounter {
    * call to {@link #add(long)}, {@link #add(long, Attributes)}, or {@link #add(long, Attributes,
    * Context)}.
    */
-  default boolean enabled() {
+  default boolean isEnabled() {
     return true;
   }
 }

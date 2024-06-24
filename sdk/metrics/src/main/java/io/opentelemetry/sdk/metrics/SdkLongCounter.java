@@ -65,7 +65,7 @@ final class SdkLongCounter extends AbstractInstrument implements ExtendedLongCou
   }
 
   @Override
-  public boolean enabled() {
+  public boolean isEnabled() {
     return meterSharedState.isMeterEnabled() && storage.isEnabled();
   }
 
