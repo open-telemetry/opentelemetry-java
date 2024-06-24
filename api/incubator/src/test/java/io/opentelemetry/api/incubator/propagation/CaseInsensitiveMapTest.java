@@ -6,15 +6,16 @@
 package io.opentelemetry.api.incubator.propagation;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-/** only unit test CaseInsensitiveMapUnitTest. */
-public class CaseInsensitiveMapUnitTest {
+/** only unit test CaseInsensitiveMapTest. */
+class CaseInsensitiveMapTest {
 
-  /** test Constructor method. */
   @Test
   void createByConstructor() {
     Map<String, String> map = new HashMap<>();
@@ -23,6 +24,15 @@ public class CaseInsensitiveMapUnitTest {
 
     CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap(map);
 
+    Method getKeyLowerCaseMethod = null;
+    try {
+      getKeyLowerCaseMethod =
+          CaseInsensitiveMap.class.getDeclaredMethod("getKeyLowerCase", String.class);
+      getKeyLowerCaseMethod.setAccessible(true);
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(" CaseInsensitiveMap class getKeyLowerCase method not found ", e);
+    }
+
     for (Map.Entry<String, String> caseEntry : caseInsensitiveMap.entrySet()) {
       String k = caseEntry.getKey();
       String v = caseEntry.getValue();
@@ -30,7 +40,16 @@ public class CaseInsensitiveMapUnitTest {
       for (Map.Entry<String, String> mapEntry : map.entrySet()) {
         String k1 = mapEntry.getKey();
         String v1 = mapEntry.getValue();
-        boolean equals = caseInsensitiveMap.getKeyLowerCase(k1).equals(k);
+
+        String keyLowerCase;
+        try {
+          keyLowerCase = (String) getKeyLowerCaseMethod.invoke(caseInsensitiveMap, k1);
+        } catch (Exception e) {
+          throw new RuntimeException(
+              " CaseInsensitiveMap class getKeyLowerCase method invoke fail ", e);
+        }
+
+        boolean equals = keyLowerCase.equals(k);
         if (equals) {
           if (v1.equals(v)) {
             result = true;
@@ -42,9 +61,17 @@ public class CaseInsensitiveMapUnitTest {
     }
   }
 
-  /** test put and get method. */
   @Test
-  void getMethodUnitTest() {
+  void createByConstructorWithNullMap() {
+    assertThatCode(
+            () -> {
+              new CaseInsensitiveMap(null);
+            })
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void getAndPut() {
     Map<String, String> map = new HashMap<>();
     map.put("KeY1", "test");
     CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap(map);
