@@ -48,19 +48,15 @@ class LogRecordProcessorFactoryTest {
 
   @Test
   void create_BatchNullExporter() {
-    List<Closeable> closeables = new ArrayList<>();
-
-    io.opentelemetry.sdk.logs.LogRecordProcessor processor =
-        LogRecordProcessorFactory.getInstance()
-            .create(
-                new LogRecordProcessor().withBatch(new BatchLogRecordProcessor()),
-                spiHelper,
-                Collections.emptyList());
-    cleanup.addCloseable(processor);
-    cleanup.addCloseables(closeables);
-
-    assertThat(processor.toString())
-        .isEqualTo(io.opentelemetry.sdk.logs.LogRecordProcessor.composite().toString());
+    assertThatThrownBy(
+            () ->
+                LogRecordProcessorFactory.getInstance()
+                    .create(
+                        new LogRecordProcessor().withBatch(new BatchLogRecordProcessor()),
+                        spiHelper,
+                        Collections.emptyList()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("exporter required for batch log record processor");
   }
 
   @Test
@@ -119,19 +115,15 @@ class LogRecordProcessorFactoryTest {
 
   @Test
   void create_SimpleNullExporter() {
-    List<Closeable> closeables = new ArrayList<>();
-
-    io.opentelemetry.sdk.logs.LogRecordProcessor processor =
-        LogRecordProcessorFactory.getInstance()
-            .create(
-                new LogRecordProcessor().withSimple(new SimpleLogRecordProcessor()),
-                spiHelper,
-                Collections.emptyList());
-    cleanup.addCloseable(processor);
-    cleanup.addCloseables(closeables);
-
-    assertThat(processor.toString())
-        .isEqualTo(io.opentelemetry.sdk.logs.LogRecordProcessor.composite().toString());
+    assertThatThrownBy(
+            () ->
+                LogRecordProcessorFactory.getInstance()
+                    .create(
+                        new LogRecordProcessor().withSimple(new SimpleLogRecordProcessor()),
+                        spiHelper,
+                        Collections.emptyList()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("exporter required for simple log record processor");
   }
 
   @Test

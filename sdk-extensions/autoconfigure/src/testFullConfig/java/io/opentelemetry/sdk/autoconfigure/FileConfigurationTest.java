@@ -185,7 +185,8 @@ class FileConfigurationTest {
 
     assertThatThrownBy(() -> AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).build())
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unrecognized span exporter(s): [foo]");
+        .hasMessage(
+            "No component provider detected for io.opentelemetry.sdk.trace.export.SpanExporter with name \"foo\".");
   }
 
   @Test

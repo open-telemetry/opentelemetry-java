@@ -47,13 +47,12 @@ final class LogRecordProcessorFactory
         batchModel = model.getBatch();
     if (batchModel != null) {
       LogRecordExporter exporterModel = batchModel.getExporter();
-      if (exporterModel == null) {
-        return LogRecordProcessor.composite();
+      io.opentelemetry.sdk.logs.export.LogRecordExporter logRecordExporter =
+          LogRecordExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
+      if (logRecordExporter == null) {
+        throw new ConfigurationException("exporter required for batch log record processor");
       }
-
-      BatchLogRecordProcessorBuilder builder =
-          BatchLogRecordProcessor.builder(
-              LogRecordExporterFactory.getInstance().create(exporterModel, spiHelper, closeables));
+      BatchLogRecordProcessorBuilder builder = BatchLogRecordProcessor.builder(logRecordExporter);
       if (batchModel.getExportTimeout() != null) {
         builder.setExporterTimeout(Duration.ofMillis(batchModel.getExportTimeout()));
       }
@@ -73,14 +72,13 @@ final class LogRecordProcessorFactory
         simpleModel = model.getSimple();
     if (simpleModel != null) {
       LogRecordExporter exporterModel = simpleModel.getExporter();
-      if (exporterModel == null) {
-        return LogRecordProcessor.composite();
+      io.opentelemetry.sdk.logs.export.LogRecordExporter logRecordExporter =
+          LogRecordExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
+      if (logRecordExporter == null) {
+        throw new ConfigurationException("exporter required for simple log record processor");
       }
-
       return FileConfigUtil.addAndReturn(
-          closeables,
-          SimpleLogRecordProcessor.create(
-              LogRecordExporterFactory.getInstance().create(exporterModel, spiHelper, closeables)));
+          closeables, SimpleLogRecordProcessor.create(logRecordExporter));
     }
 
     // TODO: add support for generic log record processors

@@ -1,0 +1,3 @@
+io.opentelemetry.exporter.logging.internal.ConsoleMetricExporterComponentProvider
+io.opentelemetry.exporter.logging.internal.ConsoleSpanExporterComponentProvider
+io.opentelemetry.exporter.logging.internal.ConsoleLogRecordExporterComponentProvider

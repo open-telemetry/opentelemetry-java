@@ -1,0 +1,3 @@
+io.opentelemetry.sdk.extension.incubator.fileconfig.component.MetricExporterComponentProvider
+io.opentelemetry.sdk.extension.incubator.fileconfig.component.SpanExporterComponentProvider
+io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordExporterComponentProvider

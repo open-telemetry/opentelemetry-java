@@ -118,7 +118,8 @@ class FileConfigurationCreateTest {
                 FileConfiguration.parseAndCreate(
                     new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unrecognized log record exporter(s): [foo]");
+        .hasMessage(
+            "No component provider detected for io.opentelemetry.sdk.logs.export.LogRecordExporter with name \"foo\".");
     logCapturer.assertContains(
         "Error encountered interpreting configuration model. Closing partially configured components.");
     logCapturer.assertContains(
