@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -66,6 +67,11 @@ public interface SpanProcessor extends Closeable {
    * @return {@code true} if this {@link SpanProcessor} requires start events.
    */
   boolean isStartRequired();
+
+  default void onEnd(ReadableSpan span, Consumer<ReadableSpan> spanOutput) {
+    onEnd(span);
+    spanOutput.accept(span);
+  }
 
   /**
    * Called when a {@link io.opentelemetry.api.trace.Span} is ended, if the {@link
