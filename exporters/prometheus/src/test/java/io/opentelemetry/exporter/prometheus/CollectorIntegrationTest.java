@@ -134,6 +134,10 @@ class CollectorIntegrationTest {
             // Resource attributes derived from the prometheus scrape config
             stringKeyValue("service.name", "app"),
             stringKeyValue("service.instance.id", "host.testcontainers.internal:" + prometheusPort),
+            // net.host.name, net.host.port and http.scheme are superseded by server.address,
+            // server.port, and url.scheme respectively and will be removed by default in a future
+            // collector release
+            // https://github.com/open-telemetry/opentelemetry-collector-contrib/pull/32829
             stringKeyValue("net.host.name", "host.testcontainers.internal"),
             stringKeyValue("net.host.port", String.valueOf(prometheusPort)),
             stringKeyValue("http.scheme", "http"),
