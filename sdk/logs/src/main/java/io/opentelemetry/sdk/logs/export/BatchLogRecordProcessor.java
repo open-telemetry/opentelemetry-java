@@ -22,6 +22,10 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -69,6 +73,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       LogRecordExporter logRecordExporter,
       MeterProvider meterProvider,
       long scheduleDelayNanos,
+      int maxConcurrentExport,
       int maxQueueSize,
       int maxExportBatchSize,
       long exporterTimeoutNanos) {
@@ -77,6 +82,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
             logRecordExporter,
             meterProvider,
             scheduleDelayNanos,
+            maxConcurrentExport,
             maxExportBatchSize,
             exporterTimeoutNanos,
             new ArrayBlockingQueue<>(maxQueueSize)); // TODO: use JcTools.newFixedSizeQueue(..)
@@ -146,6 +152,8 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
 
     private final LogRecordExporter logRecordExporter;
     private final long scheduleDelayNanos;
+    private final int maxConcurrentExport;
+    private final Semaphore semaphore;
     private final int maxExportBatchSize;
     private final long exporterTimeoutNanos;
 
@@ -163,11 +171,13 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
     private volatile boolean continueWork = true;
     private final ArrayList<LogRecordData> batch;
+    private final ExecutorService executor;
 
     private Worker(
         LogRecordExporter logRecordExporter,
         MeterProvider meterProvider,
         long scheduleDelayNanos,
+        int maxConcurrentExport,
         int maxExportBatchSize,
         long exporterTimeoutNanos,
         Queue<ReadWriteLogRecord> queue) {
@@ -211,6 +221,9 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
               false);
 
       this.batch = new ArrayList<>(this.maxExportBatchSize);
+      this.maxConcurrentExport = maxConcurrentExport;
+      this.semaphore = new Semaphore(maxConcurrentExport);
+      this.executor = Executors.newFixedThreadPool(maxConcurrentExport);
     }
 
     private void addLog(ReadWriteLogRecord logData) {
@@ -278,6 +291,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     }
 
     private CompletableResultCode shutdown() {
+
       CompletableResultCode result = new CompletableResultCode();
 
       CompletableResultCode flushResult = forceFlush();
@@ -294,6 +308,15 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
                   }
                 });
           });
+
+      for (int i = 0; i < maxConcurrentExport; i++) {
+        try {
+          semaphore.acquire();
+        } catch (InterruptedException e){
+          logger.log(Level.WARNING, "Acquire Semaphore for shutdown failed", e);
+        }
+      }
+      executor.shutdown();
 
       return result;
     }
@@ -317,13 +340,41 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
       }
 
       try {
-        CompletableResultCode result =
-            logRecordExporter.export(Collections.unmodifiableList(batch));
-        result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
-        if (result.isSuccess()) {
-          processedLogsCounter.add(batch.size(), exportedAttrs);
+        if (this.maxConcurrentExport == 1) {
+          CompletableResultCode result =
+              logRecordExporter.export(Collections.unmodifiableList(batch));
+          result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+          if (result.isSuccess()) {
+            processedLogsCounter.add(batch.size(), exportedAttrs);
+          } else {
+            logger.log(Level.FINE, "Exporter failed");
+          }
         } else {
-          logger.log(Level.FINE, "Exporter failed");
+          try {
+            semaphore.acquire();
+          } catch (InterruptedException e) {
+            logger.log(Level.WARNING, "Acquire semaphore for exporter failed", e);
+            return;
+          }
+          ArrayList<LogRecordData> exportBatch = new ArrayList<>(batch.size());
+          exportBatch.addAll(batch);
+          Future<?> future = executor.submit(() -> {
+            try {
+              CompletableResultCode result =
+                  logRecordExporter.export(Collections.unmodifiableList(exportBatch));
+              result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
+              if (result.isSuccess()) {
+                processedLogsCounter.add(exportBatch.size(), exportedAttrs);
+              } else {
+                logger.log(Level.FINE, "Exporter failed");
+              }
+            } catch (RuntimeException e) {
+              logger.log(Level.WARNING, "Exporter threw an Exception", e);
+            } finally {
+              semaphore.release();
+            }
+          });
+          future.isDone();
         }
       } catch (RuntimeException e) {
         logger.log(Level.WARNING, "Exporter threw an Exception", e);
