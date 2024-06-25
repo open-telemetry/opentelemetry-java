@@ -137,6 +137,9 @@ class CollectorIntegrationTest {
             stringKeyValue("net.host.name", "host.testcontainers.internal"),
             stringKeyValue("net.host.port", String.valueOf(prometheusPort)),
             stringKeyValue("http.scheme", "http"),
+            stringKeyValue("server.address", "host.testcontainers.internal"),
+            stringKeyValue("server.port", String.valueOf(prometheusPort)),
+            stringKeyValue("url.scheme", "http"),
             // Resource attributes from the metric SDK resource translated to target_info
             stringKeyValue(
                 "service_name",
