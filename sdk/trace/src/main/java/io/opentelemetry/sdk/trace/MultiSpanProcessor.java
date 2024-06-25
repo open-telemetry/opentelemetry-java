@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 final class MultiSpanProcessor implements SpanProcessor {
   private final List<SpanProcessor> spanProcessorsStart;
+  private final List<SpanProcessor> spanProcessorsBeforeEnd;
   private final List<SpanProcessor> spanProcessorsEnd;
   private final List<SpanProcessor> spanProcessorsAll;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
@@ -59,6 +60,18 @@ final class MultiSpanProcessor implements SpanProcessor {
   }
 
   @Override
+  public void beforeEnd(ReadWriteSpan span) {
+    for (SpanProcessor spanProcessor : spanProcessorsBeforeEnd) {
+      spanProcessor.beforeEnd(span);
+    }
+  }
+
+  @Override
+  public boolean isBeforeEndRequired() {
+    return !spanProcessorsBeforeEnd.isEmpty();
+  }
+
+  @Override
   public CompletableResultCode shutdown() {
     if (isShutdown.getAndSet(true)) {
       return CompletableResultCode.ofSuccess();
@@ -83,9 +96,13 @@ final class MultiSpanProcessor implements SpanProcessor {
     this.spanProcessorsAll = spanProcessors;
     this.spanProcessorsStart = new ArrayList<>(spanProcessorsAll.size());
     this.spanProcessorsEnd = new ArrayList<>(spanProcessorsAll.size());
+    this.spanProcessorsBeforeEnd = new ArrayList<>(spanProcessorsAll.size());
     for (SpanProcessor spanProcessor : spanProcessorsAll) {
       if (spanProcessor.isStartRequired()) {
         spanProcessorsStart.add(spanProcessor);
+      }
+      if (spanProcessor.isBeforeEndRequired()) {
+        spanProcessorsBeforeEnd.add(spanProcessor);
       }
       if (spanProcessor.isEndRequired()) {
         spanProcessorsEnd.add(spanProcessor);
