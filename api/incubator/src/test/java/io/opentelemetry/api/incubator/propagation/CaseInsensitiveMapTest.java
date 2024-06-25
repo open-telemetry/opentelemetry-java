@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-/** only unit test CaseInsensitiveMapTest. */
 class CaseInsensitiveMapTest {
 
   @Test
