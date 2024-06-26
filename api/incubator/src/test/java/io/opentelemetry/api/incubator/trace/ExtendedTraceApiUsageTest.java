@@ -170,6 +170,7 @@ class ExtendedTraceApiUsageTest {
     // Wrap the resetCheckout method in a span
     String cartId =
         ((ExtendedSpanBuilder) tracer.spanBuilder("reset_checkout_and_return"))
+            .setAttribute("key123", "val456")
             .startAndCall(() -> resetCheckoutAndReturn("abc123", /* throwException= */ false));
     assertThat(cartId).isEqualTo("abc123");
     // ...or runnable variation
