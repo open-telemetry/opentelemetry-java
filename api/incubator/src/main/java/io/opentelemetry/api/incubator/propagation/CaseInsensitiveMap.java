@@ -5,9 +5,11 @@
 
 package io.opentelemetry.api.incubator.propagation;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 class CaseInsensitiveMap extends HashMap<String, String> {
@@ -26,7 +28,8 @@ class CaseInsensitiveMap extends HashMap<String, String> {
     return super.put(getKeyLowerCase(key), value);
   }
 
-  private static String getKeyLowerCase(String key) {
+  @VisibleForTesting
+  String getKeyLowerCase(@Nonnull String key) {
     return key.toLowerCase(Locale.ROOT);
   }
 

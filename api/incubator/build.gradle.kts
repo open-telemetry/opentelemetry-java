@@ -19,4 +19,6 @@ dependencies {
   testImplementation("io.opentelemetry.semconv:opentelemetry-semconv-incubating")
 
   testImplementation("com.google.guava:guava")
+
+  implementation("com.google.guava:guava-annotations:r03")
 }
