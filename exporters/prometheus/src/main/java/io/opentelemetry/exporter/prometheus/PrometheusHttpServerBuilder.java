@@ -46,6 +46,7 @@ public final class PrometheusHttpServerBuilder {
     this.otelScopeEnabled = builder.otelScopeEnabled;
     this.allowedResourceAttributesFilter = builder.allowedResourceAttributesFilter;
     this.executor = builder.executor;
+    this.defaultAggregationSelector = builder.defaultAggregationSelector;
   }
 
   /** Sets the host to bind to. If unset, defaults to {@value #DEFAULT_HOST}. */

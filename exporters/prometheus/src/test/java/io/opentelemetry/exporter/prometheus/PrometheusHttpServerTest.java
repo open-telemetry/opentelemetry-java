@@ -25,9 +25,12 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
@@ -503,10 +506,14 @@ class PrometheusHttpServerTest {
 
   @Test
   void toBuilder() {
+    DefaultAggregationSelector defaultAggregationSelector =
+        DefaultAggregationSelector.getDefault()
+            .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram());
     PrometheusHttpServerBuilder builder = PrometheusHttpServer.builder();
     builder.setHost("localhost");
     builder.setPort(1234);
     builder.setOtelScopeEnabled(false);
+    builder.setDefaultAggregationSelector(defaultAggregationSelector);
 
     Predicate<String> resourceAttributesFilter = s -> false;
     builder.setAllowedResourceAttributesFilter(resourceAttributesFilter);
@@ -527,6 +534,7 @@ class PrometheusHttpServerTest {
         .hasFieldOrPropertyWithValue("otelScopeEnabled", false)
         .hasFieldOrPropertyWithValue("allowedResourceAttributesFilter", resourceAttributesFilter)
         .hasFieldOrPropertyWithValue("executor", executor)
-        .hasFieldOrPropertyWithValue("prometheusRegistry", prometheusRegistry);
+        .hasFieldOrPropertyWithValue("prometheusRegistry", prometheusRegistry)
+        .hasFieldOrPropertyWithValue("defaultAggregationSelector", defaultAggregationSelector);
   }
 }
