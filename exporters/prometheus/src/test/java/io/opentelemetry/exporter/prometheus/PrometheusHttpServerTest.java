@@ -113,6 +113,9 @@ class PrometheusHttpServerTest {
     assertThatThrownBy(() -> PrometheusHttpServer.builder().setHost(""))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("host must not be empty");
+    assertThatThrownBy(() -> PrometheusHttpServer.builder().setDefaultAggregationSelector(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("defaultAggregationSelector");
   }
 
   @Test
