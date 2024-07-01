@@ -20,5 +20,4 @@ dependencies {
 
   testImplementation("com.google.guava:guava")
 
-  implementation("com.google.guava:guava-annotations:r03")
 }

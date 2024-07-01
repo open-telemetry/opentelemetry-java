@@ -28,8 +28,7 @@ class CaseInsensitiveMap extends HashMap<String, String> {
     return super.put(getKeyLowerCase(key), value);
   }
 
-  @VisibleForTesting
-  String getKeyLowerCase(@Nonnull String key) {
+  private String getKeyLowerCase(@Nonnull String key) {
     return key.toLowerCase(Locale.ROOT);
   }
 

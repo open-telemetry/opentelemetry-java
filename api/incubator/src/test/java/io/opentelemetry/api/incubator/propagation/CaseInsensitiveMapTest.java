@@ -22,25 +22,10 @@ class CaseInsensitiveMapTest {
 
     CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap(map);
 
-    for (Map.Entry<String, String> caseEntry : caseInsensitiveMap.entrySet()) {
-      String k = caseEntry.getKey();
-      String v = caseEntry.getValue();
-      boolean result = false;
-      for (Map.Entry<String, String> mapEntry : map.entrySet()) {
-        String k1 = mapEntry.getKey();
-        String v1 = mapEntry.getValue();
-
-        String keyLowerCase = caseInsensitiveMap.getKeyLowerCase(k1);
-
-        boolean equals = keyLowerCase.equals(k);
-        if (equals) {
-          if (v1.equals(v)) {
-            result = true;
-            break;
-          }
-        }
-      }
-      assertThat(result).isTrue();
+    for (Map.Entry<String, String> mapEntry : map.entrySet()) {
+      String k1 = mapEntry.getKey();
+      String v1 = mapEntry.getValue();
+      assertThat(v1).isEqualTo(caseInsensitiveMap.get(k1));
     }
   }
 
@@ -57,22 +42,22 @@ class CaseInsensitiveMapTest {
     map.put(key1, value1);
     CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap(map);
 
+    for (Map.Entry<String, String> mapEntry : map.entrySet()) {
+      String k1 = mapEntry.getKey();
+      String v1 = mapEntry.getValue();
+      assertThat(v1).isEqualTo(caseInsensitiveMap.get(k1));
+    }
+
     String key2 = "KEY2";
     String value2 = "test2";
     map.put(key2, value2);
 
     caseInsensitiveMap.put(key2, value2);
 
-    Map<String, String> lowCaseKeyMap = new HashMap<>();
-
-    lowCaseKeyMap.put(caseInsensitiveMap.getKeyLowerCase(key1), value1);
-    lowCaseKeyMap.put(caseInsensitiveMap.getKeyLowerCase(key2), value2);
-
-    assertThat(lowCaseKeyMap).isEqualTo(caseInsensitiveMap);
-
-    for (String s : map.keySet()) {
-      // test get method
-      assertThat(caseInsensitiveMap.get(s)).isEqualTo(map.get(s));
+    for (Map.Entry<String, String> mapEntry : map.entrySet()) {
+      String k1 = mapEntry.getKey();
+      String v1 = mapEntry.getValue();
+      assertThat(v1).isEqualTo(caseInsensitiveMap.get(k1));
     }
   }
 }
