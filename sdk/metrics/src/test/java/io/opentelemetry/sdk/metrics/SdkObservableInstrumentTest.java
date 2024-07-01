@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
@@ -36,7 +37,11 @@ class SdkObservableInstrumentTest {
   @BeforeEach
   void setup() {
     meterSharedState =
-        spy(MeterSharedState.create(InstrumentationScopeInfo.empty(), Collections.emptyList()));
+        spy(
+            MeterSharedState.create(
+                InstrumentationScopeInfo.empty(),
+                Collections.emptyList(),
+                MeterConfig.defaultConfig()));
     callbackRegistration =
         CallbackRegistration.create(
             Collections.singletonList(

@@ -22,4 +22,10 @@ public interface WriteableMetricStorage {
 
   /** Records a measurement. */
   void recordDouble(double value, Attributes attributes, Context context);
+
+  /**
+   * Returns {@code true} if the storage is actively recording measurements, and {@code false}
+   * otherwise (i.e. noop / empty metric storage is installed).
+   */
+  boolean isEnabled();
 }

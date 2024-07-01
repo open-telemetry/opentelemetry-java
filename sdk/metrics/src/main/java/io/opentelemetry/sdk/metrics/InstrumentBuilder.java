@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.metrics.internal.state.SdkObservableMeasurement;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 /** Helper to make implementing builders easier. */
@@ -65,12 +64,21 @@ final class InstrumentBuilder {
         meterProviderSharedState, meterSharedState, name, description, unit, adviceBuilder);
   }
 
+  @FunctionalInterface
+  interface SynchronousInstrumentConstructor<I extends AbstractInstrument> {
+
+    I createInstrument(
+        InstrumentDescriptor instrumentDescriptor,
+        MeterSharedState meterSharedState,
+        WriteableMetricStorage storage);
+  }
+
   <I extends AbstractInstrument> I buildSynchronousInstrument(
-      BiFunction<InstrumentDescriptor, WriteableMetricStorage, I> instrumentFactory) {
+      SynchronousInstrumentConstructor<I> instrumentFactory) {
     InstrumentDescriptor descriptor = newDescriptor();
     WriteableMetricStorage storage =
         meterSharedState.registerSynchronousMetricStorage(descriptor, meterProviderSharedState);
-    return instrumentFactory.apply(descriptor, storage);
+    return instrumentFactory.createInstrument(descriptor, meterSharedState, storage);
   }
 
   SdkObservableInstrument buildDoubleAsynchronousInstrument(

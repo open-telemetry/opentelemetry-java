@@ -39,4 +39,9 @@ final class EmptyMetricStorage implements SynchronousMetricStorage {
 
   @Override
   public void recordDouble(double value, Attributes attributes, Context context) {}
+
+  @Override
+  public boolean isEnabled() {
+    return false;
+  }
 }

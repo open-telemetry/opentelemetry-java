@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.metrics.ExtendedLongGauge;
 import io.opentelemetry.api.incubator.metrics.ExtendedLongGaugeBuilder;
-import io.opentelemetry.api.metrics.LongGauge;
 import io.opentelemetry.api.metrics.LongGaugeBuilder;
 import io.opentelemetry.api.metrics.ObservableLongGauge;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
@@ -21,12 +21,17 @@ import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.List;
 import java.util.function.Consumer;
 
-final class SdkLongGauge extends AbstractInstrument implements LongGauge {
+final class SdkLongGauge extends AbstractInstrument implements ExtendedLongGauge {
 
+  private final MeterSharedState meterSharedState;
   private final WriteableMetricStorage storage;
 
-  private SdkLongGauge(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+  private SdkLongGauge(
+      InstrumentDescriptor descriptor,
+      MeterSharedState meterSharedState,
+      WriteableMetricStorage storage) {
     super(descriptor);
+    this.meterSharedState = meterSharedState;
     this.storage = storage;
   }
 
@@ -43,6 +48,11 @@ final class SdkLongGauge extends AbstractInstrument implements LongGauge {
   @Override
   public void set(long increment) {
     set(increment, Attributes.empty());
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return meterSharedState.isMeterEnabled() && storage.isEnabled();
   }
 
   static final class SdkLongGaugeBuilder implements ExtendedLongGaugeBuilder {
