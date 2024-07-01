@@ -35,13 +35,13 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
   /** Values are {@link #isPrimitive(Object)}, {@link List} of scalars. */
   private final Map<String, Object> simpleEntries;
 
-  private final Map<String, List<StructuredConfigProperties>> listEntries;
-  private final Map<String, StructuredConfigProperties> mapEntries;
+  private final Map<String, List<YamlStructuredConfigProperties>> listEntries;
+  private final Map<String, YamlStructuredConfigProperties> mapEntries;
 
   private YamlStructuredConfigProperties(
       Map<String, Object> simpleEntries,
-      Map<String, List<StructuredConfigProperties>> listEntries,
-      Map<String, StructuredConfigProperties> mapEntries) {
+      Map<String, List<YamlStructuredConfigProperties>> listEntries,
+      Map<String, YamlStructuredConfigProperties> mapEntries) {
     this.simpleEntries = simpleEntries;
     this.listEntries = listEntries;
     this.mapEntries = mapEntries;
@@ -59,8 +59,8 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
   @SuppressWarnings("unchecked")
   static YamlStructuredConfigProperties create(Map<String, Object> properties) {
     Map<String, Object> simpleEntries = new HashMap<>();
-    Map<String, List<StructuredConfigProperties>> listEntries = new HashMap<>();
-    Map<String, StructuredConfigProperties> mapEntries = new HashMap<>();
+    Map<String, List<YamlStructuredConfigProperties>> listEntries = new HashMap<>();
+    Map<String, YamlStructuredConfigProperties> mapEntries = new HashMap<>();
     for (Map.Entry<String, Object> entry : properties.entrySet()) {
       String key = entry.getKey();
       Object value = entry.getValue();
@@ -73,7 +73,7 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
         continue;
       }
       if (isListOfMaps(value)) {
-        List<StructuredConfigProperties> list =
+        List<YamlStructuredConfigProperties> list =
             ((List<Map<String, Object>>) value)
                 .stream().map(YamlStructuredConfigProperties::create).collect(toList());
         listEntries.put(key, list);
@@ -257,7 +257,11 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
   @Nullable
   @Override
   public List<StructuredConfigProperties> getStructuredList(String name) {
-    return listEntries.get(name);
+    List<YamlStructuredConfigProperties> value = listEntries.get(name);
+    if (value != null) {
+      return Collections.unmodifiableList(value);
+    }
+    return null;
   }
 
   @Override
@@ -276,5 +280,16 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
     listEntries.forEach((key, value) -> joiner.add(key + "=" + value));
     mapEntries.forEach((key, value) -> joiner.add(key + "=" + value));
     return joiner.toString();
+  }
+
+  /** Return a map representation of the data. */
+  Map<String, Object> toMap() {
+    Map<String, Object> result = new HashMap<>(simpleEntries);
+    listEntries.forEach(
+        (key, value) ->
+            result.put(
+                key, value.stream().map(YamlStructuredConfigProperties::toMap).collect(toList())));
+    mapEntries.forEach((key, value) -> result.put(key, value.toMap()));
+    return Collections.unmodifiableMap(result);
   }
 }

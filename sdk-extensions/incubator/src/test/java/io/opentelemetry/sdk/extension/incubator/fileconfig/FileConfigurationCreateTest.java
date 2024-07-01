@@ -120,7 +120,7 @@ class FileConfigurationCreateTest {
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Unrecognized log record exporter(s): [foo]");
     logCapturer.assertContains(
-        "Error encountered interpreting configuration model. Closing partially configured components.");
+        "Error encountered interpreting model. Closing partially configured components.");
     logCapturer.assertContains(
         "Closing io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter");
     logCapturer.assertContains("Closing io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor");

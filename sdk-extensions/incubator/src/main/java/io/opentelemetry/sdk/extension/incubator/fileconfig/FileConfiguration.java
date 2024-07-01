@@ -12,8 +12,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sampler;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +26,7 @@ import java.util.logging.Logger;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import org.snakeyaml.engine.v2.api.Load;
 import org.snakeyaml.engine.v2.api.LoadSettings;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
@@ -84,30 +87,10 @@ public final class FileConfiguration {
    * @throws ConfigurationException if unable to interpret
    */
   public static OpenTelemetrySdk create(OpenTelemetryConfiguration configurationModel) {
-    List<Closeable> closeables = new ArrayList<>();
-    try {
-      return OpenTelemetryConfigurationFactory.getInstance()
-          .create(
-              configurationModel,
-              SpiHelper.create(FileConfiguration.class.getClassLoader()),
-              closeables);
-    } catch (RuntimeException e) {
-      logger.info(
-          "Error encountered interpreting configuration model. Closing partially configured components.");
-      for (Closeable closeable : closeables) {
-        try {
-          logger.fine("Closing " + closeable.getClass().getName());
-          closeable.close();
-        } catch (IOException ex) {
-          logger.warning(
-              "Error closing " + closeable.getClass().getName() + ": " + ex.getMessage());
-        }
-      }
-      if (e instanceof ConfigurationException) {
-        throw e;
-      }
-      throw new ConfigurationException("Unexpected configuration error", e);
-    }
+    return createAndMaybeCleanup(
+        OpenTelemetryConfigurationFactory.getInstance(),
+        SpiHelper.create(FileConfiguration.class.getClassLoader()),
+        configurationModel);
   }
 
   /**
@@ -155,6 +138,58 @@ public final class FileConfiguration {
     Map<String, Object> configurationMap =
         MAPPER.convertValue(model, new TypeReference<Map<String, Object>>() {});
     return YamlStructuredConfigProperties.create(configurationMap);
+  }
+
+  /**
+   * Create a {@link Sampler} from the {@code samplerModel} representing the sampler config.
+   *
+   * <p>This is used when samplers are composed, with one sampler accepting one or more additional
+   * samplers as config properties. The {@link ComponentProvider} implementation can call this to
+   * configure a delegate {@link Sampler} from the {@link StructuredConfigProperties} corresponding
+   * to a particular config property.
+   */
+  // TODO(jack-berg): add create methods for all SDK extension components supported by
+  // ComponentProvider
+  @Nullable
+  public static io.opentelemetry.sdk.trace.samplers.Sampler createSampler(
+      StructuredConfigProperties genericSamplerModel) {
+    Sampler samplerModel = convertToModel(genericSamplerModel, Sampler.class);
+    return createAndMaybeCleanup(
+        SamplerFactory.getInstance(),
+        SpiHelper.create(FileConfiguration.class.getClassLoader()),
+        samplerModel);
+  }
+
+  static <T> T convertToModel(
+      StructuredConfigProperties structuredConfigProperties, Class<T> modelType) {
+    if (!(structuredConfigProperties instanceof YamlStructuredConfigProperties)) {
+      throw new ConfigurationException(
+          "Only YamlStructuredConfigProperties can be converted to model");
+    }
+    return MAPPER.convertValue(
+        ((YamlStructuredConfigProperties) structuredConfigProperties).toMap(), modelType);
+  }
+
+  static <M, R> R createAndMaybeCleanup(Factory<M, R> factory, SpiHelper spiHelper, M model) {
+    List<Closeable> closeables = new ArrayList<>();
+    try {
+      return factory.create(model, spiHelper, closeables);
+    } catch (RuntimeException e) {
+      logger.info("Error encountered interpreting model. Closing partially configured components.");
+      for (Closeable closeable : closeables) {
+        try {
+          logger.fine("Closing " + closeable.getClass().getName());
+          closeable.close();
+        } catch (IOException ex) {
+          logger.warning(
+              "Error closing " + closeable.getClass().getName() + ": " + ex.getMessage());
+        }
+      }
+      if (e instanceof ConfigurationException) {
+        throw e;
+      }
+      throw new ConfigurationException("Unexpected configuration error", e);
+    }
   }
 
   /**
