@@ -11,15 +11,15 @@ val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.17.1",
   "com.google.guava:guava-bom:33.2.1-jre",
   "com.google.protobuf:protobuf-bom:3.25.3",
-  "com.linecorp.armeria:armeria-bom:1.29.0",
+  "com.linecorp.armeria:armeria-bom:1.29.1",
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
   "com.squareup.okio:okio-bom:3.9.0", // applies to transitive dependencies of okhttp
-  "io.grpc:grpc-bom:1.64.0",
+  "io.grpc:grpc-bom:1.65.0",
   "io.netty:netty-bom:4.1.111.Final",
   "io.zipkin.brave:brave-bom:6.0.3",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.4.0",
   "org.assertj:assertj-bom:3.26.0",
-  "org.junit:junit-bom:5.10.2",
+  "org.junit:junit-bom:5.10.3",
   "org.testcontainers:testcontainers-bom:1.19.8",
   "org.snakeyaml:snakeyaml-engine:2.7"
 )
@@ -79,7 +79,7 @@ val DEPENDENCIES = listOf(
   "org.jctools:jctools-core:4.0.5",
   "org.junit-pioneer:junit-pioneer:1.9.1",
   "org.mock-server:mockserver-netty:5.15.0:shaded",
-  "org.skyscreamer:jsonassert:1.5.1",
+  "org.skyscreamer:jsonassert:1.5.3",
   "com.android.tools:desugar_jdk_libs:2.0.4",
 )
 
