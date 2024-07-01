@@ -8,7 +8,7 @@ package io.opentelemetry.exporter.sender.okhttp.internal;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.context.Context;
-import io.opentelemetry.exporter.internal.InstrumentationUtil;
+import io.opentelemetry.context.internal.InstrumentationUtil;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.AfterEach;

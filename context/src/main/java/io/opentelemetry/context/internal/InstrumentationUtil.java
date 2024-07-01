@@ -1,20 +1,16 @@
-/*
- * Copyright The OpenTelemetry Authors
- * SPDX-License-Identifier: Apache-2.0
- */
-
-package io.opentelemetry.exporter.internal;
+package io.opentelemetry.context.internal;
 
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ContextKey;
+import java.util.Objects;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
- * any time
- *
- * @deprecated use {@link io.opentelemetry.context.internal.InstrumentationUtil} instead
+ * any time.
  */
-@Deprecated
 public final class InstrumentationUtil {
+  private static final ContextKey<Boolean> SUPPRESS_INSTRUMENTATION_KEY =
+      ContextKey.named("suppress_instrumentation");
 
   private InstrumentationUtil() {}
 
@@ -24,7 +20,7 @@ public final class InstrumentationUtil {
    * calls.
    */
   public static void suppressInstrumentation(Runnable runnable) {
-    io.opentelemetry.context.internal.InstrumentationUtil.suppressInstrumentation(runnable);
+    Context.current().with(SUPPRESS_INSTRUMENTATION_KEY, true).wrap(runnable).run();
   }
 
   /**
@@ -34,7 +30,6 @@ public final class InstrumentationUtil {
    *     instrumentation.
    */
   public static boolean shouldSuppressInstrumentation(Context context) {
-    return io.opentelemetry.context.internal.InstrumentationUtil.shouldSuppressInstrumentation(
-        context);
+    return Objects.equals(context.get(SUPPRESS_INSTRUMENTATION_KEY), true);
   }
 }
