@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
@@ -155,7 +156,10 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
-   * Set the tracer configurator, which computes {@link TracerConfig} for each {@link
+   * This method is experimental so not public. You may reflectively call it using {@link
+   * SdkTracerProviderUtil#setTracerConfigurator(SdkTracerProviderBuilder, ScopeConfigurator)}
+   *
+   * <p>Set the tracer configurator, which computes {@link TracerConfig} for each {@link
    * InstrumentationScopeInfo}.
    *
    * <p>Overrides any matchers added via {@link #addTracerConfiguratorCondition(Predicate,
@@ -170,7 +174,11 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
-   * Adds a condition to the tracer configurator, which computes {@link TracerConfig} for each
+   * This method is experimental so not public. You may reflectively call it using {@link
+   * SdkTracerProviderUtil#addTracerConfiguratorCondition(SdkTracerProviderBuilder, Predicate,
+   * TracerConfig)}
+   *
+   * <p>Adds a condition to the tracer configurator, which computes {@link TracerConfig} for each
    * {@link InstrumentationScopeInfo}.
    *
    * <p>Applies after any previously added conditions.

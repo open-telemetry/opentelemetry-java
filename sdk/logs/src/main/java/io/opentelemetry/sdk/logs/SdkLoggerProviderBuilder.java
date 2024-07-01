@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.internal.LoggerConfig;
+import io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -108,7 +109,10 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
-   * Set the logger configurator, which computes {@link LoggerConfig} for each {@link
+   * This method is experimental so not public. You may reflectively call it using {@link
+   * SdkLoggerProviderUtil#setLoggerConfigurator(SdkLoggerProviderBuilder, ScopeConfigurator)}
+   *
+   * <p>Set the logger configurator, which computes {@link LoggerConfig} for each {@link
    * InstrumentationScopeInfo}.
    *
    * <p>Overrides any matchers added via {@link #addLoggerConfiguratorCondition(Predicate,
@@ -123,7 +127,11 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
-   * Adds a condition to the logger configurator, which computes {@link LoggerConfig} for each
+   * This method is experimental so not public. You may reflectively call it using {@link
+   * SdkLoggerProviderUtil#addLoggerConfiguratorCondition(SdkLoggerProviderBuilder, Predicate,
+   * LoggerConfig)}
+   *
+   * <p>Adds a condition to the logger configurator, which computes {@link LoggerConfig} for each
    * {@link InstrumentationScopeInfo}.
    *
    * <p>Applies after any previously added conditions.
