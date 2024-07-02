@@ -9,10 +9,21 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.exporter.otlp.profiles.FunctionData;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * Auto value implementation of {@link FunctionData}, which describes a code function.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @Immutable
 @AutoValue
 public abstract class ImmutableFunctionData implements FunctionData {
 
+  /**
+   * Returns a new FunctionData describing the given function characteristics.
+   *
+   * @return a new FunctionData describing the given function characteristics.
+   */
   public static FunctionData create(
       long nameIndex, long systemNameIndex, long filenameIndex, long startLine) {
     return new AutoValue_ImmutableFunctionData(

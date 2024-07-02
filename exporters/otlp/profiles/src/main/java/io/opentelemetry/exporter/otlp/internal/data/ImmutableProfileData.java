@@ -18,10 +18,23 @@ import io.opentelemetry.exporter.otlp.profiles.ValueTypeData;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * Auto value implementation of {@link ProfileData}, which represents a complete profile, including
+ * sample types, samples, mappings to binaries, locations, functions, string table, and additional
+ * metadata.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @Immutable
 @AutoValue
 public abstract class ImmutableProfileData implements ProfileData {
 
+  /**
+   * Returns a new ProfileData representing the given data.
+   *
+   * @return a new ProfileData representing the given data.
+   */
   @SuppressWarnings("TooManyParameters")
   public static ProfileData create(
       List<ValueTypeData> sampleTypes,

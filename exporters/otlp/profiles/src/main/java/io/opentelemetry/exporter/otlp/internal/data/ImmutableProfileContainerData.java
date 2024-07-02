@@ -15,10 +15,21 @@ import java.nio.ByteBuffer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * Auto value implementation of {@link ProfileContainerData}, which represents a single profile.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @Immutable
 @AutoValue
 public abstract class ImmutableProfileContainerData implements ProfileContainerData {
 
+  /**
+   * Returns a new ProfileContainerData representing the given profile information.
+   *
+   * @return a new ProfileContainerData representing the given profile information.
+   */
   @SuppressWarnings("TooManyParameters")
   public static ProfileContainerData create(
       Resource resource,
