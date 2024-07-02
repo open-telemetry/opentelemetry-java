@@ -5,19 +5,14 @@
 
 package io.opentelemetry.exporter.otlp.internal;
 
-import static io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram;
-
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.metrics.Aggregation;
-import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -197,18 +192,9 @@ public final class OtlpConfigUtil {
       Consumer<DefaultAggregationSelector> defaultAggregationSelectorConsumer) {
     String defaultHistogramAggregation =
         config.getString("otel.exporter.otlp.metrics.default.histogram.aggregation");
-    if (defaultHistogramAggregation == null) {
-      return;
-    }
-    if (AggregationUtil.aggregationName(Aggregation.base2ExponentialBucketHistogram())
-        .equalsIgnoreCase(defaultHistogramAggregation)) {
-      defaultAggregationSelectorConsumer.accept(
-          DefaultAggregationSelector.getDefault()
-              .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()));
-    } else if (!AggregationUtil.aggregationName(explicitBucketHistogram())
-        .equalsIgnoreCase(defaultHistogramAggregation)) {
-      throw new ConfigurationException(
-          "Unrecognized default histogram aggregation: " + defaultHistogramAggregation);
+    if (defaultHistogramAggregation != null) {
+      ExporterBuilderUtil.configureHistogramDefaultAggregation(
+          defaultHistogramAggregation, defaultAggregationSelectorConsumer);
     }
   }
 
