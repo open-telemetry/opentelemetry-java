@@ -1,10 +1,15 @@
-package io.opentelemetry.context.internal;
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-import io.opentelemetry.context.Context;
-import org.junit.jupiter.api.Test;
+package io.opentelemetry.context.internal;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import io.opentelemetry.context.Context;
+import org.junit.jupiter.api.Test;
 
 class InstrumentationUtilTest {
   @Test
