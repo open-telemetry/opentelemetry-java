@@ -1,5 +1,6 @@
 extensions:
-  health_check: {}
+  health_check:
+    endpoint: 0.0.0.0:13133
 receivers:
   prometheus:
     config:
@@ -7,12 +8,12 @@ receivers:
         - job_name: 'app'
           scrape_interval: 1s
           static_configs:
-            - targets: ['$APP_ENDPOINT']
+            - targets: ['${APP_ENDPOINT}']
 exporters:
   logging:
-    verbosity: $LOGGING_EXPORTER_VERBOSITY
+    verbosity: ${LOGGING_EXPORTER_VERBOSITY}
   otlp:
-    endpoint: $OTLP_EXPORTER_ENDPOINT
+    endpoint: ${OTLP_EXPORTER_ENDPOINT}
     tls:
       insecure: true
     compression: none
