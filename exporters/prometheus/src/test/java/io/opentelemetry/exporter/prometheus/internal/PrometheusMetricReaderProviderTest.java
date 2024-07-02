@@ -83,7 +83,7 @@ class PrometheusMetricReaderProviderTest {
     config.put("otel.exporter.prometheus.port", String.valueOf(port));
     config.put("otel.java.experimental.exporter.memory_mode", "reusable_data");
     config.put(
-        "otel.exporter.prometheus.metrics.default.histogram.aggregation",
+        "otel.java.experimental.exporter.prometheus.metrics.default.histogram.aggregation",
         "BASE2_EXPONENTIAL_BUCKET_HISTOGRAM");
 
     when(configProperties.getInt(any())).thenReturn(null);
@@ -108,7 +108,8 @@ class PrometheusMetricReaderProviderTest {
   @Test
   void createMetricReader_WithWrongConfiguration() throws IOException {
     Map<String, String> config = new HashMap<>();
-    config.put("otel.exporter.prometheus.metrics.default.histogram.aggregation", "foo");
+    config.put(
+        "otel.java.experimental.exporter.prometheus.metrics.default.histogram.aggregation", "foo");
 
     when(configProperties.getInt(any())).thenReturn(null);
     when(configProperties.getString(any())).thenReturn(null);
