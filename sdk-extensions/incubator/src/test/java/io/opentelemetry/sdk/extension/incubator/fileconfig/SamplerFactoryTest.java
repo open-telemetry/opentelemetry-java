@@ -9,10 +9,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOff;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOn;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.JaegerRemote;
@@ -135,7 +135,7 @@ class SamplerFactoryTest {
                             .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
                         spiHelper,
                         new ArrayList<>()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(StructuredConfigException.class)
         .hasMessage("Unrecognized sampler(s): [test]");
     cleanup.addCloseables(closeables);
   }

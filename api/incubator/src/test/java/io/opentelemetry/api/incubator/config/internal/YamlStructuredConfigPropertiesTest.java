@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.extension.incubator.fileconfig;
+package io.opentelemetry.api.incubator.config.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableSet;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
+import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfiguration;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;

@@ -12,8 +12,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.internal.testing.CleanupExtension;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -117,7 +117,7 @@ class FileConfigurationCreateTest {
             () ->
                 FileConfiguration.parseAndCreate(
                     new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(StructuredConfigException.class)
         .hasMessage("Unrecognized log record exporter(s): [foo]");
     logCapturer.assertContains(
         "Error encountered interpreting configuration model. Closing partially configured components.");

@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Stream;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.ViewBuilder;
@@ -28,7 +28,7 @@ final class ViewFactory implements Factory<Stream, View> {
   @Override
   public View create(@Nullable Stream model, SpiHelper spiHelper, List<Closeable> closeables) {
     if (model == null) {
-      throw new ConfigurationException("stream must not be null");
+      throw new StructuredConfigException("stream must not be null");
     }
 
     ViewBuilder builder = View.builder();

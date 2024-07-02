@@ -7,10 +7,10 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static java.util.stream.Collectors.joining;
 
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric;
@@ -57,12 +57,12 @@ final class MetricExporterFactory
     }
 
     if (model.getPrometheus() != null) {
-      throw new ConfigurationException("prometheus exporter not supported in this context");
+      throw new StructuredConfigException("prometheus exporter not supported in this context");
     }
 
     // TODO(jack-berg): add support for generic SPI exporters
     if (!model.getAdditionalProperties().isEmpty()) {
-      throw new ConfigurationException(
+      throw new StructuredConfigException(
           "Unrecognized metric exporter(s): "
               + model.getAdditionalProperties().keySet().stream().collect(joining(",", "[", "]")));
     }

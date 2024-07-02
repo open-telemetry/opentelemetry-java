@@ -11,11 +11,11 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporter;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReader;
@@ -58,7 +58,7 @@ class MetricReaderFactoryTest {
                         new MetricReader().withPeriodic(new PeriodicMetricReader()),
                         spiHelper,
                         Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(StructuredConfigException.class)
         .hasMessage("exporter required for periodic reader");
   }
 
@@ -180,7 +180,7 @@ class MetricReaderFactoryTest {
                         new MetricReader().withPull(new PullMetricReader()),
                         spiHelper,
                         Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(StructuredConfigException.class)
         .hasMessage("exporter required for pull reader");
 
     assertThatThrownBy(
@@ -191,7 +191,7 @@ class MetricReaderFactoryTest {
                             .withPull(new PullMetricReader().withExporter(new MetricExporter())),
                         spiHelper,
                         Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(StructuredConfigException.class)
         .hasMessage("prometheus is the only currently supported pull reader");
 
     assertThatThrownBy(
@@ -204,7 +204,7 @@ class MetricReaderFactoryTest {
                                     .withExporter(new MetricExporter().withOtlp(new OtlpMetric()))),
                         spiHelper,
                         Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(StructuredConfigException.class)
         .hasMessage("prometheus is the only currently supported pull reader");
   }
 

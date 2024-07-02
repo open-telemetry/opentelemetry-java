@@ -9,10 +9,10 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessor;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessor;
@@ -169,7 +169,7 @@ class SpanProcessorFactoryTest {
                             .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
                         spiHelper,
                         closeables))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(StructuredConfigException.class)
         .hasMessage("Unrecognized span processor(s): [test]");
     cleanup.addCloseables(closeables);
   }

@@ -25,6 +25,7 @@ dependencies {
   implementation("org.snakeyaml:snakeyaml-engine")
 
   // io.opentelemetry.sdk.extension.incubator.fileconfig
+  implementation(project(":api:incubator"))
   implementation("com.fasterxml.jackson.core:jackson-databind")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
   implementation(project(":sdk-extensions:autoconfigure"))

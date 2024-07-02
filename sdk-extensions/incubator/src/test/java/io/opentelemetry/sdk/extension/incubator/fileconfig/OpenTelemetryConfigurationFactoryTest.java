@@ -10,6 +10,7 @@ import static io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -22,7 +23,6 @@ import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOn;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Attributes;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessor;
@@ -95,7 +95,7 @@ class OpenTelemetryConfigurationFactoryTest {
               () ->
                   OpenTelemetryConfigurationFactory.getInstance()
                       .create(testCase, spiHelper, closeables))
-          .isInstanceOf(ConfigurationException.class)
+          .isInstanceOf(StructuredConfigException.class)
           .hasMessage("Unsupported file format. Supported formats include: 0.1");
       cleanup.addCloseables(closeables);
     }

@@ -15,13 +15,13 @@ import static org.mockito.Mockito.verify;
 
 import com.google.common.collect.ImmutableMap;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Console;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Headers;
@@ -229,7 +229,7 @@ class MetricExporterFactoryTest {
                             .withPrometheus(new Prometheus()),
                         spiHelper,
                         new ArrayList<>()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(StructuredConfigException.class)
         .hasMessage("prometheus exporter not supported in this context");
     cleanup.addCloseables(closeables);
   }
@@ -247,7 +247,7 @@ class MetricExporterFactoryTest {
                             .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
                         spiHelper,
                         new ArrayList<>()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(StructuredConfigException.class)
         .hasMessage("Unrecognized metric exporter(s): [test]");
     cleanup.addCloseables(closeables);
   }

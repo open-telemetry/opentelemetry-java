@@ -9,8 +9,8 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Aggregation;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogram;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Stream;
@@ -28,7 +28,7 @@ class ViewFactoryTest {
             () ->
                 ViewFactory.getInstance()
                     .create(null, mock(SpiHelper.class), Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(StructuredConfigException.class)
         .hasMessage("stream must not be null");
   }
 

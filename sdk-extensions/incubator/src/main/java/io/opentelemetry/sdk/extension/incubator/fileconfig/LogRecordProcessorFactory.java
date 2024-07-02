@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static java.util.stream.Collectors.joining;
 
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporter;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
@@ -85,7 +85,7 @@ final class LogRecordProcessorFactory
 
     // TODO: add support for generic log record processors
     if (!model.getAdditionalProperties().isEmpty()) {
-      throw new ConfigurationException(
+      throw new StructuredConfigException(
           "Unrecognized log record processor(s): "
               + model.getAdditionalProperties().keySet().stream().collect(joining(",", "[", "]")));
     }

@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
@@ -37,7 +37,8 @@ final class OpenTelemetryConfigurationFactory
     }
 
     if (!"0.1".equals(model.getFileFormat())) {
-      throw new ConfigurationException("Unsupported file format. Supported formats include: 0.1");
+      throw new StructuredConfigException(
+          "Unsupported file format. Supported formats include: 0.1");
     }
 
     if (Objects.equals(Boolean.TRUE, model.getDisabled())) {

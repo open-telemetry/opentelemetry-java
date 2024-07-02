@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporter;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReader;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Prometheus;
@@ -47,7 +47,7 @@ final class MetricReaderFactory
     if (periodicModel != null) {
       MetricExporter exporterModel = periodicModel.getExporter();
       if (exporterModel == null) {
-        throw new ConfigurationException("exporter required for periodic reader");
+        throw new StructuredConfigException("exporter required for periodic reader");
       }
       io.opentelemetry.sdk.metrics.export.MetricExporter metricExporter =
           MetricExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
@@ -67,7 +67,7 @@ final class MetricReaderFactory
     if (pullModel != null) {
       MetricExporter exporterModel = pullModel.getExporter();
       if (exporterModel == null) {
-        throw new ConfigurationException("exporter required for pull reader");
+        throw new StructuredConfigException("exporter required for pull reader");
       }
       Prometheus prometheusModel = exporterModel.getPrometheus();
       if (prometheusModel != null) {
@@ -77,7 +77,7 @@ final class MetricReaderFactory
         return FileConfigUtil.addAndReturn(closeables, metricReader);
       }
 
-      throw new ConfigurationException("prometheus is the only currently supported pull reader");
+      throw new StructuredConfigException("prometheus is the only currently supported pull reader");
     }
 
     return null;

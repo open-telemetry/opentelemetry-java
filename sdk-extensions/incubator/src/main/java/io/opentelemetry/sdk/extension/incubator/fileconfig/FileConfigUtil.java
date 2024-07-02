@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
+import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import java.io.Closeable;
 import java.util.List;
 import java.util.function.Function;
@@ -39,7 +39,7 @@ final class FileConfigUtil {
    * {@code type}, {@link ComponentProvider#getName()} matching {@code name}, and call {@link
    * ComponentProvider#create(StructuredConfigProperties)} with the given {@code model}.
    *
-   * @throws ConfigurationException if no matching providers are found, or if multiple are found
+   * @throws StructuredConfigException if no matching providers are found, or if multiple are found
    *     (i.e. conflict), or if {@link ComponentProvider#create(StructuredConfigProperties)} throws
    */
   @SuppressWarnings({"unchecked", "rawtypes"})
@@ -56,11 +56,11 @@ final class FileConfigUtil {
                     componentProvider.getType() == type && name.equals(componentProvider.getName()))
             .collect(Collectors.toList());
     if (matchedProviders.isEmpty()) {
-      throw new ConfigurationException(
+      throw new StructuredConfigException(
           "No component provider detected for " + type.getName() + " with name \"" + name + "\".");
     }
     if (matchedProviders.size() > 1) {
-      throw new ConfigurationException(
+      throw new StructuredConfigException(
           "Component provider conflict. Multiple providers detected for "
               + type.getName()
               + " with name \""
@@ -79,7 +79,7 @@ final class FileConfigUtil {
     try {
       return provider.create(config);
     } catch (Throwable throwable) {
-      throw new ConfigurationException(
+      throw new StructuredConfigException(
           "Error configuring " + type.getName() + " with name \"" + name + "\"", throwable);
     }
   }

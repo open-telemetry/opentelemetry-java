@@ -9,8 +9,8 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Selector;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -25,7 +25,7 @@ class InstrumentSelectorFactoryTest {
             () ->
                 InstrumentSelectorFactory.getInstance()
                     .create(null, mock(SpiHelper.class), Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(StructuredConfigException.class)
         .hasMessage("selector must not be null");
   }
 
@@ -35,7 +35,7 @@ class InstrumentSelectorFactoryTest {
             () ->
                 InstrumentSelectorFactory.getInstance()
                     .create(new Selector(), mock(SpiHelper.class), Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(StructuredConfigException.class)
         .hasMessage("Invalid selector");
   }
 

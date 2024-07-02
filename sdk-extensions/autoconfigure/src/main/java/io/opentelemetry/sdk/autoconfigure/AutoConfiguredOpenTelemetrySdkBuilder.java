@@ -8,6 +8,9 @@ package io.opentelemetry.sdk.autoconfigure;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.incubator.config.ConfigProvider;
+import io.opentelemetry.api.incubator.config.GlobalConfigProvider;
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -21,7 +24,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
@@ -49,6 +51,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -431,7 +434,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     AutoConfiguredOpenTelemetrySdk fromFileConfiguration = maybeConfigureFromFile(config);
     if (fromFileConfiguration != null) {
       maybeRegisterShutdownHook(fromFileConfiguration.getOpenTelemetrySdk());
-      maybeSetAsGlobal(fromFileConfiguration.getOpenTelemetrySdk());
+      maybeSetAsGlobal(
+          fromFileConfiguration.getOpenTelemetrySdk(), fromFileConfiguration.getConfigProvider());
       return fromFileConfiguration;
     }
 
@@ -503,7 +507,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       }
 
       maybeRegisterShutdownHook(openTelemetrySdk);
-      maybeSetAsGlobal(openTelemetrySdk);
+      maybeSetAsGlobal(openTelemetrySdk, null);
       callAutoConfigureListeners(spiHelper, openTelemetrySdk);
 
       return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config, null);
@@ -554,25 +558,32 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
               "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration");
       Method create = configurationFactory.getMethod("create", openTelemetryConfiguration);
       OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model);
-      Method toConfigProperties =
-          configurationFactory.getMethod("toConfigProperties", openTelemetryConfiguration);
-      StructuredConfigProperties structuredConfigProperties =
-          (StructuredConfigProperties) toConfigProperties.invoke(null, model);
+      Class<?> fileConfigProvider =
+          Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigProvider");
+      Method createFileConfigProvider =
+          fileConfigProvider.getMethod("create", openTelemetryConfiguration);
+      ConfigProvider configProvider = (ConfigProvider) createFileConfigProvider.invoke(null, model);
       // Note: can't access file configuration resource without reflection so setting a dummy
       // resource
       return AutoConfiguredOpenTelemetrySdk.create(
-          sdk, Resource.getDefault(), null, structuredConfigProperties);
+          sdk, Resource.getDefault(), null, configProvider);
     } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
       throw new ConfigurationException(
           "Error configuring from file. Is opentelemetry-sdk-extension-incubator on the classpath?",
           e);
     } catch (InvocationTargetException e) {
       Throwable cause = e.getCause();
-      if (cause instanceof ConfigurationException) {
-        throw (ConfigurationException) cause;
+      if (cause instanceof StructuredConfigException) {
+        throw toConfigurationException((StructuredConfigException) cause);
       }
       throw new ConfigurationException("Unexpected error configuring from file", e);
     }
+  }
+
+  private static ConfigurationException toConfigurationException(
+      StructuredConfigException exception) {
+    String message = Objects.requireNonNull(exception.getMessage());
+    return new ConfigurationException(message, exception);
   }
 
   private void maybeRegisterShutdownHook(OpenTelemetrySdk openTelemetrySdk) {
@@ -582,13 +593,15 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     Runtime.getRuntime().addShutdownHook(shutdownHook(openTelemetrySdk));
   }
 
-  private void maybeSetAsGlobal(OpenTelemetrySdk openTelemetrySdk) {
+  private void maybeSetAsGlobal(
+      OpenTelemetrySdk openTelemetrySdk, @Nullable ConfigProvider configProvider) {
     if (!setResultAsGlobal) {
       return;
     }
     GlobalOpenTelemetry.set(openTelemetrySdk);
     GlobalEventLoggerProvider.set(
         SdkEventLoggerProvider.create(openTelemetrySdk.getSdkLoggerProvider()));
+    GlobalConfigProvider.set(configProvider != null ? configProvider : ConfigProvider.noop());
     logger.log(
         Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetrySdk);
   }

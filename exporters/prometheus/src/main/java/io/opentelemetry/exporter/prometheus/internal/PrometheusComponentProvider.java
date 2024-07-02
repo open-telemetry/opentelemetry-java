@@ -5,10 +5,10 @@
 
 package io.opentelemetry.exporter.prometheus.internal;
 
+import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServerBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 
 /**

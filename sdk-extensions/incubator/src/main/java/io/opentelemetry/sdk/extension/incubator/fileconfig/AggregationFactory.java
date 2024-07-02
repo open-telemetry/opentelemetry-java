@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Aggregation;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2ExponentialBucketHistogram;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogram;
@@ -56,7 +56,7 @@ final class AggregationFactory
         return io.opentelemetry.sdk.metrics.Aggregation.base2ExponentialBucketHistogram(
             maxSize, maxScale);
       } catch (IllegalArgumentException e) {
-        throw new ConfigurationException("Invalid exponential bucket histogram", e);
+        throw new StructuredConfigException("Invalid exponential bucket histogram", e);
       }
     }
     ExplicitBucketHistogram explicitBucketHistogram = model.getExplicitBucketHistogram();
@@ -68,7 +68,7 @@ final class AggregationFactory
       try {
         return io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram(boundaries);
       } catch (IllegalArgumentException e) {
-        throw new ConfigurationException("Invalid explicit bucket histogram", e);
+        throw new StructuredConfigException("Invalid explicit bucket histogram", e);
       }
     }
 
