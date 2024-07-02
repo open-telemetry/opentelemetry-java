@@ -42,6 +42,7 @@ public class PrometheusComponentProvider implements ComponentProvider<MetricRead
     if (host != null) {
       prometheusBuilder.setHost(host);
     }
+
     String defaultHistogramAggregation = config.getString("default_histogram_aggregation");
     if (defaultHistogramAggregation != null) {
       ExporterBuilderUtil.configureHistogramDefaultAggregation(

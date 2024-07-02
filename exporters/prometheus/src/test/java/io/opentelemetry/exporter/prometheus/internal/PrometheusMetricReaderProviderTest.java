@@ -106,7 +106,7 @@ class PrometheusMetricReaderProviderTest {
   }
 
   @Test
-  void createMetricReader_WithWrongConfiguration() throws IOException {
+  void createMetricReader_WithWrongConfiguration() {
     Map<String, String> config = new HashMap<>();
     config.put(
         "otel.java.experimental.exporter.prometheus.metrics.default.histogram.aggregation", "foo");
