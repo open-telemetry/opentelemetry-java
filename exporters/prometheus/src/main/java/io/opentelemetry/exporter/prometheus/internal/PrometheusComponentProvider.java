@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.prometheus.internal;
 
-import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServerBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
@@ -41,12 +40,6 @@ public class PrometheusComponentProvider implements ComponentProvider<MetricRead
     String host = config.getString("host");
     if (host != null) {
       prometheusBuilder.setHost(host);
-    }
-
-    String defaultHistogramAggregation = config.getString("default_histogram_aggregation");
-    if (defaultHistogramAggregation != null) {
-      ExporterBuilderUtil.configureHistogramDefaultAggregation(
-          defaultHistogramAggregation, prometheusBuilder::setDefaultAggregationSelector);
     }
 
     return prometheusBuilder.build();
