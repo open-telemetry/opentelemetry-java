@@ -131,6 +131,11 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
     }
   }
 
+  @Override
+  public boolean isEnabled() {
+    return true;
+  }
+
   /**
    * Obtain the AggregatorHolder for recording measurements, re-reading the volatile
    * this.aggregatorHolder until we access one where recordsInProgress is even. Collect sets
