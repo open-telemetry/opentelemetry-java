@@ -77,9 +77,6 @@ class CaseInsensitiveMapTest {
     expectMap.put("KEY2", "test2");
 
     // test get
-    expectMap.forEach(
-        (k, v) -> {
-          assertThat(v).isEqualTo(caseInsensitiveMap.get(k));
-        });
+    expectMap.forEach((k, v) -> assertThat(v).isEqualTo(caseInsensitiveMap.get(k)));
   }
 }
