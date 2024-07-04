@@ -11,11 +11,13 @@ import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.RegisteredReader;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,20 +38,25 @@ public class MeterSharedState {
   private final List<CallbackRegistration> callbackRegistrations = new ArrayList<>();
 
   private final Map<RegisteredReader, MetricStorageRegistry> readerStorageRegistries;
-
   private final InstrumentationScopeInfo instrumentationScopeInfo;
+  private final boolean meterEnabled;
 
   private MeterSharedState(
-      InstrumentationScopeInfo instrumentationScopeInfo, List<RegisteredReader> registeredReaders) {
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      List<RegisteredReader> registeredReaders,
+      MeterConfig meterConfig) {
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.readerStorageRegistries =
         registeredReaders.stream()
             .collect(toMap(Function.identity(), unused -> new MetricStorageRegistry()));
+    this.meterEnabled = meterConfig.isEnabled();
   }
 
   public static MeterSharedState create(
-      InstrumentationScopeInfo instrumentationScopeInfo, List<RegisteredReader> registeredReaders) {
-    return new MeterSharedState(instrumentationScopeInfo, registeredReaders);
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      List<RegisteredReader> registeredReaders,
+      MeterConfig meterConfig) {
+    return new MeterSharedState(instrumentationScopeInfo, registeredReaders, meterConfig);
   }
 
   /**
@@ -81,11 +88,20 @@ public class MeterSharedState {
     return instrumentationScopeInfo;
   }
 
+  /** Returns {@code true} if the {@link MeterConfig#enabled()} of the meter is {@code true}. */
+  public boolean isMeterEnabled() {
+    return meterEnabled;
+  }
+
   /** Collects all metrics. */
   public List<MetricData> collectAll(
       RegisteredReader registeredReader,
       MeterProviderSharedState meterProviderSharedState,
       long epochNanos) {
+    // Short circuit collection process if meter is disabled
+    if (!meterEnabled) {
+      return Collections.emptyList();
+    }
     List<CallbackRegistration> currentRegisteredCallbacks;
     synchronized (callbackLock) {
       currentRegisteredCallbacks = new ArrayList<>(callbackRegistrations);
@@ -113,7 +129,7 @@ public class MeterSharedState {
           result.add(current);
         }
       }
-      return result;
+      return Collections.unmodifiableList(result);
     }
   }
 
