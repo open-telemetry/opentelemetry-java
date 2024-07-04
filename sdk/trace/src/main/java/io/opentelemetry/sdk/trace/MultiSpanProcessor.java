@@ -60,14 +60,14 @@ final class MultiSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void beforeEnd(ReadWriteSpan span) {
+  public void onEnding(ReadWriteSpan span) {
     for (SpanProcessor spanProcessor : spanProcessorsBeforeEnd) {
-      spanProcessor.beforeEnd(span);
+      spanProcessor.onEnding(span);
     }
   }
 
   @Override
-  public boolean isBeforeEndRequired() {
+  public boolean isOnEndingRequired() {
     return !spanProcessorsBeforeEnd.isEmpty();
   }
 
@@ -101,7 +101,7 @@ final class MultiSpanProcessor implements SpanProcessor {
       if (spanProcessor.isStartRequired()) {
         spanProcessorsStart.add(spanProcessor);
       }
-      if (spanProcessor.isBeforeEndRequired()) {
+      if (spanProcessor.isOnEndingRequired()) {
         spanProcessorsBeforeEnd.add(spanProcessor);
       }
       if (spanProcessor.isEndRequired()) {

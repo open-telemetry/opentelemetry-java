@@ -95,13 +95,13 @@ public interface SpanProcessor extends Closeable {
    *
    * @param span the {@code Span} that is just about to be ended.
    */
-  default void beforeEnd(ReadWriteSpan span) {
+  default void onEnding(ReadWriteSpan span) {
   }
 
   /**
    * Returns {@code true} if this {@link SpanProcessor} requires before-end events.
    */
-  default boolean isBeforeEndRequired() {
+  default boolean isOnEndingRequired() {
     return false;
   }
 

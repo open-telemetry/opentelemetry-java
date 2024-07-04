@@ -497,8 +497,8 @@ final class SdkSpan implements ReadWriteSpan {
       }
       hasEnded = EndState.ENDING;
       this.endEpochNanos = endEpochNanos;
-      if (spanProcessor.isBeforeEndRequired()) {
-        spanProcessor.beforeEnd(this);
+      if (spanProcessor.isOnEndingRequired()) {
+        spanProcessor.onEnding(this);
       }
       hasEnded = EndState.ENDED;
     }

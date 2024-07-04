@@ -110,7 +110,7 @@ class SdkSpanTest {
     expectedAttributes = builder.build();
     testClock = TestClock.create(Instant.ofEpochSecond(0, START_EPOCH_NANOS));
     when(spanProcessor.isStartRequired()).thenReturn(true);
-    when(spanProcessor.isBeforeEndRequired()).thenReturn(true);
+    when(spanProcessor.isOnEndingRequired()).thenReturn(true);
     when(spanProcessor.isEndRequired()).thenReturn(true);
   }
 
@@ -158,10 +158,10 @@ class SdkSpanTest {
       endedStateInProcessor.set(sp.hasEnded());
       sp.setAttribute(dummyAttrib, "bar");
       return null;
-    }).when(spanProcessor).beforeEnd(any());
+    }).when(spanProcessor).onEnding(any());
 
     span.end();
-    verify(spanProcessor).beforeEnd(same(span));
+    verify(spanProcessor).onEnding(same(span));
     assertThat(span.hasEnded()).isTrue();
     assertThat(endedStateInProcessor.get()).isFalse();
     assertThat(span.getAttribute(dummyAttrib)).isEqualTo("bar");
@@ -178,7 +178,7 @@ class SdkSpanTest {
       testClock.advance(Duration.ofSeconds(100));
       spanLatencyInProcessor.set(sp.getLatencyNanos());
       return null;
-    }).when(spanProcessor).beforeEnd(any());
+    }).when(spanProcessor).onEnding(any());
 
     testClock.advance(Duration.ofSeconds(1));
     long expectedDuration = testClock.now() - START_EPOCH_NANOS;
@@ -186,7 +186,7 @@ class SdkSpanTest {
     assertThat(span.getLatencyNanos()).isEqualTo(expectedDuration);
 
     span.end();
-    verify(spanProcessor).beforeEnd(same(span));
+    verify(spanProcessor).onEnding(same(span));
     assertThat(span.hasEnded()).isTrue();
     assertThat(span.getLatencyNanos()).isEqualTo(expectedDuration);
     assertThat(spanLatencyInProcessor.get()).isEqualTo(expectedDuration);
