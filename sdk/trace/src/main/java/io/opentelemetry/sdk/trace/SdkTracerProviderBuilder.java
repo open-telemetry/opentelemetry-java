@@ -156,11 +156,11 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
-   * This method is experimental so not public. You may reflectively call it using {@link
-   * SdkTracerProviderUtil#setTracerConfigurator(SdkTracerProviderBuilder, ScopeConfigurator)}
-   *
-   * <p>Set the tracer configurator, which computes {@link TracerConfig} for each {@link
+   * Set the tracer configurator, which computes {@link TracerConfig} for each {@link
    * InstrumentationScopeInfo}.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkTracerProviderUtil#setTracerConfigurator(SdkTracerProviderBuilder, ScopeConfigurator)}.
    *
    * <p>Overrides any matchers added via {@link #addTracerConfiguratorCondition(Predicate,
    * TracerConfig)}.
@@ -174,12 +174,12 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
-   * This method is experimental so not public. You may reflectively call it using {@link
-   * SdkTracerProviderUtil#addTracerConfiguratorCondition(SdkTracerProviderBuilder, Predicate,
-   * TracerConfig)}
-   *
-   * <p>Adds a condition to the tracer configurator, which computes {@link TracerConfig} for each
+   * Adds a condition to the tracer configurator, which computes {@link TracerConfig} for each
    * {@link InstrumentationScopeInfo}.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkTracerProviderUtil#addTracerConfiguratorCondition(SdkTracerProviderBuilder, Predicate,
+   * TracerConfig)}.
    *
    * <p>Applies after any previously added conditions.
    *

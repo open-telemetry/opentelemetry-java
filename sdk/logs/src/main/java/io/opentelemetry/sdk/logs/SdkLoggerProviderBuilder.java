@@ -109,11 +109,11 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
-   * This method is experimental so not public. You may reflectively call it using {@link
-   * SdkLoggerProviderUtil#setLoggerConfigurator(SdkLoggerProviderBuilder, ScopeConfigurator)}
-   *
-   * <p>Set the logger configurator, which computes {@link LoggerConfig} for each {@link
+   * Set the logger configurator, which computes {@link LoggerConfig} for each {@link
    * InstrumentationScopeInfo}.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkLoggerProviderUtil#setLoggerConfigurator(SdkLoggerProviderBuilder, ScopeConfigurator)}.
    *
    * <p>Overrides any matchers added via {@link #addLoggerConfiguratorCondition(Predicate,
    * LoggerConfig)}.
@@ -127,12 +127,12 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
-   * This method is experimental so not public. You may reflectively call it using {@link
-   * SdkLoggerProviderUtil#addLoggerConfiguratorCondition(SdkLoggerProviderBuilder, Predicate,
-   * LoggerConfig)}
-   *
-   * <p>Adds a condition to the logger configurator, which computes {@link LoggerConfig} for each
+   * Adds a condition to the logger configurator, which computes {@link LoggerConfig} for each
    * {@link InstrumentationScopeInfo}.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkLoggerProviderUtil#addLoggerConfiguratorCondition(SdkLoggerProviderBuilder, Predicate,
+   * LoggerConfig)}.
    *
    * <p>Applies after any previously added conditions.
    *

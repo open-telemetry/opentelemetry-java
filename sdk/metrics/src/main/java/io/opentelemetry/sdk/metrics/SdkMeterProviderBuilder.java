@@ -81,12 +81,9 @@ public final class SdkMeterProviderBuilder {
   }
 
   /**
-   * This method is experimental so not public. You may reflectively call it using {@link
-   * SdkMeterProviderUtil#setExemplarFilter(SdkMeterProviderBuilder, ExemplarFilter)}
+   * Assign an {@link ExemplarFilter} for all metrics created by Meters.
    *
-   * <p>Assign an {@link ExemplarFilter} for all metrics created by Meters.
-   *
-   * <p>Note: not currently stable but available for experimental use via {@link
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
    * SdkMeterProviderUtil#setExemplarFilter(SdkMeterProviderBuilder, ExemplarFilter)}.
    */
   SdkMeterProviderBuilder setExemplarFilter(ExemplarFilter filter) {
@@ -138,11 +135,11 @@ public final class SdkMeterProviderBuilder {
   }
 
   /**
-   * This method is experimental so not public. You may reflectively call it using {@link
+   * Registers a {@link MetricReader} with a {@link CardinalityLimitSelector}.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
    * SdkMeterProviderUtil#registerMetricReaderWithCardinalitySelector(SdkMeterProviderBuilder,
    * MetricReader, CardinalityLimitSelector)}
-   *
-   * <p>Registers a {@link MetricReader} with a {@link CardinalityLimitSelector}.
    *
    * <p>Note: not currently stable but available for experimental use via {@link
    * SdkMeterProviderUtil#registerMetricReaderWithCardinalitySelector(SdkMeterProviderBuilder,
@@ -165,11 +162,11 @@ public final class SdkMeterProviderBuilder {
   }
 
   /**
-   * This method is experimental so not public. You may reflectively call it using {@link
-   * SdkMeterProviderUtil#setMeterConfigurator(SdkMeterProviderBuilder, ScopeConfigurator)}
-   *
-   * <p>Set the meter configurator, which computes {@link MeterConfig} for each {@link
+   * Set the meter configurator, which computes {@link MeterConfig} for each {@link
    * InstrumentationScopeInfo}.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkMeterProviderUtil#setMeterConfigurator(SdkMeterProviderBuilder, ScopeConfigurator)}.
    *
    * <p>Overrides any matchers added via {@link #addMeterConfiguratorCondition(Predicate,
    * MeterConfig)}.
@@ -182,12 +179,12 @@ public final class SdkMeterProviderBuilder {
   }
 
   /**
-   * This method is experimental so not public. You may reflectively call it using {@link
-   * SdkMeterProviderUtil#addMeterConfiguratorCondition(SdkMeterProviderBuilder, Predicate,
-   * MeterConfig)}
+   * Adds a condition to the meter configurator, which computes {@link MeterConfig} for each {@link
+   * InstrumentationScopeInfo}.
    *
-   * <p>Adds a condition to the meter configurator, which computes {@link MeterConfig} for each
-   * {@link InstrumentationScopeInfo}.
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkMeterProviderUtil#addMeterConfiguratorCondition(SdkMeterProviderBuilder, Predicate,
+   * MeterConfig)}.
    *
    * <p>Applies after any previously added conditions.
    *

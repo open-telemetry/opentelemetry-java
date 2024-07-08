@@ -92,10 +92,11 @@ public final class ViewBuilder {
   }
 
   /**
-   * This method is experimental so not public. You may reflectively call it using {@link
-   * SdkMeterProviderUtil#appendFilteredBaggageAttributes(ViewBuilder, Predicate)}
+   * Add an attribute processor.
    *
-   * <p>Add an attribute processor.
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkMeterProviderUtil#appendFilteredBaggageAttributes(ViewBuilder, Predicate)}, {@link
+   * SdkMeterProviderUtil#appendAllBaggageAttributes(ViewBuilder)}.
    *
    * <p>Note: not currently stable but additional attribute processors can be configured via {@link
    * SdkMeterProviderUtil#appendAllBaggageAttributes(ViewBuilder)}.
@@ -107,10 +108,10 @@ public final class ViewBuilder {
   }
 
   /**
-   * This method is experimental so not public. You may reflectively call it using {@link
-   * SdkMeterProviderUtil#setCardinalityLimit(ViewBuilder, int)}
+   * Set the cardinality limit.
    *
-   * <p>Set the cardinality limit.
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkMeterProviderUtil#setCardinalityLimit(ViewBuilder, int)}
    *
    * <p>Note: not currently stable but cardinality limit can be configured via
    * SdkMeterProviderUtil#setCardinalityLimit(ViewBuilder, int).
