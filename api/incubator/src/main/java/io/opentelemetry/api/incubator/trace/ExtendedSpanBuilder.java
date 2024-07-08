@@ -6,10 +6,17 @@
 package io.opentelemetry.api.incubator.trace;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import java.time.Instant;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
 /** Extended {@link SpanBuilder} with experimental APIs. */
@@ -90,4 +97,60 @@ public interface ExtendedSpanBuilder extends SpanBuilder {
    */
   <E extends Throwable> void startAndRun(
       SpanRunnable<E> runnable, BiConsumer<Span, Throwable> handleException) throws E;
+
+  /** {@inheritDoc} */
+  @Override
+  ExtendedSpanBuilder setParent(Context context);
+
+  /** {@inheritDoc} */
+  @Override
+  ExtendedSpanBuilder setNoParent();
+
+  /** {@inheritDoc} */
+  @Override
+  ExtendedSpanBuilder addLink(SpanContext spanContext);
+
+  /** {@inheritDoc} */
+  @Override
+  ExtendedSpanBuilder addLink(SpanContext spanContext, Attributes attributes);
+
+  /** {@inheritDoc} */
+  @Override
+  ExtendedSpanBuilder setAttribute(String key, String value);
+
+  /** {@inheritDoc} */
+  @Override
+  ExtendedSpanBuilder setAttribute(String key, long value);
+
+  /** {@inheritDoc} */
+  @Override
+  ExtendedSpanBuilder setAttribute(String key, double value);
+
+  /** {@inheritDoc} */
+  @Override
+  ExtendedSpanBuilder setAttribute(String key, boolean value);
+
+  /** {@inheritDoc} */
+  @Override
+  <T> ExtendedSpanBuilder setAttribute(AttributeKey<T> key, T value);
+
+  /** {@inheritDoc} */
+  @Override
+  default ExtendedSpanBuilder setAllAttributes(Attributes attributes) {
+    return (ExtendedSpanBuilder) SpanBuilder.super.setAllAttributes(attributes);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  ExtendedSpanBuilder setSpanKind(SpanKind spanKind);
+
+  /** {@inheritDoc} */
+  @Override
+  ExtendedSpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit);
+
+  /** {@inheritDoc} */
+  @Override
+  default ExtendedSpanBuilder setStartTimestamp(Instant startTimestamp) {
+    return (ExtendedSpanBuilder) SpanBuilder.super.setStartTimestamp(startTimestamp);
+  }
 }

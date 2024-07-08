@@ -11,15 +11,15 @@ val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.17.1",
   "com.google.guava:guava-bom:33.2.1-jre",
   "com.google.protobuf:protobuf-bom:3.25.3",
-  "com.linecorp.armeria:armeria-bom:1.29.0",
+  "com.linecorp.armeria:armeria-bom:1.29.1",
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
   "com.squareup.okio:okio-bom:3.9.0", // applies to transitive dependencies of okhttp
-  "io.grpc:grpc-bom:1.64.0",
+  "io.grpc:grpc-bom:1.65.0",
   "io.netty:netty-bom:4.1.111.Final",
   "io.zipkin.brave:brave-bom:6.0.3",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.4.0",
   "org.assertj:assertj-bom:3.26.0",
-  "org.junit:junit-bom:5.10.2",
+  "org.junit:junit-bom:5.10.3",
   "org.testcontainers:testcontainers-bom:1.19.8",
   "org.snakeyaml:snakeyaml-engine:2.7"
 )
@@ -67,7 +67,7 @@ val DEPENDENCIES = listOf(
   "io.jaegertracing:jaeger-client:1.8.1",
   "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.29.0-alpha",
   "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.25.0-alpha",
-  "io.opentelemetry.proto:opentelemetry-proto:1.2.0-alpha",
+  "io.opentelemetry.proto:opentelemetry-proto:1.3.2-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
   "io.prometheus:prometheus-metrics-exporter-httpserver:1.3.1",
@@ -75,11 +75,11 @@ val DEPENDENCIES = listOf(
   "nl.jqno.equalsverifier:equalsverifier:3.16.1",
   "org.awaitility:awaitility:4.2.1",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
-  "org.codehaus.mojo:animal-sniffer-annotations:1.23",
+  "org.codehaus.mojo:animal-sniffer-annotations:1.24",
   "org.jctools:jctools-core:4.0.5",
   "org.junit-pioneer:junit-pioneer:1.9.1",
   "org.mock-server:mockserver-netty:5.15.0:shaded",
-  "org.skyscreamer:jsonassert:1.5.1",
+  "org.skyscreamer:jsonassert:1.5.3",
   "com.android.tools:desugar_jdk_libs:2.0.4",
 )
 
