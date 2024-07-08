@@ -74,8 +74,8 @@ jobs:
           RUN_JMH_BASED_TESTS: ${{ matrix.jmh-based-tests }}
 
       - name: Check for diff
-        # The jApiCmp diff compares current to latest, which isn't appropriate for release branches
-        if: ${{ !startsWith(github.ref_name, 'release/') && !startsWith(github.base_ref, 'release/') }}
+        # The jApiCmp diff compares current to latest, which isn't appropriate for release branches, or for bot-generated PRs
+        if: ${{ !startsWith(github.ref_name, 'release/') && !startsWith(github.base_ref, 'release/') && (github.actor != 'opentelemetrybot') }}
         run: |
           # need to "git add" in case any generated files did not already exist
           git add docs/apidiffs
