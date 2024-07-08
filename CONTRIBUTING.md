@@ -250,17 +250,17 @@ Example usage could be as follows:
    }
    ```
 
-   Please confirm whether the local opentelemetry-java version is consistent with the 
-   opentelemetry-java version declared in the project that relies on opentelemetry-java. 
+   Please confirm whether the local opentelemetry-java version is consistent with the
+   opentelemetry-java version declared in the project that relies on opentelemetry-java.
    If it is inconsistent, `dependencySubstitution` may not take effect.
-   
+
    See [the Gradle documentation](https://docs.gradle.org/current/userguide/composite_builds.html#included_build_declaring_substitutions)
    for more information.
 4. If you now build your project, it will use the included build to supply the opentelemetry-java
    artifacts, ignoring any version declarations. Use the prefix `:DIRECTORY:` to refer to
    tasks/projects within the included build, where DIRECTORY is the name of the directory in the
    included build (only the part after the last `/`).
-5. Here are some issues and solutions ([discussions/6551](https://github.com/open-telemetry/opentelemetry-java/discussions/6551)) 
+5. Here are some issues and solutions ([discussions/6551](https://github.com/open-telemetry/opentelemetry-java/discussions/6551))
    you may encounter that may be helpful to you.
 
 ### Updating the OTLP protobufs
