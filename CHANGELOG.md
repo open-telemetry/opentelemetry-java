@@ -1939,7 +1939,7 @@ should not be many. Thanks for bearing with us on this.
 ### General
 
 * Examples moved
-  to [opentelemetry-java-docs](https://github.com/open-telemetry/opentelemetry-java-docs)
+  to [opentelemetry-java-examples](https://github.com/open-telemetry/opentelemetry-java-examples)
 
 ### SDK
 
