@@ -9,7 +9,7 @@ import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Describes a function.
+ * Describes function and line table debug information.
  *
  * @see "pprofextended.proto::Location"
  */

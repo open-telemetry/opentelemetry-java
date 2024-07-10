@@ -11,4 +11,6 @@ otelJava.moduleName.set("io.opentelemetry.exporter.otlp.profiles")
 
 dependencies {
   api(project(":sdk:common"))
+
+  annotationProcessor("com.google.auto.value:auto-value")
 }
