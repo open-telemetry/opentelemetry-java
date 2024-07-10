@@ -93,7 +93,7 @@ Other repositories in the OpenTelemetry Java ecosystem include:
   contains instrumentation.
 * [opentelemetry-java-contrib](https://github.com/open-telemetry/opentelemetry-java-contrib)
   contains extensions, prototypes, and instrumentation, including vendor specific components.
-* [opentelemetry-java-docs](https://github.com/open-telemetry/opentelemetry-java-docs) contains
+* [opentelemetry-java-examples](https://github.com/open-telemetry/opentelemetry-java-examples) contains
   working code snippets demonstrating various concepts.
 
 ## Style guideline

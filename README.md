@@ -15,7 +15,7 @@ javaagent**, see [opentelemetry-java-instrumentation][].
 If you are looking for **examples** on how to use the OpenTelemetry API to
 write your own **manual instrumentation**, or how to set up the OpenTelemetry
 Java SDK, see [Manual instrumentation][]. Fully-functional examples
-are available in [opentelemetry-java-docs][].
+are available in [opentelemetry-java-examples][].
 
 If you are looking for generated classes for
 the [OpenTelemetry semantic conventions][opentelemetry-semantic-conventions],
@@ -338,7 +338,7 @@ Made with [contrib.rocks](https://contrib.rocks).
 [maven-image]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry/opentelemetry-api/badge.svg
 [maven-url]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry/opentelemetry-api
 [opentelemetry-java-instrumentation]: https://github.com/open-telemetry/opentelemetry-java-instrumentation
-[opentelemetry-java-docs]: https://github.com/open-telemetry/opentelemetry-java-docs
+[opentelemetry-java-examples]: https://github.com/open-telemetry/opentelemetry-java-examples
 [opentelemetry-semantic-conventions]: https://opentelemetry.io/docs/specs/semconv/
 [opentelemetry-semantic-conventions-java]: https://github.com/open-telemetry/semantic-conventions-java
 [opentelemetry.io]: https://opentelemetry.io
