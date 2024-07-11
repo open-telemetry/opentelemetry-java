@@ -15,10 +15,11 @@ class CaseInsensitiveMap extends HashMap<String, String> {
 
   private static final long serialVersionUID = -4202518750189126871L;
 
+  CaseInsensitiveMap() {}
+
   CaseInsensitiveMap(Map<String, String> carrier) {
-    super();
     if (carrier != null) {
-      carrier.forEach(this::put);
+      this.putAll(carrier);
     }
   }
 
@@ -26,6 +27,16 @@ class CaseInsensitiveMap extends HashMap<String, String> {
   public String put(String key, String value) {
     return super.put(getKeyLowerCase(key), value);
   }
+
+  @Override
+  public void putAll(Map<? extends String, ? extends String> m) {
+    m.forEach(this::put);
+  }
+
+  //  @Override
+  //  public String putIfAbsent(String key, String value) {
+  //    return super.putIfAbsent(getKeyLowerCase(key), value);
+  //  }
 
   private static String getKeyLowerCase(@Nonnull String key) {
     return key.toLowerCase(Locale.ROOT);
