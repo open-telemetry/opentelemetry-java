@@ -6,7 +6,6 @@
 package io.opentelemetry.api.incubator.propagation;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,61 +21,49 @@ class CaseInsensitiveMapTest {
 
     CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap(map);
 
-    Map<String, String> expectMap = new HashMap<>();
-    expectMap.put("key1", "test");
-    expectMap.put("key2", "test2");
+    Map<String, String> standardMap = new HashMap<>();
+    standardMap.put("key1", "test");
+    standardMap.put("key2", "test2");
 
-    assertThat(caseInsensitiveMap).isEqualTo(expectMap);
+    assertThat(caseInsensitiveMap).isEqualTo(standardMap);
+  }
+
+  @Test
+  void putAll() {
+    CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap();
+    Map<String, String> standardMap = new HashMap<>();
+    standardMap.put("key1", "test");
+    standardMap.put("key2", "test2");
+    caseInsensitiveMap.putAll(standardMap);
+    assertThat(caseInsensitiveMap).isEqualTo(standardMap);
+  }
+
+  @Test
+  void putIfAbsent() {
+    CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap();
+    caseInsensitiveMap.putIfAbsent("key1", "test");
+    assertThat(caseInsensitiveMap.get("KEY1")).isEqualTo("test");
+    caseInsensitiveMap.putIfAbsent("key1", "nope");
+    assertThat(caseInsensitiveMap.get("KEY1")).isEqualTo("test");
   }
 
   @Test
   void createByConstructorWithNullMap() {
-    assertThatCode(() -> new CaseInsensitiveMap(null)).doesNotThrowAnyException();
+    CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap(null);
+    assertThat(caseInsensitiveMap).isEmpty();
   }
 
   @Test
-  void putMethodTest() {
-
+  void caseInsensitivity() {
     CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap(null);
 
     assertThat(caseInsensitiveMap).isEmpty();
 
-    String key1 = "KEY1";
-    String value1 = "test1";
-    caseInsensitiveMap.put(key1, value1);
-
-    String key2 = "KEY2";
-    String value2 = "test2";
-    caseInsensitiveMap.put(key2, value2);
-
-    Map<String, String> expectMap = new HashMap<>();
-    expectMap.put("key1", "test1");
-    expectMap.put("key2", "test2");
-
-    // test put
-    assertThat(caseInsensitiveMap).isEqualTo(expectMap);
-  }
-
-  @Test
-  void getMethodTest() {
-
-    CaseInsensitiveMap caseInsensitiveMap = new CaseInsensitiveMap(null);
-
-    assertThat(caseInsensitiveMap).isEmpty();
-
-    String key1 = "key1";
-    String value1 = "test1";
-    caseInsensitiveMap.put(key1, value1);
-
-    String key2 = "key2";
-    String value2 = "test2";
-    caseInsensitiveMap.put(key2, value2);
-
-    Map<String, String> expectMap = new HashMap<>();
-    expectMap.put("KEY1", "test1");
-    expectMap.put("KEY2", "test2");
-
-    // test get
-    expectMap.forEach((k, v) -> assertThat(v).isEqualTo(caseInsensitiveMap.get(k)));
+    caseInsensitiveMap.put("KEY1", "test1");
+    caseInsensitiveMap.put("KEY2", "test2");
+    assertThat(caseInsensitiveMap.get("key1")).isEqualTo("test1");
+    assertThat(caseInsensitiveMap.get("key2")).isEqualTo("test2");
+    assertThat(caseInsensitiveMap.get("kEy2")).isEqualTo("test2");
+    assertThat(caseInsensitiveMap.get("KEY2")).isEqualTo("test2");
   }
 }
