@@ -33,11 +33,6 @@ class CaseInsensitiveMap extends HashMap<String, String> {
     m.forEach(this::put);
   }
 
-  //  @Override
-  //  public String putIfAbsent(String key, String value) {
-  //    return super.putIfAbsent(getKeyLowerCase(key), value);
-  //  }
-
   private static String getKeyLowerCase(@Nonnull String key) {
     return key.toLowerCase(Locale.ROOT);
   }
