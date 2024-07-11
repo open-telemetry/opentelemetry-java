@@ -13,6 +13,7 @@ import static io.opentelemetry.sdk.trace.internal.TracerConfig.disabled;
 import static io.opentelemetry.sdk.trace.internal.TracerConfig.enabled;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.trace.ExtendedTracer;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.Tracer;
@@ -90,6 +91,10 @@ class TracerConfigTest {
                     .hasSpanId(grandchild.getSpanContext().getSpanId())
                     .hasParentSpanId(parent.getSpanContext().getSpanId())
                     .hasAttributes(Attributes.builder().put("c", "1").build()));
+    // tracerA and tracerC are enabled, tracerB is disabled.
+    assertThat(((ExtendedTracer) tracerA).isEnabled()).isTrue();
+    assertThat(((ExtendedTracer) tracerB).isEnabled()).isFalse();
+    assertThat(((ExtendedTracer) tracerA).isEnabled()).isTrue();
   }
 
   @ParameterizedTest

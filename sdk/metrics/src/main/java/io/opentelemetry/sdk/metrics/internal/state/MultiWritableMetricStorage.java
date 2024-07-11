@@ -29,4 +29,14 @@ class MultiWritableMetricStorage implements WriteableMetricStorage {
       storage.recordDouble(value, attributes, context);
     }
   }
+
+  @Override
+  public boolean isEnabled() {
+    for (WriteableMetricStorage storage : storages) {
+      if (storage.isEnabled()) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+## Version 1.40.0 (2024-07-05)
+
+### API
+
+#### Incubator
+
+* Narrow ExtendedSpanBuilder return types for chaining
+  ([#6514](https://github.com/open-telemetry/opentelemetry-java/pull/6514))
+* Add APIs to determine if tracer, logger, instruments are enabled
+  ([#6502](https://github.com/open-telemetry/opentelemetry-java/pull/6502))
+
+### SDK
+
+#### Extensions
+
+* Move autoconfigure docs to opentelemetry.io
+  ([#6491](https://github.com/open-telemetry/opentelemetry-java/pull/6491))
+
 ## Version 1.39.0 (2024-06-07)
 
 ### API
@@ -1921,7 +1939,7 @@ should not be many. Thanks for bearing with us on this.
 ### General
 
 * Examples moved
-  to [opentelemetry-java-docs](https://github.com/open-telemetry/opentelemetry-java-docs)
+  to [opentelemetry-java-examples](https://github.com/open-telemetry/opentelemetry-java-examples)
 
 ### SDK
 
