@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.context.internal;
+package io.opentelemetry.api.internal;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;

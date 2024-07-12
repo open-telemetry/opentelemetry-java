@@ -23,7 +23,7 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
-import io.opentelemetry.context.internal.InstrumentationUtil;
+import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
