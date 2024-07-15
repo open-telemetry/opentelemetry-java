@@ -1,7 +1,7 @@
 pluginManagement {
   plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("com.gradle.develocity") version "3.17.4"
+    id("com.gradle.develocity") version "3.17.5"
     id("de.undercouch.download") version "5.6.0"
     id("org.jsonschema2pojo") version "1.2.1"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
@@ -32,6 +32,7 @@ include(":dependencyManagement")
 include(":extensions:kotlin")
 include(":extensions:trace-propagators")
 include(":exporters:common")
+include(":exporters:common:compile-stub")
 include(":exporters:sender:grpc-managed-channel")
 include(":exporters:sender:jdk")
 include(":exporters:sender:okhttp")

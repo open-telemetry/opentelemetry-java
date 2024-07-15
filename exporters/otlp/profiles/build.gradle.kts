@@ -1,6 +1,7 @@
 plugins {
   id("otel.java-conventions")
-  id("otel.publish-conventions")
+  // TODO (jack-berg): uncomment when ready to publish
+  // id("otel.publish-conventions")
 
   id("otel.animalsniffer-conventions")
 }
@@ -10,4 +11,6 @@ otelJava.moduleName.set("io.opentelemetry.exporter.otlp.profiles")
 
 dependencies {
   api(project(":sdk:common"))
+
+  annotationProcessor("com.google.auto.value:auto-value")
 }

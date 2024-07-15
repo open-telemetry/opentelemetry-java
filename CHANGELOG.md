@@ -2,6 +2,68 @@
 
 ## Unreleased
 
+## Version 1.40.0 (2024-07-05)
+
+### API
+
+#### Incubator
+
+* Narrow ExtendedSpanBuilder return types for chaining
+  ([#6514](https://github.com/open-telemetry/opentelemetry-java/pull/6514))
+* Add APIs to determine if tracer, logger, instruments are enabled
+  ([#6502](https://github.com/open-telemetry/opentelemetry-java/pull/6502))
+
+### SDK
+
+#### Extensions
+
+* Move autoconfigure docs to opentelemetry.io
+  ([#6491](https://github.com/open-telemetry/opentelemetry-java/pull/6491))
+
+## Version 1.39.0 (2024-06-07)
+
+### API
+
+#### Incubator
+
+* BREAKING: Refactor ExtendedTracer, ExtendedSpanBuilder to reflect incubating API conventions
+  ([#6497](https://github.com/open-telemetry/opentelemetry-java/pull/6497))
+
+### SDK
+
+#### Exporter
+
+* BREAKING: Serve prometheus metrics only on `/metrics` by default. To restore the previous behavior
+  and serve metrics on all paths, override the default handler
+  as [demonstrated here](https://github.com/open-telemetry/opentelemetry-java/blob/main/exporters/prometheus/src/test/java/io/opentelemetry/exporter/prometheus/PrometheusHttpServerTest.java#L251-L259).
+  ([#6476](https://github.com/open-telemetry/opentelemetry-java/pull/6476))
+* Make OTLP exporter memory mode API public
+  ([#6469](https://github.com/open-telemetry/opentelemetry-java/pull/6469))
+* Speed up OTLP string marshaling using sun.misc.Unsafe
+  ([#6433](https://github.com/open-telemetry/opentelemetry-java/pull/6433))
+* Add exporter data classes for experimental profiling signal type.
+  ([#6374](https://github.com/open-telemetry/opentelemetry-java/pull/6374))
+* Start prometheus http server with daemon thread
+  ([#6472](https://github.com/open-telemetry/opentelemetry-java/pull/6472))
+* Update the Prometheus metrics library and improve how units are included in metric names.
+  ([#6473](https://github.com/open-telemetry/opentelemetry-java/pull/6473))
+* Remove android animalsniffer check from prometheus exporter
+  ([#6478](https://github.com/open-telemetry/opentelemetry-java/pull/6478))
+
+#### Extensions
+
+* Load file config YAML using core schema, ensure that env var substitution retains string types.
+  ([#6436](https://github.com/open-telemetry/opentelemetry-java/pull/6436))
+* Define dedicated file configuration SPI ComponentProvider
+  ([#6457](https://github.com/open-telemetry/opentelemetry-java/pull/6457))
+
+### Tooling
+
+* Normalize timestamps and file ordering in jars, making the outputs reproducible
+  ([#6471](https://github.com/open-telemetry/opentelemetry-java/pull/6471))
+* GHA for generating the post-release pull request
+  ([#6449](https://github.com/open-telemetry/opentelemetry-java/pull/6449))
+
 ## Version 1.38.0 (2024-05-10)
 
 ### API
@@ -1877,7 +1939,7 @@ should not be many. Thanks for bearing with us on this.
 ### General
 
 * Examples moved
-  to [opentelemetry-java-docs](https://github.com/open-telemetry/opentelemetry-java-docs)
+  to [opentelemetry-java-examples](https://github.com/open-telemetry/opentelemetry-java-examples)
 
 ### SDK
 
