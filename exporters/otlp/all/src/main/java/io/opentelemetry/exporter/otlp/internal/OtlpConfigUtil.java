@@ -140,9 +140,11 @@ public final class OtlpConfigUtil {
             determinePropertyByType(config, "otel.exporter.otlp", dataType, "client.certificate"));
 
     if (clientKeyPath != null && clientKeyChainPath == null) {
-      throw new ConfigurationException("Client key provided but certification chain is missing");
+      throw new ConfigurationException(
+          "client key provided without client certificate - both client key and client certificate must be set");
     } else if (clientKeyPath == null && clientKeyChainPath != null) {
-      throw new ConfigurationException("Client key chain provided but key is missing");
+      throw new ConfigurationException(
+          "client certificate provided without client key - both client key and client_certificate must be set");
     }
 
     byte[] certificateBytes = readFileBytes(certificatePath);
@@ -222,9 +224,11 @@ public final class OtlpConfigUtil {
     String clientKeyChainPath = config.getString("client_certificate");
 
     if (clientKeyPath != null && clientKeyChainPath == null) {
-      throw new ConfigurationException("client_key provided but client_certificate");
+      throw new ConfigurationException(
+          "client_key provided without client_certificate - both client_key and client_certificate must be set");
     } else if (clientKeyPath == null && clientKeyChainPath != null) {
-      throw new ConfigurationException("client_certificate provided but client_key");
+      throw new ConfigurationException(
+          "client_certificate provided without client_key - both client_key and client_certificate must be set");
     }
     byte[] certificateBytes = readFileBytes(certificatePath);
     if (certificateBytes != null) {
