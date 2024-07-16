@@ -17,18 +17,24 @@ import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.metrics.v1.AggregationTemporality;
+import io.opentelemetry.proto.metrics.v1.Histogram;
+import io.opentelemetry.proto.metrics.v1.HistogramDataPoint;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.NumberDataPoint;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
 import io.opentelemetry.proto.metrics.v1.Sum;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.UncheckedIOException;
 import java.time.Duration;
@@ -71,7 +77,14 @@ class CollectorIntegrationTest {
 
   @BeforeAll
   static void beforeAll() {
-    PrometheusHttpServer prometheusHttpServer = PrometheusHttpServer.builder().setPort(0).build();
+    PrometheusHttpServer prometheusHttpServer =
+        PrometheusHttpServer.builder()
+            .setPort(0)
+            .setDefaultAggregationSelector(
+                DefaultAggregationSelector.getDefault()
+                    .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()))
+            .build();
+
     prometheusPort = prometheusHttpServer.getAddress().getPort();
     resource = Resource.getDefault();
     meterProvider =
@@ -115,11 +128,15 @@ class CollectorIntegrationTest {
   @Test
   void endToEnd() {
     Meter meter = meterProvider.meterBuilder("test").setInstrumentationVersion("1.0.0").build();
-
     meter
         .counterBuilder("requests")
         .build()
         .add(3, Attributes.builder().put("animal", "bear").build());
+
+    DoubleHistogram histogram = meter.histogramBuilder("latency").build();
+
+    histogram.record(3, Attributes.builder().put("animal", "bear").build());
+    histogram.record(5, Attributes.builder().put("animal", "bear").build());
 
     await()
         .atMost(Duration.ofSeconds(30))
@@ -169,6 +186,11 @@ class CollectorIntegrationTest {
             .orElseThrow(() -> new IllegalStateException("missing scope with name \"test\""));
     assertThat(testScopeMetrics.getScope().getVersion()).isEqualTo("1.0.0");
 
+    verifyCounterMetric(testScopeMetrics);
+    verifyHistogramMetric(testScopeMetrics);
+  }
+
+  private static void verifyCounterMetric(ScopeMetrics testScopeMetrics) {
     Optional<Metric> optRequestTotal =
         testScopeMetrics.getMetricsList().stream()
             .filter(metric -> metric.getName().equals("requests_total"))
@@ -186,6 +208,32 @@ class CollectorIntegrationTest {
     NumberDataPoint requestTotalDataPoint = requestTotalSum.getDataPoints(0);
     assertThat(requestTotalDataPoint.getAsDouble()).isEqualTo(3.0);
     assertThat(requestTotalDataPoint.getAttributesList())
+        .containsExactlyInAnyOrder(
+            stringKeyValue("animal", "bear"),
+            // Scope name and version are serialized as attributes to disambiguate metrics with the
+            // same name in different scopes
+            stringKeyValue("otel_scope_name", "test"),
+            stringKeyValue("otel_scope_version", "1.0.0"));
+  }
+
+  private static void verifyHistogramMetric(ScopeMetrics testScopeMetrics) {
+    Optional<Metric> optRequestTotal =
+        testScopeMetrics.getMetricsList().stream()
+            .filter(metric -> metric.getName().equals("latency"))
+            .findFirst();
+    assertThat(optRequestTotal).isPresent();
+    Metric requestTotal = optRequestTotal.get();
+    assertThat(requestTotal.getDataCase()).isEqualTo(Metric.DataCase.HISTOGRAM);
+
+    Histogram requestHistogram = requestTotal.getHistogram();
+    assertThat(requestHistogram.getAggregationTemporality())
+        .isEqualTo(AggregationTemporality.AGGREGATION_TEMPORALITY_CUMULATIVE);
+    assertThat(requestHistogram.getDataPointsCount()).isEqualTo(1);
+
+    HistogramDataPoint requestHistogramDataPoints = requestHistogram.getDataPoints(0);
+    assertThat(requestHistogramDataPoints.getCount()).isEqualTo(2);
+    assertThat(requestHistogramDataPoints.getBucketCountsCount()).isEqualTo(1);
+    assertThat(requestHistogramDataPoints.getAttributesList())
         .containsExactlyInAnyOrder(
             stringKeyValue("animal", "bear"),
             // Scope name and version are serialized as attributes to disambiguate metrics with the
