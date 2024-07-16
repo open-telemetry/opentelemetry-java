@@ -127,7 +127,7 @@ class OtlpLogRecordExporterProviderTest {
       verify(grpcBuilder, never()).setTimeout(any());
       verify(grpcBuilder, never()).setTrustedCertificates(any());
       verify(grpcBuilder, never()).setClientTls(any(), any());
-      assertThat(grpcBuilder).extracting("delegate").extracting("retryPolicy").isNull();
+      assertThat(grpcBuilder).extracting("delegate").extracting("retryPolicy").isNotNull();
       assertThat(exporter).extracting("memoryMode").isEqualTo(MemoryMode.IMMUTABLE_DATA);
     }
     Mockito.verifyNoInteractions(httpBuilder);
@@ -143,7 +143,7 @@ class OtlpLogRecordExporterProviderTest {
     config.put("otel.exporter.otlp.headers", "header-key=header-value");
     config.put("otel.exporter.otlp.compression", "gzip");
     config.put("otel.exporter.otlp.timeout", "15s");
-    config.put("otel.experimental.exporter.otlp.retry.enabled", "true");
+    config.put("otel.java.exporter.otlp.retry.disabled", "true");
 
     try (LogRecordExporter exporter =
         provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
@@ -156,7 +156,7 @@ class OtlpLogRecordExporterProviderTest {
       verify(grpcBuilder).setTrustedCertificates(serverTls.certificate().getEncoded());
       verify(grpcBuilder)
           .setClientTls(clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded());
-      assertThat(grpcBuilder).extracting("delegate").extracting("retryPolicy").isNotNull();
+      assertThat(grpcBuilder).extracting("delegate").extracting("retryPolicy").isNull();
     }
     Mockito.verifyNoInteractions(httpBuilder);
   }
@@ -210,7 +210,7 @@ class OtlpLogRecordExporterProviderTest {
       verify(httpBuilder, never()).setTimeout(any());
       verify(httpBuilder, never()).setTrustedCertificates(any());
       verify(httpBuilder, never()).setClientTls(any(), any());
-      assertThat(httpBuilder).extracting("delegate").extracting("retryPolicy").isNull();
+      assertThat(httpBuilder).extracting("delegate").extracting("retryPolicy").isNotNull();
       assertThat(exporter).extracting("memoryMode").isEqualTo(MemoryMode.IMMUTABLE_DATA);
     }
     Mockito.verifyNoInteractions(grpcBuilder);
@@ -227,7 +227,7 @@ class OtlpLogRecordExporterProviderTest {
     config.put("otel.exporter.otlp.headers", "header-key=header-value");
     config.put("otel.exporter.otlp.compression", "gzip");
     config.put("otel.exporter.otlp.timeout", "15s");
-    config.put("otel.experimental.exporter.otlp.retry.enabled", "true");
+    config.put("otel.java.exporter.otlp.retry.disabled", "true");
 
     try (LogRecordExporter exporter =
         provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
@@ -240,7 +240,7 @@ class OtlpLogRecordExporterProviderTest {
       verify(httpBuilder).setTrustedCertificates(serverTls.certificate().getEncoded());
       verify(httpBuilder)
           .setClientTls(clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded());
-      assertThat(httpBuilder).extracting("delegate").extracting("retryPolicy").isNotNull();
+      assertThat(httpBuilder).extracting("delegate").extracting("retryPolicy").isNull();
     }
     Mockito.verifyNoInteractions(grpcBuilder);
   }

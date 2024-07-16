@@ -104,6 +104,7 @@ class OpenTelemetrySpanImpl extends Span
 
   @Override
   public void addLink(Link link) {
+    // TODO (jack-berg): Revisit now that adding links after creation is allowed
     LOGGER.warning("OpenTelemetry does not support links added after a span is created.");
   }
 
