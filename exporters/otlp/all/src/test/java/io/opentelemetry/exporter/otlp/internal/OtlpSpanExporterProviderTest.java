@@ -144,7 +144,7 @@ class OtlpSpanExporterProviderTest {
     config.put("otel.exporter.otlp.headers", "header-key=header-value");
     config.put("otel.exporter.otlp.compression", "gzip");
     config.put("otel.exporter.otlp.timeout", "15s");
-    config.put("otel.java.exporter.otlp.retry.enabled", "false");
+    config.put("otel.java.exporter.otlp.retry.disabled", "true");
 
     try (SpanExporter exporter =
         provider.createExporter(DefaultConfigProperties.createFromMap(config))) {

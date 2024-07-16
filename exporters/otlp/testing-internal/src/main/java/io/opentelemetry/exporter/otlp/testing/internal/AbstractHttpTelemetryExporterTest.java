@@ -937,10 +937,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         .collect(Collectors.toList());
   }
 
-  private TelemetryExporter<T> nonRetryingExporter() {
-    return exporterBuilder().setEndpoint(server.httpUri() + path).setRetryPolicy(null).build();
-  }
-
   private static void addHttpError(int code) {
     httpErrors.add(HttpResponse.of(code));
   }
