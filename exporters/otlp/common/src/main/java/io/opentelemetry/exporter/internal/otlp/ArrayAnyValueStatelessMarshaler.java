@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
-import io.opentelemetry.api.incubator.logs.AnyValue;
+import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;

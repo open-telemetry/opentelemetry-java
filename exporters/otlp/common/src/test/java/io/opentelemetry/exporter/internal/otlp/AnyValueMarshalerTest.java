@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
-import static io.opentelemetry.api.incubator.logs.AnyValue.of;
+import static io.opentelemetry.api.common.AnyValue.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -13,7 +13,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
-import io.opentelemetry.api.incubator.logs.KeyAnyValue;
+import io.opentelemetry.api.common.KeyAnyValue;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
@@ -39,7 +39,7 @@ class AnyValueMarshalerTest {
   @ParameterizedTest
   @MethodSource("serializeAnyValueArgs")
   void anyValueString_StatefulMarshaler(
-      io.opentelemetry.api.incubator.logs.AnyValue<?> anyValue, AnyValue expectedSerializedValue) {
+      io.opentelemetry.api.common.AnyValue<?> anyValue, AnyValue expectedSerializedValue) {
     MarshalerWithSize marshaler = AnyValueMarshaler.create(anyValue);
     AnyValue serializedValue = parse(AnyValue.getDefaultInstance(), marshaler);
     assertThat(serializedValue).isEqualTo(expectedSerializedValue);
@@ -48,7 +48,7 @@ class AnyValueMarshalerTest {
   @ParameterizedTest
   @MethodSource("serializeAnyValueArgs")
   void anyValueString_StatelessMarshaler(
-      io.opentelemetry.api.incubator.logs.AnyValue<?> anyValue, AnyValue expectedSerializedValue) {
+      io.opentelemetry.api.common.AnyValue<?> anyValue, AnyValue expectedSerializedValue) {
     Marshaler marshaler = createMarshaler(AnyValueStatelessMarshaler.INSTANCE, anyValue);
     AnyValue serializedValue = parse(AnyValue.getDefaultInstance(), marshaler);
     assertThat(serializedValue).isEqualTo(expectedSerializedValue);

@@ -7,9 +7,9 @@ package io.opentelemetry.sdk.logs;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
-import io.opentelemetry.api.incubator.logs.AnyValue;
+import io.opentelemetry.api.common.AnyValue;
+import io.opentelemetry.api.common.KeyAnyValue;
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
-import io.opentelemetry.api.incubator.logs.KeyAnyValue;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.logs.internal.AnyValueBody;

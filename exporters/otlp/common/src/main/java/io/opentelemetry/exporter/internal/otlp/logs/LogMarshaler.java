@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp.logs;
 
-import io.opentelemetry.api.incubator.logs.AnyValue;
+import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;

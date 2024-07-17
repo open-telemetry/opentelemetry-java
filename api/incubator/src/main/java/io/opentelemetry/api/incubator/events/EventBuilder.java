@@ -7,9 +7,9 @@ package io.opentelemetry.api.incubator.events;
 
 import static java.util.stream.Collectors.toList;
 
+import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.logs.AnyValue;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
 import java.time.Instant;

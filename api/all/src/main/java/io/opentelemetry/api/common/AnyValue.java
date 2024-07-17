@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.incubator.logs;
+package io.opentelemetry.api.common;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -27,6 +27,9 @@ import java.util.Map;
  *       arrays, or any combination.
  *   <li>Raw bytes via {@link #of(byte[])}
  * </ul>
+ *
+ * <p>Currently, AnyValue is only used as an argument for {@link
+ * io.opentelemetry.api.logs.LogRecordBuilder#setBody(AnyValue)}.
  *
  * @param <T> the type. See {@link #getValue()} for description of types.
  */
@@ -105,6 +108,9 @@ public interface AnyValue<T> {
    * Return a string encoding of this {@link AnyValue}. This is intended to be a fallback serialized
    * representation in case there is no suitable encoding that can utilize {@link #getType()} /
    * {@link #getValue()} to serialize specific types.
+   *
+   * <p>WARNING: No guarantees are made about the encoding of this string response. It MAY change in
+   * a future minor release. If you need a reliable string encoding, write your own serializer.
    */
   // TODO(jack-berg): Should this be a JSON encoding?
   String asString();

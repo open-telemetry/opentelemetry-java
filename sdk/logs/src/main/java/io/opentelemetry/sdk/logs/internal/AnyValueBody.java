@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.logs.internal;
 
-import io.opentelemetry.api.incubator.logs.AnyValue;
+import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.sdk.logs.data.Body;
 import javax.annotation.concurrent.Immutable;
 

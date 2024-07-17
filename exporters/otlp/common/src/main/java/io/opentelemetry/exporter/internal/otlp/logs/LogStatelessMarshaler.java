@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.internal.otlp.logs;
 
 import static io.opentelemetry.exporter.internal.otlp.logs.LogMarshaler.toProtoSeverityNumber;
 
-import io.opentelemetry.api.incubator.logs.AnyValue;
+import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;

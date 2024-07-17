@@ -3,29 +3,29 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.incubator.logs;
+package io.opentelemetry.api.common;
 
 import java.util.Objects;
 
-final class AnyValueBoolean implements AnyValue<Boolean> {
+final class AnyValueLong implements AnyValue<Long> {
 
-  private final boolean value;
+  private final long value;
 
-  private AnyValueBoolean(boolean value) {
+  private AnyValueLong(long value) {
     this.value = value;
   }
 
-  static AnyValue<Boolean> create(boolean value) {
-    return new AnyValueBoolean(value);
+  static AnyValue<Long> create(long value) {
+    return new AnyValueLong(value);
   }
 
   @Override
   public AnyValueType getType() {
-    return AnyValueType.BOOLEAN;
+    return AnyValueType.LONG;
   }
 
   @Override
-  public Boolean getValue() {
+  public Long getValue() {
     return value;
   }
 
@@ -36,7 +36,7 @@ final class AnyValueBoolean implements AnyValue<Boolean> {
 
   @Override
   public String toString() {
-    return "AnyValueBoolean{" + asString() + "}";
+    return "AnyValueLong{" + asString() + "}";
   }
 
   @Override
@@ -49,6 +49,6 @@ final class AnyValueBoolean implements AnyValue<Boolean> {
 
   @Override
   public int hashCode() {
-    return Boolean.hashCode(value);
+    return Long.hashCode(value);
   }
 }

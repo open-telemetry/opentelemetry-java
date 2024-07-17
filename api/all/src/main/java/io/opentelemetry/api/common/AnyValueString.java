@@ -3,40 +3,41 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.incubator.logs;
+package io.opentelemetry.api.common;
 
 import java.util.Objects;
 
-final class AnyValueDouble implements AnyValue<Double> {
+final class AnyValueString implements AnyValue<String> {
 
-  private final double value;
+  private final String value;
 
-  private AnyValueDouble(double value) {
+  private AnyValueString(String value) {
     this.value = value;
   }
 
-  static AnyValue<Double> create(double value) {
-    return new AnyValueDouble(value);
+  static AnyValue<String> create(String value) {
+    Objects.requireNonNull(value, "value must not be null");
+    return new AnyValueString(value);
   }
 
   @Override
   public AnyValueType getType() {
-    return AnyValueType.DOUBLE;
+    return AnyValueType.STRING;
   }
 
   @Override
-  public Double getValue() {
+  public String getValue() {
     return value;
   }
 
   @Override
   public String asString() {
-    return String.valueOf(value);
+    return value;
   }
 
   @Override
   public String toString() {
-    return "AnyValueDouble{" + asString() + "}";
+    return "AnyValueString{" + value + "}";
   }
 
   @Override
@@ -49,6 +50,6 @@ final class AnyValueDouble implements AnyValue<Double> {
 
   @Override
   public int hashCode() {
-    return Double.hashCode(value);
+    return value.hashCode();
   }
 }

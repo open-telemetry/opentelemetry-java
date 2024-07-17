@@ -23,8 +23,7 @@ final class ArrayAnyValueMarshaler extends MarshalerWithSize {
     this.value = value;
   }
 
-  static MarshalerWithSize createAnyValue(
-      List<io.opentelemetry.api.incubator.logs.AnyValue<?>> values) {
+  static MarshalerWithSize createAnyValue(List<io.opentelemetry.api.common.AnyValue<?>> values) {
     return createInternal(values, AnyValueMarshaler::create);
   }
 

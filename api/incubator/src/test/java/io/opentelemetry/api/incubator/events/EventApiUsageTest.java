@@ -8,8 +8,8 @@ package io.opentelemetry.api.incubator.events;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.logs.AnyValue;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.logs.internal.AnyValueBody;

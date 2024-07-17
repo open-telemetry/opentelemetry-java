@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.logs;
 
+import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -66,8 +67,18 @@ public interface LogRecordBuilder {
   /** Set the severity text. */
   LogRecordBuilder setSeverityText(String severityText);
 
-  /** Set the body string. */
+  /**
+   * Set the body string.
+   *
+   * <p>Shorthand for calling {@link #setBody(AnyValue)} with {@link AnyValue#of(String)}.
+   */
   LogRecordBuilder setBody(String body);
+
+  /** Set the body {@link AnyValue}. */
+  default LogRecordBuilder setBody(AnyValue<?> body) {
+    setBody(body.asString());
+    return this;
+  }
 
   /**
    * Sets attributes. If the {@link LogRecordBuilder} previously contained a mapping for any of the

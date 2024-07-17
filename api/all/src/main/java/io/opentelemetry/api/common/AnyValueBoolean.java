@@ -3,41 +3,40 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.incubator.logs;
+package io.opentelemetry.api.common;
 
 import java.util.Objects;
 
-final class AnyValueString implements AnyValue<String> {
+final class AnyValueBoolean implements AnyValue<Boolean> {
 
-  private final String value;
+  private final boolean value;
 
-  private AnyValueString(String value) {
+  private AnyValueBoolean(boolean value) {
     this.value = value;
   }
 
-  static AnyValue<String> create(String value) {
-    Objects.requireNonNull(value, "value must not be null");
-    return new AnyValueString(value);
+  static AnyValue<Boolean> create(boolean value) {
+    return new AnyValueBoolean(value);
   }
 
   @Override
   public AnyValueType getType() {
-    return AnyValueType.STRING;
+    return AnyValueType.BOOLEAN;
   }
 
   @Override
-  public String getValue() {
+  public Boolean getValue() {
     return value;
   }
 
   @Override
   public String asString() {
-    return value;
+    return String.valueOf(value);
   }
 
   @Override
   public String toString() {
-    return "AnyValueString{" + value + "}";
+    return "AnyValueBoolean{" + asString() + "}";
   }
 
   @Override
@@ -50,6 +49,6 @@ final class AnyValueString implements AnyValue<String> {
 
   @Override
   public int hashCode() {
-    return value.hashCode();
+    return Boolean.hashCode(value);
   }
 }

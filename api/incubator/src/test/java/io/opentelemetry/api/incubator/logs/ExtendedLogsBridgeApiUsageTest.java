@@ -10,6 +10,7 @@ import static io.opentelemetry.sdk.logs.internal.LoggerConfig.disabled;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
