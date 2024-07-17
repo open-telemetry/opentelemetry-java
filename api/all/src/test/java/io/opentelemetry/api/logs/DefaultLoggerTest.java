@@ -7,6 +7,7 @@ package io.opentelemetry.api.logs;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -30,6 +31,7 @@ class DefaultLoggerTest {
                     .setSeverity(Severity.DEBUG)
                     .setSeverityText("debug")
                     .setBody("body")
+                    .setBody(AnyValue.of("body"))
                     .setAttribute(AttributeKey.stringKey("key1"), "value1")
                     .setAllAttributes(Attributes.builder().put("key2", "value2").build())
                     .emit())
