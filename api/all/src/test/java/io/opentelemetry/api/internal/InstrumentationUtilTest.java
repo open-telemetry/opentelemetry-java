@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal;
+package io.opentelemetry.api.internal;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,10 +12,7 @@ import io.opentelemetry.context.Context;
 import org.junit.jupiter.api.Test;
 
 class InstrumentationUtilTest {
-
-  // testing deprecated implementation until it's removed
   @Test
-  @SuppressWarnings("deprecation")
   void verifySuppressInstrumentation() {
     // Should be false by default.
     assertFalse(InstrumentationUtil.shouldSuppressInstrumentation(Context.current()));
