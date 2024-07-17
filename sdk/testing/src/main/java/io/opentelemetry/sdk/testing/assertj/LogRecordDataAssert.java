@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.testing.assertj;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
+import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -17,6 +18,7 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
@@ -55,7 +57,7 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
     isNotNull();
     resource.accept(
         new ResourceAssert(
-            actual.getResource(), String.format("log [%s]", actual.getBody().asString())));
+            actual.getResource(), String.format("log [%s]", actual.getAnyValueBody())));
     return this;
   }
 
@@ -149,13 +151,19 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
   /** Asserts the log has the given body. */
   public LogRecordDataAssert hasBody(String body) {
     isNotNull();
-    if (!actual.getBody().asString().equals(body)) {
+    return hasBody(AnyValue.of(body));
+  }
+
+  /** Asserts the log has the given body. */
+  public LogRecordDataAssert hasBody(@Nullable AnyValue<?> body) {
+    isNotNull();
+    if (!Objects.equals(actual.getAnyValueBody(), body)) {
       failWithActualExpectedAndMessage(
-          actual.getBody(),
+          actual.getAnyValueBody(),
           body,
           "Expected log to have body <%s> but was <%s>",
           body,
-          actual.getBody().asString());
+          actual.getAnyValueBody());
     }
     return this;
   }

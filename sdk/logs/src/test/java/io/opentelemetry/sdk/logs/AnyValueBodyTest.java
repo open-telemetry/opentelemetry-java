@@ -8,12 +8,13 @@ package io.opentelemetry.sdk.logs;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.AnyValue;
+import io.opentelemetry.api.common.AnyValueType;
 import io.opentelemetry.api.common.KeyAnyValue;
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
-import io.opentelemetry.sdk.logs.internal.AnyValueBody;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import org.junit.jupiter.api.Test;
@@ -36,11 +37,13 @@ class AnyValueBodyTest {
         .hasSize(1)
         .satisfiesExactly(
             logRecordData -> {
-              // TODO (jack-berg): add assertion when ANY_VALUE is added to Body.Type
-              // assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
-              assertThat(logRecordData.getBody().asString()).isEqualTo("1");
-              assertThat(((AnyValueBody) logRecordData.getBody()).asAnyValue())
-                  .isEqualTo(AnyValue.of(1));
+              assertThat(logRecordData.getAnyValueBody())
+                  .isNotNull()
+                  .satisfies(
+                      body -> {
+                        assertThat(body.getType()).isEqualTo(AnyValueType.LONG);
+                        assertThat((Long) body.getValue()).isEqualTo(1L);
+                      });
             });
     exporter.reset();
 
@@ -52,11 +55,15 @@ class AnyValueBodyTest {
         .hasSize(1)
         .satisfiesExactly(
             logRecordData -> {
-              // TODO (jack-berg): add assertion when ANY_VALUE is added to Body.Type
-              // assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
-              assertThat(logRecordData.getBody().asString()).isEqualTo("aGVsbG8gd29ybGQ=");
-              assertThat(((AnyValueBody) logRecordData.getBody()).asAnyValue())
-                  .isEqualTo(AnyValue.of("hello world".getBytes(StandardCharsets.UTF_8)));
+              assertThat(logRecordData.getAnyValueBody())
+                  .isNotNull()
+                  .satisfies(
+                      body -> {
+                        assertThat(body.getType()).isEqualTo(AnyValueType.BYTES);
+                        assertThat((ByteBuffer) body.getValue())
+                            .isEqualTo(
+                                ByteBuffer.wrap("hello world".getBytes(StandardCharsets.UTF_8)));
+                      });
             });
     exporter.reset();
 
@@ -95,40 +102,48 @@ class AnyValueBodyTest {
         .hasSize(1)
         .satisfiesExactly(
             logRecordData -> {
-              // TODO (jack-berg): add assertion when ANY_VALUE is added to Body.Type
-              // assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
-              assertThat(logRecordData.getBody().asString())
-                  .isEqualTo(
-                      "["
-                          + "str_key=value, "
-                          + "bool_key=true, "
-                          + "long_key=1, "
-                          + "double_key=1.1, "
-                          + "bytes_key=Ynl0ZXM=, "
-                          + "arr_key=[entry1, 2, 3.3], "
-                          + "key_value_list_key=[child_str_key1=child_value1, child_str_key2=child_value2]"
-                          + "]");
-              assertThat(((AnyValueBody) logRecordData.getBody()).asAnyValue())
-                  .isEqualTo(
-                      AnyValue.of(
-                          KeyAnyValue.of("str_key", AnyValue.of("value")),
-                          KeyAnyValue.of("bool_key", AnyValue.of(true)),
-                          KeyAnyValue.of("long_key", AnyValue.of(1L)),
-                          KeyAnyValue.of("double_key", AnyValue.of(1.1)),
-                          KeyAnyValue.of(
-                              "bytes_key", AnyValue.of("bytes".getBytes(StandardCharsets.UTF_8))),
-                          KeyAnyValue.of(
-                              "arr_key",
-                              AnyValue.of(AnyValue.of("entry1"), AnyValue.of(2), AnyValue.of(3.3))),
-                          KeyAnyValue.of(
-                              "key_value_list_key",
-                              AnyValue.of(
-                                  new LinkedHashMap<String, AnyValue<?>>() {
-                                    {
-                                      put("child_str_key1", AnyValue.of("child_value1"));
-                                      put("child_str_key2", AnyValue.of("child_value2"));
-                                    }
-                                  }))));
+              assertThat(logRecordData.getAnyValueBody())
+                  .isNotNull()
+                  .satisfies(
+                      body -> {
+                        assertThat(body.getType()).isEqualTo(AnyValueType.KEY_VALUE_LIST);
+                        assertThat(body)
+                            .isEqualTo(
+                                AnyValue.of(
+                                    KeyAnyValue.of("str_key", AnyValue.of("value")),
+                                    KeyAnyValue.of("bool_key", AnyValue.of(true)),
+                                    KeyAnyValue.of("long_key", AnyValue.of(1L)),
+                                    KeyAnyValue.of("double_key", AnyValue.of(1.1)),
+                                    KeyAnyValue.of(
+                                        "bytes_key",
+                                        AnyValue.of("bytes".getBytes(StandardCharsets.UTF_8))),
+                                    KeyAnyValue.of(
+                                        "arr_key",
+                                        AnyValue.of(
+                                            AnyValue.of("entry1"),
+                                            AnyValue.of(2),
+                                            AnyValue.of(3.3))),
+                                    KeyAnyValue.of(
+                                        "key_value_list_key",
+                                        AnyValue.of(
+                                            new LinkedHashMap<String, AnyValue<?>>() {
+                                              {
+                                                put("child_str_key1", AnyValue.of("child_value1"));
+                                                put("child_str_key2", AnyValue.of("child_value2"));
+                                              }
+                                            }))));
+                        assertThat(body.asString())
+                            .isEqualTo(
+                                "["
+                                    + "str_key=value, "
+                                    + "bool_key=true, "
+                                    + "long_key=1, "
+                                    + "double_key=1.1, "
+                                    + "bytes_key=Ynl0ZXM=, "
+                                    + "arr_key=[entry1, 2, 3.3], "
+                                    + "key_value_list_key=[child_str_key1=child_value1, child_str_key2=child_value2]"
+                                    + "]");
+                      });
             });
     exporter.reset();
 
@@ -140,12 +155,16 @@ class AnyValueBodyTest {
         .hasSize(1)
         .satisfiesExactly(
             logRecordData -> {
-              // TODO (jack-berg): add assertion when ANY_VALUE is added to Body.Type
-              // assertThat(logRecordData.getBody().getType()).isEqualTo(Body.Type.ANY_VALUE);
-              assertThat(logRecordData.getBody().asString()).isEqualTo("[entry1, entry2, 3]");
-              assertThat(((AnyValueBody) logRecordData.getBody()).asAnyValue())
-                  .isEqualTo(
-                      AnyValue.of(AnyValue.of("entry1"), AnyValue.of("entry2"), AnyValue.of(3)));
+              assertThat(logRecordData.getAnyValueBody())
+                  .isNotNull()
+                  .satisfies(
+                      body -> {
+                        assertThat(body.getType()).isEqualTo(AnyValueType.ARRAY);
+                        assertThat(body)
+                            .isEqualTo(
+                                AnyValue.of(
+                                    AnyValue.of("entry1"), AnyValue.of("entry2"), AnyValue.of(3)));
+                      });
             });
     exporter.reset();
   }

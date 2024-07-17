@@ -71,8 +71,7 @@ class SdkEventLoggerProviderTest {
     assertThat(seenLog.get().toLogRecordData().getObservedTimestampEpochNanos()).isPositive();
     AnyValue<?> expectedPayload =
         AnyValue.of(Collections.singletonMap("key1", AnyValue.of("value1")));
-    assertThat(((AnyValueBody) seenLog.get().toLogRecordData().getBody()).asAnyValue())
-        .isEqualTo(expectedPayload);
+    assertThat(seenLog.get().toLogRecordData().getAnyValueBody()).isEqualTo(expectedPayload);
   }
 
   @Test
@@ -140,7 +139,7 @@ class SdkEventLoggerProviderTest {
         "attrDoubleArrKey", AnyValue.of(Arrays.asList(AnyValue.of(1.0), AnyValue.of(2.0))));
     expectedPayload.put(
         "attrBoolArrKey", AnyValue.of(Arrays.asList(AnyValue.of(true), AnyValue.of(false))));
-    assertThat(((AnyValueBody) seenLog.get().toLogRecordData().getBody()).asAnyValue())
+    assertThat(seenLog.get().toLogRecordData().getAnyValueBody())
         .isEqualTo(AnyValue.of(expectedPayload));
   }
 }

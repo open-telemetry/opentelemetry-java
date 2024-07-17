@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.logs;
 
+import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.GuardedBy;
@@ -12,7 +13,6 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
-import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
@@ -29,7 +29,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
   private final SpanContext spanContext;
   private final Severity severity;
   @Nullable private final String severityText;
-  private final Body body;
+  @Nullable private final AnyValue<?> body;
   private final Object lock = new Object();
 
   @GuardedBy("lock")
@@ -45,7 +45,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       SpanContext spanContext,
       Severity severity,
       @Nullable String severityText,
-      Body body,
+      @Nullable AnyValue<?> body,
       @Nullable AttributesMap attributes) {
     this.logLimits = logLimits;
     this.resource = resource;
@@ -69,7 +69,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       SpanContext spanContext,
       Severity severity,
       @Nullable String severityText,
-      Body body,
+      @Nullable AnyValue<?> body,
       @Nullable AttributesMap attributes) {
     return new SdkReadWriteLogRecord(
         logLimits,

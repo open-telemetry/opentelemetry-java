@@ -14,8 +14,6 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
-import io.opentelemetry.sdk.logs.data.Body;
-import io.opentelemetry.sdk.logs.internal.AnyValueBody;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -32,7 +30,7 @@ final class SdkLogRecordBuilder implements ExtendedLogRecordBuilder {
   @Nullable private Context context;
   private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
   @Nullable private String severityText;
-  private Body body = Body.empty();
+  @Nullable private AnyValue<?> body;
   @Nullable private AttributesMap attributes;
 
   SdkLogRecordBuilder(
@@ -88,13 +86,13 @@ final class SdkLogRecordBuilder implements ExtendedLogRecordBuilder {
 
   @Override
   public SdkLogRecordBuilder setBody(String body) {
-    this.body = AnyValueBody.create(AnyValue.of(body));
+    this.body = AnyValue.of(body);
     return this;
   }
 
   @Override
   public LogRecordBuilder setBody(AnyValue<?> value) {
-    this.body = AnyValueBody.create(value);
+    this.body = value;
     return this;
   }
 

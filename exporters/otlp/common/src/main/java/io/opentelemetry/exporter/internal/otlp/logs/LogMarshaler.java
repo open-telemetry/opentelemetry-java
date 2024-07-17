@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.internal.otlp.logs;
 
-import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -19,23 +18,19 @@ import io.opentelemetry.exporter.internal.otlp.AnyValueMarshaler;
 import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
 import io.opentelemetry.proto.logs.v1.internal.LogRecord;
 import io.opentelemetry.proto.logs.v1.internal.SeverityNumber;
-import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.logs.internal.AnyValueBody;
 import java.io.IOException;
 import javax.annotation.Nullable;
 
 final class LogMarshaler extends MarshalerWithSize {
   private static final String INVALID_TRACE_ID = TraceId.getInvalid();
   private static final String INVALID_SPAN_ID = SpanId.getInvalid();
-  private static final MarshalerWithSize EMPTY_BODY_MARSHALER =
-      AnyValueMarshaler.create(AnyValue.of(""));
 
   private final long timeUnixNano;
   private final long observedTimeUnixNano;
   private final ProtoEnumInfo severityNumber;
   private final byte[] severityText;
-  private final MarshalerWithSize anyValueMarshaler;
+  @Nullable private final MarshalerWithSize anyValueMarshaler;
   private final KeyValueMarshaler[] attributeMarshalers;
   private final int droppedAttributesCount;
   private final TraceFlags traceFlags;
@@ -46,7 +41,10 @@ final class LogMarshaler extends MarshalerWithSize {
     KeyValueMarshaler[] attributeMarshalers =
         KeyValueMarshaler.createForAttributes(logRecordData.getAttributes());
 
-    MarshalerWithSize bodyMarshaler = body(logRecordData.getBody());
+    MarshalerWithSize bodyMarshaler =
+        logRecordData.getAnyValueBody() == null
+            ? null
+            : AnyValueMarshaler.create(logRecordData.getAnyValueBody());
 
     SpanContext spanContext = logRecordData.getSpanContext();
     return new LogMarshaler(
@@ -62,25 +60,12 @@ final class LogMarshaler extends MarshalerWithSize {
         spanContext.getSpanId().equals(INVALID_SPAN_ID) ? null : spanContext.getSpanId());
   }
 
-  private static MarshalerWithSize body(Body body) {
-    if (body instanceof AnyValueBody) {
-      return AnyValueMarshaler.create(((AnyValueBody) body).asAnyValue());
-    }
-    switch (body.getType()) {
-      case STRING:
-        return AnyValueMarshaler.create(AnyValue.of(body.asString()));
-      case EMPTY:
-        return EMPTY_BODY_MARSHALER;
-    }
-    throw new IllegalStateException("Unsupported Body type: " + body.getType());
-  }
-
   private LogMarshaler(
       long timeUnixNano,
       long observedTimeUnixNano,
       ProtoEnumInfo severityNumber,
       byte[] severityText,
-      MarshalerWithSize anyValueMarshaler,
+      @Nullable MarshalerWithSize anyValueMarshaler,
       KeyValueMarshaler[] attributeMarshalers,
       int droppedAttributesCount,
       TraceFlags traceFlags,
@@ -120,7 +105,9 @@ final class LogMarshaler extends MarshalerWithSize {
 
     output.serializeString(LogRecord.SEVERITY_TEXT, severityText);
 
-    output.serializeMessage(LogRecord.BODY, anyValueMarshaler);
+    if (anyValueMarshaler != null) {
+      output.serializeMessage(LogRecord.BODY, anyValueMarshaler);
+    }
 
     output.serializeRepeatedMessage(LogRecord.ATTRIBUTES, attributeMarshalers);
     output.serializeUInt32(LogRecord.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
@@ -135,7 +122,7 @@ final class LogMarshaler extends MarshalerWithSize {
       long observedTimeUnixNano,
       ProtoEnumInfo severityNumber,
       byte[] severityText,
-      MarshalerWithSize anyValueMarshaler,
+      @Nullable MarshalerWithSize anyValueMarshaler,
       KeyValueMarshaler[] attributeMarshalers,
       int droppedAttributesCount,
       TraceFlags traceFlags,
@@ -150,7 +137,9 @@ final class LogMarshaler extends MarshalerWithSize {
 
     size += MarshalerUtil.sizeBytes(LogRecord.SEVERITY_TEXT, severityText);
 
-    size += MarshalerUtil.sizeMessage(LogRecord.BODY, anyValueMarshaler);
+    if (anyValueMarshaler != null) {
+      size += MarshalerUtil.sizeMessage(LogRecord.BODY, anyValueMarshaler);
+    }
 
     size += MarshalerUtil.sizeRepeatedMessage(LogRecord.ATTRIBUTES, attributeMarshalers);
     size += MarshalerUtil.sizeUInt32(LogRecord.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);

@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
@@ -184,12 +185,14 @@ class OpenTelemetryExtensionTest {
     assertThat(otelTesting.getLogRecords())
         .singleElement()
         .satisfies(
-            logRecordData -> assertThat(logRecordData.getBody().asString()).isEqualTo("body"));
+            logRecordData ->
+                assertThat(logRecordData.getAnyValueBody()).isEqualTo(AnyValue.of("body")));
     // Logs cleared between tests, not when retrieving
     assertThat(otelTesting.getLogRecords())
         .singleElement()
         .satisfies(
-            logRecordData -> assertThat(logRecordData.getBody().asString()).isEqualTo("body"));
+            logRecordData ->
+                assertThat(logRecordData.getAnyValueBody()).isEqualTo(AnyValue.of("body")));
   }
 
   // We have two tests to verify spans get cleared up between tests.
@@ -200,12 +203,14 @@ class OpenTelemetryExtensionTest {
     assertThat(otelTesting.getLogRecords())
         .singleElement()
         .satisfies(
-            logRecordData -> assertThat(logRecordData.getBody().asString()).isEqualTo("body"));
+            logRecordData ->
+                assertThat(logRecordData.getAnyValueBody()).isEqualTo(AnyValue.of("body")));
     // Logs cleared between tests, not when retrieving
     assertThat(otelTesting.getLogRecords())
         .singleElement()
         .satisfies(
-            logRecordData -> assertThat(logRecordData.getBody().asString()).isEqualTo("body"));
+            logRecordData ->
+                assertThat(logRecordData.getAnyValueBody()).isEqualTo(AnyValue.of("body")));
   }
 
   @Test

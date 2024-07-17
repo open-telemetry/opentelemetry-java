@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.logs.data;
 
+import io.opentelemetry.api.common.AnyValue;
+import io.opentelemetry.api.common.AnyValueType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
@@ -46,8 +48,25 @@ public interface LogRecordData {
   @Nullable
   String getSeverityText();
 
-  /** Returns the body for this log, or {@link Body#empty()} if unset. */
+  /**
+   * Returns the body for this log, or {@link Body#empty()} if unset.
+   *
+   * <p>If the body has been set to some {@link AnyValueType} other than {@link
+   * AnyValueType#STRING}, this will return a {@link Body} with a string representation of the
+   * {@link AnyValue}.
+   *
+   * @deprecated Use {@link #getAnyValueBody()} instead.
+   */
+  @Deprecated
   Body getBody();
+
+  /** Returns the {@link AnyValue} representation of the log body, of null if unset. */
+  @Nullable
+  @SuppressWarnings("deprecation") // Default impl uses deprecated code for backwards compatibility
+  default AnyValue<?> getAnyValueBody() {
+    Body body = getBody();
+    return body.getType() == Body.Type.EMPTY ? null : AnyValue.of(body.asString());
+  }
 
   /** Returns the attributes for this log, or {@link Attributes#empty()} if unset. */
   Attributes getAttributes();

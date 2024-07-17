@@ -12,7 +12,6 @@ import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
-import io.opentelemetry.sdk.logs.internal.AnyValueBody;
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
@@ -64,7 +63,8 @@ class EventApiUsageTest {
               assertThat(logData)
                   .hasAttributes(
                       Attributes.builder().put("event.name", "org.foo.my-event").build());
-              assertThat(((AnyValueBody) logData.getBody()).asAnyValue())
+              assertThat(logData.getAnyValueBody())
+                  .isNotNull()
                   .isEqualTo(
                       AnyValue.of(
                           ImmutableMap.of(

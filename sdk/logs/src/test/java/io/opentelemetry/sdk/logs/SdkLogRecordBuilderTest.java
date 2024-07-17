@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.logs;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Severity;
@@ -18,7 +19,6 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -105,7 +105,7 @@ class SdkLogRecordBuilderTest {
     assertThat(emittedLog.get().toLogRecordData())
         .hasResource(RESOURCE)
         .hasInstrumentationScope(SCOPE_INFO)
-        .hasBody(Body.empty().asString())
+        .hasBody((AnyValue<?>) null)
         .hasTimestamp(0L)
         .hasObservedTimestamp(10L)
         .hasAttributes(Attributes.empty())
