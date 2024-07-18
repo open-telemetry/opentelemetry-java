@@ -26,8 +26,8 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 @AutoValue.CopyAnnotations
-@SuppressWarnings("deprecation") // Carry suppression for Body to AutoValue implementation via
-// @AutoValue.CopyAnnotations
+// Carry suppression for Body to AutoValue implementation via @AutoValue.CopyAnnotations
+@SuppressWarnings("deprecation")
 public abstract class TestLogRecordData implements LogRecordData {
 
   /** Creates a new Builder for creating an {@link LogRecordData} instance. */
