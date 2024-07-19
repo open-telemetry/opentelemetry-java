@@ -59,7 +59,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private Supplier<Map<String, String>> headerSupplier = Collections::emptyMap;
 
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
-  @Nullable private RetryPolicy retryPolicy;
+  @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
   @Nullable private Authenticator authenticator;
 
@@ -128,7 +128,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public HttpExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy) {
+  public HttpExporterBuilder<T> setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
     this.retryPolicy = retryPolicy;
     return this;
   }

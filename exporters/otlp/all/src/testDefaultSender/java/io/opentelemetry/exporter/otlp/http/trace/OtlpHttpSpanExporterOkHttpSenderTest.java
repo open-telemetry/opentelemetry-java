@@ -48,6 +48,7 @@ class OtlpHttpSpanExporterOkHttpSenderTest
                   + ", "
                   + "exportAsJson=false, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}, "
+                  + "retryPolicy=RetryPolicy\\{.*\\}, "
                   + "memoryMode=IMMUTABLE_DATA"
                   + "\\}");
     }

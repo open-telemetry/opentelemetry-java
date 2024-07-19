@@ -48,6 +48,7 @@ class OtlpGrpcSpanExporterTest extends AbstractGrpcTelemetryExporterTest<SpanDat
                   + ", "
                   + "compressorEncoding=null, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}, "
+                  + "retryPolicy=RetryPolicy\\{.*\\}, "
                   + "memoryMode=IMMUTABLE_DATA"
                   + "\\}");
     }

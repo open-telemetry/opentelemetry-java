@@ -151,10 +151,16 @@ public final class OtlpConfigUtil {
       setClientTls.accept(clientKeyBytes, clientKeyChainBytes);
     }
 
-    boolean retryEnabled =
-        config.getBoolean("otel.experimental.exporter.otlp.retry.enabled", false);
-    if (retryEnabled) {
-      setRetryPolicy.accept(RetryPolicy.getDefault());
+    Boolean retryDisabled = config.getBoolean("otel.java.exporter.otlp.retry.disabled");
+    if (retryDisabled == null) {
+      Boolean experimentalRetryEnabled =
+          config.getBoolean("otel.experimental.exporter.otlp.retry.enabled");
+      if (experimentalRetryEnabled != null) {
+        retryDisabled = !experimentalRetryEnabled;
+      }
+    }
+    if (retryDisabled != null && retryDisabled) {
+      setRetryPolicy.accept(null);
     }
 
     ExporterBuilderUtil.configureExporterMemoryMode(config, setMemoryMode);
