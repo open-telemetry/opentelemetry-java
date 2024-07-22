@@ -29,8 +29,7 @@ final class LinkMarshaler extends MarshalerWithSize {
     byte[] traceId = OtelEncodingUtils.bytesFromBase16(linkData.getTraceId(), TraceId.getLength());
     byte[] spanId = OtelEncodingUtils.bytesFromBase16(linkData.getSpanId(), SpanId.getLength());
 
-    LinkMarshaler linkMarshaler = new LinkMarshaler(traceId, spanId);
-    return linkMarshaler;
+    return new LinkMarshaler(traceId, spanId);
   }
 
   static LinkMarshaler[] createRepeated(List<LinkData> items) {

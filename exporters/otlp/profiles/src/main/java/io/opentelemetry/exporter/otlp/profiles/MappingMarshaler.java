@@ -41,20 +41,18 @@ final class MappingMarshaler extends MarshalerWithSize {
         buildKind = BuildIdKind.BUILD_ID_BINARY_HASH;
         break;
     }
-    MappingMarshaler mappingMarshaler =
-        new MappingMarshaler(
-            mappingData.getMemoryStart(),
-            mappingData.getMemoryLimit(),
-            mappingData.getFileOffset(),
-            mappingData.getFilenameIndex(),
-            mappingData.getBuildIdIndex(),
-            buildKind,
-            mappingData.getAttributeIndices(),
-            mappingData.hasFunctions(),
-            mappingData.hasFilenames(),
-            mappingData.hasLineNumbers(),
-            mappingData.hasInlineFrames());
-    return mappingMarshaler;
+    return new MappingMarshaler(
+        mappingData.getMemoryStart(),
+        mappingData.getMemoryLimit(),
+        mappingData.getFileOffset(),
+        mappingData.getFilenameIndex(),
+        mappingData.getBuildIdIndex(),
+        buildKind,
+        mappingData.getAttributeIndices(),
+        mappingData.hasFunctions(),
+        mappingData.hasFilenames(),
+        mappingData.hasLineNumbers(),
+        mappingData.hasInlineFrames());
   }
 
   static MappingMarshaler[] createRepeated(List<MappingData> items) {

@@ -22,9 +22,7 @@ final class LineMarshaler extends MarshalerWithSize {
   private final long column;
 
   static LineMarshaler create(LineData lineData) {
-    LineMarshaler lineMarshaler =
-        new LineMarshaler(lineData.getFunctionIndex(), lineData.getLine(), lineData.getColumn());
-    return lineMarshaler;
+    return new LineMarshaler(lineData.getFunctionIndex(), lineData.getLine(), lineData.getColumn());
   }
 
   static LineMarshaler[] createRepeated(List<LineData> items) {

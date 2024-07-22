@@ -23,13 +23,11 @@ final class FunctionMarshaler extends MarshalerWithSize {
   private final long startLine;
 
   static FunctionMarshaler create(FunctionData functionData) {
-    FunctionMarshaler functionMarshaler =
-        new FunctionMarshaler(
-            functionData.getNameIndex(),
-            functionData.getSystemNameIndex(),
-            functionData.getFilenameIndex(),
-            functionData.getStartLine());
-    return functionMarshaler;
+    return new FunctionMarshaler(
+        functionData.getNameIndex(),
+        functionData.getSystemNameIndex(),
+        functionData.getFilenameIndex(),
+        functionData.getStartLine());
   }
 
   static FunctionMarshaler[] createRepeated(List<FunctionData> items) {

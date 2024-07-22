@@ -25,15 +25,13 @@ final class LocationMarshaler extends MarshalerWithSize {
   private final List<Long> attributes;
 
   static LocationMarshaler create(LocationData locationData) {
-    LocationMarshaler locationMarshaler =
-        new LocationMarshaler(
-            locationData.getMappingIndex(),
-            locationData.getAddress(),
-            LineMarshaler.createRepeated(locationData.getLines()),
-            locationData.isFolded(),
-            locationData.getTypeIndex(),
-            locationData.getAttributes());
-    return locationMarshaler;
+    return new LocationMarshaler(
+        locationData.getMappingIndex(),
+        locationData.getAddress(),
+        LineMarshaler.createRepeated(locationData.getLines()),
+        locationData.isFolded(),
+        locationData.getTypeIndex(),
+        locationData.getAttributes());
   }
 
   static LocationMarshaler[] createRepeated(List<LocationData> items) {
