@@ -396,24 +396,6 @@ public abstract class Serializer implements AutoCloseable {
   }
 
   /** Serializes a {@code repeated int64} field. */
-  public void serializeRepeatedInt64(ProtoFieldInfo field, long[] values) throws IOException {
-    if (values.length == 0) {
-      return;
-    }
-
-    int payloadSize = 0;
-    for (long v : values) {
-      payloadSize += CodedOutputStream.computeInt64SizeNoTag(v);
-    }
-
-    writeStartRepeatedVarint(field, payloadSize);
-    for (long value : values) {
-      writeUInt64Value(value);
-    }
-    writeEndRepeatedVarint();
-  }
-
-  /** Serializes a {@code repeated int64} field. */
   public void serializeRepeatedInt64(ProtoFieldInfo field, List<Long> values) throws IOException {
     if (values.isEmpty()) {
       return;

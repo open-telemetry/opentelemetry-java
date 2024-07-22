@@ -17,10 +17,9 @@ dependencies {
 
   api(project(":sdk:common"))
   api(project(":exporters:common"))
+  implementation(project(":exporters:otlp:common"))
 
   annotationProcessor("com.google.auto.value:auto-value")
-
-  implementation(project(":exporters:otlp:common"))
 
   testImplementation("com.fasterxml.jackson.core:jackson-databind")
   testImplementation("com.google.protobuf:protobuf-java-util")
