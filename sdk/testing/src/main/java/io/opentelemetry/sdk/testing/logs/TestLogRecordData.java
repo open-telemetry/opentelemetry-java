@@ -150,12 +150,14 @@ public abstract class TestLogRecordData implements LogRecordData {
     public Builder setBody(io.opentelemetry.sdk.logs.data.Body body) {
       if (body.getType() == io.opentelemetry.sdk.logs.data.Body.Type.STRING) {
         setAnyValueBody(AnyValue.of(body.asString()));
+      } else if (body.getType() == io.opentelemetry.sdk.logs.data.Body.Type.EMPTY) {
+        setAnyValueBody(null);
       }
       return this;
     }
 
     /** Set the body. */
-    public abstract Builder setAnyValueBody(AnyValue<?> body);
+    public abstract Builder setAnyValueBody(@Nullable AnyValue<?> body);
 
     /** Set the attributes. */
     public abstract Builder setAttributes(Attributes attributes);
