@@ -5,9 +5,9 @@
 
 package io.opentelemetry.exporter.zipkin;
 
+import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterMetrics;
-import io.opentelemetry.exporter.internal.InstrumentationUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -77,17 +77,18 @@ public final class ZipkinSpanExporter implements SpanExporter {
     }
 
     CompletableResultCode resultCode = new CompletableResultCode();
-    InstrumentationUtil.suppressInstrumentation(() -> {
-      try {
-        sender.send(encodedSpans);
-        exporterMetrics.addSuccess(numItems);
-        resultCode.succeed();
-      } catch (IOException | RuntimeException e) {
-        exporterMetrics.addFailed(numItems);
-        logger.log(Level.WARNING, "Failed to export spans", e);
-        resultCode.fail();
-      }
-    });
+    InstrumentationUtil.suppressInstrumentation(
+        () -> {
+          try {
+            sender.send(encodedSpans);
+            exporterMetrics.addSuccess(numItems);
+            resultCode.succeed();
+          } catch (IOException | RuntimeException e) {
+            exporterMetrics.addFailed(numItems);
+            logger.log(Level.WARNING, "Failed to export spans", e);
+            resultCode.fail();
+          }
+        });
     return resultCode;
   }
 
