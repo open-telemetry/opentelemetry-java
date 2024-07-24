@@ -50,6 +50,7 @@ val DEPENDENCIES = listOf(
   "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
   "org.slf4j:slf4j-simple:${slf4jVersion}",
   "org.slf4j:jul-to-slf4j:${slf4jVersion}",
+  "io.prometheus:prometheus-metrics-shaded-protobuf:1.3.1",
   "io.prometheus:simpleclient:${prometheusClientVersion}",
   "io.prometheus:simpleclient_common:${prometheusClientVersion}",
   "io.prometheus:simpleclient_httpserver:${prometheusClientVersion}",

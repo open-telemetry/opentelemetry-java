@@ -111,9 +111,6 @@ class PrometheusMetricReaderProviderTest {
     config.put(
         "otel.java.experimental.exporter.prometheus.metrics.default.histogram.aggregation", "foo");
 
-    when(configProperties.getInt(any())).thenReturn(null);
-    when(configProperties.getString(any())).thenReturn(null);
-
     assertThatThrownBy(
             () -> provider.createMetricReader(DefaultConfigProperties.createFromMap(config)))
         .isInstanceOf(ConfigurationException.class)
