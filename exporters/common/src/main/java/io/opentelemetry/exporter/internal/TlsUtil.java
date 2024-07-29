@@ -20,7 +20,6 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
@@ -77,14 +76,11 @@ public final class TlsUtil {
       PrivateKey key = generatePrivateKey(keySpec, SUPPORTED_KEY_FACTORIES);
 
       CertificateFactory cf = CertificateFactory.getInstance("X.509");
-
-      List<Certificate> chain = new ArrayList<>();
-
       ByteArrayInputStream is = new ByteArrayInputStream(certificatePem);
-      while (is.available() > 0) {
-        chain.add(cf.generateCertificate(is));
-      }
-
+      // pass the input stream to generateCertificates to get a list of certificates
+      // generateCertificates can handle multiple certificates in a single input stream
+      // including PEM files with explanatory text
+      List<? extends Certificate> chain = (List<? extends Certificate>) cf.generateCertificates(is);
       ks.setKeyEntry("trusted", key, "".toCharArray(), chain.toArray(new Certificate[] {}));
 
       KeyManagerFactory kmf =
@@ -126,9 +122,13 @@ public final class TlsUtil {
       ByteArrayInputStream is = new ByteArrayInputStream(trustedCertificatesPem);
       CertificateFactory factory = CertificateFactory.getInstance("X.509");
       int i = 0;
-      while (is.available() > 0) {
-        X509Certificate cert = (X509Certificate) factory.generateCertificate(is);
-        ks.setCertificateEntry("cert_" + i, cert);
+      // pass the input stream to generateCertificates to get a list of certificates
+      // generateCertificates can handle multiple certificates in a single input stream
+      // including PEM files with explanatory text
+      List<? extends Certificate> certificates =
+          (List<? extends Certificate>) factory.generateCertificates(is);
+      for (Certificate certificate : certificates) {
+        ks.setCertificateEntry("cert_" + i, certificate);
         i++;
       }
 

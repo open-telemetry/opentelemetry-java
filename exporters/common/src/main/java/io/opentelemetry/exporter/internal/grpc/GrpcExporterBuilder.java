@@ -60,7 +60,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   private final Map<String, String> constantHeaders = new HashMap<>();
   private Supplier<Map<String, String>> headerSupplier = Collections::emptyMap;
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
-  @Nullable private RetryPolicy retryPolicy;
+  @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
 
   // Use Object type since gRPC may not be on the classpath.
@@ -137,7 +137,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public GrpcExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy) {
+  public GrpcExporterBuilder<T> setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
     this.retryPolicy = retryPolicy;
     return this;
   }
@@ -195,6 +195,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
           return result;
         };
 
+    boolean isPlainHttp = "http".equals(endpoint.getScheme());
     GrpcSenderProvider grpcSenderProvider = resolveGrpcSenderProvider();
     GrpcSender<T> grpcSender =
         grpcSenderProvider.createSender(
@@ -207,8 +208,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
             grpcChannel,
             grpcStubFactory,
             retryPolicy,
-            tlsConfigHelper.getSslContext(),
-            tlsConfigHelper.getTrustManager());
+            isPlainHttp ? null : tlsConfigHelper.getSslContext(),
+            isPlainHttp ? null : tlsConfigHelper.getTrustManager());
     LOGGER.log(Level.FINE, "Using GrpcSender: " + grpcSender.getClass().getName());
 
     return new GrpcExporter<>(exporterName, type, grpcSender, meterProviderSupplier);

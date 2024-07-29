@@ -11,7 +11,10 @@ import io.opentelemetry.api.logs.LoggerBuilder;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
 import java.util.List;
@@ -33,6 +36,7 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
 
   private final LoggerSharedState sharedState;
   private final ComponentRegistry<SdkLogger> loggerComponentRegistry;
+  private final ScopeConfigurator<LoggerConfig> loggerConfigurator;
   private final boolean isNoopLogRecordProcessor;
 
   /**
@@ -48,14 +52,25 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
       Resource resource,
       Supplier<LogLimits> logLimitsSupplier,
       List<LogRecordProcessor> processors,
-      Clock clock) {
+      Clock clock,
+      ScopeConfigurator<LoggerConfig> loggerConfigurator) {
     LogRecordProcessor logRecordProcessor = LogRecordProcessor.composite(processors);
     this.sharedState =
         new LoggerSharedState(resource, logLimitsSupplier, logRecordProcessor, clock);
     this.loggerComponentRegistry =
         new ComponentRegistry<>(
-            instrumentationScopeInfo -> new SdkLogger(sharedState, instrumentationScopeInfo));
+            instrumentationScopeInfo ->
+                new SdkLogger(
+                    sharedState,
+                    instrumentationScopeInfo,
+                    getLoggerConfig(instrumentationScopeInfo)));
+    this.loggerConfigurator = loggerConfigurator;
     this.isNoopLogRecordProcessor = logRecordProcessor instanceof NoopLogRecordProcessor;
+  }
+
+  private LoggerConfig getLoggerConfig(InstrumentationScopeInfo instrumentationScopeInfo) {
+    LoggerConfig loggerConfig = loggerConfigurator.apply(instrumentationScopeInfo);
+    return loggerConfig == null ? LoggerConfig.defaultConfig() : loggerConfig;
   }
 
   @Override

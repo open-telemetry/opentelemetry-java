@@ -44,6 +44,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,7 +72,11 @@ class InteroperabilityTest {
     SpanProcessor spanProcessor = SimpleSpanProcessor.create(spanExporter);
     openTelemetry =
         OpenTelemetrySdk.builder()
-            .setTracerProvider(SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build())
+            .setTracerProvider(
+                SdkTracerProvider.builder()
+                    .setSampler(Sampler.alwaysOn())
+                    .addSpanProcessor(spanProcessor)
+                    .build())
             .buildAndRegisterGlobal();
   }
 
@@ -84,7 +89,7 @@ class InteroperabilityTest {
   }
 
   @Test
-  void testParentChildRelationshipsAreExportedCorrectly() {
+  void parentChildRelationshipsAreExportedCorrectly() {
     Tracer tracer = openTelemetry.getTracer("io.opentelemetry.test.scoped.span.1");
     Span span = tracer.spanBuilder("OpenTelemetrySpan").startSpan();
     try (Scope scope = Context.current().with(span).makeCurrent()) {
@@ -128,7 +133,7 @@ class InteroperabilityTest {
   }
 
   @Test
-  void testRemoteParent() {
+  void remoteParent() {
     io.opencensus.trace.Tracer tracer = Tracing.getTracer();
     io.opencensus.trace.Span remoteParentSpan =
         tracer.spanBuilder("remote parent span").startSpan();
@@ -148,6 +153,15 @@ class InteroperabilityTest {
 
     assertThat(export1.size()).isEqualTo(1);
     SpanData spanData1 = export1.iterator().next();
+
+    // Remote parent should be set to parent span context
+    assertThat(spanData1.getParentSpanContext().isRemote()).isTrue();
+    assertThat(spanData1.getParentSpanContext().getTraceId())
+        .isEqualTo(remoteParentSpan.getContext().getTraceId().toLowerBase16());
+    assertThat(spanData1.getParentSpanContext().getSpanId())
+        .isEqualTo(remoteParentSpan.getContext().getSpanId().toLowerBase16());
+
+    // Remote parent should be added as link
     assertThat(spanData1.getName()).isEqualTo("OpenCensusSpan");
     assertThat(spanData1.getLinks().get(0).getSpanContext().getSpanId())
         .isEqualTo(remoteParentSpan.getContext().getSpanId().toLowerBase16());
@@ -155,7 +169,7 @@ class InteroperabilityTest {
 
   @Test
   @SuppressLogger(OpenTelemetrySpanImpl.class)
-  void testParentChildRelationshipsAreExportedCorrectlyForOpenCensusOnly() {
+  void parentChildRelationshipsAreExportedCorrectlyForOpenCensusOnly() {
     io.opencensus.trace.Tracer tracer = Tracing.getTracer();
     io.opencensus.trace.Span parentLinkSpan = tracer.spanBuilder("parent link span").startSpan();
     try (io.opencensus.common.Scope scope =
@@ -261,7 +275,7 @@ class InteroperabilityTest {
   }
 
   @Test
-  void testOpenTelemetryMethodsOnOpenCensusSpans() {
+  void openTelemetryMethodsOnOpenCensusSpans() {
     io.opencensus.trace.Tracer tracer = Tracing.getTracer();
     try (io.opencensus.common.Scope scope =
         tracer
@@ -308,7 +322,7 @@ class InteroperabilityTest {
   }
 
   @Test
-  public void testNoSampleDoesNotExport() {
+  public void noSampleDoesNotExport() {
     io.opencensus.trace.Tracer tracer = Tracing.getTracer();
     try (io.opencensus.common.Scope scope =
         tracer.spanBuilder("OpenCensusSpan").setSampler(Samplers.neverSample()).startScopedSpan()) {
@@ -324,14 +338,14 @@ class InteroperabilityTest {
   }
 
   @Test
-  public void testOpenCensusSamplerIsAlwaysOn() {
+  public void openCensusSamplerIsAlwaysOn() {
     // OpenTelemetryTraceComponentImpl provides this behavior
     assertThat(Tracing.getTraceConfig().getActiveTraceParams().getSampler())
         .isEqualTo(Samplers.alwaysSample());
   }
 
   @Test
-  public void testByDefaultDoesExport() {
+  public void byDefaultDoesExport() {
     io.opencensus.trace.Tracer tracer = Tracing.getTracer();
     try (io.opencensus.common.Scope scope =
         tracer.spanBuilder("OpenCensusSpan").setRecordEvents(false).startScopedSpan()) {

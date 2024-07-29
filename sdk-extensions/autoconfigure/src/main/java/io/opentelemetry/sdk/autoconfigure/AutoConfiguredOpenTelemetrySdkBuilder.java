@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
@@ -505,7 +506,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       maybeSetAsGlobal(openTelemetrySdk);
       callAutoConfigureListeners(spiHelper, openTelemetrySdk);
 
-      return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config);
+      return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config, null);
     } catch (RuntimeException e) {
       logger.info(
           "Error encountered during autoconfiguration. Closing partially configured components.");
@@ -527,7 +528,12 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
   @Nullable
   private static AutoConfiguredOpenTelemetrySdk maybeConfigureFromFile(ConfigProperties config) {
-    String configurationFile = config.getString("otel.config.file");
+    String otelConfigFile = config.getString("otel.config.file");
+    if (otelConfigFile != null && !otelConfigFile.isEmpty()) {
+      logger.warning(
+          "otel.config.file was set, but has been replaced with otel.experimental.config.file");
+    }
+    String configurationFile = config.getString("otel.experimental.config.file");
     if (configurationFile == null || configurationFile.isEmpty()) {
       return null;
     }
@@ -541,11 +547,21 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     try {
       Class<?> configurationFactory =
           Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfiguration");
-      Method parseAndCreate = configurationFactory.getMethod("parseAndCreate", InputStream.class);
-      OpenTelemetrySdk sdk = (OpenTelemetrySdk) parseAndCreate.invoke(null, fis);
+      Method parse = configurationFactory.getMethod("parse", InputStream.class);
+      Object model = parse.invoke(null, fis);
+      Class<?> openTelemetryConfiguration =
+          Class.forName(
+              "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration");
+      Method create = configurationFactory.getMethod("create", openTelemetryConfiguration);
+      OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model);
+      Method toConfigProperties =
+          configurationFactory.getMethod("toConfigProperties", openTelemetryConfiguration);
+      StructuredConfigProperties structuredConfigProperties =
+          (StructuredConfigProperties) toConfigProperties.invoke(null, model);
       // Note: can't access file configuration resource without reflection so setting a dummy
       // resource
-      return AutoConfiguredOpenTelemetrySdk.create(sdk, Resource.getDefault(), config);
+      return AutoConfiguredOpenTelemetrySdk.create(
+          sdk, Resource.getDefault(), null, structuredConfigProperties);
     } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
       throw new ConfigurationException(
           "Error configuring from file. Is opentelemetry-sdk-extension-incubator on the classpath?",

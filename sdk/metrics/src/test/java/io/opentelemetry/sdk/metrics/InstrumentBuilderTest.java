@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
@@ -24,7 +25,7 @@ class InstrumentBuilderTest {
           TestClock.create(), Resource.getDefault(), ExemplarFilter.alwaysOff(), 0);
   static final InstrumentationScopeInfo SCOPE = InstrumentationScopeInfo.create("scope-name");
   public static final MeterSharedState METER_SHARED_STATE =
-      MeterSharedState.create(SCOPE, Collections.emptyList());
+      MeterSharedState.create(SCOPE, Collections.emptyList(), MeterConfig.defaultConfig());
 
   @Test
   void stringRepresentation() {

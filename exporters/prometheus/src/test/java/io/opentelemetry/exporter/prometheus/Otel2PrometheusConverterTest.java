@@ -283,9 +283,9 @@ class Otel2PrometheusConverterTest {
         // if metric name ends with unit the unit is omitted - order matters
         Arguments.of(
             createSampleMetricData("metric_total_hertz", "hertz_total", MetricDataType.LONG_SUM),
-            "metric_total_hertz_hertz_total counter",
-            "metric_total_hertz_hertz_total description",
-            "metric_total_hertz_hertz_total"),
+            "metric_total_hertz_total counter",
+            "metric_total_hertz_total description",
+            "metric_total_hertz_total"),
         // metric name cannot start with a number
         Arguments.of(
             createSampleMetricData("2_metric_name", "By", MetricDataType.SUMMARY),

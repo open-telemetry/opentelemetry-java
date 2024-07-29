@@ -238,6 +238,13 @@ final class SdkSpan implements ReadWriteSpan {
   }
 
   @Override
+  public Attributes getAttributes() {
+    synchronized (lock) {
+      return attributes == null ? Attributes.empty() : attributes.immutableCopy();
+    }
+  }
+
+  @Override
   public boolean hasEnded() {
     synchronized (lock) {
       return hasEnded == EndState.ENDED;
@@ -466,7 +473,7 @@ final class SdkSpan implements ReadWriteSpan {
         return this;
       }
       if (links == null) {
-        links = new ArrayList<>(spanLimits.getMaxNumberOfLinks());
+        links = new ArrayList<>();
       }
       if (links.size() < spanLimits.getMaxNumberOfLinks()) {
         links.add(link);

@@ -23,7 +23,9 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class OtlpHttpMetricExporterOkHttpSenderTest
@@ -75,6 +77,34 @@ class OtlpHttpMetricExporterOkHttpSenderTest
     assertThatThrownBy(() -> OtlpHttpMetricExporter.builder().setDefaultAggregationSelector(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("defaultAggregationSelector");
+  }
+
+  /** Test configuration specific to metric exporter. */
+  @Test
+  void stringRepresentation() {
+    try (MetricExporter metricExporter = OtlpHttpMetricExporter.builder().build()) {
+      assertThat(metricExporter.toString())
+          .matches(
+              "OtlpHttpMetricExporter\\{"
+                  + "exporterName=otlp, "
+                  + "type=metric, "
+                  + "endpoint=http://localhost:4318/v1/metrics, "
+                  + "timeoutNanos="
+                  + TimeUnit.SECONDS.toNanos(10)
+                  + ", "
+                  + "proxyOptions=null, "
+                  + "compressorEncoding=null, "
+                  + "connectTimeoutNanos="
+                  + TimeUnit.SECONDS.toNanos(10)
+                  + ", "
+                  + "exportAsJson=false, "
+                  + "headers=Headers\\{User-Agent=OBFUSCATED\\}, "
+                  + "retryPolicy=RetryPolicy\\{.*\\}, "
+                  + "aggregationTemporalitySelector=AggregationTemporalitySelector\\{.*\\}, "
+                  + "defaultAggregationSelector=DefaultAggregationSelector\\{.*\\}, "
+                  + "memoryMode=IMMUTABLE_DATA"
+                  + "\\}");
+    }
   }
 
   @Override

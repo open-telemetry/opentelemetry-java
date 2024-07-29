@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.metrics.DoubleGauge;
+import io.opentelemetry.api.incubator.metrics.ExtendedDoubleGauge;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.LongGaugeBuilder;
@@ -21,23 +21,38 @@ import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.List;
 import java.util.function.Consumer;
 
-final class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
+final class SdkDoubleGauge extends AbstractInstrument implements ExtendedDoubleGauge {
 
+  private final MeterSharedState meterSharedState;
   private final WriteableMetricStorage storage;
 
-  private SdkDoubleGauge(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+  private SdkDoubleGauge(
+      InstrumentDescriptor descriptor,
+      MeterSharedState meterSharedState,
+      WriteableMetricStorage storage) {
     super(descriptor);
+    this.meterSharedState = meterSharedState;
     this.storage = storage;
   }
 
   @Override
-  public void set(double increment, Attributes attributes) {
-    storage.recordDouble(increment, attributes, Context.root());
+  public void set(double value, Attributes attributes) {
+    storage.recordDouble(value, attributes, Context.current());
+  }
+
+  @Override
+  public void set(double value, Attributes attributes, Context context) {
+    storage.recordDouble(value, attributes, context);
   }
 
   @Override
   public void set(double increment) {
     set(increment, Attributes.empty());
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return meterSharedState.isMeterEnabled() && storage.isEnabled();
   }
 
   static final class SdkDoubleGaugeBuilder implements ExtendedDoubleGaugeBuilder {
@@ -48,11 +63,10 @@ final class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
         MeterSharedState meterSharedState,
         String name) {
 
-      // TODO: use InstrumentType.GAUGE when available
       builder =
           new InstrumentBuilder(
               name,
-              InstrumentType.OBSERVABLE_GAUGE,
+              InstrumentType.GAUGE,
               InstrumentValueType.DOUBLE,
               meterProviderSharedState,
               meterSharedState);
@@ -88,13 +102,11 @@ final class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
 
     @Override
     public ObservableDoubleGauge buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
-      // TODO: use InstrumentType.GAUGE when available
       return builder.buildDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
     }
 
     @Override
     public ObservableDoubleMeasurement buildObserver() {
-      // TODO: use InstrumentType.GAUGE when available
       return builder.buildObservableMeasurement(InstrumentType.OBSERVABLE_GAUGE);
     }
 

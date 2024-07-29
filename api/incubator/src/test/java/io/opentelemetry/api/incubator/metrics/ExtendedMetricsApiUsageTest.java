@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.incubator.metrics;
 
+import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameEquals;
+import static io.opentelemetry.sdk.metrics.internal.MeterConfig.disabled;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -15,54 +17,66 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
+import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 /** Demonstrating usage of extended Metrics API. */
 class ExtendedMetricsApiUsageTest {
 
   @Test
-  void synchronousGaugeUsage() {
+  void meterEnabled() {
     // Setup SdkMeterProvider
     InMemoryMetricReader reader = InMemoryMetricReader.create();
-    SdkMeterProvider meterProvider =
+    SdkMeterProviderBuilder meterProviderBuilder =
         SdkMeterProvider.builder()
             // Default resource used for demonstration purposes
             .setResource(Resource.getDefault())
             // In-memory reader used for demonstration purposes
-            .registerMetricReader(reader)
-            .build();
+            .registerMetricReader(reader);
+    // Disable meterB
+    SdkMeterProviderUtil.addMeterConfiguratorCondition(
+        meterProviderBuilder, nameEquals("meterB"), disabled());
+    SdkMeterProvider meterProvider = meterProviderBuilder.build();
 
-    // Get a Meter for a scope
-    Meter meter = meterProvider.get("org.foo.my-scope");
+    // Create meterA and meterB, and corresponding instruments
+    Meter meterA = meterProvider.get("meterA");
+    Meter meterB = meterProvider.get("meterB");
+    ExtendedDoubleHistogram histogramA =
+        (ExtendedDoubleHistogram) meterA.histogramBuilder("histogramA").build();
+    ExtendedDoubleHistogram histogramB =
+        (ExtendedDoubleHistogram) meterB.histogramBuilder("histogramB").build();
 
-    // Cast GaugeBuilder to ExtendedDoubleGaugeBuilder
-    DoubleGauge gauge = ((ExtendedDoubleGaugeBuilder) meter.gaugeBuilder("my-gauge")).build();
+    // Check if instrument is enabled before recording measurement and avoid unnecessary computation
+    if (histogramA.isEnabled()) {
+      histogramA.record(1.0, Attributes.builder().put("result", flipCoin()).build());
+    }
+    if (histogramB.isEnabled()) {
+      histogramA.record(1.0, Attributes.builder().put("result", flipCoin()).build());
+    }
 
-    // Call set synchronously to set the value
-    gauge.set(1.0, Attributes.builder().put("key", "value1").build());
-    gauge.set(2.0, Attributes.builder().put("key", "value2").build());
+    // histogramA is enabled since meterA is enabled, histogramB is disabled since meterB is
+    // disabled
+    assertThat(histogramA.isEnabled()).isTrue();
+    assertThat(histogramB.isEnabled()).isFalse();
 
+    // Collected data only consists of metrics from meterA. Note, meterB's histogramB would be
+    // omitted from the results even if values were recorded. The check if enabled simply avoids
+    // unnecessary computation.
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
-            metricData ->
-                assertThat(metricData)
-                    .hasName("my-gauge")
-                    .hasDoubleGaugeSatisfying(
-                        gaugeAssert ->
-                            gaugeAssert.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasValue(1.0)
-                                        .hasAttributes(
-                                            Attributes.builder().put("key", "value1").build()),
-                                point ->
-                                    point
-                                        .hasValue(2.0)
-                                        .hasAttributes(
-                                            Attributes.builder().put("key", "value2").build()))));
+        .allSatisfy(
+            metric ->
+                assertThat(metric.getInstrumentationScopeInfo().getName()).isEqualTo("meterA"));
+  }
+
+  private static final Random random = new Random();
+
+  private static String flipCoin() {
+    return random.nextBoolean() ? "heads" : "tails";
   }
 
   @Test

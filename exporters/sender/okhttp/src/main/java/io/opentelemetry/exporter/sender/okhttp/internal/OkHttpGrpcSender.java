@@ -23,7 +23,7 @@
 
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
-import io.opentelemetry.exporter.internal.InstrumentationUtil;
+import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.exporter.internal.RetryUtil;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
@@ -47,6 +47,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.ConnectionSpec;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
@@ -89,14 +90,18 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
       clientBuilder.addInterceptor(
           new RetryInterceptor(retryPolicy, OkHttpGrpcSender::isRetryable));
     }
-    if (sslContext != null && trustManager != null) {
-      clientBuilder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
-    }
-    if (endpoint.startsWith("http://")) {
+
+    boolean isPlainHttp = endpoint.startsWith("http://");
+    if (isPlainHttp) {
+      clientBuilder.connectionSpecs(Collections.singletonList(ConnectionSpec.CLEARTEXT));
       clientBuilder.protocols(Collections.singletonList(Protocol.H2_PRIOR_KNOWLEDGE));
     } else {
       clientBuilder.protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1));
+      if (sslContext != null && trustManager != null) {
+        clientBuilder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+      }
     }
+
     this.client = clientBuilder.build();
     this.headersSupplier = headersSupplier;
     this.url = HttpUrl.get(endpoint);

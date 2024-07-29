@@ -13,19 +13,22 @@ import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
-import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
@@ -42,7 +45,7 @@ public final class OtlpHttpMetricExporterBuilder {
       AggregationTemporalitySelector.alwaysCumulative();
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
 
-  private final HttpExporterBuilder<MetricsRequestMarshaler> delegate;
+  private final HttpExporterBuilder<Marshaler> delegate;
   private AggregationTemporalitySelector aggregationTemporalitySelector =
       DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR;
 
@@ -50,8 +53,7 @@ public final class OtlpHttpMetricExporterBuilder {
       DefaultAggregationSelector.getDefault();
   private MemoryMode memoryMode;
 
-  OtlpHttpMetricExporterBuilder(
-      HttpExporterBuilder<MetricsRequestMarshaler> delegate, MemoryMode memoryMode) {
+  OtlpHttpMetricExporterBuilder(HttpExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
     this.memoryMode = memoryMode;
     delegate.setMeterProvider(MeterProvider::noop);
@@ -211,12 +213,12 @@ public final class OtlpHttpMetricExporterBuilder {
   }
 
   /**
-   * Ses the retry policy. Retry is disabled by default.
+   * Set the retry policy, or {@code null} to disable retry. Retry policy is {@link
+   * RetryPolicy#getDefault()} by default
    *
    * @since 1.28.0
    */
-  public OtlpHttpMetricExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
-    requireNonNull(retryPolicy, "retryPolicy");
+  public OtlpHttpMetricExporterBuilder setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
     delegate.setRetryPolicy(retryPolicy);
     return this;
   }
@@ -232,8 +234,20 @@ public final class OtlpHttpMetricExporterBuilder {
     return this;
   }
 
-  /** Set the {@link MemoryMode}. */
-  OtlpHttpMetricExporterBuilder setMemoryMode(MemoryMode memoryMode) {
+  /**
+   * Set the {@link MemoryMode}. If unset, defaults to {@link #DEFAULT_MEMORY_MODE}.
+   *
+   * <p>When memory mode is {@link MemoryMode#REUSABLE_DATA}, serialization is optimized to reduce
+   * memory allocation. Additionally, the value is used for {@link MetricExporter#getMemoryMode()},
+   * which sends a signal to the metrics SDK to reuse memory when possible. This is safe and
+   * desirable for most use cases, but should be used with caution of wrapping and delegating to the
+   * exporter. It is not safe for the wrapping exporter to hold onto references to {@link
+   * MetricData} batches since the same data structures will be reused in subsequent calls to {@link
+   * MetricExporter#export(Collection)}.
+   *
+   * @since 1.39.0
+   */
+  public OtlpHttpMetricExporterBuilder setMemoryMode(MemoryMode memoryMode) {
     requireNonNull(memoryMode, "memoryMode");
     this.memoryMode = memoryMode;
     return this;

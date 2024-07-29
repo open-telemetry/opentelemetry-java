@@ -19,12 +19,7 @@ final class SpanStatusMarshaler extends MarshalerWithSize {
   private final byte[] descriptionUtf8;
 
   static SpanStatusMarshaler create(StatusData status) {
-    ProtoEnumInfo protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET;
-    if (status.getStatusCode() == StatusCode.OK) {
-      protoStatusCode = Status.StatusCode.STATUS_CODE_OK;
-    } else if (status.getStatusCode() == StatusCode.ERROR) {
-      protoStatusCode = Status.StatusCode.STATUS_CODE_ERROR;
-    }
+    ProtoEnumInfo protoStatusCode = toProtoSpanStatus(status);
     byte[] description = MarshalerUtil.toBytes(status.getDescription());
     return new SpanStatusMarshaler(protoStatusCode, description);
   }
@@ -46,5 +41,15 @@ final class SpanStatusMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeBytes(Status.MESSAGE, descriptionUtf8);
     size += MarshalerUtil.sizeEnum(Status.CODE, protoStatusCode);
     return size;
+  }
+
+  static ProtoEnumInfo toProtoSpanStatus(StatusData status) {
+    ProtoEnumInfo protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET;
+    if (status.getStatusCode() == StatusCode.OK) {
+      protoStatusCode = Status.StatusCode.STATUS_CODE_OK;
+    } else if (status.getStatusCode() == StatusCode.ERROR) {
+      protoStatusCode = Status.StatusCode.STATUS_CODE_ERROR;
+    }
+    return protoStatusCode;
   }
 }

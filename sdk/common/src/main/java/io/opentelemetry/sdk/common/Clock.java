@@ -34,8 +34,28 @@ public interface Clock {
    * // Spend time...
    * long durationNanos = clock.now() - startNanos;
    * }</pre>
+   *
+   * <p>Calling this is equivalent to calling {@link #now(boolean)} with {@code highPrecision=true}.
    */
   long now();
+
+  /**
+   * Returns the current epoch timestamp in nanos from this clock.
+   *
+   * <p>This overload of {@link #now()} includes a {@code highPrecision} argument which specifies
+   * whether the implementation should attempt to resolve higher precision at the potential expense
+   * of performance. For example, in java 9+ its sometimes possible to resolve ns precision higher
+   * than the ms precision of {@link System#currentTimeMillis()}, but doing so incurs a performance
+   * penalty which some callers may wish to avoid. In contrast, we don't currently know if resolving
+   * ns precision is possible in java 8, regardless of the value of {@code highPrecision}.
+   *
+   * <p>See {@link #now()} javadoc for details on usage.
+   *
+   * @since 1.38.0
+   */
+  default long now(boolean highPrecision) {
+    return now();
+  }
 
   /**
    * Returns a time measurement with nanosecond precision that can only be used to calculate elapsed

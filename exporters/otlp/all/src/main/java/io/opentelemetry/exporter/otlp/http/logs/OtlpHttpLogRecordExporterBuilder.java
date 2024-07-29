@@ -14,14 +14,16 @@ import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
-import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
@@ -33,16 +35,19 @@ import javax.net.ssl.X509TrustManager;
 public final class OtlpHttpLogRecordExporterBuilder {
 
   private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/logs";
+  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
 
-  private final HttpExporterBuilder<LogsRequestMarshaler> delegate;
+  private final HttpExporterBuilder<Marshaler> delegate;
+  private MemoryMode memoryMode;
 
-  OtlpHttpLogRecordExporterBuilder(HttpExporterBuilder<LogsRequestMarshaler> delegate) {
+  OtlpHttpLogRecordExporterBuilder(HttpExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
+    this.memoryMode = memoryMode;
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeaders);
   }
 
   OtlpHttpLogRecordExporterBuilder() {
-    this(new HttpExporterBuilder<>("otlp", "log", DEFAULT_ENDPOINT));
+    this(new HttpExporterBuilder<>("otlp", "log", DEFAULT_ENDPOINT), DEFAULT_MEMORY_MODE);
   }
 
   /**
@@ -162,12 +167,12 @@ public final class OtlpHttpLogRecordExporterBuilder {
   }
 
   /**
-   * Ses the retry policy. Retry is disabled by default.
+   * Set the retry policy, or {@code null} to disable retry. Retry policy is {@link
+   * RetryPolicy#getDefault()} by default
    *
    * @since 1.28.0
    */
-  public OtlpHttpLogRecordExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
-    requireNonNull(retryPolicy, "retryPolicy");
+  public OtlpHttpLogRecordExporterBuilder setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
     delegate.setRetryPolicy(retryPolicy);
     return this;
   }
@@ -207,11 +212,25 @@ public final class OtlpHttpLogRecordExporterBuilder {
   }
 
   /**
+   * Set the {@link MemoryMode}. If unset, defaults to {@link #DEFAULT_MEMORY_MODE}.
+   *
+   * <p>When memory mode is {@link MemoryMode#REUSABLE_DATA}, serialization is optimized to reduce
+   * memory allocation.
+   *
+   * @since 1.39.0
+   */
+  public OtlpHttpLogRecordExporterBuilder setMemoryMode(MemoryMode memoryMode) {
+    requireNonNull(memoryMode, "memoryMode");
+    this.memoryMode = memoryMode;
+    return this;
+  }
+
+  /**
    * Constructs a new instance of the exporter based on the builder's values.
    *
    * @return a new exporter's instance
    */
   public OtlpHttpLogRecordExporter build() {
-    return new OtlpHttpLogRecordExporter(delegate, delegate.build());
+    return new OtlpHttpLogRecordExporter(delegate, delegate.build(), memoryMode);
   }
 }

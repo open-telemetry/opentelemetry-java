@@ -14,6 +14,7 @@ dependencies {
   api(project(":sdk-extensions:autoconfigure-spi"))
 
   compileOnly(project(":sdk:common"))
+  compileOnly(project(":exporters:common:compile-stub"))
 
   compileOnly("org.codehaus.mojo:animal-sniffer-annotations")
 
@@ -22,6 +23,8 @@ dependencies {
   // We include helpers shared by gRPC exporters but do not want to impose these
   // dependency on all of our consumers.
   compileOnly("com.fasterxml.jackson.core:jackson-core")
+  // sun.misc.Unsafe from the JDK isn't found by the compiler, we provide our own trimmed down
+  // version that we can compile against.
   compileOnly("io.grpc:grpc-stub")
 
   testImplementation(project(":sdk:common"))
@@ -31,6 +34,7 @@ dependencies {
   testImplementation("org.skyscreamer:jsonassert")
   testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("io.grpc:grpc-testing")
+  testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
 }
 

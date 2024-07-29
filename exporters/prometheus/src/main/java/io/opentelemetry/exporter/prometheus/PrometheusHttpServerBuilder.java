@@ -8,9 +8,11 @@ package io.opentelemetry.exporter.prometheus;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
+import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
@@ -28,6 +30,7 @@ public final class PrometheusHttpServerBuilder {
   @Nullable private Predicate<String> allowedResourceAttributesFilter;
   @Nullable private ExecutorService executor;
   private MemoryMode memoryMode = DEFAULT_MEMORY_MODE;
+  @Nullable private HttpHandler defaultHandler;
 
   PrometheusHttpServerBuilder() {}
 
@@ -93,10 +96,33 @@ public final class PrometheusHttpServerBuilder {
     return this;
   }
 
-  /** Set the {@link MemoryMode}. */
+  /**
+   * Set the {@link MemoryMode}.
+   *
+   * <p>If set to {@link MemoryMode#REUSABLE_DATA}, requests are served sequentially which is
+   * accomplished by overriding {@link #setExecutor(ExecutorService)} to {@link
+   * Executors#newSingleThreadExecutor()}.
+   */
   public PrometheusHttpServerBuilder setMemoryMode(MemoryMode memoryMode) {
     requireNonNull(memoryMode, "memoryMode");
     this.memoryMode = memoryMode;
+    return this;
+  }
+
+  /**
+   * Override the default handler for serving the "/", "/**" endpoint.
+   *
+   * <p>This can be used to serve metrics on additional paths besides the default "/metrics". For
+   * example: <code>
+   *   PrometheusHttpServer.builder()
+   *     .setPrometheusRegistry(prometheusRegistry)
+   *     .setDefaultHandler(new MetricsHandler(prometheusRegistry))
+   *     .build()
+   * </code>
+   */
+  public PrometheusHttpServerBuilder setDefaultHandler(HttpHandler defaultHandler) {
+    requireNonNull(defaultHandler, "defaultHandler");
+    this.defaultHandler = defaultHandler;
     return this;
   }
 
@@ -113,6 +139,7 @@ public final class PrometheusHttpServerBuilder {
         prometheusRegistry,
         otelScopeEnabled,
         allowedResourceAttributesFilter,
-        memoryMode);
+        memoryMode,
+        defaultHandler);
   }
 }

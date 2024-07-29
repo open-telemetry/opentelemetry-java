@@ -10,8 +10,11 @@ import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.util.List;
@@ -27,6 +30,7 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   static final String DEFAULT_TRACER_NAME = "";
   private final TracerSharedState sharedState;
   private final ComponentRegistry<SdkTracer> tracerSdkComponentRegistry;
+  private final ScopeConfigurator<TracerConfig> tracerConfigurator;
 
   /**
    * Returns a new {@link SdkTracerProviderBuilder} for {@link SdkTracerProvider}.
@@ -37,19 +41,31 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
     return new SdkTracerProviderBuilder();
   }
 
+  @SuppressWarnings("NonApiType")
   SdkTracerProvider(
       Clock clock,
       IdGenerator idsGenerator,
       Resource resource,
       Supplier<SpanLimits> spanLimitsSupplier,
       Sampler sampler,
-      List<SpanProcessor> spanProcessors) {
+      List<SpanProcessor> spanProcessors,
+      ScopeConfigurator<TracerConfig> tracerConfigurator) {
     this.sharedState =
         new TracerSharedState(
             clock, idsGenerator, resource, spanLimitsSupplier, sampler, spanProcessors);
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
-            instrumentationScopeInfo -> new SdkTracer(sharedState, instrumentationScopeInfo));
+            instrumentationScopeInfo ->
+                new SdkTracer(
+                    sharedState,
+                    instrumentationScopeInfo,
+                    getTracerConfig(instrumentationScopeInfo)));
+    this.tracerConfigurator = tracerConfigurator;
+  }
+
+  private TracerConfig getTracerConfig(InstrumentationScopeInfo instrumentationScopeInfo) {
+    TracerConfig tracerConfig = tracerConfigurator.apply(instrumentationScopeInfo);
+    return tracerConfig == null ? TracerConfig.defaultConfig() : tracerConfig;
   }
 
   @Override

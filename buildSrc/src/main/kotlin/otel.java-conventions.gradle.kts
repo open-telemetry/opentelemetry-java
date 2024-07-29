@@ -24,6 +24,13 @@ base {
   }
 }
 
+// normalize timestamps and file ordering in jars, making the outputs reproducible
+// see open-telemetry/opentelemetry-java#4488
+tasks.withType<AbstractArchiveTask>().configureEach {
+  isPreserveFileTimestamps = false
+  isReproducibleFileOrder = true
+}
+
 java {
   toolchain {
     languageVersion.set(JavaLanguageVersion.of(17))
@@ -35,7 +42,7 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "10.15.0"
+  toolVersion = "10.17.0"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }

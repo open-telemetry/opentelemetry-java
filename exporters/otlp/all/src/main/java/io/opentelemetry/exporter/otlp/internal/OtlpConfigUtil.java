@@ -7,8 +7,7 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import static io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram;
 
-import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
+import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -22,8 +21,6 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -58,6 +55,7 @@ public final class OtlpConfigUtil {
   }
 
   /** Invoke the setters with the OTLP configuration for the {@code dataType}. */
+  @SuppressWarnings("TooManyParameters")
   public static void configureOtlpExporterBuilder(
       String dataType,
       ConfigProperties config,
@@ -67,7 +65,8 @@ public final class OtlpConfigUtil {
       Consumer<Duration> setTimeout,
       Consumer<byte[]> setTrustedCertificates,
       BiConsumer<byte[], byte[]> setClientTls,
-      Consumer<RetryPolicy> setRetryPolicy) {
+      Consumer<RetryPolicy> setRetryPolicy,
+      Consumer<MemoryMode> setMemoryMode) {
     String protocol = getOtlpProtocol(dataType, config);
     boolean isHttpProtobuf = protocol.equals(PROTOCOL_HTTP_PROTOBUF);
     URL endpoint =
@@ -152,11 +151,19 @@ public final class OtlpConfigUtil {
       setClientTls.accept(clientKeyBytes, clientKeyChainBytes);
     }
 
-    boolean retryEnabled =
-        config.getBoolean("otel.experimental.exporter.otlp.retry.enabled", false);
-    if (retryEnabled) {
-      setRetryPolicy.accept(RetryPolicy.getDefault());
+    Boolean retryDisabled = config.getBoolean("otel.java.exporter.otlp.retry.disabled");
+    if (retryDisabled == null) {
+      Boolean experimentalRetryEnabled =
+          config.getBoolean("otel.experimental.exporter.otlp.retry.enabled");
+      if (experimentalRetryEnabled != null) {
+        retryDisabled = !experimentalRetryEnabled;
+      }
     }
+    if (retryDisabled != null && retryDisabled) {
+      setRetryPolicy.accept(null);
+    }
+
+    ExporterBuilderUtil.configureExporterMemoryMode(config, setMemoryMode);
   }
 
   /**
@@ -208,44 +215,6 @@ public final class OtlpConfigUtil {
         .equalsIgnoreCase(defaultHistogramAggregation)) {
       throw new ConfigurationException(
           "Unrecognized default histogram aggregation: " + defaultHistogramAggregation);
-    }
-  }
-
-  /**
-   * Calls {@code #setMemoryMode} on the {@code Otlp{Protocol}MetricExporterBuilder} with the {@code
-   * memoryMode}.
-   */
-  public static void setMemoryModeOnOtlpMetricExporterBuilder(
-      Object builder, MemoryMode memoryMode) {
-    try {
-      if (builder instanceof OtlpGrpcMetricExporterBuilder) {
-        // Calling getDeclaredMethod causes all private methods to be read, which causes a
-        // ClassNotFoundException when running with the OkHttHttpProvider as the private
-        // setManagedChanel(io.grpc.ManagedChannel) is reached and io.grpc.ManagedChannel is not on
-        // the classpath. io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricUtil provides a layer
-        // of indirection which avoids scanning the OtlpGrpcMetricExporterBuilder private methods.
-        Class<?> otlpGrpcMetricUtil =
-            Class.forName("io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricUtil");
-        Method method =
-            otlpGrpcMetricUtil.getDeclaredMethod(
-                "setMemoryMode", OtlpGrpcMetricExporterBuilder.class, MemoryMode.class);
-        method.setAccessible(true);
-        method.invoke(null, builder, memoryMode);
-      } else if (builder instanceof OtlpHttpMetricExporterBuilder) {
-        Method method =
-            OtlpHttpMetricExporterBuilder.class.getDeclaredMethod(
-                "setMemoryMode", MemoryMode.class);
-        method.setAccessible(true);
-        method.invoke(builder, memoryMode);
-      } else {
-        throw new IllegalArgumentException(
-            "Can only set memory mode on OtlpHttpMetricExporterBuilder and OtlpGrpcMetricExporterBuilder.");
-      }
-    } catch (NoSuchMethodException
-        | InvocationTargetException
-        | IllegalAccessException
-        | ClassNotFoundException e) {
-      throw new IllegalStateException("Error calling setMemoryMode.", e);
     }
   }
 

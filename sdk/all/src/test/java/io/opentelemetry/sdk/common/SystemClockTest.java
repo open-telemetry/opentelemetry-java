@@ -18,7 +18,7 @@ class SystemClockTest {
 
   @EnabledOnJre(JRE.JAVA_8)
   @Test
-  void millisPrecision() {
+  void now_millisPrecision() {
     // If we test many times, we can be fairly sure we didn't just get lucky with having a rounded
     // result on a higher than expected precision timestamp.
     for (int i = 0; i < 100; i++) {
@@ -29,12 +29,37 @@ class SystemClockTest {
 
   @DisabledOnJre(JRE.JAVA_8)
   @Test
-  void microsPrecision() {
+  void now_microsPrecision() {
     // If we test many times, we can be fairly sure we get at least one timestamp that isn't
     // coincidentally rounded to millis precision.
     int numHasMicros = 0;
     for (int i = 0; i < 100; i++) {
       long now = SystemClock.getInstance().now();
+      if (now % 1000000 != 0) {
+        numHasMicros++;
+      }
+    }
+    assertThat(numHasMicros).isNotZero();
+  }
+
+  @Test
+  void now_lowPrecision() {
+    // If we test many times, we can be fairly sure we didn't just get lucky with having a rounded
+    // result on a higher than expected precision timestamp.
+    for (int i = 0; i < 100; i++) {
+      long now = SystemClock.getInstance().now(false);
+      assertThat(now % 1000000).isZero();
+    }
+  }
+
+  @DisabledOnJre(JRE.JAVA_8)
+  @Test
+  void now_highPrecision() {
+    // If we test many times, we can be fairly sure we get at least one timestamp that isn't
+    // coincidentally rounded to millis precision.
+    int numHasMicros = 0;
+    for (int i = 0; i < 100; i++) {
+      long now = SystemClock.getInstance().now(true);
       if (now % 1000000 != 0) {
         numHasMicros++;
       }

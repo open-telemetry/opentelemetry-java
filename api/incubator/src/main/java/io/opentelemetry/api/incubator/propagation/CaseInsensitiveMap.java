@@ -14,18 +14,31 @@ class CaseInsensitiveMap extends HashMap<String, String> {
 
   private static final long serialVersionUID = -4202518750189126871L;
 
+  CaseInsensitiveMap() {}
+
   CaseInsensitiveMap(Map<String, String> carrier) {
-    super(carrier);
+    if (carrier != null) {
+      this.putAll(carrier);
+    }
   }
 
   @Override
   public String put(String key, String value) {
-    return super.put(key.toLowerCase(Locale.ROOT), value);
+    return super.put(getKeyLowerCase(key), value);
+  }
+
+  @Override
+  public void putAll(Map<? extends String, ? extends String> m) {
+    m.forEach(this::put);
+  }
+
+  private static String getKeyLowerCase(String key) {
+    return key.toLowerCase(Locale.ROOT);
   }
 
   @Override
   @Nullable
   public String get(Object key) {
-    return super.get(((String) key).toLowerCase(Locale.ROOT));
+    return super.get(getKeyLowerCase((String) key));
   }
 }

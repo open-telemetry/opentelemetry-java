@@ -9,7 +9,6 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_M
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
-import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
@@ -44,15 +43,12 @@ public class OtlpMetricExporterProvider implements ConfigurableMetricExporterPro
           builder::setTimeout,
           builder::setTrustedCertificates,
           builder::setClientTls,
-          builder::setRetryPolicy);
+          builder::setRetryPolicy,
+          builder::setMemoryMode);
       OtlpConfigUtil.configureOtlpAggregationTemporality(
           config, builder::setAggregationTemporalitySelector);
       OtlpConfigUtil.configureOtlpHistogramDefaultAggregation(
           config, builder::setDefaultAggregationSelector);
-      ExporterBuilderUtil.configureExporterMemoryMode(
-          config,
-          memoryMode ->
-              OtlpConfigUtil.setMemoryModeOnOtlpMetricExporterBuilder(builder, memoryMode));
 
       return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
@@ -67,15 +63,12 @@ public class OtlpMetricExporterProvider implements ConfigurableMetricExporterPro
           builder::setTimeout,
           builder::setTrustedCertificates,
           builder::setClientTls,
-          builder::setRetryPolicy);
+          builder::setRetryPolicy,
+          builder::setMemoryMode);
       OtlpConfigUtil.configureOtlpAggregationTemporality(
           config, builder::setAggregationTemporalitySelector);
       OtlpConfigUtil.configureOtlpHistogramDefaultAggregation(
           config, builder::setDefaultAggregationSelector);
-      ExporterBuilderUtil.configureExporterMemoryMode(
-          config,
-          memoryMode ->
-              OtlpConfigUtil.setMemoryModeOnOtlpMetricExporterBuilder(builder, memoryMode));
 
       return builder.build();
     }

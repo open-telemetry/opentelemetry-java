@@ -89,10 +89,15 @@ public final class OtelEncodingUtils {
   /** Returns the {@code byte[]} decoded from the given hex {@link CharSequence}. */
   public static byte[] bytesFromBase16(CharSequence value, int length) {
     byte[] result = new byte[length / 2];
-    for (int i = 0; i < length; i += 2) {
-      result[i / 2] = byteFromBase16(value.charAt(i), value.charAt(i + 1));
-    }
+    bytesFromBase16(value, length, result);
     return result;
+  }
+
+  /** Fills {@code bytes} with bytes decoded from the given hex {@link CharSequence}. */
+  public static void bytesFromBase16(CharSequence value, int length, byte[] bytes) {
+    for (int i = 0; i < length; i += 2) {
+      bytes[i / 2] = byteFromBase16(value.charAt(i), value.charAt(i + 1));
+    }
   }
 
   /** Fills {@code dest} with the hex encoding of {@code bytes}. */

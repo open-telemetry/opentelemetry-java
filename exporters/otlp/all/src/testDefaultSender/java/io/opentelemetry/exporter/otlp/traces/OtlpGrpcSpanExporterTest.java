@@ -17,14 +17,41 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class OtlpGrpcSpanExporterTest extends AbstractGrpcTelemetryExporterTest<SpanData, ResourceSpans> {
 
   OtlpGrpcSpanExporterTest() {
     super("span", ResourceSpans.getDefaultInstance());
+  }
+
+  /** Test configuration specific to metric exporter. */
+  @Test
+  void stringRepresentation() {
+    try (SpanExporter spanExporter = OtlpGrpcSpanExporter.builder().build()) {
+      assertThat(spanExporter.toString())
+          .matches(
+              "OtlpGrpcSpanExporter\\{"
+                  + "exporterName=otlp, "
+                  + "type=span, "
+                  + "endpoint=http://localhost:4317, "
+                  + "endpointPath=.*, "
+                  + "timeoutNanos="
+                  + TimeUnit.SECONDS.toNanos(10)
+                  + ", "
+                  + "connectTimeoutNanos="
+                  + TimeUnit.SECONDS.toNanos(10)
+                  + ", "
+                  + "compressorEncoding=null, "
+                  + "headers=Headers\\{User-Agent=OBFUSCATED\\}, "
+                  + "retryPolicy=RetryPolicy\\{.*\\}, "
+                  + "memoryMode=IMMUTABLE_DATA"
+                  + "\\}");
+    }
   }
 
   @Test

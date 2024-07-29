@@ -59,7 +59,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private Supplier<Map<String, String>> headerSupplier = Collections::emptyMap;
 
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
-  @Nullable private RetryPolicy retryPolicy;
+  @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
   @Nullable private Authenticator authenticator;
 
@@ -128,7 +128,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public HttpExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy) {
+  public HttpExporterBuilder<T> setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
     this.retryPolicy = retryPolicy;
     return this;
   }
@@ -185,6 +185,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
           return result;
         };
 
+    boolean isPlainHttp = endpoint.startsWith("http://");
     HttpSenderProvider httpSenderProvider = resolveHttpSenderProvider();
     HttpSender httpSender =
         httpSenderProvider.createSender(
@@ -198,8 +199,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
             proxyOptions,
             authenticator,
             retryPolicy,
-            tlsConfigHelper.getSslContext(),
-            tlsConfigHelper.getTrustManager());
+            isPlainHttp ? null : tlsConfigHelper.getSslContext(),
+            isPlainHttp ? null : tlsConfigHelper.getTrustManager());
     LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
 
     return new HttpExporter<>(exporterName, type, httpSender, meterProviderSupplier, exportAsJson);
