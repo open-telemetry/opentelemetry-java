@@ -99,6 +99,7 @@ class OtlpHttpMetricExporterOkHttpSenderTest
                   + ", "
                   + "exportAsJson=false, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}, "
+                  + "retryPolicy=RetryPolicy\\{.*\\}, "
                   + "aggregationTemporalitySelector=AggregationTemporalitySelector\\{.*\\}, "
                   + "defaultAggregationSelector=DefaultAggregationSelector\\{.*\\}, "
                   + "memoryMode=IMMUTABLE_DATA"

@@ -11,7 +11,16 @@ import static io.opentelemetry.sdk.metrics.internal.MeterConfig.defaultConfig;
 import static io.opentelemetry.sdk.metrics.internal.MeterConfig.disabled;
 import static io.opentelemetry.sdk.metrics.internal.MeterConfig.enabled;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static java.util.stream.Collectors.groupingBy;
 
+import io.opentelemetry.api.incubator.metrics.ExtendedDoubleCounter;
+import io.opentelemetry.api.incubator.metrics.ExtendedDoubleGauge;
+import io.opentelemetry.api.incubator.metrics.ExtendedDoubleHistogram;
+import io.opentelemetry.api.incubator.metrics.ExtendedDoubleUpDownCounter;
+import io.opentelemetry.api.incubator.metrics.ExtendedLongCounter;
+import io.opentelemetry.api.incubator.metrics.ExtendedLongGauge;
+import io.opentelemetry.api.incubator.metrics.ExtendedLongHistogram;
+import io.opentelemetry.api.incubator.metrics.ExtendedLongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
@@ -20,7 +29,7 @@ import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -37,50 +46,136 @@ class MeterConfigTest {
             // Disable meterB. Since meters are enabled by default, meterA and meterC are enabled.
             .addMeterConfiguratorCondition(nameEquals("meterB"), disabled())
             .registerMetricReader(reader)
+            // Register drop aggregation for all instruments of meterD. Instruments are disabled if
+            // their relevant MeterConfig is disabled, or if there are no resolved views which
+            // consume the measurements.
+            .registerView(
+                InstrumentSelector.builder().setMeterName("meterD").build(),
+                View.builder().setAggregation(Aggregation.drop()).build())
             .build();
 
     Meter meterA = meterProvider.get("meterA");
     Meter meterB = meterProvider.get("meterB");
     Meter meterC = meterProvider.get("meterC");
+    Meter meterD = meterProvider.get("meterD");
+    AtomicLong meterAInvocations = new AtomicLong();
+    AtomicLong meterBInvocations = new AtomicLong();
+    AtomicLong meterCInvocations = new AtomicLong();
+    AtomicLong meterDInvocations = new AtomicLong();
 
-    meterA.counterBuilder("counterA").build().add(1);
-    meterA.counterBuilder("asyncCounterA").buildWithCallback(observable -> observable.record(1));
-    meterA.upDownCounterBuilder("upDownCounterA").build().add(1);
-    meterA
-        .upDownCounterBuilder("asyncUpDownCounterA")
-        .buildWithCallback(observable -> observable.record(1));
-    meterA.histogramBuilder("histogramA").build().record(1.0);
-    meterA.gaugeBuilder("gaugeA").buildWithCallback(observable -> observable.record(1.0));
-
-    meterB.counterBuilder("counterB").build().add(1);
-    meterB.counterBuilder("asyncCounterB").buildWithCallback(observable -> observable.record(1));
-    meterB.upDownCounterBuilder("upDownCounterB").build().add(1);
-    meterB
-        .upDownCounterBuilder("asyncUpDownCounterB")
-        .buildWithCallback(observable -> observable.record(1));
-    meterB.histogramBuilder("histogramB").build().record(1.0);
-    meterB.gaugeBuilder("gaugeB").buildWithCallback(observable -> observable.record(1.0));
-
-    meterC.counterBuilder("counterC").build().add(1);
-    meterC.counterBuilder("asyncCounterC").buildWithCallback(observable -> observable.record(1));
-    meterC.upDownCounterBuilder("upDownCounterC").build().add(1);
-    meterC
-        .upDownCounterBuilder("asyncUpDownCounterC")
-        .buildWithCallback(observable -> observable.record(1));
-    meterC.histogramBuilder("histogramC").build().record(1.0);
-    meterC.gaugeBuilder("gaugeC").buildWithCallback(observable -> observable.record(1.0));
+    // Record measurements to each instrument type
+    recordToMeterInstruments(meterA, meterAInvocations);
+    recordToMeterInstruments(meterB, meterBInvocations);
+    recordToMeterInstruments(meterC, meterCInvocations);
+    recordToMeterInstruments(meterD, meterDInvocations);
 
     // Only metrics from meterA and meterC should be seen
     assertThat(reader.collectAllMetrics())
         .satisfies(
             metrics -> {
               Map<InstrumentationScopeInfo, List<MetricData>> metricsByScope =
-                  metrics.stream()
-                      .collect(Collectors.groupingBy(MetricData::getInstrumentationScopeInfo));
-              assertThat(metricsByScope.get(InstrumentationScopeInfo.create("meterA"))).hasSize(6);
+                  metrics.stream().collect(groupingBy(MetricData::getInstrumentationScopeInfo));
+              assertThat(metricsByScope.get(InstrumentationScopeInfo.create("meterA"))).hasSize(14);
               assertThat(metricsByScope.get(InstrumentationScopeInfo.create("meterB"))).isNull();
-              assertThat(metricsByScope.get(InstrumentationScopeInfo.create("meterC"))).hasSize(6);
+              assertThat(metricsByScope.get(InstrumentationScopeInfo.create("meterC"))).hasSize(14);
+              assertThat(metricsByScope.get(InstrumentationScopeInfo.create("meterD"))).isNull();
             });
+    // Only async callbacks from meterA and meterC should be invoked
+    assertThat(meterAInvocations.get()).isPositive();
+    assertThat(meterBInvocations.get()).isZero();
+    assertThat(meterCInvocations.get()).isPositive();
+    assertThat(meterDInvocations.get()).isZero();
+    // Instruments from meterA and meterC are enabled, meterC is not enabled
+    assertMeterInstrumentsEnabled(meterA, /* expectedEnabled= */ true);
+    assertMeterInstrumentsEnabled(meterB, /* expectedEnabled= */ false);
+    assertMeterInstrumentsEnabled(meterC, /* expectedEnabled= */ true);
+    assertMeterInstrumentsEnabled(meterD, /* expectedEnabled= */ false);
+  }
+
+  private static void recordToMeterInstruments(Meter meter, AtomicLong asyncInvocationsCount) {
+    meter.counterBuilder("longCounter").build().add(1);
+    meter.counterBuilder("doubleCounter").ofDoubles().build().add(1);
+    meter
+        .counterBuilder("asyncLongCounter")
+        .buildWithCallback(
+            observable -> {
+              asyncInvocationsCount.incrementAndGet();
+              observable.record(1);
+            });
+    meter
+        .counterBuilder("asyncDoubleCounter")
+        .ofDoubles()
+        .buildWithCallback(
+            observable -> {
+              asyncInvocationsCount.incrementAndGet();
+              observable.record(1);
+            });
+    meter.upDownCounterBuilder("longUpDownCounter").build().add(1);
+    meter.upDownCounterBuilder("doubleUpDownCounter").ofDoubles().build().add(1);
+    meter
+        .upDownCounterBuilder("asyncLongUpDownCounter")
+        .buildWithCallback(
+            observable -> {
+              asyncInvocationsCount.incrementAndGet();
+              observable.record(1);
+            });
+    meter
+        .upDownCounterBuilder("asyncDoubleUpDownCounter")
+        .ofDoubles()
+        .buildWithCallback(
+            observable -> {
+              asyncInvocationsCount.incrementAndGet();
+              observable.record(1);
+            });
+    meter.histogramBuilder("doubleHistogram").build().record(1.0);
+    meter.histogramBuilder("longHistogram").ofLongs().build().record(1);
+    meter.gaugeBuilder("doubleGauge").build().set(1);
+    meter.gaugeBuilder("longGauge").ofLongs().build().set(1);
+    meter
+        .gaugeBuilder("asyncDoubleGauge")
+        .buildWithCallback(
+            observable -> {
+              asyncInvocationsCount.incrementAndGet();
+              observable.record(1.0);
+            });
+    meter
+        .gaugeBuilder("asyncLongGauge")
+        .ofLongs()
+        .buildWithCallback(
+            observable -> {
+              asyncInvocationsCount.incrementAndGet();
+              observable.record(1);
+            });
+  }
+
+  private static void assertMeterInstrumentsEnabled(Meter meter, boolean expectedEnabled) {
+    assertThat(
+            ((ExtendedDoubleCounter) meter.counterBuilder("doubleCounter").ofDoubles().build())
+                .isEnabled())
+        .isEqualTo(expectedEnabled);
+    assertThat(((ExtendedLongCounter) meter.counterBuilder("longCounter").build()).isEnabled())
+        .isEqualTo(expectedEnabled);
+    assertThat(
+            ((ExtendedDoubleUpDownCounter)
+                    meter.upDownCounterBuilder("doubleUpDownCounter").ofDoubles().build())
+                .isEnabled())
+        .isEqualTo(expectedEnabled);
+    assertThat(
+            ((ExtendedLongUpDownCounter) meter.upDownCounterBuilder("longUpDownCounter").build())
+                .isEnabled())
+        .isEqualTo(expectedEnabled);
+    assertThat(
+            ((ExtendedDoubleHistogram) meter.histogramBuilder("doubleHistogram").build())
+                .isEnabled())
+        .isEqualTo(expectedEnabled);
+    assertThat(
+            ((ExtendedLongHistogram) meter.histogramBuilder("longHistogram").ofLongs().build())
+                .isEnabled())
+        .isEqualTo(expectedEnabled);
+    assertThat(((ExtendedDoubleGauge) meter.gaugeBuilder("doubleGauge").build()).isEnabled())
+        .isEqualTo(expectedEnabled);
+    assertThat(((ExtendedLongGauge) meter.gaugeBuilder("longGauge").ofLongs().build()).isEnabled())
+        .isEqualTo(expectedEnabled);
   }
 
   @ParameterizedTest

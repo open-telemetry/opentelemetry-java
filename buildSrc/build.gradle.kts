@@ -50,7 +50,7 @@ repositories {
 }
 
 dependencies {
-  implementation(enforcedPlatform("com.squareup.wire:wire-bom:4.9.9"))
+  implementation(enforcedPlatform("com.squareup.wire:wire-bom:5.0.0"))
   implementation("com.google.auto.value:auto-value-annotations:1.11.0")
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:6.25.0")
@@ -66,7 +66,7 @@ dependencies {
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.0.1")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.0.0")
   implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0")
-  implementation("org.owasp:dependency-check-gradle:9.2.0")
+  implementation("org.owasp:dependency-check-gradle:10.0.3")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:1.7.1")
 }
 
