@@ -9,10 +9,10 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporter;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessor;
@@ -169,7 +169,7 @@ class LogRecordProcessorFactoryTest {
                             .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
                         spiHelper,
                         closeables))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(StructuredConfigException.class)
         .hasMessage("Unrecognized log record processor(s): [test]");
     cleanup.addCloseables(closeables);
   }

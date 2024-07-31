@@ -14,6 +14,11 @@ dependencies {
 
   annotationProcessor("com.google.auto.value:auto-value")
 
+  // To use parsed config file as input for YamlStructuredConfigPropertiesTest
+  testImplementation(project(":sdk-extensions:incubator"))
+  // TODO (jack-berg): Why is this dependency not brought in as transitive dependency of :sdk-extensions:incubator?
+  testImplementation("com.fasterxml.jackson.core:jackson-databind")
+
   testImplementation(project(":sdk:testing"))
 
   testImplementation("io.opentelemetry.semconv:opentelemetry-semconv-incubating")

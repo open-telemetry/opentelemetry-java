@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Aggregation;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOff;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOn;
@@ -70,7 +70,7 @@ class FileConfigurationParseTest {
             () ->
                 FileConfiguration.parseAndCreate(
                     new ByteArrayInputStream("foo".getBytes(StandardCharsets.UTF_8))))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(StructuredConfigException.class)
         .hasMessage("Unable to parse configuration input stream");
   }
 

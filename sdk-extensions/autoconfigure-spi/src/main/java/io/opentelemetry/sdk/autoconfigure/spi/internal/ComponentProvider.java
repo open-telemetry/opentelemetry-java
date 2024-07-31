@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.spi.internal;
 
+import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**

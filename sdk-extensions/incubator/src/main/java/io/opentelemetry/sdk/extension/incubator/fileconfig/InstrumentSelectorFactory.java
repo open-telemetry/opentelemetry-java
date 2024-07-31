@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Selector;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder;
@@ -29,7 +29,7 @@ final class InstrumentSelectorFactory implements Factory<Selector, InstrumentSel
   public InstrumentSelector create(
       @Nullable Selector model, SpiHelper spiHelper, List<Closeable> closeables) {
     if (model == null) {
-      throw new ConfigurationException("selector must not be null");
+      throw new StructuredConfigException("selector must not be null");
     }
 
     InstrumentSelectorBuilder builder = InstrumentSelector.builder();
@@ -41,7 +41,7 @@ final class InstrumentSelectorFactory implements Factory<Selector, InstrumentSel
       try {
         instrumentType = InstrumentType.valueOf(model.getInstrumentType().name());
       } catch (IllegalArgumentException e) {
-        throw new ConfigurationException(
+        throw new StructuredConfigException(
             "Unrecognized instrument type: " + model.getInstrumentType(), e);
       }
       builder.setType(instrumentType);
@@ -59,7 +59,7 @@ final class InstrumentSelectorFactory implements Factory<Selector, InstrumentSel
     try {
       return builder.build();
     } catch (IllegalArgumentException e) {
-      throw new ConfigurationException("Invalid selector", e);
+      throw new StructuredConfigException("Invalid selector", e);
     }
   }
 }

@@ -9,10 +9,11 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
+import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
+import io.opentelemetry.api.incubator.config.internal.YamlStructuredConfigProperties;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
 import java.io.Closeable;
 import java.io.IOException;
@@ -68,7 +69,7 @@ public final class FileConfiguration {
   /**
    * Combines {@link #parse(InputStream)} and {@link #create(OpenTelemetryConfiguration)}.
    *
-   * @throws ConfigurationException if unable to parse or interpret
+   * @throws StructuredConfigException if unable to parse or interpret
    */
   public static OpenTelemetrySdk parseAndCreate(InputStream inputStream) {
     OpenTelemetryConfiguration configurationModel = parse(inputStream);
@@ -81,7 +82,7 @@ public final class FileConfiguration {
    *
    * @param configurationModel the configuration model
    * @return the {@link OpenTelemetrySdk}
-   * @throws ConfigurationException if unable to interpret
+   * @throws StructuredConfigException if unable to interpret
    */
   public static OpenTelemetrySdk create(OpenTelemetryConfiguration configurationModel) {
     List<Closeable> closeables = new ArrayList<>();
@@ -103,10 +104,10 @@ public final class FileConfiguration {
               "Error closing " + closeable.getClass().getName() + ": " + ex.getMessage());
         }
       }
-      if (e instanceof ConfigurationException) {
+      if (e instanceof StructuredConfigException) {
         throw e;
       }
-      throw new ConfigurationException("Unexpected configuration error", e);
+      throw new StructuredConfigException("Unexpected configuration error", e);
     }
   }
 
@@ -116,13 +117,13 @@ public final class FileConfiguration {
    * <p>Before parsing, environment variable substitution is performed as described in {@link
    * EnvSubstitutionConstructor}.
    *
-   * @throws ConfigurationException if unable to parse
+   * @throws StructuredConfigException if unable to parse
    */
   public static OpenTelemetryConfiguration parse(InputStream configuration) {
     try {
       return parse(configuration, System.getenv());
     } catch (RuntimeException e) {
-      throw new ConfigurationException("Unable to parse configuration input stream", e);
+      throw new StructuredConfigException("Unable to parse configuration input stream", e);
     }
   }
 

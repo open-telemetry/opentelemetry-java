@@ -6,12 +6,12 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import java.io.Closeable;
 import java.util.Arrays;
@@ -40,7 +40,7 @@ final class TextMapPropagatorFactory implements Factory<List<String>, TextMapPro
 
     if (model.contains("none")) {
       if (model.size() > 1) {
-        throw new ConfigurationException(
+        throw new StructuredConfigException(
             "propagators contains \"none\" along with other propagators");
       }
       return TextMapPropagator.noop();
@@ -73,6 +73,6 @@ final class TextMapPropagatorFactory implements Factory<List<String>, TextMapPro
     if (spiPropagator != null) {
       return spiPropagator;
     }
-    throw new ConfigurationException("Unrecognized propagator: " + name);
+    throw new StructuredConfigException("Unrecognized propagator: " + name);
   }
 }

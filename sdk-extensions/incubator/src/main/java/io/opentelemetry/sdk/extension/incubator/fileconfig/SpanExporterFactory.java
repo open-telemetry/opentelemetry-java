@@ -7,10 +7,10 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static java.util.stream.Collectors.joining;
 
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
@@ -62,7 +62,7 @@ final class SpanExporterFactory
 
     // TODO(jack-berg): add support for generic SPI exporters
     if (!model.getAdditionalProperties().isEmpty()) {
-      throw new ConfigurationException(
+      throw new StructuredConfigException(
           "Unrecognized span exporter(s): "
               + model.getAdditionalProperties().keySet().stream().collect(joining(",", "[", "]")));
     }

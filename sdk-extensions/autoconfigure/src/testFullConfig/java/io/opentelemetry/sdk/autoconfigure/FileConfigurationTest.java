@@ -18,6 +18,10 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.incubator.config.ConfigProvider;
+import io.opentelemetry.api.incubator.config.GlobalConfigProvider;
+import io.opentelemetry.api.incubator.config.InstrumentationConfigUtil;
+import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
 import io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -25,10 +29,10 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.internal.AutoConfigureUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -37,6 +41,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,14 +73,21 @@ class FileConfigurationTest {
             + "    - simple:\n"
             + "        exporter:\n"
             + "          console: {}\n"
-            + "other:\n"
-            + "  str_key: str_value\n"
-            + "  map_key:\n"
-            + "    str_key1: str_value1\n";
+            + "instrumentation:\n"
+            + "  general:\n"
+            + "    http:\n"
+            + "      client:\n"
+            + "        request_captured_headers:\n"
+            + "          - Content-Type\n"
+            + "          - Accept\n"
+            + "  java:\n"
+            + "    example:\n"
+            + "      key: value\n";
     configFilePath = tempDir.resolve("otel-config.yaml");
     Files.write(configFilePath, yaml.getBytes(StandardCharsets.UTF_8));
     GlobalOpenTelemetry.resetForTest();
     GlobalEventLoggerProvider.resetForTest();
+    GlobalConfigProvider.resetForTest();
   }
 
   @Test
@@ -145,6 +157,8 @@ class FileConfigurationTest {
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isNotSameAs(openTelemetrySdk);
     assertThat(GlobalEventLoggerProvider.get())
         .isNotSameAs(openTelemetrySdk.getSdkLoggerProvider());
+    assertThat(GlobalConfigProvider.get())
+        .isNotSameAs(autoConfiguredOpenTelemetrySdk.getConfigProvider());
   }
 
   @Test
@@ -163,6 +177,8 @@ class FileConfigurationTest {
         .isInstanceOf(SdkEventLoggerProvider.class)
         .extracting("delegateLoggerProvider")
         .isSameAs(openTelemetrySdk.getSdkLoggerProvider());
+    assertThat(GlobalConfigProvider.get())
+        .isSameAs(autoConfiguredOpenTelemetrySdk.getConfigProvider());
   }
 
   @Test
@@ -189,7 +205,7 @@ class FileConfigurationTest {
   }
 
   @Test
-  void configFile_StructuredConfigProperties() {
+  void configFile_ConfigProvider() {
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
             Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
@@ -200,14 +216,19 @@ class FileConfigurationTest {
     cleanup.addCloseable(openTelemetrySdk);
 
     // getConfig() should return ExtendedConfigProperties generic representation of the config file
-    StructuredConfigProperties structuredConfigProps =
-        autoConfiguredOpenTelemetrySdk.getStructuredConfig();
-    assertThat(structuredConfigProps).isNotNull();
-    StructuredConfigProperties otherProps = structuredConfigProps.getStructured("other");
-    assertThat(otherProps).isNotNull();
-    assertThat(otherProps.getString("str_key")).isEqualTo("str_value");
-    StructuredConfigProperties otherMapKeyProps = otherProps.getStructured("map_key");
-    assertThat(otherMapKeyProps).isNotNull();
-    assertThat(otherMapKeyProps.getString("str_key1")).isEqualTo("str_value1");
+    ConfigProvider globalConfigProvider = GlobalConfigProvider.get();
+    assertThat(globalConfigProvider)
+        .isNotNull()
+        .isSameAs(AutoConfigureUtil.getConfigProvider(autoConfiguredOpenTelemetrySdk));
+    StructuredConfigProperties instrumentationConfig =
+        globalConfigProvider.getInstrumentationConfig();
+    assertThat(instrumentationConfig).isNotNull();
+
+    // Extract instrumentation config from ConfigProvider
+    assertThat(InstrumentationConfigUtil.httpClientRequestCapturedHeaders(globalConfigProvider))
+        .isEqualTo(Arrays.asList("Content-Type", "Accept"));
+    assertThat(InstrumentationConfigUtil.javaInstrumentationConfig(globalConfigProvider, "example"))
+        .isNotNull()
+        .satisfies(exampleConfig -> assertThat(exampleConfig.getString("key")).isEqualTo("value"));
   }
 }

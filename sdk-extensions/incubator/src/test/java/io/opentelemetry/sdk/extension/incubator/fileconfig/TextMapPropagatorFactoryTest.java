@@ -9,13 +9,13 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -67,7 +67,7 @@ class TextMapPropagatorFactoryTest {
             () ->
                 TextMapPropagatorFactory.getInstance()
                     .create(Arrays.asList("none", "foo"), spiHelper, Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(StructuredConfigException.class)
         .hasMessage("propagators contains \"none\" along with other propagators");
   }
 
@@ -77,7 +77,7 @@ class TextMapPropagatorFactoryTest {
             () ->
                 TextMapPropagatorFactory.getInstance()
                     .create(Collections.singletonList("foo"), spiHelper, Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(StructuredConfigException.class)
         .hasMessage("Unrecognized propagator: foo");
   }
 }
