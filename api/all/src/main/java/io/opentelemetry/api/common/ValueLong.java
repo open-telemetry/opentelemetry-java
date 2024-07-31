@@ -7,25 +7,25 @@ package io.opentelemetry.api.common;
 
 import java.util.Objects;
 
-final class AnyValueBoolean implements AnyValue<Boolean> {
+final class ValueLong implements Value<Long> {
 
-  private final boolean value;
+  private final long value;
 
-  private AnyValueBoolean(boolean value) {
+  private ValueLong(long value) {
     this.value = value;
   }
 
-  static AnyValue<Boolean> create(boolean value) {
-    return new AnyValueBoolean(value);
+  static Value<Long> create(long value) {
+    return new ValueLong(value);
   }
 
   @Override
-  public AnyValueType getType() {
-    return AnyValueType.BOOLEAN;
+  public ValueType getType() {
+    return ValueType.LONG;
   }
 
   @Override
-  public Boolean getValue() {
+  public Long getValue() {
     return value;
   }
 
@@ -36,7 +36,7 @@ final class AnyValueBoolean implements AnyValue<Boolean> {
 
   @Override
   public String toString() {
-    return "AnyValueBoolean{" + asString() + "}";
+    return "ValueLong{" + asString() + "}";
   }
 
   @Override
@@ -44,11 +44,11 @@ final class AnyValueBoolean implements AnyValue<Boolean> {
     if (this == o) {
       return true;
     }
-    return (o instanceof AnyValue) && Objects.equals(this.value, ((AnyValue<?>) o).getValue());
+    return (o instanceof Value) && Objects.equals(this.value, ((Value<?>) o).getValue());
   }
 
   @Override
   public int hashCode() {
-    return Boolean.hashCode(value);
+    return Long.hashCode(value);
   }
 }

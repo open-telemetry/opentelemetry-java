@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.logging;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-import io.opentelemetry.api.common.AnyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -64,7 +64,7 @@ public class SystemOutLogRecordExporter implements LogRecordExporter {
   // VisibleForTesting
   static void formatLog(StringBuilder stringBuilder, LogRecordData log) {
     InstrumentationScopeInfo instrumentationScopeInfo = log.getInstrumentationScopeInfo();
-    AnyValue<?> body = log.getAnyValueBody();
+    Value<?> body = log.getBodyValue();
     stringBuilder
         .append(
             ISO_FORMAT.format(

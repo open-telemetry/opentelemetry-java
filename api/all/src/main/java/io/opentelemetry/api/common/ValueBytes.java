@@ -10,22 +10,22 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Objects;
 
-final class AnyValueBytes implements AnyValue<ByteBuffer> {
+final class ValueBytes implements Value<ByteBuffer> {
 
   private final byte[] raw;
 
-  private AnyValueBytes(byte[] value) {
+  private ValueBytes(byte[] value) {
     this.raw = value;
   }
 
-  static AnyValue<ByteBuffer> create(byte[] value) {
+  static Value<ByteBuffer> create(byte[] value) {
     Objects.requireNonNull(value, "value must not be null");
-    return new AnyValueBytes(Arrays.copyOf(value, value.length));
+    return new ValueBytes(Arrays.copyOf(value, value.length));
   }
 
   @Override
-  public AnyValueType getType() {
-    return AnyValueType.BYTES;
+  public ValueType getType() {
+    return ValueType.BYTES;
   }
 
   @Override
@@ -40,7 +40,7 @@ final class AnyValueBytes implements AnyValue<ByteBuffer> {
 
   @Override
   public String toString() {
-    return "AnyValueBytes{" + asString() + "}";
+    return "ValueBytes{" + asString() + "}";
   }
 
   @Override
@@ -48,7 +48,7 @@ final class AnyValueBytes implements AnyValue<ByteBuffer> {
     if (this == o) {
       return true;
     }
-    return (o instanceof AnyValueBytes) && Arrays.equals(this.raw, ((AnyValueBytes) o).raw);
+    return (o instanceof ValueBytes) && Arrays.equals(this.raw, ((ValueBytes) o).raw);
   }
 
   @Override

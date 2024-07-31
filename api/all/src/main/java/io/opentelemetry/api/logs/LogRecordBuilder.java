@@ -5,9 +5,9 @@
 
 package io.opentelemetry.api.logs;
 
-import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -70,12 +70,12 @@ public interface LogRecordBuilder {
   /**
    * Set the body string.
    *
-   * <p>Shorthand for calling {@link #setBody(AnyValue)} with {@link AnyValue#of(String)}.
+   * <p>Shorthand for calling {@link #setBody(Value)} with {@link Value#of(String)}.
    */
   LogRecordBuilder setBody(String body);
 
-  /** Set the body {@link AnyValue}. */
-  default LogRecordBuilder setBody(AnyValue<?> body) {
+  /** Set the body {@link Value}. */
+  default LogRecordBuilder setBody(Value<?> body) {
     setBody(body.asString());
     return this;
   }

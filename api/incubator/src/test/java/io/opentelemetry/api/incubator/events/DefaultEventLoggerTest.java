@@ -7,9 +7,9 @@ package io.opentelemetry.api.incubator.events;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
@@ -38,13 +38,13 @@ class DefaultEventLoggerTest {
                     .put("longArrKey", 1L, 2L)
                     .put("doubleArrKey", 1.0, 2.0)
                     .put("boolArrKey", true, false)
-                    // Set AnyValue types to encode complex data
+                    // Set complex data
                     .put(
-                        "anyValueKey",
-                        AnyValue.of(
-                            new HashMap<String, AnyValue<?>>() {
+                        "valueKey",
+                        Value.of(
+                            new HashMap<String, Value<?>>() {
                               {
-                                put("key", AnyValue.of("value"));
+                                put("key", Value.of("value"));
                               }
                             }))
                     // Helper methods to set AttributeKey<T> types

@@ -35,9 +35,9 @@ final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
         LogRecord.OBSERVED_TIME_UNIX_NANO, log.getObservedTimestampEpochNanos());
     output.serializeEnum(LogRecord.SEVERITY_NUMBER, toProtoSeverityNumber(log.getSeverity()));
     output.serializeStringWithContext(LogRecord.SEVERITY_TEXT, log.getSeverityText(), context);
-    if (log.getAnyValueBody() != null) {
+    if (log.getBodyValue() != null) {
       output.serializeMessageWithContext(
-          LogRecord.BODY, log.getAnyValueBody(), AnyValueStatelessMarshaler.INSTANCE, context);
+          LogRecord.BODY, log.getBodyValue(), AnyValueStatelessMarshaler.INSTANCE, context);
     }
     output.serializeRepeatedMessageWithContext(
         LogRecord.ATTRIBUTES,
@@ -70,10 +70,10 @@ final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
     size +=
         StatelessMarshalerUtil.sizeStringWithContext(
             LogRecord.SEVERITY_TEXT, log.getSeverityText(), context);
-    if (log.getAnyValueBody() != null) {
+    if (log.getBodyValue() != null) {
       size +=
           StatelessMarshalerUtil.sizeMessageWithContext(
-              LogRecord.BODY, log.getAnyValueBody(), AnyValueStatelessMarshaler.INSTANCE, context);
+              LogRecord.BODY, log.getBodyValue(), AnyValueStatelessMarshaler.INSTANCE, context);
     }
     size +=
         StatelessMarshalerUtil.sizeRepeatedMessageWithContext(

@@ -7,9 +7,9 @@ package io.opentelemetry.api.incubator.events;
 
 import static java.util.stream.Collectors.toList;
 
-import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
@@ -22,58 +22,58 @@ public interface EventBuilder {
 
   /** Put the given {@code key} and {@code value} in the payload. */
   default EventBuilder put(String key, String value) {
-    return put(key, AnyValue.of(value));
+    return put(key, Value.of(value));
   }
 
   /** Put the given {@code key} and {@code value} in the payload. */
   default EventBuilder put(String key, long value) {
-    return put(key, AnyValue.of(value));
+    return put(key, Value.of(value));
   }
 
   /** Put the given {@code key} and {@code value} in the payload. */
   default EventBuilder put(String key, double value) {
-    return put(key, AnyValue.of(value));
+    return put(key, Value.of(value));
   }
 
   /** Put the given {@code key} and {@code value} in the payload. */
   default EventBuilder put(String key, boolean value) {
-    return put(key, AnyValue.of(value));
+    return put(key, Value.of(value));
   }
 
   /** Put the given {@code key} and {@code value} in the payload. */
   default EventBuilder put(String key, String... value) {
-    List<AnyValue<?>> values = new ArrayList<>(value.length);
+    List<Value<?>> values = new ArrayList<>(value.length);
     for (String val : value) {
-      values.add(AnyValue.of(val));
+      values.add(Value.of(val));
     }
-    return put(key, AnyValue.of(values));
+    return put(key, Value.of(values));
   }
 
   /** Put the given {@code key} and {@code value} in the payload. */
   default EventBuilder put(String key, long... value) {
-    List<AnyValue<?>> values = new ArrayList<>(value.length);
+    List<Value<?>> values = new ArrayList<>(value.length);
     for (long val : value) {
-      values.add(AnyValue.of(val));
+      values.add(Value.of(val));
     }
-    return put(key, AnyValue.of(values));
+    return put(key, Value.of(values));
   }
 
   /** Put the given {@code key} and {@code value} in the payload. */
   default EventBuilder put(String key, double... value) {
-    List<AnyValue<?>> values = new ArrayList<>(value.length);
+    List<Value<?>> values = new ArrayList<>(value.length);
     for (double val : value) {
-      values.add(AnyValue.of(val));
+      values.add(Value.of(val));
     }
-    return put(key, AnyValue.of(values));
+    return put(key, Value.of(values));
   }
 
   /** Put the given {@code key} and {@code value} in the payload. */
   default EventBuilder put(String key, boolean... value) {
-    List<AnyValue<?>> values = new ArrayList<>(value.length);
+    List<Value<?>> values = new ArrayList<>(value.length);
     for (boolean val : value) {
-      values.add(AnyValue.of(val));
+      values.add(Value.of(val));
     }
-    return put(key, AnyValue.of(values));
+    return put(key, Value.of(values));
   }
 
   /**
@@ -97,25 +97,24 @@ public interface EventBuilder {
       case STRING_ARRAY:
         return put(
             key.getKey(),
-            AnyValue.of(((List<String>) value).stream().map(AnyValue::of).collect(toList())));
+            Value.of(((List<String>) value).stream().map(Value::of).collect(toList())));
       case BOOLEAN_ARRAY:
         return put(
             key.getKey(),
-            AnyValue.of(((List<Boolean>) value).stream().map(AnyValue::of).collect(toList())));
+            Value.of(((List<Boolean>) value).stream().map(Value::of).collect(toList())));
       case LONG_ARRAY:
         return put(
-            key.getKey(),
-            AnyValue.of(((List<Long>) value).stream().map(AnyValue::of).collect(toList())));
+            key.getKey(), Value.of(((List<Long>) value).stream().map(Value::of).collect(toList())));
       case DOUBLE_ARRAY:
         return put(
             key.getKey(),
-            AnyValue.of(((List<Double>) value).stream().map(AnyValue::of).collect(toList())));
+            Value.of(((List<Double>) value).stream().map(Value::of).collect(toList())));
     }
     return this;
   }
 
   /** Put the given {@code key} and {@code value} in the payload. */
-  EventBuilder put(String key, AnyValue<?> value);
+  EventBuilder put(String key, Value<?> value);
 
   /**
    * Set the epoch {@code timestamp}, using the timestamp and unit.
@@ -143,9 +142,9 @@ public interface EventBuilder {
    * Set the attributes.
    *
    * <p>Event {@link io.opentelemetry.api.common.Attributes} provide additional details about the
-   * Event which are not part of the well-defined {@link AnyValue} payload. Setting event attributes
-   * is less common than adding entries to the event payload. Most users will want to call one of
-   * the {@code #put(String, ?)} methods instead.
+   * Event which are not part of the well-defined {@link Value} payload. Setting event attributes is
+   * less common than adding entries to the event payload. Most users will want to call one of the
+   * {@code #put(String, ?)} methods instead.
    */
   EventBuilder setAttributes(Attributes attributes);
 

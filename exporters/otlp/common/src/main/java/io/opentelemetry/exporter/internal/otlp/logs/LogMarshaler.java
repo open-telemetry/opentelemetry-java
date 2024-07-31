@@ -42,9 +42,9 @@ final class LogMarshaler extends MarshalerWithSize {
         KeyValueMarshaler.createForAttributes(logRecordData.getAttributes());
 
     MarshalerWithSize bodyMarshaler =
-        logRecordData.getAnyValueBody() == null
+        logRecordData.getBodyValue() == null
             ? null
-            : AnyValueMarshaler.create(logRecordData.getAnyValueBody());
+            : AnyValueMarshaler.create(logRecordData.getBodyValue());
 
     SpanContext spanContext = logRecordData.getSpanContext();
     return new LogMarshaler(

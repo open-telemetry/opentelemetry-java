@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
@@ -23,7 +24,7 @@ final class ArrayAnyValueMarshaler extends MarshalerWithSize {
     this.value = value;
   }
 
-  static MarshalerWithSize createAnyValue(List<io.opentelemetry.api.common.AnyValue<?>> values) {
+  static MarshalerWithSize createAnyValue(List<Value<?>> values) {
     return createInternal(values, AnyValueMarshaler::create);
   }
 

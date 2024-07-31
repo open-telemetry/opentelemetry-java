@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
-import static io.opentelemetry.api.common.AnyValue.of;
+import static io.opentelemetry.api.common.Value.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -13,7 +13,8 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
-import io.opentelemetry.api.common.KeyAnyValue;
+import io.opentelemetry.api.common.KeyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
@@ -21,7 +22,6 @@ import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.ArrayValue;
-import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.common.v1.KeyValueList;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,22 +34,20 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @SuppressWarnings("BadImport")
-class AnyValueMarshalerTest {
+class ValueMarshalerTest {
 
   @ParameterizedTest
   @MethodSource("serializeAnyValueArgs")
-  void anyValueString_StatefulMarshaler(
-      io.opentelemetry.api.common.AnyValue<?> anyValue, AnyValue expectedSerializedValue) {
-    MarshalerWithSize marshaler = AnyValueMarshaler.create(anyValue);
+  void anyValueString_StatefulMarshaler(Value<?> value, AnyValue expectedSerializedValue) {
+    MarshalerWithSize marshaler = AnyValueMarshaler.create(value);
     AnyValue serializedValue = parse(AnyValue.getDefaultInstance(), marshaler);
     assertThat(serializedValue).isEqualTo(expectedSerializedValue);
   }
 
   @ParameterizedTest
   @MethodSource("serializeAnyValueArgs")
-  void anyValueString_StatelessMarshaler(
-      io.opentelemetry.api.common.AnyValue<?> anyValue, AnyValue expectedSerializedValue) {
-    Marshaler marshaler = createMarshaler(AnyValueStatelessMarshaler.INSTANCE, anyValue);
+  void anyValueString_StatelessMarshaler(Value<?> value, AnyValue expectedSerializedValue) {
+    Marshaler marshaler = createMarshaler(AnyValueStatelessMarshaler.INSTANCE, value);
     AnyValue serializedValue = parse(AnyValue.getDefaultInstance(), marshaler);
     assertThat(serializedValue).isEqualTo(expectedSerializedValue);
   }
@@ -75,17 +73,17 @@ class AnyValueMarshalerTest {
                 .build()),
         // map
         arguments(
-            of(KeyAnyValue.of("key1", of("val1")), KeyAnyValue.of("key2", of(2))),
+            of(KeyValue.of("key1", of("val1")), KeyValue.of("key2", of(2))),
             AnyValue.newBuilder()
                 .setKvlistValue(
                     KeyValueList.newBuilder()
                         .addValues(
-                            KeyValue.newBuilder()
+                            io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                                 .setKey("key1")
                                 .setValue(AnyValue.newBuilder().setStringValue("val1").build())
                                 .build())
                         .addValues(
-                            KeyValue.newBuilder()
+                            io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                                 .setKey("key2")
                                 .setValue(AnyValue.newBuilder().setIntValue(2).build())
                                 .build())
@@ -100,14 +98,15 @@ class AnyValueMarshalerTest {
                 .setKvlistValue(
                     KeyValueList.newBuilder()
                         .addValues(
-                            KeyValue.newBuilder()
+                            io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                                 .setKey("child")
                                 .setValue(
                                     AnyValue.newBuilder()
                                         .setKvlistValue(
                                             KeyValueList.newBuilder()
                                                 .addValues(
-                                                    KeyValue.newBuilder()
+                                                    io.opentelemetry.proto.common.v1.KeyValue
+                                                        .newBuilder()
                                                         .setKey("grandchild")
                                                         .setValue(
                                                             AnyValue.newBuilder()

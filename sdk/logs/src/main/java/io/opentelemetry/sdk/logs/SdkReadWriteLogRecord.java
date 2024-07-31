@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.logs;
 
-import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
@@ -29,7 +29,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
   private final SpanContext spanContext;
   private final Severity severity;
   @Nullable private final String severityText;
-  @Nullable private final AnyValue<?> body;
+  @Nullable private final Value<?> body;
   private final Object lock = new Object();
 
   @GuardedBy("lock")
@@ -45,7 +45,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       SpanContext spanContext,
       Severity severity,
       @Nullable String severityText,
-      @Nullable AnyValue<?> body,
+      @Nullable Value<?> body,
       @Nullable AttributesMap attributes) {
     this.logLimits = logLimits;
     this.resource = resource;
@@ -69,7 +69,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       SpanContext spanContext,
       Severity severity,
       @Nullable String severityText,
-      @Nullable AnyValue<?> body,
+      @Nullable Value<?> body,
       @Nullable AttributesMap attributes) {
     return new SdkReadWriteLogRecord(
         logLimits,

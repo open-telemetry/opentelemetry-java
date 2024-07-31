@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.testing.logs;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -45,15 +45,15 @@ public abstract class TestLogRecordData implements LogRecordData {
 
   @Deprecated
   public io.opentelemetry.sdk.logs.data.Body getBody() {
-    AnyValue<?> anyValueBody = getAnyValueBody();
-    return anyValueBody == null
+    Value<?> valueBody = getBodyValue();
+    return valueBody == null
         ? io.opentelemetry.sdk.logs.data.Body.empty()
-        : io.opentelemetry.sdk.logs.data.Body.string(anyValueBody.asString());
+        : io.opentelemetry.sdk.logs.data.Body.string(valueBody.asString());
   }
 
   @Override
   @Nullable
-  public abstract AnyValue<?> getAnyValueBody();
+  public abstract Value<?> getBodyValue();
 
   TestLogRecordData() {}
 
@@ -138,26 +138,26 @@ public abstract class TestLogRecordData implements LogRecordData {
 
     /** Set the body string. */
     public Builder setBody(String body) {
-      return setAnyValueBody(AnyValue.of(body));
+      return setBodyValue(Value.of(body));
     }
 
     /**
      * Set the body.
      *
-     * @deprecated Use {@link #setAnyValueBody(AnyValue)}.
+     * @deprecated Use {@link #setBodyValue(Value)}.
      */
     @Deprecated
     public Builder setBody(io.opentelemetry.sdk.logs.data.Body body) {
       if (body.getType() == io.opentelemetry.sdk.logs.data.Body.Type.STRING) {
-        setAnyValueBody(AnyValue.of(body.asString()));
+        setBodyValue(Value.of(body.asString()));
       } else if (body.getType() == io.opentelemetry.sdk.logs.data.Body.Type.EMPTY) {
-        setAnyValueBody(null);
+        setBodyValue(null);
       }
       return this;
     }
 
     /** Set the body. */
-    public abstract Builder setAnyValueBody(@Nullable AnyValue<?> body);
+    public abstract Builder setBodyValue(@Nullable Value<?> body);
 
     /** Set the attributes. */
     public abstract Builder setAttributes(Attributes attributes);

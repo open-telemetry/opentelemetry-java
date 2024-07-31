@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.logs;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -31,7 +31,7 @@ abstract class SdkLogRecordData implements LogRecordData {
       SpanContext spanContext,
       Severity severity,
       @Nullable String severityText,
-      @Nullable AnyValue<?> body,
+      @Nullable Value<?> body,
       Attributes attributes,
       int totalAttributeCount) {
     return new AutoValue_SdkLogRecordData(
@@ -49,14 +49,14 @@ abstract class SdkLogRecordData implements LogRecordData {
 
   @Override
   @Nullable
-  public abstract AnyValue<?> getAnyValueBody();
+  public abstract Value<?> getBodyValue();
 
   @Override
   @SuppressWarnings("deprecation") // Implementation of deprecated method
   public io.opentelemetry.sdk.logs.data.Body getBody() {
-    AnyValue<?> anyValueBody = getAnyValueBody();
-    return anyValueBody == null
+    Value<?> valueBody = getBodyValue();
+    return valueBody == null
         ? io.opentelemetry.sdk.logs.data.Body.empty()
-        : io.opentelemetry.sdk.logs.data.Body.string(anyValueBody.asString());
+        : io.opentelemetry.sdk.logs.data.Body.string(valueBody.asString());
   }
 }

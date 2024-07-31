@@ -7,22 +7,22 @@ package io.opentelemetry.api.common;
 
 import java.util.Objects;
 
-final class AnyValueString implements AnyValue<String> {
+final class ValueString implements Value<String> {
 
   private final String value;
 
-  private AnyValueString(String value) {
+  private ValueString(String value) {
     this.value = value;
   }
 
-  static AnyValue<String> create(String value) {
+  static Value<String> create(String value) {
     Objects.requireNonNull(value, "value must not be null");
-    return new AnyValueString(value);
+    return new ValueString(value);
   }
 
   @Override
-  public AnyValueType getType() {
-    return AnyValueType.STRING;
+  public ValueType getType() {
+    return ValueType.STRING;
   }
 
   @Override
@@ -37,7 +37,7 @@ final class AnyValueString implements AnyValue<String> {
 
   @Override
   public String toString() {
-    return "AnyValueString{" + value + "}";
+    return "ValueString{" + value + "}";
   }
 
   @Override
@@ -45,7 +45,7 @@ final class AnyValueString implements AnyValue<String> {
     if (this == o) {
       return true;
     }
-    return (o instanceof AnyValue) && Objects.equals(this.value, ((AnyValue<?>) o).getValue());
+    return (o instanceof Value) && Objects.equals(this.value, ((Value<?>) o).getValue());
   }
 
   @Override

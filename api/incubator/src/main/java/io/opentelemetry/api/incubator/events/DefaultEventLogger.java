@@ -5,8 +5,8 @@
 
 package io.opentelemetry.api.incubator.events;
 
-import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
@@ -32,7 +32,7 @@ class DefaultEventLogger implements EventLogger {
     public static final EventBuilder INSTANCE = new NoOpEventBuilder();
 
     @Override
-    public EventBuilder put(String key, AnyValue<?> value) {
+    public EventBuilder put(String key, Value<?> value) {
       return this;
     }
 

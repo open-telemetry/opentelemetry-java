@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.logs;
 
-import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
@@ -30,7 +30,7 @@ final class SdkLogRecordBuilder implements ExtendedLogRecordBuilder {
   @Nullable private Context context;
   private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
   @Nullable private String severityText;
-  @Nullable private AnyValue<?> body;
+  @Nullable private Value<?> body;
   @Nullable private AttributesMap attributes;
 
   SdkLogRecordBuilder(
@@ -86,12 +86,12 @@ final class SdkLogRecordBuilder implements ExtendedLogRecordBuilder {
 
   @Override
   public SdkLogRecordBuilder setBody(String body) {
-    this.body = AnyValue.of(body);
+    this.body = Value.of(body);
     return this;
   }
 
   @Override
-  public LogRecordBuilder setBody(AnyValue<?> value) {
+  public LogRecordBuilder setBody(Value<?> value) {
     this.body = value;
     return this;
   }

@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.testing.junit4;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.common.AnyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
@@ -95,14 +95,12 @@ public class OpenTelemetryRuleTest {
     assertThat(otelTesting.getLogRecords())
         .singleElement()
         .satisfies(
-            logRecordData ->
-                assertThat(logRecordData.getAnyValueBody()).isEqualTo(AnyValue.of("body")));
+            logRecordData -> assertThat(logRecordData.getBodyValue()).isEqualTo(Value.of("body")));
     // Logs cleared between tests, not when retrieving
     assertThat(otelTesting.getLogRecords())
         .singleElement()
         .satisfies(
-            logRecordData ->
-                assertThat(logRecordData.getAnyValueBody()).isEqualTo(AnyValue.of("body")));
+            logRecordData -> assertThat(logRecordData.getBodyValue()).isEqualTo(Value.of("body")));
   }
 
   // We have two tests to verify logs get cleared up between tests.
@@ -113,13 +111,11 @@ public class OpenTelemetryRuleTest {
     assertThat(otelTesting.getLogRecords())
         .singleElement()
         .satisfies(
-            logRecordData ->
-                assertThat(logRecordData.getAnyValueBody()).isEqualTo(AnyValue.of("body")));
+            logRecordData -> assertThat(logRecordData.getBodyValue()).isEqualTo(Value.of("body")));
     // Logs cleared between tests, not when retrieving
     assertThat(otelTesting.getLogRecords())
         .singleElement()
         .satisfies(
-            logRecordData ->
-                assertThat(logRecordData.getAnyValueBody()).isEqualTo(AnyValue.of("body")));
+            logRecordData -> assertThat(logRecordData.getBodyValue()).isEqualTo(Value.of("body")));
   }
 }

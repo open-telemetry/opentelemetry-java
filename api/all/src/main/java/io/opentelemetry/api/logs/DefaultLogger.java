@@ -5,8 +5,8 @@
 
 package io.opentelemetry.api.logs;
 
-import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -72,7 +72,7 @@ class DefaultLogger implements Logger {
     }
 
     @Override
-    public LogRecordBuilder setBody(AnyValue<?> body) {
+    public LogRecordBuilder setBody(Value<?> body) {
       return this;
     }
 

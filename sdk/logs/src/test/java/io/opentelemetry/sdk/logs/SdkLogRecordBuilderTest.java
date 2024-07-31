@@ -8,9 +8,9 @@ package io.opentelemetry.sdk.logs;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.api.common.AnyValue;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -105,7 +105,7 @@ class SdkLogRecordBuilderTest {
     assertThat(emittedLog.get().toLogRecordData())
         .hasResource(RESOURCE)
         .hasInstrumentationScope(SCOPE_INFO)
-        .hasBody((AnyValue<?>) null)
+        .hasBody((Value<?>) null)
         .hasTimestamp(0L)
         .hasObservedTimestamp(10L)
         .hasAttributes(Attributes.empty())

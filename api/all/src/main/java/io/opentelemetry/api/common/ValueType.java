@@ -10,7 +10,7 @@ package io.opentelemetry.api.common;
  * href="https://github.com/open-telemetry/opentelemetry-proto/blob/ac3242b03157295e4ee9e616af53b81517b06559/opentelemetry/proto/common/v1/common.proto#L31">AnyValue#value
  * options</a>.
  */
-public enum AnyValueType {
+public enum ValueType {
   STRING,
   BOOLEAN,
   LONG,
