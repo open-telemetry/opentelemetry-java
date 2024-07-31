@@ -23,7 +23,7 @@ public interface ConfigProvider {
   /**
    * Returns the {@link StructuredConfigProperties} corresponding to <a
    * href="https://github.com/open-telemetry/opentelemetry-configuration/blob/main/schema/instrumentation.json">instrumentation
-   * config</a>, or {@code null} if file configuration is not used.
+   * config</a>, or {@code null} if unavailable.
    *
    * @return the instrumentation {@link StructuredConfigProperties}
    */

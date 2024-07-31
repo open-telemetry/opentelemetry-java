@@ -287,10 +287,7 @@ public final class YamlStructuredConfigProperties implements StructuredConfigPro
     return joiner.toString();
   }
 
-  /**
-   * Returns a map representation of this {@link YamlStructuredConfigProperties}, which is useful
-   * for testing.
-   */
+  /** Returns a map representation of this, which is useful for testing. */
   public Map<String, Object> asMap() {
     Map<String, Object> response = new HashMap<>();
     response.putAll(simpleEntries);

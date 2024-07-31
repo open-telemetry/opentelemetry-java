@@ -37,11 +37,10 @@ class GlobalConfigProviderTest {
 
   @Test
   void setThenSet() {
-    GlobalConfigProvider.set(() -> YamlStructuredConfigProperties.create(Collections.emptyMap()));
-    assertThatThrownBy(
-            () ->
-                GlobalConfigProvider.set(
-                    () -> YamlStructuredConfigProperties.create(Collections.emptyMap())))
+    ConfigProvider configProvider =
+        () -> YamlStructuredConfigProperties.create(Collections.emptyMap());
+    GlobalConfigProvider.set(configProvider);
+    assertThatThrownBy(() -> GlobalConfigProvider.set(configProvider))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("GlobalConfigProvider.set has already been called")
         .hasStackTraceContaining("setThenSet");

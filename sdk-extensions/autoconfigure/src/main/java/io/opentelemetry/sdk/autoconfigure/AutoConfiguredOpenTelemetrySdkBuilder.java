@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -435,7 +436,9 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     if (fromFileConfiguration != null) {
       maybeRegisterShutdownHook(fromFileConfiguration.getOpenTelemetrySdk());
       maybeSetAsGlobal(
-          fromFileConfiguration.getOpenTelemetrySdk(), fromFileConfiguration.getConfigProvider());
+          fromFileConfiguration.getOpenTelemetrySdk(),
+          Optional.ofNullable(fromFileConfiguration.getConfigProvider())
+              .orElse(ConfigProvider.noop()));
       return fromFileConfiguration;
     }
 
@@ -507,7 +510,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       }
 
       maybeRegisterShutdownHook(openTelemetrySdk);
-      maybeSetAsGlobal(openTelemetrySdk, null);
+      maybeSetAsGlobal(openTelemetrySdk, ConfigProvider.noop());
       callAutoConfigureListeners(spiHelper, openTelemetrySdk);
 
       return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config, null);
@@ -593,15 +596,14 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     Runtime.getRuntime().addShutdownHook(shutdownHook(openTelemetrySdk));
   }
 
-  private void maybeSetAsGlobal(
-      OpenTelemetrySdk openTelemetrySdk, @Nullable ConfigProvider configProvider) {
+  private void maybeSetAsGlobal(OpenTelemetrySdk openTelemetrySdk, ConfigProvider configProvider) {
     if (!setResultAsGlobal) {
       return;
     }
     GlobalOpenTelemetry.set(openTelemetrySdk);
     GlobalEventLoggerProvider.set(
         SdkEventLoggerProvider.create(openTelemetrySdk.getSdkLoggerProvider()));
-    GlobalConfigProvider.set(configProvider != null ? configProvider : ConfigProvider.noop());
+    GlobalConfigProvider.set(configProvider);
     logger.log(
         Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetrySdk);
   }

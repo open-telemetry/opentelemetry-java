@@ -37,6 +37,8 @@ public final class GlobalConfigProvider {
    * Sets the global {@link ConfigProvider}. Future calls to {@link #get()} will return the provided
    * {@link ConfigProvider} instance. This should be called once as early as possible in your
    * application initialization logic.
+   *
+   * @throws IllegalStateException when called more than once
    */
   public static void set(ConfigProvider configProvider) {
     boolean changed = instance.compareAndSet(ConfigProvider.noop(), configProvider);
