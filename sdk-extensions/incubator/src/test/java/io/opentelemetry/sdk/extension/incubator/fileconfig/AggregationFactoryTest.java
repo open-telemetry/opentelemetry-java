@@ -17,23 +17,12 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LastVa
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sum;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 class AggregationFactoryTest {
-
-  @Test
-  void create_Null() {
-    assertThat(
-            AggregationFactory.getInstance()
-                .create(null, mock(SpiHelper.class), Collections.emptyList())
-                .toString())
-        .isEqualTo(io.opentelemetry.sdk.metrics.Aggregation.defaultAggregation().toString());
-  }
 
   @ParameterizedTest
   @MethodSource("createTestCases")

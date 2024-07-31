@@ -19,7 +19,6 @@ import java.io.Closeable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 final class LogRecordExporterFactory
     implements Factory<
@@ -36,15 +35,9 @@ final class LogRecordExporterFactory
 
   @Override
   public LogRecordExporter create(
-      @Nullable
-          io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporter
-              model,
+      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporter model,
       SpiHelper spiHelper,
       List<Closeable> closeables) {
-    if (model == null) {
-      return LogRecordExporter.composite();
-    }
-
     Otlp otlpModel = model.getOtlp();
     if (otlpModel != null) {
       return FileConfigUtil.addAndReturn(closeables, createOtlpExporter(otlpModel, spiHelper));
@@ -55,9 +48,9 @@ final class LogRecordExporterFactory
       throw new ConfigurationException(
           "Unrecognized log record exporter(s): "
               + model.getAdditionalProperties().keySet().stream().collect(joining(",", "[", "]")));
+    } else {
+      throw new ConfigurationException("log exporter must be set");
     }
-
-    return LogRecordExporter.composite();
   }
 
   private static LogRecordExporter createOtlpExporter(Otlp otlp, SpiHelper spiHelper) {

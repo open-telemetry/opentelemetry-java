@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 final class SpanExporterFactory
     implements Factory<
@@ -38,14 +37,9 @@ final class SpanExporterFactory
 
   @Override
   public SpanExporter create(
-      @Nullable
-          io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporter model,
+      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporter model,
       SpiHelper spiHelper,
       List<Closeable> closeables) {
-    if (model == null) {
-      return SpanExporter.composite();
-    }
-
     Otlp otlpModel = model.getOtlp();
     if (otlpModel != null) {
       return FileConfigUtil.addAndReturn(closeables, createOtlpExporter(otlpModel, spiHelper));
@@ -65,9 +59,9 @@ final class SpanExporterFactory
       throw new ConfigurationException(
           "Unrecognized span exporter(s): "
               + model.getAdditionalProperties().keySet().stream().collect(joining(",", "[", "]")));
+    } else {
+      throw new ConfigurationException("span exporter must be set");
     }
-
-    return SpanExporter.composite();
   }
 
   private static SpanExporter createOtlpExporter(Otlp model, SpiHelper spiHelper) {

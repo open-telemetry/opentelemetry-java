@@ -57,16 +57,6 @@ class LogRecordExporterFactoryTest {
       SpiHelper.create(LogRecordExporterFactoryTest.class.getClassLoader());
 
   @Test
-  void create_Null() {
-    LogRecordExporter expectedExporter = LogRecordExporter.composite();
-
-    LogRecordExporter exporter =
-        LogRecordExporterFactory.getInstance().create(null, spiHelper, new ArrayList<>());
-
-    assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
-  }
-
-  @Test
   void create_OtlpDefaults() {
     spiHelper = spy(spiHelper);
     List<Closeable> closeables = new ArrayList<>();

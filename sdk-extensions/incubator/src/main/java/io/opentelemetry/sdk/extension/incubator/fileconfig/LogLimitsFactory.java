@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.LogLimitsBuilder;
 import java.io.Closeable;
 import java.util.List;
-import javax.annotation.Nullable;
 
 final class LogLimitsFactory implements Factory<LogRecordLimitsAndAttributeLimits, LogLimits> {
 
@@ -26,12 +25,7 @@ final class LogLimitsFactory implements Factory<LogRecordLimitsAndAttributeLimit
 
   @Override
   public LogLimits create(
-      @Nullable LogRecordLimitsAndAttributeLimits model,
-      SpiHelper spiHelper,
-      List<Closeable> closeables) {
-    if (model == null) {
-      return LogLimits.getDefault();
-    }
+      LogRecordLimitsAndAttributeLimits model, SpiHelper spiHelper, List<Closeable> closeables) {
     LogLimitsBuilder builder = LogLimits.builder();
 
     AttributeLimits attributeLimitsModel = model.getAttributeLimits();

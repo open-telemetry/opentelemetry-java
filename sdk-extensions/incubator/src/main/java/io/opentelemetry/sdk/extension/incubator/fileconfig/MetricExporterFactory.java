@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 final class MetricExporterFactory
     implements Factory<
@@ -35,18 +34,11 @@ final class MetricExporterFactory
     return INSTANCE;
   }
 
-  @SuppressWarnings("NullAway") // Override superclass non-null response
   @Override
-  @Nullable
   public MetricExporter create(
-      @Nullable
-          io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporter model,
+      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporter model,
       SpiHelper spiHelper,
       List<Closeable> closeables) {
-    if (model == null) {
-      return null;
-    }
-
     OtlpMetric otlpModel = model.getOtlp();
     if (otlpModel != null) {
       return FileConfigUtil.addAndReturn(closeables, createOtlpExporter(otlpModel, spiHelper));
@@ -65,9 +57,9 @@ final class MetricExporterFactory
       throw new ConfigurationException(
           "Unrecognized metric exporter(s): "
               + model.getAdditionalProperties().keySet().stream().collect(joining(",", "[", "]")));
+    } else {
+      throw new ConfigurationException("metric exporter must be set");
     }
-
-    return null;
   }
 
   private static MetricExporter createOtlpExporter(OtlpMetric model, SpiHelper spiHelper) {

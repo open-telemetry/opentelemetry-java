@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.List;
-import javax.annotation.Nullable;
 
 final class LogRecordProcessorFactory
     implements Factory<
@@ -34,22 +33,15 @@ final class LogRecordProcessorFactory
 
   @Override
   public LogRecordProcessor create(
-      @Nullable
-          io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessor
-              model,
+      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessor model,
       SpiHelper spiHelper,
       List<Closeable> closeables) {
-    if (model == null) {
-      return LogRecordProcessor.composite();
-    }
-
     io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessor
         batchModel = model.getBatch();
     if (batchModel != null) {
-      LogRecordExporter exporterModel = batchModel.getExporter();
-      if (exporterModel == null) {
-        return LogRecordProcessor.composite();
-      }
+      LogRecordExporter exporterModel =
+          FileConfigUtil.requireNonNull(
+              batchModel.getExporter(), "batch log record processor exporter");
 
       BatchLogRecordProcessorBuilder builder =
           BatchLogRecordProcessor.builder(
@@ -72,10 +64,9 @@ final class LogRecordProcessorFactory
     io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleLogRecordProcessor
         simpleModel = model.getSimple();
     if (simpleModel != null) {
-      LogRecordExporter exporterModel = simpleModel.getExporter();
-      if (exporterModel == null) {
-        return LogRecordProcessor.composite();
-      }
+      LogRecordExporter exporterModel =
+          FileConfigUtil.requireNonNull(
+              simpleModel.getExporter(), "simple log record processor exporter");
 
       return FileConfigUtil.addAndReturn(
           closeables,
@@ -88,8 +79,8 @@ final class LogRecordProcessorFactory
       throw new ConfigurationException(
           "Unrecognized log record processor(s): "
               + model.getAdditionalProperties().keySet().stream().collect(joining(",", "[", "]")));
+    } else {
+      throw new ConfigurationException("log processor must be set");
     }
-
-    return LogRecordProcessor.composite();
   }
 }
