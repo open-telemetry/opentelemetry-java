@@ -18,6 +18,8 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.ServerSocket;
 import java.net.http.HttpClient;
 import java.net.http.HttpConnectTimeoutException;
 import java.time.Duration;
@@ -53,8 +55,8 @@ class JdkHttpSenderTest {
     sender =
         new JdkHttpSender(
             mockHttpClient,
-            "http://10.255.255.1", // Connecting to a non-routable IP address to trigger connection
-            // timeout
+            // Connecting to a non-routable IP address to trigger connection timeout
+            "http://10.255.255.1",
             null,
             false,
             "text/plain",
@@ -72,6 +74,38 @@ class JdkHttpSenderTest {
         .isInstanceOf(HttpConnectTimeoutException.class);
 
     verify(mockHttpClient, times(2)).send(any(), any());
+  }
+
+  @Test
+  void sendInternal_RetryableConnectException() throws IOException, InterruptedException {
+    sender =
+        new JdkHttpSender(
+            mockHttpClient,
+            // Connecting to localhost on an unused port address to trigger
+            // java.net.ConnectException
+            "http://localhost:" + freePort(),
+            null,
+            false,
+            "text/plain",
+            Duration.ofSeconds(10).toNanos(),
+            Collections::emptyMap,
+            RetryPolicy.builder()
+                .setMaxAttempts(2)
+                .setInitialBackoff(Duration.ofMillis(1))
+                .build());
+
+    assertThatThrownBy(() -> sender.sendInternal(new NoOpMarshaler()))
+        .isInstanceOf(ConnectException.class);
+
+    verify(mockHttpClient, times(2)).send(any(), any());
+  }
+
+  private static int freePort() {
+    try (ServerSocket socket = new ServerSocket(0)) {
+      return socket.getLocalPort();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Test
