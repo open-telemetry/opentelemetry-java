@@ -3,7 +3,7 @@
 [![Coverage Status][codecov-image]][codecov-url]
 [![Maven Central][maven-image]][maven-url]
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > We are currently seeking additional contributors! See [help wanted](#help-wanted) for details.
 
 ## Project Status
