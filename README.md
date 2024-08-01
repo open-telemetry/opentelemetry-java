@@ -3,6 +3,9 @@
 [![Coverage Status][codecov-image]][codecov-url]
 [![Maven Central][maven-image]][maven-url]
 
+> [!IMPORTANT]  
+> We are currently seeking additional contributors! See [help wanted](#help-wanted) for details.
+
 ## Project Status
 
 See [Java status on OpenTelemetry.io][otel-java-status].
@@ -321,6 +324,15 @@ Emeritus:
 - Approver [Mateusz Rzeszutek](https://github.com/mateuszrzeszutek)
 
 *Find more about the maintainer role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#maintainer).*
+
+### Help wanted
+
+We are currently resource constrained and are actively seeking new contributors interested in working towards [approver](https://github.com/open-telemetry/community/blob/master/community-membership.md#approver) / [maintainer](https://github.com/open-telemetry/community/blob/master/community-membership.md#maintainer) roles. In addition to the documentation for approver / maintainer roles and the [contributing](./CONTRIBUTING.md) guide, here are some additional notes on engaging:
+
+- [Pull request](https://github.com/open-telemetry/opentelemetry-java/pulls) reviews are equally or more helpful than code contributions. Comments and approvals are valuable with or without a formal project role. They're also a great forcing function to explore a fairly complex codebase.
+- Attending the [Java: SDK + Automatic Instrumentation](https://github.com/open-telemetry/community?tab=readme-ov-file#implementation-sigs) SIG is a great way to get to know community members and learn about project priorities.
+- Issues labeled [help wanted](https://github.com/open-telemetry/opentelemetry-java/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) are project priorities. Code contributions (or pull request reviews when a PR is linked) for these issues are particularly important.
+- Triaging / responding to new issues and discussions is a great way to engage with the project.
 
 ### Thanks to all the people who have contributed
 
