@@ -82,7 +82,8 @@ class JdkHttpSenderTest {
         new JdkHttpSender(
             mockHttpClient,
             // Connecting to localhost on an unused port address to trigger
-            // java.net.ConnectException
+            // java.net.ConnectException (or java.net.http.HttpConnectTimeoutException on linux java
+            // 11+)
             "http://localhost:" + freePort(),
             null,
             false,
@@ -95,7 +96,12 @@ class JdkHttpSenderTest {
                 .build());
 
     assertThatThrownBy(() -> sender.sendInternal(new NoOpMarshaler()))
-        .isInstanceOf(ConnectException.class);
+        .satisfies(
+            e ->
+                assertThat(
+                        (e instanceof ConnectException)
+                            || (e instanceof HttpConnectTimeoutException))
+                    .isTrue());
 
     verify(mockHttpClient, times(2)).send(any(), any());
   }
