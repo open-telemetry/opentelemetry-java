@@ -7,15 +7,23 @@ package io.opentelemetry.api.trace;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.propagation.ExtendedContextPropagators;
+import io.opentelemetry.api.incubator.trace.ExtendedSpanBuilder;
+import io.opentelemetry.api.incubator.trace.ExtendedTracer;
+import io.opentelemetry.api.incubator.trace.SpanCallable;
+import io.opentelemetry.api.incubator.trace.SpanRunnable;
 import io.opentelemetry.api.internal.ApiUsageLogger;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** No-op implementation of {@link Tracer}. */
 @ThreadSafe
-final class DefaultTracer implements Tracer {
+final class DefaultTracer implements ExtendedTracer {
 
   private static final Tracer INSTANCE = new DefaultTracer();
 
@@ -31,7 +39,7 @@ final class DefaultTracer implements Tracer {
   private DefaultTracer() {}
 
   // Noop implementation of Span.Builder.
-  private static final class NoopSpanBuilder implements SpanBuilder {
+  private static final class NoopSpanBuilder implements ExtendedSpanBuilder {
     static NoopSpanBuilder create() {
       return new NoopSpanBuilder();
     }
@@ -54,6 +62,13 @@ final class DefaultTracer implements Tracer {
         return this;
       }
       spanContext = Span.fromContext(context).getSpanContext();
+      return this;
+    }
+
+    @Override
+    public NoopSpanBuilder setParentFrom(
+        ContextPropagators propagators, Map<String, String> carrier) {
+      setParent(ExtendedContextPropagators.extractTextMapPropagationContext(carrier, propagators));
       return this;
     }
 
@@ -111,6 +126,28 @@ final class DefaultTracer implements Tracer {
     @Override
     public NoopSpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit) {
       return this;
+    }
+
+    @Override
+    public <T, E extends Throwable> T startAndCall(SpanCallable<T, E> spanCallable) throws E {
+      return spanCallable.callInSpan();
+    }
+
+    @Override
+    public <T, E extends Throwable> T startAndCall(
+        SpanCallable<T, E> spanCallable, BiConsumer<Span, Throwable> handleException) throws E {
+      return spanCallable.callInSpan();
+    }
+
+    @Override
+    public <E extends Throwable> void startAndRun(SpanRunnable<E> runnable) throws E {
+      runnable.runInSpan();
+    }
+
+    @Override
+    public <E extends Throwable> void startAndRun(
+        SpanRunnable<E> runnable, BiConsumer<Span, Throwable> handleException) throws E {
+      runnable.runInSpan();
     }
 
     private NoopSpanBuilder() {}
