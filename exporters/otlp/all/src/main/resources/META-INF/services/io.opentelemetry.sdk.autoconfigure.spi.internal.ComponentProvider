@@ -1,0 +1,3 @@
+io.opentelemetry.exporter.otlp.internal.OtlpMetricExporterComponentProvider
+io.opentelemetry.exporter.otlp.internal.OtlpSpanExporterComponentProvider
+io.opentelemetry.exporter.otlp.internal.OtlpLogRecordExporterComponentProvider
