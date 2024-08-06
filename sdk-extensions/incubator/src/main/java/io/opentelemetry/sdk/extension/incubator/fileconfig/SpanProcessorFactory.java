@@ -41,10 +41,9 @@ final class SpanProcessorFactory
     if (batchModel != null) {
       SpanExporter exporterModel =
           FileConfigUtil.requireNonNull(batchModel.getExporter(), "batch span processor exporter");
-
-      BatchSpanProcessorBuilder builder =
-          BatchSpanProcessor.builder(
-              SpanExporterFactory.getInstance().create(exporterModel, spiHelper, closeables));
+      io.opentelemetry.sdk.trace.export.SpanExporter spanExporter =
+          SpanExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
+      BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(spanExporter);
       if (batchModel.getExportTimeout() != null) {
         builder.setExporterTimeout(Duration.ofMillis(batchModel.getExportTimeout()));
       }
@@ -66,11 +65,9 @@ final class SpanProcessorFactory
       SpanExporter exporterModel =
           FileConfigUtil.requireNonNull(
               simpleModel.getExporter(), "simple span processor exporter");
-
-      return FileConfigUtil.addAndReturn(
-          closeables,
-          SimpleSpanProcessor.create(
-              SpanExporterFactory.getInstance().create(exporterModel, spiHelper, closeables)));
+      io.opentelemetry.sdk.trace.export.SpanExporter spanExporter =
+          SpanExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
+      return FileConfigUtil.addAndReturn(closeables, SimpleSpanProcessor.create(spanExporter));
     }
 
     // TODO: add support for generic span processors
