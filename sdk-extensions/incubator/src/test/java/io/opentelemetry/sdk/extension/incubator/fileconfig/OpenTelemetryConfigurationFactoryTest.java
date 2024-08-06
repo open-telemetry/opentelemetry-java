@@ -161,6 +161,10 @@ class OpenTelemetryConfigurationFactoryTest {
         io.opentelemetry.sdk.resources.Resource.getDefault().toBuilder()
             .put("service.name", "my-service")
             .put("key", "val")
+            // resource attributes from resource ComponentProviders
+            .put("color", "red")
+            .put("shape", "square")
+            .put("order", "second")
             .build();
     OpenTelemetrySdk expectedSdk =
         OpenTelemetrySdk.builder()
