@@ -16,6 +16,8 @@ import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.component.TextMapPropagatorComponentProvider;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -72,12 +74,22 @@ class TextMapPropagatorFactoryTest {
   }
 
   @Test
-  void create_UnknownSpiPropagator() {
+  void create_SpiPropagator_Unknown() {
     assertThatThrownBy(
             () ->
                 TextMapPropagatorFactory.getInstance()
                     .create(Collections.singletonList("foo"), spiHelper, Collections.emptyList()))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unrecognized propagator: foo");
+        .hasMessage(
+            "No component provider detected for io.opentelemetry.context.propagation.TextMapPropagator with name \"foo\".");
+  }
+
+  @Test
+  void create_SpiPropagator_Valid() {
+    TextMapPropagator textMapPropagator =
+        TextMapPropagatorFactory.getInstance()
+            .create(Collections.singletonList("test"), spiHelper, new ArrayList<>());
+    assertThat(textMapPropagator)
+        .isInstanceOf(TextMapPropagatorComponentProvider.TestTextMapPropagator.class);
   }
 }
