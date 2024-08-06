@@ -9,12 +9,16 @@ import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.spanBuilder;
 import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.zipkinSpanBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
@@ -23,6 +27,7 @@ import java.net.InetAddress;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -33,6 +38,7 @@ import zipkin2.reporter.BytesEncoder;
 import zipkin2.reporter.BytesMessageSender;
 import zipkin2.reporter.Encoding;
 import zipkin2.reporter.SpanBytesEncoder;
+import zipkin2.reporter.okhttp3.OkHttpSender;
 
 @ExtendWith(MockitoExtension.class)
 class ZipkinSpanExporterTest {
@@ -119,10 +125,10 @@ class ZipkinSpanExporterTest {
     verify(mockSender).close();
     assertThat(logs.getEvents()).isEmpty();
     assertThat(
-            exporter
-                .export(Collections.singletonList(spanBuilder().build()))
-                .join(10, TimeUnit.SECONDS)
-                .isSuccess())
+        exporter
+            .export(Collections.singletonList(spanBuilder().build()))
+            .join(10, TimeUnit.SECONDS)
+            .isSuccess())
         .isFalse();
     assertThat(exporter.shutdown().isSuccess()).isTrue();
     logs.assertContains("Calling shutdown() multiple times.");
@@ -130,7 +136,7 @@ class ZipkinSpanExporterTest {
 
   @Test
   @SuppressWarnings({"PreferJavaTimeOverload", "deprecation"})
-  // we have to use the deprecated setEncoder overload to test it
+    // we have to use the deprecated setEncoder overload to test it
   void invalidConfig() {
     assertThatThrownBy(() -> ZipkinSpanExporter.builder().setReadTimeout(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
@@ -157,7 +163,7 @@ class ZipkinSpanExporterTest {
         .hasMessage("sender");
 
     assertThatThrownBy(
-            () -> ZipkinSpanExporter.builder().setEncoder((zipkin2.codec.BytesEncoder<Span>) null))
+        () -> ZipkinSpanExporter.builder().setEncoder((zipkin2.codec.BytesEncoder<Span>) null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("encoder");
 
@@ -244,4 +250,28 @@ class ZipkinSpanExporterTest {
               "ZipkinSpanExporter{endpoint=http://zipkin:9411/api/v2/spans, compressionEnabled=false, readTimeoutMillis=15000}");
     }
   }
+
+  @Test
+  void testSuppressInstrumentation() {
+    AtomicBoolean suppressInstrumentation = new AtomicBoolean(
+        InstrumentationUtil.shouldSuppressInstrumentation(Context.current()));
+
+    assertFalse(suppressInstrumentation.get());
+
+    InstrumentationUtil.suppressInstrumentation(() ->
+        {
+          try (BytesMessageSender sender = OkHttpSender.newBuilder().endpoint("https://localhost")
+              .encoding(Encoding.PROTO3)
+              .build()) {
+            sender.send(Collections.singletonList(new byte[0]));
+          } catch (IOException e) {
+            //it always goes here
+            suppressInstrumentation.set(
+                InstrumentationUtil.shouldSuppressInstrumentation(Context.current()));
+          }
+        }
+    );
+    assertTrue(suppressInstrumentation.get());
+  }
+
 }
