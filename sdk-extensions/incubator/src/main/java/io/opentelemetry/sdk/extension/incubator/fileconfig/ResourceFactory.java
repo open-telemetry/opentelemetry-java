@@ -63,7 +63,7 @@ final class ResourceFactory
   }
 
   /**
-   * Load resources from resource detectors, in order over lowest priority to highest priority.
+   * Load resources from resource detectors, in order of lowest priority to highest priority.
    *
    * <p>In file configuration, a resource detector is a {@link ComponentProvider} with {@link
    * ComponentProvider#getType()} set to {@link Resource}. Unlike other {@link ComponentProvider}s,
