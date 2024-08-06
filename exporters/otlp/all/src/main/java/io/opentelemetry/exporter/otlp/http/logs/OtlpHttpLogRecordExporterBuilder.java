@@ -23,6 +23,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
@@ -166,12 +167,12 @@ public final class OtlpHttpLogRecordExporterBuilder {
   }
 
   /**
-   * Ses the retry policy. Retry is disabled by default.
+   * Set the retry policy, or {@code null} to disable retry. Retry policy is {@link
+   * RetryPolicy#getDefault()} by default
    *
    * @since 1.28.0
    */
-  public OtlpHttpLogRecordExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
-    requireNonNull(retryPolicy, "retryPolicy");
+  public OtlpHttpLogRecordExporterBuilder setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
     delegate.setRetryPolicy(retryPolicy);
     return this;
   }
@@ -213,8 +214,10 @@ public final class OtlpHttpLogRecordExporterBuilder {
   /**
    * Set the {@link MemoryMode}. If unset, defaults to {@link #DEFAULT_MEMORY_MODE}.
    *
-   * <p>>When memory mode is {@link MemoryMode#REUSABLE_DATA}, serialization is optimized to reduce
+   * <p>When memory mode is {@link MemoryMode#REUSABLE_DATA}, serialization is optimized to reduce
    * memory allocation.
+   *
+   * @since 1.39.0
    */
   public OtlpHttpLogRecordExporterBuilder setMemoryMode(MemoryMode memoryMode) {
     requireNonNull(memoryMode, "memoryMode");

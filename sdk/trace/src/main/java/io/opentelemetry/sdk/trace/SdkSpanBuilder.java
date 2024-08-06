@@ -12,14 +12,21 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.propagation.ExtendedContextPropagators;
+import io.opentelemetry.api.incubator.trace.ExtendedSpanBuilder;
+import io.opentelemetry.api.incubator.trace.SpanCallable;
+import io.opentelemetry.api.incubator.trace.SpanRunnable;
 import io.opentelemetry.api.internal.ImmutableSpanContext;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributeUtil;
 import io.opentelemetry.sdk.internal.AttributesMap;
@@ -29,11 +36,13 @@ import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 
 /** {@link SdkSpanBuilder} is SDK implementation of {@link SpanBuilder}. */
-final class SdkSpanBuilder implements SpanBuilder {
+final class SdkSpanBuilder implements ExtendedSpanBuilder {
 
   private final String spanName;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
@@ -59,7 +68,7 @@ final class SdkSpanBuilder implements SpanBuilder {
   }
 
   @Override
-  public SpanBuilder setParent(Context context) {
+  public ExtendedSpanBuilder setParent(Context context) {
     if (context == null) {
       return this;
     }
@@ -68,13 +77,13 @@ final class SdkSpanBuilder implements SpanBuilder {
   }
 
   @Override
-  public SpanBuilder setNoParent() {
+  public ExtendedSpanBuilder setNoParent() {
     this.parent = Context.root();
     return this;
   }
 
   @Override
-  public SpanBuilder setSpanKind(SpanKind spanKind) {
+  public ExtendedSpanBuilder setSpanKind(SpanKind spanKind) {
     if (spanKind == null) {
       return this;
     }
@@ -83,7 +92,7 @@ final class SdkSpanBuilder implements SpanBuilder {
   }
 
   @Override
-  public SpanBuilder addLink(SpanContext spanContext) {
+  public ExtendedSpanBuilder addLink(SpanContext spanContext) {
     if (spanContext == null || !spanContext.isValid()) {
       return this;
     }
@@ -92,7 +101,7 @@ final class SdkSpanBuilder implements SpanBuilder {
   }
 
   @Override
-  public SpanBuilder addLink(SpanContext spanContext, Attributes attributes) {
+  public ExtendedSpanBuilder addLink(SpanContext spanContext, Attributes attributes) {
     if (spanContext == null || !spanContext.isValid()) {
       return this;
     }
@@ -126,27 +135,27 @@ final class SdkSpanBuilder implements SpanBuilder {
   }
 
   @Override
-  public SpanBuilder setAttribute(String key, String value) {
+  public ExtendedSpanBuilder setAttribute(String key, String value) {
     return setAttribute(stringKey(key), value);
   }
 
   @Override
-  public SpanBuilder setAttribute(String key, long value) {
+  public ExtendedSpanBuilder setAttribute(String key, long value) {
     return setAttribute(longKey(key), value);
   }
 
   @Override
-  public SpanBuilder setAttribute(String key, double value) {
+  public ExtendedSpanBuilder setAttribute(String key, double value) {
     return setAttribute(doubleKey(key), value);
   }
 
   @Override
-  public SpanBuilder setAttribute(String key, boolean value) {
+  public ExtendedSpanBuilder setAttribute(String key, boolean value) {
     return setAttribute(booleanKey(key), value);
   }
 
   @Override
-  public <T> SpanBuilder setAttribute(AttributeKey<T> key, T value) {
+  public <T> ExtendedSpanBuilder setAttribute(AttributeKey<T> key, T value) {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
@@ -155,11 +164,18 @@ final class SdkSpanBuilder implements SpanBuilder {
   }
 
   @Override
-  public SpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit) {
+  public ExtendedSpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit) {
     if (startTimestamp < 0 || unit == null) {
       return this;
     }
     startEpochNanos = unit.toNanos(startTimestamp);
+    return this;
+  }
+
+  @Override
+  public ExtendedSpanBuilder setParentFrom(
+      ContextPropagators propagators, Map<String, String> carrier) {
+    setParent(ExtendedContextPropagators.extractTextMapPropagationContext(carrier, propagators));
     return this;
   }
 
@@ -234,6 +250,44 @@ final class SdkSpanBuilder implements SpanBuilder {
         startEpochNanos);
   }
 
+  @Override
+  public <T, E extends Throwable> T startAndCall(SpanCallable<T, E> spanCallable) throws E {
+    return startAndCall(spanCallable, SdkSpanBuilder::setSpanError);
+  }
+
+  @Override
+  public <T, E extends Throwable> T startAndCall(
+      SpanCallable<T, E> spanCallable, BiConsumer<Span, Throwable> handleException) throws E {
+    Span span = startSpan();
+
+    //noinspection unused
+    try (Scope unused = span.makeCurrent()) {
+      return spanCallable.callInSpan();
+    } catch (Throwable e) {
+      handleException.accept(span, e);
+      throw e;
+    } finally {
+      span.end();
+    }
+  }
+
+  @Override
+  public <E extends Throwable> void startAndRun(SpanRunnable<E> runnable) throws E {
+    startAndRun(runnable, SdkSpanBuilder::setSpanError);
+  }
+
+  @SuppressWarnings("NullAway")
+  @Override
+  public <E extends Throwable> void startAndRun(
+      SpanRunnable<E> runnable, BiConsumer<Span, Throwable> handleException) throws E {
+    startAndCall(
+        () -> {
+          runnable.runInSpan();
+          return null;
+        },
+        handleException);
+  }
+
   private AttributesMap attributes() {
     AttributesMap attributes = this.attributes;
     if (attributes == null) {
@@ -254,5 +308,16 @@ final class SdkSpanBuilder implements SpanBuilder {
   // Visible for testing
   static boolean isSampled(SamplingDecision decision) {
     return SamplingDecision.RECORD_AND_SAMPLE.equals(decision);
+  }
+
+  /**
+   * Marks a span as error. This is the default exception handler.
+   *
+   * @param span the span
+   * @param exception the exception that caused the error
+   */
+  private static void setSpanError(Span span, Throwable exception) {
+    span.setStatus(StatusCode.ERROR);
+    span.recordException(exception);
   }
 }

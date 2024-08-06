@@ -12,7 +12,10 @@ import io.opentelemetry.context.Context;
 import org.junit.jupiter.api.Test;
 
 class InstrumentationUtilTest {
+
+  // testing deprecated implementation until it's removed
   @Test
+  @SuppressWarnings("deprecation")
   void verifySuppressInstrumentation() {
     // Should be false by default.
     assertFalse(InstrumentationUtil.shouldSuppressInstrumentation(Context.current()));

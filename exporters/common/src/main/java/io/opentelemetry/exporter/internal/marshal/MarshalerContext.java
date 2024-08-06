@@ -24,6 +24,7 @@ import javax.annotation.Nullable;
  */
 public final class MarshalerContext {
   private final boolean marshalStringNoAllocation;
+  private final boolean marshalStringUnsafe;
 
   private int[] sizes = new int[16];
   private int sizeReadIndex;
@@ -32,17 +33,21 @@ public final class MarshalerContext {
   private int dataReadIndex;
   private int dataWriteIndex;
 
-  @SuppressWarnings("BooleanParameter")
   public MarshalerContext() {
-    this(true);
+    this(/* marshalStringNoAllocation= */ true, /* marshalStringUnsafe= */ true);
   }
 
-  public MarshalerContext(boolean marshalStringNoAllocation) {
+  public MarshalerContext(boolean marshalStringNoAllocation, boolean marshalStringUnsafe) {
     this.marshalStringNoAllocation = marshalStringNoAllocation;
+    this.marshalStringUnsafe = marshalStringUnsafe;
   }
 
   public boolean marshalStringNoAllocation() {
     return marshalStringNoAllocation;
+  }
+
+  public boolean marshalStringUnsafe() {
+    return marshalStringUnsafe;
   }
 
   public void addSize(int size) {

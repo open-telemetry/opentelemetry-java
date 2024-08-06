@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
@@ -212,12 +213,12 @@ public final class OtlpHttpMetricExporterBuilder {
   }
 
   /**
-   * Ses the retry policy. Retry is disabled by default.
+   * Set the retry policy, or {@code null} to disable retry. Retry policy is {@link
+   * RetryPolicy#getDefault()} by default
    *
    * @since 1.28.0
    */
-  public OtlpHttpMetricExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
-    requireNonNull(retryPolicy, "retryPolicy");
+  public OtlpHttpMetricExporterBuilder setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
     delegate.setRetryPolicy(retryPolicy);
     return this;
   }
@@ -236,13 +237,15 @@ public final class OtlpHttpMetricExporterBuilder {
   /**
    * Set the {@link MemoryMode}. If unset, defaults to {@link #DEFAULT_MEMORY_MODE}.
    *
-   * <p>>When memory mode is {@link MemoryMode#REUSABLE_DATA}, serialization is optimized to reduce
+   * <p>When memory mode is {@link MemoryMode#REUSABLE_DATA}, serialization is optimized to reduce
    * memory allocation. Additionally, the value is used for {@link MetricExporter#getMemoryMode()},
    * which sends a signal to the metrics SDK to reuse memory when possible. This is safe and
    * desirable for most use cases, but should be used with caution of wrapping and delegating to the
    * exporter. It is not safe for the wrapping exporter to hold onto references to {@link
    * MetricData} batches since the same data structures will be reused in subsequent calls to {@link
    * MetricExporter#export(Collection)}.
+   *
+   * @since 1.39.0
    */
   public OtlpHttpMetricExporterBuilder setMemoryMode(MemoryMode memoryMode) {
     requireNonNull(memoryMode, "memoryMode");

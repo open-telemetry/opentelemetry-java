@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.metrics.ExtendedDoubleUpDownCounter;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
@@ -21,12 +22,18 @@ import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.List;
 import java.util.function.Consumer;
 
-final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleUpDownCounter {
+final class SdkDoubleUpDownCounter extends AbstractInstrument
+    implements ExtendedDoubleUpDownCounter {
 
+  private final MeterSharedState meterSharedState;
   private final WriteableMetricStorage storage;
 
-  private SdkDoubleUpDownCounter(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+  private SdkDoubleUpDownCounter(
+      InstrumentDescriptor descriptor,
+      MeterSharedState meterSharedState,
+      WriteableMetricStorage storage) {
     super(descriptor);
+    this.meterSharedState = meterSharedState;
     this.storage = storage;
   }
 
@@ -43,6 +50,11 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleU
   @Override
   public void add(double increment) {
     add(increment, Attributes.empty());
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return meterSharedState.isMeterEnabled() && storage.isEnabled();
   }
 
   static final class SdkDoubleUpDownCounterBuilder implements ExtendedDoubleUpDownCounterBuilder {

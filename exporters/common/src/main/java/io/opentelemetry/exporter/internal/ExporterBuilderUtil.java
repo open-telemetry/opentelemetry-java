@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.internal;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -50,6 +51,22 @@ public final class ExporterBuilderUtil {
       memoryMode = MemoryMode.valueOf(memoryModeStr.toUpperCase(Locale.ROOT));
     } catch (IllegalArgumentException e) {
       throw new ConfigurationException("Unrecognized memory mode: " + memoryModeStr, e);
+    }
+    memoryModeConsumer.accept(memoryMode);
+  }
+
+  /** Invoke the {@code memoryModeConsumer} with the configured {@link MemoryMode}. */
+  public static void configureExporterMemoryMode(
+      StructuredConfigProperties config, Consumer<MemoryMode> memoryModeConsumer) {
+    String memoryModeStr = config.getString("memory_mode");
+    if (memoryModeStr == null) {
+      return;
+    }
+    MemoryMode memoryMode;
+    try {
+      memoryMode = MemoryMode.valueOf(memoryModeStr.toUpperCase(Locale.ROOT));
+    } catch (IllegalArgumentException e) {
+      throw new ConfigurationException("Unrecognized memory_mode: " + memoryModeStr, e);
     }
     memoryModeConsumer.accept(memoryMode);
   }
