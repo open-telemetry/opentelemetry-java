@@ -13,6 +13,7 @@ import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordProcessorComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporter;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessor;
@@ -23,6 +24,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -150,19 +152,35 @@ class LogRecordProcessorFactoryTest {
   }
 
   @Test
-  void create_SpiProcessor() {
-    List<Closeable> closeables = new ArrayList<>();
-
+  void create_SpiProcessor_Unknown() {
     assertThatThrownBy(
             () ->
                 LogRecordProcessorFactory.getInstance()
                     .create(
                         new LogRecordProcessor()
-                            .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
+                            .withAdditionalProperty(
+                                "unknown_key", ImmutableMap.of("key1", "value1")),
                         spiHelper,
-                        closeables))
+                        new ArrayList<>()))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unrecognized log record processor(s): [test]");
-    cleanup.addCloseables(closeables);
+        .hasMessage(
+            "No component provider detected for io.opentelemetry.sdk.logs.LogRecordProcessor with name \"unknown_key\".");
+  }
+
+  @Test
+  void create_SpiExporter_Valid() {
+    io.opentelemetry.sdk.logs.LogRecordProcessor logRecordProcessor =
+        LogRecordProcessorFactory.getInstance()
+            .create(
+                new LogRecordProcessor()
+                    .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
+                spiHelper,
+                new ArrayList<>());
+    assertThat(logRecordProcessor)
+        .isInstanceOf(LogRecordProcessorComponentProvider.TestLogRecordProcessor.class);
+    Assertions.assertThat(
+            ((LogRecordProcessorComponentProvider.TestLogRecordProcessor) logRecordProcessor)
+                .config.getString("key1"))
+        .isEqualTo("value1");
   }
 }

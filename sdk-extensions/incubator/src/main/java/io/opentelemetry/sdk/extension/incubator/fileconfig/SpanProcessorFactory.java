@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 
 final class SpanProcessorFactory
@@ -79,11 +80,26 @@ final class SpanProcessorFactory
       return FileConfigUtil.addAndReturn(closeables, SimpleSpanProcessor.create(spanExporter));
     }
 
-    // TODO: add support for generic span processors
     if (!model.getAdditionalProperties().isEmpty()) {
-      throw new ConfigurationException(
-          "Unrecognized span processor(s): "
-              + model.getAdditionalProperties().keySet().stream().collect(joining(",", "[", "]")));
+      Map<String, Object> additionalProperties = model.getAdditionalProperties();
+      if (additionalProperties.size() > 1) {
+        throw new ConfigurationException(
+            "Invalid configuration - multiple span processors set: "
+                + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
+      }
+      Map.Entry<String, Object> processorKeyValue =
+          additionalProperties.entrySet().stream()
+              .findFirst()
+              .orElseThrow(
+                  () ->
+                      new IllegalStateException("Missing processor. This is a programming error."));
+      SpanProcessor spanProcessor =
+          FileConfigUtil.loadComponent(
+              spiHelper,
+              SpanProcessor.class,
+              processorKeyValue.getKey(),
+              processorKeyValue.getValue());
+      return FileConfigUtil.addAndReturn(closeables, spanProcessor);
     }
 
     return SpanProcessor.composite();

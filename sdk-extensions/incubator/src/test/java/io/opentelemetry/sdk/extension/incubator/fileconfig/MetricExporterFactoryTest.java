@@ -216,7 +216,7 @@ class MetricExporterFactoryTest {
                                 .MetricExporter()
                             .withPrometheus(new Prometheus()),
                         spiHelper,
-                        new ArrayList<>()))
+                        closeables))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("prometheus exporter not supported in this context");
     cleanup.addCloseables(closeables);
@@ -224,8 +224,6 @@ class MetricExporterFactoryTest {
 
   @Test
   void create_SpiExporter_Unknown() {
-    List<Closeable> closeables = new ArrayList<>();
-
     assertThatThrownBy(
             () ->
                 MetricExporterFactory.getInstance()
@@ -239,7 +237,6 @@ class MetricExporterFactoryTest {
         .isInstanceOf(ConfigurationException.class)
         .hasMessage(
             "No component provider detected for io.opentelemetry.sdk.metrics.export.MetricExporter with name \"unknown_key\".");
-    cleanup.addCloseables(closeables);
   }
 
   @Test

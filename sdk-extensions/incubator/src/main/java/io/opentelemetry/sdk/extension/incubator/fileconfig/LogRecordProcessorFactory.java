@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 
 final class LogRecordProcessorFactory
@@ -81,11 +82,26 @@ final class LogRecordProcessorFactory
           closeables, SimpleLogRecordProcessor.create(logRecordExporter));
     }
 
-    // TODO: add support for generic log record processors
     if (!model.getAdditionalProperties().isEmpty()) {
-      throw new ConfigurationException(
-          "Unrecognized log record processor(s): "
-              + model.getAdditionalProperties().keySet().stream().collect(joining(",", "[", "]")));
+      Map<String, Object> additionalProperties = model.getAdditionalProperties();
+      if (additionalProperties.size() > 1) {
+        throw new ConfigurationException(
+            "Invalid configuration - multiple log record processors set: "
+                + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
+      }
+      Map.Entry<String, Object> processorKeyValue =
+          additionalProperties.entrySet().stream()
+              .findFirst()
+              .orElseThrow(
+                  () ->
+                      new IllegalStateException("Missing processor. This is a programming error."));
+      LogRecordProcessor logRecordProcessor =
+          FileConfigUtil.loadComponent(
+              spiHelper,
+              LogRecordProcessor.class,
+              processorKeyValue.getKey(),
+              processorKeyValue.getValue());
+      return FileConfigUtil.addAndReturn(closeables, logRecordProcessor);
     }
 
     return LogRecordProcessor.composite();
