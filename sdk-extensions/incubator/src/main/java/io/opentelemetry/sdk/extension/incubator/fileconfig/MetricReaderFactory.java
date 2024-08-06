@@ -46,13 +46,10 @@ final class MetricReaderFactory
     PeriodicMetricReader periodicModel = model.getPeriodic();
     if (periodicModel != null) {
       MetricExporter exporterModel = periodicModel.getExporter();
-      if (exporterModel == null) {
-        throw new ConfigurationException("exporter required for periodic reader");
-      }
       io.opentelemetry.sdk.metrics.export.MetricExporter metricExporter =
           MetricExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
       if (metricExporter == null) {
-        return null;
+        throw new ConfigurationException("exporter required for periodic reader");
       }
       PeriodicMetricReaderBuilder builder =
           io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
