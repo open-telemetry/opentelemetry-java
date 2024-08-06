@@ -102,6 +102,8 @@ class ValueBodyTest {
             logRecordData -> {
               assertThat(logRecordData.getBodyValue())
                   .isNotNull()
+                  // TODO: use fluent asserts when available. See
+                  // https://github.com/open-telemetry/opentelemetry-java/pull/6509
                   .satisfies(
                       body -> {
                         assertThat(body.getType()).isEqualTo(ValueType.KEY_VALUE_LIST);

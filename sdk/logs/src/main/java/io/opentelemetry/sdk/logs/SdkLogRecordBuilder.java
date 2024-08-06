@@ -86,12 +86,11 @@ final class SdkLogRecordBuilder implements ExtendedLogRecordBuilder {
 
   @Override
   public SdkLogRecordBuilder setBody(String body) {
-    this.body = Value.of(body);
-    return this;
+    return setBody(Value.of(body));
   }
 
   @Override
-  public LogRecordBuilder setBody(Value<?> value) {
+  public SdkLogRecordBuilder setBody(Value<?> value) {
     this.body = value;
     return this;
   }
