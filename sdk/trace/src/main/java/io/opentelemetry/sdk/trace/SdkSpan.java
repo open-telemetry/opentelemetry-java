@@ -293,7 +293,7 @@ final class SdkSpan implements ReadWriteSpan {
   @Override
   public long getLatencyNanos() {
     synchronized (lock) {
-      return (hasEnded == EndState.NOT_ENDED ? clock.now()  : endEpochNanos) - startEpochNanos;
+      return (hasEnded == EndState.NOT_ENDED ? clock.now() : endEpochNanos) - startEpochNanos;
     }
   }
 

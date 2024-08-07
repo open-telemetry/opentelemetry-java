@@ -152,14 +152,17 @@ class SdkSpanTest {
     AttributeKey<String> dummyAttrib = AttributeKey.stringKey("processor_foo");
 
     AtomicBoolean endedStateInProcessor = new AtomicBoolean();
-    doAnswer(invocation -> {
-      ReadWriteSpan sp = invocation.getArgument(0, ReadWriteSpan.class);
-      assertThat(sp.hasEnded()).isFalse();
-      sp.end(); //should have no effect, nested end should be detected
-      endedStateInProcessor.set(sp.hasEnded());
-      sp.setAttribute(dummyAttrib, "bar");
-      return null;
-    }).when(spanProcessor).onEnding(any());
+    doAnswer(
+            invocation -> {
+              ReadWriteSpan sp = invocation.getArgument(0, ReadWriteSpan.class);
+              assertThat(sp.hasEnded()).isFalse();
+              sp.end(); // should have no effect, nested end should be detected
+              endedStateInProcessor.set(sp.hasEnded());
+              sp.setAttribute(dummyAttrib, "bar");
+              return null;
+            })
+        .when(spanProcessor)
+        .onEnding(any());
 
     span.end();
     verify(spanProcessor).onEnding(same(span));
@@ -173,13 +176,16 @@ class SdkSpanTest {
     SdkSpan span = createTestSpan(SpanKind.INTERNAL);
 
     AtomicLong spanLatencyInProcessor = new AtomicLong();
-    doAnswer(invocation -> {
-      ReadWriteSpan sp = invocation.getArgument(0, ReadWriteSpan.class);
+    doAnswer(
+            invocation -> {
+              ReadWriteSpan sp = invocation.getArgument(0, ReadWriteSpan.class);
 
-      testClock.advance(Duration.ofSeconds(100));
-      spanLatencyInProcessor.set(sp.getLatencyNanos());
-      return null;
-    }).when(spanProcessor).onEnding(any());
+              testClock.advance(Duration.ofSeconds(100));
+              spanLatencyInProcessor.set(sp.getLatencyNanos());
+              return null;
+            })
+        .when(spanProcessor)
+        .onEnding(any());
 
     testClock.advance(Duration.ofSeconds(1));
     long expectedDuration = testClock.now() - START_EPOCH_NANOS;
