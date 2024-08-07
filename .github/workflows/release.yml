@@ -22,7 +22,7 @@ jobs:
           java-version: 17
 
       - name: Build and publish artifacts
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
         with:
           arguments: assemble publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:
