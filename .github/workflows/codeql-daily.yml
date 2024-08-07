@@ -27,10 +27,11 @@ jobs:
           # see https://github.com/github/codeql-action/issues/1555#issuecomment-1452228433
           tools: latest
 
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          # skipping build cache is needed so that all modules will be analyzed
-          arguments: assemble --no-build-cache
+      - name: Set up gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Assemble
+        # skipping build cache is needed so that all modules will be analyzed
+        run: ./gradlew assemble --no-build-cache
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v3
