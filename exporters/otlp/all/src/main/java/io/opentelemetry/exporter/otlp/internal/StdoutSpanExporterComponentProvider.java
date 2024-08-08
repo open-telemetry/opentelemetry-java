@@ -6,25 +6,25 @@
 package io.opentelemetry.exporter.otlp.internal;
 
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
-import io.opentelemetry.exporter.otlp.stream.logs.StdoutLogRecordExporter;
-import io.opentelemetry.exporter.otlp.stream.logs.StdoutLogRecordExporterBuilder;
+import io.opentelemetry.exporter.otlp.stream.trace.StdoutSpanExporter;
+import io.opentelemetry.exporter.otlp.stream.trace.StdoutSpanExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
-import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**
  * File configuration SPI implementation for {@link
- * io.opentelemetry.exporter.otlp.stream.logs.StdoutLogRecordExporter}.
+ * StdoutSpanExporter}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class StdoutLogRecordExporterComponentProvider
-    implements ComponentProvider<LogRecordExporter> {
+public class StdoutSpanExporterComponentProvider
+    implements ComponentProvider<SpanExporter> {
 
   @Override
-  public Class<LogRecordExporter> getType() {
-    return LogRecordExporter.class;
+  public Class<SpanExporter> getType() {
+    return SpanExporter.class;
   }
 
   @Override
@@ -33,8 +33,8 @@ public class StdoutLogRecordExporterComponentProvider
   }
 
   @Override
-  public LogRecordExporter create(StructuredConfigProperties config) {
-    StdoutLogRecordExporterBuilder builder = StdoutLogRecordExporter.builder();
+  public SpanExporter create(StructuredConfigProperties config) {
+    StdoutSpanExporterBuilder builder = StdoutSpanExporter.builder();
     ExporterBuilderUtil.configureExporterMemoryMode(config, builder::setMemoryMode);
     return builder.build();
   }
