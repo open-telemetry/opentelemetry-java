@@ -37,6 +37,8 @@ public final class CompletableResultCode {
   /**
    * Returns a {@link CompletableResultCode} that has been {@link #failExceptionally(Throwable)
    * failed exceptionally}.
+   *
+   * @since 1.41.0
    */
   public static CompletableResultCode ofExceptionalFailure(Throwable throwable) {
     return new CompletableResultCode().failExceptionally(throwable);
@@ -120,6 +122,8 @@ public final class CompletableResultCode {
   /**
    * Completes this {@link CompletableResultCode} unsuccessfully if it is not already completed,
    * setting the {@link #getFailureThrowable() failure throwable} to {@code throwable}.
+   *
+   * @since 1.41.0
    */
   public CompletableResultCode failExceptionally(Throwable throwable) {
     return failInternal(throwable);
@@ -156,7 +160,8 @@ public final class CompletableResultCode {
    * via the {@link #whenComplete(Runnable)} method.
    *
    * @return the throwable if failed exceptionally, or null if: {@link #fail() failed without
-   *     exception}, {@link #succeed() succeeded}, or not complete.
+   *     exception}, {@link #succeed() succeeded}, or not complete.g
+   * @since 1.41.0
    */
   @Nullable
   public Throwable getFailureThrowable() {
