@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 
 final class OpenTelemetryConfigurationFactory
     implements Factory<OpenTelemetryConfiguration, OpenTelemetrySdk> {
@@ -30,12 +29,8 @@ final class OpenTelemetryConfigurationFactory
 
   @Override
   public OpenTelemetrySdk create(
-      @Nullable OpenTelemetryConfiguration model, SpiHelper spiHelper, List<Closeable> closeables) {
+      OpenTelemetryConfiguration model, SpiHelper spiHelper, List<Closeable> closeables) {
     OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
-    if (model == null) {
-      return FileConfigUtil.addAndReturn(closeables, builder.build());
-    }
-
     if (!"0.1".equals(model.getFileFormat())) {
       throw new ConfigurationException("Unsupported file format. Supported formats include: 0.1");
     }
@@ -44,11 +39,15 @@ final class OpenTelemetryConfigurationFactory
       return builder.build();
     }
 
-    builder.setPropagators(
-        PropagatorFactory.getInstance().create(model.getPropagator(), spiHelper, closeables));
+    if (model.getPropagator() != null) {
+      builder.setPropagators(
+          PropagatorFactory.getInstance().create(model.getPropagator(), spiHelper, closeables));
+    }
 
-    Resource resource =
-        ResourceFactory.getInstance().create(model.getResource(), spiHelper, closeables);
+    Resource resource = Resource.getDefault();
+    if (model.getResource() != null) {
+      resource = ResourceFactory.getInstance().create(model.getResource(), spiHelper, closeables);
+    }
 
     if (model.getLoggerProvider() != null) {
       builder.setLoggerProvider(

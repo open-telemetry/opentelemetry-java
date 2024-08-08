@@ -54,7 +54,6 @@ class TracerProviderFactoryTest {
 
   private static Stream<Arguments> createArguments() {
     return Stream.of(
-        Arguments.of(null, SdkTracerProvider.builder().build()),
         Arguments.of(
             TracerProviderAndAttributeLimits.create(null, null),
             SdkTracerProvider.builder().build()),

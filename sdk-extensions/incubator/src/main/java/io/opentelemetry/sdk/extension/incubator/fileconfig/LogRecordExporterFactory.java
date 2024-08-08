@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 final class LogRecordExporterFactory
     implements Factory<
@@ -29,19 +28,11 @@ final class LogRecordExporterFactory
     return INSTANCE;
   }
 
-  @SuppressWarnings("NullAway") // Override superclass non-null response
   @Override
-  @Nullable
   public LogRecordExporter create(
-      @Nullable
-          io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporter
-              model,
+      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporter model,
       SpiHelper spiHelper,
       List<Closeable> closeables) {
-    if (model == null) {
-      return null;
-    }
-
     Otlp otlpModel = model.getOtlp();
     if (otlpModel != null) {
       model.getAdditionalProperties().put("otlp", otlpModel);
@@ -67,8 +58,8 @@ final class LogRecordExporterFactory
               exporterKeyValue.getKey(),
               exporterKeyValue.getValue());
       return FileConfigUtil.addAndReturn(closeables, logRecordExporter);
+    } else {
+      throw new ConfigurationException("log exporter must be set");
     }
-
-    return null;
   }
 }

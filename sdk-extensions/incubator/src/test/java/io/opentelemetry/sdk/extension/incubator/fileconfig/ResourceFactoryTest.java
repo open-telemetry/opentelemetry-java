@@ -17,14 +17,6 @@ import org.junit.jupiter.api.Test;
 class ResourceFactoryTest {
 
   @Test
-  void create_Null() {
-    assertThat(
-            ResourceFactory.getInstance()
-                .create(null, mock(SpiHelper.class), Collections.emptyList()))
-        .isEqualTo(Resource.getDefault());
-  }
-
-  @Test
   void create() {
     assertThat(
             ResourceFactory.getInstance()

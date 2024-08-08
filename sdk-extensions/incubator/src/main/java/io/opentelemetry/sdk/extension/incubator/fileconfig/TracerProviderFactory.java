@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.util.List;
-import javax.annotation.Nullable;
 
 final class TracerProviderFactory
     implements Factory<TracerProviderAndAttributeLimits, SdkTracerProviderBuilder> {
@@ -29,13 +28,8 @@ final class TracerProviderFactory
 
   @Override
   public SdkTracerProviderBuilder create(
-      @Nullable TracerProviderAndAttributeLimits model,
-      SpiHelper spiHelper,
-      List<Closeable> closeables) {
+      TracerProviderAndAttributeLimits model, SpiHelper spiHelper, List<Closeable> closeables) {
     SdkTracerProviderBuilder builder = SdkTracerProvider.builder();
-    if (model == null) {
-      return builder;
-    }
     TracerProvider tracerProviderModel = model.getTracerProvider();
     if (tracerProviderModel == null) {
       return builder;
@@ -50,10 +44,10 @@ final class TracerProviderFactory
                 closeables);
     builder.setSpanLimits(spanLimits);
 
-    Sampler sampler =
-        SamplerFactory.getInstance()
-            .create(tracerProviderModel.getSampler(), spiHelper, closeables);
-    if (sampler != null) {
+    if (tracerProviderModel.getSampler() != null) {
+      Sampler sampler =
+          SamplerFactory.getInstance()
+              .create(tracerProviderModel.getSampler(), spiHelper, closeables);
       builder.setSampler(sampler);
     }
 

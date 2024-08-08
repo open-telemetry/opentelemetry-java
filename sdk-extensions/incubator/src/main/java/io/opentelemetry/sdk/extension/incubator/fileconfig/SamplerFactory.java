@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 final class SamplerFactory
     implements Factory<
@@ -31,17 +30,11 @@ final class SamplerFactory
     return INSTANCE;
   }
 
-  @SuppressWarnings("NullAway") // Override superclass non-null response
   @Override
-  @Nullable
   public Sampler create(
-      @Nullable io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sampler model,
+      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sampler model,
       SpiHelper spiHelper,
       List<Closeable> closeables) {
-    if (model == null) {
-      return Sampler.parentBased(Sampler.alwaysOn());
-    }
-
     if (model.getAlwaysOn() != null) {
       return Sampler.alwaysOn();
     }
@@ -64,31 +57,21 @@ final class SamplerFactory
               : create(parentBasedModel.getRoot(), spiHelper, closeables);
       ParentBasedSamplerBuilder builder = Sampler.parentBasedBuilder(root);
       if (parentBasedModel.getRemoteParentSampled() != null) {
-        Sampler sampler =
-            requireNonNull(
-                create(parentBasedModel.getRemoteParentSampled(), spiHelper, closeables),
-                "sampler required for remote parent sampled sampler");
+        Sampler sampler = create(parentBasedModel.getRemoteParentSampled(), spiHelper, closeables);
         builder.setRemoteParentSampled(sampler);
       }
       if (parentBasedModel.getRemoteParentNotSampled() != null) {
         Sampler sampler =
-            requireNonNull(
-                create(parentBasedModel.getRemoteParentNotSampled(), spiHelper, closeables),
-                "sampler required for remote parent not sampled sampler");
+            create(parentBasedModel.getRemoteParentNotSampled(), spiHelper, closeables);
         builder.setRemoteParentNotSampled(sampler);
       }
       if (parentBasedModel.getLocalParentSampled() != null) {
-        Sampler sampler =
-            requireNonNull(
-                create(parentBasedModel.getLocalParentSampled(), spiHelper, closeables),
-                "sampler required for local parent sampled sampler");
+        Sampler sampler = create(parentBasedModel.getLocalParentSampled(), spiHelper, closeables);
         builder.setLocalParentSampled(sampler);
       }
       if (parentBasedModel.getLocalParentNotSampled() != null) {
         Sampler sampler =
-            requireNonNull(
-                create(parentBasedModel.getLocalParentNotSampled(), spiHelper, closeables),
-                "sampler required for local parent not sampled sampler");
+            create(parentBasedModel.getLocalParentNotSampled(), spiHelper, closeables);
         builder.setLocalParentNotSampled(sampler);
       }
       return builder.build();
@@ -115,15 +98,8 @@ final class SamplerFactory
           FileConfigUtil.loadComponent(
               spiHelper, Sampler.class, exporterKeyValue.getKey(), exporterKeyValue.getValue());
       return FileConfigUtil.addAndReturn(closeables, sampler);
+    } else {
+      throw new ConfigurationException("sampler must be set");
     }
-
-    return null;
-  }
-
-  static Sampler requireNonNull(@Nullable Sampler sampler, String errorMessage) {
-    if (sampler == null) {
-      throw new ConfigurationException(errorMessage);
-    }
-    return sampler;
   }
 }

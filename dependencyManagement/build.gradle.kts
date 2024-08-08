@@ -14,13 +14,13 @@ val DEPENDENCY_BOMS = listOf(
   "com.linecorp.armeria:armeria-bom:1.29.4",
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
   "com.squareup.okio:okio-bom:3.9.0", // applies to transitive dependencies of okhttp
-  "io.grpc:grpc-bom:1.65.1",
+  "io.grpc:grpc-bom:1.66.0",
   "io.netty:netty-bom:4.1.112.Final",
   "io.zipkin.brave:brave-bom:6.0.3",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.4.0",
   "org.assertj:assertj-bom:3.26.3",
   "org.junit:junit-bom:5.10.3",
-  "org.testcontainers:testcontainers-bom:1.20.0",
+  "org.testcontainers:testcontainers-bom:1.20.1",
   "org.snakeyaml:snakeyaml-engine:2.7"
 )
 
@@ -29,7 +29,7 @@ val errorProneVersion = "2.29.2"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
-val slf4jVersion = "2.0.13"
+val slf4jVersion = "2.0.15"
 val opencensusVersion = "0.31.1"
 val prometheusClientVersion = "0.16.0"
 
@@ -73,7 +73,7 @@ val DEPENDENCIES = listOf(
   "io.prometheus:prometheus-metrics-exporter-httpserver:1.3.1",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.16.1",
-  "org.awaitility:awaitility:4.2.1",
+  "org.awaitility:awaitility:4.2.2",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
   "org.codehaus.mojo:animal-sniffer-annotations:1.24",
   "org.jctools:jctools-core:4.0.5",

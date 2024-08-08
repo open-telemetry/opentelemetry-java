@@ -62,10 +62,6 @@ class SamplerFactoryTest {
   private static Stream<Arguments> createArguments() {
     return Stream.of(
         Arguments.of(
-            null,
-            io.opentelemetry.sdk.trace.samplers.Sampler.parentBased(
-                io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn())),
-        Arguments.of(
             new Sampler().withAlwaysOn(new AlwaysOn()),
             io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn()),
         Arguments.of(
