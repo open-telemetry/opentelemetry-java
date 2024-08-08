@@ -61,6 +61,22 @@ public final class ExporterBuilderUtil {
     memoryModeConsumer.accept(memoryMode);
   }
 
+  /** Invoke the {@code memoryModeConsumer} with the configured {@link MemoryMode}. */
+  public static void configureExporterMemoryMode(
+      StructuredConfigProperties config, Consumer<MemoryMode> memoryModeConsumer) {
+    String memoryModeStr = config.getString("memory_mode");
+    if (memoryModeStr == null) {
+      return;
+    }
+    MemoryMode memoryMode;
+    try {
+      memoryMode = MemoryMode.valueOf(memoryModeStr.toUpperCase(Locale.ROOT));
+    } catch (IllegalArgumentException e) {
+      throw new ConfigurationException("Unrecognized memory_mode: " + memoryModeStr, e);
+    }
+    memoryModeConsumer.accept(memoryMode);
+  }
+
   /**
    * Invoke the {@code defaultAggregationSelectorConsumer} with the configured {@link
    * DefaultAggregationSelector}.
@@ -78,22 +94,6 @@ public final class ExporterBuilderUtil {
       throw new ConfigurationException(
           "Unrecognized default histogram aggregation: " + defaultHistogramAggregation);
     }
-  }
-
-  /** Invoke the {@code memoryModeConsumer} with the configured {@link MemoryMode}. */
-  public static void configureExporterMemoryMode(
-      StructuredConfigProperties config, Consumer<MemoryMode> memoryModeConsumer) {
-    String memoryModeStr = config.getString("memory_mode");
-    if (memoryModeStr == null) {
-      return;
-    }
-    MemoryMode memoryMode;
-    try {
-      memoryMode = MemoryMode.valueOf(memoryModeStr.toUpperCase(Locale.ROOT));
-    } catch (IllegalArgumentException e) {
-      throw new ConfigurationException("Unrecognized memory_mode: " + memoryModeStr, e);
-    }
-    memoryModeConsumer.accept(memoryMode);
   }
 
   private ExporterBuilderUtil() {}
