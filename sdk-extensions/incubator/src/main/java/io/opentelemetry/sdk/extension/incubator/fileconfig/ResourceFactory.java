@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 
 final class ResourceFactory
     implements Factory<
@@ -36,13 +35,9 @@ final class ResourceFactory
 
   @Override
   public Resource create(
-      @Nullable io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Resource model,
+      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Resource model,
       SpiHelper spiHelper,
       List<Closeable> closeables) {
-    if (model == null) {
-      return Resource.getDefault();
-    }
-
     Resource result = Resource.getDefault();
 
     List<Resource> resourceDetectorResources = loadFromResourceDetectors(spiHelper);

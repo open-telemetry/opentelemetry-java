@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -18,14 +17,6 @@ import org.junit.jupiter.api.Test;
 class ResourceFactoryTest {
 
   private SpiHelper spiHelper = SpiHelper.create(MetricExporterFactoryTest.class.getClassLoader());
-
-  @Test
-  void create_Null() {
-    assertThat(
-            ResourceFactory.getInstance()
-                .create(null, mock(SpiHelper.class), Collections.emptyList()))
-        .isEqualTo(Resource.getDefault());
-  }
 
   @Test
   void create() {

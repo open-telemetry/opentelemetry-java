@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 final class MetricExporterFactory
     implements Factory<
@@ -29,18 +28,11 @@ final class MetricExporterFactory
     return INSTANCE;
   }
 
-  @SuppressWarnings("NullAway") // Override superclass non-null response
   @Override
-  @Nullable
   public MetricExporter create(
-      @Nullable
-          io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporter model,
+      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporter model,
       SpiHelper spiHelper,
       List<Closeable> closeables) {
-    if (model == null) {
-      return null;
-    }
-
     OtlpMetric otlpModel = model.getOtlp();
     if (otlpModel != null) {
       model.getAdditionalProperties().put("otlp", otlpModel);
@@ -74,8 +66,8 @@ final class MetricExporterFactory
               exporterKeyValue.getKey(),
               exporterKeyValue.getValue());
       return FileConfigUtil.addAndReturn(closeables, metricExporter);
+    } else {
+      throw new ConfigurationException("metric exporter must be set");
     }
-
-    return null;
   }
 }

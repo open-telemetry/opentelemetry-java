@@ -34,19 +34,6 @@ class LogRecordProcessorFactoryTest {
       SpiHelper.create(LogRecordProcessorFactoryTest.class.getClassLoader());
 
   @Test
-  void create_Null() {
-    List<Closeable> closeables = new ArrayList<>();
-
-    io.opentelemetry.sdk.logs.LogRecordProcessor processor =
-        LogRecordProcessorFactory.getInstance().create(null, spiHelper, Collections.emptyList());
-    cleanup.addCloseable(processor);
-    cleanup.addCloseables(closeables);
-
-    assertThat(processor.toString())
-        .isEqualTo(io.opentelemetry.sdk.logs.LogRecordProcessor.composite().toString());
-  }
-
-  @Test
   void create_BatchNullExporter() {
     assertThatThrownBy(
             () ->
@@ -56,7 +43,7 @@ class LogRecordProcessorFactoryTest {
                         spiHelper,
                         Collections.emptyList()))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("exporter required for batch log record processor");
+        .hasMessage("batch log record processor exporter is required but is null");
   }
 
   @Test
@@ -123,7 +110,7 @@ class LogRecordProcessorFactoryTest {
                         spiHelper,
                         Collections.emptyList()))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("exporter required for simple log record processor");
+        .hasMessage("simple log record processor exporter is required but is null");
   }
 
   @Test

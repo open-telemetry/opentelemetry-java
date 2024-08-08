@@ -6,11 +6,9 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Aggregation;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogram;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Stream;
@@ -21,16 +19,6 @@ import java.util.HashSet;
 import org.junit.jupiter.api.Test;
 
 class ViewFactoryTest {
-
-  @Test
-  void create_Null() {
-    assertThatThrownBy(
-            () ->
-                ViewFactory.getInstance()
-                    .create(null, mock(SpiHelper.class), Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage("stream must not be null");
-  }
 
   @Test
   void create_Defaults() {
