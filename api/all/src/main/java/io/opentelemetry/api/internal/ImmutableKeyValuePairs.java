@@ -274,4 +274,9 @@ public abstract class ImmutableKeyValuePairs<K, V> {
     sb.append("}");
     return sb.toString();
   }
+
+  @SuppressWarnings("AvoidObjectArrays")
+  public Object[] getData() {
+    return data;
+  }
 }
