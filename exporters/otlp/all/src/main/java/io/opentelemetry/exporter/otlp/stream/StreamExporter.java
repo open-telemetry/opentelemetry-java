@@ -60,4 +60,8 @@ public class StreamExporter<T extends Marshaler> implements OtlpExporter<T> {
       return CompletableResultCode.ofFailure();
     }
   }
+
+  public OutputStream getOutputStream() {
+    return outputStream;
+  }
 }

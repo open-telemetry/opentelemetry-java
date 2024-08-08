@@ -10,8 +10,10 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.stream.StreamExporterBuilder;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.OutputStream;
 
 /** Builder for {@link OtlpStdoutMetricExporter}. */
@@ -55,6 +57,35 @@ public final class OtlpStdoutMetricExporterBuilder {
   public OtlpStdoutMetricExporterBuilder setOutputStream(OutputStream outputStream) {
     requireNonNull(outputStream, "outputStream");
     this.delegate.setOutputStream(outputStream);
+    return this;
+  }
+
+  /**
+   * Set the {@link AggregationTemporalitySelector} used for {@link
+   * MetricExporter#getAggregationTemporality(InstrumentType)}.
+   *
+   * <p>If unset, defaults to {@link AggregationTemporalitySelector#alwaysCumulative()}.
+   *
+   * <p>{@link AggregationTemporalitySelector#deltaPreferred()} is a common configuration for delta
+   * backends.
+   */
+  public OtlpStdoutMetricExporterBuilder setAggregationTemporalitySelector(
+      AggregationTemporalitySelector aggregationTemporalitySelector) {
+    requireNonNull(aggregationTemporalitySelector, "aggregationTemporalitySelector");
+    this.aggregationTemporalitySelector = aggregationTemporalitySelector;
+    return this;
+  }
+
+  /**
+   * Set the {@link DefaultAggregationSelector} used for {@link
+   * MetricExporter#getDefaultAggregation(InstrumentType)}.
+   *
+   * <p>If unset, defaults to {@link DefaultAggregationSelector#getDefault()}.
+   */
+  public OtlpStdoutMetricExporterBuilder setDefaultAggregationSelector(
+      DefaultAggregationSelector defaultAggregationSelector) {
+    requireNonNull(defaultAggregationSelector, "defaultAggregationSelector");
+    this.defaultAggregationSelector = defaultAggregationSelector;
     return this;
   }
 

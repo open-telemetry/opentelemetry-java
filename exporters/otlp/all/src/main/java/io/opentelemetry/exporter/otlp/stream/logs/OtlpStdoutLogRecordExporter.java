@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.StringJoiner;
 import javax.annotation.concurrent.ThreadSafe;
@@ -71,6 +72,10 @@ public final class OtlpStdoutLogRecordExporter implements LogRecordExporter {
     joiner.add(builder.toString(false));
     joiner.add("memoryMode=" + otlpExporter.getMemoryMode());
     return joiner.toString();
+  }
+
+  public OutputStream getOutputStream() {
+    return streamExporter.getOutputStream();
   }
 
   @Override

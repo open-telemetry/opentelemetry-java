@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.StringJoiner;
 import javax.annotation.concurrent.ThreadSafe;
@@ -92,6 +93,10 @@ public final class OtlpStdoutMetricExporter implements MetricExporter {
   @Override
   public Aggregation getDefaultAggregation(InstrumentType instrumentType) {
     return defaultAggregationSelector.getDefaultAggregation(instrumentType);
+  }
+
+  public OutputStream getOutputStream() {
+    return streamExporter.getOutputStream();
   }
 
   @Override
