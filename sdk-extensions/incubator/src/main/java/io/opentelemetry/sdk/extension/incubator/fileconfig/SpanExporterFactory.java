@@ -15,7 +15,6 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 final class SpanExporterFactory
     implements Factory<
@@ -30,18 +29,11 @@ final class SpanExporterFactory
     return INSTANCE;
   }
 
-  @SuppressWarnings("NullAway") // Override superclass non-null response
   @Override
-  @Nullable
   public SpanExporter create(
-      @Nullable
-          io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporter model,
+      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporter model,
       SpiHelper spiHelper,
       List<Closeable> closeables) {
-    if (model == null) {
-      return null;
-    }
-
     Otlp otlpModel = model.getOtlp();
     if (otlpModel != null) {
       model.getAdditionalProperties().put("otlp", otlpModel);
@@ -76,8 +68,8 @@ final class SpanExporterFactory
               exporterKeyValue.getKey(),
               exporterKeyValue.getValue());
       return FileConfigUtil.addAndReturn(closeables, spanExporter);
+    } else {
+      throw new ConfigurationException("span exporter must be set");
     }
-
-    return null;
   }
 }

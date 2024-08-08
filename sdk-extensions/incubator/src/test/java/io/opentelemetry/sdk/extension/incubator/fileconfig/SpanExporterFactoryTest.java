@@ -60,12 +60,6 @@ class SpanExporterFactoryTest {
   private SpiHelper spiHelper = SpiHelper.create(SpanExporterFactoryTest.class.getClassLoader());
 
   @Test
-  void create_Null() {
-    assertThat(SpanExporterFactory.getInstance().create(null, spiHelper, new ArrayList<>()))
-        .isNull();
-  }
-
-  @Test
   void create_OtlpDefaults() {
     spiHelper = spy(spiHelper);
     List<Closeable> closeables = new ArrayList<>();

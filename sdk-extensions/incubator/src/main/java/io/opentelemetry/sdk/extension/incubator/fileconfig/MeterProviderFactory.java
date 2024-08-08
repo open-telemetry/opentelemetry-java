@@ -5,15 +5,18 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNonNull;
+
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReader;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Selector;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Stream;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.View;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import java.io.Closeable;
 import java.util.List;
-import javax.annotation.Nullable;
 
 final class MeterProviderFactory implements Factory<MeterProvider, SdkMeterProviderBuilder> {
 
@@ -27,11 +30,7 @@ final class MeterProviderFactory implements Factory<MeterProvider, SdkMeterProvi
 
   @Override
   public SdkMeterProviderBuilder create(
-      @Nullable MeterProvider model, SpiHelper spiHelper, List<Closeable> closeables) {
-    if (model == null) {
-      return SdkMeterProvider.builder();
-    }
-
+      MeterProvider model, SpiHelper spiHelper, List<Closeable> closeables) {
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
 
     List<MetricReader> readerModels = model.getReaders();
@@ -49,11 +48,13 @@ final class MeterProviderFactory implements Factory<MeterProvider, SdkMeterProvi
     List<View> viewModels = model.getViews();
     if (viewModels != null) {
       viewModels.forEach(
-          viewModel ->
-              builder.registerView(
-                  InstrumentSelectorFactory.getInstance()
-                      .create(viewModel.getSelector(), spiHelper, closeables),
-                  ViewFactory.getInstance().create(viewModel.getStream(), spiHelper, closeables)));
+          viewModel -> {
+            Selector selector = requireNonNull(viewModel.getSelector(), "view selector");
+            Stream stream = requireNonNull(viewModel.getStream(), "view stream");
+            builder.registerView(
+                InstrumentSelectorFactory.getInstance().create(selector, spiHelper, closeables),
+                ViewFactory.getInstance().create(stream, spiHelper, closeables));
+          });
     }
 
     return builder;
