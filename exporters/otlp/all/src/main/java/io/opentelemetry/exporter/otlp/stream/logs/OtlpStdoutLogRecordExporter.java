@@ -3,39 +3,38 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.stream.trace;
+package io.opentelemetry.exporter.otlp.stream.logs;
 
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.otlp.internal.OtlpSpanExporter;
+import io.opentelemetry.exporter.otlp.internal.OtlpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.stream.StreamExporter;
 import io.opentelemetry.exporter.otlp.stream.StreamExporterBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
-
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.Collection;
 import java.util.StringJoiner;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Exports logs using OTLP via gRPC, using OpenTelemetry's protobuf model. */
 @ThreadSafe
-public final class StdoutSpanExporter implements SpanExporter {
+public final class OtlpStdoutLogRecordExporter implements LogRecordExporter {
 
   private final StreamExporterBuilder<Marshaler> builder;
 
-  private final OtlpSpanExporter otlpExporter;
+  private final OtlpLogRecordExporter otlpExporter;
   private final StreamExporter<Marshaler> streamExporter;
 
   /**
-   * Returns a new {@link StdoutSpanExporter} using the default values.
+   * Returns a new {@link OtlpStdoutLogRecordExporter} using the default values.
    *
    * <p>To load configuration values from environment variables and system properties, use <a
    * href="https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure">opentelemetry-sdk-extension-autoconfigure</a>.
    *
-   * @return a new {@link StdoutSpanExporter} instance.
+   * @return a new {@link OtlpStdoutLogRecordExporter} instance.
    */
-  public static StdoutSpanExporter getDefault() {
+  public static OtlpStdoutLogRecordExporter getDefault() {
     return builder().build();
   }
 
@@ -44,16 +43,16 @@ public final class StdoutSpanExporter implements SpanExporter {
    *
    * @return a new builder instance for this exporter.
    */
-  public static StdoutSpanExporterBuilder builder() {
-    return new StdoutSpanExporterBuilder();
+  public static OtlpStdoutLogRecordExporterBuilder builder() {
+    return new OtlpStdoutLogRecordExporterBuilder();
   }
 
-  StdoutSpanExporter(
+  OtlpStdoutLogRecordExporter(
       StreamExporterBuilder<Marshaler> builder,
       StreamExporter<Marshaler> streamExporter,
       MemoryMode memoryMode) {
     this.streamExporter = streamExporter;
-    this.otlpExporter = new OtlpSpanExporter(streamExporter, memoryMode);
+    this.otlpExporter = new OtlpLogRecordExporter(streamExporter, memoryMode);
     this.builder = builder;
   }
 
@@ -62,21 +61,21 @@ public final class StdoutSpanExporter implements SpanExporter {
    *
    * <p>IMPORTANT: Be sure to {@link #shutdown()} this instance if it will no longer be used.
    */
-  public StdoutSpanExporterBuilder toBuilder() {
-    return new StdoutSpanExporterBuilder(builder.copy(), otlpExporter.getMemoryMode());
+  public OtlpStdoutLogRecordExporterBuilder toBuilder() {
+    return new OtlpStdoutLogRecordExporterBuilder(builder.copy(), otlpExporter.getMemoryMode());
   }
 
   @Override
   public String toString() {
-    StringJoiner joiner = new StringJoiner(", ", "OtlpGrpcSpanExporter{", "}");
+    StringJoiner joiner = new StringJoiner(", ", "OtlpGrpcLogRecordExporter{", "}");
     joiner.add(builder.toString(false));
     joiner.add("memoryMode=" + otlpExporter.getMemoryMode());
     return joiner.toString();
   }
 
   @Override
-  public CompletableResultCode export(Collection<SpanData> spans) {
-    return otlpExporter.export(spans);
+  public CompletableResultCode export(Collection<LogRecordData> logs) {
+    return otlpExporter.export(logs);
   }
 
   @Override

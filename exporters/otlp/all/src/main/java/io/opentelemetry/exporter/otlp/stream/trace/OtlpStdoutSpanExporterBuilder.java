@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.stream.logs;
+package io.opentelemetry.exporter.otlp.stream.trace;
 
 import static java.util.Objects.requireNonNull;
 
@@ -13,11 +13,11 @@ import io.opentelemetry.sdk.common.export.MemoryMode;
 import java.io.OutputStream;
 
 /**
- * Builder for {@link StdoutLogRecordExporter}.
+ * Builder for {@link OtlpStdoutSpanExporter}.
  *
  * @since 1.27.0
  */
-public final class StdoutLogRecordExporterBuilder {
+public final class OtlpStdoutSpanExporterBuilder {
 
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
 
@@ -25,12 +25,12 @@ public final class StdoutLogRecordExporterBuilder {
   final StreamExporterBuilder<Marshaler> delegate;
   private MemoryMode memoryMode;
 
-  StdoutLogRecordExporterBuilder(StreamExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
+  OtlpStdoutSpanExporterBuilder(StreamExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
     this.memoryMode = memoryMode;
   }
 
-  StdoutLogRecordExporterBuilder() {
+  OtlpStdoutSpanExporterBuilder() {
     this(new StreamExporterBuilder<>(), DEFAULT_MEMORY_MODE);
   }
 
@@ -40,13 +40,13 @@ public final class StdoutLogRecordExporterBuilder {
    * <p>When memory mode is {@link MemoryMode#REUSABLE_DATA}, serialization is optimized to reduce
    * memory allocation.
    */
-  public StdoutLogRecordExporterBuilder setMemoryMode(MemoryMode memoryMode) {
+  public OtlpStdoutSpanExporterBuilder setMemoryMode(MemoryMode memoryMode) {
     requireNonNull(memoryMode, "memoryMode");
     this.memoryMode = memoryMode;
     return this;
   }
 
-  public StdoutLogRecordExporterBuilder setOutputStream(OutputStream outputStream) {
+  public OtlpStdoutSpanExporterBuilder setOutputStream(OutputStream outputStream) {
     requireNonNull(outputStream, "outputStream");
     this.delegate.setOutputStream(outputStream);
     return this;
@@ -57,7 +57,7 @@ public final class StdoutLogRecordExporterBuilder {
    *
    * @return a new exporter's instance
    */
-  public StdoutLogRecordExporter build() {
-    return new StdoutLogRecordExporter(delegate, delegate.build(), memoryMode);
+  public OtlpStdoutSpanExporter build() {
+    return new OtlpStdoutSpanExporter(delegate, delegate.build(), memoryMode);
   }
 }

@@ -34,23 +34,23 @@ public class OtlpMetricExporter {
    */
   public CompletableResultCode export(Collection<MetricData> metrics) {
     if (memoryMode == MemoryMode.REUSABLE_DATA) {
-         LowAllocationMetricsRequestMarshaler marshaler = marshalerPool.poll();
-         if (marshaler == null) {
-           marshaler = new LowAllocationMetricsRequestMarshaler();
-         }
-         LowAllocationMetricsRequestMarshaler exportMarshaler = marshaler;
-         exportMarshaler.initialize(metrics);
-         return delegate
-             .export(exportMarshaler, metrics.size())
-             .whenComplete(
-                 () -> {
-                   exportMarshaler.reset();
-                   marshalerPool.add(exportMarshaler);
-                 });
-       }
-       // MemoryMode == MemoryMode.IMMUTABLE_DATA
-       MetricsRequestMarshaler request = MetricsRequestMarshaler.create(metrics);
-       return delegate.export(request, metrics.size());
+      LowAllocationMetricsRequestMarshaler marshaler = marshalerPool.poll();
+      if (marshaler == null) {
+        marshaler = new LowAllocationMetricsRequestMarshaler();
+      }
+      LowAllocationMetricsRequestMarshaler exportMarshaler = marshaler;
+      exportMarshaler.initialize(metrics);
+      return delegate
+          .export(exportMarshaler, metrics.size())
+          .whenComplete(
+              () -> {
+                exportMarshaler.reset();
+                marshalerPool.add(exportMarshaler);
+              });
+    }
+    // MemoryMode == MemoryMode.IMMUTABLE_DATA
+    MetricsRequestMarshaler request = MetricsRequestMarshaler.create(metrics);
+    return delegate.export(request, metrics.size());
   }
 
   public MemoryMode getMemoryMode() {

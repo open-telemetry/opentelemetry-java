@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 
-class StdoutLogRecordExporterTest {
+class OtlpStdoutLogRecordExporterTest {
 
   private static final Resource RESOURCE =
       Resource.create(Attributes.builder().put("key", "value").build());
@@ -105,7 +105,7 @@ class StdoutLogRecordExporterTest {
 
   @BeforeEach
   void setUp() {
-    exporter = StdoutLogRecordExporter.getDefault();
+    exporter = OtlpStdoutLogRecordExporter.getDefault();
     STREAM.reset();
   }
 

@@ -3,34 +3,40 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.stream.trace;
+package io.opentelemetry.exporter.otlp.stream.metrics;
 
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.stream.StreamExporterBuilder;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import java.io.OutputStream;
 
-/**
- * Builder for {@link StdoutSpanExporter}.
- *
- * @since 1.27.0
- */
-public final class StdoutSpanExporterBuilder {
+/** Builder for {@link OtlpStdoutMetricExporter}. */
+public final class OtlpStdoutMetricExporterBuilder {
 
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
+  private static final AggregationTemporalitySelector DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR =
+      AggregationTemporalitySelector.alwaysCumulative();
 
   // Visible for testing
   final StreamExporterBuilder<Marshaler> delegate;
   private MemoryMode memoryMode;
+  private AggregationTemporalitySelector aggregationTemporalitySelector =
+      DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR;
 
-  StdoutSpanExporterBuilder(StreamExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
+  private DefaultAggregationSelector defaultAggregationSelector =
+      DefaultAggregationSelector.getDefault();
+
+  OtlpStdoutMetricExporterBuilder(
+      StreamExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
     this.memoryMode = memoryMode;
   }
 
-  StdoutSpanExporterBuilder() {
+  OtlpStdoutMetricExporterBuilder() {
     this(new StreamExporterBuilder<>(), DEFAULT_MEMORY_MODE);
   }
 
@@ -40,13 +46,13 @@ public final class StdoutSpanExporterBuilder {
    * <p>When memory mode is {@link MemoryMode#REUSABLE_DATA}, serialization is optimized to reduce
    * memory allocation.
    */
-  public StdoutSpanExporterBuilder setMemoryMode(MemoryMode memoryMode) {
+  public OtlpStdoutMetricExporterBuilder setMemoryMode(MemoryMode memoryMode) {
     requireNonNull(memoryMode, "memoryMode");
     this.memoryMode = memoryMode;
     return this;
   }
 
-  public StdoutSpanExporterBuilder setOutputStream(OutputStream outputStream) {
+  public OtlpStdoutMetricExporterBuilder setOutputStream(OutputStream outputStream) {
     requireNonNull(outputStream, "outputStream");
     this.delegate.setOutputStream(outputStream);
     return this;
@@ -57,7 +63,12 @@ public final class StdoutSpanExporterBuilder {
    *
    * @return a new exporter's instance
    */
-  public StdoutSpanExporter build() {
-    return new StdoutSpanExporter(delegate, delegate.build(), memoryMode);
+  public OtlpStdoutMetricExporter build() {
+    return new OtlpStdoutMetricExporter(
+        delegate,
+        delegate.build(),
+        aggregationTemporalitySelector,
+        defaultAggregationSelector,
+        memoryMode);
   }
 }

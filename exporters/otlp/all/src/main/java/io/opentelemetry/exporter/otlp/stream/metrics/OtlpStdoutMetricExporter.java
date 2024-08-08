@@ -24,7 +24,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** Exports logs using OTLP via gRPC, using OpenTelemetry's protobuf model. */
 @ThreadSafe
-public final class StdoutMetricExporter implements MetricExporter {
+public final class OtlpStdoutMetricExporter implements MetricExporter {
 
   private final StreamExporterBuilder<Marshaler> builder;
 
@@ -34,14 +34,14 @@ public final class StdoutMetricExporter implements MetricExporter {
   private final DefaultAggregationSelector defaultAggregationSelector;
 
   /**
-   * Returns a new {@link StdoutMetricExporter} using the default values.
+   * Returns a new {@link OtlpStdoutMetricExporter} using the default values.
    *
    * <p>To load configuration values from environment variables and system properties, use <a
    * href="https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure">opentelemetry-sdk-extension-autoconfigure</a>.
    *
-   * @return a new {@link StdoutMetricExporter} instance.
+   * @return a new {@link OtlpStdoutMetricExporter} instance.
    */
-  public static StdoutMetricExporter getDefault() {
+  public static OtlpStdoutMetricExporter getDefault() {
     return builder().build();
   }
 
@@ -50,11 +50,11 @@ public final class StdoutMetricExporter implements MetricExporter {
    *
    * @return a new builder instance for this exporter.
    */
-  public static StdoutMetricExporterBuilder builder() {
-    return new StdoutMetricExporterBuilder();
+  public static OtlpStdoutMetricExporterBuilder builder() {
+    return new OtlpStdoutMetricExporterBuilder();
   }
 
-  StdoutMetricExporter(
+  OtlpStdoutMetricExporter(
       StreamExporterBuilder<Marshaler> builder,
       StreamExporter<Marshaler> streamExporter,
       AggregationTemporalitySelector aggregationTemporalitySelector,
@@ -72,8 +72,8 @@ public final class StdoutMetricExporter implements MetricExporter {
    *
    * <p>IMPORTANT: Be sure to {@link #shutdown()} this instance if it will no longer be used.
    */
-  public StdoutMetricExporterBuilder toBuilder() {
-    return new StdoutMetricExporterBuilder(builder.copy(), otlpExporter.getMemoryMode());
+  public OtlpStdoutMetricExporterBuilder toBuilder() {
+    return new OtlpStdoutMetricExporterBuilder(builder.copy(), otlpExporter.getMemoryMode());
   }
 
   @Override

@@ -34,23 +34,23 @@ public class OtlpSpanExporter {
    */
   public CompletableResultCode export(Collection<SpanData> spans) {
     if (memoryMode == MemoryMode.REUSABLE_DATA) {
-        LowAllocationTraceRequestMarshaler marshaler = marshalerPool.poll();
-        if (marshaler == null) {
-          marshaler = new LowAllocationTraceRequestMarshaler();
-        }
-        LowAllocationTraceRequestMarshaler exportMarshaler = marshaler;
-        exportMarshaler.initialize(spans);
-        return delegate
-            .export(exportMarshaler, spans.size())
-            .whenComplete(
-                () -> {
-                  exportMarshaler.reset();
-                  marshalerPool.add(exportMarshaler);
-                });
+      LowAllocationTraceRequestMarshaler marshaler = marshalerPool.poll();
+      if (marshaler == null) {
+        marshaler = new LowAllocationTraceRequestMarshaler();
       }
-      // MemoryMode == MemoryMode.IMMUTABLE_DATA
-      TraceRequestMarshaler request = TraceRequestMarshaler.create(spans);
-      return delegate.export(request, spans.size());
+      LowAllocationTraceRequestMarshaler exportMarshaler = marshaler;
+      exportMarshaler.initialize(spans);
+      return delegate
+          .export(exportMarshaler, spans.size())
+          .whenComplete(
+              () -> {
+                exportMarshaler.reset();
+                marshalerPool.add(exportMarshaler);
+              });
+    }
+    // MemoryMode == MemoryMode.IMMUTABLE_DATA
+    TraceRequestMarshaler request = TraceRequestMarshaler.create(spans);
+    return delegate.export(request, spans.size());
   }
 
   public MemoryMode getMemoryMode() {

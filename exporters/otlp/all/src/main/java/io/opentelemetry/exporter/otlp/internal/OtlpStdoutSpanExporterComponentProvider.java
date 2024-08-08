@@ -6,25 +6,23 @@
 package io.opentelemetry.exporter.otlp.internal;
 
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
-import io.opentelemetry.exporter.otlp.stream.metrics.StdoutMetricExporter;
-import io.opentelemetry.exporter.otlp.stream.metrics.StdoutMetricExporterBuilder;
+import io.opentelemetry.exporter.otlp.stream.trace.OtlpStdoutSpanExporter;
+import io.opentelemetry.exporter.otlp.stream.trace.OtlpStdoutSpanExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**
- * File configuration SPI implementation for {@link
- * StdoutMetricExporter}.
+ * File configuration SPI implementation for {@link OtlpStdoutSpanExporter}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class StdoutMetricExporterComponentProvider
-    implements ComponentProvider<MetricExporter> {
+public class OtlpStdoutSpanExporterComponentProvider implements ComponentProvider<SpanExporter> {
 
   @Override
-  public Class<MetricExporter> getType() {
-    return MetricExporter.class;
+  public Class<SpanExporter> getType() {
+    return SpanExporter.class;
   }
 
   @Override
@@ -33,8 +31,8 @@ public class StdoutMetricExporterComponentProvider
   }
 
   @Override
-  public MetricExporter create(StructuredConfigProperties config) {
-    StdoutMetricExporterBuilder builder = StdoutMetricExporter.builder();
+  public SpanExporter create(StructuredConfigProperties config) {
+    OtlpStdoutSpanExporterBuilder builder = OtlpStdoutSpanExporter.builder();
     ExporterBuilderUtil.configureExporterMemoryMode(config, builder::setMemoryMode);
     return builder.build();
   }
