@@ -9,7 +9,6 @@ import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.spanBuilder;
 import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.zipkinSpanBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -26,6 +25,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,6 @@ import zipkin2.reporter.BytesEncoder;
 import zipkin2.reporter.BytesMessageSender;
 import zipkin2.reporter.Encoding;
 import zipkin2.reporter.SpanBytesEncoder;
-import zipkin2.reporter.okhttp3.OkHttpSender;
 
 @ExtendWith(MockitoExtension.class)
 class ZipkinSpanExporterTest {
@@ -253,25 +252,52 @@ class ZipkinSpanExporterTest {
 
   @Test
   void testSuppressInstrumentation() {
-    AtomicBoolean suppressInstrumentation =
-        new AtomicBoolean(InstrumentationUtil.shouldSuppressInstrumentation(Context.current()));
+    TestSpanData testSpanData = spanBuilder().build();
 
-    assertFalse(suppressInstrumentation.get());
+    SuppressCatchingSender suppressCatchingSender = new SuppressCatchingSender(Encoding.JSON);
+    ZipkinSpanExporter zipkinSpanExporter =
+        new ZipkinSpanExporter(
+            new ZipkinSpanExporterBuilder(),
+            mockEncoder,
+            suppressCatchingSender,
+            MeterProvider::noop,
+            mockTransformer);
 
-    InstrumentationUtil.suppressInstrumentation(
-        () -> {
-          try (BytesMessageSender sender =
-              OkHttpSender.newBuilder()
-                  .endpoint("https://localhost")
-                  .encoding(Encoding.PROTO3)
-                  .build()) {
-            sender.send(Collections.singletonList(new byte[0]));
-          } catch (IOException e) {
-            // it always goes here
-            suppressInstrumentation.set(
-                InstrumentationUtil.shouldSuppressInstrumentation(Context.current()));
-          }
-        });
-    assertTrue(suppressInstrumentation.get());
+    byte[] someBytes = new byte[0];
+    Span zipkinSpan =
+        zipkinSpanBuilder(Span.Kind.SERVER, localIp)
+            .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
+            .build();
+    when(mockTransformer.generateSpan(testSpanData)).thenReturn(zipkinSpan);
+    when(mockEncoder.encode(zipkinSpan)).thenReturn(someBytes);
+
+    zipkinSpanExporter.export(Collections.singleton(testSpanData));
+
+    assertTrue(suppressCatchingSender.sent.get());
+    assertTrue(suppressCatchingSender.suppressed.get());
+  }
+
+  static class SuppressCatchingSender extends BytesMessageSender.Base {
+
+    final AtomicBoolean sent = new AtomicBoolean();
+    final AtomicBoolean suppressed = new AtomicBoolean();
+
+    protected SuppressCatchingSender(Encoding encoding) {
+      super(encoding);
+    }
+
+    @Override
+    public int messageMaxBytes() {
+      return 1024;
+    }
+
+    @Override
+    public void send(List<byte[]> list) throws IOException {
+      sent.set(true);
+      suppressed.set(InstrumentationUtil.shouldSuppressInstrumentation(Context.current()));
+    }
+
+    @Override
+    public void close() throws IOException {}
   }
 }
