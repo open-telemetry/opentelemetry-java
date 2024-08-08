@@ -107,7 +107,11 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
     return CompletableResultCode.ofAll(pendingExports);
   }
 
-  /** Return the processor's configured {@link LogRecordExporter}. */
+  /**
+   * Return the processor's configured {@link LogRecordExporter}.
+   *
+   * @since 1.37.0
+   */
   public LogRecordExporter getLogRecordExporter() {
     return logRecordExporter;
   }

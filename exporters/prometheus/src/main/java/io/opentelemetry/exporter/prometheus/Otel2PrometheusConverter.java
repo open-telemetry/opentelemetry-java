@@ -537,8 +537,7 @@ final class Otel2PrometheusConverter {
     String help = metricData.getDescription();
     Unit unit = PrometheusUnitsHelper.convertUnit(metricData.getUnit());
     if (unit != null && !name.endsWith(unit.toString())) {
-      // Need to re-sanitize metric name since unit may contain illegal characters
-      name = sanitizeMetricName(name + "_" + unit);
+      name = name + "_" + unit;
     }
     // Repeated __ are not allowed according to spec, although this is allowed in prometheus
     while (name.contains("__")) {
@@ -550,7 +549,7 @@ final class Otel2PrometheusConverter {
 
   private static void putOrMerge(
       Map<String, MetricSnapshot> snapshotsByName, MetricSnapshot snapshot) {
-    String name = snapshot.getMetadata().getName();
+    String name = snapshot.getMetadata().getPrometheusName();
     if (snapshotsByName.containsKey(name)) {
       MetricSnapshot merged = merge(snapshotsByName.get(name), snapshot);
       if (merged != null) {

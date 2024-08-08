@@ -11,11 +11,14 @@ import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.export.CardinalityLimitSelector;
@@ -49,6 +52,7 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   private final List<MetricProducer> metricProducers;
   private final MeterProviderSharedState sharedState;
   private final ComponentRegistry<SdkMeter> registry;
+  private final ScopeConfigurator<MeterConfig> meterConfigurator;
   private final AtomicBoolean isClosed = new AtomicBoolean(false);
 
   /** Returns a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}. */
@@ -62,7 +66,8 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
       List<MetricProducer> metricProducers,
       Clock clock,
       Resource resource,
-      ExemplarFilter exemplarFilter) {
+      ExemplarFilter exemplarFilter,
+      ScopeConfigurator<MeterConfig> meterConfigurator) {
     long startEpochNanos = clock.now();
     this.registeredViews = registeredViews;
     this.registeredReaders =
@@ -79,7 +84,12 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo ->
-                new SdkMeter(sharedState, instrumentationLibraryInfo, registeredReaders));
+                new SdkMeter(
+                    sharedState,
+                    instrumentationLibraryInfo,
+                    registeredReaders,
+                    getMeterConfig(instrumentationLibraryInfo)));
+    this.meterConfigurator = meterConfigurator;
     for (RegisteredReader registeredReader : registeredReaders) {
       List<MetricProducer> readerMetricProducers = new ArrayList<>(metricProducers);
       readerMetricProducers.add(new LeasedMetricProducer(registry, sharedState, registeredReader));
@@ -88,6 +98,11 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
           .register(new SdkCollectionRegistration(readerMetricProducers, sharedState));
       registeredReader.setLastCollectEpochNanos(startEpochNanos);
     }
+  }
+
+  private MeterConfig getMeterConfig(InstrumentationScopeInfo instrumentationScopeInfo) {
+    MeterConfig meterConfig = meterConfigurator.apply(instrumentationScopeInfo);
+    return meterConfig == null ? MeterConfig.defaultConfig() : meterConfig;
   }
 
   @Override

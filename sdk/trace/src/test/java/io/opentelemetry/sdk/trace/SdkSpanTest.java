@@ -25,7 +25,6 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.incubator.trace.ExtendedSpan;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -336,6 +335,32 @@ class SdkSpanTest {
     SdkSpan span = createTestSpanWithAttributes(attributes);
     try {
       assertThat(span.getAttribute(longKey("MyLongAttributeKey"))).isEqualTo(123L);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void getAttributes() {
+    SdkSpan span = createTestSpanWithAttributes(attributes);
+    try {
+      assertThat(span.getAttributes())
+          .isEqualTo(
+              Attributes.builder()
+                  .put("MyBooleanAttributeKey", false)
+                  .put("MyStringAttributeKey", "MyStringAttributeValue")
+                  .put("MyLongAttributeKey", 123L)
+                  .build());
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void getAttributes_Empty() {
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
+    try {
+      assertThat(span.getAttributes()).isEqualTo(Attributes.empty());
     } finally {
       span.end();
     }
@@ -821,10 +846,10 @@ class SdkSpanTest {
             null,
             null);
     try {
-      ExtendedSpan span1 = createTestSpan(SpanKind.INTERNAL);
-      ExtendedSpan span2 = createTestSpan(SpanKind.INTERNAL);
-      ExtendedSpan span3 = createTestSpan(SpanKind.INTERNAL);
-      ExtendedSpan span4 = createTestSpan(SpanKind.INTERNAL);
+      Span span1 = createTestSpan(SpanKind.INTERNAL);
+      Span span2 = createTestSpan(SpanKind.INTERNAL);
+      Span span3 = createTestSpan(SpanKind.INTERNAL);
+      Span span4 = createTestSpan(SpanKind.INTERNAL);
 
       span.addLink(span1.getSpanContext());
 
@@ -889,12 +914,42 @@ class SdkSpanTest {
 
   @Test
   void addLink_InvalidArgs() {
-    ExtendedSpan span = createTestSpan(SpanKind.INTERNAL);
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
     assertThatCode(() -> span.addLink(null)).doesNotThrowAnyException();
     assertThatCode(() -> span.addLink(SpanContext.getInvalid())).doesNotThrowAnyException();
     assertThatCode(() -> span.addLink(null, null)).doesNotThrowAnyException();
     assertThatCode(() -> span.addLink(SpanContext.getInvalid(), Attributes.empty()))
         .doesNotThrowAnyException();
+  }
+
+  @Test
+  void addLink_FaultIn() {
+    SdkSpan span =
+        SdkSpan.startSpan(
+            spanContext,
+            SPAN_NAME,
+            instrumentationScopeInfo,
+            SpanKind.INTERNAL,
+            Span.getInvalid(),
+            Context.root(),
+            SpanLimits.getDefault(),
+            spanProcessor,
+            testClock,
+            resource,
+            null,
+            null, // exercises the fault-in path
+            0,
+            0);
+    SdkSpan linkedSpan = createTestSpan(SpanKind.INTERNAL);
+    span.addLink(linkedSpan.getSpanContext());
+
+    SpanData spanData = span.toSpanData();
+    assertThat(spanData.getTotalRecordedLinks()).isEqualTo(1);
+    assertThat(spanData.getLinks())
+        .satisfiesExactly(
+            link -> {
+              assertThat(link.getSpanContext()).isEqualTo(linkedSpan.getSpanContext());
+            });
   }
 
   @Test

@@ -8,8 +8,11 @@ package io.opentelemetry.exporter.prometheus;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
+import com.sun.net.httpserver.HttpHandler;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
@@ -18,6 +21,7 @@ public final class PrometheusHttpServerBuilder {
 
   static final int DEFAULT_PORT = 9464;
   private static final String DEFAULT_HOST = "0.0.0.0";
+  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
 
   private String host = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
@@ -25,6 +29,19 @@ public final class PrometheusHttpServerBuilder {
   private boolean otelScopeEnabled = true;
   @Nullable private Predicate<String> allowedResourceAttributesFilter;
   @Nullable private ExecutorService executor;
+  private MemoryMode memoryMode = DEFAULT_MEMORY_MODE;
+  @Nullable private HttpHandler defaultHandler;
+
+  PrometheusHttpServerBuilder() {}
+
+  PrometheusHttpServerBuilder(PrometheusHttpServerBuilder builder) {
+    this.host = builder.host;
+    this.port = builder.port;
+    this.prometheusRegistry = builder.prometheusRegistry;
+    this.otelScopeEnabled = builder.otelScopeEnabled;
+    this.allowedResourceAttributesFilter = builder.allowedResourceAttributesFilter;
+    this.executor = builder.executor;
+  }
 
   /** Sets the host to bind to. If unset, defaults to {@value #DEFAULT_HOST}. */
   public PrometheusHttpServerBuilder setHost(String host) {
@@ -80,6 +97,36 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /**
+   * Set the {@link MemoryMode}.
+   *
+   * <p>If set to {@link MemoryMode#REUSABLE_DATA}, requests are served sequentially which is
+   * accomplished by overriding {@link #setExecutor(ExecutorService)} to {@link
+   * Executors#newSingleThreadExecutor()}.
+   */
+  public PrometheusHttpServerBuilder setMemoryMode(MemoryMode memoryMode) {
+    requireNonNull(memoryMode, "memoryMode");
+    this.memoryMode = memoryMode;
+    return this;
+  }
+
+  /**
+   * Override the default handler for serving the "/", "/**" endpoint.
+   *
+   * <p>This can be used to serve metrics on additional paths besides the default "/metrics". For
+   * example: <code>
+   *   PrometheusHttpServer.builder()
+   *     .setPrometheusRegistry(prometheusRegistry)
+   *     .setDefaultHandler(new MetricsHandler(prometheusRegistry))
+   *     .build()
+   * </code>
+   */
+  public PrometheusHttpServerBuilder setDefaultHandler(HttpHandler defaultHandler) {
+    requireNonNull(defaultHandler, "defaultHandler");
+    this.defaultHandler = defaultHandler;
+    return this;
+  }
+
+  /**
    * Returns a new {@link PrometheusHttpServer} with the configuration of this builder which can be
    * registered with a {@link io.opentelemetry.sdk.metrics.SdkMeterProvider}.
    */
@@ -91,17 +138,8 @@ public final class PrometheusHttpServerBuilder {
         executor,
         prometheusRegistry,
         otelScopeEnabled,
-        allowedResourceAttributesFilter);
-  }
-
-  PrometheusHttpServerBuilder() {}
-
-  PrometheusHttpServerBuilder(PrometheusHttpServerBuilder builder) {
-    this.host = builder.host;
-    this.port = builder.port;
-    this.prometheusRegistry = builder.prometheusRegistry;
-    this.otelScopeEnabled = builder.otelScopeEnabled;
-    this.allowedResourceAttributesFilter = builder.allowedResourceAttributesFilter;
-    this.executor = builder.executor;
+        allowedResourceAttributesFilter,
+        memoryMode,
+        defaultHandler);
   }
 }

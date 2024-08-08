@@ -11,10 +11,12 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attri
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.metrics.DoubleGauge;
-import io.opentelemetry.api.incubator.metrics.ExtendedDoubleGaugeBuilder;
+import io.opentelemetry.api.metrics.DoubleGauge;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableDoubleGauge;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.internal.state.DefaultSynchronousMetricStorage;
@@ -22,7 +24,9 @@ import io.opentelemetry.sdk.metrics.internal.state.SdkObservableMeasurement;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.testing.time.TestClock;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
@@ -47,11 +51,7 @@ class SdkDoubleGaugeTest {
 
   @Test
   void set_PreventNullAttributes() {
-    assertThatThrownBy(
-            () ->
-                ((ExtendedDoubleGaugeBuilder) sdkMeter.gaugeBuilder("testGauge"))
-                    .build()
-                    .set(1.0, null))
+    assertThatThrownBy(() -> sdkMeter.gaugeBuilder("testGauge").build().set(1.0, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("attributes");
   }
@@ -59,7 +59,7 @@ class SdkDoubleGaugeTest {
   @Test
   @SuppressLogger(DefaultSynchronousMetricStorage.class)
   void set_NaN() {
-    DoubleGauge gauge = ((ExtendedDoubleGaugeBuilder) sdkMeter.gaugeBuilder("testGauge")).build();
+    DoubleGauge gauge = sdkMeter.gaugeBuilder("testGauge").build();
     gauge.set(Double.NaN);
     assertThat(cumulativeReader.collectAllMetrics()).hasSize(0);
   }
@@ -93,16 +93,14 @@ class SdkDoubleGaugeTest {
 
   @Test
   void collectMetrics_NoRecords() {
-    ((ExtendedDoubleGaugeBuilder) sdkMeter.gaugeBuilder("testGauge")).build();
+    sdkMeter.gaugeBuilder("testGauge").build();
     assertThat(cumulativeReader.collectAllMetrics()).isEmpty();
   }
 
   @Test
   void collectMetrics_WithEmptyAttributes() {
     DoubleGauge doubleGauge =
-        ((ExtendedDoubleGaugeBuilder)
-                sdkMeter.gaugeBuilder("testGauge").setDescription("description").setUnit("K"))
-            .build();
+        sdkMeter.gaugeBuilder("testGauge").setDescription("description").setUnit("K").build();
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     doubleGauge.set(12d, Attributes.empty());
     doubleGauge.set(13d);
@@ -127,10 +125,58 @@ class SdkDoubleGaugeTest {
   }
 
   @Test
+  void collectMetrics_WithExemplars() {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder()
+            .setClock(testClock)
+            .setResource(RESOURCE)
+            .registerView(
+                InstrumentSelector.builder().setName("*").build(),
+                View.builder().setAttributeFilter(Collections.emptySet()).build())
+            .registerMetricReader(reader)
+            .build();
+    Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
+    DoubleGauge doubleGauge =
+        sdkMeter.gaugeBuilder("testGauge").setDescription("description").setUnit("K").build();
+
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
+    Tracer tracer = tracerProvider.get("foo");
+
+    Span span = tracer.spanBuilder("span").startSpan();
+    try (Scope unused = span.makeCurrent()) {
+      doubleGauge.set(12d, Attributes.builder().put("key", "value").build());
+    }
+
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+                    .hasName("testGauge")
+                    .hasDescription("description")
+                    .hasUnit("K")
+                    .hasDoubleGaugeSatisfying(
+                        gauge ->
+                            gauge.hasPointsSatisfying(
+                                point ->
+                                    point
+                                        .hasValue(12d)
+                                        .hasExemplarsSatisfying(
+                                            exemplar ->
+                                                exemplar
+                                                    .hasValue(12d)
+                                                    .hasFilteredAttributes(
+                                                        Attributes.builder()
+                                                            .put("key", "value")
+                                                            .build())))));
+  }
+
+  @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    DoubleGauge doubleGauge =
-        ((ExtendedDoubleGaugeBuilder) sdkMeter.gaugeBuilder("testGauge")).build();
+    DoubleGauge doubleGauge = sdkMeter.gaugeBuilder("testGauge").build();
     doubleGauge.set(12.1d, Attributes.empty());
     doubleGauge.set(123.3d, Attributes.builder().put("K", "V").build());
     doubleGauge.set(21.4d, Attributes.empty());
@@ -228,8 +274,7 @@ class SdkDoubleGaugeTest {
 
   @Test
   void stressTest() {
-    DoubleGauge doubleGauge =
-        ((ExtendedDoubleGaugeBuilder) sdkMeter.gaugeBuilder("testGauge")).build();
+    DoubleGauge doubleGauge = sdkMeter.gaugeBuilder("testGauge").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setCollectionIntervalMs(100);
@@ -268,8 +313,7 @@ class SdkDoubleGaugeTest {
   void stressTest_WithDifferentLabelSet() {
     String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    DoubleGauge doubleGauge =
-        ((ExtendedDoubleGaugeBuilder) sdkMeter.gaugeBuilder("testGauge")).build();
+    DoubleGauge doubleGauge = sdkMeter.gaugeBuilder("testGauge").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setCollectionIntervalMs(100);

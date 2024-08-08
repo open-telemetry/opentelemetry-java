@@ -7,8 +7,11 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import static io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram;
 
+import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -52,7 +55,13 @@ public final class OtlpConfigUtil {
     return config.getString("otel.exporter.otlp.protocol", PROTOCOL_GRPC);
   }
 
+  /** Determine the configured OTLP protocol for the {@code dataType}. */
+  public static String getStructuredConfigOtlpProtocol(StructuredConfigProperties config) {
+    return config.getString("protocol", PROTOCOL_GRPC);
+  }
+
   /** Invoke the setters with the OTLP configuration for the {@code dataType}. */
+  @SuppressWarnings("TooManyParameters")
   public static void configureOtlpExporterBuilder(
       String dataType,
       ConfigProperties config,
@@ -62,7 +71,8 @@ public final class OtlpConfigUtil {
       Consumer<Duration> setTimeout,
       Consumer<byte[]> setTrustedCertificates,
       BiConsumer<byte[], byte[]> setClientTls,
-      Consumer<RetryPolicy> setRetryPolicy) {
+      Consumer<RetryPolicy> setRetryPolicy,
+      Consumer<MemoryMode> setMemoryMode) {
     String protocol = getOtlpProtocol(dataType, config);
     boolean isHttpProtobuf = protocol.equals(PROTOCOL_HTTP_PROTOBUF);
     URL endpoint =
@@ -130,9 +140,11 @@ public final class OtlpConfigUtil {
             determinePropertyByType(config, "otel.exporter.otlp", dataType, "client.certificate"));
 
     if (clientKeyPath != null && clientKeyChainPath == null) {
-      throw new ConfigurationException("Client key provided but certification chain is missing");
+      throw new ConfigurationException(
+          "client key provided without client certificate - both client key and client certificate must be set");
     } else if (clientKeyPath == null && clientKeyChainPath != null) {
-      throw new ConfigurationException("Client key chain provided but key is missing");
+      throw new ConfigurationException(
+          "client certificate provided without client key - both client key and client_certificate must be set");
     }
 
     byte[] certificateBytes = readFileBytes(certificatePath);
@@ -147,11 +159,94 @@ public final class OtlpConfigUtil {
       setClientTls.accept(clientKeyBytes, clientKeyChainBytes);
     }
 
-    boolean retryEnabled =
-        config.getBoolean("otel.experimental.exporter.otlp.retry.enabled", false);
-    if (retryEnabled) {
-      setRetryPolicy.accept(RetryPolicy.getDefault());
+    Boolean retryDisabled = config.getBoolean("otel.java.exporter.otlp.retry.disabled");
+    if (retryDisabled == null) {
+      Boolean experimentalRetryEnabled =
+          config.getBoolean("otel.experimental.exporter.otlp.retry.enabled");
+      if (experimentalRetryEnabled != null) {
+        retryDisabled = !experimentalRetryEnabled;
+      }
     }
+    if (retryDisabled != null && retryDisabled) {
+      setRetryPolicy.accept(null);
+    }
+
+    ExporterBuilderUtil.configureExporterMemoryMode(config, setMemoryMode);
+  }
+
+  /** Invoke the setters with the OTLP configuration for the {@code dataType}. */
+  @SuppressWarnings("TooManyParameters")
+  public static void configureOtlpExporterBuilder(
+      String dataType,
+      StructuredConfigProperties config,
+      Consumer<String> setEndpoint,
+      BiConsumer<String, String> addHeader,
+      Consumer<String> setCompression,
+      Consumer<Duration> setTimeout,
+      Consumer<byte[]> setTrustedCertificates,
+      BiConsumer<byte[], byte[]> setClientTls,
+      Consumer<RetryPolicy> setRetryPolicy,
+      Consumer<MemoryMode> setMemoryMode) {
+    String protocol = getStructuredConfigOtlpProtocol(config);
+    boolean isHttpProtobuf = protocol.equals(PROTOCOL_HTTP_PROTOBUF);
+    URL endpoint = validateEndpoint(config.getString("endpoint"), isHttpProtobuf);
+    if (endpoint != null && isHttpProtobuf) {
+      String path = endpoint.getPath();
+      if (!path.endsWith("/")) {
+        path += "/";
+      }
+      path += signalPath(dataType);
+      endpoint = createUrl(endpoint, path);
+    }
+    if (endpoint != null) {
+      setEndpoint.accept(endpoint.toString());
+    }
+
+    StructuredConfigProperties headers = config.getStructured("headers");
+    if (headers != null) {
+      headers
+          .getPropertyKeys()
+          .forEach(
+              header -> {
+                String value = headers.getString(header);
+                if (value != null) {
+                  addHeader.accept(header, value);
+                }
+              });
+    }
+
+    String compression = config.getString("compression");
+    if (compression != null) {
+      setCompression.accept(compression);
+    }
+
+    Integer timeoutMs = config.getInt("timeout");
+    if (timeoutMs != null) {
+      setTimeout.accept(Duration.ofMillis(timeoutMs));
+    }
+
+    String certificatePath = config.getString("certificate");
+    String clientKeyPath = config.getString("client_key");
+    String clientKeyChainPath = config.getString("client_certificate");
+
+    if (clientKeyPath != null && clientKeyChainPath == null) {
+      throw new ConfigurationException(
+          "client_key provided without client_certificate - both client_key and client_certificate must be set");
+    } else if (clientKeyPath == null && clientKeyChainPath != null) {
+      throw new ConfigurationException(
+          "client_certificate provided without client_key - both client_key and client_certificate must be set");
+    }
+    byte[] certificateBytes = readFileBytes(certificatePath);
+    if (certificateBytes != null) {
+      setTrustedCertificates.accept(certificateBytes);
+    }
+    byte[] clientKeyBytes = readFileBytes(clientKeyPath);
+    byte[] clientKeyChainBytes = readFileBytes(clientKeyChainPath);
+    if (clientKeyBytes != null && clientKeyChainBytes != null) {
+      setClientTls.accept(clientKeyBytes, clientKeyChainBytes);
+    }
+
+    ExporterBuilderUtil.configureExporterMemoryMode(config, setMemoryMode);
   }
 
   /**
@@ -182,6 +277,30 @@ public final class OtlpConfigUtil {
     aggregationTemporalitySelectorConsumer.accept(temporalitySelector);
   }
 
+  public static void configureOtlpAggregationTemporality(
+      StructuredConfigProperties config,
+      Consumer<AggregationTemporalitySelector> aggregationTemporalitySelectorConsumer) {
+    String temporalityStr = config.getString("temporality_preference");
+    if (temporalityStr == null) {
+      return;
+    }
+    AggregationTemporalitySelector temporalitySelector;
+    switch (temporalityStr.toLowerCase(Locale.ROOT)) {
+      case "cumulative":
+        temporalitySelector = AggregationTemporalitySelector.alwaysCumulative();
+        break;
+      case "delta":
+        temporalitySelector = AggregationTemporalitySelector.deltaPreferred();
+        break;
+      case "lowmemory":
+        temporalitySelector = AggregationTemporalitySelector.lowMemory();
+        break;
+      default:
+        throw new ConfigurationException("Unrecognized temporality_preference: " + temporalityStr);
+    }
+    aggregationTemporalitySelectorConsumer.accept(temporalitySelector);
+  }
+
   /**
    * Invoke the {@code defaultAggregationSelectorConsumer} with the configured {@link
    * DefaultAggregationSelector}.
@@ -203,6 +322,29 @@ public final class OtlpConfigUtil {
         .equalsIgnoreCase(defaultHistogramAggregation)) {
       throw new ConfigurationException(
           "Unrecognized default histogram aggregation: " + defaultHistogramAggregation);
+    }
+  }
+
+  /**
+   * Invoke the {@code defaultAggregationSelectorConsumer} with the configured {@link
+   * DefaultAggregationSelector}.
+   */
+  public static void configureOtlpHistogramDefaultAggregation(
+      StructuredConfigProperties config,
+      Consumer<DefaultAggregationSelector> defaultAggregationSelectorConsumer) {
+    String defaultHistogramAggregation = config.getString("default_histogram_aggregation");
+    if (defaultHistogramAggregation == null) {
+      return;
+    }
+    if (AggregationUtil.aggregationName(Aggregation.base2ExponentialBucketHistogram())
+        .equalsIgnoreCase(defaultHistogramAggregation)) {
+      defaultAggregationSelectorConsumer.accept(
+          DefaultAggregationSelector.getDefault()
+              .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()));
+    } else if (!AggregationUtil.aggregationName(explicitBucketHistogram())
+        .equalsIgnoreCase(defaultHistogramAggregation)) {
+      throw new ConfigurationException(
+          "Unrecognized default_histogram_aggregation: " + defaultHistogramAggregation);
     }
   }
 

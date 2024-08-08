@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import io.prometheus.metrics.model.snapshots.PrometheusNaming;
 import io.prometheus.metrics.model.snapshots.Unit;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -86,11 +87,22 @@ class PrometheusUnitsHelper {
       String part1 = pluralNames.getOrDefault(parts[0], parts[0]).trim();
       String part2 = singularNames.getOrDefault(parts[1], parts[1]).trim();
       if (part1.isEmpty()) {
-        return new Unit("per_" + part2);
+        return unitOrNull("per_" + part2);
       } else {
-        return new Unit(part1 + "_per_" + part2);
+        return unitOrNull(part1 + "_per_" + part2);
       }
     }
-    return new Unit(otelUnit);
+    return unitOrNull(otelUnit);
+  }
+
+  @Nullable
+  private static Unit unitOrNull(String name) {
+    try {
+      return new Unit(PrometheusNaming.sanitizeUnitName(name));
+    } catch (IllegalArgumentException e) {
+      // This happens if the name cannot be converted to a valid Prometheus unit name,
+      // for example if name is "total".
+      return null;
+    }
   }
 }

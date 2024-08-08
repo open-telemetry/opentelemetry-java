@@ -15,14 +15,16 @@ import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
-import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
@@ -37,12 +39,15 @@ public final class OtlpGrpcSpanExporterBuilder {
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
   private static final long DEFAULT_TIMEOUT_SECS = 10;
+  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
 
   // Visible for testing
-  final GrpcExporterBuilder<TraceRequestMarshaler> delegate;
+  final GrpcExporterBuilder<Marshaler> delegate;
+  private MemoryMode memoryMode;
 
-  OtlpGrpcSpanExporterBuilder(GrpcExporterBuilder<TraceRequestMarshaler> delegate) {
+  OtlpGrpcSpanExporterBuilder(GrpcExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
+    this.memoryMode = memoryMode;
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeader);
   }
 
@@ -54,7 +59,8 @@ public final class OtlpGrpcSpanExporterBuilder {
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerTraceServiceGrpc::newFutureStub,
-            GRPC_ENDPOINT_PATH));
+            GRPC_ENDPOINT_PATH),
+        DEFAULT_MEMORY_MODE);
   }
 
   /**
@@ -202,12 +208,12 @@ public final class OtlpGrpcSpanExporterBuilder {
   }
 
   /**
-   * Ses the retry policy. Retry is disabled by default.
+   * Set the retry policy, or {@code null} to disable retry. Retry policy is {@link
+   * RetryPolicy#getDefault()} by default
    *
    * @since 1.28.0
    */
-  public OtlpGrpcSpanExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
-    requireNonNull(retryPolicy, "retryPolicy");
+  public OtlpGrpcSpanExporterBuilder setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
     delegate.setRetryPolicy(retryPolicy);
     return this;
   }
@@ -236,11 +242,25 @@ public final class OtlpGrpcSpanExporterBuilder {
   }
 
   /**
+   * Set the {@link MemoryMode}. If unset, defaults to {@link #DEFAULT_MEMORY_MODE}.
+   *
+   * <p>When memory mode is {@link MemoryMode#REUSABLE_DATA}, serialization is optimized to reduce
+   * memory allocation.
+   *
+   * @since 1.39.0
+   */
+  public OtlpGrpcSpanExporterBuilder setMemoryMode(MemoryMode memoryMode) {
+    requireNonNull(memoryMode, "memoryMode");
+    this.memoryMode = memoryMode;
+    return this;
+  }
+
+  /**
    * Constructs a new instance of the exporter based on the builder's values.
    *
    * @return a new exporter's instance
    */
   public OtlpGrpcSpanExporter build() {
-    return new OtlpGrpcSpanExporter(delegate, delegate.build());
+    return new OtlpGrpcSpanExporter(delegate, delegate.build(), memoryMode);
   }
 }

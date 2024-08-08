@@ -223,7 +223,18 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
 
   @BeforeAll
   void setUp() {
-    exporter = exporterBuilder().setEndpoint(server.httpUri() + path).build();
+    //
+    exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpUri() + path)
+            // We don't validate backoff time itself in these tests, just that retries
+            // occur. Keep the tests fast by using minimal backoff.
+            .setRetryPolicy(
+                RetryPolicy.getDefault().toBuilder()
+                    .setMaxAttempts(2)
+                    .setInitialBackoff(Duration.ofMillis(1))
+                    .build())
+            .build();
 
     // Sanity check that TLS files are in PEM format.
     assertThat(certificate.certificateFile())
@@ -518,6 +529,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
             // Connecting to a non-routable IP address to trigger connection error
             .setEndpoint("http://10.255.255.1")
             .setConnectTimeout(Duration.ofMillis(1))
+            .setRetryPolicy(null)
             .build();
     try {
       long startTimeMillis = System.currentTimeMillis();
@@ -598,18 +610,12 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   void retryableError(int code) {
     addHttpError(code);
 
-    TelemetryExporter<T> exporter = retryingExporter();
-
-    try {
-      assertThat(
-              exporter
-                  .export(Collections.singletonList(generateFakeTelemetry()))
-                  .join(10, TimeUnit.SECONDS)
-                  .isSuccess())
-          .isTrue();
-    } finally {
-      exporter.shutdown();
-    }
+    assertThat(
+            exporter
+                .export(Collections.singletonList(generateFakeTelemetry()))
+                .join(10, TimeUnit.SECONDS)
+                .isSuccess())
+        .isTrue();
 
     assertThat(attempts).hasValue(2);
   }
@@ -620,18 +626,12 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     addHttpError(502);
     addHttpError(502);
 
-    TelemetryExporter<T> exporter = retryingExporter();
-
-    try {
-      assertThat(
-              exporter
-                  .export(Collections.singletonList(generateFakeTelemetry()))
-                  .join(10, TimeUnit.SECONDS)
-                  .isSuccess())
-          .isFalse();
-    } finally {
-      exporter.shutdown();
-    }
+    assertThat(
+            exporter
+                .export(Collections.singletonList(generateFakeTelemetry()))
+                .join(10, TimeUnit.SECONDS)
+                .isSuccess())
+        .isFalse();
 
     assertThat(attempts).hasValue(2);
   }
@@ -642,18 +642,12 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   void nonRetryableError(int code) {
     addHttpError(code);
 
-    TelemetryExporter<T> exporter = retryingExporter();
-
-    try {
-      assertThat(
-              exporter
-                  .export(Collections.singletonList(generateFakeTelemetry()))
-                  .join(10, TimeUnit.SECONDS)
-                  .isSuccess())
-          .isFalse();
-    } finally {
-      exporter.shutdown();
-    }
+    assertThat(
+            exporter
+                .export(Collections.singletonList(generateFakeTelemetry()))
+                .join(10, TimeUnit.SECONDS)
+                .isSuccess())
+        .isFalse();
 
     assertThat(attempts).hasValue(1);
   }
@@ -858,6 +852,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + ", "
                   + "exportAsJson=false, "
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
+                  + ".*" // Maybe additional signal specific fields
                   + "\\}");
     } finally {
       telemetryExporter.shutdown();
@@ -900,6 +895,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + "exportAsJson=false, "
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
                   + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3\\}"
+                  + ".*" // Maybe additional signal specific fields
                   + "\\}");
     } finally {
       telemetryExporter.shutdown();
@@ -939,21 +935,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
               }
             })
         .collect(Collectors.toList());
-  }
-
-  private TelemetryExporter<T> retryingExporter() {
-    return exporterBuilder()
-        .setEndpoint(server.httpUri() + path)
-        .setRetryPolicy(
-            RetryPolicy.builder()
-                .setMaxAttempts(2)
-                // We don't validate backoff time itself in these tests, just that retries
-                // occur. Keep the tests fast by using minimal backoff.
-                .setInitialBackoff(Duration.ofMillis(1))
-                .setMaxBackoff(Duration.ofMillis(1))
-                .setBackoffMultiplier(1)
-                .build())
-        .build();
   }
 
   private static void addHttpError(int code) {

@@ -10,6 +10,7 @@ package io.opentelemetry.sdk.metrics;
  *
  * @since 1.14.0
  */
+@SuppressWarnings({"MissingSummary", "SummaryJavadoc"})
 public enum InstrumentType {
   COUNTER,
   UP_DOWN_COUNTER,
@@ -17,4 +18,8 @@ public enum InstrumentType {
   OBSERVABLE_COUNTER,
   OBSERVABLE_UP_DOWN_COUNTER,
   OBSERVABLE_GAUGE,
+  /**
+   * @since 1.38.0
+   */
+  GAUGE,
 }

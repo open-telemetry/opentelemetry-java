@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import java.io.Closeable;
 import java.util.List;
-import javax.annotation.Nullable;
 
 final class InstrumentSelectorFactory implements Factory<Selector, InstrumentSelector> {
 
@@ -27,11 +26,7 @@ final class InstrumentSelectorFactory implements Factory<Selector, InstrumentSel
 
   @Override
   public InstrumentSelector create(
-      @Nullable Selector model, SpiHelper spiHelper, List<Closeable> closeables) {
-    if (model == null) {
-      throw new ConfigurationException("selector must not be null");
-    }
-
+      Selector model, SpiHelper spiHelper, List<Closeable> closeables) {
     InstrumentSelectorBuilder builder = InstrumentSelector.builder();
     if (model.getInstrumentName() != null) {
       builder.setName(model.getInstrumentName());

@@ -24,6 +24,13 @@ base {
   }
 }
 
+// normalize timestamps and file ordering in jars, making the outputs reproducible
+// see open-telemetry/opentelemetry-java#4488
+tasks.withType<AbstractArchiveTask>().configureEach {
+  isPreserveFileTimestamps = false
+  isReproducibleFileOrder = true
+}
+
 java {
   toolchain {
     languageVersion.set(JavaLanguageVersion.of(17))
@@ -35,7 +42,7 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "10.14.2"
+  toolVersion = "10.17.0"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
@@ -79,7 +86,10 @@ tasks {
             // https://groups.google.com/forum/#!topic/bazel-discuss/_R3A9TJSoPM
             "-Xlint:-processing",
             // We suppress the "options" warning because it prevents compilation on modern JDKs
-            "-Xlint:-options"
+            "-Xlint:-options",
+
+            // Fail build on any warning
+            "-Werror",
           ),
         )
       }

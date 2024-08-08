@@ -1,8 +1,6 @@
 plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
-
-  id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry Prometheus Exporter"
@@ -11,6 +9,7 @@ otelJava.moduleName.set("io.opentelemetry.exporter.prometheus")
 dependencies {
   api(project(":sdk:metrics"))
 
+  implementation(project(":exporters:common"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
   implementation("io.prometheus:prometheus-metrics-exporter-httpserver")
 

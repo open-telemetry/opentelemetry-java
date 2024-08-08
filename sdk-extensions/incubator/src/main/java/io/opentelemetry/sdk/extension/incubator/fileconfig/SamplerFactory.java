@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 final class SamplerFactory
     implements Factory<
@@ -39,13 +38,9 @@ final class SamplerFactory
 
   @Override
   public Sampler create(
-      @Nullable io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sampler model,
+      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sampler model,
       SpiHelper spiHelper,
       List<Closeable> closeables) {
-    if (model == null) {
-      return Sampler.parentBased(Sampler.alwaysOn());
-    }
-
     if (model.getAlwaysOn() != null) {
       return Sampler.alwaysOn();
     }
@@ -121,9 +116,9 @@ final class SamplerFactory
       throw new ConfigurationException(
           "Unrecognized sampler(s): "
               + model.getAdditionalProperties().keySet().stream().collect(joining(",", "[", "]")));
+    } else {
+      throw new ConfigurationException("sampler must be set");
     }
-
-    return Sampler.parentBased(Sampler.alwaysOn());
   }
 
   private static NamedSpiManager<Sampler> samplerSpiManager(

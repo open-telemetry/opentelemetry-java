@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.trace.ExtendedSpan;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -36,7 +35,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** Implementation for the {@link Span} class that records trace events. */
 @ThreadSafe
-final class SdkSpan implements ReadWriteSpan, ExtendedSpan {
+final class SdkSpan implements ReadWriteSpan {
 
   private static final Logger logger = Logger.getLogger(SdkSpan.class.getName());
 
@@ -230,6 +229,13 @@ final class SdkSpan implements ReadWriteSpan, ExtendedSpan {
   public <T> T getAttribute(AttributeKey<T> key) {
     synchronized (lock) {
       return attributes == null ? null : attributes.get(key);
+    }
+  }
+
+  @Override
+  public Attributes getAttributes() {
+    synchronized (lock) {
+      return attributes == null ? Attributes.empty() : attributes.immutableCopy();
     }
   }
 
@@ -462,7 +468,7 @@ final class SdkSpan implements ReadWriteSpan, ExtendedSpan {
         return this;
       }
       if (links == null) {
-        links = new ArrayList<>(spanLimits.getMaxNumberOfLinks());
+        links = new ArrayList<>();
       }
       if (links.size() < spanLimits.getMaxNumberOfLinks()) {
         links.add(link);

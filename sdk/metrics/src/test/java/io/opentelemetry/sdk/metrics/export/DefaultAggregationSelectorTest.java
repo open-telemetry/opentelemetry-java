@@ -45,6 +45,8 @@ class DefaultAggregationSelectorTest {
         .isEqualTo(Aggregation.defaultAggregation());
     assertThat(selector1.getDefaultAggregation(InstrumentType.OBSERVABLE_GAUGE))
         .isEqualTo(Aggregation.defaultAggregation());
+    assertThat(selector1.getDefaultAggregation(InstrumentType.GAUGE))
+        .isEqualTo(Aggregation.defaultAggregation());
 
     DefaultAggregationSelector selector2 =
         selector1.with(InstrumentType.COUNTER, Aggregation.drop());
@@ -60,5 +62,36 @@ class DefaultAggregationSelectorTest {
         .isEqualTo(Aggregation.defaultAggregation());
     assertThat(selector2.getDefaultAggregation(InstrumentType.OBSERVABLE_GAUGE))
         .isEqualTo(Aggregation.defaultAggregation());
+    assertThat(selector2.getDefaultAggregation(InstrumentType.GAUGE))
+        .isEqualTo(Aggregation.defaultAggregation());
+  }
+
+  @Test
+  void stringRepresentation() {
+    assertThat(DefaultAggregationSelector.asString(DefaultAggregationSelector.getDefault()))
+        .isEqualTo(
+            "DefaultAggregationSelector{"
+                + "COUNTER=default, "
+                + "UP_DOWN_COUNTER=default, "
+                + "HISTOGRAM=default, "
+                + "OBSERVABLE_COUNTER=default, "
+                + "OBSERVABLE_UP_DOWN_COUNTER=default, "
+                + "OBSERVABLE_GAUGE=default, "
+                + "GAUGE=default"
+                + "}");
+    assertThat(
+            DefaultAggregationSelector.asString(
+                DefaultAggregationSelector.getDefault()
+                    .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram())))
+        .isEqualTo(
+            "DefaultAggregationSelector{"
+                + "COUNTER=default, "
+                + "UP_DOWN_COUNTER=default, "
+                + "HISTOGRAM=base2_exponential_bucket_histogram, "
+                + "OBSERVABLE_COUNTER=default, "
+                + "OBSERVABLE_UP_DOWN_COUNTER=default, "
+                + "OBSERVABLE_GAUGE=default, "
+                + "GAUGE=default"
+                + "}");
   }
 }

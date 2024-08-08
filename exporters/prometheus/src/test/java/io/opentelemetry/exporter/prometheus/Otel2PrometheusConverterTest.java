@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.prometheus;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -106,6 +107,34 @@ class Otel2PrometheusConverterTest {
     String metricLabels =
         metricLine.substring(metricLine.indexOf("{") + 1, metricLine.indexOf("}"));
     assertThat(metricLabels).isEqualTo(expectedMetricLabels);
+  }
+
+  @Test
+  void prometheusNameCollisionTest_Issue6277() {
+    // NOTE: Metrics with the same resolved prometheus name should merge. However,
+    // Otel2PrometheusConverter is not responsible for merging individual series, so the merge will
+    // fail if the two different metrics contain overlapping series. Users should deal with this by
+    // adding a view that renames one of the two metrics such that the conflict does not occur.
+    MetricData dotName =
+        createSampleMetricData(
+            "my.metric",
+            "units",
+            MetricDataType.LONG_SUM,
+            Attributes.builder().put("key", "a").build(),
+            Resource.create(Attributes.empty()));
+    MetricData underscoreName =
+        createSampleMetricData(
+            "my_metric",
+            "units",
+            MetricDataType.LONG_SUM,
+            Attributes.builder().put("key", "b").build(),
+            Resource.create(Attributes.empty()));
+
+    List<MetricData> metricData = new ArrayList<>();
+    metricData.add(dotName);
+    metricData.add(underscoreName);
+
+    assertThatCode(() -> converter.convert(metricData)).doesNotThrowAnyException();
   }
 
   private static Stream<Arguments> resourceAttributesAdditionArgs() {
@@ -254,9 +283,9 @@ class Otel2PrometheusConverterTest {
         // if metric name ends with unit the unit is omitted - order matters
         Arguments.of(
             createSampleMetricData("metric_total_hertz", "hertz_total", MetricDataType.LONG_SUM),
-            "metric_total_hertz_hertz_total counter",
-            "metric_total_hertz_hertz_total description",
-            "metric_total_hertz_hertz_total"),
+            "metric_total_hertz_total counter",
+            "metric_total_hertz_total description",
+            "metric_total_hertz_total"),
         // metric name cannot start with a number
         Arguments.of(
             createSampleMetricData("2_metric_name", "By", MetricDataType.SUMMARY),

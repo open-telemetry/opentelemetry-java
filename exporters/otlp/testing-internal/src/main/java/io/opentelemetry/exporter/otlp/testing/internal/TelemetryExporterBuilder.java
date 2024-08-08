@@ -18,6 +18,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
@@ -59,7 +60,7 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> setSslContext(SSLContext sslContext, X509TrustManager trustManager);
 
-  TelemetryExporterBuilder<T> setRetryPolicy(RetryPolicy retryPolicy);
+  TelemetryExporterBuilder<T> setRetryPolicy(@Nullable RetryPolicy retryPolicy);
 
   TelemetryExporterBuilder<T> setProxyOptions(ProxyOptions proxyOptions);
 

@@ -1,16 +1,16 @@
 pluginManagement {
   plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("com.gradle.enterprise") version "3.16.2"
+    id("com.gradle.develocity") version "3.17.6"
     id("de.undercouch.download") version "5.6.0"
     id("org.jsonschema2pojo") version "1.2.1"
-    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
-    id("org.graalvm.buildtools.native") version "0.10.1"
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
+    id("org.graalvm.buildtools.native") version "0.10.2"
   }
 }
 
 plugins {
-  id("com.gradle.enterprise")
+  id("com.gradle.develocity")
 }
 
 dependencyResolutionManagement {
@@ -32,6 +32,7 @@ include(":dependencyManagement")
 include(":extensions:kotlin")
 include(":extensions:trace-propagators")
 include(":exporters:common")
+include(":exporters:common:compile-stub")
 include(":exporters:sender:grpc-managed-channel")
 include(":exporters:sender:jdk")
 include(":exporters:sender:okhttp")
@@ -39,6 +40,7 @@ include(":exporters:logging")
 include(":exporters:logging-otlp")
 include(":exporters:otlp:all")
 include(":exporters:otlp:common")
+include(":exporters:otlp:profiles")
 include(":exporters:otlp:testing-internal")
 include(":exporters:prometheus")
 include(":exporters:zipkin")
@@ -71,30 +73,29 @@ val geAccessKey = System.getenv("GRADLE_ENTERPRISE_ACCESS_KEY") ?: ""
 val useScansGradleCom = isCI && geAccessKey.isEmpty()
 
 if (useScansGradleCom) {
-  gradleEnterprise {
+  develocity {
     buildScan {
-      termsOfServiceUrl = "https://gradle.com/terms-of-service"
-      termsOfServiceAgree = "yes"
-      isUploadInBackground = !isCI
-      publishAlways()
+      termsOfUseUrl.set("https://gradle.com/terms-of-service")
+      termsOfUseAgree.set("yes")
+      uploadInBackground.set(!isCI)
+      publishing.onlyIf { true }
 
       capture {
-        isTaskInputFiles = true
+        fileFingerprints.set(true)
       }
     }
   }
 } else {
-  gradleEnterprise {
+  develocity {
     server = gradleEnterpriseServer
     buildScan {
-      isUploadInBackground = !isCI
-
-      this as com.gradle.enterprise.gradleplugin.internal.extension.BuildScanExtensionWithHiddenFeatures
-      publishIfAuthenticated()
-      publishAlways()
+      uploadInBackground.set(!isCI)
+      publishing.onlyIf {
+        it.isAuthenticated
+      }
 
       capture {
-        isTaskInputFiles = true
+        fileFingerprints.set(true)
       }
 
       gradle.startParameter.projectProperties["testJavaVersion"]?.let { tag(it) }

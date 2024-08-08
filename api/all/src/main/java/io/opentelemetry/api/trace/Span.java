@@ -360,6 +360,49 @@ public interface Span extends ImplicitContextKeyed {
   Span updateName(String name);
 
   /**
+   * Adds a link to this {@code Span}.
+   *
+   * <p>Links are used to link {@link Span}s in different traces. Used (for example) in batching
+   * operations, where a single batch handler processes multiple requests from different traces or
+   * the same trace.
+   *
+   * <p>Implementations may ignore calls with an {@linkplain SpanContext#isValid() invalid span
+   * context}.
+   *
+   * <p>Callers should prefer to add links before starting the span via {@link
+   * SpanBuilder#addLink(SpanContext)} if possible.
+   *
+   * @param spanContext the context of the linked {@code Span}.
+   * @return this.
+   * @since 1.37.0
+   */
+  default Span addLink(SpanContext spanContext) {
+    return addLink(spanContext, Attributes.empty());
+  }
+
+  /**
+   * Adds a link to this {@code Span}.
+   *
+   * <p>Links are used to link {@link Span}s in different traces. Used (for example) in batching
+   * operations, where a single batch handler processes multiple requests from different traces or
+   * the same trace.
+   *
+   * <p>Implementations may ignore calls with an {@linkplain SpanContext#isValid() invalid span
+   * context}.
+   *
+   * <p>Callers should prefer to add links before starting the span via {@link
+   * SpanBuilder#addLink(SpanContext, Attributes)} if possible.
+   *
+   * @param spanContext the context of the linked {@code Span}.
+   * @param attributes the attributes of the {@code Link}.
+   * @return this.
+   * @since 1.37.0
+   */
+  default Span addLink(SpanContext spanContext, Attributes attributes) {
+    return this;
+  }
+
+  /**
    * Marks the end of {@code Span} execution.
    *
    * <p>Only the timing of the first end call for a given {@code Span} will be recorded, and

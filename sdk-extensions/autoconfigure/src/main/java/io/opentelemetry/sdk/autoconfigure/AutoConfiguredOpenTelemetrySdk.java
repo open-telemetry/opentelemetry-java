@@ -10,7 +10,9 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -43,8 +45,12 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
   }
 
   static AutoConfiguredOpenTelemetrySdk create(
-      OpenTelemetrySdk sdk, Resource resource, ConfigProperties config) {
-    return new AutoValue_AutoConfiguredOpenTelemetrySdk(sdk, resource, config);
+      OpenTelemetrySdk sdk,
+      Resource resource,
+      @Nullable ConfigProperties config,
+      @Nullable StructuredConfigProperties structuredConfigProperties) {
+    return new AutoValue_AutoConfiguredOpenTelemetrySdk(
+        sdk, resource, config, structuredConfigProperties);
   }
 
   /**
@@ -60,8 +66,23 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
   /** Returns the {@link Resource} that was auto-configured. */
   abstract Resource getResource();
 
-  /** Returns the {@link ConfigProperties} used for auto-configuration. */
+  /**
+   * Returns the {@link ConfigProperties} used for auto-configuration, or {@code null} if file
+   * configuration was used.
+   *
+   * @see #getStructuredConfig()
+   */
+  @Nullable
   abstract ConfigProperties getConfig();
+
+  /**
+   * Returns the {@link StructuredConfigProperties} used for auto-configuration, or {@code null} if
+   * file configuration was not used.
+   *
+   * @see #getConfig()
+   */
+  @Nullable
+  abstract StructuredConfigProperties getStructuredConfig();
 
   AutoConfiguredOpenTelemetrySdk() {}
 }

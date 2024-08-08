@@ -65,7 +65,7 @@ public interface Meter {
    * callbacks).
    *
    * @param name the name of the Counter. Instrument names must consist of 255 or fewer characters
-   *     including alphanumeric, _, ., -, and start with a letter.
+   *     including alphanumeric, _, ., -, /, and start with a letter.
    * @return a builder for configuring a Counter instrument. Defaults to recording long values, but
    *     may be changed.
    * @see <a
@@ -81,7 +81,7 @@ public interface Meter {
    * callbacks).
    *
    * @param name the name of the UpDownCounter. Instrument names must consist of 255 or fewer
-   *     characters including alphanumeric, _, ., -, and start with a letter.
+   *     characters including alphanumeric, _, ., -, /, and start with a letter.
    * @return a builder for configuring an UpDownCounter instrument. Defaults to recording long
    *     values, but may be changed.
    * @see <a
@@ -94,7 +94,7 @@ public interface Meter {
    * Constructs a Histogram instrument.
    *
    * @param name the name of the Histogram. Instrument names must consist of 255 or fewer characters
-   *     including alphanumeric, _, ., -, and start with a letter.
+   *     including alphanumeric, _, ., -, /, and start with a letter.
    * @return a builder for configuring a Histogram synchronous instrument. Defaults to recording
    *     double values, but may be changed.
    * @see <a
@@ -107,7 +107,7 @@ public interface Meter {
    * Constructs an Asynchronous Gauge instrument.
    *
    * @param name the name of the Gauge. Instrument names must consist of 255 or fewer characters
-   *     including alphanumeric, _, ., -, and start with a letter.
+   *     including alphanumeric, _, ., -, /, and start with a letter.
    * @return a builder used for configuring a Gauge instrument. Defaults to recording double values,
    *     but may be changed.
    * @see <a

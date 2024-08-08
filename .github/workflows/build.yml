@@ -21,18 +21,29 @@ jobs:
       matrix:
         os:
           - macos-latest
+          - macos-13
           - ubuntu-latest
         test-java-version:
           - 8
           - 11
           - 17
-          - 20
+          - 21
         # Collect coverage on latest LTS
         include:
           - os: ubuntu-20.04
-            test-java-version: 17
+            test-java-version: 21
             coverage: true
             jmh-based-tests: true
+        # macos-latest drops support for java 8 temurin. Run java 8 on macos-13. Run java 11, 17, 21 on macos-latest.
+        exclude:
+          - os: macos-latest
+            test-java-version: 8
+          - os: macos-13
+            test-java-version: 11
+          - os: macos-13
+            test-java-version: 17
+          - os: macos-13
+            test-java-version: 21
     steps:
       - uses: actions/checkout@v4
 
@@ -50,10 +61,11 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/actions/setup-gradle@v3
-        with:
-          arguments: |
-            build
+      - name: Set up gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Build
+        run: >
+            ./gradlew build
             ${{ matrix.coverage && 'jacocoTestReport' || '' }}
             -PtestJavaVersion=${{ matrix.test-java-version }}
             -Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }},${{ steps.setup-java.outputs.path }}
@@ -63,8 +75,8 @@ jobs:
           RUN_JMH_BASED_TESTS: ${{ matrix.jmh-based-tests }}
 
       - name: Check for diff
-        # The jApiCmp diff compares current to latest, which isn't appropriate for release branches
-        if: ${{ !startsWith(github.ref_name, 'release/') && !startsWith(github.base_ref, 'release/') }}
+        # The jApiCmp diff compares current to latest, which isn't appropriate for release branches, or for bot-generated PRs
+        if: ${{ !startsWith(github.ref_name, 'release/') && !startsWith(github.base_ref, 'release/') && (github.actor != 'opentelemetrybot') }}
         run: |
           # need to "git add" in case any generated files did not already exist
           git add docs/apidiffs
@@ -123,12 +135,16 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/actions/setup-gradle@v3
+      - name: Set up gradle
+        uses: gradle/actions/setup-gradle@v4
         # skipping release branches because the versions in those branches are not snapshots
         # (also this skips pull requests)
         if: ${{ github.ref_name == 'main' && github.repository == 'open-telemetry/opentelemetry-java' }}
-        with:
-          arguments: assemble publishToSonatype
+      - name: Publish to Sonatype
+        run: ./gradlew assemble publishToSonatype
+        # skipping release branches because the versions in those branches are not snapshots
+        # (also this skips pull requests)
+        if: ${{ github.ref_name == 'main' && github.repository == 'open-telemetry/opentelemetry-java' }}
         env:
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}

@@ -448,6 +448,7 @@ class W3CBaggagePropagatorTest {
             .put("\2ab\3cd", "wacky key nonprintable")
             .put(null, "null key")
             .put("nullvalue", null)
+            .put(" ", "key is only space")
             .build();
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
     Map<String, String> carrier = new HashMap<>();

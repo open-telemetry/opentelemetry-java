@@ -94,6 +94,20 @@ public class DefaultMeterTest {
   }
 
   @Test
+  void noopLongGauage_doesNotThrow() {
+    LongGauge gauge =
+        METER
+            .gaugeBuilder("temperature")
+            .ofLongs()
+            .setDescription("The current temperature")
+            .setUnit("C")
+            .build();
+    gauge.set(1);
+    gauge.set(2, Attributes.of(stringKey("thing"), "engine"));
+    gauge.set(2, Attributes.of(stringKey("thing"), "engine"), Context.current());
+  }
+
+  @Test
   void noopObservableLongGauage_doesNotThrow() {
     METER
         .gaugeBuilder("temperature")
@@ -105,6 +119,19 @@ public class DefaultMeterTest {
               m.record(1);
               m.record(2, Attributes.of(stringKey("thing"), "engine"));
             });
+  }
+
+  @Test
+  void noopDoubleGauage_doesNotThrow() {
+    DoubleGauge gauge =
+        METER
+            .gaugeBuilder("temperature")
+            .setDescription("The current temperature")
+            .setUnit("C")
+            .build();
+    gauge.set(1);
+    gauge.set(2, Attributes.of(stringKey("thing"), "engine"));
+    gauge.set(2, Attributes.of(stringKey("thing"), "engine"), Context.current());
   }
 
   @Test

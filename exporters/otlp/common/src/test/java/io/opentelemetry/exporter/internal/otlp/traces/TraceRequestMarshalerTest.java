@@ -27,6 +27,9 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
+import io.opentelemetry.exporter.internal.marshal.Serializer;
+import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.ArrayValue;
 import io.opentelemetry.proto.common.v1.InstrumentationScope;
@@ -40,6 +43,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -49,6 +53,8 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.Locale;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 class TraceRequestMarshalerTest {
 
@@ -56,7 +62,9 @@ class TraceRequestMarshalerTest {
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4};
   private static final String TRACE_ID = TraceId.fromBytes(TRACE_ID_BYTES);
   private static final byte[] SPAN_ID_BYTES = new byte[] {0, 0, 0, 0, 4, 3, 2, 1};
+  private static final byte[] PARENT_SPAN_ID_BYTES = new byte[] {0, 0, 0, 0, 5, 6, 7, 8};
   private static final String SPAN_ID = SpanId.fromBytes(SPAN_ID_BYTES);
+  private static final String PARENT_SPAN_ID = SpanId.fromBytes(PARENT_SPAN_ID_BYTES);
   private static final String TRACE_STATE_VALUE = "baz=qux,foo=bar";
   private static final SpanContext SPAN_CONTEXT =
       SpanContext.create(
@@ -64,6 +72,10 @@ class TraceRequestMarshalerTest {
           SPAN_ID,
           TraceFlags.getSampled(),
           TraceState.builder().put("foo", "bar").put("baz", "qux").build());
+
+  private static final SpanContext PARENT_SPAN_CONTEXT =
+      SpanContext.createFromRemoteParent(
+          TRACE_ID, PARENT_SPAN_ID, TraceFlags.getSampled(), TraceState.builder().build());
 
   @Test
   void toProtoResourceSpans() {
@@ -110,12 +122,13 @@ class TraceRequestMarshalerTest {
                 .build());
   }
 
-  @Test
-  void toProtoSpan() {
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void toProtoSpan(MarshalerSource marshalerSource) {
     Span protoSpan =
         parse(
             Span.getDefaultInstance(),
-            SpanMarshaler.create(
+            marshalerSource.create(
                 TestSpanData.builder()
                     .setHasEnded(true)
                     .setSpanContext(SPAN_CONTEXT)
@@ -147,8 +160,10 @@ class TraceRequestMarshalerTest {
 
     assertThat(protoSpan.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(protoSpan.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
-    assertThat(protoSpan.getFlags())
-        .isEqualTo(((int) SPAN_CONTEXT.getTraceFlags().asByte()) & 0x00ff);
+    assertThat(protoSpan.getFlags() & 0xff)
+        .isEqualTo((SPAN_CONTEXT.getTraceFlags().asByte() & 0xff));
+    assertThat(SpanFlags.isKnownWhetherParentIsRemote(protoSpan.getFlags())).isTrue();
+    assertThat(SpanFlags.isParentRemote(protoSpan.getFlags())).isFalse();
     assertThat(protoSpan.getTraceState()).isEqualTo(TRACE_STATE_VALUE);
     assertThat(protoSpan.getParentSpanId().toByteArray()).isEqualTo(new byte[] {});
     assertThat(protoSpan.getName()).isEqualTo("GET /api/endpoint");
@@ -227,10 +242,46 @@ class TraceRequestMarshalerTest {
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
-                .setFlags(SPAN_CONTEXT.getTraceFlags().asByte())
+                .setFlags(
+                    (SPAN_CONTEXT.getTraceFlags().asByte() & 0xff)
+                        | SpanFlags.getHasParentIsRemoteMask())
                 .setTraceState(encodeTraceState(SPAN_CONTEXT.getTraceState()))
                 .build());
     assertThat(protoSpan.getDroppedLinksCount()).isEqualTo(1); // 2 - 1
+    assertThat(protoSpan.getStatus())
+        .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).build());
+  }
+
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void toProtoSpan_withRemoteParent(MarshalerSource marshalerSource) {
+    Span protoSpan =
+        parse(
+            Span.getDefaultInstance(),
+            marshalerSource.create(
+                TestSpanData.builder()
+                    .setHasEnded(true)
+                    .setSpanContext(SPAN_CONTEXT)
+                    .setParentSpanContext(PARENT_SPAN_CONTEXT)
+                    .setName("GET /api/endpoint")
+                    .setKind(SpanKind.SERVER)
+                    .setStartEpochNanos(12345)
+                    .setEndEpochNanos(12349)
+                    .setStatus(StatusData.ok())
+                    .build()));
+
+    assertThat(protoSpan.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
+    assertThat(protoSpan.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
+    assertThat(protoSpan.getFlags() & 0xff)
+        .isEqualTo((SPAN_CONTEXT.getTraceFlags().asByte() & 0xff));
+    assertThat(SpanFlags.isKnownWhetherParentIsRemote(protoSpan.getFlags())).isTrue();
+    assertThat(SpanFlags.isParentRemote(protoSpan.getFlags())).isTrue();
+    assertThat(protoSpan.getTraceState()).isEqualTo(TRACE_STATE_VALUE);
+    assertThat(protoSpan.getParentSpanId().toByteArray()).isEqualTo(PARENT_SPAN_ID_BYTES);
+    assertThat(protoSpan.getName()).isEqualTo("GET /api/endpoint");
+    assertThat(protoSpan.getKind()).isEqualTo(SPAN_KIND_SERVER);
+    assertThat(protoSpan.getStartTimeUnixNano()).isEqualTo(12345);
+    assertThat(protoSpan.getEndTimeUnixNano()).isEqualTo(12349);
     assertThat(protoSpan.getStatus())
         .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).build());
   }
@@ -249,9 +300,10 @@ class TraceRequestMarshalerTest {
         .isEqualTo(io.opentelemetry.proto.trace.v1.internal.Span.SpanKind.SPAN_KIND_CONSUMER);
   }
 
-  @Test
-  void toProtoStatus() {
-    assertThat(parse(Status.getDefaultInstance(), SpanStatusMarshaler.create(StatusData.unset())))
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void toProtoStatus(MarshalerSource marshalerSource) {
+    assertThat(parse(Status.getDefaultInstance(), marshalerSource.create(StatusData.unset())))
         .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_UNSET).build());
     assertThat(
             parse(
@@ -270,12 +322,13 @@ class TraceRequestMarshalerTest {
         .isEqualTo(Status.newBuilder().setCode(STATUS_CODE_OK).setMessage("OK_OVERRIDE").build());
   }
 
-  @Test
-  void toProtoSpanEvent_WithoutAttributes() {
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void toProtoSpanEvent_WithoutAttributes(MarshalerSource marshalerSource) {
     assertThat(
             parse(
                 Span.Event.getDefaultInstance(),
-                SpanEventMarshaler.create(
+                marshalerSource.create(
                     EventData.create(12345, "test_without_attributes", Attributes.empty()))))
         .isEqualTo(
             Span.Event.newBuilder()
@@ -284,12 +337,13 @@ class TraceRequestMarshalerTest {
                 .build());
   }
 
-  @Test
-  void toProtoSpanEvent_WithAttributes() {
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void toProtoSpanEvent_WithAttributes(MarshalerSource marshalerSource) {
     assertThat(
             parse(
                 Span.Event.getDefaultInstance(),
-                SpanEventMarshaler.create(
+                marshalerSource.create(
                     EventData.create(
                         12345,
                         "test_with_attributes",
@@ -308,34 +362,57 @@ class TraceRequestMarshalerTest {
                 .build());
   }
 
-  @Test
-  void toProtoSpanLink_WithoutAttributes() {
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void toProtoSpanLink_WithoutAttributes(MarshalerSource marshalerSource) {
     assertThat(
             parse(
                 Span.Link.getDefaultInstance(),
-                SpanLinkMarshaler.create(LinkData.create(SPAN_CONTEXT))))
+                marshalerSource.create(LinkData.create(SPAN_CONTEXT))))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
-                .setFlags(SPAN_CONTEXT.getTraceFlags().asByte())
+                .setFlags(
+                    (SPAN_CONTEXT.getTraceFlags().asByte() & 0xff)
+                        | SpanFlags.getHasParentIsRemoteMask())
                 .setTraceState(TRACE_STATE_VALUE)
                 .build());
   }
 
-  @Test
-  void toProtoSpanLink_WithAttributes() {
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void toProtoSpanLink_WithRemoteContext(MarshalerSource marshalerSource) {
     assertThat(
             parse(
                 Span.Link.getDefaultInstance(),
-                SpanLinkMarshaler.create(
+                marshalerSource.create(LinkData.create(PARENT_SPAN_CONTEXT))))
+        .isEqualTo(
+            Span.Link.newBuilder()
+                .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
+                .setSpanId(ByteString.copyFrom(PARENT_SPAN_ID_BYTES))
+                .setFlags(
+                    (SPAN_CONTEXT.getTraceFlags().asByte() & 0xff)
+                        | SpanFlags.getParentIsRemoteMask())
+                .build());
+  }
+
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void toProtoSpanLink_WithAttributes(MarshalerSource marshalerSource) {
+    assertThat(
+            parse(
+                Span.Link.getDefaultInstance(),
+                marshalerSource.create(
                     LinkData.create(
                         SPAN_CONTEXT, Attributes.of(stringKey("key_string"), "string"), 5))))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
                 .setSpanId(ByteString.copyFrom(SPAN_ID_BYTES))
-                .setFlags(SPAN_CONTEXT.getTraceFlags().asByte())
+                .setFlags(
+                    (SPAN_CONTEXT.getTraceFlags().asByte() & 0xff)
+                        | SpanFlags.getHasParentIsRemoteMask())
                 .setTraceState(TRACE_STATE_VALUE)
                 .addAttributes(
                     KeyValue.newBuilder()
@@ -431,7 +508,6 @@ class TraceRequestMarshalerTest {
   }
 
   private static String toJson(Marshaler marshaler) {
-
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     try {
       marshaler.writeJsonTo(bos);
@@ -439,5 +515,76 @@ class TraceRequestMarshalerTest {
       throw new UncheckedIOException(e);
     }
     return new String(bos.toByteArray(), StandardCharsets.UTF_8);
+  }
+
+  private static <T> Marshaler createMarshaler(StatelessMarshaler<T> marshaler, T data) {
+    return new Marshaler() {
+      private final MarshalerContext context = new MarshalerContext();
+      private final int size = marshaler.getBinarySerializedSize(data, context);
+
+      @Override
+      public int getBinarySerializedSize() {
+        return size;
+      }
+
+      @Override
+      protected void writeTo(Serializer output) throws IOException {
+        context.resetReadIndex();
+        marshaler.writeTo(output, data, context);
+      }
+    };
+  }
+
+  private enum MarshalerSource {
+    STATEFUL_MARSHALER {
+      @Override
+      Marshaler create(SpanData spanData) {
+        return SpanMarshaler.create(spanData);
+      }
+
+      @Override
+      Marshaler create(StatusData statusData) {
+        return SpanStatusMarshaler.create(statusData);
+      }
+
+      @Override
+      Marshaler create(EventData eventData) {
+        return SpanEventMarshaler.create(eventData);
+      }
+
+      @Override
+      Marshaler create(LinkData linkData) {
+        return SpanLinkMarshaler.create(linkData);
+      }
+    },
+    STATELESS_MARSHALER {
+      @Override
+      Marshaler create(SpanData spanData) {
+        return createMarshaler(SpanStatelessMarshaler.INSTANCE, spanData);
+      }
+
+      @Override
+      Marshaler create(StatusData statusData) {
+        return createMarshaler(SpanStatusStatelessMarshaler.INSTANCE, statusData);
+      }
+
+      @Override
+      Marshaler create(EventData eventData) {
+        return createMarshaler(SpanEventStatelessMarshaler.INSTANCE, eventData);
+      }
+
+      @Override
+      Marshaler create(LinkData linkData) {
+        return createMarshaler(SpanLinkStatelessMarshaler.INSTANCE, linkData);
+      }
+    };
+
+    abstract Marshaler create(SpanData spanData);
+
+    abstract Marshaler create(StatusData statusData);
+
+    abstract Marshaler create(EventData eventData);
+
+    abstract Marshaler create(LinkData linkData);
   }
 }

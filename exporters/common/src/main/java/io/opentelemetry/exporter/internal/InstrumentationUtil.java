@@ -6,16 +6,16 @@
 package io.opentelemetry.exporter.internal;
 
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.ContextKey;
-import java.util.Objects;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
- * any time.
+ * any time
+ *
+ * @deprecated use {@link io.opentelemetry.api.internal.InstrumentationUtil} instead. This class
+ *     should be removed once instrumentation does not refer to it anymore.
  */
+@Deprecated
 public final class InstrumentationUtil {
-  private static final ContextKey<Boolean> SUPPRESS_INSTRUMENTATION_KEY =
-      ContextKey.named("suppress_internal_exporter_instrumentation");
 
   private InstrumentationUtil() {}
 
@@ -25,7 +25,7 @@ public final class InstrumentationUtil {
    * calls.
    */
   public static void suppressInstrumentation(Runnable runnable) {
-    Context.current().with(SUPPRESS_INSTRUMENTATION_KEY, true).wrap(runnable).run();
+    io.opentelemetry.api.internal.InstrumentationUtil.suppressInstrumentation(runnable);
   }
 
   /**
@@ -35,6 +35,6 @@ public final class InstrumentationUtil {
    *     instrumentation.
    */
   public static boolean shouldSuppressInstrumentation(Context context) {
-    return Objects.equals(context.get(SUPPRESS_INSTRUMENTATION_KEY), true);
+    return io.opentelemetry.api.internal.InstrumentationUtil.shouldSuppressInstrumentation(context);
   }
 }
