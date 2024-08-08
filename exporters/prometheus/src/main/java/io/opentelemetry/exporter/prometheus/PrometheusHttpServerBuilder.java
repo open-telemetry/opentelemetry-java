@@ -10,6 +10,9 @@ import static java.util.Objects.requireNonNull;
 
 import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,6 +34,8 @@ public final class PrometheusHttpServerBuilder {
   @Nullable private ExecutorService executor;
   private MemoryMode memoryMode = DEFAULT_MEMORY_MODE;
   @Nullable private HttpHandler defaultHandler;
+  private DefaultAggregationSelector defaultAggregationSelector =
+      DefaultAggregationSelector.getDefault();
 
   PrometheusHttpServerBuilder() {}
 
@@ -41,6 +46,7 @@ public final class PrometheusHttpServerBuilder {
     this.otelScopeEnabled = builder.otelScopeEnabled;
     this.allowedResourceAttributesFilter = builder.allowedResourceAttributesFilter;
     this.executor = builder.executor;
+    this.defaultAggregationSelector = builder.defaultAggregationSelector;
   }
 
   /** Sets the host to bind to. If unset, defaults to {@value #DEFAULT_HOST}. */
@@ -127,6 +133,19 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /**
+   * Set the {@link DefaultAggregationSelector} used for {@link
+   * MetricExporter#getDefaultAggregation(InstrumentType)}.
+   *
+   * <p>If unset, defaults to {@link DefaultAggregationSelector#getDefault()}.
+   */
+  public PrometheusHttpServerBuilder setDefaultAggregationSelector(
+      DefaultAggregationSelector defaultAggregationSelector) {
+    requireNonNull(defaultAggregationSelector, "defaultAggregationSelector");
+    this.defaultAggregationSelector = defaultAggregationSelector;
+    return this;
+  }
+
+  /**
    * Returns a new {@link PrometheusHttpServer} with the configuration of this builder which can be
    * registered with a {@link io.opentelemetry.sdk.metrics.SdkMeterProvider}.
    */
@@ -140,6 +159,7 @@ public final class PrometheusHttpServerBuilder {
         otelScopeEnabled,
         allowedResourceAttributesFilter,
         memoryMode,
-        defaultHandler);
+        defaultHandler,
+        defaultAggregationSelector);
   }
 }
