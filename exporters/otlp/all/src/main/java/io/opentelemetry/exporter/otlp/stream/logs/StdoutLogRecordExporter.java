@@ -1,0 +1,67 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.exporter.otlp.stream.logs;
+
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.otlp.internal.OtlpExporter;
+import io.opentelemetry.exporter.otlp.internal.OtlpLogRecordExporter;
+import io.opentelemetry.exporter.otlp.stream.StreamExporterBuilder;
+import io.opentelemetry.sdk.common.export.MemoryMode;
+import java.util.StringJoiner;
+import javax.annotation.concurrent.ThreadSafe;
+
+/** Exports logs using OTLP via gRPC, using OpenTelemetry's protobuf model. */
+@ThreadSafe
+public final class StdoutLogRecordExporter extends OtlpLogRecordExporter {
+
+  private final StreamExporterBuilder<Marshaler> builder;
+
+  /**
+   * Returns a new {@link StdoutLogRecordExporter} using the default values.
+   *
+   * <p>To load configuration values from environment variables and system properties, use <a
+   * href="https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure">opentelemetry-sdk-extension-autoconfigure</a>.
+   *
+   * @return a new {@link StdoutLogRecordExporter} instance.
+   */
+  public static StdoutLogRecordExporter getDefault() {
+    return builder().build();
+  }
+
+  /**
+   * Returns a new builder instance for this exporter.
+   *
+   * @return a new builder instance for this exporter.
+   */
+  public static StdoutLogRecordExporterBuilder builder() {
+    return new StdoutLogRecordExporterBuilder();
+  }
+
+  StdoutLogRecordExporter(
+      StreamExporterBuilder<Marshaler> builder,
+      OtlpExporter<Marshaler> delegate,
+      MemoryMode memoryMode) {
+    super(delegate, memoryMode);
+    this.builder = builder;
+  }
+
+  /**
+   * Returns a builder with configuration values equal to those for this exporter.
+   *
+   * <p>IMPORTANT: Be sure to {@link #shutdown()} this instance if it will no longer be used.
+   */
+  public StdoutLogRecordExporterBuilder toBuilder() {
+    return new StdoutLogRecordExporterBuilder(builder.copy(), memoryMode);
+  }
+
+  @Override
+  public String toString() {
+    StringJoiner joiner = new StringJoiner(", ", "OtlpGrpcLogRecordExporter{", "}");
+    joiner.add(builder.toString(false));
+    joiner.add("memoryMode=" + memoryMode);
+    return joiner.toString();
+  }
+}

@@ -20,11 +20,14 @@ dependencies {
   implementation(project(":exporters:sender:okhttp"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
 
+  implementation("com.fasterxml.jackson.core:jackson-core")
+
   compileOnly("io.grpc:grpc-stub")
 
   testImplementation(project(":exporters:otlp:testing-internal"))
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("io.grpc:grpc-stub")
+  testImplementation("org.skyscreamer:jsonassert")
 
   jmhImplementation(project(":sdk:testing"))
   jmhImplementation(project(":exporters:sender:grpc-managed-channel"))
