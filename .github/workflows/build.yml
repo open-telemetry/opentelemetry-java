@@ -61,10 +61,11 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/actions/setup-gradle@v3
-        with:
-          arguments: |
-            build
+      - name: Set up gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Build
+        run: >
+            ./gradlew build
             ${{ matrix.coverage && 'jacocoTestReport' || '' }}
             -PtestJavaVersion=${{ matrix.test-java-version }}
             -Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }},${{ steps.setup-java.outputs.path }}
@@ -134,12 +135,16 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/actions/setup-gradle@v3
+      - name: Set up gradle
+        uses: gradle/actions/setup-gradle@v4
         # skipping release branches because the versions in those branches are not snapshots
         # (also this skips pull requests)
         if: ${{ github.ref_name == 'main' && github.repository == 'open-telemetry/opentelemetry-java' }}
-        with:
-          arguments: assemble publishToSonatype
+      - name: Publish to Sonatype
+        run: ./gradlew assemble publishToSonatype
+        # skipping release branches because the versions in those branches are not snapshots
+        # (also this skips pull requests)
+        if: ${{ github.ref_name == 'main' && github.repository == 'open-telemetry/opentelemetry-java' }}
         env:
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}

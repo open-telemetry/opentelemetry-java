@@ -7,20 +7,13 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static java.util.stream.Collectors.joining;
 
-import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.Closeable;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 final class MetricExporterFactory
     implements Factory<
@@ -35,107 +28,46 @@ final class MetricExporterFactory
     return INSTANCE;
   }
 
-  @SuppressWarnings("NullAway") // Override superclass non-null response
   @Override
-  @Nullable
   public MetricExporter create(
-      @Nullable
-          io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporter model,
+      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporter model,
       SpiHelper spiHelper,
       List<Closeable> closeables) {
-    if (model == null) {
-      return null;
-    }
-
     OtlpMetric otlpModel = model.getOtlp();
     if (otlpModel != null) {
-      return FileConfigUtil.addAndReturn(closeables, createOtlpExporter(otlpModel, spiHelper));
+      model.getAdditionalProperties().put("otlp", otlpModel);
     }
 
     if (model.getConsole() != null) {
-      return FileConfigUtil.addAndReturn(closeables, createConsoleExporter(spiHelper));
+      model.getAdditionalProperties().put("console", model.getConsole());
     }
 
     if (model.getPrometheus() != null) {
       throw new ConfigurationException("prometheus exporter not supported in this context");
     }
 
-    // TODO(jack-berg): add support for generic SPI exporters
     if (!model.getAdditionalProperties().isEmpty()) {
-      throw new ConfigurationException(
-          "Unrecognized metric exporter(s): "
-              + model.getAdditionalProperties().keySet().stream().collect(joining(",", "[", "]")));
+      Map<String, Object> additionalProperties = model.getAdditionalProperties();
+      if (additionalProperties.size() > 1) {
+        throw new ConfigurationException(
+            "Invalid configuration - multiple metric exporters set: "
+                + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
+      }
+      Map.Entry<String, Object> exporterKeyValue =
+          additionalProperties.entrySet().stream()
+              .findFirst()
+              .orElseThrow(
+                  () ->
+                      new IllegalStateException("Missing exporter. This is a programming error."));
+      MetricExporter metricExporter =
+          FileConfigUtil.loadComponent(
+              spiHelper,
+              MetricExporter.class,
+              exporterKeyValue.getKey(),
+              exporterKeyValue.getValue());
+      return FileConfigUtil.addAndReturn(closeables, metricExporter);
+    } else {
+      throw new ConfigurationException("metric exporter must be set");
     }
-
-    return null;
-  }
-
-  private static MetricExporter createOtlpExporter(OtlpMetric model, SpiHelper spiHelper) {
-    // Translate from file configuration scheme to environment variable scheme. This is ultimately
-    // interpreted by Otlp*ExporterProviders, but we want to avoid the dependency on
-    // opentelemetry-exporter-otlp
-    Map<String, String> properties = new HashMap<>();
-    if (model.getProtocol() != null) {
-      properties.put("otel.exporter.otlp.metrics.protocol", model.getProtocol());
-    }
-    if (model.getEndpoint() != null) {
-      // NOTE: Set general otel.exporter.otlp.endpoint instead of signal specific
-      // otel.exporter.otlp.metrics.endpoint to allow signal path (i.e. /v1/metrics) to be added
-      // if not
-      // present
-      properties.put("otel.exporter.otlp.endpoint", model.getEndpoint());
-    }
-    if (model.getHeaders() != null) {
-      properties.put(
-          "otel.exporter.otlp.metrics.headers",
-          model.getHeaders().getAdditionalProperties().entrySet().stream()
-              .map(entry -> entry.getKey() + "=" + entry.getValue())
-              .collect(joining(",")));
-    }
-    if (model.getCompression() != null) {
-      properties.put("otel.exporter.otlp.metrics.compression", model.getCompression());
-    }
-    if (model.getTimeout() != null) {
-      properties.put("otel.exporter.otlp.metrics.timeout", Integer.toString(model.getTimeout()));
-    }
-    if (model.getCertificate() != null) {
-      properties.put("otel.exporter.otlp.metrics.certificate", model.getCertificate());
-    }
-    if (model.getClientKey() != null) {
-      properties.put("otel.exporter.otlp.metrics.client.key", model.getClientKey());
-    }
-    if (model.getClientCertificate() != null) {
-      properties.put("otel.exporter.otlp.metrics.client.certificate", model.getClientCertificate());
-    }
-    if (model.getDefaultHistogramAggregation() != null) {
-      properties.put(
-          "otel.exporter.otlp.metrics.default.histogram.aggregation",
-          model.getDefaultHistogramAggregation().value());
-    }
-    if (model.getTemporalityPreference() != null) {
-      properties.put(
-          "otel.exporter.otlp.metrics.temporality.preference", model.getTemporalityPreference());
-    }
-
-    ConfigProperties configProperties = DefaultConfigProperties.createFromMap(properties);
-    return FileConfigUtil.assertNotNull(
-        metricExporterSpiManager(configProperties, spiHelper).getByName("otlp"), "otlp exporter");
-  }
-
-  private static MetricExporter createConsoleExporter(SpiHelper spiHelper) {
-    return FileConfigUtil.assertNotNull(
-        metricExporterSpiManager(
-                DefaultConfigProperties.createFromMap(Collections.emptyMap()), spiHelper)
-            .getByName("logging"),
-        "logging exporter");
-  }
-
-  private static NamedSpiManager<MetricExporter> metricExporterSpiManager(
-      ConfigProperties config, SpiHelper spiHelper) {
-    return spiHelper.loadConfigurable(
-        ConfigurableMetricExporterProvider.class,
-        ConfigurableMetricExporterProvider::getName,
-        ConfigurableMetricExporterProvider::createExporter,
-        config);
   }
 }

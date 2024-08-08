@@ -5,13 +5,14 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNonNull;
+
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Propagator;
 import java.io.Closeable;
 import java.util.List;
-import javax.annotation.Nullable;
 
 final class PropagatorFactory implements Factory<Propagator, ContextPropagators> {
 
@@ -25,11 +26,8 @@ final class PropagatorFactory implements Factory<Propagator, ContextPropagators>
 
   @Override
   public ContextPropagators create(
-      @Nullable Propagator model, SpiHelper spiHelper, List<Closeable> closeables) {
-    List<String> compositeModel = null;
-    if (model != null) {
-      compositeModel = model.getComposite();
-    }
+      Propagator model, SpiHelper spiHelper, List<Closeable> closeables) {
+    List<String> compositeModel = requireNonNull(model.getComposite(), "composite propagator");
     TextMapPropagator textMapPropagator =
         TextMapPropagatorFactory.getInstance().create(compositeModel, spiHelper, closeables);
     return ContextPropagators.create(textMapPropagator);

@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
@@ -102,7 +103,7 @@ public class HttpLogRecordExporterBuilderWrapper
   }
 
   @Override
-  public TelemetryExporterBuilder<LogRecordData> setRetryPolicy(RetryPolicy retryPolicy) {
+  public TelemetryExporterBuilder<LogRecordData> setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
     builder.setRetryPolicy(retryPolicy);
     return this;
   }

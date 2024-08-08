@@ -9,6 +9,7 @@ import static io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -77,6 +78,22 @@ public final class ExporterBuilderUtil {
       throw new ConfigurationException(
           "Unrecognized default histogram aggregation: " + defaultHistogramAggregation);
     }
+  }
+
+  /** Invoke the {@code memoryModeConsumer} with the configured {@link MemoryMode}. */
+  public static void configureExporterMemoryMode(
+      StructuredConfigProperties config, Consumer<MemoryMode> memoryModeConsumer) {
+    String memoryModeStr = config.getString("memory_mode");
+    if (memoryModeStr == null) {
+      return;
+    }
+    MemoryMode memoryMode;
+    try {
+      memoryMode = MemoryMode.valueOf(memoryModeStr.toUpperCase(Locale.ROOT));
+    } catch (IllegalArgumentException e) {
+      throw new ConfigurationException("Unrecognized memory_mode: " + memoryModeStr, e);
+    }
+    memoryModeConsumer.accept(memoryMode);
   }
 
   private ExporterBuilderUtil() {}

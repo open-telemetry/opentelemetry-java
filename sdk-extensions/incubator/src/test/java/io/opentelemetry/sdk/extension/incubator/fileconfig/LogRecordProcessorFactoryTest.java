@@ -34,33 +34,16 @@ class LogRecordProcessorFactoryTest {
       SpiHelper.create(LogRecordProcessorFactoryTest.class.getClassLoader());
 
   @Test
-  void create_Null() {
-    List<Closeable> closeables = new ArrayList<>();
-
-    io.opentelemetry.sdk.logs.LogRecordProcessor processor =
-        LogRecordProcessorFactory.getInstance().create(null, spiHelper, Collections.emptyList());
-    cleanup.addCloseable(processor);
-    cleanup.addCloseables(closeables);
-
-    assertThat(processor.toString())
-        .isEqualTo(io.opentelemetry.sdk.logs.LogRecordProcessor.composite().toString());
-  }
-
-  @Test
   void create_BatchNullExporter() {
-    List<Closeable> closeables = new ArrayList<>();
-
-    io.opentelemetry.sdk.logs.LogRecordProcessor processor =
-        LogRecordProcessorFactory.getInstance()
-            .create(
-                new LogRecordProcessor().withBatch(new BatchLogRecordProcessor()),
-                spiHelper,
-                Collections.emptyList());
-    cleanup.addCloseable(processor);
-    cleanup.addCloseables(closeables);
-
-    assertThat(processor.toString())
-        .isEqualTo(io.opentelemetry.sdk.logs.LogRecordProcessor.composite().toString());
+    assertThatThrownBy(
+            () ->
+                LogRecordProcessorFactory.getInstance()
+                    .create(
+                        new LogRecordProcessor().withBatch(new BatchLogRecordProcessor()),
+                        spiHelper,
+                        Collections.emptyList()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("batch log record processor exporter is required but is null");
   }
 
   @Test
@@ -119,19 +102,15 @@ class LogRecordProcessorFactoryTest {
 
   @Test
   void create_SimpleNullExporter() {
-    List<Closeable> closeables = new ArrayList<>();
-
-    io.opentelemetry.sdk.logs.LogRecordProcessor processor =
-        LogRecordProcessorFactory.getInstance()
-            .create(
-                new LogRecordProcessor().withSimple(new SimpleLogRecordProcessor()),
-                spiHelper,
-                Collections.emptyList());
-    cleanup.addCloseable(processor);
-    cleanup.addCloseables(closeables);
-
-    assertThat(processor.toString())
-        .isEqualTo(io.opentelemetry.sdk.logs.LogRecordProcessor.composite().toString());
+    assertThatThrownBy(
+            () ->
+                LogRecordProcessorFactory.getInstance()
+                    .create(
+                        new LogRecordProcessor().withSimple(new SimpleLogRecordProcessor()),
+                        spiHelper,
+                        Collections.emptyList()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("simple log record processor exporter is required but is null");
   }
 
   @Test
