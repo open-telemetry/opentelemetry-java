@@ -22,14 +22,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class AttributesFactoryTest {
 
-  @Test
-  void create_Null() {
-    assertThat(
-            AttributesFactory.getInstance()
-                .create(null, mock(SpiHelper.class), Collections.emptyList()))
-        .isEqualTo(io.opentelemetry.api.common.Attributes.empty());
-  }
-
   @ParameterizedTest
   @MethodSource("invalidAttributes")
   void create_InvalidAttributes(Attributes model, String expectedMessage) {
