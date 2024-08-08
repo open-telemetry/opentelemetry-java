@@ -24,12 +24,15 @@
 
 #### Exporter
 
+* Enable retry by default for OTLP exporters.
+  ([#6588](https://github.com/open-telemetry/opentelemetry-java/pull/6588))
+* Extend `PrometheusHttpServer` with ability to configure default aggregation as function of
+  instrument kind, including experimental env var support.
+  ([#6541](https://github.com/open-telemetry/opentelemetry-java/pull/6541))
 * Add exporter data model impl for profiling signal type.
   ([#6498](https://github.com/open-telemetry/opentelemetry-java/pull/6498))
 * Add Marshalers for profiling signal type.
   ([#6565](https://github.com/open-telemetry/opentelemetry-java/pull/6565))
-* Enable retry by default for OTLP exporters.
-  ([#6588](https://github.com/open-telemetry/opentelemetry-java/pull/6588))
 * Use generateCertificates() of CertificateFactory to process certificates.
   ([#6579](https://github.com/open-telemetry/opentelemetry-java/pull/6579))
 
