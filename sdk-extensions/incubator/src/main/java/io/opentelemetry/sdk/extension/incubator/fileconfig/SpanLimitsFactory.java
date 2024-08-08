@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLi
 import io.opentelemetry.sdk.trace.SpanLimitsBuilder;
 import java.io.Closeable;
 import java.util.List;
-import javax.annotation.Nullable;
 
 final class SpanLimitsFactory
     implements Factory<SpanLimitsAndAttributeLimits, io.opentelemetry.sdk.trace.SpanLimits> {
@@ -26,13 +25,7 @@ final class SpanLimitsFactory
 
   @Override
   public io.opentelemetry.sdk.trace.SpanLimits create(
-      @Nullable SpanLimitsAndAttributeLimits model,
-      SpiHelper spiHelper,
-      List<Closeable> closeables) {
-    if (model == null) {
-      return io.opentelemetry.sdk.trace.SpanLimits.getDefault();
-    }
-
+      SpanLimitsAndAttributeLimits model, SpiHelper spiHelper, List<Closeable> closeables) {
     SpanLimitsBuilder builder = io.opentelemetry.sdk.trace.SpanLimits.builder();
 
     AttributeLimits attributeLimitsModel = model.getAttributeLimits();

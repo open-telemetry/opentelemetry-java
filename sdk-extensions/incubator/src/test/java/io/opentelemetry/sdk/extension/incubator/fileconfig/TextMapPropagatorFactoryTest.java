@@ -44,10 +44,6 @@ class TextMapPropagatorFactoryTest {
   private static Stream<Arguments> createArguments() {
     return Stream.of(
         Arguments.of(
-            null,
-            TextMapPropagator.composite(
-                W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())),
-        Arguments.of(
             Collections.emptyList(),
             TextMapPropagator.composite(
                 W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())),

@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nullable;
 
 final class TextMapPropagatorFactory implements Factory<List<String>, TextMapPropagator> {
 
@@ -29,8 +28,8 @@ final class TextMapPropagatorFactory implements Factory<List<String>, TextMapPro
 
   @Override
   public TextMapPropagator create(
-      @Nullable List<String> model, SpiHelper spiHelper, List<Closeable> closeables) {
-    if (model == null || model.isEmpty()) {
+      List<String> model, SpiHelper spiHelper, List<Closeable> closeables) {
+    if (model.isEmpty()) {
       model = Arrays.asList("tracecontext", "baggage");
     }
 

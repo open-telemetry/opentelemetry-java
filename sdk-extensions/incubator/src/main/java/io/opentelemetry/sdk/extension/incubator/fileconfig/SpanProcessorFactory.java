@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.List;
-import javax.annotation.Nullable;
 
 final class SpanProcessorFactory
     implements Factory<
@@ -34,23 +33,16 @@ final class SpanProcessorFactory
 
   @Override
   public SpanProcessor create(
-      @Nullable
-          io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessor model,
+      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessor model,
       SpiHelper spiHelper,
       List<Closeable> closeables) {
-    if (model == null) {
-      return SpanProcessor.composite();
-    }
-
     io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessor
         batchModel = model.getBatch();
     if (batchModel != null) {
-      SpanExporter exporterModel = batchModel.getExporter();
+      SpanExporter exporterModel =
+          FileConfigUtil.requireNonNull(batchModel.getExporter(), "batch span processor exporter");
       io.opentelemetry.sdk.trace.export.SpanExporter spanExporter =
           SpanExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
-      if (spanExporter == null) {
-        throw new ConfigurationException("exporter required for batch span processor");
-      }
       BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(spanExporter);
       if (batchModel.getExportTimeout() != null) {
         builder.setExporterTimeout(Duration.ofMillis(batchModel.getExportTimeout()));
@@ -70,12 +62,11 @@ final class SpanProcessorFactory
     io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessor
         simpleModel = model.getSimple();
     if (simpleModel != null) {
-      SpanExporter exporterModel = simpleModel.getExporter();
+      SpanExporter exporterModel =
+          FileConfigUtil.requireNonNull(
+              simpleModel.getExporter(), "simple span processor exporter");
       io.opentelemetry.sdk.trace.export.SpanExporter spanExporter =
           SpanExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
-      if (spanExporter == null) {
-        throw new ConfigurationException("exporter required for simple span processor");
-      }
       return FileConfigUtil.addAndReturn(closeables, SimpleSpanProcessor.create(spanExporter));
     }
 
@@ -84,8 +75,8 @@ final class SpanProcessorFactory
       throw new ConfigurationException(
           "Unrecognized span processor(s): "
               + model.getAdditionalProperties().keySet().stream().collect(joining(",", "[", "]")));
+    } else {
+      throw new ConfigurationException("span processor must be set");
     }
-
-    return SpanProcessor.composite();
   }
 }
