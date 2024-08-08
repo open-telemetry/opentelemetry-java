@@ -1,2 +1,7 @@
 Comparing source compatibility of opentelemetry-sdk-common-1.41.0-SNAPSHOT.jar against opentelemetry-sdk-common-1.40.0.jar
-No changes.
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.common.CompletableResultCode  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode failExceptionally(java.lang.Throwable)
+	+++  NEW METHOD: PUBLIC(+) java.lang.Throwable getFailureThrowable()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.CompletableResultCode ofExceptionalFailure(java.lang.Throwable)
