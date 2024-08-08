@@ -36,7 +36,6 @@ public class StreamExporter<T extends Marshaler> implements OtlpExporter<T> {
     }
     try {
       exportRequest.writeJsonTo(outputStream);
-      outputStream.flush();
       return CompletableResultCode.ofSuccess();
     } catch (IOException e) {
       logger.log(Level.WARNING, "Failed to export items", e);
@@ -50,5 +49,15 @@ public class StreamExporter<T extends Marshaler> implements OtlpExporter<T> {
       logger.log(Level.INFO, "Calling shutdown() multiple times.");
     }
     return CompletableResultCode.ofSuccess();
+  }
+
+  public CompletableResultCode flush() {
+    try {
+      outputStream.flush();
+      return CompletableResultCode.ofSuccess();
+    } catch (IOException e) {
+      logger.log(Level.WARNING, "Failed to flush items", e);
+      return CompletableResultCode.ofFailure();
+    }
   }
 }

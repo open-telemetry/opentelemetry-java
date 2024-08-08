@@ -6,18 +6,25 @@
 package io.opentelemetry.exporter.otlp.stream.logs;
 
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.otlp.internal.OtlpExporter;
 import io.opentelemetry.exporter.otlp.internal.OtlpLogRecordExporter;
+import io.opentelemetry.exporter.otlp.stream.StreamExporter;
 import io.opentelemetry.exporter.otlp.stream.StreamExporterBuilder;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import java.util.Collection;
 import java.util.StringJoiner;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Exports logs using OTLP via gRPC, using OpenTelemetry's protobuf model. */
 @ThreadSafe
-public final class StdoutLogRecordExporter extends OtlpLogRecordExporter {
+public final class StdoutLogRecordExporter implements LogRecordExporter {
 
   private final StreamExporterBuilder<Marshaler> builder;
+
+  private final OtlpLogRecordExporter otlpExporter;
+  private final StreamExporter<Marshaler> streamExporter;
 
   /**
    * Returns a new {@link StdoutLogRecordExporter} using the default values.
@@ -42,9 +49,10 @@ public final class StdoutLogRecordExporter extends OtlpLogRecordExporter {
 
   StdoutLogRecordExporter(
       StreamExporterBuilder<Marshaler> builder,
-      OtlpExporter<Marshaler> delegate,
+      StreamExporter<Marshaler> streamExporter,
       MemoryMode memoryMode) {
-    super(delegate, memoryMode);
+    this.streamExporter = streamExporter;
+    this.otlpExporter = new OtlpLogRecordExporter(streamExporter, memoryMode);
     this.builder = builder;
   }
 
@@ -54,14 +62,29 @@ public final class StdoutLogRecordExporter extends OtlpLogRecordExporter {
    * <p>IMPORTANT: Be sure to {@link #shutdown()} this instance if it will no longer be used.
    */
   public StdoutLogRecordExporterBuilder toBuilder() {
-    return new StdoutLogRecordExporterBuilder(builder.copy(), memoryMode);
+    return new StdoutLogRecordExporterBuilder(builder.copy(), otlpExporter.getMemoryMode());
   }
 
   @Override
   public String toString() {
     StringJoiner joiner = new StringJoiner(", ", "OtlpGrpcLogRecordExporter{", "}");
     joiner.add(builder.toString(false));
-    joiner.add("memoryMode=" + memoryMode);
+    joiner.add("memoryMode=" + otlpExporter.getMemoryMode());
     return joiner.toString();
+  }
+
+  @Override
+  public CompletableResultCode export(Collection<LogRecordData> logs) {
+    return otlpExporter.export(logs);
+  }
+
+  @Override
+  public CompletableResultCode flush() {
+    return streamExporter.flush();
+  }
+
+  @Override
+  public CompletableResultCode shutdown() {
+    return streamExporter.shutdown();
   }
 }
