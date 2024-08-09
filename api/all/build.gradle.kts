@@ -12,7 +12,6 @@ base.archivesName.set("opentelemetry-api")
 
 dependencies {
   api(project(":context"))
-  implementation(project(":api:incubator"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 

@@ -1,0 +1,38 @@
+[
+  {
+    "methods": [
+      {
+        "name": "getInstance",
+        "parameterTypes": []
+      }
+    ],
+    "name": "io.opentelemetry.api.incubator.logs.ExtendedDefaultLoggerProvider"
+  },
+  {
+    "methods": [
+      {
+        "name": "getInstance",
+        "parameterTypes": []
+      }
+    ],
+    "name": "io.opentelemetry.api.incubator.metrics.ExtendedDefaultMeterProvider"
+  },
+  {
+    "methods": [
+      {
+        "name": "getInstance",
+        "parameterTypes": []
+      }
+    ],
+    "name": "io.opentelemetry.api.incubator.trace.ExtendedDefaultTracerProvider"
+  },
+  {
+    "methods": [
+      {
+        "name": "getInstance",
+        "parameterTypes": []
+      }
+    ],
+    "name": "io.opentelemetry.api.incubator.ExtendedDefaultOpenTelemetry"
+  }
+]
