@@ -21,58 +21,48 @@ import javax.annotation.Nullable;
 @SuppressWarnings("unchecked")
 final class FilteredAttributes implements Attributes {
 
+  private static final int BITS_PER_WORD = 8;
+
+  private final byte[] words;
   private final Object[] sourceData;
-  private final BitSet filteredIndices;
-  private final int size;
   private final int hashcode;
 
   private FilteredAttributes(
       ImmutableKeyValuePairs<AttributeKey<?>, Object> source, Set<AttributeKey<?>> keys) {
     this.sourceData = source.getData();
-    this.filteredIndices = new BitSet(source.size());
+    this.words = new byte[wordIndex(source.size() - 1) + 1];
     // Record the indices to filter.
     // Compute hashcode inline to avoid iteration later
     int hashcode = 1;
     for (int i = 0; i < sourceData.length; i += 2) {
       if (!keys.contains(sourceData[i])) {
-        filteredIndices.set(i / 2);
+        set(i / 2);
       } else {
         hashcode = 31 * hashcode + sourceData[i].hashCode();
         hashcode = 31 * hashcode + sourceData[i + 1].hashCode();
       }
     }
     this.hashcode = hashcode;
-    this.size = sourceData.length / 2 - filteredIndices.cardinality();
   }
 
   static Attributes create(Attributes source, Set<AttributeKey<?>> keys) {
     if (keys.isEmpty()) {
       return source;
     }
-    if (!hasExtraKeys(source, keys)) {
-      return source;
+    if (!(source instanceof ImmutableKeyValuePairs)) {
+      // convert alternative implementations of attributes to standard implementation and wrap with
+      // FilteredAttributes
+      // this is required for proper funcitoning of equals and hashcode
+      AttributesBuilder builder = Attributes.builder();
+      source.forEach(
+          (key, value) -> putInBuilder(builder, (AttributeKey<? super Object>) key, value));
+      source = builder.build();
     }
-    if (source instanceof ImmutableKeyValuePairs) {
-      return new FilteredAttributes((ImmutableKeyValuePairs<AttributeKey<?>, Object>) source, keys);
+    if (!(source instanceof ImmutableKeyValuePairs)) {
+      throw new IllegalStateException(
+          "Expected ImmutableKeyValuePairs based implementation of Attributes. This is a programming error.");
     }
-    AttributesBuilder builder = source.toBuilder();
-    builder.removeIf(key -> !keys.contains(key));
-    return builder.build();
-  }
-
-  /** Returns true if {@code attributes} has keys not contained in {@code keys}. */
-  private static boolean hasExtraKeys(Attributes attributes, Set<AttributeKey<?>> keys) {
-    if (attributes.size() > keys.size()) {
-      return true;
-    }
-    boolean[] result = {false};
-    attributes.forEach(
-        (key, value) -> {
-          if (!result[0] && !keys.contains(key)) {
-            result[0] = true;
-          }
-        });
-    return result[0];
+    return new FilteredAttributes((ImmutableKeyValuePairs<AttributeKey<?>, Object>) source, keys);
   }
 
   @Nullable
@@ -82,7 +72,7 @@ final class FilteredAttributes implements Attributes {
       return null;
     }
     for (int i = 0; i < sourceData.length; i += 2) {
-      if (key.equals(sourceData[i]) && !filteredIndices.get(i / 2)) {
+      if (key.equals(sourceData[i]) && !get(i / 2)) {
         return (T) sourceData[i + 1];
       }
     }
@@ -92,7 +82,7 @@ final class FilteredAttributes implements Attributes {
   @Override
   public void forEach(BiConsumer<? super AttributeKey<?>, ? super Object> consumer) {
     for (int i = 0; i < sourceData.length; i += 2) {
-      if (!filteredIndices.get(i / 2)) {
+      if (!get(i / 2)) {
         consumer.accept((AttributeKey<?>) sourceData[i], sourceData[i + 1]);
       }
     }
@@ -100,7 +90,7 @@ final class FilteredAttributes implements Attributes {
 
   @Override
   public int size() {
-    return size;
+    return sourceData.length / 2 - cardinality();
   }
 
   @Override
@@ -116,7 +106,7 @@ final class FilteredAttributes implements Attributes {
     }
     Map<AttributeKey<?>, Object> result = new LinkedHashMap<>(size);
     for (int i = 0; i < sourceData.length; i += 2) {
-      if (!filteredIndices.get(i / 2)) {
+      if (!get(i / 2)) {
         result.put((AttributeKey<?>) sourceData[i], sourceData[i + 1]);
       }
     }
@@ -131,7 +121,7 @@ final class FilteredAttributes implements Attributes {
       return builder;
     }
     for (int i = 0; i < sourceData.length; i += 2) {
-      if (!filteredIndices.get(i / 2)) {
+      if (!get(i / 2)) {
         putInBuilder(builder, (AttributeKey<? super Object>) sourceData[i], sourceData[i + 1]);
       }
     }
@@ -147,22 +137,17 @@ final class FilteredAttributes implements Attributes {
     if (this == object) {
       return true;
     }
+    // We require other object to also be instance of FilteredAttributes. In other words, where one
+    // FilteredAttributes is used for a key in a map, it must be used for all the keys. Note, this
+    // same requirement exists for the default Attributes implementation - you can not mix
+    // implementations.
     if (object == null || getClass() != object.getClass()) {
       return false;
     }
 
-    // TODO: valid equals implementation when object isn't FilteredAttributes, or ensure no short
-    // circuiting to other types in FilteredAttributes.create
     FilteredAttributes that = (FilteredAttributes) object;
-    int size = size();
-    if (size != that.size()) {
-      return false;
-    } else if (size == 0) {
-      return true;
-    }
-
-    // compare each non-filtered key / value pair from this to that.
-    // depends on the entries from the backing ImmutableKeyValuePairs being sorted.
+    // Compare each non-filtered key / value pair from this to that.
+    // Depends on the entries from the backing ImmutableKeyValuePairs being sorted.
     int thisIndex = 0;
     int thatIndex = 0;
     boolean thisDone;
@@ -171,11 +156,11 @@ final class FilteredAttributes implements Attributes {
       thisDone = thisIndex >= this.sourceData.length;
       thatDone = thatIndex >= that.sourceData.length;
       // advance to next unfiltered key value pair for this and that
-      if (!thisDone && this.filteredIndices.get(thisIndex / 2)) {
+      if (!thisDone && this.get(thisIndex / 2)) {
         thisIndex += 2;
         continue;
       }
-      if (!thatDone && that.filteredIndices.get(thatIndex / 2)) {
+      if (!thatDone && that.get(thatIndex / 2)) {
         thatIndex += 2;
         continue;
       }
@@ -210,48 +195,37 @@ final class FilteredAttributes implements Attributes {
   public String toString() {
     StringJoiner joiner = new StringJoiner(",", "FilteredAttributes{", "}");
     for (int i = 0; i < sourceData.length; i += 2) {
-      if (!filteredIndices.get(i / 2)) {
+      if (!get(i / 2)) {
         joiner.add(((AttributeKey<?>) sourceData[i]).getKey() + "=" + sourceData[i + 1]);
       }
     }
     return joiner.toString();
   }
 
-  private static class BitSet {
-    private static final int BITS_PER_WORD = 8;
+  private static int wordIndex(int bitIndex) {
+    return bitIndex >> BITS_PER_WORD;
+  }
 
-    private final byte[] words;
+  private void set(int bitIndex) {
+    // TODO check range
+    int wordIndex = wordIndex(bitIndex);
+    bitIndex = wordIndex == 0 ? bitIndex : bitIndex % wordIndex;
+    int word = words[wordIndex];
+    words[wordIndex] = (byte) (word | (1 << bitIndex));
+  }
 
-    private BitSet(int numBits) {
-      words = new byte[wordIndex(numBits - 1) + 1];
+  private boolean get(int bitIndex) {
+    int wordIndex = wordIndex(bitIndex);
+    bitIndex = wordIndex == 0 ? bitIndex : bitIndex % wordIndex;
+    int word = words[wordIndex];
+    return (word & (1 << bitIndex)) != 0;
+  }
+
+  private int cardinality() {
+    int sum = 0;
+    for (byte word : words) {
+      sum += Integer.bitCount(word);
     }
-
-    private static int wordIndex(int bitIndex) {
-      return bitIndex / BITS_PER_WORD;
-    }
-
-    private void set(int bitIndex) {
-      // TODO check range
-      int wordIndex = wordIndex(bitIndex);
-      bitIndex = wordIndex == 0 ? bitIndex : bitIndex % wordIndex;
-      int word = words[wordIndex];
-      words[wordIndex] = (byte) (word | (1 << bitIndex));
-    }
-
-    private boolean get(int bitIndex) {
-      // TODO check range
-      int wordIndex = wordIndex(bitIndex);
-      bitIndex = wordIndex == 0 ? bitIndex : bitIndex % wordIndex;
-      int word = words[wordIndex];
-      return (word & (1 << bitIndex)) != 0;
-    }
-
-    private int cardinality() {
-      int sum = 0;
-      for (byte word : words) {
-        sum += Integer.bitCount(word);
-      }
-      return sum;
-    }
+    return sum;
   }
 }
