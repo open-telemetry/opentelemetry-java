@@ -15,6 +15,7 @@ dependencies {
   annotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":sdk:testing"))
+  testImplementation(testFixtures(project(":api:all")))
 
   testImplementation("io.opentelemetry.semconv:opentelemetry-semconv-incubating")
 

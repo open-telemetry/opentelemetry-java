@@ -14,18 +14,18 @@ public class ExtendedDefaultTracerProvider implements TracerProvider {
 
   private static final TracerProvider INSTANCE = new ExtendedDefaultTracerProvider();
 
-  public static TracerProvider getInstance() {
+  public static TracerProvider getNoop() {
     return INSTANCE;
   }
 
   @Override
   public Tracer get(String instrumentationScopeName) {
-    return ExtendedDefaultTracer.getInstance();
+    return ExtendedDefaultTracer.getNoop();
   }
 
   @Override
   public Tracer get(String instrumentationScopeName, String instrumentationScopeVersion) {
-    return ExtendedDefaultTracer.getInstance();
+    return ExtendedDefaultTracer.getNoop();
   }
 
   private ExtendedDefaultTracerProvider() {}

@@ -16,7 +16,7 @@ public class ExtendedDefaultLoggerProvider implements LoggerProvider {
 
   private ExtendedDefaultLoggerProvider() {}
 
-  public static LoggerProvider getInstance() {
+  public static LoggerProvider getNoop() {
     return INSTANCE;
   }
 
@@ -39,7 +39,7 @@ public class ExtendedDefaultLoggerProvider implements LoggerProvider {
 
     @Override
     public Logger build() {
-      return ExtendedDefaultLogger.getInstance();
+      return ExtendedDefaultLogger.getNoop();
     }
   }
 }

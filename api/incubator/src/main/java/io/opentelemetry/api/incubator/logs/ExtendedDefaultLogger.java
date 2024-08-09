@@ -20,7 +20,7 @@ class ExtendedDefaultLogger implements ExtendedLogger {
 
   private ExtendedDefaultLogger() {}
 
-  static Logger getInstance() {
+  static Logger getNoop() {
     return INSTANCE;
   }
 

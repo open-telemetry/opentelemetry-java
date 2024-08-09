@@ -11,12 +11,10 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
@@ -25,53 +23,10 @@ import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.util.Random;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /** Demonstrating usage of extended Metrics API. */
 class ExtendedMetricsApiUsageTest {
-
-  @Test
-  void incubatingApiIsLoaded() {
-    Meter meter = MeterProvider.noop().get("test");
-    assertThat(meter).isSameAs(OpenTelemetry.noop().getMeter("test"));
-
-    Assertions.assertThat(meter.gaugeBuilder("test").ofLongs())
-        .isInstanceOf(ExtendedLongGaugeBuilder.class);
-    Assertions.assertThat(meter.gaugeBuilder("test").ofLongs().build())
-        .isInstanceOf(ExtendedLongGauge.class);
-    Assertions.assertThat(meter.gaugeBuilder("test"))
-        .isInstanceOf(ExtendedDoubleGaugeBuilder.class);
-    Assertions.assertThat(meter.gaugeBuilder("test").build())
-        .isInstanceOf(ExtendedDoubleGauge.class);
-
-    Assertions.assertThat(meter.histogramBuilder("test").ofLongs())
-        .isInstanceOf(ExtendedLongHistogramBuilder.class);
-    Assertions.assertThat(meter.histogramBuilder("test").ofLongs().build())
-        .isInstanceOf(ExtendedLongHistogram.class);
-    Assertions.assertThat(meter.histogramBuilder("test"))
-        .isInstanceOf(ExtendedDoubleHistogramBuilder.class);
-    Assertions.assertThat(meter.histogramBuilder("test").build())
-        .isInstanceOf(ExtendedDoubleHistogram.class);
-
-    Assertions.assertThat(meter.counterBuilder("test"))
-        .isInstanceOf(ExtendedLongCounterBuilder.class);
-    Assertions.assertThat(meter.counterBuilder("test").build())
-        .isInstanceOf(ExtendedLongCounter.class);
-    Assertions.assertThat(meter.counterBuilder("test").ofDoubles())
-        .isInstanceOf(ExtendedDoubleCounterBuilder.class);
-    Assertions.assertThat(meter.counterBuilder("test").ofDoubles().build())
-        .isInstanceOf(ExtendedDoubleCounter.class);
-
-    Assertions.assertThat(meter.upDownCounterBuilder("test"))
-        .isInstanceOf(ExtendedLongUpDownCounterBuilder.class);
-    Assertions.assertThat(meter.upDownCounterBuilder("test").build())
-        .isInstanceOf(ExtendedLongUpDownCounter.class);
-    Assertions.assertThat(meter.upDownCounterBuilder("test").ofDoubles())
-        .isInstanceOf(ExtendedDoubleUpDownCounterBuilder.class);
-    Assertions.assertThat(meter.upDownCounterBuilder("test").ofDoubles().build())
-        .isInstanceOf(ExtendedDoubleUpDownCounter.class);
-  }
 
   @Test
   void meterEnabled() {

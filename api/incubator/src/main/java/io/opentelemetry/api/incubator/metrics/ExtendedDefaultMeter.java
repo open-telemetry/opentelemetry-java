@@ -59,7 +59,7 @@ class ExtendedDefaultMeter implements Meter {
   private static final ObservableLongMeasurement NOOP_OBSERVABLE_LONG_MEASUREMENT =
       new NoopObservableLongMeasurement();
 
-  static Meter getInstance() {
+  static Meter getNoop() {
     return INSTANCE;
   }
 

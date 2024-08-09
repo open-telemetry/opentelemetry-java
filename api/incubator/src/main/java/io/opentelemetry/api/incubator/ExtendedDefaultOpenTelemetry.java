@@ -38,12 +38,12 @@ final class ExtendedDefaultOpenTelemetry implements OpenTelemetry {
 
   @Override
   public TracerProvider getTracerProvider() {
-    return ExtendedDefaultTracerProvider.getInstance();
+    return ExtendedDefaultTracerProvider.getNoop();
   }
 
   @Override
   public MeterProvider getMeterProvider() {
-    return ExtendedDefaultMeterProvider.getInstance();
+    return ExtendedDefaultMeterProvider.getNoop();
   }
 
   @Override

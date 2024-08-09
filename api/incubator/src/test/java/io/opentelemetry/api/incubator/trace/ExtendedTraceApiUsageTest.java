@@ -9,7 +9,6 @@ import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameEquals;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.trace.internal.TracerConfig.disabled;
 
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
@@ -17,7 +16,6 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -38,15 +36,6 @@ import org.junit.jupiter.api.Test;
 
 /** Demonstrating usage of extended Trace API. */
 class ExtendedTraceApiUsageTest {
-
-  @Test
-  void incubatingApiIsLoaded() {
-    Tracer tracer = TracerProvider.noop().get("test");
-    assertThat(tracer).isSameAs(OpenTelemetry.noop().getTracer("test"));
-
-    assertThat(tracer).isInstanceOf(ExtendedTracer.class);
-    assertThat(tracer.spanBuilder("test")).isInstanceOf(ExtendedSpanBuilder.class);
-  }
 
   @Test
   void tracerEnabled() {
