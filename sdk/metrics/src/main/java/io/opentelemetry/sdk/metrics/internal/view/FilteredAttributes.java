@@ -9,7 +9,6 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -216,5 +215,43 @@ final class FilteredAttributes implements Attributes {
       }
     }
     return joiner.toString();
+  }
+
+  private static class BitSet {
+    private static final int BITS_PER_WORD = 8;
+
+    private final byte[] words;
+
+    private BitSet(int numBits) {
+      words = new byte[wordIndex(numBits - 1) + 1];
+    }
+
+    private static int wordIndex(int bitIndex) {
+      return bitIndex / BITS_PER_WORD;
+    }
+
+    private void set(int bitIndex) {
+      // TODO check range
+      int wordIndex = wordIndex(bitIndex);
+      bitIndex = wordIndex == 0 ? bitIndex : bitIndex % wordIndex;
+      int word = words[wordIndex];
+      words[wordIndex] = (byte) (word | (1 << bitIndex));
+    }
+
+    private boolean get(int bitIndex) {
+      // TODO check range
+      int wordIndex = wordIndex(bitIndex);
+      bitIndex = wordIndex == 0 ? bitIndex : bitIndex % wordIndex;
+      int word = words[wordIndex];
+      return (word & (1 << bitIndex)) != 0;
+    }
+
+    private int cardinality() {
+      int sum = 0;
+      for (byte word : words) {
+        sum += Integer.bitCount(word);
+      }
+      return sum;
+    }
   }
 }
