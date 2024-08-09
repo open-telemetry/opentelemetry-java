@@ -9,10 +9,9 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
-import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -24,20 +23,20 @@ import javax.annotation.Nullable;
 final class FilteredAttributes implements Attributes {
 
   private final Object[] sourceData;
-  private final List<Integer> filteredIndices;
-  private final Set<AttributeKey<?>> keys;
+  private final BitSet filteredIndices;
+  private final int size;
   private int hashcode;
 
   private FilteredAttributes(
       ImmutableKeyValuePairs<AttributeKey<?>, Object> source, Set<AttributeKey<?>> keys) {
-    this.keys = keys;
     this.sourceData = source.getData();
-    filteredIndices = new ArrayList<>(source.size() - keys.size());
+    this.filteredIndices = new BitSet(source.size());
     for (int i = 0; i < sourceData.length; i += 2) {
       if (!keys.contains(sourceData[i])) {
-        filteredIndices.add(i);
+        filteredIndices.set(i / 2);
       }
     }
+    this.size = sourceData.length / 2 - filteredIndices.cardinality();
   }
 
   static Attributes create(Attributes source, Set<AttributeKey<?>> keys) {
@@ -77,7 +76,7 @@ final class FilteredAttributes implements Attributes {
       return null;
     }
     for (int i = 0; i < sourceData.length; i += 2) {
-      if (key.equals(sourceData[i]) && keys.contains(sourceData[i])) {
+      if (key.equals(sourceData[i]) && !filteredIndices.get(i / 2)) {
         return (T) sourceData[i + 1];
       }
     }
@@ -87,7 +86,7 @@ final class FilteredAttributes implements Attributes {
   @Override
   public void forEach(BiConsumer<? super AttributeKey<?>, ? super Object> consumer) {
     for (int i = 0; i < sourceData.length; i += 2) {
-      if (keys.contains(sourceData[i])) {
+      if (!filteredIndices.get(i / 2)) {
         consumer.accept((AttributeKey<?>) sourceData[i], sourceData[i + 1]);
       }
     }
@@ -95,7 +94,7 @@ final class FilteredAttributes implements Attributes {
 
   @Override
   public int size() {
-    return sourceData.length / 2 - filteredIndices.size();
+    return size;
   }
 
   @Override
@@ -109,9 +108,9 @@ final class FilteredAttributes implements Attributes {
     if (size == 0) {
       return Collections.emptyMap();
     }
-    Map<AttributeKey<?>, Object> result = new HashMap<>(size);
+    Map<AttributeKey<?>, Object> result = new LinkedHashMap<>(size);
     for (int i = 0; i < sourceData.length; i += 2) {
-      if (keys.contains(sourceData[i])) {
+      if (!filteredIndices.get(i / 2)) {
         result.put((AttributeKey<?>) sourceData[i], sourceData[i + 1]);
       }
     }
@@ -126,7 +125,7 @@ final class FilteredAttributes implements Attributes {
       return builder;
     }
     for (int i = 0; i < sourceData.length; i += 2) {
-      if (keys.contains(sourceData[i])) {
+      if (!filteredIndices.get(i / 2)) {
         putInBuilder(builder, (AttributeKey<? super Object>) sourceData[i], sourceData[i + 1]);
       }
     }
@@ -158,26 +157,19 @@ final class FilteredAttributes implements Attributes {
 
     // compare each non-filtered key / value pair from this to that.
     // depends on the entries from the backing ImmutableKeyValuePairs being sorted.
-    // sacrifice readability for performance because this is on the hotpath
     int thisIndex = 0;
     int thatIndex = 0;
-    int thisFilterIndex = 0;
-    int thisFilterIndexValue = nextFilteredIndex(thisFilterIndex, this);
-    int thatFilterIndex = 0;
-    int thatFilterIndexValue = nextFilteredIndex(thatFilterIndex, that);
     boolean thisDone;
     boolean thatDone;
     do {
       thisDone = thisIndex >= this.sourceData.length;
       thatDone = thatIndex >= that.sourceData.length;
       // advance to next unfiltered key value pair for this and that
-      if (!thisDone && thisFilterIndexValue != -1 && thisIndex == thisFilterIndexValue) {
-        thisFilterIndexValue = nextFilteredIndex(thisFilterIndex++, this);
+      if (!thisDone && this.filteredIndices.get(thisIndex / 2)) {
         thisIndex += 2;
         continue;
       }
-      if (!thatDone && thatFilterIndexValue != -1 && thatIndex == thatFilterIndexValue) {
-        thisFilterIndexValue = nextFilteredIndex(thatFilterIndex++, this);
+      if (!thatDone && that.filteredIndices.get(thatIndex / 2)) {
         thatIndex += 2;
         continue;
       }
@@ -203,12 +195,6 @@ final class FilteredAttributes implements Attributes {
     return true;
   }
 
-  private static int nextFilteredIndex(int index, FilteredAttributes filteredAttributes) {
-    return filteredAttributes.filteredIndices.size() > index
-        ? filteredAttributes.filteredIndices.get(index)
-        : -1;
-  }
-
   @Override
   public int hashCode() {
     // memoize the hashcode to avoid comparatively expensive recompute
@@ -216,7 +202,7 @@ final class FilteredAttributes implements Attributes {
     if (result == 0) {
       result = 1;
       for (int i = 0; i < sourceData.length; i += 2) {
-        if (keys.contains(sourceData[i])) {
+        if (!filteredIndices.get(i / 2)) {
           result = 31 * result + sourceData[i].hashCode();
           result = 31 * result + sourceData[i + 1].hashCode();
         }
@@ -230,7 +216,7 @@ final class FilteredAttributes implements Attributes {
   public String toString() {
     StringJoiner joiner = new StringJoiner(",", "FilteredAttributes{", "}");
     for (int i = 0; i < sourceData.length; i += 2) {
-      if (keys.contains(sourceData[i])) {
+      if (!filteredIndices.get(i / 2)) {
         joiner.add(((AttributeKey<?>) sourceData[i]).getKey() + "=" + sourceData[i + 1]);
       }
     }
