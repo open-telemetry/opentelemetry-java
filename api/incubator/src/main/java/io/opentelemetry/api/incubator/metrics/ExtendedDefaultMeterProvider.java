@@ -19,7 +19,7 @@ public class ExtendedDefaultMeterProvider implements MeterProvider {
   private static final ExtendedDefaultMeterProvider INSTANCE = new ExtendedDefaultMeterProvider();
   private static final MeterBuilder BUILDER_INSTANCE = new NoopMeterBuilder();
 
-  public static MeterProvider getInstance() {
+  public static MeterProvider getNoop() {
     return INSTANCE;
   }
 
@@ -39,7 +39,7 @@ public class ExtendedDefaultMeterProvider implements MeterProvider {
 
     @Override
     public Meter build() {
-      return ExtendedDefaultMeter.getInstance();
+      return ExtendedDefaultMeter.getNoop();
     }
   }
 }

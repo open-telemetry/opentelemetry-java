@@ -28,7 +28,7 @@ final class ExtendedDefaultTracer implements ExtendedTracer {
 
   private static final Tracer INSTANCE = new ExtendedDefaultTracer();
 
-  static Tracer getInstance() {
+  static Tracer getNoop() {
     return INSTANCE;
   }
 

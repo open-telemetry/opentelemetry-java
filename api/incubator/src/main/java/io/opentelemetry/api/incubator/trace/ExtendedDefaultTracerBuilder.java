@@ -27,6 +27,6 @@ class ExtendedDefaultTracerBuilder implements TracerBuilder {
 
   @Override
   public Tracer build() {
-    return ExtendedDefaultTracer.getInstance();
+    return ExtendedDefaultTracer.getNoop();
   }
 }

@@ -20,7 +20,7 @@ public class IncubatingUtil {
   public static <T> T incubatingApiIfAvailable(T stableApi, String incubatingClassName) {
     try {
       Class<?> incubatingClass = Class.forName(incubatingClassName);
-      Method getInstance = incubatingClass.getDeclaredMethod("getInstance");
+      Method getInstance = incubatingClass.getDeclaredMethod("getNoop");
       return (T) getInstance.invoke(null);
     } catch (Exception e) {
       return stableApi;
