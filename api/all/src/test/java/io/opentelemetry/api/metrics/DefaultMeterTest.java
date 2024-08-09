@@ -5,9 +5,6 @@
 
 package io.opentelemetry.api.metrics;
 
-import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-
-@SuppressLogger()
 public class DefaultMeterTest extends AbstractDefaultMeterTest {
 
   @Override

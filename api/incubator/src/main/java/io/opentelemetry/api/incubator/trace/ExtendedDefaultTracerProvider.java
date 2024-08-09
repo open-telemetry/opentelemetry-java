@@ -6,6 +6,7 @@
 package io.opentelemetry.api.incubator.trace;
 
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -26,6 +27,11 @@ public class ExtendedDefaultTracerProvider implements TracerProvider {
   @Override
   public Tracer get(String instrumentationScopeName, String instrumentationScopeVersion) {
     return ExtendedDefaultTracer.getNoop();
+  }
+
+  @Override
+  public TracerBuilder tracerBuilder(String instrumentationScopeName) {
+    return ExtendedDefaultTracerBuilder.getInstance();
   }
 
   private ExtendedDefaultTracerProvider() {}

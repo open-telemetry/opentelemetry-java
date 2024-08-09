@@ -17,11 +17,6 @@ class OpenTelemetryTest extends AbstractOpenTelemetryTest {
   }
 
   @Override
-  protected OpenTelemetry getOpenTelemetry() {
-    return OpenTelemetry.noop();
-  }
-
-  @Override
   protected MeterProvider getMeterProvider() {
     return MeterProvider.noop();
   }

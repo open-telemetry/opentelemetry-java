@@ -5,10 +5,11 @@
 
 package io.opentelemetry.api.incubator.logs;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.opentelemetry.api.logs.AbstractDefaultLoggerTest;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerProvider;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class ExtendedDefaultLoggerTest extends AbstractDefaultLoggerTest {
@@ -27,7 +28,9 @@ class ExtendedDefaultLoggerTest extends AbstractDefaultLoggerTest {
   void incubatingApiIsLoaded() {
     Logger logger = LoggerProvider.noop().get("test");
 
-    Assertions.assertThat(logger).isInstanceOf(ExtendedLogger.class);
-    Assertions.assertThat(logger.logRecordBuilder()).isInstanceOf(ExtendedLogRecordBuilder.class);
+    assertThat(logger).isInstanceOf(ExtendedLogger.class);
+    ExtendedLogRecordBuilder builder = (ExtendedLogRecordBuilder) logger.logRecordBuilder();
+    assertThat(builder).isInstanceOf(ExtendedLogRecordBuilder.class);
+    assertThat(builder.setBody(AnyValue.of(0))).isSameAs(builder);
   }
 }

@@ -18,6 +18,7 @@ import io.opentelemetry.api.incubator.trace.ExtendedTracer;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import org.junit.jupiter.api.Test;
 
 class ExtendedOpenTelemetryTest extends AbstractOpenTelemetryTest {
@@ -25,11 +26,6 @@ class ExtendedOpenTelemetryTest extends AbstractOpenTelemetryTest {
   @Override
   protected TracerProvider getTracerProvider() {
     return ExtendedDefaultTracerProvider.getNoop();
-  }
-
-  @Override
-  protected OpenTelemetry getOpenTelemetry() {
-    return ExtendedDefaultOpenTelemetry.getNoop();
   }
 
   @Override
@@ -44,9 +40,14 @@ class ExtendedOpenTelemetryTest extends AbstractOpenTelemetryTest {
 
   @Test
   void incubatingApiIsLoaded() {
-    assertThat(OpenTelemetry.noop().getMeter("test").counterBuilder("test"))
+    assertIsExtended(OpenTelemetry.noop());
+    assertIsExtended(OpenTelemetry.propagating(ContextPropagators.noop()));
+  }
+
+  private static void assertIsExtended(OpenTelemetry openTelemetry) {
+    assertThat(openTelemetry.getMeter("test").counterBuilder("test"))
         .isInstanceOf(ExtendedLongCounterBuilder.class);
-    assertThat(OpenTelemetry.noop().getLogsBridge().get("test")).isInstanceOf(ExtendedLogger.class);
-    assertThat(OpenTelemetry.noop().getTracer("test")).isInstanceOf(ExtendedTracer.class);
+    assertThat(openTelemetry.getLogsBridge().get("test")).isInstanceOf(ExtendedLogger.class);
+    assertThat(openTelemetry.getTracer("test")).isInstanceOf(ExtendedTracer.class);
   }
 }

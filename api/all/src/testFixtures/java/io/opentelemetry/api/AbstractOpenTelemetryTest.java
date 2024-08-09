@@ -46,7 +46,9 @@ public abstract class AbstractOpenTelemetryTest {
 
   protected abstract TracerProvider getTracerProvider();
 
-  protected abstract OpenTelemetry getOpenTelemetry();
+  protected OpenTelemetry getOpenTelemetry() {
+    return OpenTelemetry.noop();
+  }
 
   protected abstract MeterProvider getMeterProvider();
 
