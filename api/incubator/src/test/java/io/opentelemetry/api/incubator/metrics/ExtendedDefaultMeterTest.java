@@ -11,11 +11,9 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.AbstractDefaultMeterTest;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-@SuppressLogger()
 public class ExtendedDefaultMeterTest extends AbstractDefaultMeterTest {
 
   @Override
@@ -29,7 +27,7 @@ public class ExtendedDefaultMeterTest extends AbstractDefaultMeterTest {
   }
 
   @Test
-  void incubatingApiIsLoaded() {
+  public void incubatingApiIsLoaded() {
     Meter meter = MeterProvider.noop().get("test");
     assertThat(meter).isSameAs(OpenTelemetry.noop().getMeter("test"));
 

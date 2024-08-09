@@ -10,7 +10,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @SuppressLogger()
 public abstract class AbstractDefaultMeterTest {
@@ -128,6 +128,16 @@ public abstract class AbstractDefaultMeterTest {
     gauge.set(1);
     gauge.set(2, Attributes.of(stringKey("thing"), "engine"));
     gauge.set(2, Attributes.of(stringKey("thing"), "engine"), Context.current());
+
+    ObservableLongMeasurement measurement =
+        meter
+            .gaugeBuilder("temperature")
+            .ofLongs()
+            .setDescription("The current temperature")
+            .setUnit("C")
+            .buildObserver();
+    measurement.record(1);
+    measurement.record(1, Attributes.of(stringKey("thing"), "engine"));
   }
 
   @Test
@@ -155,6 +165,15 @@ public abstract class AbstractDefaultMeterTest {
     gauge.set(1);
     gauge.set(2, Attributes.of(stringKey("thing"), "engine"));
     gauge.set(2, Attributes.of(stringKey("thing"), "engine"), Context.current());
+
+    ObservableDoubleMeasurement measurement =
+        meter
+            .gaugeBuilder("temperature")
+            .setDescription("The current temperature")
+            .setUnit("C")
+            .buildObserver();
+    measurement.record(1.0);
+    measurement.record(1.0, Attributes.of(stringKey("thing"), "engine"));
   }
 
   @Test
@@ -222,5 +241,10 @@ public abstract class AbstractDefaultMeterTest {
               m.record(1.0e1);
               m.record(-27.4, Attributes.of(stringKey("thing"), "engine"));
             });
+  }
+
+  @Test
+  public void noopBatchCallback_doesNotThrow() {
+    meter.batchCallback(() -> {}, null);
   }
 }

@@ -8,7 +8,7 @@ package io.opentelemetry.api.incubator.trace;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 
-class ExtendedDefaultTracerBuilder implements TracerBuilder {
+final class ExtendedDefaultTracerBuilder implements TracerBuilder {
   private static final ExtendedDefaultTracerBuilder INSTANCE = new ExtendedDefaultTracerBuilder();
 
   static TracerBuilder getInstance() {
