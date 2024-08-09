@@ -18,6 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -58,6 +60,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
@@ -107,6 +111,7 @@ class SdkSpanTest {
     expectedAttributes = builder.build();
     testClock = TestClock.create(Instant.ofEpochSecond(0, START_EPOCH_NANOS));
     when(spanProcessor.isStartRequired()).thenReturn(true);
+    when(spanProcessor.isOnEndingRequired()).thenReturn(true);
     when(spanProcessor.isEndRequired()).thenReturn(true);
   }
 
@@ -138,6 +143,60 @@ class SdkSpanTest {
     assertThat(span.hasEnded()).isTrue();
     span.end();
     assertThat(span.hasEnded()).isTrue();
+  }
+
+  @Test
+  void beforeEnd_spanStillMutable() {
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
+
+    AttributeKey<String> dummyAttrib = AttributeKey.stringKey("processor_foo");
+
+    AtomicBoolean endedStateInProcessor = new AtomicBoolean();
+    doAnswer(
+            invocation -> {
+              ReadWriteSpan sp = invocation.getArgument(0, ReadWriteSpan.class);
+              assertThat(sp.hasEnded()).isFalse();
+              sp.end(); // should have no effect, nested end should be detected
+              endedStateInProcessor.set(sp.hasEnded());
+              sp.setAttribute(dummyAttrib, "bar");
+              return null;
+            })
+        .when(spanProcessor)
+        .onEnding(any());
+
+    span.end();
+    verify(spanProcessor).onEnding(same(span));
+    assertThat(span.hasEnded()).isTrue();
+    assertThat(endedStateInProcessor.get()).isFalse();
+    assertThat(span.getAttribute(dummyAttrib)).isEqualTo("bar");
+  }
+
+  @Test
+  void beforeEnd_latencyPinned() {
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
+
+    AtomicLong spanLatencyInProcessor = new AtomicLong();
+    doAnswer(
+            invocation -> {
+              ReadWriteSpan sp = invocation.getArgument(0, ReadWriteSpan.class);
+
+              testClock.advance(Duration.ofSeconds(100));
+              spanLatencyInProcessor.set(sp.getLatencyNanos());
+              return null;
+            })
+        .when(spanProcessor)
+        .onEnding(any());
+
+    testClock.advance(Duration.ofSeconds(1));
+    long expectedDuration = testClock.now() - START_EPOCH_NANOS;
+
+    assertThat(span.getLatencyNanos()).isEqualTo(expectedDuration);
+
+    span.end();
+    verify(spanProcessor).onEnding(same(span));
+    assertThat(span.hasEnded()).isTrue();
+    assertThat(span.getLatencyNanos()).isEqualTo(expectedDuration);
+    assertThat(spanLatencyInProcessor.get()).isEqualTo(expectedDuration);
   }
 
   @Test
