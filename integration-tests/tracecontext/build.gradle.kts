@@ -1,7 +1,7 @@
 plugins {
   id("otel.java-conventions")
 
-  id("com.github.johnrengelman.shadow")
+  id("com.gradleup.shadow")
 }
 
 description = "OpenTelemetry W3C Context Propagation Integration Tests"
