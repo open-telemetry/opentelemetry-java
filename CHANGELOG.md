@@ -26,6 +26,8 @@
 
 * Enable retry by default for OTLP exporters.
   ([#6588](https://github.com/open-telemetry/opentelemetry-java/pull/6588))
+* Retry ConnectException, add retry logging.
+  ([#6614](https://github.com/open-telemetry/opentelemetry-java/pull/6614))
 * Extend `PrometheusHttpServer` with ability to configure default aggregation as function of
   instrument kind, including experimental env var support.
   ([#6541](https://github.com/open-telemetry/opentelemetry-java/pull/6541))
