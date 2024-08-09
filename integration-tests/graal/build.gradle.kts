@@ -19,6 +19,7 @@ dependencies {
   implementation(project(":sdk:all"))
   implementation(project(":sdk:trace-shaded-deps"))
   implementation(project(":exporters:otlp:all"))
+  implementation(project(":api:incubator"))
 }
 
 // org.graalvm.buildtools.native pluging requires java 11+ as of version 0.9.26

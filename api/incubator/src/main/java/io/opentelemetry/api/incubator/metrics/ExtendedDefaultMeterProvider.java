@@ -3,28 +3,27 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.metrics;
+package io.opentelemetry.api.incubator.metrics;
 
-import io.opentelemetry.api.internal.IncubatingUtil;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterBuilder;
+import io.opentelemetry.api.metrics.MeterProvider;
 
 /** A {@link MeterProvider} that does nothing. */
-class DefaultMeterProvider implements MeterProvider {
+public class ExtendedDefaultMeterProvider implements MeterProvider {
   @Override
   public MeterBuilder meterBuilder(String instrumentationScopeName) {
     return BUILDER_INSTANCE;
   }
 
-  private static final MeterProvider INSTANCE =
-      IncubatingUtil.incubatingApiIfAvailable(
-          new DefaultMeterProvider(),
-          "io.opentelemetry.api.incubator.metrics.ExtendedDefaultMeterProvider");
+  private static final ExtendedDefaultMeterProvider INSTANCE = new ExtendedDefaultMeterProvider();
   private static final MeterBuilder BUILDER_INSTANCE = new NoopMeterBuilder();
 
-  static MeterProvider getInstance() {
+  public static MeterProvider getNoop() {
     return INSTANCE;
   }
 
-  private DefaultMeterProvider() {}
+  private ExtendedDefaultMeterProvider() {}
 
   private static class NoopMeterBuilder implements MeterBuilder {
 
@@ -40,7 +39,7 @@ class DefaultMeterProvider implements MeterProvider {
 
     @Override
     public Meter build() {
-      return DefaultMeter.getInstance();
+      return ExtendedDefaultMeter.getNoop();
     }
   }
 }
