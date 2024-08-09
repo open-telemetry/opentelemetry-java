@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.internal.otlp.logs;
 
 import static io.opentelemetry.exporter.internal.otlp.logs.LogMarshaler.toProtoSeverityNumber;
 
-import io.opentelemetry.api.incubator.logs.AnyValue;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
@@ -19,9 +18,7 @@ import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
 import io.opentelemetry.exporter.internal.otlp.AnyValueStatelessMarshaler;
 import io.opentelemetry.exporter.internal.otlp.AttributeKeyValueStatelessMarshaler;
 import io.opentelemetry.proto.logs.v1.internal.LogRecord;
-import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.logs.internal.AnyValueBody;
 import java.io.IOException;
 
 /** See {@link LogMarshaler}. */
@@ -38,8 +35,10 @@ final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
         LogRecord.OBSERVED_TIME_UNIX_NANO, log.getObservedTimestampEpochNanos());
     output.serializeEnum(LogRecord.SEVERITY_NUMBER, toProtoSeverityNumber(log.getSeverity()));
     output.serializeStringWithContext(LogRecord.SEVERITY_TEXT, log.getSeverityText(), context);
-    output.serializeMessageWithContext(
-        LogRecord.BODY, log.getBody(), BodyMarshaler.INSTANCE, context);
+    if (log.getBodyValue() != null) {
+      output.serializeMessageWithContext(
+          LogRecord.BODY, log.getBodyValue(), AnyValueStatelessMarshaler.INSTANCE, context);
+    }
     output.serializeRepeatedMessageWithContext(
         LogRecord.ATTRIBUTES,
         log.getAttributes(),
@@ -71,9 +70,11 @@ final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
     size +=
         StatelessMarshalerUtil.sizeStringWithContext(
             LogRecord.SEVERITY_TEXT, log.getSeverityText(), context);
-    size +=
-        StatelessMarshalerUtil.sizeMessageWithContext(
-            LogRecord.BODY, log.getBody(), BodyMarshaler.INSTANCE, context);
+    if (log.getBodyValue() != null) {
+      size +=
+          StatelessMarshalerUtil.sizeMessageWithContext(
+              LogRecord.BODY, log.getBodyValue(), AnyValueStatelessMarshaler.INSTANCE, context);
+    }
     size +=
         StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
             LogRecord.ATTRIBUTES,
@@ -93,55 +94,5 @@ final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
     }
 
     return size;
-  }
-
-  private static class BodyMarshaler implements StatelessMarshaler<Body> {
-
-    private static final BodyMarshaler INSTANCE = new BodyMarshaler();
-    private static final AnyValue<String> EMPTY_BODY = AnyValue.of("");
-
-    private BodyMarshaler() {}
-
-    @Override
-    public void writeTo(Serializer output, Body value, MarshalerContext context)
-        throws IOException {
-      AnyValue<?> anyValue;
-      if (value instanceof AnyValueBody) {
-        anyValue = ((AnyValueBody) value).asAnyValue();
-      } else {
-        switch (value.getType()) {
-          case STRING:
-            anyValue = context.getData(AnyValue.class);
-            break;
-          case EMPTY:
-            anyValue = EMPTY_BODY;
-            break;
-          default:
-            throw new IllegalStateException("Unsupported Body type: " + value.getType());
-        }
-      }
-      AnyValueStatelessMarshaler.INSTANCE.writeTo(output, anyValue, context);
-    }
-
-    @Override
-    public int getBinarySerializedSize(Body value, MarshalerContext context) {
-      AnyValue<?> anyValue;
-      if (value instanceof AnyValueBody) {
-        anyValue = ((AnyValueBody) value).asAnyValue();
-      } else {
-        switch (value.getType()) {
-          case STRING:
-            anyValue = AnyValue.of(value.asString());
-            context.addData(anyValue);
-            break;
-          case EMPTY:
-            anyValue = EMPTY_BODY;
-            break;
-          default:
-            throw new IllegalStateException("Unsupported Body type: " + value.getType());
-        }
-      }
-      return AnyValueStatelessMarshaler.INSTANCE.getBinarySerializedSize(anyValue, context);
-    }
   }
 }

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.logs.data;
 
+@SuppressWarnings("deprecation") // Implementation of deprecated Body
 enum EmptyBody implements Body {
   INSTANCE;
 

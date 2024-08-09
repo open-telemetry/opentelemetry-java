@@ -29,17 +29,20 @@ class AllowNewAbstractMethodOnAutovalueClasses : AbstractRecordingSeenMembers() 
   override fun maybeAddViolation(member: JApiCompatibility): Violation? {
     val allowableAutovalueChanges = setOf(JApiCompatibilityChange.METHOD_ABSTRACT_ADDED_TO_CLASS, JApiCompatibilityChange.METHOD_ADDED_TO_PUBLIC_CLASS)
     if (member.compatibilityChanges.filter { !allowableAutovalueChanges.contains(it) }.isEmpty() &&
-      member is JApiMethod &&
-      member.getjApiClass().newClass.get().getAnnotation(AutoValue::class.java) != null
-    ) {
+      member is JApiMethod && isAutoValueClass(member.getjApiClass()))
+    {
       return Violation.accept(member, "Autovalue will automatically add implementation")
     }
     if (member.compatibilityChanges.isEmpty() &&
-      member is JApiClass &&
-      member.newClass.get().getAnnotation(AutoValue::class.java) != null) {
+      member is JApiClass && isAutoValueClass(member)) {
       return Violation.accept(member, "Autovalue class modification is allowed")
     }
     return null
+  }
+
+  fun isAutoValueClass(japiClass: JApiClass): Boolean {
+    return japiClass.newClass.get().getAnnotation(AutoValue::class.java) != null ||
+        japiClass.newClass.get().getAnnotation(AutoValue.Builder::class.java) != null
   }
 }
 

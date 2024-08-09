@@ -7,8 +7,8 @@ package io.opentelemetry.exporter.internal.otlp;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.incubator.events.EventLogger;
-import io.opentelemetry.api.incubator.logs.AnyValue;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
@@ -98,9 +98,8 @@ public class LogsRequestMarshalerBenchmark {
         .put("longArrKey", 1L, 2L)
         .put("doubleArrKey", 1.0, 2.0)
         .put("boolArrKey", true, false)
-        // Set AnyValue types to encode complex data
-        .put(
-            "anyValueKey", AnyValue.of(Collections.singletonMap("childKey1", AnyValue.of("value"))))
+        // Set complex data
+        .put("key", Value.of(Collections.singletonMap("childKey1", Value.of("value"))))
         .emit();
 
     LOGS = logRecordExporter.getFinishedLogRecordItems();

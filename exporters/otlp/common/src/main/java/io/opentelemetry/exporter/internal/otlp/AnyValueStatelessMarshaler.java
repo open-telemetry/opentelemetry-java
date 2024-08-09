@@ -5,8 +5,8 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
-import io.opentelemetry.api.incubator.logs.AnyValue;
-import io.opentelemetry.api.incubator.logs.KeyAnyValue;
+import io.opentelemetry.api.common.KeyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.exporter.internal.marshal.MarshalerContext;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
@@ -21,7 +21,7 @@ import java.util.List;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class AnyValueStatelessMarshaler implements StatelessMarshaler<AnyValue<?>> {
+public final class AnyValueStatelessMarshaler implements StatelessMarshaler<Value<?>> {
 
   public static final AnyValueStatelessMarshaler INSTANCE = new AnyValueStatelessMarshaler();
 
@@ -29,7 +29,7 @@ public final class AnyValueStatelessMarshaler implements StatelessMarshaler<AnyV
 
   @SuppressWarnings("unchecked")
   @Override
-  public void writeTo(Serializer output, AnyValue<?> value, MarshalerContext context)
+  public void writeTo(Serializer output, Value<?> value, MarshalerContext context)
       throws IOException {
     switch (value.getType()) {
       case STRING:
@@ -50,14 +50,14 @@ public final class AnyValueStatelessMarshaler implements StatelessMarshaler<AnyV
       case ARRAY:
         output.serializeMessageWithContext(
             io.opentelemetry.proto.common.v1.internal.AnyValue.ARRAY_VALUE,
-            (List<AnyValue<?>>) value.getValue(),
+            (List<Value<?>>) value.getValue(),
             ArrayAnyValueStatelessMarshaler.INSTANCE,
             context);
         return;
       case KEY_VALUE_LIST:
         output.serializeMessageWithContext(
             io.opentelemetry.proto.common.v1.internal.AnyValue.KVLIST_VALUE,
-            (List<KeyAnyValue>) value.getValue(),
+            (List<KeyValue>) value.getValue(),
             KeyValueListAnyValueStatelessMarshaler.INSTANCE,
             context);
         return;
@@ -73,7 +73,7 @@ public final class AnyValueStatelessMarshaler implements StatelessMarshaler<AnyV
 
   @SuppressWarnings("unchecked")
   @Override
-  public int getBinarySerializedSize(AnyValue<?> value, MarshalerContext context) {
+  public int getBinarySerializedSize(Value<?> value, MarshalerContext context) {
     switch (value.getType()) {
       case STRING:
         return StringAnyValueStatelessMarshaler.INSTANCE.getBinarySerializedSize(
@@ -90,13 +90,13 @@ public final class AnyValueStatelessMarshaler implements StatelessMarshaler<AnyV
       case ARRAY:
         return StatelessMarshalerUtil.sizeMessageWithContext(
             io.opentelemetry.proto.common.v1.internal.AnyValue.ARRAY_VALUE,
-            (List<AnyValue<?>>) value.getValue(),
+            (List<Value<?>>) value.getValue(),
             ArrayAnyValueStatelessMarshaler.INSTANCE,
             context);
       case KEY_VALUE_LIST:
         return StatelessMarshalerUtil.sizeMessageWithContext(
             io.opentelemetry.proto.common.v1.internal.AnyValue.KVLIST_VALUE,
-            (List<KeyAnyValue>) value.getValue(),
+            (List<KeyValue>) value.getValue(),
             KeyValueListAnyValueStatelessMarshaler.INSTANCE,
             context);
       case BYTES:

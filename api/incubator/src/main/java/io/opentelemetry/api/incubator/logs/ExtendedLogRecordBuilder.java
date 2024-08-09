@@ -10,6 +10,6 @@ import io.opentelemetry.api.logs.LogRecordBuilder;
 /** Extended {@link LogRecordBuilder} with experimental APIs. */
 public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
 
-  /** Set the body {@link AnyValue}. */
-  LogRecordBuilder setBody(AnyValue<?> body);
+  // Nothing at the moment, but experimental methods may be added in the future.
+
 }

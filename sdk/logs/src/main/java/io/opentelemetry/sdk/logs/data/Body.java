@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.logs.data;
 
+import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.common.ValueType;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -14,16 +16,21 @@ import javax.annotation.concurrent.Immutable;
  * log data model.
  *
  * @since 1.27.0
+ * @deprecated Use {@link LogRecordData#getBodyValue()} and {@link Value}.
  */
 @Immutable
+@Deprecated
 public interface Body {
 
-  /** An enum that represents all the possible value types for an {@code Body}. */
+  /**
+   * An enum that represents all the possible value types for an {@code Body}.
+   *
+   * @deprecated Use {@link Value#getType()}.
+   */
+  @Deprecated
   enum Type {
     EMPTY,
     STRING
-    // TODO (jack-berg): Add ANY_VALUE type when API for setting body to AnyValue is stable
-    // ANY_VALUE
   }
 
   /**
@@ -45,9 +52,20 @@ public interface Body {
     return EmptyBody.INSTANCE;
   }
 
-  /** Returns the String value of this {@code Body}. */
+  /**
+   * Returns the String value of this {@code Body}.
+   *
+   * <p>If the log record body is some {@link ValueType} other than {@link ValueType#STRING}, this
+   * returns {@link Value#asString()}. Consumers should use {@link LogRecordData#getBodyValue()}
+   * instead.
+   */
   String asString();
 
-  /** Returns the type of the {@code Body}. */
+  /**
+   * Returns the type of the {@code Body}.
+   *
+   * @deprecated Use {@link Value#getType()}.
+   */
+  @Deprecated
   Type getType();
 }

@@ -10,6 +10,7 @@ import javax.annotation.concurrent.Immutable;
 
 @Immutable
 @AutoValue
+@SuppressWarnings("deprecation") // Implementation of deprecated Body
 abstract class StringBody implements Body {
   StringBody() {}
 

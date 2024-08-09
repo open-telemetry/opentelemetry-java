@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
-import io.opentelemetry.api.incubator.logs.KeyAnyValue;
+import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
@@ -24,11 +24,11 @@ final class KeyValueListAnyValueMarshaler extends MarshalerWithSize {
     this.value = value;
   }
 
-  static MarshalerWithSize create(List<KeyAnyValue> values) {
+  static MarshalerWithSize create(List<KeyValue> values) {
     int len = values.size();
     KeyValueMarshaler[] marshalers = new KeyValueMarshaler[values.size()];
     for (int i = 0; i < len; i++) {
-      marshalers[i] = KeyValueMarshaler.createForKeyAnyValue(values.get(i));
+      marshalers[i] = KeyValueMarshaler.createForKeyValue(values.get(i));
     }
     return new KeyValueListAnyValueMarshaler(new KeyValueListMarshaler(marshalers));
   }

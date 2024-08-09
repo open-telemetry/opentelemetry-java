@@ -5,8 +5,8 @@
 
 package io.opentelemetry.exporter.internal.otlp;
 
-import io.opentelemetry.api.incubator.logs.AnyValue;
-import io.opentelemetry.api.incubator.logs.KeyAnyValue;
+import io.opentelemetry.api.common.KeyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -22,23 +22,23 @@ public final class AnyValueMarshaler {
   private AnyValueMarshaler() {}
 
   @SuppressWarnings("unchecked")
-  public static MarshalerWithSize create(AnyValue<?> anyValue) {
-    switch (anyValue.getType()) {
+  public static MarshalerWithSize create(Value<?> value) {
+    switch (value.getType()) {
       case STRING:
-        return StringAnyValueMarshaler.create((String) anyValue.getValue());
+        return StringAnyValueMarshaler.create((String) value.getValue());
       case BOOLEAN:
-        return BoolAnyValueMarshaler.create((boolean) anyValue.getValue());
+        return BoolAnyValueMarshaler.create((boolean) value.getValue());
       case LONG:
-        return IntAnyValueMarshaler.create((long) anyValue.getValue());
+        return IntAnyValueMarshaler.create((long) value.getValue());
       case DOUBLE:
-        return DoubleAnyValueMarshaler.create((double) anyValue.getValue());
+        return DoubleAnyValueMarshaler.create((double) value.getValue());
       case ARRAY:
-        return ArrayAnyValueMarshaler.createAnyValue((List<AnyValue<?>>) anyValue.getValue());
+        return ArrayAnyValueMarshaler.createAnyValue((List<Value<?>>) value.getValue());
       case KEY_VALUE_LIST:
-        return KeyValueListAnyValueMarshaler.create((List<KeyAnyValue>) anyValue.getValue());
+        return KeyValueListAnyValueMarshaler.create((List<KeyValue>) value.getValue());
       case BYTES:
-        return BytesAnyValueMarshaler.create((ByteBuffer) anyValue.getValue());
+        return BytesAnyValueMarshaler.create((ByteBuffer) value.getValue());
     }
-    throw new IllegalArgumentException("Unsupported AnyValue type: " + anyValue.getType());
+    throw new IllegalArgumentException("Unsupported Value type: " + value.getType());
   }
 }

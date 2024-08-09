@@ -7,13 +7,12 @@ package io.opentelemetry.exporter.internal.otlp;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.logs.KeyAnyValue;
+import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.internal.InternalAttributeKeyImpl;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.proto.common.v1.internal.KeyValue;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -39,11 +38,11 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
     this.value = value;
   }
 
-  /** Returns Marshaler for the given KeyAnyValue. */
-  public static KeyValueMarshaler createForKeyAnyValue(KeyAnyValue keyAnyValue) {
+  /** Returns Marshaler for the given KeyValue. */
+  public static KeyValueMarshaler createForKeyValue(KeyValue keyValue) {
     return new KeyValueMarshaler(
-        keyAnyValue.getKey().getBytes(StandardCharsets.UTF_8),
-        AnyValueMarshaler.create(keyAnyValue.getAnyValue()));
+        keyValue.getKey().getBytes(StandardCharsets.UTF_8),
+        AnyValueMarshaler.create(keyValue.getValue()));
   }
 
   /** Returns Marshalers for the given Attributes. */
@@ -104,14 +103,16 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
 
   @Override
   public void writeTo(Serializer output) throws IOException {
-    output.serializeString(KeyValue.KEY, keyUtf8);
-    output.serializeMessage(KeyValue.VALUE, value);
+    output.serializeString(io.opentelemetry.proto.common.v1.internal.KeyValue.KEY, keyUtf8);
+    output.serializeMessage(io.opentelemetry.proto.common.v1.internal.KeyValue.VALUE, value);
   }
 
   private static int calculateSize(byte[] keyUtf8, Marshaler value) {
     int size = 0;
-    size += MarshalerUtil.sizeBytes(KeyValue.KEY, keyUtf8);
-    size += MarshalerUtil.sizeMessage(KeyValue.VALUE, value);
+    size +=
+        MarshalerUtil.sizeBytes(io.opentelemetry.proto.common.v1.internal.KeyValue.KEY, keyUtf8);
+    size +=
+        MarshalerUtil.sizeMessage(io.opentelemetry.proto.common.v1.internal.KeyValue.VALUE, value);
     return size;
   }
 }

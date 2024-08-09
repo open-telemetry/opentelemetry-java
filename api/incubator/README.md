@@ -14,8 +14,7 @@ See [EventApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/events/Ev
 
 Features:
 
-* Check if logger is enabled before emitting logs to avoid uneccessary computation
-* Set AnyValue log record body with arbitrarily complex data
+* Check if logger is enabled before emitting logs to avoid unnecessary computation
 
 See [ExtendedLogsBridgeApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/logs/ExtendedLogsBridgeApiUsageTest.java).
 
@@ -31,7 +30,7 @@ See [ExtendedMetricsApiUsageTest](./src/test/java/io/opentelemetry/api/incubator
 
 Features:
 
-* Check if instrument is enabled before recording measurements to avoid uneccessary computation
+* Check if instrument is enabled before recording measurements to avoid unnecessary computation
 * Simplified injection / extraction of context
 
 See [ExtendedContextPropagatorsUsageTest](./src/test/java/io/opentelemetry/api/incubator/propagation/ExtendedContextPropagatorsUsageTest.java).
@@ -40,7 +39,7 @@ See [ExtendedContextPropagatorsUsageTest](./src/test/java/io/opentelemetry/api/i
 
 Features:
 
-* Check if tracer is enabled before starting spans to avoid uneccessary computation
+* Check if tracer is enabled before starting spans to avoid unnecessary computation
 * Utility methods to reduce boilerplace using span API, including extracting context, and wrapping runnables / callables with spans
 
 See [ExtendedTraceApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/trace/ExtendedTraceApiUsageTest.java).

@@ -9,10 +9,9 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.logs.AnyValue;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
-import io.opentelemetry.sdk.logs.internal.AnyValueBody;
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
@@ -42,21 +41,20 @@ class EventApiUsageTest {
     eventLogger
         .builder("org.foo.my-event")
         // Add fields to the payload. The API has helpers for adding field values which are
-        // primitives or arrays of primitives, but you can also add a field with type AnyValue,
+        // primitives or arrays of primitives, but you can also add a field with type Value,
         // allowing for arbitrarily complex payloads.
         .put("key1", "value1")
         .put(
             "key2",
-            AnyValue.of(
-                ImmutableMap.of(
-                    "childKey1", AnyValue.of("value2"), "childKey2", AnyValue.of("value3"))))
+            Value.of(
+                ImmutableMap.of("childKey1", Value.of("value2"), "childKey2", Value.of("value3"))))
         // Optionally set other fields, including timestamp, severity, context, and attributes
         // (attributes provide additional details about the event which are not part of the well
         // defined payload)
         .emit();
 
     // Events manifest as log records with an event.name attribute, and with the payload fields in
-    // the AnyValue log record body
+    // the Value log record body
     loggerProvider.forceFlush().join(10, TimeUnit.SECONDS);
     assertThat(exporter.getFinishedLogRecordItems())
         .satisfiesExactly(
@@ -64,19 +62,20 @@ class EventApiUsageTest {
               assertThat(logData)
                   .hasAttributes(
                       Attributes.builder().put("event.name", "org.foo.my-event").build());
-              assertThat(((AnyValueBody) logData.getBody()).asAnyValue())
+              assertThat(logData.getBodyValue())
+                  .isNotNull()
                   .isEqualTo(
-                      AnyValue.of(
+                      Value.of(
                           ImmutableMap.of(
                               "key1",
-                              AnyValue.of("value1"),
+                              Value.of("value1"),
                               "key2",
-                              AnyValue.of(
+                              Value.of(
                                   ImmutableMap.of(
                                       "childKey1",
-                                      AnyValue.of("value2"),
+                                      Value.of("value2"),
                                       "childKey2",
-                                      AnyValue.of("value3"))))));
+                                      Value.of("value3"))))));
             });
   }
 }
