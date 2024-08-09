@@ -149,8 +149,7 @@ public final class RetryInterceptor implements Interceptor {
     if (e instanceof SocketTimeoutException) {
       String message = e.getMessage();
       // Connect timeouts can produce SocketTimeoutExceptions with no message, or with "connect
-      // timed
-      // out"
+      // timed out"
       return message == null || message.toLowerCase(Locale.ROOT).contains("connect timed out");
     } else if (e instanceof ConnectException) {
       // Exceptions resemble: java.net.ConnectException: Failed to connect to
