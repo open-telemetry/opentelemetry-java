@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Attributes;
@@ -16,8 +16,11 @@ import org.junit.jupiter.api.Test;
 
 class ResourceFactoryTest {
 
+  private SpiHelper spiHelper = SpiHelper.create(MetricExporterFactoryTest.class.getClassLoader());
+
   @Test
   void create() {
+    spiHelper = spy(spiHelper);
     assertThat(
             ResourceFactory.getInstance()
                 .create(
@@ -26,13 +29,21 @@ class ResourceFactoryTest {
                         .withAttributes(
                             new Attributes()
                                 .withServiceName("my-service")
-                                .withAdditionalProperty("key", "val")),
-                    mock(SpiHelper.class),
+                                .withAdditionalProperty("key", "val")
+                                // Should override shape attribute from ResourceComponentProvider
+                                .withAdditionalProperty("shape", "circle")),
+                    spiHelper,
                     Collections.emptyList()))
         .isEqualTo(
             Resource.getDefault().toBuilder()
                 .put("service.name", "my-service")
                 .put("key", "val")
+                .put("shape", "circle")
+                // From ResourceComponentProvider
+                .put("color", "red")
+                // From ResourceOrderedSecondComponentProvider, which takes priority over
+                // ResourceOrderedFirstComponentProvider
+                .put("order", "second")
                 .build());
   }
 }

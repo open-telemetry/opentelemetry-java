@@ -81,9 +81,9 @@ public final class SpiHelper {
   }
 
   /**
-   * Find a registered {@link ComponentProvider} which {@link ComponentProvider#getType()} matching
+   * Find a registered {@link ComponentProvider} with {@link ComponentProvider#getType()} matching
    * {@code type}, {@link ComponentProvider#getName()} matching {@code name}, and call {@link
-   * ComponentProvider#create(StructuredConfigProperties)} with the given {@code model}.
+   * ComponentProvider#create(StructuredConfigProperties)} with the given {@code config}.
    *
    * @throws ConfigurationException if no matching providers are found, or if multiple are found
    *     (i.e. conflict), or if {@link ComponentProvider#create(StructuredConfigProperties)} throws
