@@ -25,17 +25,24 @@ final class FilteredAttributes implements Attributes {
   private final Object[] sourceData;
   private final BitSet filteredIndices;
   private final int size;
-  private int hashcode;
+  private final int hashcode;
 
   private FilteredAttributes(
       ImmutableKeyValuePairs<AttributeKey<?>, Object> source, Set<AttributeKey<?>> keys) {
     this.sourceData = source.getData();
     this.filteredIndices = new BitSet(source.size());
+    // Record the indices to filter.
+    // Compute hashcode inline to avoid iteration later
+    int hashcode = 1;
     for (int i = 0; i < sourceData.length; i += 2) {
       if (!keys.contains(sourceData[i])) {
         filteredIndices.set(i / 2);
+      } else {
+        hashcode = 31 * hashcode + sourceData[i].hashCode();
+        hashcode = 31 * hashcode + sourceData[i + 1].hashCode();
       }
     }
+    this.hashcode = hashcode;
     this.size = sourceData.length / 2 - filteredIndices.cardinality();
   }
 
@@ -197,19 +204,7 @@ final class FilteredAttributes implements Attributes {
 
   @Override
   public int hashCode() {
-    // memoize the hashcode to avoid comparatively expensive recompute
-    int result = hashcode;
-    if (result == 0) {
-      result = 1;
-      for (int i = 0; i < sourceData.length; i += 2) {
-        if (!filteredIndices.get(i / 2)) {
-          result = 31 * result + sourceData[i].hashCode();
-          result = 31 * result + sourceData[i + 1].hashCode();
-        }
-      }
-      hashcode = result;
-    }
-    return result;
+    return hashcode;
   }
 
   @Override
