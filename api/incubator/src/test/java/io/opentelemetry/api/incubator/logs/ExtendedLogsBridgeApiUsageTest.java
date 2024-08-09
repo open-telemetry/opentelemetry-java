@@ -12,6 +12,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
@@ -21,10 +22,19 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /** Demonstrating usage of extended Logs Bridge API. */
 class ExtendedLogsBridgeApiUsageTest {
+
+  @Test
+  void incubatingApiIsLoaded() {
+    Logger logger = LoggerProvider.noop().get("test");
+
+    Assertions.assertThat(logger).isInstanceOf(ExtendedLogger.class);
+    Assertions.assertThat(logger.logRecordBuilder()).isInstanceOf(ExtendedLogRecordBuilder.class);
+  }
 
   @Test
   void loggerEnabled() {

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.logs;
 
+import io.opentelemetry.api.internal.IncubatingUtil;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -43,6 +44,8 @@ public interface LoggerProvider {
 
   /** Returns a no-op {@link LoggerProvider} which provides Loggers which do not record or emit. */
   static LoggerProvider noop() {
-    return DefaultLoggerProvider.getInstance();
+    return IncubatingUtil.incubatingApiIfAvailable(
+        DefaultLoggerProvider.getInstance(),
+        "io.opentelemetry.api.incubator.logs.ExtendedDefaultLoggerProvider");
   }
 }

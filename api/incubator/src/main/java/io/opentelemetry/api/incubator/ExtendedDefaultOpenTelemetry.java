@@ -3,9 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api;
+package io.opentelemetry.api.incubator;
 
-import io.opentelemetry.api.internal.IncubatingUtil;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.incubator.metrics.ExtendedDefaultMeterProvider;
+import io.opentelemetry.api.incubator.trace.ExtendedDefaultTracerProvider;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -16,34 +18,32 @@ import javax.annotation.concurrent.ThreadSafe;
  * back to no-op default implementations.
  */
 @ThreadSafe
-final class DefaultOpenTelemetry implements OpenTelemetry {
+final class ExtendedDefaultOpenTelemetry implements OpenTelemetry {
   private static final OpenTelemetry NO_OP =
-      IncubatingUtil.incubatingApiIfAvailable(
-          new DefaultOpenTelemetry(ContextPropagators.noop()),
-          "io.opentelemetry.api.incubator.ExtendedDefaultOpenTelemetry");
+      new ExtendedDefaultOpenTelemetry(ContextPropagators.noop());
 
   static OpenTelemetry getNoop() {
     return NO_OP;
   }
 
   static OpenTelemetry getPropagating(ContextPropagators propagators) {
-    return new DefaultOpenTelemetry(propagators);
+    return new ExtendedDefaultOpenTelemetry(propagators);
   }
 
   private final ContextPropagators propagators;
 
-  DefaultOpenTelemetry(ContextPropagators propagators) {
+  ExtendedDefaultOpenTelemetry(ContextPropagators propagators) {
     this.propagators = propagators;
   }
 
   @Override
   public TracerProvider getTracerProvider() {
-    return TracerProvider.noop();
+    return ExtendedDefaultTracerProvider.getInstance();
   }
 
   @Override
   public MeterProvider getMeterProvider() {
-    return MeterProvider.noop();
+    return ExtendedDefaultMeterProvider.getInstance();
   }
 
   @Override
