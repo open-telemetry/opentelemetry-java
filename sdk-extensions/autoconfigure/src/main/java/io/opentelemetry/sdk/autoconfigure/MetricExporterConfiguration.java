@@ -34,6 +34,7 @@ final class MetricExporterConfiguration {
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging", "opentelemetry-exporter-logging");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("logging-otlp", "opentelemetry-exporter-logging-otlp");
     EXPORTER_ARTIFACT_ID_BY_NAME.put("otlp", "opentelemetry-exporter-otlp");
+    EXPORTER_ARTIFACT_ID_BY_NAME.put("otlp-stdout", "opentelemetry-exporter-otlp");
 
     READER_ARTIFACT_ID_BY_NAME = new HashMap<>();
     READER_ARTIFACT_ID_BY_NAME.put("prometheus", "opentelemetry-exporter-prometheus");

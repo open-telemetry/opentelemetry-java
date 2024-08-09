@@ -1,0 +1,89 @@
+{
+  "resourceLogs": [
+    {
+      "resource": {
+        "attributes": [
+          {
+            "key": "key",
+            "value": {
+              "stringValue": "value"
+            }
+          }
+        ]
+      },
+      "scopeLogs": [
+        {
+          "scope": {
+            "name": "instrumentation",
+            "version": "1",
+            "attributes": [
+              {
+                "key": "key",
+                "value": {
+                  "stringValue": "value"
+                }
+              }
+            ]
+          },
+          "logRecords": [
+            {
+              "timeUnixNano": "100",
+              "observedTimeUnixNano": "200",
+              "severityNumber": 9,
+              "severityText": "INFO",
+              "body": {
+                "stringValue": "body1"
+              },
+              "attributes": [
+                {
+                  "key": "animal",
+                  "value": {
+                    "stringValue": "cat"
+                  }
+                },
+                {
+                  "key": "lives",
+                  "value": {
+                    "intValue": "9"
+                  }
+                }
+              ],
+              "droppedAttributesCount": -2,
+              "traceId": "12345678876543211234567887654322",
+              "spanId": "8765432112345876"
+            }
+          ]
+        },
+        {
+          "scope": {
+            "name": "instrumentation2",
+            "version": "2",
+            "attributes": []
+          },
+          "logRecords": [
+            {
+              "timeUnixNano": "100",
+              "observedTimeUnixNano": "200",
+              "severityNumber": 9,
+              "severityText": "INFO",
+              "body": {
+                "stringValue": "body2"
+              },
+              "attributes": [
+                {
+                  "key": "important",
+                  "value": {
+                    "boolValue": true
+                  }
+                }
+              ],
+              "droppedAttributesCount": -1,
+              "traceId": "12345678876543211234567887654322",
+              "spanId": "8765432112345875"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
