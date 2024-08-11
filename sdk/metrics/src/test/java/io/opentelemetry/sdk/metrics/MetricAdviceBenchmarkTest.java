@@ -107,4 +107,17 @@ public class MetricAdviceBenchmarkTest {
       counter.add(1, httpServerSpanAttributes());
     }
   }
+
+  @Test
+  void adviceAllAttributesCached() {
+    Attributes attributes = httpServerSpanAttributes();
+    LongCounter counter =
+        ((ExtendedLongCounterBuilder) meter.counterBuilder("counter"))
+            .setAttributesAdvice(httpServerMetricAttributeKeys)
+            .build();
+
+    for (int i = 0; i < 1_000_000; i++) {
+      counter.add(1, attributes);
+    }
+  }
 }

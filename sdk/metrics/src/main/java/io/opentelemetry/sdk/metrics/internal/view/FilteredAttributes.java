@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -21,27 +22,37 @@ import javax.annotation.Nullable;
 @SuppressWarnings("unchecked")
 final class FilteredAttributes implements Attributes {
 
-  private static final int BITS_PER_WORD = 8;
+  private static final int BITS_PER_INTEGER = 32;
 
-  private final byte[] words;
+  private final int filteredIndices;
+  @Nullable private final BitSet overflowFilteredIndices;
   private final Object[] sourceData;
   private final int hashcode;
 
+  @SuppressWarnings("NullAway")
   private FilteredAttributes(
       ImmutableKeyValuePairs<AttributeKey<?>, Object> source, Set<AttributeKey<?>> keys) {
     this.sourceData = source.getData();
-    this.words = new byte[wordIndex(source.size() - 1) + 1];
+    int filteredIndices = 0;
+    this.overflowFilteredIndices =
+        source.size() > BITS_PER_INTEGER ? new BitSet(source.size() - BITS_PER_INTEGER) : null;
     // Record the indices to filter.
     // Compute hashcode inline to avoid iteration later
     int hashcode = 1;
     for (int i = 0; i < sourceData.length; i += 2) {
+      int filterIndex = i / 2;
       if (!keys.contains(sourceData[i])) {
-        set(i / 2);
+        if (filterIndex < BITS_PER_INTEGER) {
+          filteredIndices = filteredIndices | (1 << filterIndex);
+        } else {
+          overflowFilteredIndices.set(filterIndex - BITS_PER_INTEGER);
+        }
       } else {
         hashcode = 31 * hashcode + sourceData[i].hashCode();
         hashcode = 31 * hashcode + sourceData[i + 1].hashCode();
       }
     }
+    this.filteredIndices = filteredIndices;
     this.hashcode = hashcode;
   }
 
@@ -202,30 +213,16 @@ final class FilteredAttributes implements Attributes {
     return joiner.toString();
   }
 
-  private static int wordIndex(int bitIndex) {
-    return bitIndex >> BITS_PER_WORD;
-  }
-
-  private void set(int bitIndex) {
-    // TODO check range
-    int wordIndex = wordIndex(bitIndex);
-    bitIndex = wordIndex == 0 ? bitIndex : bitIndex % wordIndex;
-    int word = words[wordIndex];
-    words[wordIndex] = (byte) (word | (1 << bitIndex));
-  }
-
+  @SuppressWarnings("NullAway")
   private boolean get(int bitIndex) {
-    int wordIndex = wordIndex(bitIndex);
-    bitIndex = wordIndex == 0 ? bitIndex : bitIndex % wordIndex;
-    int word = words[wordIndex];
-    return (word & (1 << bitIndex)) != 0;
+    if (bitIndex < BITS_PER_INTEGER) {
+      return (filteredIndices & (1 << bitIndex)) != 0;
+    }
+    return overflowFilteredIndices.get(bitIndex - BITS_PER_INTEGER);
   }
 
   private int cardinality() {
-    int sum = 0;
-    for (byte word : words) {
-      sum += Integer.bitCount(word);
-    }
-    return sum;
+    return Integer.bitCount(filteredIndices)
+        + (overflowFilteredIndices == null ? 0 : overflowFilteredIndices.cardinality());
   }
 }

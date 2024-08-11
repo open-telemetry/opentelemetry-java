@@ -100,6 +100,8 @@ public class MetricAdviceBenchmark {
         .build();
   }
 
+  static final Attributes CACHED_HTTP_SERVER_SPAN_ATTRIBUTES = httpServerSpanAttributes();
+
   @State(Scope.Benchmark)
   public static class ThreadState {
 
@@ -159,6 +161,20 @@ public class MetricAdviceBenchmark {
             counter.add(value, httpServerMetricAttributes());
           }
         }),
+    NO_ADVICE_ALL_ATTRIBUTES_CACHED(
+        new Instrument() {
+          private LongCounter counter;
+
+          @Override
+          void setup(Meter meter) {
+            counter = ((ExtendedLongCounterBuilder) meter.counterBuilder("counter")).build();
+          }
+
+          @Override
+          void record(long value) {
+            counter.add(value, CACHED_HTTP_SERVER_SPAN_ATTRIBUTES);
+          }
+        }),
     ADVICE_ALL_ATTRIBUTES(
         new Instrument() {
           private LongCounter counter;
@@ -191,6 +207,23 @@ public class MetricAdviceBenchmark {
           @Override
           void record(long value) {
             counter.add(value, httpServerMetricAttributes());
+          }
+        }),
+    ADVICE_ALL_ATTRIBUTES_CACHED(
+        new Instrument() {
+          private LongCounter counter;
+
+          @Override
+          void setup(Meter meter) {
+            counter =
+                ((ExtendedLongCounterBuilder) meter.counterBuilder("counter"))
+                    .setAttributesAdvice(httpServerMetricAttributeKeys)
+                    .build();
+          }
+
+          @Override
+          void record(long value) {
+            counter.add(value, CACHED_HTTP_SERVER_SPAN_ATTRIBUTES);
           }
         });
 
