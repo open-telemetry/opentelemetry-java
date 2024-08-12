@@ -133,6 +133,10 @@ public class MetricAdviceBenchmark {
 
   @SuppressWarnings("ImmutableEnumChecker")
   public enum InstrumentParam {
+    /**
+     * Record HTTP span attributes without advice. This baseline shows the CPU and memory allocation
+     * independent of advice.
+     */
     NO_ADVICE_ALL_ATTRIBUTES(
         new Instrument() {
           private LongCounter counter;
@@ -147,6 +151,13 @@ public class MetricAdviceBenchmark {
             counter.add(value, httpServerSpanAttributes());
           }
         }),
+    /**
+     * Record HTTP metric attributes without advice. This baseline shows the lower bound if
+     * attribute filtering was done in instrumentation instead of the metrics SDK with advice. It's
+     * not quite fair though because instrumentation would have to separately allocate attributes
+     * for spans and metrics, whereas with advice, we can manage to only allocate span attributes
+     * and a lightweight metrics attributes view derived from span attributes.
+     */
     NO_ADVICE_FILTERED_ATTRIBUTES(
         new Instrument() {
           private LongCounter counter;
@@ -161,6 +172,10 @@ public class MetricAdviceBenchmark {
             counter.add(value, httpServerMetricAttributes());
           }
         }),
+    /**
+     * Record cached HTTP span attributes without advice. This baseline helps isolate the CPU and
+     * memory allocation for recording vs. creating attributes.
+     */
     NO_ADVICE_ALL_ATTRIBUTES_CACHED(
         new Instrument() {
           private LongCounter counter;
@@ -175,6 +190,10 @@ public class MetricAdviceBenchmark {
             counter.add(value, CACHED_HTTP_SERVER_SPAN_ATTRIBUTES);
           }
         }),
+    /**
+     * Record HTTP span attributes with advice filtering to HTTP metric attributes. This is meant to
+     * realistically demonstrate a typical HTTP server instrumentation scenario.
+     */
     ADVICE_ALL_ATTRIBUTES(
         new Instrument() {
           private LongCounter counter;
@@ -192,6 +211,10 @@ public class MetricAdviceBenchmark {
             counter.add(value, httpServerSpanAttributes());
           }
         }),
+    /**
+     * Record HTTP metric attributes with advice filtering to HTTP metric attributes. This
+     * demonstrates the overhead of advice when no attributes are filtered.
+     */
     ADVICE_FILTERED_ATTRIBUTES(
         new Instrument() {
           private LongCounter counter;
@@ -209,6 +232,10 @@ public class MetricAdviceBenchmark {
             counter.add(value, httpServerMetricAttributes());
           }
         }),
+    /**
+     * Record cached HTTP span attributes with advice filtering to HTTP metric attributes. This
+     * isolates the CPU and memory allocation for applying advice vs. creating attributes.
+     */
     ADVICE_ALL_ATTRIBUTES_CACHED(
         new Instrument() {
           private LongCounter counter;
