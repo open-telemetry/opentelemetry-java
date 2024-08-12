@@ -8,239 +8,185 @@ package io.opentelemetry.sdk.metrics.internal.view;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.entry;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.testing.EqualsTester;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import java.util.Arrays;
+import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /** Unit tests for {@link FilteredAttributes}s. */
 @SuppressWarnings("rawtypes")
 class FilteredAttributesTest {
 
-  @Test
-  void forEach() {
-    Map<AttributeKey, Object> entriesSeen = new LinkedHashMap<>();
+  private static final AttributeKey<String> KEY1 = stringKey("key1");
+  private static final AttributeKey<String> KEY2 = stringKey("key2");
+  private static final AttributeKey<String> KEY3 = stringKey("key3");
+  private static final AttributeKey<String> KEY4 = stringKey("key4");
+  private static final AttributeKey<Long> KEY2_LONG = longKey("key2");
+  private static final Set<AttributeKey<?>> ALL_KEYS =
+      ImmutableSet.of(KEY1, KEY2, KEY3, KEY4, KEY2_LONG);
+  private static final Attributes ALL_ATTRIBUTES =
+      Attributes.of(KEY1, "value1", KEY2, "value2", KEY2_LONG, 222L, KEY3, "value3");
+  private static final Attributes FILTERED_ATTRIBUTES_ONE =
+      FilteredAttributes.create(ALL_ATTRIBUTES, ImmutableSet.of(KEY1));
+  private static final Attributes FILTERED_ATTRIBUTES_TWO =
+      FilteredAttributes.create(ALL_ATTRIBUTES, ImmutableSet.of(KEY1, KEY2_LONG));
+  private static final Attributes FILTERED_ATTRIBUTES_THREE =
+      FilteredAttributes.create(ALL_ATTRIBUTES, ImmutableSet.of(KEY1, KEY2_LONG, KEY3));
+  private static final Attributes FILTERED_ATTRIBUTES_FOUR =
+      FilteredAttributes.create(ALL_ATTRIBUTES, ImmutableSet.of(KEY1, KEY2_LONG, KEY3, KEY4));
+  private static final Attributes FILTERED_ATTRIBUTES_EMPTY_SOURCE =
+      FilteredAttributes.create(Attributes.empty(), ImmutableSet.of(KEY1));
+  private static final Attributes FILTERED_ATTRIBUTES_EMPTY =
+      FilteredAttributes.create(ALL_ATTRIBUTES, Collections.emptySet());
 
-    Attributes attributes =
-        FilteredAttributes.create(
-            Attributes.of(
-                stringKey("key1"), "value1", longKey("key2"), 333L, stringKey("key3"), "value3"),
-            ImmutableSet.of(stringKey("key1"), longKey("key2")));
-
-    attributes.forEach(entriesSeen::put);
-
-    assertThat(entriesSeen)
-        .containsExactly(entry(stringKey("key1"), "value1"), entry(longKey("key2"), 333L));
-  }
-
-  @Test
-  void forEach_singleAttribute() {
+  @ParameterizedTest
+  @MethodSource("mapArgs")
+  void forEach(Attributes filteredAttributes, Map<AttributeKey<?>, Object> expectedMapEntries) {
     Map<AttributeKey, Object> entriesSeen = new HashMap<>();
-
-    Attributes attributes =
-        FilteredAttributes.create(
-            Attributes.of(stringKey("key"), "value"), ImmutableSet.of(stringKey("key")));
-    attributes.forEach(entriesSeen::put);
-    assertThat(entriesSeen).containsExactly(entry(stringKey("key"), "value"));
+    filteredAttributes.forEach(entriesSeen::put);
+    assertThat(entriesSeen).isEqualTo(expectedMapEntries);
   }
 
-  @SuppressWarnings("CollectionIncompatibleType")
-  @Test
-  void asMap() {
-    Attributes attributes =
-        FilteredAttributes.create(
-            Attributes.of(
-                stringKey("key1"), "value1", longKey("key2"), 333L, stringKey("key3"), "value3"),
-            ImmutableSet.of(stringKey("key1"), longKey("key2")));
-
-    Map<AttributeKey<?>, Object> map = attributes.asMap();
-    assertThat(map)
-        .containsExactly(entry(stringKey("key1"), "value1"), entry(longKey("key2"), 333L));
-
-    assertThat(map.get(stringKey("key1"))).isEqualTo("value1");
-    assertThat(map.get(longKey("key2"))).isEqualTo(333L);
-    // Map of AttributeKey, not String
-    assertThat(map.get("key1")).isNull();
-    assertThat(map.get(null)).isNull();
-    assertThat(map.keySet()).containsExactlyInAnyOrder(stringKey("key1"), longKey("key2"));
-    assertThat(map.values()).containsExactlyInAnyOrder("value1", 333L);
-    assertThat(map.entrySet())
-        .containsExactlyInAnyOrder(
-            entry(stringKey("key1"), "value1"), entry(longKey("key2"), 333L));
-    assertThat(map.entrySet().contains(entry(stringKey("key1"), "value1"))).isTrue();
-    assertThat(map.entrySet().contains(entry(stringKey("key1"), "value2"))).isFalse();
-    assertThat(map.isEmpty()).isFalse();
-    assertThat(map.containsKey(stringKey("key1"))).isTrue();
-    assertThat(map.containsKey(longKey("key2"))).isTrue();
-    assertThat(map.containsKey(stringKey("key3"))).isFalse();
-    assertThat(map.containsKey(null)).isFalse();
-    assertThat(map.containsValue("value1")).isTrue();
-    assertThat(map.containsValue(333L)).isTrue();
-    assertThat(map.containsValue("cat")).isFalse();
-    assertThatThrownBy(() -> map.put(stringKey("animal"), "cat"))
-        .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> map.remove(stringKey("key1")))
-        .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> map.putAll(Collections.emptyMap()))
-        .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(map::clear).isInstanceOf(UnsupportedOperationException.class);
-
-    assertThat(map.containsKey(stringKey("key1"))).isTrue();
-    assertThat(map.containsKey(stringKey("key3"))).isFalse();
-    assertThat(map.keySet().containsAll(Arrays.asList(stringKey("key1"), longKey("key2"))))
-        .isTrue();
-    assertThat(map.keySet().containsAll(Arrays.asList(stringKey("key1"), longKey("key3"))))
-        .isFalse();
-    assertThat(map.keySet().containsAll(Collections.emptyList())).isTrue();
-    assertThat(map.keySet().size()).isEqualTo(2);
-    assertThat(map.keySet().toArray())
-        .containsExactlyInAnyOrder(stringKey("key1"), longKey("key2"));
-    AttributeKey<?>[] keys = new AttributeKey[2];
-    map.keySet().toArray(keys);
-    assertThat(keys).containsExactlyInAnyOrder(stringKey("key1"), longKey("key2"));
-    keys = new AttributeKey[0];
-    assertThat(map.keySet().toArray(keys))
-        .containsExactlyInAnyOrder(stringKey("key1"), longKey("key2"));
-    assertThat(keys).isEmpty(); // Didn't use input array.
-    assertThatThrownBy(() -> map.keySet().iterator().remove())
-        .isInstanceOf(UnsupportedOperationException.class);
-    assertThat(map.containsKey(stringKey("key1"))).isTrue();
-    assertThat(map.keySet().containsAll(Arrays.asList(stringKey("key1"), stringKey("key3"))))
-        .isFalse();
-    assertThat(map.keySet().isEmpty()).isFalse();
-    assertThatThrownBy(() -> map.keySet().add(stringKey("key3")))
-        .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> map.keySet().remove(stringKey("key1")))
-        .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> map.keySet().add(stringKey("key3")))
-        .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> map.keySet().retainAll(Collections.singletonList(stringKey("key3"))))
-        .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> map.keySet().removeAll(Collections.singletonList(stringKey("key3"))))
-        .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> map.keySet().clear())
-        .isInstanceOf(UnsupportedOperationException.class);
-
-    assertThat(map.containsValue("value1")).isTrue();
-    assertThat(map.containsValue("value3")).isFalse();
-
-    assertThat(map.toString()).isEqualTo("{key1=value1, key2=333}");
-
-    Map<AttributeKey<?>, Object> emptyMap = Attributes.builder().build().asMap();
-    assertThat(emptyMap.isEmpty()).isTrue();
-    assertThatThrownBy(() -> emptyMap.entrySet().iterator().next())
-        .isInstanceOf(NoSuchElementException.class);
+  @ParameterizedTest
+  @MethodSource("mapArgs")
+  void asMap(Attributes filteredAttributes, Map<AttributeKey<?>, Object> expectedMapEntries) {
+    assertThat(filteredAttributes.asMap()).isEqualTo(expectedMapEntries);
   }
 
-  @Test
-  void equalsAndHashCode() {
-    Attributes one =
-        FilteredAttributes.create(
-            Attributes.of(
-                stringKey("key1"), "value1",
-                stringKey("key2"), "value2",
-                stringKey("key3"), "value3"),
-            ImmutableSet.of(stringKey("key1"), stringKey("key2")));
-    Attributes two =
-        FilteredAttributes.create(
-            Attributes.of(
-                stringKey("key1"), "value1",
-                stringKey("key2"), "value2",
-                stringKey("key3"), "other"),
-            ImmutableSet.of(stringKey("key1"), stringKey("key2")));
-    Attributes three =
-        FilteredAttributes.create(
-            Attributes.of(
-                stringKey("key1"), "value1",
-                stringKey("key2"), "value2",
-                stringKey("key4"), "value4"),
-            ImmutableSet.of(stringKey("key1"), stringKey("key2")));
-
-    assertThat(one).isEqualTo(two);
-    assertThat(one).isEqualTo(three);
-    assertThat(two).isEqualTo(three);
-    assertThat(one.hashCode()).isEqualTo(two.hashCode());
-    assertThat(two.hashCode()).isEqualTo(three.hashCode());
-
-    Attributes four =
-        FilteredAttributes.create(
-            Attributes.of(
-                stringKey("key1"), "value1",
-                stringKey("key2"), "other"),
-            ImmutableSet.of(stringKey("key1"), stringKey("key2")));
-    Attributes five =
-        FilteredAttributes.create(
-            Attributes.of(
-                stringKey("key1"), "value1",
-                stringKey("key2"), "value2",
-                stringKey("key3"), "value3"),
-            ImmutableSet.of(stringKey("key1"), stringKey("key2"), stringKey("key3")));
-    assertThat(one).isNotEqualTo(four);
-    assertThat(one).isNotEqualTo(five);
-    assertThat(one.hashCode()).isNotEqualTo(four.hashCode());
-    assertThat(one.hashCode()).isNotEqualTo(five.hashCode());
-
-    assertThat(two).isNotEqualTo(four);
-    assertThat(two).isNotEqualTo(five);
-    assertThat(two.hashCode()).isNotEqualTo(four.hashCode());
-    assertThat(two.hashCode()).isNotEqualTo(five.hashCode());
-
-    assertThat(three).isNotEqualTo(four);
-    assertThat(three).isNotEqualTo(five);
-    assertThat(three.hashCode()).isNotEqualTo(four.hashCode());
-    assertThat(three.hashCode()).isNotEqualTo(five.hashCode());
+  @ParameterizedTest
+  @MethodSource("mapArgs")
+  void size(Attributes filteredAttributes, Map<AttributeKey<?>, Object> expectedMapEntries) {
+    assertThat(filteredAttributes.size()).isEqualTo(expectedMapEntries.size());
   }
 
-  @Test
-  void get_Null() {
-    Attributes attributes =
-        FilteredAttributes.create(
-            Attributes.of(
-                stringKey("key1"), "value1", longKey("key2"), 333L, stringKey("key3"), "value3"),
-            ImmutableSet.of(stringKey("key1"), longKey("key2")));
-    assertThat(attributes.get(stringKey("foo"))).isNull();
-    assertThat(attributes.get(stringKey("key3"))).isNull();
-    assertThat(attributes.get(stringKey("key3"))).isNull();
+  @ParameterizedTest
+  @MethodSource("mapArgs")
+  void isEmpty(Attributes filteredAttributes, Map<AttributeKey<?>, Object> expectedMapEntries) {
+    assertThat(filteredAttributes.isEmpty()).isEqualTo(expectedMapEntries.isEmpty());
   }
 
-  @Test
-  void get() {
-    Attributes attributes =
-        FilteredAttributes.create(
-            Attributes.of(
-                stringKey("key1"), "value1", longKey("key2"), 333L, stringKey("key3"), "value3"),
-            ImmutableSet.of(stringKey("key1"), longKey("key2")));
-    assertThat(attributes.get(stringKey("key1"))).isEqualTo("value1");
-    assertThat(attributes.get(longKey("key2"))).isEqualTo(333L);
+  @ParameterizedTest
+  @MethodSource("mapArgs")
+  void get(Attributes filteredAttributes, Map<AttributeKey<?>, Object> expectedMapEntries) {
+    for (AttributeKey<?> key : ALL_KEYS) {
+      Object expectedValue = expectedMapEntries.get(key);
+      assertThat(filteredAttributes.get(key)).isEqualTo(expectedValue);
+    }
   }
 
-  @Test
-  void toBuilder() {
-    Attributes attributes =
-        FilteredAttributes.create(
-            Attributes.of(
-                stringKey("key1"), "value1", longKey("key2"), 333L, stringKey("key3"), "value3"),
-            ImmutableSet.of(stringKey("key1"), longKey("key2")));
-    assertThat(attributes.toBuilder().build())
-        .isEqualTo(Attributes.of(stringKey("key1"), "value1", longKey("key2"), 333L));
+  @ParameterizedTest
+  @MethodSource("mapArgs")
+  void toBuilder(Attributes filteredAttributes, Map<AttributeKey<?>, Object> expectedMapEntries) {
+    Attributes attributes = filteredAttributes.toBuilder().build();
+    assertThat(attributes.asMap()).isEqualTo(expectedMapEntries);
+  }
+
+  private static Stream<Arguments> mapArgs() {
+    return Stream.of(
+        Arguments.of(FILTERED_ATTRIBUTES_ONE, ImmutableMap.of(KEY1, "value1")),
+        Arguments.of(FILTERED_ATTRIBUTES_TWO, ImmutableMap.of(KEY1, "value1", KEY2_LONG, 222L)),
+        Arguments.of(
+            FILTERED_ATTRIBUTES_THREE,
+            ImmutableMap.of(KEY1, "value1", KEY2_LONG, 222L, KEY3, "value3")),
+        Arguments.of(
+            FILTERED_ATTRIBUTES_FOUR,
+            ImmutableMap.of(KEY1, "value1", KEY2_LONG, 222L, KEY3, "value3")),
+        Arguments.of(FILTERED_ATTRIBUTES_EMPTY_SOURCE, Collections.emptyMap()),
+        Arguments.of(FILTERED_ATTRIBUTES_EMPTY, Collections.emptyMap()));
   }
 
   @Test
   void stringRepresentation() {
-    Attributes attributes =
-        FilteredAttributes.create(
-            Attributes.of(
-                stringKey("key1"), "value1", longKey("key2"), 333L, stringKey("key3"), "value3"),
-            ImmutableSet.of(stringKey("key1"), longKey("key2")));
-    assertThat(attributes.toString()).isEqualTo("FilteredAttributes{key1=value1,key2=333}");
+    assertThat(FILTERED_ATTRIBUTES_ONE.toString()).isEqualTo("FilteredAttributes{key1=value1}");
+    assertThat(FILTERED_ATTRIBUTES_TWO.toString())
+        .isEqualTo("FilteredAttributes{key1=value1,key2=222}");
+    assertThat(FILTERED_ATTRIBUTES_THREE.toString())
+        .isEqualTo("FilteredAttributes{key1=value1,key2=222,key3=value3}");
+    assertThat(FILTERED_ATTRIBUTES_FOUR.toString())
+        .isEqualTo("FilteredAttributes{key1=value1,key2=222,key3=value3}");
+    assertThat(FILTERED_ATTRIBUTES_EMPTY_SOURCE.toString()).isEqualTo("{}");
+    assertThat(FILTERED_ATTRIBUTES_EMPTY.toString()).isEqualTo("{}");
+  }
+
+  /**
+   * Test behavior of attributes with more than the 32 limit of FilteredAttributes.filteredIndices.
+   */
+  @RepeatedTest(10)
+  void largeAttributes() {
+    Set<AttributeKey<?>> allKeys = new HashSet<>();
+    AttributesBuilder allAttributesBuilder = Attributes.builder();
+    IntStream.range(0, 100)
+        .forEach(
+            i -> {
+              AttributeKey<String> key = stringKey("key" + i);
+              allKeys.add(key);
+              allAttributesBuilder.put(key, "value" + i);
+            });
+    Attributes allAttributes = allAttributesBuilder.build();
+
+    Attributes empty = FilteredAttributes.create(allAttributes, Collections.emptySet());
+    assertThat(empty.size()).isEqualTo(0);
+    assertThat(empty.isEmpty()).isTrue();
+
+    Set<AttributeKey<?>> oneKey = allKeys.stream().limit(1).collect(Collectors.toSet());
+    Attributes one = FilteredAttributes.create(allAttributes, oneKey);
+    assertThat(one.size()).isEqualTo(1);
+    assertThat(one.isEmpty()).isFalse();
+    allKeys.stream()
+        .forEach(
+            key -> {
+              if (oneKey.contains(key)) {
+                assertThat(one.get(key)).isNotNull();
+              } else {
+                assertThat(one.get(key)).isNull();
+              }
+            });
+
+    Set<AttributeKey<?>> tenKeys = allKeys.stream().limit(10).collect(Collectors.toSet());
+    Attributes ten = FilteredAttributes.create(allAttributes, tenKeys);
+    assertThat(ten.size()).isEqualTo(10);
+    assertThat(ten.isEmpty()).isFalse();
+    allKeys.stream()
+        .forEach(
+            key -> {
+              if (tenKeys.contains(key)) {
+                assertThat(ten.get(key)).isNotNull();
+              } else {
+                assertThat(ten.get(key)).isNull();
+              }
+            });
+  }
+
+  @Test
+  void equalsAndHashCode() {
+    new EqualsTester()
+        .addEqualityGroup(
+            FILTERED_ATTRIBUTES_ONE,
+            FilteredAttributes.create(Attributes.of(KEY1, "value1"), Collections.singleton(KEY1)),
+            FilteredAttributes.create(Attributes.of(KEY1, "value1"), ImmutableSet.of(KEY1, KEY2)),
+            FilteredAttributes.create(
+                Attributes.of(KEY1, "value1", KEY2, "value2"), Collections.singleton(KEY1)),
+            FilteredAttributes.create(
+                Attributes.of(KEY1, "value1", KEY2_LONG, 222L), Collections.singleton(KEY1)))
+        .addEqualityGroup(FILTERED_ATTRIBUTES_TWO)
+        .addEqualityGroup(FILTERED_ATTRIBUTES_THREE, FILTERED_ATTRIBUTES_FOUR)
+        .addEqualityGroup(FILTERED_ATTRIBUTES_EMPTY, FILTERED_ATTRIBUTES_EMPTY_SOURCE)
+        .testEquals();
   }
 }

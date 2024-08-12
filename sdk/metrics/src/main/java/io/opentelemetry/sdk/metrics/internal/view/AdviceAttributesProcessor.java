@@ -25,18 +25,6 @@ final class AdviceAttributesProcessor extends AttributesProcessor {
     return FilteredAttributes.create(incoming, attributeKeys);
   }
 
-  /** Returns true if {@code attributes} has keys not contained in {@link #attributeKeys}. */
-  private boolean hasExtraKeys(Attributes attributes) {
-    boolean[] result = {false};
-    attributes.forEach(
-        (key, value) -> {
-          if (!result[0] && !attributeKeys.contains(key)) {
-            result[0] = true;
-          }
-        });
-    return result[0];
-  }
-
   @Override
   public boolean usesContext() {
     return false;
