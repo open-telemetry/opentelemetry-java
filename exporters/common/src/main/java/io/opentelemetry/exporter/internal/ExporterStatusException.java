@@ -18,7 +18,7 @@ public final class ExporterStatusException extends Exception {
 
   private static final long serialVersionUID = -4885282244234214070L;
 
-  public int statusCode;
+  private final int statusCode;
 
   public ExporterStatusException(int statusCode, @Nullable Throwable cause) {
     super(cause);
