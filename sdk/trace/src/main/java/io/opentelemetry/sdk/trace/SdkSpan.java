@@ -104,6 +104,16 @@ final class SdkSpan implements ReadWriteSpan {
   @GuardedBy("lock")
   private EndState hasEnded;
 
+  /**
+   * The thread on which {@link #end()} is called and which will be invoking the {@link
+   * SpanProcessor}s. This field is used to ensure that only this thread may modify the span while
+   * it is in state {@link EndState#ENDING} to prevent concurrent updates outside of {@link
+   * SpanProcessor#onEnding(ReadWriteSpan)}.
+   */
+  @GuardedBy("lock")
+  @Nullable
+  private Thread spanEndingThread;
+
   private SdkSpan(
       SpanContext context,
       String name,
@@ -308,7 +318,7 @@ final class SdkSpan implements ReadWriteSpan {
       return this;
     }
     synchronized (lock) {
-      if (hasEnded == EndState.ENDED) {
+      if (isSpanUnmodifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
         return this;
       }
@@ -321,6 +331,12 @@ final class SdkSpan implements ReadWriteSpan {
       attributes.put(key, value);
     }
     return this;
+  }
+
+  @GuardedBy("lock")
+  private boolean isSpanUnmodifiableByCurrentThread() {
+    return hasEnded == EndState.ENDED
+        || (hasEnded == EndState.ENDING && Thread.currentThread() != spanEndingThread);
   }
 
   @Override
@@ -385,7 +401,7 @@ final class SdkSpan implements ReadWriteSpan {
 
   private void addTimedEvent(EventData timedEvent) {
     synchronized (lock) {
-      if (hasEnded == EndState.ENDED) {
+      if (isSpanUnmodifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
         return;
       }
@@ -405,7 +421,7 @@ final class SdkSpan implements ReadWriteSpan {
       return this;
     }
     synchronized (lock) {
-      if (hasEnded == EndState.ENDED) {
+      if (isSpanUnmodifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return this;
       } else if (this.status.getStatusCode() == StatusCode.OK) {
@@ -443,7 +459,7 @@ final class SdkSpan implements ReadWriteSpan {
       return this;
     }
     synchronized (lock) {
-      if (hasEnded == EndState.ENDED) {
+      if (isSpanUnmodifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling updateName() on an ended Span.");
         return this;
       }
@@ -468,7 +484,7 @@ final class SdkSpan implements ReadWriteSpan {
                 spanLimits.getMaxNumberOfAttributesPerLink(),
                 spanLimits.getMaxAttributeValueLength()));
     synchronized (lock) {
-      if (hasEnded == EndState.ENDED) {
+      if (isSpanUnmodifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling addLink() on an ended Span.");
         return this;
       }
@@ -502,11 +518,14 @@ final class SdkSpan implements ReadWriteSpan {
         logger.log(Level.FINE, "Calling end() on an ended or ending Span.");
         return;
       }
-      hasEnded = EndState.ENDING;
       this.endEpochNanos = endEpochNanos;
-      if (spanProcessor.isOnEndingRequired()) {
-        spanProcessor.onEnding(this);
-      }
+      spanEndingThread = Thread.currentThread();
+      hasEnded = EndState.ENDING;
+    }
+    if (spanProcessor.isOnEndingRequired()) {
+      spanProcessor.onEnding(this);
+    }
+    synchronized (lock) {
       hasEnded = EndState.ENDED;
     }
     if (spanProcessor.isEndRequired()) {

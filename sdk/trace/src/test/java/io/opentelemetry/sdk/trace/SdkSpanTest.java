@@ -146,7 +146,7 @@ class SdkSpanTest {
   }
 
   @Test
-  void beforeEnd_spanStillMutable() {
+  void onEnding_spanStillMutable() {
     SdkSpan span = createTestSpan(SpanKind.INTERNAL);
 
     AttributeKey<String> dummyAttrib = AttributeKey.stringKey("processor_foo");
@@ -172,7 +172,39 @@ class SdkSpanTest {
   }
 
   @Test
-  void beforeEnd_latencyPinned() {
+  void onEnding_concurrentModificationsPrevented() {
+    SdkSpan span = createTestSpan(SpanKind.INTERNAL);
+
+    AttributeKey<String> syncAttrib = AttributeKey.stringKey("sync_foo");
+    AttributeKey<String> concurrentAttrib = AttributeKey.stringKey("concurrent_foo");
+
+    doAnswer(
+            invocation -> {
+              ReadWriteSpan sp = invocation.getArgument(0, ReadWriteSpan.class);
+
+              Thread concurrent =
+                  new Thread(
+                      () -> {
+                        sp.setAttribute(concurrentAttrib, "concurrent_bar");
+                      });
+              concurrent.start();
+              concurrent.join();
+
+              sp.setAttribute(syncAttrib, "sync_bar");
+
+              return null;
+            })
+        .when(spanProcessor)
+        .onEnding(any());
+
+    span.end();
+    verify(spanProcessor).onEnding(same(span));
+    assertThat(span.getAttribute(concurrentAttrib)).isNull();
+    assertThat(span.getAttribute(syncAttrib)).isEqualTo("sync_bar");
+  }
+
+  @Test
+  void onEnding_latencyPinned() {
     SdkSpan span = createTestSpan(SpanKind.INTERNAL);
 
     AtomicLong spanLatencyInProcessor = new AtomicLong();
