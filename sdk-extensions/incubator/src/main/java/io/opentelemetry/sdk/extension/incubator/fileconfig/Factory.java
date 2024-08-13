@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import java.io.Closeable;
 import java.util.List;
-import javax.annotation.Nullable;
 
 interface Factory<ModelT, ResultT> {
 
@@ -20,5 +19,5 @@ interface Factory<ModelT, ResultT> {
    * @param closeables mutable list of closeables created
    * @return the {@link ResultT}
    */
-  ResultT create(@Nullable ModelT model, SpiHelper spiHelper, List<Closeable> closeables);
+  ResultT create(ModelT model, SpiHelper spiHelper, List<Closeable> closeables);
 }

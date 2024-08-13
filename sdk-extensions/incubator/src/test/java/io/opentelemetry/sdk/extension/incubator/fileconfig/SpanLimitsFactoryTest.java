@@ -32,7 +32,6 @@ class SpanLimitsFactoryTest {
 
   private static Stream<Arguments> createArguments() {
     return Stream.of(
-        Arguments.of(null, io.opentelemetry.sdk.trace.SpanLimits.getDefault()),
         Arguments.of(
             SpanLimitsAndAttributeLimits.create(null, null),
             io.opentelemetry.sdk.trace.SpanLimits.getDefault()),

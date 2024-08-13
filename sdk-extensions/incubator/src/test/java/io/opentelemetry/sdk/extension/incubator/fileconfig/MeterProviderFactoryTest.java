@@ -35,20 +35,6 @@ class MeterProviderFactoryTest {
       SpiHelper.create(MeterProviderFactoryTest.class.getClassLoader());
 
   @Test
-  void create_Null() {
-    List<Closeable> closeables = new ArrayList<>();
-    SdkMeterProvider expectedProvider = SdkMeterProvider.builder().build();
-    cleanup.addCloseable(expectedProvider);
-
-    SdkMeterProvider provider =
-        MeterProviderFactory.getInstance().create(null, spiHelper, closeables).build();
-    cleanup.addCloseable(provider);
-    cleanup.addCloseables(closeables);
-
-    assertThat(provider.toString()).isEqualTo(expectedProvider.toString());
-  }
-
-  @Test
   void create_Defaults() {
     List<Closeable> closeables = new ArrayList<>();
     SdkMeterProvider expectedProvider = SdkMeterProvider.builder().build();

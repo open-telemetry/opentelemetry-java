@@ -40,11 +40,6 @@ class PropagatorFactoryTest {
   private static Stream<Arguments> createArguments() {
     return Stream.of(
         Arguments.of(
-            null,
-            ContextPropagators.create(
-                TextMapPropagator.composite(
-                    W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance()))),
-        Arguments.of(
             new Propagator()
                 .withComposite(
                     Arrays.asList("tracecontext", "baggage", "ottrace", "b3multi", "b3", "jaeger")),

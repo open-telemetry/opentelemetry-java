@@ -7,14 +7,18 @@ package io.opentelemetry.exporter.prometheus.internal;
 
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import java.io.IOException;
@@ -59,6 +63,8 @@ class PrometheusMetricReaderProviderTest {
                 assertThat(server.getAddress().getPort()).isEqualTo(9464);
               });
       assertThat(metricReader.getMemoryMode()).isEqualTo(MemoryMode.IMMUTABLE_DATA);
+      assertThat(metricReader.getDefaultAggregation(InstrumentType.HISTOGRAM))
+          .isEqualTo(Aggregation.defaultAggregation());
     }
   }
 
@@ -76,6 +82,9 @@ class PrometheusMetricReaderProviderTest {
     config.put("otel.exporter.prometheus.host", "localhost");
     config.put("otel.exporter.prometheus.port", String.valueOf(port));
     config.put("otel.java.experimental.exporter.memory_mode", "reusable_data");
+    config.put(
+        "otel.java.experimental.exporter.prometheus.metrics.default.histogram.aggregation",
+        "BASE2_EXPONENTIAL_BUCKET_HISTOGRAM");
 
     when(configProperties.getInt(any())).thenReturn(null);
     when(configProperties.getString(any())).thenReturn(null);
@@ -91,6 +100,20 @@ class PrometheusMetricReaderProviderTest {
                 assertThat(server.getAddress().getPort()).isEqualTo(port);
               });
       assertThat(metricReader.getMemoryMode()).isEqualTo(MemoryMode.REUSABLE_DATA);
+      assertThat(metricReader.getDefaultAggregation(InstrumentType.HISTOGRAM))
+          .isEqualTo(Aggregation.base2ExponentialBucketHistogram());
     }
+  }
+
+  @Test
+  void createMetricReader_WithWrongConfiguration() {
+    Map<String, String> config = new HashMap<>();
+    config.put(
+        "otel.java.experimental.exporter.prometheus.metrics.default.histogram.aggregation", "foo");
+
+    assertThatThrownBy(
+            () -> provider.createMetricReader(DefaultConfigProperties.createFromMap(config)))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Unrecognized default histogram aggregation:");
   }
 }

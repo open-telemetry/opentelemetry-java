@@ -70,20 +70,6 @@ class OpenTelemetryConfigurationFactoryTest {
       SpiHelper.create(OpenTelemetryConfigurationFactoryTest.class.getClassLoader());
 
   @Test
-  void create_Null() {
-    List<Closeable> closeables = new ArrayList<>();
-    OpenTelemetrySdk expectedSdk = OpenTelemetrySdk.builder().build();
-    cleanup.addCloseable(expectedSdk);
-
-    OpenTelemetrySdk sdk =
-        OpenTelemetryConfigurationFactory.getInstance().create(null, spiHelper, closeables);
-    cleanup.addCloseable(sdk);
-    cleanup.addCloseables(closeables);
-
-    assertThat(sdk.toString()).isEqualTo(expectedSdk.toString());
-  }
-
-  @Test
   void create_InvalidFileFormat() {
     List<OpenTelemetryConfiguration> testCases =
         Arrays.asList(
@@ -104,14 +90,7 @@ class OpenTelemetryConfigurationFactoryTest {
   @Test
   void create_Defaults() {
     List<Closeable> closeables = new ArrayList<>();
-    OpenTelemetrySdk expectedSdk =
-        OpenTelemetrySdk.builder()
-            .setPropagators(
-                ContextPropagators.create(
-                    TextMapPropagator.composite(
-                        W3CTraceContextPropagator.getInstance(),
-                        W3CBaggagePropagator.getInstance())))
-            .build();
+    OpenTelemetrySdk expectedSdk = OpenTelemetrySdk.builder().build();
     cleanup.addCloseable(expectedSdk);
 
     OpenTelemetrySdk sdk =
