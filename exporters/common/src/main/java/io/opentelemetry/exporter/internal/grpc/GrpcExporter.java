@@ -10,6 +10,7 @@ import static io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil.GRPC_STAT
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterMetrics;
+import io.opentelemetry.exporter.internal.ExporterStatusException;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
@@ -66,7 +67,9 @@ public final class GrpcExporter<T extends Marshaler> {
         },
         (response, throwable) -> {
           exporterMetrics.addFailed(numItems);
-          switch (response.grpcStatusValue()) {
+          int statusValue = response.grpcStatusValue();
+
+          switch (statusValue) {
             case GRPC_STATUS_UNIMPLEMENTED:
               if (loggedUnimplemented.compareAndSet(false, true)) {
                 GrpcExporterUtil.logUnimplemented(
@@ -98,7 +101,8 @@ public final class GrpcExporter<T extends Marshaler> {
             logger.log(
                 Level.FINEST, "Failed to export " + type + "s. Details follow: " + throwable);
           }
-          result.fail();
+          ExporterStatusException exception = new ExporterStatusException(statusValue, throwable);
+          result.failExceptionally(exception);
         });
 
     return result;

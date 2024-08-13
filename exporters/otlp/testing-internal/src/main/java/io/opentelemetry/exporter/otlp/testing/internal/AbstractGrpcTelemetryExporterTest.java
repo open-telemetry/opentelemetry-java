@@ -25,6 +25,7 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.grpc.ManagedChannel;
+import io.opentelemetry.exporter.internal.ExporterStatusException;
 import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
@@ -66,6 +67,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.assertj.core.api.iterable.ThrowingExtractor;
 import org.junit.jupiter.api.AfterAll;
@@ -557,6 +559,26 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + type
                   + "s. Server responded with gRPC status code 13. Error message:");
       assertThat(log.getLevel()).isEqualTo(Level.WARN);
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  @SuppressLogger(GrpcExporter.class)
+  void errorWithStatus() {
+    addGrpcError(6, null);
+
+    TelemetryExporter<T> exporter = nonRetryingExporter();
+
+    try {
+      assertThat(
+              exporter
+                  .export(Collections.singletonList(generateFakeTelemetry()))
+                  .join(10, TimeUnit.SECONDS)
+                  .getFailureThrowable())
+          .asInstanceOf(InstanceOfAssertFactories.throwable(ExporterStatusException.class))
+          .returns(6, Assertions.from(ExporterStatusException::getStatusCode));
     } finally {
       exporter.shutdown();
     }
