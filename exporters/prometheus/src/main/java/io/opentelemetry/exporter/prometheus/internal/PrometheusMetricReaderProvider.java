@@ -40,7 +40,7 @@ public class PrometheusMetricReaderProvider implements ConfigurableMetricReaderP
             "otel.java.experimental.exporter.prometheus.metrics.default.histogram.aggregation");
     if (defaultHistogramAggregation != null) {
       ExporterBuilderUtil.configureHistogramDefaultAggregation(
-          defaultHistogramAggregation, prometheusBuilder::setDefaultAggregationSelector);
+          defaultHistogramAggregation, prometheusBuilder::setDefaultAggregationSelector, config);
     }
 
     return prometheusBuilder.build();

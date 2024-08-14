@@ -83,12 +83,33 @@ public final class ExporterBuilderUtil {
    */
   public static void configureHistogramDefaultAggregation(
       String defaultHistogramAggregation,
-      Consumer<DefaultAggregationSelector> defaultAggregationSelectorConsumer) {
+      Consumer<DefaultAggregationSelector> defaultAggregationSelectorConsumer,
+      ConfigProperties config) {
     if (AggregationUtil.aggregationName(Aggregation.base2ExponentialBucketHistogram())
         .equalsIgnoreCase(defaultHistogramAggregation)) {
-      defaultAggregationSelectorConsumer.accept(
-          DefaultAggregationSelector.getDefault()
-              .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()));
+      Integer maxScaleConfig =
+          config.getInt("otel.java.experimental.histogram.base2ExponentialBucket.maxScale");
+      Integer maxBucketsConfig =
+          config.getInt("otel.java.experimental.histogram.base2ExponentialBucket.maxBuckets");
+      DefaultAggregationSelector defaultSelector = DefaultAggregationSelector.getDefault();
+      if (maxScaleConfig == null && maxBucketsConfig == null) {
+        defaultSelector =
+            defaultSelector.with(
+                InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram());
+      } else if (maxScaleConfig != null && maxBucketsConfig != null) {
+        defaultSelector =
+            defaultSelector.with(
+                InstrumentType.HISTOGRAM,
+                Aggregation.base2ExponentialBucketHistogram(maxBucketsConfig, maxScaleConfig));
+      } else {
+        throw new ConfigurationException(
+            "Either Max Buckets or Max Scale config is missing: Max Buckets("
+                + maxBucketsConfig
+                + "), Max Scale("
+                + maxScaleConfig
+                + ")");
+      }
+      defaultAggregationSelectorConsumer.accept(defaultSelector);
     } else if (!AggregationUtil.aggregationName(explicitBucketHistogram())
         .equalsIgnoreCase(defaultHistogramAggregation)) {
       throw new ConfigurationException(

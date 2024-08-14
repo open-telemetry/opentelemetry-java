@@ -312,7 +312,7 @@ public final class OtlpConfigUtil {
         config.getString("otel.exporter.otlp.metrics.default.histogram.aggregation");
     if (defaultHistogramAggregation != null) {
       ExporterBuilderUtil.configureHistogramDefaultAggregation(
-          defaultHistogramAggregation, defaultAggregationSelectorConsumer);
+          defaultHistogramAggregation, defaultAggregationSelectorConsumer, config);
     }
   }
 
