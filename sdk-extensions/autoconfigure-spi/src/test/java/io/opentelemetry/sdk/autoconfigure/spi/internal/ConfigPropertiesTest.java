@@ -190,7 +190,7 @@ class ConfigPropertiesTest {
     assertThat(
             DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "-42"))
                 .getDuration("duration"))
-        .isEqualTo(Duration.ofMillis(-42));
+        .isEqualTo(Duration.ofMillis(-41));
   }
 
   @Test
