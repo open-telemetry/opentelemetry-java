@@ -188,7 +188,7 @@ class ConfigPropertiesTest {
   @Test
   void durationNegativeParsing() {
     assertThat(
-            DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "-42"))
+            DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "-41"))
                 .getDuration("duration"))
         .isEqualTo(Duration.ofMillis(-41));
   }
