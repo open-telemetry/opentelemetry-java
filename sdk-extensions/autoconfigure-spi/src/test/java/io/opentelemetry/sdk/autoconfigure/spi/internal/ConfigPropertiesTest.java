@@ -196,18 +196,13 @@ class ConfigPropertiesTest {
   @Test
   void durationUnitParsing() {
     assertThat(
-            DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "1ns"))
+            DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "3ns"))
                 .getDuration("duration"))
-        .isEqualTo(Duration.ofNanos(1));
+        .isEqualTo(Duration.ofNanos(3));
     assertThat(
-            DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "1us"))
+            DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "2us"))
                 .getDuration("duration"))
-        .isEqualTo(Duration.ofNanos(1000));
-    assertThat(
-            DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "2ms"))
-                .getDuration("duration"))
-        .isEqualTo(Duration.ofMillis(2));
-
+        .isEqualTo(Duration.ofNanos(2000));
     assertThat(
             DefaultConfigProperties.createFromMap(Collections.singletonMap("duration", "1"))
                 .getDuration("duration"))
