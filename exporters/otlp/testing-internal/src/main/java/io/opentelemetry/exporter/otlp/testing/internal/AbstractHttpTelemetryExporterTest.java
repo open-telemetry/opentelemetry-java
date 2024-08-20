@@ -26,6 +26,7 @@ import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.http.HttpExporter;
@@ -72,6 +73,8 @@ import okio.Buffer;
 import okio.GzipSource;
 import okio.Okio;
 import okio.Source;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.assertj.core.api.iterable.ThrowingExtractor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -534,8 +537,16 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     try {
       long startTimeMillis = System.currentTimeMillis();
       CompletableResultCode result =
-          exporter.export(Collections.singletonList(generateFakeTelemetry()));
-      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+          exporter
+              .export(Collections.singletonList(generateFakeTelemetry()))
+              .join(10, TimeUnit.SECONDS);
+
+      assertThat(result.isSuccess()).isFalse();
+      assertThat(result.getFailureThrowable())
+          .asInstanceOf(
+              InstanceOfAssertFactories.throwable(FailedExportException.HttpExportException.class))
+          .returns(false, Assertions.from(FailedExportException::failedWithResponse));
+
       // Assert that the export request fails well before the default connect timeout of 10s
       assertThat(System.currentTimeMillis() - startTimeMillis)
           .isLessThan(TimeUnit.SECONDS.toMillis(1));
@@ -591,12 +602,18 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @SuppressLogger(HttpExporter.class)
   void error() {
     addHttpError(500);
-    assertThat(
-            exporter
-                .export(Collections.singletonList(generateFakeTelemetry()))
-                .join(10, TimeUnit.SECONDS)
-                .isSuccess())
-        .isFalse();
+    CompletableResultCode result =
+        exporter
+            .export(Collections.singletonList(generateFakeTelemetry()))
+            .join(10, TimeUnit.SECONDS);
+
+    assertThat(result.isSuccess()).isFalse();
+
+    assertThat(result.getFailureThrowable())
+        .asInstanceOf(
+            InstanceOfAssertFactories.throwable(FailedExportException.HttpExportException.class))
+        .returns(true, Assertions.from(FailedExportException::failedWithResponse));
+
     LoggingEvent log =
         logs.assertContains(
             "Failed to export "

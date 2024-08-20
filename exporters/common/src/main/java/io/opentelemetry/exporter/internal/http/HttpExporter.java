@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.internal.http;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterMetrics;
-import io.opentelemetry.exporter.internal.ExporterStatusException;
+import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -75,11 +75,9 @@ public final class HttpExporter<T extends Marshaler> {
           exporterMetrics.addFailed(numItems);
 
           byte[] body = null;
-          Throwable throwable = null;
           try {
             body = httpResponse.responseBody();
           } catch (IOException ex) {
-            throwable = ex;
             logger.log(Level.FINE, "Unable to obtain response body", ex);
           }
 
@@ -94,8 +92,7 @@ public final class HttpExporter<T extends Marshaler> {
                   + ". Error message: "
                   + status);
 
-          ExporterStatusException exception = new ExporterStatusException(statusCode, throwable);
-          result.failExceptionally(exception);
+          result.failExceptionally(FailedExportException.httpFailedWithResponse(httpResponse));
         },
         e -> {
           exporterMetrics.addFailed(numItems);
@@ -106,7 +103,7 @@ public final class HttpExporter<T extends Marshaler> {
                   + "s. The request could not be executed. Full error message: "
                   + e.getMessage(),
               e);
-          result.failExceptionally(e);
+          result.failExceptionally(FailedExportException.httpFailedExceptionally(e));
         });
 
     return result;

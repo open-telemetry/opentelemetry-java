@@ -25,7 +25,7 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.grpc.ManagedChannel;
-import io.opentelemetry.exporter.internal.ExporterStatusException;
+import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
@@ -577,8 +577,30 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   .export(Collections.singletonList(generateFakeTelemetry()))
                   .join(10, TimeUnit.SECONDS)
                   .getFailureThrowable())
-          .asInstanceOf(InstanceOfAssertFactories.throwable(ExporterStatusException.class))
-          .returns(6, Assertions.from(ExporterStatusException::getStatusCode));
+          .asInstanceOf(
+              InstanceOfAssertFactories.throwable(FailedExportException.GrpcExportException.class))
+          .returns(true, Assertions.from(FailedExportException::failedWithResponse));
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  @SuppressLogger(GrpcExporter.class)
+  void errorWithException() {
+    addGrpcError(2, null);
+
+    TelemetryExporter<T> exporter = nonRetryingExporter();
+
+    try {
+      assertThat(
+              exporter
+                  .export(Collections.singletonList(generateFakeTelemetry()))
+                  .join(10, TimeUnit.SECONDS)
+                  .getFailureThrowable())
+          .asInstanceOf(
+              InstanceOfAssertFactories.throwable(FailedExportException.GrpcExportException.class))
+          .returns(false, Assertions.from(FailedExportException::failedWithResponse));
     } finally {
       exporter.shutdown();
     }
