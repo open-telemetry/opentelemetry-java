@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.sdk.trace.internal.ExtendedSpanProcessor;
 import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -522,8 +523,11 @@ final class SdkSpan implements ReadWriteSpan {
       spanEndingThread = Thread.currentThread();
       hasEnded = EndState.ENDING;
     }
-    if (spanProcessor.isOnEndingRequired()) {
-      spanProcessor.onEnding(this);
+    if (spanProcessor instanceof ExtendedSpanProcessor) {
+      ExtendedSpanProcessor extendedSpanProcessor = (ExtendedSpanProcessor) spanProcessor;
+      if (extendedSpanProcessor.isOnEndingRequired()) {
+        extendedSpanProcessor.onEnding(this);
+      }
     }
     synchronized (lock) {
       hasEnded = EndState.ENDED;

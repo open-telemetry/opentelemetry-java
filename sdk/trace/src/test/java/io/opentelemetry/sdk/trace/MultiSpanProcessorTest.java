@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.trace.internal.ExtendedSpanProcessor;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,8 +28,8 @@ import org.mockito.quality.Strictness;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class MultiSpanProcessorTest {
-  @Mock private SpanProcessor spanProcessor1;
-  @Mock private SpanProcessor spanProcessor2;
+  @Mock private ExtendedSpanProcessor spanProcessor1;
+  @Mock private ExtendedSpanProcessor spanProcessor2;
   @Mock private ReadableSpan readableSpan;
   @Mock private ReadWriteSpan readWriteSpan;
 
@@ -63,8 +64,9 @@ class MultiSpanProcessorTest {
 
   @Test
   void twoSpanProcessor() {
-    SpanProcessor multiSpanProcessor =
-        SpanProcessor.composite(Arrays.asList(spanProcessor1, spanProcessor2));
+    ExtendedSpanProcessor multiSpanProcessor =
+        (ExtendedSpanProcessor)
+            SpanProcessor.composite(Arrays.asList(spanProcessor1, spanProcessor2));
     multiSpanProcessor.onStart(Context.root(), readWriteSpan);
     verify(spanProcessor1).onStart(same(Context.root()), same(readWriteSpan));
     verify(spanProcessor2).onStart(same(Context.root()), same(readWriteSpan));
@@ -91,8 +93,9 @@ class MultiSpanProcessorTest {
     when(spanProcessor1.isEndRequired()).thenReturn(false);
     when(spanProcessor2.isOnEndingRequired()).thenReturn(false);
     when(spanProcessor2.isStartRequired()).thenReturn(false);
-    SpanProcessor multiSpanProcessor =
-        SpanProcessor.composite(Arrays.asList(spanProcessor1, spanProcessor2));
+    ExtendedSpanProcessor multiSpanProcessor =
+        (ExtendedSpanProcessor)
+            SpanProcessor.composite(Arrays.asList(spanProcessor1, spanProcessor2));
 
     assertThat(multiSpanProcessor.isStartRequired()).isTrue();
     assertThat(multiSpanProcessor.isEndRequired()).isTrue();

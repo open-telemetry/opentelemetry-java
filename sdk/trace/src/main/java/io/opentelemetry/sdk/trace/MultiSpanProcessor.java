@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.trace.internal.ExtendedSpanProcessor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -16,9 +17,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Implementation of the {@code SpanProcessor} that simply forwards all received events to a list of
  * {@code SpanProcessor}s.
  */
-final class MultiSpanProcessor implements SpanProcessor {
+final class MultiSpanProcessor implements ExtendedSpanProcessor {
   private final List<SpanProcessor> spanProcessorsStart;
-  private final List<SpanProcessor> spanProcessorsBeforeEnd;
+  private final List<ExtendedSpanProcessor> spanProcessorsEnding;
   private final List<SpanProcessor> spanProcessorsEnd;
   private final List<SpanProcessor> spanProcessorsAll;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
@@ -61,14 +62,14 @@ final class MultiSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnding(ReadWriteSpan span) {
-    for (SpanProcessor spanProcessor : spanProcessorsBeforeEnd) {
+    for (ExtendedSpanProcessor spanProcessor : spanProcessorsEnding) {
       spanProcessor.onEnding(span);
     }
   }
 
   @Override
   public boolean isOnEndingRequired() {
-    return !spanProcessorsBeforeEnd.isEmpty();
+    return !spanProcessorsEnding.isEmpty();
   }
 
   @Override
@@ -96,13 +97,16 @@ final class MultiSpanProcessor implements SpanProcessor {
     this.spanProcessorsAll = spanProcessors;
     this.spanProcessorsStart = new ArrayList<>(spanProcessorsAll.size());
     this.spanProcessorsEnd = new ArrayList<>(spanProcessorsAll.size());
-    this.spanProcessorsBeforeEnd = new ArrayList<>(spanProcessorsAll.size());
+    this.spanProcessorsEnding = new ArrayList<>(spanProcessorsAll.size());
     for (SpanProcessor spanProcessor : spanProcessorsAll) {
       if (spanProcessor.isStartRequired()) {
         spanProcessorsStart.add(spanProcessor);
       }
-      if (spanProcessor.isOnEndingRequired()) {
-        spanProcessorsBeforeEnd.add(spanProcessor);
+      if (spanProcessor instanceof ExtendedSpanProcessor) {
+        ExtendedSpanProcessor extendedSpanProcessor = (ExtendedSpanProcessor) spanProcessor;
+        if (extendedSpanProcessor.isOnEndingRequired()) {
+          spanProcessorsEnding.add(extendedSpanProcessor);
+        }
       }
       if (spanProcessor.isEndRequired()) {
         spanProcessorsEnd.add(spanProcessor);
@@ -115,6 +119,8 @@ final class MultiSpanProcessor implements SpanProcessor {
     return "MultiSpanProcessor{"
         + "spanProcessorsStart="
         + spanProcessorsStart
+        + ", spanProcessorsEnding="
+        + spanProcessorsEnding
         + ", spanProcessorsEnd="
         + spanProcessorsEnd
         + ", spanProcessorsAll="
