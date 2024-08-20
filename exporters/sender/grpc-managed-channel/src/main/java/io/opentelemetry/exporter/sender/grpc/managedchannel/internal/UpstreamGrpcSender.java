@@ -20,7 +20,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -50,7 +50,7 @@ public final class UpstreamGrpcSender<T extends Marshaler> implements GrpcSender
   }
 
   @Override
-  public void send(T request, Runnable onSuccess, BiConsumer<GrpcResponse, Throwable> onError) {
+  public void send(T request, Consumer<GrpcResponse> onResponse, Consumer<Throwable> onError) {
     MarshalerServiceStub<T, ?, ?> stub = this.stub;
     if (timeoutNanos > 0) {
       stub = stub.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
@@ -71,14 +71,18 @@ public final class UpstreamGrpcSender<T extends Marshaler> implements GrpcSender
         new FutureCallback<Object>() {
           @Override
           public void onSuccess(@Nullable Object unused) {
-            onSuccess.run();
+            onResponse.accept(
+                GrpcResponse.create(Status.OK.getCode().value(), Status.OK.getDescription()));
           }
 
           @Override
           public void onFailure(Throwable t) {
             Status status = Status.fromThrowable(t);
-            onError.accept(
-                GrpcResponse.create(status.getCode().value(), status.getDescription()), t);
+            if (status.getCode() != Status.UNKNOWN.getCode()) {
+              onResponse.accept(
+                  GrpcResponse.create(status.getCode().value(), status.getDescription()));
+            }
+            onError.accept(t);
           }
         },
         MoreExecutors.directExecutor());
