@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.sender.jdk.internal;
 
+import static java.util.stream.Collectors.joining;
+
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.http.HttpSender;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
@@ -25,6 +27,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -33,6 +36,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -51,6 +56,8 @@ public final class JdkHttpSender implements HttpSender {
       ThreadLocal.withInitial(NoCopyByteArrayOutputStream::new);
   private static final ThreadLocal<ByteBufferPool> threadLocalByteBufPool =
       ThreadLocal.withInitial(ByteBufferPool::new);
+
+  private static final Logger logger = Logger.getLogger(JdkHttpSender.class.getName());
 
   private final ExecutorService executorService = Executors.newFixedThreadPool(5);
   private final HttpClient client;
@@ -211,11 +218,37 @@ public final class JdkHttpSender implements HttpSender {
         exception = e;
       }
 
-      if (httpResponse != null && !retryableStatusCodes.contains(httpResponse.statusCode())) {
-        return httpResponse;
+      if (httpResponse != null) {
+        boolean retryable = retryableStatusCodes.contains(httpResponse.statusCode());
+        if (logger.isLoggable(Level.FINER)) {
+          logger.log(
+              Level.FINER,
+              "Attempt "
+                  + attempt
+                  + " returned "
+                  + (retryable ? "retryable" : "non-retryable")
+                  + " response: "
+                  + responseStringRepresentation(httpResponse));
+        }
+        if (!retryable) {
+          return httpResponse;
+        }
       }
-      if (exception != null && !isRetryableException(exception)) {
-        throw exception;
+      if (exception != null) {
+        boolean retryable = isRetryableException(exception);
+        if (logger.isLoggable(Level.FINER)) {
+          logger.log(
+              Level.FINER,
+              "Attempt "
+                  + attempt
+                  + " failed with "
+                  + (retryable ? "retryable" : "non-retryable")
+                  + " exception",
+              exception);
+        }
+        if (!retryable) {
+          throw exception;
+        }
       }
     } while (attempt < retryPolicy.getMaxAttempts());
 
@@ -223,6 +256,17 @@ public final class JdkHttpSender implements HttpSender {
       return httpResponse;
     }
     throw exception;
+  }
+
+  private static String responseStringRepresentation(HttpResponse<?> response) {
+    StringJoiner joiner = new StringJoiner(",", "HttpResponse{", "}");
+    joiner.add("code=" + response.statusCode());
+    joiner.add(
+        "headers="
+            + response.headers().map().entrySet().stream()
+                .map(entry -> entry.getKey() + "=" + String.join(",", entry.getValue()))
+                .collect(joining(",", "[", "]")));
+    return joiner.toString();
   }
 
   private void write(Marshaler marshaler, OutputStream os) throws IOException {

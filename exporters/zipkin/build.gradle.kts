@@ -15,6 +15,7 @@ dependencies {
 
   implementation(project(":exporters:common"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
+  implementation(project(":api:incubator"))
 
   implementation("io.zipkin.reporter2:zipkin-sender-okhttp3")
 

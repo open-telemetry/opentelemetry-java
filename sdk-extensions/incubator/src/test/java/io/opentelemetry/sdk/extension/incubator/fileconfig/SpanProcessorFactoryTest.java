@@ -34,33 +34,16 @@ class SpanProcessorFactoryTest {
       SpiHelper.create(SpanProcessorFactoryTest.class.getClassLoader());
 
   @Test
-  void create_Null() {
-    List<Closeable> closeables = new ArrayList<>();
-
-    io.opentelemetry.sdk.trace.SpanProcessor processor =
-        SpanProcessorFactory.getInstance().create(null, spiHelper, Collections.emptyList());
-    cleanup.addCloseable(processor);
-    cleanup.addCloseables(closeables);
-
-    assertThat(processor.toString())
-        .isEqualTo(io.opentelemetry.sdk.trace.SpanProcessor.composite().toString());
-  }
-
-  @Test
   void create_BatchNullExporter() {
-    List<Closeable> closeables = new ArrayList<>();
-
-    io.opentelemetry.sdk.trace.SpanProcessor processor =
-        SpanProcessorFactory.getInstance()
-            .create(
-                new SpanProcessor().withBatch(new BatchSpanProcessor()),
-                spiHelper,
-                Collections.emptyList());
-    cleanup.addCloseable(processor);
-    cleanup.addCloseables(closeables);
-
-    assertThat(processor.toString())
-        .isEqualTo(io.opentelemetry.sdk.trace.SpanProcessor.composite().toString());
+    assertThatThrownBy(
+            () ->
+                SpanProcessorFactory.getInstance()
+                    .create(
+                        new SpanProcessor().withBatch(new BatchSpanProcessor()),
+                        spiHelper,
+                        Collections.emptyList()))
+        .isInstanceOf(StructuredConfigException.class)
+        .hasMessage("batch span processor exporter is required but is null");
   }
 
   @Test
@@ -119,19 +102,15 @@ class SpanProcessorFactoryTest {
 
   @Test
   void create_SimpleNullExporter() {
-    List<Closeable> closeables = new ArrayList<>();
-
-    io.opentelemetry.sdk.trace.SpanProcessor processor =
-        SpanProcessorFactory.getInstance()
-            .create(
-                new SpanProcessor().withSimple(new SimpleSpanProcessor()),
-                spiHelper,
-                Collections.emptyList());
-    cleanup.addCloseable(processor);
-    cleanup.addCloseables(closeables);
-
-    assertThat(processor.toString())
-        .isEqualTo(io.opentelemetry.sdk.trace.SpanProcessor.composite().toString());
+    assertThatThrownBy(
+            () ->
+                SpanProcessorFactory.getInstance()
+                    .create(
+                        new SpanProcessor().withSimple(new SimpleSpanProcessor()),
+                        spiHelper,
+                        Collections.emptyList()))
+        .isInstanceOf(StructuredConfigException.class)
+        .hasMessage("simple span processor exporter is required but is null");
   }
 
   @Test

@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Attributes;
 import java.io.Closeable;
 import java.util.List;
-import javax.annotation.Nullable;
 
 final class AttributesFactory
     implements Factory<Attributes, io.opentelemetry.api.common.Attributes> {
@@ -29,11 +28,7 @@ final class AttributesFactory
 
   @Override
   public io.opentelemetry.api.common.Attributes create(
-      @Nullable Attributes model, SpiHelper spiHelper, List<Closeable> closeables) {
-    if (model == null) {
-      return io.opentelemetry.api.common.Attributes.empty();
-    }
-
+      Attributes model, SpiHelper spiHelper, List<Closeable> closeables) {
     AttributesBuilder builder = io.opentelemetry.api.common.Attributes.builder();
 
     String serviceName = model.getServiceName();

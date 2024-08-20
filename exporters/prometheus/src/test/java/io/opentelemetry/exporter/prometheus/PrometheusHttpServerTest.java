@@ -16,18 +16,24 @@ import com.linecorp.armeria.client.WebClient;
 import com.linecorp.armeria.client.retry.RetryRule;
 import com.linecorp.armeria.client.retry.RetryingClient;
 import com.linecorp.armeria.common.AggregatedHttpResponse;
+import com.linecorp.armeria.common.HttpData;
 import com.linecorp.armeria.common.HttpHeaderNames;
 import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.RequestHeaders;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
@@ -36,7 +42,9 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import io.prometheus.metrics.exporter.httpserver.MetricsHandler;
+import io.prometheus.metrics.expositionformats.generated.com_google_protobuf_3_25_3.Metrics;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
+import io.prometheus.metrics.shaded.com_google_protobuf_3_25_3.TextFormat;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -113,6 +121,9 @@ class PrometheusHttpServerTest {
     assertThatThrownBy(() -> PrometheusHttpServer.builder().setHost(""))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("host must not be empty");
+    assertThatThrownBy(() -> PrometheusHttpServer.builder().setDefaultAggregationSelector(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("defaultAggregationSelector");
   }
 
   @Test
@@ -525,5 +536,76 @@ class PrometheusHttpServerTest {
         .hasFieldOrPropertyWithValue("allowedResourceAttributesFilter", resourceAttributesFilter)
         .hasFieldOrPropertyWithValue("executor", executor)
         .hasFieldOrPropertyWithValue("prometheusRegistry", prometheusRegistry);
+  }
+
+  /**
+   * Set the default histogram aggregation to be {@link
+   * Aggregation#base2ExponentialBucketHistogram()}. In order to validate that exponential
+   * histograms are produced, we request protobuf encoded metrics when scraping since the prometheus
+   * text format does not support native histograms. We parse the binary content protobuf payload to
+   * the protobuf java bindings, and assert against the string representation.
+   */
+  @Test
+  void histogramDefaultBase2ExponentialHistogram() throws IOException {
+    PrometheusHttpServer prometheusServer =
+        PrometheusHttpServer.builder()
+            .setHost("localhost")
+            .setPort(0)
+            .setDefaultAggregationSelector(
+                DefaultAggregationSelector.getDefault()
+                    .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()))
+            .build();
+    try (SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().registerMetricReader(prometheusServer).build()) {
+      DoubleHistogram histogram = meterProvider.get("meter").histogramBuilder("histogram").build();
+      histogram.record(1.0);
+
+      WebClient client =
+          WebClient.builder("http://localhost:" + prometheusServer.getAddress().getPort())
+              .decorator(RetryingClient.newDecorator(RetryRule.failsafe()))
+              // Request protobuf binary encoding, which is required for the prometheus native
+              // histogram format
+              .addHeader(
+                  "Accept",
+                  "application/vnd.google.protobuf; proto=io.prometheus.client.MetricFamily")
+              .build();
+      AggregatedHttpResponse response = client.get("/metrics").aggregate().join();
+      assertThat(response.status()).isEqualTo(HttpStatus.OK);
+      assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
+          .isEqualTo(
+              "application/vnd.google.protobuf; proto=io.prometheus.client.MetricFamily; encoding=delimited");
+      // Parse the data to Metrics.MetricFamily protobuf java binding and assert against the string
+      // representation
+      try (HttpData data = response.content()) {
+        Metrics.MetricFamily metricFamily =
+            Metrics.MetricFamily.parseDelimitedFrom(data.toInputStream());
+        String s = TextFormat.printer().printToString(metricFamily);
+        assertThat(s)
+            .isEqualTo(
+                "name: \"histogram\"\n"
+                    + "help: \"\"\n"
+                    + "type: HISTOGRAM\n"
+                    + "metric {\n"
+                    + "  label {\n"
+                    + "    name: \"otel_scope_name\"\n"
+                    + "    value: \"meter\"\n"
+                    + "  }\n"
+                    + "  histogram {\n"
+                    + "    sample_count: 1\n"
+                    + "    sample_sum: 1.0\n"
+                    + "    schema: 8\n"
+                    + "    zero_threshold: 0.0\n"
+                    + "    zero_count: 0\n"
+                    + "    positive_span {\n"
+                    + "      offset: 0\n"
+                    + "      length: 1\n"
+                    + "    }\n"
+                    + "    positive_delta: 1\n"
+                    + "  }\n"
+                    + "}\n");
+      }
+    } finally {
+      prometheusServer.shutdown();
+    }
   }
 }

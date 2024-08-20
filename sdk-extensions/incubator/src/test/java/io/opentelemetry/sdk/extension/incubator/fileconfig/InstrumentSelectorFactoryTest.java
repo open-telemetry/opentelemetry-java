@@ -20,16 +20,6 @@ import org.junit.jupiter.api.Test;
 class InstrumentSelectorFactoryTest {
 
   @Test
-  void create_Null() {
-    assertThatThrownBy(
-            () ->
-                InstrumentSelectorFactory.getInstance()
-                    .create(null, mock(SpiHelper.class), Collections.emptyList()))
-        .isInstanceOf(StructuredConfigException.class)
-        .hasMessage("selector must not be null");
-  }
-
-  @Test
   void create_Defaults() {
     assertThatThrownBy(
             () ->

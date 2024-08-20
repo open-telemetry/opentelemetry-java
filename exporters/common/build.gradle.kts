@@ -12,6 +12,7 @@ val versions: Map<String, String> by project
 dependencies {
   api(project(":api:all"))
   api(project(":sdk-extensions:autoconfigure-spi"))
+  implementation(project(":api:incubator"))
 
   compileOnly(project(":sdk:common"))
   compileOnly(project(":exporters:common:compile-stub"))

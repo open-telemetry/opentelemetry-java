@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.autoconfigure.spi.internal;
 
 import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**
@@ -13,9 +15,10 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
  * extension components which are not part of the core SDK to be referenced in file based
  * configuration.
  *
- * @param <T> the type of the SDK extension component. See {@link #getType()}.
+ * @param <T> the type of the SDK extension component. See {@link #getType()}. Supported values
+ *     include: {@link SpanExporter}, {@link MetricExporter}, {@link LogRecordExporter}.
  */
-// TODO (jack-berg): list the specific types which are supported in file configuration
+// TODO: add support for Sampler, LogRecordProcessor, SpanProcessor, MetricReader
 public interface ComponentProvider<T> {
 
   /**

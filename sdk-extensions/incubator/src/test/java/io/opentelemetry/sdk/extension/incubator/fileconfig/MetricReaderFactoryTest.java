@@ -44,12 +44,6 @@ class MetricReaderFactoryTest {
   private SpiHelper spiHelper = SpiHelper.create(MetricReaderFactoryTest.class.getClassLoader());
 
   @Test
-  void create_Null() {
-    assertThat(MetricReaderFactory.getInstance().create(null, spiHelper, Collections.emptyList()))
-        .isNull();
-  }
-
-  @Test
   void create_PeriodicNullExporter() {
     assertThatThrownBy(
             () ->
@@ -59,7 +53,7 @@ class MetricReaderFactoryTest {
                         spiHelper,
                         Collections.emptyList()))
         .isInstanceOf(StructuredConfigException.class)
-        .hasMessage("exporter required for periodic reader");
+        .hasMessage("periodic metric reader exporter is required but is null");
   }
 
   @Test
@@ -181,7 +175,7 @@ class MetricReaderFactoryTest {
                         spiHelper,
                         Collections.emptyList()))
         .isInstanceOf(StructuredConfigException.class)
-        .hasMessage("exporter required for pull reader");
+        .hasMessage("pull metric reader exporter is required but is null");
 
     assertThatThrownBy(
             () ->

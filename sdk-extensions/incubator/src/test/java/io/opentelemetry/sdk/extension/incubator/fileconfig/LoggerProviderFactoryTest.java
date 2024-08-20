@@ -52,7 +52,6 @@ class LoggerProviderFactoryTest {
 
   private static Stream<Arguments> createArguments() {
     return Stream.of(
-        Arguments.of(null, SdkLoggerProvider.builder().build()),
         Arguments.of(
             LoggerProviderAndAttributeLimits.create(null, null),
             SdkLoggerProvider.builder().build()),

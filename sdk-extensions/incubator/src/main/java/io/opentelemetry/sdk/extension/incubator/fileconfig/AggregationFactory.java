@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2E
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogram;
 import java.io.Closeable;
 import java.util.List;
-import javax.annotation.Nullable;
 
 final class AggregationFactory
     implements Factory<Aggregation, io.opentelemetry.sdk.metrics.Aggregation> {
@@ -27,11 +26,7 @@ final class AggregationFactory
 
   @Override
   public io.opentelemetry.sdk.metrics.Aggregation create(
-      @Nullable Aggregation model, SpiHelper spiHelper, List<Closeable> closeables) {
-    if (model == null) {
-      return io.opentelemetry.sdk.metrics.Aggregation.defaultAggregation();
-    }
-
+      Aggregation model, SpiHelper spiHelper, List<Closeable> closeables) {
     if (model.getDrop() != null) {
       return io.opentelemetry.sdk.metrics.Aggregation.drop();
     }

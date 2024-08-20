@@ -20,6 +20,7 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
+  testImplementation("io.prometheus:prometheus-metrics-shaded-protobuf")
   testImplementation("com.sun.net.httpserver:http")
   testImplementation("com.google.guava:guava")
   testImplementation("com.linecorp.armeria:armeria")

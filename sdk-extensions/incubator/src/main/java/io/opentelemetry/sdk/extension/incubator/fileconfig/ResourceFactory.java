@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Resour
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import java.io.Closeable;
 import java.util.List;
-import javax.annotation.Nullable;
 
 final class ResourceFactory implements Factory<Resource, io.opentelemetry.sdk.resources.Resource> {
 
@@ -25,11 +24,7 @@ final class ResourceFactory implements Factory<Resource, io.opentelemetry.sdk.re
 
   @Override
   public io.opentelemetry.sdk.resources.Resource create(
-      @Nullable Resource model, SpiHelper spiHelper, List<Closeable> closeables) {
-    if (model == null) {
-      return io.opentelemetry.sdk.resources.Resource.getDefault();
-    }
-
+      Resource model, SpiHelper spiHelper, List<Closeable> closeables) {
     ResourceBuilder builder = io.opentelemetry.sdk.resources.Resource.getDefault().toBuilder();
 
     Attributes attributesModel = model.getAttributes();
