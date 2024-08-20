@@ -131,6 +131,7 @@ class MultiSpanProcessorTest {
         .hasToString(
             "MultiSpanProcessor{"
                 + "spanProcessorsStart=[spanProcessor1, spanProcessor1], "
+                + "spanProcessorsEnding=[spanProcessor1, spanProcessor1], "
                 + "spanProcessorsEnd=[spanProcessor1, spanProcessor1], "
                 + "spanProcessorsAll=[spanProcessor1, spanProcessor1]}");
   }
