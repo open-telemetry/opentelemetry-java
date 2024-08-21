@@ -10,8 +10,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 
 /**
- * This class provides a temporary global accessor for {@link ConfigProvider} until the config API
- * is marked stable. It will eventually be merged into {@link GlobalOpenTelemetry}.
+ * This class provides a temporary global accessor for {@link ConfigProvider} until the
+ * instrumentation config API is marked stable. It will eventually be merged into {@link
+ * GlobalOpenTelemetry}.
  */
 // We intentionally assign to be used for error reporting.
 @SuppressWarnings("StaticAssignmentOfThrowable")

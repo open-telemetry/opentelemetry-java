@@ -5,14 +5,14 @@
 
 package io.opentelemetry.sdk.autoconfigure.spi.internal;
 
-import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**
  * Provides configured instances of SDK extension components. {@link ComponentProvider} allows SDK
- * extension components which are not part of the core SDK to be referenced in file based
+ * extension components which are not part of the core SDK to be referenced in declarative
  * configuration.
  *
  * @param <T> the type of the SDK extension component. See {@link #getType()}. Supported values
@@ -45,5 +45,5 @@ public interface ComponentProvider<T> {
    */
   // TODO (jack-berg): consider dynamic configuration use case before stabilizing in case that
   // affects any API decisions
-  T create(StructuredConfigProperties config);
+  T create(DeclarativeConfigProperties config);
 }

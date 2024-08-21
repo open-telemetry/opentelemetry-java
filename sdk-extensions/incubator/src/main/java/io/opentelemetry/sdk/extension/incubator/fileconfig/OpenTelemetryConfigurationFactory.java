@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.api.incubator.config.StructuredConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -32,7 +32,7 @@ final class OpenTelemetryConfigurationFactory
       OpenTelemetryConfiguration model, SpiHelper spiHelper, List<Closeable> closeables) {
     OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
     if (!"0.1".equals(model.getFileFormat())) {
-      throw new StructuredConfigException(
+      throw new DeclarativeConfigException(
           "Unsupported file format. Supported formats include: 0.1");
     }
 

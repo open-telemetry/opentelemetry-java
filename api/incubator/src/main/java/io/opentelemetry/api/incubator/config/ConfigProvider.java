@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * A registry for accessing configuration.
+ * A registry for accessing declarative configuration.
  *
  * <p>The name <i>Provider</i> is for consistency with other languages and it is <b>NOT</b> loaded
  * using reflection.
@@ -21,14 +21,14 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface ConfigProvider {
 
   /**
-   * Returns the {@link StructuredConfigProperties} corresponding to <a
+   * Returns the {@link DeclarativeConfigProperties} corresponding to <a
    * href="https://github.com/open-telemetry/opentelemetry-configuration/blob/main/schema/instrumentation.json">instrumentation
    * config</a>, or {@code null} if unavailable.
    *
-   * @return the instrumentation {@link StructuredConfigProperties}
+   * @return the instrumentation {@link DeclarativeConfigProperties}
    */
   @Nullable
-  StructuredConfigProperties getInstrumentationConfig();
+  DeclarativeConfigProperties getInstrumentationConfig();
 
   /** Returns a no-op {@link ConfigProvider}. */
   static ConfigProvider noop() {

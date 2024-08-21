@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static java.util.stream.Collectors.joining;
 
-import io.opentelemetry.api.incubator.config.StructuredConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporter;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -72,11 +72,11 @@ final class SpanProcessorFactory
 
     // TODO: add support for generic span processors
     if (!model.getAdditionalProperties().isEmpty()) {
-      throw new StructuredConfigException(
+      throw new DeclarativeConfigException(
           "Unrecognized span processor(s): "
               + model.getAdditionalProperties().keySet().stream().collect(joining(",", "[", "]")));
     } else {
-      throw new StructuredConfigException("span processor must be set");
+      throw new DeclarativeConfigException("span processor must be set");
     }
   }
 }

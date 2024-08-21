@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.api.incubator.config.StructuredConfigException;
-import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import java.io.Closeable;
@@ -34,7 +34,7 @@ final class FileConfigUtil {
 
   static <T> T requireNonNull(@Nullable T object, String description) {
     if (object == null) {
-      throw new StructuredConfigException(description + " is required but is null");
+      throw new DeclarativeConfigException(description + " is required but is null");
     }
     return object;
   }
@@ -42,14 +42,14 @@ final class FileConfigUtil {
   /**
    * Find a registered {@link ComponentProvider} which {@link ComponentProvider#getType()} matching
    * {@code type}, {@link ComponentProvider#getName()} matching {@code name}, and call {@link
-   * ComponentProvider#create(StructuredConfigProperties)} with the given {@code model}.
+   * ComponentProvider#create(DeclarativeConfigProperties)} with the given {@code model}.
    *
-   * @throws StructuredConfigException if no matching providers are found, or if multiple are found
-   *     (i.e. conflict), or if {@link ComponentProvider#create(StructuredConfigProperties)} throws
+   * @throws DeclarativeConfigException if no matching providers are found, or if multiple are found
+   *     (i.e. conflict), or if {@link ComponentProvider#create(DeclarativeConfigProperties)} throws
    */
   static <T> T loadComponent(SpiHelper spiHelper, Class<T> type, String name, Object model) {
     // Map model to generic structured config properties
-    StructuredConfigProperties config = FileConfiguration.toConfigProperties(model);
+    DeclarativeConfigProperties config = DeclarativeConfiguration.toConfigProperties(model);
     return spiHelper.loadComponent(type, name, config);
   }
 }

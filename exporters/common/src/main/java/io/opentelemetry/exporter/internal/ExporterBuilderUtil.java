@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.internal;
 
 import static io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram;
 
-import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -63,7 +63,7 @@ public final class ExporterBuilderUtil {
 
   /** Invoke the {@code memoryModeConsumer} with the configured {@link MemoryMode}. */
   public static void configureExporterMemoryMode(
-      StructuredConfigProperties config, Consumer<MemoryMode> memoryModeConsumer) {
+      DeclarativeConfigProperties config, Consumer<MemoryMode> memoryModeConsumer) {
     String memoryModeStr = config.getString("memory_mode");
     if (memoryModeStr == null) {
       return;

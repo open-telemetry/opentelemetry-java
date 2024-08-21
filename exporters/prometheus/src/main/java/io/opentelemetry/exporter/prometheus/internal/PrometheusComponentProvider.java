@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.prometheus.internal;
 
-import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServerBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
@@ -30,7 +30,7 @@ public class PrometheusComponentProvider implements ComponentProvider<MetricRead
   }
 
   @Override
-  public MetricReader create(StructuredConfigProperties config) {
+  public MetricReader create(DeclarativeConfigProperties config) {
     PrometheusHttpServerBuilder prometheusBuilder = PrometheusHttpServer.builder();
 
     Integer port = config.getInt("port");

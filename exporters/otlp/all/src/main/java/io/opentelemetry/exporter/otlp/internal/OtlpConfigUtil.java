@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import static io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram;
 
-import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -56,7 +56,7 @@ public final class OtlpConfigUtil {
   }
 
   /** Determine the configured OTLP protocol for the {@code dataType}. */
-  public static String getStructuredConfigOtlpProtocol(StructuredConfigProperties config) {
+  public static String getStructuredConfigOtlpProtocol(DeclarativeConfigProperties config) {
     return config.getString("protocol", PROTOCOL_GRPC);
   }
 
@@ -178,7 +178,7 @@ public final class OtlpConfigUtil {
   @SuppressWarnings("TooManyParameters")
   public static void configureOtlpExporterBuilder(
       String dataType,
-      StructuredConfigProperties config,
+      DeclarativeConfigProperties config,
       Consumer<String> setEndpoint,
       BiConsumer<String, String> addHeader,
       Consumer<String> setCompression,
@@ -202,7 +202,7 @@ public final class OtlpConfigUtil {
       setEndpoint.accept(endpoint.toString());
     }
 
-    StructuredConfigProperties headers = config.getStructured("headers");
+    DeclarativeConfigProperties headers = config.getStructured("headers");
     if (headers != null) {
       headers
           .getPropertyKeys()
@@ -278,7 +278,7 @@ public final class OtlpConfigUtil {
   }
 
   public static void configureOtlpAggregationTemporality(
-      StructuredConfigProperties config,
+      DeclarativeConfigProperties config,
       Consumer<AggregationTemporalitySelector> aggregationTemporalitySelectorConsumer) {
     String temporalityStr = config.getString("temporality_preference");
     if (temporalityStr == null) {
@@ -321,7 +321,7 @@ public final class OtlpConfigUtil {
    * DefaultAggregationSelector}.
    */
   public static void configureOtlpHistogramDefaultAggregation(
-      StructuredConfigProperties config,
+      DeclarativeConfigProperties config,
       Consumer<DefaultAggregationSelector> defaultAggregationSelectorConsumer) {
     String defaultHistogramAggregation = config.getString("default_histogram_aggregation");
     if (defaultHistogramAggregation == null) {

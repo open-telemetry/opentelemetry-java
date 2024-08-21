@@ -8,9 +8,9 @@ package io.opentelemetry.api.incubator.config;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.api.incubator.config.internal.YamlStructuredConfigProperties;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfiguration;
+import io.opentelemetry.api.incubator.config.internal.YamlDeclarativeConfigProperties;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -62,9 +62,9 @@ class InstrumentationConfigUtilTest {
 
   private static ConfigProvider toConfigProvider(String configYaml) {
     OpenTelemetryConfiguration configuration =
-        FileConfiguration.parse(
+        DeclarativeConfiguration.parse(
             new ByteArrayInputStream(configYaml.getBytes(StandardCharsets.UTF_8)));
-    return FileConfigProvider.create(configuration);
+    return SdkConfigProvider.create(configuration);
   }
 
   @Test
@@ -148,7 +148,7 @@ class InstrumentationConfigUtilTest {
                 kitchenSinkConfigProvider, "example"))
         .isNotNull()
         .isInstanceOfSatisfying(
-            YamlStructuredConfigProperties.class,
+            YamlDeclarativeConfigProperties.class,
             exampleConfig ->
                 assertThat(exampleConfig.asMap()).isEqualTo(ImmutableMap.of("property", "value")));
     assertThat(

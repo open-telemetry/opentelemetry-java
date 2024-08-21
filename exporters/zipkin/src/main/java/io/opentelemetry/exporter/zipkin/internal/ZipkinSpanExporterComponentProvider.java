@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.zipkin.internal;
 
-import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
@@ -30,7 +30,7 @@ public class ZipkinSpanExporterComponentProvider implements ComponentProvider<Sp
   }
 
   @Override
-  public SpanExporter create(StructuredConfigProperties config) {
+  public SpanExporter create(DeclarativeConfigProperties config) {
     ZipkinSpanExporterBuilder builder = ZipkinSpanExporter.builder();
 
     String endpoint = config.getString("endpoint");

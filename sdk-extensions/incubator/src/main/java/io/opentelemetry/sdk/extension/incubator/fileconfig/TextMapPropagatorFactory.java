@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
-import io.opentelemetry.api.incubator.config.StructuredConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
@@ -39,7 +39,7 @@ final class TextMapPropagatorFactory implements Factory<List<String>, TextMapPro
 
     if (model.contains("none")) {
       if (model.size() > 1) {
-        throw new StructuredConfigException(
+        throw new DeclarativeConfigException(
             "propagators contains \"none\" along with other propagators");
       }
       return TextMapPropagator.noop();
@@ -72,6 +72,6 @@ final class TextMapPropagatorFactory implements Factory<List<String>, TextMapPro
     if (spiPropagator != null) {
       return spiPropagator;
     }
-    throw new StructuredConfigException("Unrecognized propagator: " + name);
+    throw new DeclarativeConfigException("Unrecognized propagator: " + name);
   }
 }

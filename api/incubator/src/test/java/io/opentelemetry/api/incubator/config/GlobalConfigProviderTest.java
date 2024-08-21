@@ -8,7 +8,7 @@ package io.opentelemetry.api.incubator.config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.api.incubator.config.internal.YamlStructuredConfigProperties;
+import io.opentelemetry.api.incubator.config.internal.YamlDeclarativeConfigProperties;
 import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,7 +30,7 @@ class GlobalConfigProviderTest {
   void setAndGet() {
     assertThat(GlobalConfigProvider.get()).isEqualTo(ConfigProvider.noop());
     ConfigProvider configProvider =
-        () -> YamlStructuredConfigProperties.create(Collections.emptyMap());
+        () -> YamlDeclarativeConfigProperties.create(Collections.emptyMap());
     GlobalConfigProvider.set(configProvider);
     assertThat(GlobalConfigProvider.get()).isSameAs(configProvider);
   }
@@ -38,7 +38,7 @@ class GlobalConfigProviderTest {
   @Test
   void setThenSet() {
     ConfigProvider configProvider =
-        () -> YamlStructuredConfigProperties.create(Collections.emptyMap());
+        () -> YamlDeclarativeConfigProperties.create(Collections.emptyMap());
     GlobalConfigProvider.set(configProvider);
     assertThatThrownBy(() -> GlobalConfigProvider.set(configProvider))
         .isInstanceOf(IllegalStateException.class)

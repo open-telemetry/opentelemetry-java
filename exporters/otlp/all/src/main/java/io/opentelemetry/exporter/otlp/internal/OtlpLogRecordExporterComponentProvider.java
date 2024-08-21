@@ -9,7 +9,7 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_L
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
-import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
@@ -39,7 +39,7 @@ public class OtlpLogRecordExporterComponentProvider
   }
 
   @Override
-  public LogRecordExporter create(StructuredConfigProperties config) {
+  public LogRecordExporter create(DeclarativeConfigProperties config) {
     String protocol = OtlpConfigUtil.getStructuredConfigOtlpProtocol(config);
 
     if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {

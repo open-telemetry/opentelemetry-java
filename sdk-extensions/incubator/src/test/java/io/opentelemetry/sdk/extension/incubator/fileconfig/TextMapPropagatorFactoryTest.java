@@ -9,7 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
-import io.opentelemetry.api.incubator.config.StructuredConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
@@ -63,7 +63,7 @@ class TextMapPropagatorFactoryTest {
             () ->
                 TextMapPropagatorFactory.getInstance()
                     .create(Arrays.asList("none", "foo"), spiHelper, Collections.emptyList()))
-        .isInstanceOf(StructuredConfigException.class)
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("propagators contains \"none\" along with other propagators");
   }
 
@@ -73,7 +73,7 @@ class TextMapPropagatorFactoryTest {
             () ->
                 TextMapPropagatorFactory.getInstance()
                     .create(Collections.singletonList("foo"), spiHelper, Collections.emptyList()))
-        .isInstanceOf(StructuredConfigException.class)
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("Unrecognized propagator: foo");
   }
 }

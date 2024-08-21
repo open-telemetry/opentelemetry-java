@@ -15,8 +15,8 @@ import static org.mockito.Mockito.verify;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
-import io.opentelemetry.api.incubator.config.StructuredConfigException;
-import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
@@ -78,11 +78,11 @@ class LogRecordExporterFactoryTest {
 
     assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
 
-    ArgumentCaptor<StructuredConfigProperties> configCaptor =
-        ArgumentCaptor.forClass(StructuredConfigProperties.class);
+    ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
+        ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     verify(spiHelper)
         .loadComponent(eq(LogRecordExporter.class), eq("otlp"), configCaptor.capture());
-    StructuredConfigProperties configProperties = configCaptor.getValue();
+    DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("protocol")).isNull();
     assertThat(configProperties.getString("endpoint")).isNull();
     assertThat(configProperties.getStructured("headers")).isNull();
@@ -143,14 +143,14 @@ class LogRecordExporterFactoryTest {
 
     assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
 
-    ArgumentCaptor<StructuredConfigProperties> configCaptor =
-        ArgumentCaptor.forClass(StructuredConfigProperties.class);
+    ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
+        ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     verify(spiHelper)
         .loadComponent(eq(LogRecordExporter.class), eq("otlp"), configCaptor.capture());
-    StructuredConfigProperties configProperties = configCaptor.getValue();
+    DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("protocol")).isEqualTo("http/protobuf");
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318");
-    StructuredConfigProperties headers = configProperties.getStructured("headers");
+    DeclarativeConfigProperties headers = configProperties.getStructured("headers");
     assertThat(headers).isNotNull();
     assertThat(headers.getPropertyKeys()).isEqualTo(ImmutableSet.of("key1", "key2"));
     assertThat(headers.getString("key1")).isEqualTo("value1");
@@ -176,7 +176,7 @@ class LogRecordExporterFactoryTest {
                                 "unknown_key", ImmutableMap.of("key1", "value1")),
                         spiHelper,
                         new ArrayList<>()))
-        .isInstanceOf(StructuredConfigException.class)
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
             "No component provider detected for io.opentelemetry.sdk.logs.export.LogRecordExporter with name \"unknown_key\".");
     cleanup.addCloseables(closeables);

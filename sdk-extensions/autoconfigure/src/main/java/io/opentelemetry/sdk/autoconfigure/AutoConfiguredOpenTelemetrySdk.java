@@ -66,8 +66,8 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
   abstract Resource getResource();
 
   /**
-   * Returns the {@link ConfigProperties} used for auto-configuration, or {@code null} if file
-   * configuration was used.
+   * Returns the {@link ConfigProperties} used for auto-configuration, or {@code null} if
+   * declarative configuration was used.
    *
    * @see #getConfigProvider()
    */
@@ -76,7 +76,7 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
 
   /**
    * Returns the {@link ConfigProvider} representing the config used for auto-configuration, or
-   * {@code null} if file configuration was not used.
+   * {@code null} if declarative configuration was not used.
    *
    * @see #getConfig()
    */

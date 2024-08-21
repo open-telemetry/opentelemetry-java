@@ -9,7 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.incubator.config.StructuredConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Attributes;
 import java.io.Closeable;
@@ -41,7 +41,7 @@ final class AttributesFactory
         .forEach(
             (key, value) -> {
               if (value == null) {
-                throw new StructuredConfigException(
+                throw new DeclarativeConfigException(
                     "Error processing attribute with key \"" + key + "\": unexpected null value");
               }
               if (value instanceof String) {
@@ -119,7 +119,7 @@ final class AttributesFactory
                   return;
                 }
               }
-              throw new StructuredConfigException(
+              throw new DeclarativeConfigException(
                   "Error processing attribute with key \""
                       + key
                       + "\": unrecognized value type "
@@ -133,13 +133,13 @@ final class AttributesFactory
     values.forEach(
         value -> {
           if (value == null) {
-            throw new StructuredConfigException(
+            throw new DeclarativeConfigException(
                 "Error processing attribute with key \""
                     + key
                     + "\": unexpected null element in value");
           }
           if (!expectedType.isAssignableFrom(value.getClass())) {
-            throw new StructuredConfigException(
+            throw new DeclarativeConfigException(
                 "Error processing attribute with key \""
                     + key
                     + "\": expected value entries to be of type "

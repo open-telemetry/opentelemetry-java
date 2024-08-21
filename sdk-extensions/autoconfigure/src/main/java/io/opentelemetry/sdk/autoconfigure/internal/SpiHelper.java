@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.autoconfigure.internal;
 
-import io.opentelemetry.api.incubator.config.StructuredConfigException;
-import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
@@ -83,13 +83,13 @@ public final class SpiHelper {
   /**
    * Find a registered {@link ComponentProvider} which {@link ComponentProvider#getType()} matching
    * {@code type}, {@link ComponentProvider#getName()} matching {@code name}, and call {@link
-   * ComponentProvider#create(StructuredConfigProperties)} with the given {@code model}.
+   * ComponentProvider#create(DeclarativeConfigProperties)} with the given {@code model}.
    *
-   * @throws StructuredConfigException if no matching providers are found, or if multiple are found
-   *     (i.e. conflict), or if {@link ComponentProvider#create(StructuredConfigProperties)} throws
+   * @throws DeclarativeConfigException if no matching providers are found, or if multiple are found
+   *     (i.e. conflict), or if {@link ComponentProvider#create(DeclarativeConfigProperties)} throws
    */
   @SuppressWarnings({"unchecked", "rawtypes"})
-  public <T> T loadComponent(Class<T> type, String name, StructuredConfigProperties config) {
+  public <T> T loadComponent(Class<T> type, String name, DeclarativeConfigProperties config) {
     // TODO(jack-berg): cache loaded component providers
     List<ComponentProvider> componentProviders = load(ComponentProvider.class);
     List<ComponentProvider<?>> matchedProviders =
@@ -102,11 +102,11 @@ public final class SpiHelper {
                     componentProvider.getType() == type && name.equals(componentProvider.getName()))
             .collect(Collectors.toList());
     if (matchedProviders.isEmpty()) {
-      throw new StructuredConfigException(
+      throw new DeclarativeConfigException(
           "No component provider detected for " + type.getName() + " with name \"" + name + "\".");
     }
     if (matchedProviders.size() > 1) {
-      throw new StructuredConfigException(
+      throw new DeclarativeConfigException(
           "Component provider conflict. Multiple providers detected for "
               + type.getName()
               + " with name \""
@@ -122,7 +122,7 @@ public final class SpiHelper {
     try {
       return provider.create(config);
     } catch (Throwable throwable) {
-      throw new StructuredConfigException(
+      throw new DeclarativeConfigException(
           "Error configuring " + type.getName() + " with name \"" + name + "\"", throwable);
     }
   }

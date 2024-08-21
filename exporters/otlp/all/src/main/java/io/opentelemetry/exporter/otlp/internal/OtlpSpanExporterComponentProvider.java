@@ -9,7 +9,7 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_T
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
-import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
@@ -38,7 +38,7 @@ public class OtlpSpanExporterComponentProvider implements ComponentProvider<Span
   }
 
   @Override
-  public SpanExporter create(StructuredConfigProperties config) {
+  public SpanExporter create(DeclarativeConfigProperties config) {
     String protocol = OtlpConfigUtil.getStructuredConfigOtlpProtocol(config);
 
     if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {

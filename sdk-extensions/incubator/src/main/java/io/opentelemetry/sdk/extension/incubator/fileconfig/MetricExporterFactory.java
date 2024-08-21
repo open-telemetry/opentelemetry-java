@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static java.util.stream.Collectors.joining;
 
-import io.opentelemetry.api.incubator.config.StructuredConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -43,13 +43,13 @@ final class MetricExporterFactory
     }
 
     if (model.getPrometheus() != null) {
-      throw new StructuredConfigException("prometheus exporter not supported in this context");
+      throw new DeclarativeConfigException("prometheus exporter not supported in this context");
     }
 
     if (!model.getAdditionalProperties().isEmpty()) {
       Map<String, Object> additionalProperties = model.getAdditionalProperties();
       if (additionalProperties.size() > 1) {
-        throw new StructuredConfigException(
+        throw new DeclarativeConfigException(
             "Invalid configuration - multiple metric exporters set: "
                 + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
       }
@@ -67,7 +67,7 @@ final class MetricExporterFactory
               exporterKeyValue.getValue());
       return FileConfigUtil.addAndReturn(closeables, metricExporter);
     } else {
-      throw new StructuredConfigException("metric exporter must be set");
+      throw new DeclarativeConfigException("metric exporter must be set");
     }
   }
 }

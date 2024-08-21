@@ -18,9 +18,9 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.GlobalConfigProvider;
 import io.opentelemetry.api.incubator.config.InstrumentationConfigUtil;
-import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
 import io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
@@ -45,7 +45,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.event.Level;
 
-class FileConfigurationTest {
+class DeclarativeConfigurationTest {
 
   @RegisterExtension private static final CleanupExtension cleanup = new CleanupExtension();
 
@@ -212,7 +212,7 @@ class FileConfigurationTest {
     assertThat(globalConfigProvider)
         .isNotNull()
         .isSameAs(AutoConfigureUtil.getConfigProvider(autoConfiguredOpenTelemetrySdk));
-    StructuredConfigProperties instrumentationConfig =
+    DeclarativeConfigProperties instrumentationConfig =
         globalConfigProvider.getInstrumentationConfig();
     assertThat(instrumentationConfig).isNotNull();
 

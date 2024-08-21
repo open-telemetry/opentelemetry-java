@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.api.incubator.config.StructuredConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Selector;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
@@ -36,7 +36,7 @@ final class InstrumentSelectorFactory implements Factory<Selector, InstrumentSel
       try {
         instrumentType = InstrumentType.valueOf(model.getInstrumentType().name());
       } catch (IllegalArgumentException e) {
-        throw new StructuredConfigException(
+        throw new DeclarativeConfigException(
             "Unrecognized instrument type: " + model.getInstrumentType(), e);
       }
       builder.setType(instrumentType);
@@ -54,7 +54,7 @@ final class InstrumentSelectorFactory implements Factory<Selector, InstrumentSel
     try {
       return builder.build();
     } catch (IllegalArgumentException e) {
-      throw new StructuredConfigException("Invalid selector", e);
+      throw new DeclarativeConfigException("Invalid selector", e);
     }
   }
 }

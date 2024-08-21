@@ -5,18 +5,18 @@
 
 package io.opentelemetry.api.incubator.config;
 
-/** An exception that is thrown if the user-provided file configuration is invalid. */
-public final class StructuredConfigException extends RuntimeException {
+/** An exception that is thrown when errors occur with declarative configuration. */
+public final class DeclarativeConfigException extends RuntimeException {
 
   private static final long serialVersionUID = 3036584181551130522L;
 
   /** Create a new configuration exception with specified {@code message} and without a cause. */
-  public StructuredConfigException(String message) {
+  public DeclarativeConfigException(String message) {
     super(message);
   }
 
   /** Create a new configuration exception with specified {@code message} and {@code cause}. */
-  public StructuredConfigException(String message, Throwable cause) {
+  public DeclarativeConfigException(String message, Throwable cause) {
     super(message, cause);
   }
 }

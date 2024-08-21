@@ -8,8 +8,8 @@ package io.opentelemetry.api.incubator.config.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableSet;
-import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfiguration;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -19,7 +19,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class YamlStructuredConfigPropertiesTest {
+class YamlDeclarativeConfigPropertiesTest {
 
   private static final String extendedSchema =
       "file_format: \"0.1\"\n"
@@ -54,23 +54,23 @@ class YamlStructuredConfigPropertiesTest {
           + "    - str_key1: str_value1\n"
           + "      int_key1: 2";
 
-  private StructuredConfigProperties structuredConfigProps;
+  private DeclarativeConfigProperties structuredConfigProps;
 
   @BeforeEach
   void setup() {
     OpenTelemetryConfiguration configuration =
-        FileConfiguration.parse(
+        DeclarativeConfiguration.parse(
             new ByteArrayInputStream(extendedSchema.getBytes(StandardCharsets.UTF_8)));
-    structuredConfigProps = FileConfiguration.toConfigProperties(configuration);
+    structuredConfigProps = DeclarativeConfiguration.toConfigProperties(configuration);
   }
 
   @Test
   void configurationSchema() {
     // Validate can read file configuration schema properties
     assertThat(structuredConfigProps.getString("file_format")).isEqualTo("0.1");
-    StructuredConfigProperties resourceProps = structuredConfigProps.getStructured("resource");
+    DeclarativeConfigProperties resourceProps = structuredConfigProps.getStructured("resource");
     assertThat(resourceProps).isNotNull();
-    StructuredConfigProperties resourceAttributesProps = resourceProps.getStructured("attributes");
+    DeclarativeConfigProperties resourceAttributesProps = resourceProps.getStructured("attributes");
     assertThat(resourceAttributesProps).isNotNull();
     assertThat(resourceAttributesProps.getString("service.name")).isEqualTo("unknown_service");
   }
@@ -82,7 +82,7 @@ class YamlStructuredConfigPropertiesTest {
 
     // Validate can read properties not part of configuration schema
     // .other
-    StructuredConfigProperties otherProps = structuredConfigProps.getStructured("other");
+    DeclarativeConfigProperties otherProps = structuredConfigProps.getStructured("other");
     assertThat(otherProps).isNotNull();
     assertThat(otherProps.getPropertyKeys())
         .isEqualTo(
@@ -123,14 +123,15 @@ class YamlStructuredConfigPropertiesTest {
         .isEqualTo(Collections.singletonList(true));
 
     // .other.map_key
-    StructuredConfigProperties otherMapKeyProps = otherProps.getStructured("map_key");
+    DeclarativeConfigProperties otherMapKeyProps = otherProps.getStructured("map_key");
     assertThat(otherMapKeyProps).isNotNull();
     assertThat(otherMapKeyProps.getPropertyKeys())
         .isEqualTo(ImmutableSet.of("str_key1", "int_key1", "map_key1"));
     assertThat(otherMapKeyProps.getString("str_key1")).isEqualTo("str_value1");
     assertThat(otherMapKeyProps.getInt("int_key1")).isEqualTo(2);
     // other.map_key.map_key1
-    StructuredConfigProperties otherMapKeyMapKey1Props = otherMapKeyProps.getStructured("map_key1");
+    DeclarativeConfigProperties otherMapKeyMapKey1Props =
+        otherMapKeyProps.getStructured("map_key1");
     assertThat(otherMapKeyMapKey1Props).isNotNull();
     assertThat(otherMapKeyMapKey1Props.getPropertyKeys())
         .isEqualTo(ImmutableSet.of("str_key2", "int_key2"));
@@ -138,22 +139,22 @@ class YamlStructuredConfigPropertiesTest {
     assertThat(otherMapKeyMapKey1Props.getInt("int_key2")).isEqualTo(3);
 
     // .other.list_key
-    List<StructuredConfigProperties> listKey = otherProps.getStructuredList("list_key");
+    List<DeclarativeConfigProperties> listKey = otherProps.getStructuredList("list_key");
     assertThat(listKey).hasSize(2);
-    StructuredConfigProperties listKeyProps1 = listKey.get(0);
+    DeclarativeConfigProperties listKeyProps1 = listKey.get(0);
     assertThat(listKeyProps1.getPropertyKeys())
         .isEqualTo(ImmutableSet.of("str_key1", "int_key1", "map_key1"));
     assertThat(listKeyProps1.getString("str_key1")).isEqualTo("str_value1");
     assertThat(listKeyProps1.getInt("int_key1")).isEqualTo(2);
     // .other.list_key[0]
-    StructuredConfigProperties listKeyProps1MapKeyProps = listKeyProps1.getStructured("map_key1");
+    DeclarativeConfigProperties listKeyProps1MapKeyProps = listKeyProps1.getStructured("map_key1");
     assertThat(listKeyProps1MapKeyProps).isNotNull();
     assertThat(listKeyProps1MapKeyProps.getPropertyKeys())
         .isEqualTo(ImmutableSet.of("str_key2", "int_key2"));
     assertThat(listKeyProps1MapKeyProps.getString("str_key2")).isEqualTo("str_value2");
     assertThat(listKeyProps1MapKeyProps.getInt("int_key2")).isEqualTo(3);
     // .other.list_key[1]
-    StructuredConfigProperties listKeyProps2 = listKey.get(1);
+    DeclarativeConfigProperties listKeyProps2 = listKey.get(1);
     assertThat(listKeyProps2.getPropertyKeys()).isEqualTo(ImmutableSet.of("str_key1", "int_key1"));
     assertThat(listKeyProps2.getString("str_key1")).isEqualTo("str_value1");
     assertThat(listKeyProps2.getInt("int_key1")).isEqualTo(2);
@@ -186,7 +187,7 @@ class YamlStructuredConfigPropertiesTest {
 
   @Test
   void wrongType() {
-    StructuredConfigProperties otherProps = structuredConfigProps.getStructured("other");
+    DeclarativeConfigProperties otherProps = structuredConfigProps.getStructured("other");
     assertThat(otherProps).isNotNull();
 
     assertThat(otherProps.getString("int_key")).isNull();

@@ -9,8 +9,8 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.GlobalConfigProvider;
-import io.opentelemetry.api.incubator.config.StructuredConfigException;
 import io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -552,19 +552,20 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       throw new ConfigurationException("Configuration file not found", e);
     }
     try {
-      Class<?> configurationFactory =
-          Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfiguration");
-      Method parse = configurationFactory.getMethod("parse", InputStream.class);
+      Class<?> declarativeConfiguration =
+          Class.forName(
+              "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration");
+      Method parse = declarativeConfiguration.getMethod("parse", InputStream.class);
       Object model = parse.invoke(null, fis);
       Class<?> openTelemetryConfiguration =
           Class.forName(
               "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration");
-      Method create = configurationFactory.getMethod("create", openTelemetryConfiguration);
+      Method create = declarativeConfiguration.getMethod("create", openTelemetryConfiguration);
       OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model);
-      Class<?> fileConfigProvider =
-          Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigProvider");
+      Class<?> sdkConfigProvider =
+          Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider");
       Method createFileConfigProvider =
-          fileConfigProvider.getMethod("create", openTelemetryConfiguration);
+          sdkConfigProvider.getMethod("create", openTelemetryConfiguration);
       ConfigProvider configProvider = (ConfigProvider) createFileConfigProvider.invoke(null, model);
       // Note: can't access file configuration resource without reflection so setting a dummy
       // resource
@@ -576,15 +577,15 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
           e);
     } catch (InvocationTargetException e) {
       Throwable cause = e.getCause();
-      if (cause instanceof StructuredConfigException) {
-        throw toConfigurationException((StructuredConfigException) cause);
+      if (cause instanceof DeclarativeConfigException) {
+        throw toConfigurationException((DeclarativeConfigException) cause);
       }
       throw new ConfigurationException("Unexpected error configuring from file", e);
     }
   }
 
   private static ConfigurationException toConfigurationException(
-      StructuredConfigException exception) {
+      DeclarativeConfigException exception) {
     String message = Objects.requireNonNull(exception.getMessage());
     return new ConfigurationException(message, exception);
   }

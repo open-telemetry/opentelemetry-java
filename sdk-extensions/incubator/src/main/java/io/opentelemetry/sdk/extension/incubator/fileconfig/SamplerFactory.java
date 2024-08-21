@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static java.util.stream.Collectors.joining;
 
-import io.opentelemetry.api.incubator.config.StructuredConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -113,11 +113,11 @@ final class SamplerFactory
 
     // TODO(jack-berg): add support for generic SPI samplers
     if (!model.getAdditionalProperties().isEmpty()) {
-      throw new StructuredConfigException(
+      throw new DeclarativeConfigException(
           "Unrecognized sampler(s): "
               + model.getAdditionalProperties().keySet().stream().collect(joining(",", "[", "]")));
     } else {
-      throw new StructuredConfigException("sampler must be set");
+      throw new DeclarativeConfigException("sampler must be set");
     }
   }
 

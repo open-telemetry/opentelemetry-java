@@ -23,11 +23,11 @@ public class InstrumentationConfigUtil {
    * Return a map representation of the peer service map entries in {@code
    * .instrumentation.general.peer.service_mapping}, or null if none is configured.
    *
-   * @throws StructuredConfigException if an unexpected type is encountered accessing the property
+   * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
    */
   @Nullable
   public static Map<String, String> peerServiceMapping(ConfigProvider configProvider) {
-    Optional<List<StructuredConfigProperties>> optServiceMappingList =
+    Optional<List<DeclarativeConfigProperties>> optServiceMappingList =
         Optional.ofNullable(configProvider.getInstrumentationConfig())
             .map(instrumentationConfig -> instrumentationConfig.getStructured("general"))
             .map(generalConfig -> generalConfig.getStructured("peer"))
@@ -53,7 +53,7 @@ public class InstrumentationConfigUtil {
    * Return {@code .instrumentation.general.http.client.request_captured_headers}, or null if none
    * is configured.
    *
-   * @throws StructuredConfigException if an unexpected type is encountered accessing the property
+   * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
    */
   @Nullable
   public static List<String> httpClientRequestCapturedHeaders(ConfigProvider configProvider) {
@@ -70,7 +70,7 @@ public class InstrumentationConfigUtil {
    * Return {@code .instrumentation.general.http.client.response_captured_headers}, or null if none
    * is configured.
    *
-   * @throws StructuredConfigException if an unexpected type is encountered accessing the property
+   * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
    */
   @Nullable
   public static List<String> httpClientResponseCapturedHeaders(ConfigProvider configProvider) {
@@ -87,7 +87,7 @@ public class InstrumentationConfigUtil {
    * Return {@code .instrumentation.general.http.server.request_captured_headers}, or null if none
    * is configured.
    *
-   * @throws StructuredConfigException if an unexpected type is encountered accessing the property
+   * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
    */
   @Nullable
   public static List<String> httpServerRequestCapturedHeaders(ConfigProvider configProvider) {
@@ -104,7 +104,7 @@ public class InstrumentationConfigUtil {
    * Return {@code .instrumentation.general.http.server.response_captured_headers}, or null if none
    * is configured.
    *
-   * @throws StructuredConfigException if an unexpected type is encountered accessing the property
+   * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
    */
   @Nullable
   public static List<String> httpSeverResponseCapturedHeaders(ConfigProvider configProvider) {
@@ -120,10 +120,10 @@ public class InstrumentationConfigUtil {
   /**
    * Return {@code .instrumentation.java.<instrumentationName>}, or null if none is configured.
    *
-   * @throws StructuredConfigException if an unexpected type is encountered accessing the property
+   * @throws DeclarativeConfigException if an unexpected type is encountered accessing the property
    */
   @Nullable
-  public static StructuredConfigProperties javaInstrumentationConfig(
+  public static DeclarativeConfigProperties javaInstrumentationConfig(
       ConfigProvider configProvider, String instrumentationName) {
     return Optional.ofNullable(configProvider.getInstrumentationConfig())
         .map(instrumentationConfig -> instrumentationConfig.getStructured("java"))

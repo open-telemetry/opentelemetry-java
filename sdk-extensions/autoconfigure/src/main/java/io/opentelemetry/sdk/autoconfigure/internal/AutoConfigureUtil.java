@@ -25,7 +25,7 @@ public final class AutoConfigureUtil {
   /**
    * Returns the {@link ConfigProperties} used for auto-configuration.
    *
-   * @return the config properties, or {@code null} if file based configuration is used
+   * @return the config properties, or {@code null} if declarative configuration is used
    */
   @Nullable
   public static ConfigProperties getConfig(
@@ -41,10 +41,10 @@ public final class AutoConfigureUtil {
   }
 
   /**
-   * Returns the {@link ConfigProvider} resulting from auto-configuration when file based
+   * Returns the {@link ConfigProvider} resulting from auto-configuration when declarative
    * configuration is used.
    *
-   * @return the {@link ConfigProvider}, or {@code null} if file based configuration is NOT used
+   * @return the {@link ConfigProvider}, or {@code null} if declarative configuration is NOT used
    */
   @Nullable
   public static ConfigProvider getConfigProvider(

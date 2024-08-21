@@ -9,9 +9,9 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.opentelemetry.api.incubator.config.StructuredConfigException;
-import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
-import io.opentelemetry.api.incubator.config.internal.YamlStructuredConfigProperties;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.api.incubator.config.internal.YamlDeclarativeConfigProperties;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
@@ -38,14 +38,16 @@ import org.snakeyaml.engine.v2.nodes.ScalarNode;
 import org.snakeyaml.engine.v2.schema.CoreSchema;
 
 /**
- * Configure {@link OpenTelemetrySdk} from YAML configuration files conforming to the schema in <a
- * href="https://github.com/open-telemetry/opentelemetry-configuration">open-telemetry/opentelemetry-configuration</a>.
- *
- * @see #parseAndCreate(InputStream)
+ * Configure {@link OpenTelemetrySdk} using <a
+ * href="https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/configuration#declarative-configuration">declarative
+ * configuration</a>. For most users, this means calling {@link #parseAndCreate(InputStream)} with a
+ * <a
+ * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/data-model.md#yaml-file-format">YAML
+ * configuration file</a>.
  */
-public final class FileConfiguration {
+public final class DeclarativeConfiguration {
 
-  private static final Logger logger = Logger.getLogger(FileConfiguration.class.getName());
+  private static final Logger logger = Logger.getLogger(DeclarativeConfiguration.class.getName());
   private static final Pattern ENV_VARIABLE_REFERENCE =
       Pattern.compile("\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)}");
 
@@ -64,12 +66,12 @@ public final class FileConfiguration {
     MAPPER.configOverride(Boolean.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
   }
 
-  private FileConfiguration() {}
+  private DeclarativeConfiguration() {}
 
   /**
    * Combines {@link #parse(InputStream)} and {@link #create(OpenTelemetryConfiguration)}.
    *
-   * @throws StructuredConfigException if unable to parse or interpret
+   * @throws DeclarativeConfigException if unable to parse or interpret
    */
   public static OpenTelemetrySdk parseAndCreate(InputStream inputStream) {
     OpenTelemetryConfiguration configurationModel = parse(inputStream);
@@ -82,7 +84,7 @@ public final class FileConfiguration {
    *
    * @param configurationModel the configuration model
    * @return the {@link OpenTelemetrySdk}
-   * @throws StructuredConfigException if unable to interpret
+   * @throws DeclarativeConfigException if unable to interpret
    */
   public static OpenTelemetrySdk create(OpenTelemetryConfiguration configurationModel) {
     List<Closeable> closeables = new ArrayList<>();
@@ -90,7 +92,7 @@ public final class FileConfiguration {
       return OpenTelemetryConfigurationFactory.getInstance()
           .create(
               configurationModel,
-              SpiHelper.create(FileConfiguration.class.getClassLoader()),
+              SpiHelper.create(DeclarativeConfiguration.class.getClassLoader()),
               closeables);
     } catch (RuntimeException e) {
       logger.info(
@@ -104,10 +106,10 @@ public final class FileConfiguration {
               "Error closing " + closeable.getClass().getName() + ": " + ex.getMessage());
         }
       }
-      if (e instanceof StructuredConfigException) {
+      if (e instanceof DeclarativeConfigException) {
         throw e;
       }
-      throw new StructuredConfigException("Unexpected configuration error", e);
+      throw new DeclarativeConfigException("Unexpected configuration error", e);
     }
   }
 
@@ -117,13 +119,13 @@ public final class FileConfiguration {
    * <p>Before parsing, environment variable substitution is performed as described in {@link
    * EnvSubstitutionConstructor}.
    *
-   * @throws StructuredConfigException if unable to parse
+   * @throws DeclarativeConfigException if unable to parse
    */
   public static OpenTelemetryConfiguration parse(InputStream configuration) {
     try {
       return parse(configuration, System.getenv());
     } catch (RuntimeException e) {
-      throw new StructuredConfigException("Unable to parse configuration input stream", e);
+      throw new DeclarativeConfigException("Unable to parse configuration input stream", e);
     }
   }
 
@@ -142,20 +144,20 @@ public final class FileConfiguration {
   }
 
   /**
-   * Convert the {@code model} to a generic {@link StructuredConfigProperties}, which can be used to
-   * read configuration not part of the model.
+   * Convert the {@code model} to a generic {@link DeclarativeConfigProperties}, which can be used
+   * to read configuration not part of the model.
    *
    * @param model the configuration model
-   * @return a generic {@link StructuredConfigProperties} representation of the model
+   * @return a generic {@link DeclarativeConfigProperties} representation of the model
    */
-  public static StructuredConfigProperties toConfigProperties(OpenTelemetryConfiguration model) {
+  public static DeclarativeConfigProperties toConfigProperties(OpenTelemetryConfiguration model) {
     return toConfigProperties((Object) model);
   }
 
-  static StructuredConfigProperties toConfigProperties(Object model) {
+  static DeclarativeConfigProperties toConfigProperties(Object model) {
     Map<String, Object> configurationMap =
         MAPPER.convertValue(model, new TypeReference<Map<String, Object>>() {});
-    return YamlStructuredConfigProperties.create(configurationMap);
+    return YamlDeclarativeConfigProperties.create(configurationMap);
   }
 
   /**

@@ -9,7 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.api.incubator.config.StructuredConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -42,7 +42,7 @@ class LogRecordProcessorFactoryTest {
                         new LogRecordProcessor().withBatch(new BatchLogRecordProcessor()),
                         spiHelper,
                         Collections.emptyList()))
-        .isInstanceOf(StructuredConfigException.class)
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("batch log record processor exporter is required but is null");
   }
 
@@ -109,7 +109,7 @@ class LogRecordProcessorFactoryTest {
                         new LogRecordProcessor().withSimple(new SimpleLogRecordProcessor()),
                         spiHelper,
                         Collections.emptyList()))
-        .isInstanceOf(StructuredConfigException.class)
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("simple log record processor exporter is required but is null");
   }
 
@@ -148,7 +148,7 @@ class LogRecordProcessorFactoryTest {
                             .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
                         spiHelper,
                         closeables))
-        .isInstanceOf(StructuredConfigException.class)
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("Unrecognized log record processor(s): [test]");
     cleanup.addCloseables(closeables);
   }

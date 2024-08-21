@@ -8,12 +8,12 @@ package io.opentelemetry.api.incubator.config.internal;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
-import io.opentelemetry.api.incubator.config.StructuredConfigException;
-import io.opentelemetry.api.incubator.config.StructuredConfigProperties;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -22,7 +22,7 @@ import java.util.StringJoiner;
 import javax.annotation.Nullable;
 
 /**
- * Implementation of {@link StructuredConfigProperties} which uses a file configuration model as a
+ * Implementation of {@link DeclarativeConfigProperties} which uses a file configuration model as a
  * source.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
@@ -31,19 +31,24 @@ import javax.annotation.Nullable;
  * @see #getStructured(String) Accessing nested maps
  * @see #getStructuredList(String) Accessing lists of maps
  */
-public final class YamlStructuredConfigProperties implements StructuredConfigProperties {
+public final class YamlDeclarativeConfigProperties implements DeclarativeConfigProperties {
+
+  private static final Set<Class<?>> SUPPORTED_SCALAR_TYPES =
+      Collections.unmodifiableSet(
+          new LinkedHashSet<>(
+              Arrays.asList(String.class, Boolean.class, Long.class, Double.class)));
 
   /** Values are {@link #isPrimitive(Object)}, {@link List} of scalars. */
   private final Map<String, Object> simpleEntries;
 
-  private final Map<String, List<StructuredConfigProperties>> listEntries;
-  private final Map<String, StructuredConfigProperties> mapEntries;
+  private final Map<String, List<DeclarativeConfigProperties>> listEntries;
+  private final Map<String, DeclarativeConfigProperties> mapEntries;
   private final Set<String> nullKeys;
 
-  private YamlStructuredConfigProperties(
+  private YamlDeclarativeConfigProperties(
       Map<String, Object> simpleEntries,
-      Map<String, List<StructuredConfigProperties>> listEntries,
-      Map<String, StructuredConfigProperties> mapEntries,
+      Map<String, List<DeclarativeConfigProperties>> listEntries,
+      Map<String, DeclarativeConfigProperties> mapEntries,
       Set<String> nullKeys) {
     this.simpleEntries = simpleEntries;
     this.listEntries = listEntries;
@@ -52,18 +57,18 @@ public final class YamlStructuredConfigProperties implements StructuredConfigPro
   }
 
   /**
-   * Create a {@link YamlStructuredConfigProperties} from the {@code properties} map.
+   * Create a {@link YamlDeclarativeConfigProperties} from the {@code properties} map.
    *
    * <p>{@code properties} is expected to be the output of YAML parsing (i.e. with Jackson {@code
    * com.fasterxml.jackson.databind.ObjectMapper}), and have values which are scalars, lists of
    * scalars, lists of maps, and maps.
    */
   @SuppressWarnings("unchecked")
-  public static YamlStructuredConfigProperties create(Map<String, Object> properties) {
-    Map<String, Object> simpleEntries = new HashMap<>();
-    Map<String, List<StructuredConfigProperties>> listEntries = new HashMap<>();
-    Map<String, StructuredConfigProperties> mapEntries = new HashMap<>();
-    Set<String> nullKeys = new HashSet<>();
+  public static YamlDeclarativeConfigProperties create(Map<String, Object> properties) {
+    Map<String, Object> simpleEntries = new LinkedHashMap<>();
+    Map<String, List<DeclarativeConfigProperties>> listEntries = new LinkedHashMap<>();
+    Map<String, DeclarativeConfigProperties> mapEntries = new LinkedHashMap<>();
+    Set<String> nullKeys = new LinkedHashSet<>();
     for (Map.Entry<String, Object> entry : properties.entrySet()) {
       String key = entry.getKey();
       Object value = entry.getValue();
@@ -76,15 +81,15 @@ public final class YamlStructuredConfigProperties implements StructuredConfigPro
         continue;
       }
       if (isListOfMaps(value)) {
-        List<StructuredConfigProperties> list =
+        List<DeclarativeConfigProperties> list =
             ((List<Map<String, Object>>) value)
-                .stream().map(YamlStructuredConfigProperties::create).collect(toList());
+                .stream().map(YamlDeclarativeConfigProperties::create).collect(toList());
         listEntries.put(key, list);
         continue;
       }
       if (isMap(value)) {
-        YamlStructuredConfigProperties configProperties =
-            YamlStructuredConfigProperties.create((Map<String, Object>) value);
+        YamlDeclarativeConfigProperties configProperties =
+            YamlDeclarativeConfigProperties.create((Map<String, Object>) value);
         mapEntries.put(key, configProperties);
         continue;
       }
@@ -92,19 +97,19 @@ public final class YamlStructuredConfigProperties implements StructuredConfigPro
         nullKeys.add(key);
         continue;
       }
-      throw new StructuredConfigException(
+      throw new DeclarativeConfigException(
           "Unable to initialize ExtendedConfigProperties. Key \""
               + key
               + "\" has unrecognized object type "
               + value.getClass().getName());
     }
-    return new YamlStructuredConfigProperties(simpleEntries, listEntries, mapEntries, nullKeys);
+    return new YamlDeclarativeConfigProperties(simpleEntries, listEntries, mapEntries, nullKeys);
   }
 
   private static boolean isPrimitiveList(Object object) {
     if (object instanceof List) {
       List<?> list = (List<?>) object;
-      return list.stream().allMatch(YamlStructuredConfigProperties::isPrimitive);
+      return list.stream().allMatch(YamlDeclarativeConfigProperties::isPrimitive);
     }
     return false;
   }
@@ -176,16 +181,12 @@ public final class YamlStructuredConfigProperties implements StructuredConfigPro
     return doubleOrNull(simpleEntries.get(name));
   }
 
-  private static final Set<Class<?>> SUPPORTED_SCALAR_TYPES =
-      Collections.unmodifiableSet(
-          new HashSet<>(Arrays.asList(String.class, Boolean.class, Long.class, Double.class)));
-
   @Nullable
   @Override
   @SuppressWarnings("unchecked")
   public <T> List<T> getScalarList(String name, Class<T> scalarType) {
     if (!SUPPORTED_SCALAR_TYPES.contains(scalarType)) {
-      throw new StructuredConfigException(
+      throw new DeclarativeConfigException(
           "Unsupported scalar type "
               + scalarType.getName()
               + ". Supported types include "
@@ -257,19 +258,19 @@ public final class YamlStructuredConfigProperties implements StructuredConfigPro
 
   @Nullable
   @Override
-  public StructuredConfigProperties getStructured(String name) {
+  public DeclarativeConfigProperties getStructured(String name) {
     return mapEntries.get(name);
   }
 
   @Nullable
   @Override
-  public List<StructuredConfigProperties> getStructuredList(String name) {
+  public List<DeclarativeConfigProperties> getStructuredList(String name) {
     return listEntries.get(name);
   }
 
   @Override
   public Set<String> getPropertyKeys() {
-    Set<String> keys = new HashSet<>();
+    Set<String> keys = new LinkedHashSet<>();
     keys.addAll(simpleEntries.keySet());
     keys.addAll(listEntries.keySet());
     keys.addAll(mapEntries.keySet());
@@ -289,7 +290,7 @@ public final class YamlStructuredConfigProperties implements StructuredConfigPro
 
   /** Returns a map representation of this, which is useful for testing. */
   public Map<String, Object> asMap() {
-    Map<String, Object> response = new HashMap<>();
+    Map<String, Object> response = new LinkedHashMap<>();
     response.putAll(simpleEntries);
     response.putAll(listEntries);
     response.putAll(mapEntries);
