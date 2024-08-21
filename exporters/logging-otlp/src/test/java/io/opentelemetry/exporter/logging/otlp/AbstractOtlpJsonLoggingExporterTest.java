@@ -17,7 +17,6 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.resources.Resource;
@@ -27,7 +26,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
@@ -54,7 +52,6 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
 
   private static final ByteArrayOutputStream STREAM = new ByteArrayOutputStream();
   private static final PrintStream PRINT_STREAM = new PrintStream(STREAM);
-  private final Class<?> exporterClass;
 
   @RegisterExtension LogCapturer logs;
   private final String defaultConfigString;
@@ -73,7 +70,6 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
       String expectedFileNoWrapper,
       String expectedFileWrapper,
       String defaultConfigString) {
-    this.exporterClass = exporterClass;
     this.providerClass = providerClass;
     this.componentProviderType = componentProviderType;
     this.expectedFileNoWrapper = expectedFileNoWrapper;
@@ -93,16 +89,9 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
 
   protected abstract CompletableResultCode export(T exporter);
 
+  protected abstract CompletableResultCode flush(T exporter);
+
   protected abstract CompletableResultCode shutdown(T exporter);
-
-  protected Map<ConfigProperties, Map<String, String>> stdoutConfigPropertiesTestCases() {
-    return emptyMap();
-  }
-
-  protected Map<StructuredConfigProperties, Map<String, String>>
-      stdoutStructuredPropertiesTestCases() {
-    return emptyMap();
-  }
 
   private String output(@Nullable OutputStream outputStream) {
     if (outputStream == null) {
@@ -212,6 +201,7 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
         createExporter(
             testCase.getOutputStream(), testCase.getMemoryMode(), testCase.isWrapperJsonObject());
     export(exporter);
+    flush(exporter);
 
     String output = output(testCase.getOutputStream());
 
@@ -269,12 +259,6 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
                 singletonMap("otel.java.experimental.exporter.memory_mode", "reusable_data")),
             "otlp-stdout"),
         ImmutableMap.of("memoryMode", "REUSABLE_DATA"));
-
-    stdoutConfigPropertiesTestCases()
-        .forEach(
-            (config, expected) -> {
-              assertToStringProperties(loadExporter(config, "otlp-stdout"), expected);
-            });
   }
 
   @Test
@@ -311,7 +295,7 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
   }
 
   @SuppressWarnings("unchecked")
-  private T loadExporter(ConfigProperties config, String name) {
+  protected T loadExporter(ConfigProperties config, String name) {
     Object provider = loadProvider(name);
 
     try {
@@ -349,16 +333,9 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
   }
 
   private void assertToStringProperties(T exporter, Map<String, String> expected) {
-    String exporterString = exporter.toString();
-    Map<String, String> got = new HashMap<>();
-    for (String entry :
-        exporterString
-            .substring(exporterClass.getSimpleName().length() + 1, exporterString.length() - 1)
-            .split(", ")) {
-      String[] split = entry.split("=", 2);
-      got.put(split[0], split[1]);
-    }
-    assertThat(got).containsAllEntriesOf(expected);
-    assertThat(toBuilderAndBack(exporter).toString()).isEqualTo(exporterString);
+    expected.forEach(
+        (key, value) ->
+            assertThat(exporter).extracting(key).extracting(Object::toString).isEqualTo(value));
+    assertThat(toBuilderAndBack(exporter).toString()).isEqualTo(exporter.toString());
   }
 }

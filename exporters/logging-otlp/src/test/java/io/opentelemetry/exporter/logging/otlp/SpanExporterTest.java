@@ -129,6 +129,11 @@ class SpanExporterTest extends AbstractOtlpJsonLoggingExporterTest<OtlpJsonLoggi
   }
 
   @Override
+  protected CompletableResultCode flush(OtlpJsonLoggingSpanExporter exporter) {
+    return exporter.flush();
+  }
+
+  @Override
   protected CompletableResultCode shutdown(OtlpJsonLoggingSpanExporter exporter) {
     return exporter.shutdown();
   }

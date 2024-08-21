@@ -92,6 +92,11 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
         .apply(InternalBuilder.forMetrics().setPreferredTemporality(aggregationTemporality));
   }
 
+  @Override
+  public MemoryMode getMemoryMode() {
+    return memoryMode;
+  }
+
   /**
    * Return the aggregation temporality.
    *

@@ -119,6 +119,11 @@ class LogRecordExporterTest
   }
 
   @Override
+  protected CompletableResultCode flush(OtlpJsonLoggingLogRecordExporter exporter) {
+    return exporter.flush();
+  }
+
+  @Override
   protected CompletableResultCode shutdown(OtlpJsonLoggingLogRecordExporter exporter) {
     return exporter.shutdown();
   }

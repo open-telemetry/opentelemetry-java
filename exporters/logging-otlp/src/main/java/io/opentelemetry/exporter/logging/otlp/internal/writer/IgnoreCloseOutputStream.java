@@ -15,10 +15,6 @@ class IgnoreCloseOutputStream extends FilterOutputStream {
     super(outputStream);
   }
 
-  public static IgnoreCloseOutputStream wrap(OutputStream outputStream) {
-    return new IgnoreCloseOutputStream(outputStream);
-  }
-
   @Override
   public void close() {
     // ignore
