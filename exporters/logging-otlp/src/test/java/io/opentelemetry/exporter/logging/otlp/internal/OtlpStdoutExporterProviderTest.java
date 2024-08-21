@@ -10,37 +10,39 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogRecordExporter;
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingMetricExporter;
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingSpanExporter;
-import io.opentelemetry.exporter.logging.otlp.internal.logs.LoggingLogRecordExporterProvider;
-import io.opentelemetry.exporter.logging.otlp.internal.metrics.LoggingMetricExporterProvider;
-import io.opentelemetry.exporter.logging.otlp.internal.trace.LoggingSpanExporterProvider;
+import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporterProvider;
+import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricExporterProvider;
+import io.opentelemetry.exporter.logging.otlp.internal.trace.OtlpStdoutSpanExporterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import java.util.Collections;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class LoggingExporterProviderTest {
+class OtlpStdoutExporterProviderTest {
 
   @Test
   void logRecordExporterProvider() {
-    LoggingLogRecordExporterProvider provider = new LoggingLogRecordExporterProvider();
-    assertThat(provider.getName()).isEqualTo("logging-otlp");
-    assertThat(
+    OtlpStdoutLogRecordExporterProvider provider = new OtlpStdoutLogRecordExporterProvider();
+    Assertions.assertThat(provider.getName()).isEqualTo("otlp-stdout");
+    Assertions.assertThat(
             provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap())))
         .isInstanceOf(OtlpJsonLoggingLogRecordExporter.class);
   }
 
   @Test
   void metricExporterProvider() {
-    LoggingMetricExporterProvider provider = new LoggingMetricExporterProvider();
-    assertThat(provider.getName()).isEqualTo("logging-otlp");
+    OtlpStdoutMetricExporterProvider provider = new OtlpStdoutMetricExporterProvider();
+    assertThat(provider.getName()).isEqualTo("otlp-stdout");
     assertThat(
             provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap())))
         .isInstanceOf(OtlpJsonLoggingMetricExporter.class);
+    // todo metric exporter does not have any configuration
   }
 
   @Test
   void spanExporterProvider() {
-    LoggingSpanExporterProvider provider = new LoggingSpanExporterProvider();
-    assertThat(provider.getName()).isEqualTo("logging-otlp");
+    OtlpStdoutSpanExporterProvider provider = new OtlpStdoutSpanExporterProvider();
+    assertThat(provider.getName()).isEqualTo("otlp-stdout");
     assertThat(
             provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap())))
         .isInstanceOf(OtlpJsonLoggingSpanExporter.class);

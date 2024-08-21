@@ -5,19 +5,27 @@
 
 package io.opentelemetry.exporter.logging.otlp;
 
-import static io.opentelemetry.exporter.logging.otlp.JsonUtil.JSON_FACTORY;
-
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.io.SegmentedStringWriter;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.internal.otlp.metrics.MetricReusableDataMarshaler;
 import io.opentelemetry.exporter.internal.otlp.metrics.ResourceMetricsMarshaler;
+import io.opentelemetry.exporter.logging.otlp.internal.InternalBuilder;
+import io.opentelemetry.exporter.logging.otlp.internal.metrics.InternalMetricBuilder;
+import io.opentelemetry.exporter.logging.otlp.internal.metrics.MetricBuilderAccessUtil;
+import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpJsonLoggingMetricExporterBuilder;
+import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import java.io.IOException;
 import java.util.Collection;
+import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,14 +40,47 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
 
   private final AtomicBoolean isShutdown = new AtomicBoolean();
 
+  private final JsonWriter jsonWriter;
+
   private final AggregationTemporality aggregationTemporality;
+  private final AggregationTemporalitySelector aggregationTemporalitySelector;
+  private final DefaultAggregationSelector defaultAggregationSelector;
+
+  private final Function<Collection<MetricData>, CompletableResultCode> marshaler;
+  private final MemoryMode memoryMode;
+  private final boolean wrapperJsonObject;
+
+  static {
+    MetricBuilderAccessUtil.setToExporter(
+        builder ->
+            new OtlpJsonLoggingMetricExporter(
+                builder.getJsonWriter(),
+                builder.getMemoryMode(),
+                builder.isWrapperJsonObject(),
+                builder.getPreferredTemporality(),
+                builder.getAggregationTemporalitySelector(),
+                builder.getDefaultAggregationSelector()));
+    MetricBuilderAccessUtil.setToBuilder(
+        exporter -> {
+          InternalMetricBuilder builder =
+              InternalBuilder.forMetrics()
+                  .setPreferredTemporality(exporter.aggregationTemporality)
+                  .setAggregationTemporalitySelector(exporter.aggregationTemporalitySelector)
+                  .setDefaultAggregationSelector(exporter.defaultAggregationSelector);
+          builder
+              .setJsonWriter(exporter.jsonWriter)
+              .setWrapperJsonObject(exporter.wrapperJsonObject)
+              .setMemoryMode(exporter.memoryMode);
+          return builder;
+        });
+  }
 
   /**
-   * Returns a new {@link OtlpJsonLoggingMetricExporter} with a aggregation temporality of {@link
+   * Returns a new {@link OtlpJsonLoggingMetricExporter} with an aggregation temporality of {@link
    * AggregationTemporality#CUMULATIVE}.
    */
   public static MetricExporter create() {
-    return new OtlpJsonLoggingMetricExporter(AggregationTemporality.CUMULATIVE);
+    return OtlpJsonLoggingMetricExporterBuilder.create().build();
   }
 
   /**
@@ -47,11 +88,8 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
    * aggregationTemporality}.
    */
   public static MetricExporter create(AggregationTemporality aggregationTemporality) {
-    return new OtlpJsonLoggingMetricExporter(aggregationTemporality);
-  }
-
-  private OtlpJsonLoggingMetricExporter(AggregationTemporality aggregationTemporality) {
-    this.aggregationTemporality = aggregationTemporality;
+    return MetricBuilderAccessUtil.getToExporter()
+        .apply(InternalBuilder.forMetrics().setPreferredTemporality(aggregationTemporality));
   }
 
   /**
@@ -66,7 +104,58 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
-    return aggregationTemporality;
+    return aggregationTemporalitySelector.getAggregationTemporality(instrumentType);
+  }
+
+  @Override
+  public Aggregation getDefaultAggregation(InstrumentType instrumentType) {
+    return defaultAggregationSelector.getDefaultAggregation(instrumentType);
+  }
+
+  OtlpJsonLoggingMetricExporter(
+      JsonWriter jsonWriter,
+      MemoryMode memoryMode,
+      boolean wrapperJsonObject,
+      AggregationTemporality preferredTemporality,
+      AggregationTemporalitySelector aggregationTemporalitySelector,
+      DefaultAggregationSelector defaultAggregationSelector) {
+    this.memoryMode = memoryMode;
+    this.wrapperJsonObject = wrapperJsonObject;
+    this.jsonWriter = jsonWriter;
+    aggregationTemporality = preferredTemporality;
+    this.aggregationTemporalitySelector = aggregationTemporalitySelector;
+    this.defaultAggregationSelector = defaultAggregationSelector;
+
+    marshaler = createMarshaler(jsonWriter, memoryMode, wrapperJsonObject);
+  }
+
+  private static Function<Collection<MetricData>, CompletableResultCode> createMarshaler(
+      JsonWriter jsonWriter, MemoryMode memoryMode, boolean wrapperJsonObject) {
+
+    if (wrapperJsonObject) {
+      MetricReusableDataMarshaler reusableDataMarshaler =
+          new MetricReusableDataMarshaler(memoryMode) {
+            @Override
+            public CompletableResultCode doExport(Marshaler exportRequest, int numItems) {
+              return jsonWriter.write(exportRequest);
+            }
+          };
+
+      return reusableDataMarshaler::export;
+    } else {
+      return metrics -> {
+        // not support for low allocation marshaler
+
+        for (ResourceMetricsMarshaler resourceMetrics : ResourceMetricsMarshaler.create(metrics)) {
+          CompletableResultCode resultCode = jsonWriter.write(resourceMetrics);
+          if (!resultCode.isSuccess()) {
+            // already logged
+            return resultCode;
+          }
+        }
+        return CompletableResultCode.ofSuccess();
+      };
+    }
   }
 
   @Override
@@ -75,27 +164,12 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
       return CompletableResultCode.ofFailure();
     }
 
-    ResourceMetricsMarshaler[] allResourceMetrics = ResourceMetricsMarshaler.create(metrics);
-    for (ResourceMetricsMarshaler resourceMetrics : allResourceMetrics) {
-      SegmentedStringWriter sw = new SegmentedStringWriter(JSON_FACTORY._getBufferRecycler());
-      try (JsonGenerator gen = JsonUtil.create(sw)) {
-        resourceMetrics.writeJsonTo(gen);
-      } catch (IOException e) {
-        // Shouldn't happen in practice, just skip it.
-        continue;
-      }
-      try {
-        logger.log(Level.INFO, sw.getAndClear());
-      } catch (IOException e) {
-        logger.log(Level.WARNING, "Unable to read OTLP JSON metrics", e);
-      }
-    }
-    return CompletableResultCode.ofSuccess();
+    return marshaler.apply(metrics);
   }
 
   @Override
   public CompletableResultCode flush() {
-    return CompletableResultCode.ofSuccess();
+    return jsonWriter.flush();
   }
 
   @Override
@@ -104,5 +178,14 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
       logger.log(Level.INFO, "Calling shutdown() multiple times.");
     }
     return CompletableResultCode.ofSuccess();
+  }
+
+  @Override
+  public String toString() {
+    StringJoiner joiner = new StringJoiner(", ", "OtlpJsonLoggingMetricExporter{", "}");
+    joiner.add("memoryMode=" + memoryMode);
+    joiner.add("wrapperJsonObject=" + wrapperJsonObject);
+    joiner.add("jsonWriter=" + jsonWriter);
+    return joiner.toString();
   }
 }

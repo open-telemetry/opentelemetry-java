@@ -9,6 +9,7 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_M
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
+import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
@@ -55,9 +56,9 @@ public class OtlpMetricExporterComponentProvider implements ComponentProvider<Me
           builder::setClientTls,
           builder::setRetryPolicy,
           builder::setMemoryMode);
-      OtlpConfigUtil.configureOtlpAggregationTemporality(
+      ExporterBuilderUtil.configureOtlpAggregationTemporality(
           config, builder::setAggregationTemporalitySelector);
-      OtlpConfigUtil.configureOtlpHistogramDefaultAggregation(
+      ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
           config, builder::setDefaultAggregationSelector);
 
       return builder.build();
@@ -75,9 +76,9 @@ public class OtlpMetricExporterComponentProvider implements ComponentProvider<Me
           builder::setClientTls,
           builder::setRetryPolicy,
           builder::setMemoryMode);
-      OtlpConfigUtil.configureOtlpAggregationTemporality(
+      ExporterBuilderUtil.configureOtlpAggregationTemporality(
           config, builder::setAggregationTemporalitySelector);
-      OtlpConfigUtil.configureOtlpHistogramDefaultAggregation(
+      ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
           config, builder::setDefaultAggregationSelector);
 
       return builder.build();

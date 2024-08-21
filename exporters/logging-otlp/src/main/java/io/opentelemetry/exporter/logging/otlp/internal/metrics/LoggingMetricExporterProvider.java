@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.logging.otlp.internal;
+package io.opentelemetry.exporter.logging.otlp.internal.metrics;
 
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingMetricExporter;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
