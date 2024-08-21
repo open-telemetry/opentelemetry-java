@@ -33,12 +33,12 @@ public abstract class FailedExportException extends Exception {
     return new HttpExportException(null, cause);
   }
 
-  /** Indicates an HTTP export failed after receiving a response from the server. */
+  /** Indicates a gRPC export failed after receiving a response from the server. */
   public static GrpcExportException grpcFailedWithResponse(GrpcResponse response) {
     return new GrpcExportException(response, null);
   }
 
-  /** Indicates an HTTP export failed exceptionally without receiving a response from the server. */
+  /** Indicates a gRPC export failed exceptionally without receiving a response from the server. */
   public static GrpcExportException grpcFailedExceptionally(Throwable cause) {
     return new GrpcExportException(null, cause);
   }

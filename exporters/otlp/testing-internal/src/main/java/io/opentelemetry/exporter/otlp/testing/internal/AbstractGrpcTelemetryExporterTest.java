@@ -29,6 +29,7 @@ import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.GrpcResponse;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.testing.internal.compressor.Base64Compressor;
@@ -488,6 +489,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+
       // Assert that the export request fails well before the default connect timeout of 10s
       assertThat(System.currentTimeMillis() - startTimeMillis)
           .isLessThan(TimeUnit.SECONDS.toMillis(1));
@@ -542,17 +544,33 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(GrpcExporter.class)
   void error() {
-    addGrpcError(13, null);
+    int statusCode = 13;
+    addGrpcError(statusCode, null);
 
     TelemetryExporter<T> exporter = nonRetryingExporter();
 
     try {
-      assertThat(
-              exporter
-                  .export(Collections.singletonList(generateFakeTelemetry()))
-                  .join(10, TimeUnit.SECONDS)
-                  .isSuccess())
-          .isFalse();
+      CompletableResultCode result =
+          exporter
+              .export(Collections.singletonList(generateFakeTelemetry()))
+              .join(10, TimeUnit.SECONDS);
+
+      assertThat(result.isSuccess()).isFalse();
+
+      assertThat(result.getFailureThrowable())
+          .asInstanceOf(
+              InstanceOfAssertFactories.throwable(FailedExportException.GrpcExportException.class))
+          .returns(true, Assertions.from(FailedExportException::failedWithResponse))
+          .satisfies(
+              ex -> {
+                assertThat(ex.getResponse())
+                    .isNotNull()
+                    .extracting(GrpcResponse::grpcStatusValue)
+                    .isEqualTo(statusCode);
+
+                assertThat(ex.getCause()).isNull();
+              });
+
       LoggingEvent log =
           logs.assertContains(
               "Failed to export "
@@ -566,28 +584,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   @Test
   @SuppressLogger(GrpcExporter.class)
-  void errorWithStatus() {
-    addGrpcError(6, null);
-
-    TelemetryExporter<T> exporter = nonRetryingExporter();
-
-    try {
-      assertThat(
-              exporter
-                  .export(Collections.singletonList(generateFakeTelemetry()))
-                  .join(10, TimeUnit.SECONDS)
-                  .getFailureThrowable())
-          .asInstanceOf(
-              InstanceOfAssertFactories.throwable(FailedExportException.GrpcExportException.class))
-          .returns(true, Assertions.from(FailedExportException::failedWithResponse));
-    } finally {
-      exporter.shutdown();
-    }
-  }
-
-  @Test
-  @SuppressLogger(GrpcExporter.class)
-  void errorWithException() {
+  void errorWithUnknownError() {
     addGrpcError(2, null);
 
     TelemetryExporter<T> exporter = nonRetryingExporter();
@@ -600,7 +597,13 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   .getFailureThrowable())
           .asInstanceOf(
               InstanceOfAssertFactories.throwable(FailedExportException.GrpcExportException.class))
-          .returns(false, Assertions.from(FailedExportException::failedWithResponse));
+          .returns(false, Assertions.from(FailedExportException::failedWithResponse))
+          .satisfies(
+              ex -> {
+                assertThat(ex.getResponse()).isNull();
+
+                assertThat(ex.getCause()).isNotNull();
+              });
     } finally {
       exporter.shutdown();
     }
