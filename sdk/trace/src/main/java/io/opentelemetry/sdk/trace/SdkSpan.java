@@ -109,7 +109,7 @@ final class SdkSpan implements ReadWriteSpan {
    * The thread on which {@link #end()} is called and which will be invoking the {@link
    * SpanProcessor}s. This field is used to ensure that only this thread may modify the span while
    * it is in state {@link EndState#ENDING} to prevent concurrent updates outside of {@link
-   * SpanProcessor#onEnding(ReadWriteSpan)}.
+   * ExtendedSpanProcessor#onEnding(ReadWriteSpan)}.
    */
   @GuardedBy("lock")
   @Nullable

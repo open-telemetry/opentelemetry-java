@@ -10,7 +10,7 @@ import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 
 /**
- * A specialization of {@link SpanProcessor} providing more extension points.
+ *  Extended {@link SpanProcessor} with experimental APIs.
  *
  * <p>Note that this interface is considered experimental and therefore should only be used at the
  * risk of its methods being changed or removed. If it stabilized, the interface is likely removed
