@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.trace.internal;
 
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -22,7 +23,7 @@ public interface ExtendedSpanProcessor extends SpanProcessor {
    * SpanProcessor#onEnd(ReadableSpan)} is invoked with an immutable variant of this span. This
    * means that the span will still be mutable. Note that the span will only be modifiable
    * synchronously from this callback, concurrent modifications from other threads will be
-   * prevented. Only called if the {@link * Span#isRecording()} returns true.
+   * prevented. Only called if {@link Span#isRecording()} returns true.
    *
    * <p>This method is called synchronously on the execution thread, should not throw or block the
    * execution thread.
