@@ -5,29 +5,27 @@
 
 package io.opentelemetry.sdk.trace.internal;
 
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
+import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 
 /**
- *  Extended {@link SpanProcessor} with experimental APIs.
+ * Extended {@link SpanProcessor} with experimental APIs.
  *
- * <p>Note that this interface is considered experimental and therefore should only be used at the
- * risk of its methods being changed or removed. If it stabilized, the interface is likely removed
- * and the methods are promoted to {@link SpanProcessor}.
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 public interface ExtendedSpanProcessor extends SpanProcessor {
 
   /**
-   * Called just before a {@link io.opentelemetry.api.trace.Span} is ended, if the {@link
-   * Span#isRecording()} returns true. This means that the span will still be mutable. Note that the
-   * span will only be modifiable synchronously from this callback, concurrent modifications from
-   * other threads will be prevented.
+   * Called when a {@link io.opentelemetry.api.trace.Span} is ended, but before {@link
+   * SpanProcessor#onEnd(ReadableSpan)} is invoked with an immutable variant of this span. This
+   * means that the span will still be mutable. Note that the span will only be modifiable
+   * synchronously from this callback, concurrent modifications from other threads will be
+   * prevented. Only called if the {@link * Span#isRecording()} returns true.
    *
    * <p>This method is called synchronously on the execution thread, should not throw or block the
    * execution thread.
-   *
-   * <p>Note: This method is experimental and might be subject to future changes.
    *
    * @param span the {@code Span} that is just about to be ended.
    */
@@ -35,8 +33,6 @@ public interface ExtendedSpanProcessor extends SpanProcessor {
 
   /**
    * Returns {@code true} if this {@link SpanProcessor} requires onEnding events.
-   *
-   * <p>Note: This method is experimental and might be subject to future changes.
    *
    * @return {@code true} if this {@link SpanProcessor} requires onEnding events.
    */
