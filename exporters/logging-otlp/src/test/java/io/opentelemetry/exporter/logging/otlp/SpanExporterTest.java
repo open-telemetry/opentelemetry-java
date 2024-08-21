@@ -17,6 +17,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.logging.otlp.internal.trace.OtlpJsonLoggingSpanExporterBuilder;
 import io.opentelemetry.exporter.logging.otlp.internal.trace.OtlpStdoutSpanExporter;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -24,14 +25,14 @@ import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import javax.annotation.Nullable;
 
 @SuppressLogger(OtlpJsonLoggingSpanExporter.class)
-class OtlpStdoutSpanExporterTest
-    extends AbstractOtlpJsonLoggingExporterTest<OtlpJsonLoggingSpanExporter> {
+class SpanExporterTest extends AbstractOtlpJsonLoggingExporterTest<OtlpJsonLoggingSpanExporter> {
 
   private static final SpanData SPAN1 =
       TestSpanData.builder()
@@ -84,8 +85,14 @@ class OtlpStdoutSpanExporterTest
               InstrumentationScopeInfo.builder("instrumentation2").setVersion("2").build())
           .build();
 
-  public OtlpStdoutSpanExporterTest() {
-    super(OtlpJsonLoggingSpanExporter.class, "expected-spans.json", "expected-spans-wrapper.json");
+  public SpanExporterTest() {
+    super(
+        OtlpJsonLoggingSpanExporter.class,
+        ConfigurableSpanExporterProvider.class,
+        SpanExporter.class,
+        "expected-spans.json",
+        "expected-spans-wrapper.json",
+        "OtlpJsonLoggingSpanExporter{memoryMode=IMMUTABLE_DATA, wrapperJsonObject=false, jsonWriter=LoggerJsonWriter}");
   }
 
   @Override

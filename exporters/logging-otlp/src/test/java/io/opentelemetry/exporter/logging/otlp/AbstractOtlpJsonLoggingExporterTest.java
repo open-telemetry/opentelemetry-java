@@ -5,13 +5,18 @@
 
 package io.opentelemetry.exporter.logging.otlp;
 
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Streams;
 import com.google.common.io.Resources;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -22,6 +27,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -49,15 +57,29 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
   private final Class<?> exporterClass;
 
   @RegisterExtension LogCapturer logs;
+  private final String defaultConfigString;
+  private final Class<?> providerClass;
+
+  @SuppressWarnings("unused")
+  private final Class<?> componentProviderType; // todo remove once used
+
   private final String expectedFileNoWrapper;
   private final String expectedFileWrapper;
 
   public AbstractOtlpJsonLoggingExporterTest(
-      Class<?> exporterClass, String expectedFileNoWrapper, String expectedFileWrapper) {
+      Class<?> exporterClass,
+      Class<?> providerClass,
+      Class<?> componentProviderType,
+      String expectedFileNoWrapper,
+      String expectedFileWrapper,
+      String defaultConfigString) {
     this.exporterClass = exporterClass;
-    logs = LogCapturer.create().captureForType(exporterClass);
+    this.providerClass = providerClass;
+    this.componentProviderType = componentProviderType;
     this.expectedFileNoWrapper = expectedFileNoWrapper;
     this.expectedFileWrapper = expectedFileWrapper;
+    logs = LogCapturer.create().captureForType(exporterClass);
+    this.defaultConfigString = defaultConfigString;
   }
 
   protected abstract T createExporter(
@@ -67,18 +89,20 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
 
   protected abstract T createDefaultStdoutExporter();
 
-  protected abstract T createExporterWithProperties(ConfigProperties properties);
-
-  protected abstract T createStdoutExporterWithProperties(ConfigProperties properties);
-
-  protected abstract T createStdoutExporterWithStructuredProperties(
-      StructuredConfigProperties properties);
-
   protected abstract T toBuilderAndBack(T exporter);
 
   protected abstract CompletableResultCode export(T exporter);
 
   protected abstract CompletableResultCode shutdown(T exporter);
+
+  protected Map<ConfigProperties, Map<String, String>> stdoutConfigPropertiesTestCases() {
+    return emptyMap();
+  }
+
+  protected Map<StructuredConfigProperties, Map<String, String>>
+      stdoutStructuredPropertiesTestCases() {
+    return emptyMap();
+  }
 
   private String output(@Nullable OutputStream outputStream) {
     if (outputStream == null) {
@@ -168,7 +192,8 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
 
   @ParameterizedTest(name = "{0}")
   @MethodSource("exportTestCases")
-  void testExport(String name, TestCase testCase) throws JSONException, IOException {
+  void exportWithProgrammaticConfig(String name, TestCase testCase)
+      throws JSONException, IOException {
     setUp();
 
     if (testCase.getMemoryMode() == MemoryMode.REUSABLE_DATA && !testCase.isWrapperJsonObject()) {
@@ -204,22 +229,6 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
   }
 
   @Test
-  void config() {
-    assertToString(
-        createDefaultExporter(),
-        "{memoryMode=IMMUTABLE_DATA, wrapperJsonObject=false, jsonWriter=LoggerJsonWriter}");
-    assertToString(
-        createDefaultStdoutExporter(),
-        "{memoryMode=IMMUTABLE_DATA, wrapperJsonObject=true, jsonWriter=StreamJsonWriter{outputStream=stdout}}");
-  }
-
-  private void assertToString(T exporter, String expected) {
-    assertThat(exporter.toString()).isEqualTo(exporterClass.getSimpleName() + expected);
-    assertThat(toBuilderAndBack(exporter).toString())
-        .isEqualTo(exporterClass.getSimpleName() + expected);
-  }
-
-  @Test
   void testShutdown() {
     T exporter = createDefaultExporter();
     assertThat(shutdown(exporter).isSuccess()).isTrue();
@@ -227,5 +236,129 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
     assertThat(output(null)).isEmpty();
     assertThat(shutdown(exporter).isSuccess()).isTrue();
     logs.assertContains("Calling shutdown() multiple times.");
+  }
+
+  @Test
+  void loggingOtlpProviderConfig() {
+    assertFullToString(createDefaultExporter(), defaultConfigString);
+
+    assertFullToString(
+        loadExporter(DefaultConfigProperties.createFromMap(emptyMap()), "logging-otlp"),
+        defaultConfigString);
+  }
+
+  @Test
+  void stdoutProviderConfig() {
+    assertToStringProperties(
+        createDefaultStdoutExporter(),
+        ImmutableMap.of(
+            "memoryMode", "IMMUTABLE_DATA",
+            "wrapperJsonObject", "true",
+            "jsonWriter", "StreamJsonWriter{outputStream=stdout}"));
+
+    assertToStringProperties(
+        loadExporter(DefaultConfigProperties.createFromMap(emptyMap()), "otlp-stdout"),
+        ImmutableMap.of(
+            "memoryMode", "IMMUTABLE_DATA",
+            "wrapperJsonObject", "true",
+            "jsonWriter", "StreamJsonWriter{outputStream=stdout}"));
+
+    assertToStringProperties(
+        loadExporter(
+            DefaultConfigProperties.createFromMap(
+                singletonMap("otel.java.experimental.exporter.memory_mode", "reusable_data")),
+            "otlp-stdout"),
+        ImmutableMap.of("memoryMode", "REUSABLE_DATA"));
+
+    stdoutConfigPropertiesTestCases()
+        .forEach(
+            (config, expected) -> {
+              assertToStringProperties(loadExporter(config, "otlp-stdout"), expected);
+            });
+  }
+
+  @Test
+  void stdoutComponentProviderConfig() {
+    //    ComponentProvider<?> provider = (ComponentProvider<?>)
+    // loadSpi(ComponentProvider.class).filter(
+    //        p -> {
+    //          ComponentProvider<?> c = (ComponentProvider<?>) p;
+    //          return "otlp-stdout".equals(c.getName()) && c.getType()
+    //              .equals(componentProviderType);
+    //        }).findFirst().orElseThrow(() -> new IllegalStateException("No provider found"));
+
+    // todo: implement DefaultStructuredConfigProperties
+
+    //    assertToString(
+    //        provider.create(DefaultStructuredConfigProperties.createFromMap(emptyMap())),
+    //        loadExporter(DefaultConfigProperties.createFromMap(emptyMap()), "otlp-stdout"),
+    //        "{memoryMode=IMMUTABLE_DATA, wrapperJsonObject=true,
+    // jsonWriter=StreamJsonWriter{outputStream=stdout}}");
+    //
+    //    assertToString(
+    //        provider.create((DefaultStructuredConfigProperties.createFromMap(singletonMap(
+    //            "memory_mode", "reusable_data"
+    //        )), "otlp-stdout"),
+    //        "{memoryMode=REUSABLE_DATA, wrapperJsonObject=true,
+    // jsonWriter=StreamJsonWriter{outputStream=stdout}}");
+    //
+    //    stdoutStructuredPropertiesTestCases().forEach(
+    //        (config, expected) -> {
+    //          assertToString(
+    //              (T) provider.create(config),
+    //              expected);
+    //        });
+  }
+
+  @SuppressWarnings("unchecked")
+  private T loadExporter(ConfigProperties config, String name) {
+    Object provider = loadProvider(name);
+
+    try {
+      return (T)
+          provider
+              .getClass()
+              .getDeclaredMethod("createExporter", ConfigProperties.class)
+              .invoke(provider, config);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private Object loadProvider(String want) {
+    return loadSpi(providerClass)
+        .filter(
+            p -> {
+              try {
+                return want.equals(p.getClass().getDeclaredMethod("getName").invoke(p));
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
+            })
+        .findFirst()
+        .orElseThrow(() -> new IllegalStateException("No provider found"));
+  }
+
+  private static Stream<?> loadSpi(Class<?> type) {
+    return Streams.stream(ServiceLoader.load(type, type.getClassLoader()).iterator());
+  }
+
+  private void assertFullToString(T exporter, String expected) {
+    assertThat(exporter.toString()).isEqualTo(expected);
+    assertThat(toBuilderAndBack(exporter).toString()).isEqualTo(expected);
+  }
+
+  private void assertToStringProperties(T exporter, Map<String, String> expected) {
+    String exporterString = exporter.toString();
+    Map<String, String> got = new HashMap<>();
+    for (String entry :
+        exporterString
+            .substring(exporterClass.getSimpleName().length() + 1, exporterString.length() - 1)
+            .split(", ")) {
+      String[] split = entry.split("=", 2);
+      got.put(split[0], split[1]);
+    }
+    assertThat(got).containsAllEntriesOf(expected);
+    assertThat(toBuilderAndBack(exporter).toString()).isEqualTo(exporterString);
   }
 }

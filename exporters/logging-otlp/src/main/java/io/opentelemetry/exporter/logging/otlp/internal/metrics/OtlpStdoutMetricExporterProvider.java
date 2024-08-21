@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.logging.otlp.internal.metrics;
 
+import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -18,7 +19,13 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 public class OtlpStdoutMetricExporterProvider implements ConfigurableMetricExporterProvider {
   @Override
   public MetricExporter createExporter(ConfigProperties config) {
-    return OtlpStdoutMetricExporter.create();
+    OtlpJsonLoggingMetricExporterBuilder builder = OtlpStdoutMetricExporter.builder();
+    ExporterBuilderUtil.configureExporterMemoryMode(config, builder::setMemoryMode);
+    ExporterBuilderUtil.configureOtlpAggregationTemporality(
+        config, builder::setAggregationTemporalitySelector);
+    ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
+        config, builder::setDefaultAggregationSelector);
+    return builder.build();
   }
 
   @Override

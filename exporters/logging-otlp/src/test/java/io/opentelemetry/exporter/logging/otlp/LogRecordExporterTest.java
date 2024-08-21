@@ -14,18 +14,15 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.exporter.logging.otlp.internal.logs.LoggingLogRecordExporterProvider;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpJsonLoggingLogRecordExporterBuilder;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporter;
-import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporterComponentProvider;
-import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporterProvider;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -33,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 @SuppressLogger(OtlpJsonLoggingLogRecordExporter.class)
-class OtlpStdoutLogRecordExporterTest
+class LogRecordExporterTest
     extends AbstractOtlpJsonLoggingExporterTest<OtlpJsonLoggingLogRecordExporter> {
 
   private static final LogRecordData LOG1 =
@@ -77,9 +74,14 @@ class OtlpStdoutLogRecordExporterTest
                   TraceState.getDefault()))
           .build();
 
-  public OtlpStdoutLogRecordExporterTest() {
+  public LogRecordExporterTest() {
     super(
-        OtlpJsonLoggingLogRecordExporter.class, "expected-logs.json", "expected-logs-wrapper.json");
+        OtlpJsonLoggingLogRecordExporter.class,
+        ConfigurableLogRecordExporterProvider.class,
+        LogRecordExporter.class,
+        "expected-logs.json",
+        "expected-logs-wrapper.json",
+        "OtlpJsonLoggingLogRecordExporter{memoryMode=IMMUTABLE_DATA, wrapperJsonObject=false, jsonWriter=LoggerJsonWriter}");
   }
 
   @Override
@@ -103,27 +105,6 @@ class OtlpStdoutLogRecordExporterTest
   @Override
   protected OtlpJsonLoggingLogRecordExporter createDefaultStdoutExporter() {
     return OtlpStdoutLogRecordExporter.create();
-  }
-
-  @Override
-  protected OtlpJsonLoggingLogRecordExporter createExporterWithProperties(
-      ConfigProperties properties) {
-    return (OtlpJsonLoggingLogRecordExporter)
-        new LoggingLogRecordExporterProvider().createExporter(properties);
-  }
-
-  @Override
-  protected OtlpJsonLoggingLogRecordExporter createStdoutExporterWithProperties(
-      ConfigProperties properties) {
-    return (OtlpJsonLoggingLogRecordExporter)
-        new OtlpStdoutLogRecordExporterProvider().createExporter(properties);
-  }
-
-  @Override
-  protected OtlpJsonLoggingLogRecordExporter createStdoutExporterWithStructuredProperties(
-      StructuredConfigProperties properties) {
-    return (OtlpJsonLoggingLogRecordExporter)
-        new OtlpStdoutLogRecordExporterComponentProvider().create(properties);
   }
 
   @Override

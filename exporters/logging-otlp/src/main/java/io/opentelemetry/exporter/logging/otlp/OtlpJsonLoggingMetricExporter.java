@@ -186,6 +186,12 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
     joiner.add("memoryMode=" + memoryMode);
     joiner.add("wrapperJsonObject=" + wrapperJsonObject);
     joiner.add("jsonWriter=" + jsonWriter);
+    joiner.add(
+        "aggregationTemporalitySelector="
+            + AggregationTemporalitySelector.asString(aggregationTemporalitySelector));
+    joiner.add(
+        "defaultAggregationSelector="
+            + DefaultAggregationSelector.asString(defaultAggregationSelector));
     return joiner.toString();
   }
 }

@@ -13,6 +13,10 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpJsonLoggingMetricExporterBuilder;
 import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricExporter;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -22,16 +26,20 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
 @SuppressLogger(OtlpJsonLoggingMetricExporter.class)
-class OtlpStdoutMetricExporterTest
+class MetricExporterTest
     extends AbstractOtlpJsonLoggingExporterTest<OtlpJsonLoggingMetricExporter> {
 
   private static final MetricData METRIC1 =
@@ -65,11 +73,14 @@ class OtlpStdoutMetricExporterTest
                   ImmutableDoublePointData.create(
                       1, 2, Attributes.of(stringKey("cat"), "meow"), 4))));
 
-  public OtlpStdoutMetricExporterTest() {
+  public MetricExporterTest() {
     super(
         OtlpJsonLoggingMetricExporter.class,
+        ConfigurableMetricExporterProvider.class,
+        MetricExporter.class,
         "expected-metrics.json",
-        "expected-metrics-wrapper.json");
+        "expected-metrics-wrapper.json",
+        "OtlpJsonLoggingMetricExporter{memoryMode=IMMUTABLE_DATA, wrapperJsonObject=false, jsonWriter=LoggerJsonWriter, aggregationTemporalitySelector=AggregationTemporalitySelector{COUNTER=CUMULATIVE, UP_DOWN_COUNTER=CUMULATIVE, HISTOGRAM=CUMULATIVE, OBSERVABLE_COUNTER=CUMULATIVE, OBSERVABLE_UP_DOWN_COUNTER=CUMULATIVE, OBSERVABLE_GAUGE=CUMULATIVE, GAUGE=CUMULATIVE}, defaultAggregationSelector=DefaultAggregationSelector{COUNTER=default, UP_DOWN_COUNTER=default, HISTOGRAM=default, OBSERVABLE_COUNTER=default, OBSERVABLE_UP_DOWN_COUNTER=default, OBSERVABLE_GAUGE=default, GAUGE=default}}");
   }
 
   @Override
@@ -108,6 +119,32 @@ class OtlpStdoutMetricExporterTest
   @Override
   protected CompletableResultCode shutdown(OtlpJsonLoggingMetricExporter exporter) {
     return exporter.shutdown();
+  }
+
+  @Override
+  protected Map<ConfigProperties, Map<String, String>> stdoutConfigPropertiesTestCases() {
+    Map<ConfigProperties, Map<String, String>> cases = new HashMap<>();
+    cases.put(
+        DefaultConfigProperties.createFromMap(
+            Collections.singletonMap("otel.exporter.otlp.metrics.temporality.preference", "DELTA")),
+        Collections.singletonMap(
+            "aggregationTemporalitySelector", "AggregationTemporalitySelector{COUNTER=DELTA"));
+    cases.put(
+        DefaultConfigProperties.createFromMap(
+            Collections.singletonMap(
+                "otel.exporter.otlp.metrics.default.histogram.aggregation",
+                "BASE2_EXPONENTIAL_BUCKET_HISTOGRAM")),
+        Collections.singletonMap("HISTOGRAM", "base2_exponential_bucket_histogram"));
+    return cases;
+  }
+
+  @Override
+  protected Map<StructuredConfigProperties, Map<String, String>>
+      stdoutStructuredPropertiesTestCases() {
+    // todo: implement this
+    // default_histogram_aggregation
+    // temporality_preference
+    return Collections.emptyMap();
   }
 
   /** Test configuration specific to metric exporter. */

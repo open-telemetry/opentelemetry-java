@@ -1,2 +1,11 @@
 Comparing source compatibility of opentelemetry-exporter-logging-otlp-1.42.0-SNAPSHOT.jar against opentelemetry-exporter-logging-otlp-1.41.0.jar
-No changes.
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogRecordExporter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) java.lang.String toString()
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingMetricExporter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.Aggregation getDefaultAggregation(io.opentelemetry.sdk.metrics.InstrumentType)
+	+++  NEW METHOD: PUBLIC(+) java.lang.String toString()
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingSpanExporter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) java.lang.String toString()
