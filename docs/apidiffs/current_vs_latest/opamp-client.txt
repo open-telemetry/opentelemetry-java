@@ -1,0 +1,2 @@
+Comparing source compatibility of opamp-client-1.42.0-SNAPSHOT.jar against 
+No changes.
