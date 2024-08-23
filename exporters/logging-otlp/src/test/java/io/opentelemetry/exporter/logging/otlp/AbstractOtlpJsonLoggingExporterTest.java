@@ -9,6 +9,8 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
@@ -16,7 +18,9 @@ import com.google.common.io.Resources;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.resources.Resource;
@@ -57,8 +61,7 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
   private final String defaultConfigString;
   private final Class<?> providerClass;
 
-  @SuppressWarnings("unused")
-  private final Class<?> componentProviderType; // todo remove once used
+  private final Class<?> componentProviderType;
 
   private final String expectedFileNoWrapper;
   private final String expectedFileWrapper;
@@ -263,35 +266,35 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
 
   @Test
   void stdoutComponentProviderConfig() {
-    //    ComponentProvider<?> provider = (ComponentProvider<?>)
-    // loadSpi(ComponentProvider.class).filter(
-    //        p -> {
-    //          ComponentProvider<?> c = (ComponentProvider<?>) p;
-    //          return "otlp-stdout".equals(c.getName()) && c.getType()
-    //              .equals(componentProviderType);
-    //        }).findFirst().orElseThrow(() -> new IllegalStateException("No provider found"));
+    StructuredConfigProperties properties = mock(StructuredConfigProperties.class);
 
-    // todo: implement DefaultStructuredConfigProperties
+    assertToStringProperties(
+        exporterFromComponentProvider(properties),
+        ImmutableMap.of(
+            "memoryMode", "IMMUTABLE_DATA",
+            "wrapperJsonObject", "true",
+            "jsonWriter", "StreamJsonWriter{outputStream=stdout}"));
 
-    //    assertToString(
-    //        provider.create(DefaultStructuredConfigProperties.createFromMap(emptyMap())),
-    //        loadExporter(DefaultConfigProperties.createFromMap(emptyMap()), "otlp-stdout"),
-    //        "{memoryMode=IMMUTABLE_DATA, wrapperJsonObject=true,
-    // jsonWriter=StreamJsonWriter{outputStream=stdout}}");
-    //
-    //    assertToString(
-    //        provider.create((DefaultStructuredConfigProperties.createFromMap(singletonMap(
-    //            "memory_mode", "reusable_data"
-    //        )), "otlp-stdout"),
-    //        "{memoryMode=REUSABLE_DATA, wrapperJsonObject=true,
-    // jsonWriter=StreamJsonWriter{outputStream=stdout}}");
-    //
-    //    stdoutStructuredPropertiesTestCases().forEach(
-    //        (config, expected) -> {
-    //          assertToString(
-    //              (T) provider.create(config),
-    //              expected);
-    //        });
+    when(properties.getString("memory_mode")).thenReturn("REUSABLE_DATA");
+
+    assertToStringProperties(
+        exporterFromComponentProvider(properties), ImmutableMap.of("memoryMode", "REUSABLE_DATA"));
+  }
+
+  @SuppressWarnings("unchecked")
+  protected T exporterFromComponentProvider(StructuredConfigProperties properties) {
+    return (T)
+        ((ComponentProvider<?>)
+                loadSpi(ComponentProvider.class)
+                    .filter(
+                        p -> {
+                          ComponentProvider<?> c = (ComponentProvider<?>) p;
+                          return "otlp-stdout".equals(c.getName())
+                              && c.getType().equals(componentProviderType);
+                        })
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("No provider found")))
+            .create(properties);
   }
 
   @SuppressWarnings("unchecked")

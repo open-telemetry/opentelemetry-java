@@ -8,6 +8,8 @@ package io.opentelemetry.exporter.logging.otlp;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.Attributes;
@@ -15,6 +17,7 @@ import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpJsonLoggingMe
 import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricExporter;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -143,9 +146,17 @@ class MetricExporterTest
 
   @Test
   void componentProviderConfig() {
-    // todo: implement this
-    // default_histogram_aggregation
-    // temporality_preference
+    StructuredConfigProperties properties = mock(StructuredConfigProperties.class);
+    when(properties.getString("temporality_preference")).thenReturn("DELTA");
+    when(properties.getString("default_histogram_aggregation"))
+        .thenReturn("BASE2_EXPONENTIAL_BUCKET_HISTOGRAM");
+
+    OtlpJsonLoggingMetricExporter exporter = exporterFromComponentProvider(properties);
+    assertThat(exporter.getAggregationTemporality(InstrumentType.COUNTER))
+        .isEqualTo(AggregationTemporality.DELTA);
+
+    assertThat(exporter.getDefaultAggregation(InstrumentType.HISTOGRAM))
+        .isEqualTo(Aggregation.base2ExponentialBucketHistogram());
   }
 
   /** Test configuration specific to metric exporter. */
