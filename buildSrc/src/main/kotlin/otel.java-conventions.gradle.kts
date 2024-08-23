@@ -160,10 +160,7 @@ tasks {
         "-exportcontents" to "!io.opentelemetry.**.internal,io.opentelemetry.*,"
       )
     }
-
   }
-
-
 
   afterEvaluate {
     withType<Javadoc>().configureEach {
