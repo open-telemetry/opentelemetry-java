@@ -157,7 +157,7 @@ tasks {
         "Implementation-Title" to project.name,
         "Implementation-Version" to project.version,
         // BND plugin to export the packages as OSGi bundle
-        "-exportcontents" to "!io.opentelemetry.**.internal,io.opentelemetry.*,"
+        "-exportcontents" to "!${otelJava.moduleName.get()}.**.internal,${otelJava.moduleName.get()}.*"
       )
     }
   }
