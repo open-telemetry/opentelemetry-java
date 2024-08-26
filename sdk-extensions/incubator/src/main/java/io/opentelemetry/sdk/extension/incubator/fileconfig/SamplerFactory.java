@@ -91,7 +91,7 @@ final class SamplerFactory
         properties.put("endpoint", jaegerRemoteModel.getEndpoint());
       }
       if (jaegerRemoteModel.getInterval() != null) {
-        properties.put("pollingInterval", String.valueOf(jaegerRemoteModel.getInterval()));
+        properties.put("pollingIntervalMs", String.valueOf(jaegerRemoteModel.getInterval()));
       }
       // TODO(jack-berg): determine how to support initial sampler. This is first case where a
       // component configured via SPI has property that isn't available in the environment variable

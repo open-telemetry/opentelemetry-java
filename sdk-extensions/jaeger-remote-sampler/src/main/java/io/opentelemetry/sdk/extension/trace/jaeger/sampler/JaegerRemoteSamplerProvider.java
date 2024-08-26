@@ -19,7 +19,7 @@ public class JaegerRemoteSamplerProvider implements ConfigurableSamplerProvider 
   static final String SAMPLER_ARG_PROPERTY = "otel.traces.sampler.arg";
   static final String RESOURCE_ATTRIBUTE_SERVICE_NAME_PROPERTY = "service.name";
   private static final String ENDPOINT_KEY = "endpoint";
-  private static final String POLLING_INTERVAL = "pollingInterval";
+  private static final String POLLING_INTERVAL = "pollingIntervalMs";
   private static final String INITIAL_SAMPLING_RATE = "initialSamplingRate";
 
   @Override
