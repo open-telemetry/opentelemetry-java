@@ -5,9 +5,16 @@
 
 package io.opentelemetry.exporter.internal;
 
+import static io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram;
+
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
@@ -52,6 +59,41 @@ public final class ExporterBuilderUtil {
       throw new ConfigurationException("Unrecognized memory mode: " + memoryModeStr, e);
     }
     memoryModeConsumer.accept(memoryMode);
+  }
+
+  /** Invoke the {@code memoryModeConsumer} with the configured {@link MemoryMode}. */
+  public static void configureExporterMemoryMode(
+      StructuredConfigProperties config, Consumer<MemoryMode> memoryModeConsumer) {
+    String memoryModeStr = config.getString("memory_mode");
+    if (memoryModeStr == null) {
+      return;
+    }
+    MemoryMode memoryMode;
+    try {
+      memoryMode = MemoryMode.valueOf(memoryModeStr.toUpperCase(Locale.ROOT));
+    } catch (IllegalArgumentException e) {
+      throw new ConfigurationException("Unrecognized memory_mode: " + memoryModeStr, e);
+    }
+    memoryModeConsumer.accept(memoryMode);
+  }
+
+  /**
+   * Invoke the {@code defaultAggregationSelectorConsumer} with the configured {@link
+   * DefaultAggregationSelector}.
+   */
+  public static void configureHistogramDefaultAggregation(
+      String defaultHistogramAggregation,
+      Consumer<DefaultAggregationSelector> defaultAggregationSelectorConsumer) {
+    if (AggregationUtil.aggregationName(Aggregation.base2ExponentialBucketHistogram())
+        .equalsIgnoreCase(defaultHistogramAggregation)) {
+      defaultAggregationSelectorConsumer.accept(
+          DefaultAggregationSelector.getDefault()
+              .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()));
+    } else if (!AggregationUtil.aggregationName(explicitBucketHistogram())
+        .equalsIgnoreCase(defaultHistogramAggregation)) {
+      throw new ConfigurationException(
+          "Unrecognized default histogram aggregation: " + defaultHistogramAggregation);
+    }
   }
 
   private ExporterBuilderUtil() {}

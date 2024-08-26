@@ -17,11 +17,7 @@ import static org.mockito.Mockito.verify;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -91,11 +87,6 @@ class FileConfigurationTest {
                         Resource.getDefault().toBuilder().put("service.name", "test").build())
                     .addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter.create()))
                     .build())
-            .setPropagators(
-                ContextPropagators.create(
-                    TextMapPropagator.composite(
-                        W3CTraceContextPropagator.getInstance(),
-                        W3CBaggagePropagator.getInstance())))
             .build();
     cleanup.addCloseable(expectedSdk);
     AutoConfiguredOpenTelemetrySdkBuilder builder = spy(AutoConfiguredOpenTelemetrySdk.builder());
@@ -185,7 +176,8 @@ class FileConfigurationTest {
 
     assertThatThrownBy(() -> AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).build())
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unrecognized span exporter(s): [foo]");
+        .hasMessage(
+            "No component provider detected for io.opentelemetry.sdk.trace.export.SpanExporter with name \"foo\".");
   }
 
   @Test

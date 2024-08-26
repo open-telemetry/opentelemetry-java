@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import java.io.Closeable;
 import java.util.List;
-import javax.annotation.Nullable;
 
 final class LoggerProviderFactory
     implements Factory<LoggerProviderAndAttributeLimits, SdkLoggerProviderBuilder> {
@@ -28,13 +27,9 @@ final class LoggerProviderFactory
 
   @Override
   public SdkLoggerProviderBuilder create(
-      @Nullable LoggerProviderAndAttributeLimits model,
-      SpiHelper spiHelper,
-      List<Closeable> closeables) {
+      LoggerProviderAndAttributeLimits model, SpiHelper spiHelper, List<Closeable> closeables) {
     SdkLoggerProviderBuilder builder = SdkLoggerProvider.builder();
-    if (model == null) {
-      return builder;
-    }
+
     LoggerProvider loggerProviderModel = model.getLoggerProvider();
     if (loggerProviderModel == null) {
       return builder;

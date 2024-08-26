@@ -15,6 +15,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
@@ -100,7 +101,7 @@ final class GrpcMetricExporterBuilderWrapper implements TelemetryExporterBuilder
   }
 
   @Override
-  public TelemetryExporterBuilder<MetricData> setRetryPolicy(RetryPolicy retryPolicy) {
+  public TelemetryExporterBuilder<MetricData> setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
     builder.setRetryPolicy(retryPolicy);
     return this;
   }

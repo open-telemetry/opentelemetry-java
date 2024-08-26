@@ -1,7 +1,7 @@
 plugins {
   id("otel.java-conventions")
 
-  id("com.github.johnrengelman.shadow")
+  id("com.gradleup.shadow")
 }
 
 // This project is not published, it is bundled into :sdk:trace
