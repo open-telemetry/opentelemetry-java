@@ -5,7 +5,6 @@
 
 package io.opentelemetry.api;
 
-import io.opentelemetry.api.internal.IncubatingUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -17,10 +16,7 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 final class DefaultOpenTelemetry implements OpenTelemetry {
-  private static final OpenTelemetry NO_OP =
-      IncubatingUtil.incubatingApiIfAvailable(
-          new DefaultOpenTelemetry(ContextPropagators.noop()),
-          "io.opentelemetry.api.incubator.ExtendedDefaultOpenTelemetry");
+  private static final OpenTelemetry NO_OP = new DefaultOpenTelemetry(ContextPropagators.noop());
 
   static OpenTelemetry getNoop() {
     return NO_OP;
