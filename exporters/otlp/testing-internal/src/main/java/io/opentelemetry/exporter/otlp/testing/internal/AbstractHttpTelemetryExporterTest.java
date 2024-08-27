@@ -625,8 +625,15 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
             ex -> {
               assertThat(ex.getResponse())
                   .isNotNull()
-                  .extracting(HttpSender.Response::statusCode)
-                  .isEqualTo(statusCode);
+                  .satisfies(
+                      response -> {
+                        assertThat(response)
+                            .extracting(HttpSender.Response::statusCode)
+                            .isEqualTo(statusCode);
+
+                        assertThatCode(response::responseBody).doesNotThrowAnyException();
+                      });
+
               assertThat(ex.getCause()).isNull();
             });
 
