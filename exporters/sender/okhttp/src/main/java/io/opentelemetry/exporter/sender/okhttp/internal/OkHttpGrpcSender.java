@@ -136,7 +136,9 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
                         if (description == null) {
                           description = "";
                         }
-                        onError.accept(GrpcResponse.create(2 /* UNKNOWN */, description), e);
+                        onError.accept(
+                            GrpcResponse.create(GrpcExporterUtil.GRPC_STATUS_UNKNOWN, description),
+                            e);
                       }
 
                       @Override
