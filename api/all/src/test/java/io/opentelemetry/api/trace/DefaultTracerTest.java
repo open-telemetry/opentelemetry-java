@@ -5,7 +5,7 @@
 
 package io.opentelemetry.api.trace;
 
-public class DefaultTracerTest extends AbstractDefaultTracerTest {
+class DefaultTracerTest extends AbstractDefaultTracerTest {
 
   @Override
   public Tracer getTracer() {

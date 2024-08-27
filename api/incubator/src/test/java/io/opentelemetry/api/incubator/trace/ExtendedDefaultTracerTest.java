@@ -14,7 +14,7 @@ import io.opentelemetry.api.trace.TracerProvider;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class ExtendedDefaultTracerTest extends AbstractDefaultTracerTest {
+class ExtendedDefaultTracerTest extends AbstractDefaultTracerTest {
 
   @Override
   public Tracer getTracer() {

@@ -15,7 +15,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import org.junit.jupiter.api.Test;
 
-public class IncubatingNotFoundApiTests {
+class IncubatingNotFoundApiTests {
   @Test
   void incubatingApiIsNotFoundViaReflection() {
     assertThat(LoggerProvider.noop().get("test")).isInstanceOf(Logger.class);

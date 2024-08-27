@@ -22,13 +22,13 @@ public abstract class AbstractDefaultMeterTest {
   protected abstract MeterProvider getMeterProvider();
 
   @Test
-  public void noopMeterProvider_getDoesNotThrow() {
+  void noopMeterProvider_getDoesNotThrow() {
     MeterProvider provider = getMeterProvider();
     provider.get("user-instrumentation");
   }
 
   @Test
-  public void noopMeterProvider_builderDoesNotThrow() {
+  void noopMeterProvider_builderDoesNotThrow() {
     MeterProvider provider = getMeterProvider();
     provider.meterBuilder("user-instrumentation").build();
     provider.meterBuilder("advanced-instrumetnation").setInstrumentationVersion("1.0").build();
@@ -41,7 +41,7 @@ public abstract class AbstractDefaultMeterTest {
   }
 
   @Test
-  public void noopLongCounter_doesNotThrow() {
+  void noopLongCounter_doesNotThrow() {
     LongCounter counter =
         meter.counterBuilder("size").setDescription("The size I'm measuring").setUnit("1").build();
     counter.add(1);
@@ -50,7 +50,7 @@ public abstract class AbstractDefaultMeterTest {
   }
 
   @Test
-  public void noopDoubleCounter_doesNotThrow() {
+  void noopDoubleCounter_doesNotThrow() {
     DoubleCounter counter =
         meter
             .counterBuilder("size")
@@ -64,7 +64,7 @@ public abstract class AbstractDefaultMeterTest {
   }
 
   @Test
-  public void noopLongUpDownCounter_doesNotThrow() {
+  void noopLongUpDownCounter_doesNotThrow() {
     LongUpDownCounter counter =
         meter
             .upDownCounterBuilder("size")
@@ -77,7 +77,7 @@ public abstract class AbstractDefaultMeterTest {
   }
 
   @Test
-  public void noopDoubleUpDownCounter_doesNotThrow() {
+  void noopDoubleUpDownCounter_doesNotThrow() {
     DoubleUpDownCounter counter =
         meter
             .upDownCounterBuilder("size")
@@ -91,7 +91,7 @@ public abstract class AbstractDefaultMeterTest {
   }
 
   @Test
-  public void noopLongHistogram_doesNotThrow() {
+  void noopLongHistogram_doesNotThrow() {
     LongHistogram histogram =
         meter
             .histogramBuilder("size")
@@ -105,7 +105,7 @@ public abstract class AbstractDefaultMeterTest {
   }
 
   @Test
-  public void noopDoubleHistogram_doesNotThrow() {
+  void noopDoubleHistogram_doesNotThrow() {
     DoubleHistogram histogram =
         meter
             .histogramBuilder("size")
@@ -118,7 +118,7 @@ public abstract class AbstractDefaultMeterTest {
   }
 
   @Test
-  public void noopLongGauage_doesNotThrow() {
+  void noopLongGauage_doesNotThrow() {
     LongGauge gauge =
         meter
             .gaugeBuilder("temperature")
@@ -142,7 +142,7 @@ public abstract class AbstractDefaultMeterTest {
   }
 
   @Test
-  public void noopObservableLongGauage_doesNotThrow() {
+  void noopObservableLongGauage_doesNotThrow() {
     meter
         .gaugeBuilder("temperature")
         .ofLongs()
@@ -178,7 +178,7 @@ public abstract class AbstractDefaultMeterTest {
   }
 
   @Test
-  public void noopObservableDoubleGauage_doesNotThrow() {
+  void noopObservableDoubleGauage_doesNotThrow() {
     meter
         .gaugeBuilder("temperature")
         .setDescription("The current temperature")
@@ -191,7 +191,7 @@ public abstract class AbstractDefaultMeterTest {
   }
 
   @Test
-  public void noopObservableLongCounter_doesNotThrow() {
+  void noopObservableLongCounter_doesNotThrow() {
     meter
         .counterBuilder("temperature")
         .setDescription("The current temperature")
@@ -204,7 +204,7 @@ public abstract class AbstractDefaultMeterTest {
   }
 
   @Test
-  public void noopObservableDoubleCounter_doesNotThrow() {
+  void noopObservableDoubleCounter_doesNotThrow() {
     meter
         .counterBuilder("temperature")
         .ofDoubles()
@@ -218,7 +218,7 @@ public abstract class AbstractDefaultMeterTest {
   }
 
   @Test
-  public void noopObservableLongUpDownCounter_doesNotThrow() {
+  void noopObservableLongUpDownCounter_doesNotThrow() {
     meter
         .upDownCounterBuilder("temperature")
         .setDescription("The current temperature")
@@ -231,7 +231,7 @@ public abstract class AbstractDefaultMeterTest {
   }
 
   @Test
-  public void noopObservableDoubleUpDownCounter_doesNotThrow() {
+   void noopObservableDoubleUpDownCounter_doesNotThrow() {
     meter
         .upDownCounterBuilder("temperature")
         .ofDoubles()
@@ -245,7 +245,7 @@ public abstract class AbstractDefaultMeterTest {
   }
 
   @Test
-  public void noopBatchCallback_doesNotThrow() {
+   void noopBatchCallback_doesNotThrow() {
     meter.batchCallback(() -> {}, null);
   }
 }

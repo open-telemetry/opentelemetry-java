@@ -14,7 +14,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ExtendedDefaultMeterTest extends AbstractDefaultMeterTest {
+class ExtendedDefaultMeterTest extends AbstractDefaultMeterTest {
 
   @Override
   protected Meter getMeter() {

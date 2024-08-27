@@ -35,7 +35,7 @@ public abstract class AbstractDefaultTracerTest {
   public abstract TracerProvider getTracerProvider();
 
   @Test
-  public void returnsDefaultTracer() {
+   void returnsDefaultTracer() {
     TracerProvider tracerProvider = getTracerProvider();
     Class<? extends Tracer> want = defaultTracer.getClass();
     assertThat(
@@ -50,13 +50,13 @@ public abstract class AbstractDefaultTracerTest {
   }
 
   @Test
-  public void defaultSpanBuilderWithName() {
+   void defaultSpanBuilderWithName() {
     assertThat(defaultTracer.spanBuilder(SPAN_NAME).startSpan().getSpanContext().isValid())
         .isFalse();
   }
 
   @Test
-  public void spanContextPropagationExplicitParent() {
+   void spanContextPropagationExplicitParent() {
     assertThat(
             defaultTracer
                 .spanBuilder(SPAN_NAME)
@@ -70,7 +70,7 @@ public abstract class AbstractDefaultTracerTest {
   }
 
   @Test
-  public void spanContextPropagation() {
+   void spanContextPropagation() {
     Span parent = Span.wrap(spanContext);
 
     Span span =
@@ -79,13 +79,13 @@ public abstract class AbstractDefaultTracerTest {
   }
 
   @Test
-  public void noSpanContextMakesInvalidSpans() {
+   void noSpanContextMakesInvalidSpans() {
     Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
     assertThat(span.getSpanContext()).isSameAs(SpanContext.getInvalid());
   }
 
   @Test
-  public void spanContextPropagation_fromContext() {
+   void spanContextPropagation_fromContext() {
     Context context = Context.current().with(Span.wrap(spanContext));
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).startSpan();
@@ -93,7 +93,7 @@ public abstract class AbstractDefaultTracerTest {
   }
 
   @Test
-  public void spanContextPropagation_fromContextAfterNoParent() {
+   void spanContextPropagation_fromContextAfterNoParent() {
     Context context = Context.current().with(Span.wrap(spanContext));
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setNoParent().setParent(context).startSpan();
@@ -101,7 +101,7 @@ public abstract class AbstractDefaultTracerTest {
   }
 
   @Test
-  public void spanContextPropagation_fromContextThenNoParent() {
+   void spanContextPropagation_fromContextThenNoParent() {
     Context context = Context.current().with(Span.wrap(spanContext));
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).setNoParent().startSpan();
@@ -109,7 +109,7 @@ public abstract class AbstractDefaultTracerTest {
   }
 
   @Test
-  public void doNotCrash_NoopImplementation() {
+   void doNotCrash_NoopImplementation() {
     assertThatCode(
             () -> {
               SpanBuilder spanBuilder = defaultTracer.spanBuilder(null);
