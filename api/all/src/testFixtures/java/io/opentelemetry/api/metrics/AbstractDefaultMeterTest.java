@@ -231,7 +231,7 @@ public abstract class AbstractDefaultMeterTest {
   }
 
   @Test
-   void noopObservableDoubleUpDownCounter_doesNotThrow() {
+  void noopObservableDoubleUpDownCounter_doesNotThrow() {
     meter
         .upDownCounterBuilder("temperature")
         .ofDoubles()
@@ -245,7 +245,7 @@ public abstract class AbstractDefaultMeterTest {
   }
 
   @Test
-   void noopBatchCallback_doesNotThrow() {
+  void noopBatchCallback_doesNotThrow() {
     meter.batchCallback(() -> {}, null);
   }
 }
