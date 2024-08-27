@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.metrics.Aggregation;
@@ -362,7 +363,7 @@ class OtlpConfigUtilTest {
   private static AggregationTemporality configureAggregationTemporality(
       Map<String, String> properties) {
     AtomicReference<AggregationTemporalitySelector> temporalityRef = new AtomicReference<>();
-    OtlpConfigUtil.configureOtlpAggregationTemporality(
+    ExporterBuilderUtil.configureOtlpAggregationTemporality(
         DefaultConfigProperties.createFromMap(properties), temporalityRef::set);
     // We apply the temporality selector to a HISTOGRAM instrument to simplify assertions
     return temporalityRef.get().getAggregationTemporality(InstrumentType.HISTOGRAM);
@@ -409,7 +410,7 @@ class OtlpConfigUtilTest {
   private static DefaultAggregationSelector configureHistogramDefaultAggregation(
       Map<String, String> properties) {
     AtomicReference<DefaultAggregationSelector> aggregationRef = new AtomicReference<>();
-    OtlpConfigUtil.configureOtlpHistogramDefaultAggregation(
+    ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
         DefaultConfigProperties.createFromMap(properties), aggregationRef::set);
     // We apply the temporality selector to a HISTOGRAM instrument to simplify assertions
     return aggregationRef.get();
