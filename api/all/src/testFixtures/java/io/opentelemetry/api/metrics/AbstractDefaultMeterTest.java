@@ -12,6 +12,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import org.junit.jupiter.api.Test;
 
+/** Unit tests for {@link DefaultMeter}. */
 @SuppressLogger()
 public abstract class AbstractDefaultMeterTest {
   private final Meter meter = getMeter();

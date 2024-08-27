@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
+/** Unit tests for {@link DefaultLogger}. */
 public abstract class AbstractDefaultLoggerTest {
 
   protected abstract LoggerProvider getLoggerProvider();

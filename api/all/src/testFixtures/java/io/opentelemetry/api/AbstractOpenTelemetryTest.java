@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+/** Unit tests for {@link OpenTelemetry}. */
 public abstract class AbstractOpenTelemetryTest {
   @BeforeAll
   public static void beforeClass() {
