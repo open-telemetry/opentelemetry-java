@@ -11,6 +11,8 @@ import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.grpc.Status;
+import io.grpc.StatusException;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.exporter.internal.grpc.GrpcResponse;
 import io.opentelemetry.exporter.internal.grpc.GrpcSender;
@@ -22,7 +24,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 /**
  * A {@link GrpcSender} which uses the upstream grpc-java library.
@@ -77,15 +79,33 @@ public final class UpstreamGrpcSender<T extends Marshaler> implements GrpcSender
 
           @Override
           public void onFailure(Throwable t) {
-            Status status = Status.fromThrowable(t);
-            if (status.getCode() != Status.UNKNOWN.getCode()) {
+            Status status = fromThrowable(t);
+            if (status != null) {
               onResponse.accept(
                   GrpcResponse.create(status.getCode().value(), status.getDescription()));
+            } else {
+              onError.accept(t);
             }
-            onError.accept(t);
           }
         },
         MoreExecutors.directExecutor());
+  }
+
+  /**
+   * Copy of {@link Status#fromThrowable(Throwable)} which returns null instead of {@link
+   * Status#UNKNOWN} when no status can be found.
+   */
+  @Nullable
+  private static Status fromThrowable(Throwable cause) {
+    while (cause != null) {
+      if (cause instanceof StatusException) {
+        return ((StatusException) cause).getStatus();
+      } else if (cause instanceof StatusRuntimeException) {
+        return ((StatusRuntimeException) cause).getStatus();
+      }
+      cause = cause.getCause();
+    }
+    return null;
   }
 
   @Override

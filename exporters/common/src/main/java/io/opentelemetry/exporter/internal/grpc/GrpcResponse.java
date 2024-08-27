@@ -25,4 +25,6 @@ public abstract class GrpcResponse {
 
   @Nullable
   public abstract String grpcStatusDescription();
+
+  // TODO(jack-berg): add byte[] responseBody() throws IOException;
 }
