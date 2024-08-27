@@ -3,27 +3,27 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.logging.otlp.internal;
+package io.opentelemetry.exporter.logging.otlp.internal.logs;
 
-import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogRecordExporter;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 
 /**
- * {@link LogRecordExporter} SPI implementation for {@link OtlpJsonLoggingLogRecordExporter}.
+ * {@link LogRecordExporter} SPI implementation for {@link OtlpStdoutLogRecordExporter}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class LoggingLogRecordExporterProvider implements ConfigurableLogRecordExporterProvider {
+public class OtlpStdoutLogRecordExporterProvider implements ConfigurableLogRecordExporterProvider {
   @Override
   public LogRecordExporter createExporter(ConfigProperties config) {
-    return OtlpJsonLoggingLogRecordExporter.create();
+    OtlpJsonLoggingLogRecordExporterBuilder builder = OtlpStdoutLogRecordExporter.builder();
+    return builder.build();
   }
 
   @Override
   public String getName() {
-    return "logging-otlp";
+    return "otlp-stdout";
   }
 }
