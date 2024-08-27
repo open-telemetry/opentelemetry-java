@@ -15,7 +15,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
 import org.junit.jupiter.api.Test;
 
-public class IncubationApiTests {
+public class IncubatingApiTests {
   @Test
   void incubatingApiIsLoadedViaReflection() {
     assertThat(LoggerProvider.noop().get("test")).isInstanceOf(ExtendedLogger.class);

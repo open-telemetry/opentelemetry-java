@@ -3,8 +3,8 @@ plugins {
   id("org.graalvm.buildtools.native")
 }
 
-description = "OpenTelemetry Graal Integration Tests"
-otelJava.moduleName.set("io.opentelemetry.graal.integration.tests")
+description = "OpenTelemetry Graal Integration Tests (Incubating)"
+otelJava.moduleName.set("io.opentelemetry.graal.integration.tests.incubating")
 
 sourceSets {
   main {
@@ -19,6 +19,7 @@ dependencies {
   implementation(project(":sdk:all"))
   implementation(project(":sdk:trace-shaded-deps"))
   implementation(project(":exporters:otlp:all"))
+  implementation(project(":api:incubator"))
 }
 
 // org.graalvm.buildtools.native pluging requires java 11+ as of version 0.9.26
