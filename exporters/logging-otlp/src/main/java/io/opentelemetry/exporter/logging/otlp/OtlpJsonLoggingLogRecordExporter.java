@@ -73,8 +73,6 @@ public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter
       };
     } else {
       return logs -> {
-        // not support for low allocation marshaler
-
         for (ResourceLogsMarshaler resourceLogs : ResourceLogsMarshaler.create(logs)) {
           CompletableResultCode resultCode = jsonWriter.write(resourceLogs);
           if (!resultCode.isSuccess()) {
