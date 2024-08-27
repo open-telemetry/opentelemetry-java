@@ -8,9 +8,6 @@ package io.opentelemetry.exporter.logging.otlp.internal;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogRecordExporter;
-import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingMetricExporter;
-import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingSpanExporter;
-import io.opentelemetry.exporter.logging.otlp.internal.metrics.InternalMetricBuilder;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonWriter;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.LoggerJsonWriter;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.StreamJsonWriter;
@@ -40,16 +37,6 @@ public class InternalBuilder {
   public static InternalBuilder forLogs() {
     return new InternalBuilder(
         Logger.getLogger(OtlpJsonLoggingLogRecordExporter.class.getName()), "log records");
-  }
-
-  public static InternalMetricBuilder forMetrics() {
-    return new InternalMetricBuilder(
-        Logger.getLogger(OtlpJsonLoggingMetricExporter.class.getName()), "metrics");
-  }
-
-  public static InternalBuilder forSpans() {
-    return new InternalBuilder(
-        Logger.getLogger(OtlpJsonLoggingSpanExporter.class.getName()), "spans");
   }
 
   public JsonWriter getJsonWriter() {

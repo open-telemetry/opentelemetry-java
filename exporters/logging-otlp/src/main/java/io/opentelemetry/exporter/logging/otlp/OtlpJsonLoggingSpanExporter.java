@@ -5,9 +5,12 @@
 
 package io.opentelemetry.exporter.logging.otlp;
 
+import static io.opentelemetry.exporter.logging.otlp.internal.writer.JsonUtil.JSON_FACTORY;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SegmentedStringWriter;
 import io.opentelemetry.exporter.internal.otlp.traces.ResourceSpansMarshaler;
+import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -43,8 +46,7 @@ public final class OtlpJsonLoggingSpanExporter implements SpanExporter {
 
     ResourceSpansMarshaler[] allResourceSpans = ResourceSpansMarshaler.create(spans);
     for (ResourceSpansMarshaler resourceSpans : allResourceSpans) {
-      SegmentedStringWriter sw =
-          new SegmentedStringWriter(JsonUtil.JSON_FACTORY._getBufferRecycler());
+      SegmentedStringWriter sw = new SegmentedStringWriter(JSON_FACTORY._getBufferRecycler());
       try (JsonGenerator gen = JsonUtil.create(sw)) {
         resourceSpans.writeJsonTo(gen);
       } catch (IOException e) {

@@ -14,11 +14,11 @@ import java.io.IOException;
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
  * any time.
  */
-final class JsonUtil {
+public final class JsonUtil {
 
   public static final JsonFactory JSON_FACTORY = new JsonFactory();
 
-  static JsonGenerator create(SegmentedStringWriter stringWriter) {
+  public static JsonGenerator create(SegmentedStringWriter stringWriter) {
     try {
       return JSON_FACTORY.createGenerator(stringWriter);
     } catch (IOException e) {
