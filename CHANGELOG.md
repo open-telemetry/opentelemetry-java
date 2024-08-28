@@ -2,6 +2,51 @@
 
 ## Unreleased
 
+## Version 1.41.0 (2024-08-09)
+
+### API
+
+* Move experimental suppress instrumentation context key to api internal package
+  ([#6546](https://github.com/open-telemetry/opentelemetry-java/pull/6546))
+
+#### Incubator
+
+* Fix bug in `ExtendedContextPropagators` preventing context extraction when case is incorrect.
+  ([#6569](https://github.com/open-telemetry/opentelemetry-java/pull/6569))
+
+### SDK
+
+* Extend `CompletableResultCode` with `failExceptionally(Throwable)`.
+  ([#6348](https://github.com/open-telemetry/opentelemetry-java/pull/6348))
+
+#### Metrics
+
+* Avoid allocations when experimental advice doesn't remove any attributes.
+  ([#6629](https://github.com/open-telemetry/opentelemetry-java/pull/6629))
+
+#### Exporter
+
+* Enable retry by default for OTLP exporters.
+  ([#6588](https://github.com/open-telemetry/opentelemetry-java/pull/6588))
+* Retry ConnectException, add retry logging.
+  ([#6614](https://github.com/open-telemetry/opentelemetry-java/pull/6614))
+* Extend `PrometheusHttpServer` with ability to configure default aggregation as function of
+  instrument kind, including experimental env var support.
+  ([#6541](https://github.com/open-telemetry/opentelemetry-java/pull/6541))
+* Add exporter data model impl for profiling signal type.
+  ([#6498](https://github.com/open-telemetry/opentelemetry-java/pull/6498))
+* Add Marshalers for profiling signal type.
+  ([#6565](https://github.com/open-telemetry/opentelemetry-java/pull/6565))
+* Use generateCertificates() of CertificateFactory to process certificates.
+  ([#6579](https://github.com/open-telemetry/opentelemetry-java/pull/6579))
+
+#### Extensions
+
+* Add file configuration ComponentProvider support for exporters.
+  ([#6493](https://github.com/open-telemetry/opentelemetry-java/pull/6493))
+* Remove nullable from file config Factory contract.
+  ([#6612](https://github.com/open-telemetry/opentelemetry-java/pull/6612))
+
 ## Version 1.40.0 (2024-07-05)
 
 ### API
