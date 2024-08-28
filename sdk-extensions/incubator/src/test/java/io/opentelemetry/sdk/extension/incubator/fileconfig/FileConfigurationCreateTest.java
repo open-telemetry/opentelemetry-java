@@ -124,7 +124,7 @@ class FileConfigurationCreateTest {
         .hasMessage(
             "No component provider detected for io.opentelemetry.sdk.logs.export.LogRecordExporter with name \"foo\".");
     logCapturer.assertContains(
-        "Error encountered interpreting configuration model. Closing partially configured components.");
+        "Error encountered interpreting model. Closing partially configured components.");
     logCapturer.assertContains(
         "Closing io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter");
     logCapturer.assertContains("Closing io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor");
