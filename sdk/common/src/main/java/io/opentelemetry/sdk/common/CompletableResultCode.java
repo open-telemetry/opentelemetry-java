@@ -13,6 +13,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 
 /**
@@ -34,8 +35,20 @@ public final class CompletableResultCode {
   }
 
   /**
+   * Returns a {@link CompletableResultCode} that has been {@link #failExceptionally(Throwable)
+   * failed exceptionally}.
+   *
+   * @since 1.41.0
+   */
+  public static CompletableResultCode ofExceptionalFailure(Throwable throwable) {
+    return new CompletableResultCode().failExceptionally(throwable);
+  }
+
+  /**
    * Returns a {@link CompletableResultCode} that completes after all the provided {@link
-   * CompletableResultCode}s complete. If any of the results fail, the result will be failed.
+   * CompletableResultCode}s complete. If any of the results fail, the result will be failed. If any
+   * {@link #failExceptionally(Throwable) failed exceptionally}, the result will be failed
+   * exceptionally with the first {@link Throwable} from {@code codes}.
    */
   public static CompletableResultCode ofAll(Collection<CompletableResultCode> codes) {
     if (codes.isEmpty()) {
@@ -44,15 +57,20 @@ public final class CompletableResultCode {
     CompletableResultCode result = new CompletableResultCode();
     AtomicInteger pending = new AtomicInteger(codes.size());
     AtomicBoolean failed = new AtomicBoolean();
+    AtomicReference<Throwable> throwableRef = new AtomicReference<>();
     for (CompletableResultCode code : codes) {
       code.whenComplete(
           () -> {
             if (!code.isSuccess()) {
               failed.set(true);
+              Throwable codeThrowable = code.getFailureThrowable();
+              if (codeThrowable != null) {
+                throwableRef.compareAndSet(null, codeThrowable);
+              }
             }
             if (pending.decrementAndGet() == 0) {
               if (failed.get()) {
-                result.fail();
+                result.failInternal(throwableRef.get());
               } else {
                 result.succeed();
               }
@@ -70,6 +88,10 @@ public final class CompletableResultCode {
   @Nullable
   @GuardedBy("lock")
   private Boolean succeeded = null;
+
+  @Nullable
+  @GuardedBy("lock")
+  private Throwable throwable = null;
 
   @GuardedBy("lock")
   private final List<Runnable> completionActions = new ArrayList<>();
@@ -89,11 +111,29 @@ public final class CompletableResultCode {
     return this;
   }
 
-  /** Complete this {@link CompletableResultCode} unsuccessfully if it is not already completed. */
+  /**
+   * Complete this {@link CompletableResultCode} unsuccessfully if it is not already completed,
+   * setting the {@link #getFailureThrowable() failure throwable} to {@code null}.
+   */
   public CompletableResultCode fail() {
+    return failInternal(null);
+  }
+
+  /**
+   * Completes this {@link CompletableResultCode} unsuccessfully if it is not already completed,
+   * setting the {@link #getFailureThrowable() failure throwable} to {@code throwable}.
+   *
+   * @since 1.41.0
+   */
+  public CompletableResultCode failExceptionally(Throwable throwable) {
+    return failInternal(throwable);
+  }
+
+  private CompletableResultCode failInternal(@Nullable Throwable throwable) {
     synchronized (lock) {
       if (succeeded == null) {
         succeeded = false;
+        this.throwable = throwable;
         for (Runnable action : completionActions) {
           action.run();
         }
@@ -104,13 +144,29 @@ public final class CompletableResultCode {
 
   /**
    * Obtain the current state of completion. Generally call once completion is achieved via the
-   * thenRun method.
+   * {@link #whenComplete(Runnable)} method.
    *
    * @return the current state of completion
    */
   public boolean isSuccess() {
     synchronized (lock) {
       return succeeded != null && succeeded;
+    }
+  }
+
+  /**
+   * Returns {@link Throwable} if this {@link CompletableResultCode} was {@link
+   * #failExceptionally(Throwable) failed exceptionally}. Generally call once completion is achieved
+   * via the {@link #whenComplete(Runnable)} method.
+   *
+   * @return the throwable if failed exceptionally, or null if: {@link #fail() failed without
+   *     exception}, {@link #succeed() succeeded}, or not complete.g
+   * @since 1.41.0
+   */
+  @Nullable
+  public Throwable getFailureThrowable() {
+    synchronized (lock) {
+      return throwable;
     }
   }
 
