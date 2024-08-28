@@ -86,6 +86,12 @@ class TextMapPropagatorFactoryTest {
         TextMapPropagatorFactory.getInstance()
             .create(Collections.singletonList("test"), spiHelper, new ArrayList<>());
     assertThat(textMapPropagator)
-        .isInstanceOf(TextMapPropagatorComponentProvider.TestTextMapPropagator.class);
+        .isInstanceOfSatisfying(
+            TextMapPropagatorComponentProvider.TestTextMapPropagator.class,
+            testTextMapPropagator ->
+                assertThat(testTextMapPropagator.config)
+                    .isInstanceOfSatisfying(
+                        YamlStructuredConfigProperties.class,
+                        config -> assertThat(config.getPropertyKeys()).isEmpty()));
   }
 }
