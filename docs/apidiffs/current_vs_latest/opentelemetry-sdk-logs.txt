@@ -1,2 +1,10 @@
 Comparing source compatibility of opentelemetry-sdk-logs-1.42.0-SNAPSHOT.jar against opentelemetry-sdk-logs-1.41.0.jar
-No changes.
++++  NEW CLASS: PUBLIC(+) io.opentelemetry.sdk.logs.EventToSpanEventBridge  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.logs.LogRecordProcessor
+	+++  NEW INTERFACE: java.io.Closeable
+	+++  NEW INTERFACE: java.lang.AutoCloseable
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.logs.EventToSpanEventBridge create(io.opentelemetry.api.metrics.MeterProvider)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.logs.EventToSpanEventBridge create()
+	+++  NEW METHOD: PUBLIC(+) void onEmit(io.opentelemetry.context.Context, io.opentelemetry.sdk.logs.ReadWriteLogRecord)

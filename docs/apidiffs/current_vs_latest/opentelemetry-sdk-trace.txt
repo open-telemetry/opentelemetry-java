@@ -1,2 +1,13 @@
 Comparing source compatibility of opentelemetry-sdk-trace-1.42.0-SNAPSHOT.jar against opentelemetry-sdk-trace-1.41.0.jar
-No changes.
++++  NEW CLASS: PUBLIC(+) io.opentelemetry.sdk.trace.SpanEventToEventBridge  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.io.Closeable
+	+++  NEW INTERFACE: java.lang.AutoCloseable
+	+++  NEW INTERFACE: io.opentelemetry.sdk.trace.SpanProcessor
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.trace.SpanEventToEventBridge create(io.opentelemetry.api.incubator.events.EventLoggerProvider, io.opentelemetry.api.metrics.MeterProvider)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.trace.SpanEventToEventBridge create(io.opentelemetry.api.incubator.events.EventLoggerProvider)
+	+++  NEW METHOD: PUBLIC(+) boolean isEndRequired()
+	+++  NEW METHOD: PUBLIC(+) boolean isStartRequired()
+	+++  NEW METHOD: PUBLIC(+) void onEnd(io.opentelemetry.sdk.trace.ReadableSpan)
+	+++  NEW METHOD: PUBLIC(+) void onStart(io.opentelemetry.context.Context, io.opentelemetry.sdk.trace.ReadWriteSpan)
