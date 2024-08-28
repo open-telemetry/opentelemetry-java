@@ -9,12 +9,15 @@ import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.spanBuilder;
 import static io.opentelemetry.exporter.zipkin.ZipkinTestUtil.zipkinSpanBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
@@ -22,7 +25,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -243,5 +248,58 @@ class ZipkinSpanExporterTest {
           .isEqualTo(
               "ZipkinSpanExporter{endpoint=http://zipkin:9411/api/v2/spans, compressionEnabled=false, readTimeoutMillis=15000}");
     }
+  }
+
+  @Test
+  void suppressInstrumentation() {
+    TestSpanData testSpanData = spanBuilder().build();
+
+    SuppressCatchingSender suppressCatchingSender = new SuppressCatchingSender(Encoding.JSON);
+    ZipkinSpanExporter zipkinSpanExporter =
+        new ZipkinSpanExporter(
+            new ZipkinSpanExporterBuilder(),
+            mockEncoder,
+            suppressCatchingSender,
+            MeterProvider::noop,
+            mockTransformer);
+
+    byte[] someBytes = new byte[0];
+    Span zipkinSpan =
+        zipkinSpanBuilder(Span.Kind.SERVER, localIp)
+            .putTag(OtelToZipkinSpanTransformer.OTEL_STATUS_CODE, "OK")
+            .build();
+    when(mockTransformer.generateSpan(testSpanData)).thenReturn(zipkinSpan);
+    when(mockEncoder.encode(zipkinSpan)).thenReturn(someBytes);
+
+    zipkinSpanExporter.export(Collections.singleton(testSpanData));
+
+    // Instrumentation should be suppressed on send, to avoid incidental spans related to span
+    // export.
+    assertTrue(suppressCatchingSender.sent.get());
+    assertTrue(suppressCatchingSender.suppressed.get());
+  }
+
+  static class SuppressCatchingSender extends BytesMessageSender.Base {
+
+    final AtomicBoolean sent = new AtomicBoolean();
+    final AtomicBoolean suppressed = new AtomicBoolean();
+
+    protected SuppressCatchingSender(Encoding encoding) {
+      super(encoding);
+    }
+
+    @Override
+    public int messageMaxBytes() {
+      return 1024;
+    }
+
+    @Override
+    public void send(List<byte[]> list) throws IOException {
+      sent.set(true);
+      suppressed.set(InstrumentationUtil.shouldSuppressInstrumentation(Context.current()));
+    }
+
+    @Override
+    public void close() throws IOException {}
   }
 }

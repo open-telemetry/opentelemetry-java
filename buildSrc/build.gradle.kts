@@ -55,7 +55,7 @@ dependencies {
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:6.25.0")
   // Needed for japicmp but not automatically brought in for some reason.
-  implementation("com.google.guava:guava:33.2.1-jre")
+  implementation("com.google.guava:guava:33.3.0-jre")
   implementation("com.squareup:javapoet:1.13.0")
   implementation("com.squareup.wire:wire-compiler")
   implementation("com.squareup.wire:wire-gradle-plugin")
@@ -65,7 +65,7 @@ dependencies {
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.2")
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.0.1")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.0.0")
-  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.10")
+  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.20")
   implementation("org.owasp:dependency-check-gradle:10.0.3")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:1.7.1")
 }
