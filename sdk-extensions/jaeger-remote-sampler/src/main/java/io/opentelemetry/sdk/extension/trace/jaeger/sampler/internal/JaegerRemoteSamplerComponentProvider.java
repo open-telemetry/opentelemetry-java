@@ -46,9 +46,7 @@ public class JaegerRemoteSamplerComponentProvider implements ComponentProvider<S
     StructuredConfigProperties initialSamplerModel = config.getStructured("initial_sampler");
     if (initialSamplerModel != null) {
       Sampler initialSampler = FileConfiguration.createSampler(initialSamplerModel);
-      if (initialSampler != null) {
-        builder.setInitialSampler(initialSampler);
-      }
+      builder.setInitialSampler(initialSampler);
     }
 
     return builder.build();

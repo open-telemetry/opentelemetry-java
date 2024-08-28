@@ -26,7 +26,6 @@ import java.util.logging.Logger;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.annotation.Nullable;
 import org.snakeyaml.engine.v2.api.Load;
 import org.snakeyaml.engine.v2.api.LoadSettings;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
@@ -150,7 +149,6 @@ public final class FileConfiguration {
    */
   // TODO(jack-berg): add create methods for all SDK extension components supported by
   // ComponentProvider
-  @Nullable
   public static io.opentelemetry.sdk.trace.samplers.Sampler createSampler(
       StructuredConfigProperties genericSamplerModel) {
     Sampler samplerModel = convertToModel(genericSamplerModel, Sampler.class);
