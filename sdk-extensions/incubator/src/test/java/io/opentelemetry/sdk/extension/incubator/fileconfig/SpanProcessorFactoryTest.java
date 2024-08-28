@@ -13,6 +13,7 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.component.SpanProcessorComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessor;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessor;
@@ -23,6 +24,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -137,19 +139,34 @@ class SpanProcessorFactoryTest {
   }
 
   @Test
-  void create_SpiProcessor() {
-    List<Closeable> closeables = new ArrayList<>();
-
+  void create_SpiProcessor_Unknown() {
     assertThatThrownBy(
             () ->
                 SpanProcessorFactory.getInstance()
                     .create(
                         new SpanProcessor()
-                            .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
+                            .withAdditionalProperty(
+                                "unknown_key", ImmutableMap.of("key1", "value1")),
                         spiHelper,
-                        closeables))
+                        new ArrayList<>()))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unrecognized span processor(s): [test]");
-    cleanup.addCloseables(closeables);
+        .hasMessage(
+            "No component provider detected for io.opentelemetry.sdk.trace.SpanProcessor with name \"unknown_key\".");
+  }
+
+  @Test
+  void create_SpiExporter_Valid() {
+    io.opentelemetry.sdk.trace.SpanProcessor spanProcessor =
+        SpanProcessorFactory.getInstance()
+            .create(
+                new SpanProcessor()
+                    .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
+                spiHelper,
+                new ArrayList<>());
+    assertThat(spanProcessor).isInstanceOf(SpanProcessorComponentProvider.TestSpanProcessor.class);
+    Assertions.assertThat(
+            ((SpanProcessorComponentProvider.TestSpanProcessor) spanProcessor)
+                .config.getString("key1"))
+        .isEqualTo("value1");
   }
 }

@@ -2,6 +2,8 @@ io.opentelemetry.sdk.extension.incubator.fileconfig.component.MetricExporterComp
 io.opentelemetry.sdk.extension.incubator.fileconfig.component.SpanExporterComponentProvider
 io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordExporterComponentProvider
 io.opentelemetry.sdk.extension.incubator.fileconfig.component.SamplerComponentProvider
+io.opentelemetry.sdk.extension.incubator.fileconfig.component.SpanProcessorComponentProvider
+io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordProcessorComponentProvider
 io.opentelemetry.sdk.extension.incubator.fileconfig.component.ResourceComponentProvider
 io.opentelemetry.sdk.extension.incubator.fileconfig.component.ResourceOrderedFirstComponentProvider
 io.opentelemetry.sdk.extension.incubator.fileconfig.component.ResourceOrderedSecondComponentProvider
