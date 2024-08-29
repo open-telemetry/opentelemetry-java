@@ -7,32 +7,23 @@ package io.opentelemetry.exporter.logging.otlp;
 
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import com.google.common.io.Resources;
 import io.github.netmikey.logunit.api.LogCapturer;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
-import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import org.assertj.core.api.AbstractObjectAssert;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -49,30 +40,29 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
 
   private static PrintStream systemOut;
 
-  protected static final Resource RESOURCE =
-      Resource.create(Attributes.builder().put("key", "value").build());
-
   private static final ByteArrayOutputStream STREAM = new ByteArrayOutputStream();
   private static final PrintStream PRINT_STREAM = new PrintStream(STREAM);
 
   @RegisterExtension LogCapturer logs;
   private final String defaultConfigString;
+  private final String type;
+  private final TestDataExporter<? super T> testDataExporter;
   private final Class<?> providerClass;
-
-  private final Class<?> componentProviderType;
 
   private final String expectedFileNoWrapper;
   private final String expectedFileWrapper;
 
   public AbstractOtlpJsonLoggingExporterTest(
+      String type,
+      TestDataExporter<? super T> testDataExporter,
       Class<?> exporterClass,
       Class<?> providerClass,
-      Class<?> componentProviderType,
       String expectedFileNoWrapper,
       String expectedFileWrapper,
       String defaultConfigString) {
+    this.type = type;
+    this.testDataExporter = testDataExporter;
     this.providerClass = providerClass;
-    this.componentProviderType = componentProviderType;
     this.expectedFileNoWrapper = expectedFileNoWrapper;
     this.expectedFileWrapper = expectedFileWrapper;
     logs = LogCapturer.create().captureForType(exporterClass);
@@ -84,15 +74,7 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
 
   protected abstract T createDefaultExporter();
 
-  protected abstract T createDefaultStdoutExporter();
-
   protected abstract T toBuilderAndBack(T exporter);
-
-  protected abstract CompletableResultCode export(T exporter);
-
-  protected abstract CompletableResultCode flush(T exporter);
-
-  protected abstract CompletableResultCode shutdown(T exporter);
 
   private String output(@Nullable OutputStream outputStream) {
     if (outputStream == null) {
@@ -149,10 +131,10 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
   @SuppressWarnings("SystemOut")
   public static Stream<Arguments> exportTestCases() {
     return ImmutableList.of(
-        testCase(System.out, true),
-        testCase(System.out, false),
-        testCase(null, true),
-        testCase(null, false))
+        testCase(System.out, /* wrapperJsonObject= */ true),
+        testCase(System.out, /* wrapperJsonObject= */ false),
+        testCase(null, /* wrapperJsonObject= */ true),
+        testCase(null, /* wrapperJsonObject= */ false))
         .stream();
   }
 
@@ -172,8 +154,8 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
     setUp();
 
     T exporter = createExporter(testCase.getOutputStream(), testCase.isWrapperJsonObject());
-    export(exporter);
-    flush(exporter);
+    testDataExporter.export(exporter);
+    testDataExporter.flush(exporter);
 
     String output = output(testCase.getOutputStream());
 
@@ -193,62 +175,19 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
   @Test
   void testShutdown() {
     T exporter = createDefaultExporter();
-    assertThat(shutdown(exporter).isSuccess()).isTrue();
-    assertThat(export(exporter).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+    assertThat(testDataExporter.shutdown(exporter).isSuccess()).isTrue();
+    assertThat(testDataExporter.export(exporter).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
     assertThat(output(null)).isEmpty();
-    assertThat(shutdown(exporter).isSuccess()).isTrue();
+    assertThat(testDataExporter.shutdown(exporter).isSuccess()).isTrue();
     logs.assertContains("Calling shutdown() multiple times.");
   }
 
   @Test
-  void loggingOtlpProviderConfig() {
+  void defaultToString() {
     assertFullToString(createDefaultExporter(), defaultConfigString);
 
     assertFullToString(
-        loadExporter(DefaultConfigProperties.createFromMap(emptyMap()), "logging-otlp"),
-        defaultConfigString);
-  }
-
-  @Test
-  void stdoutProviderConfig() {
-    assertStdoutProperties(
-        createDefaultStdoutExporter(),
-        ImmutableMap.of(
-            "wrapperJsonObject", "true",
-            "jsonWriter", "StreamJsonWriter{outputStream=stdout}"));
-
-    assertStdoutProperties(
-        loadExporter(DefaultConfigProperties.createFromMap(emptyMap()), "otlp-stdout"),
-        ImmutableMap.of(
-            "wrapperJsonObject", "true",
-            "jsonWriter", "StreamJsonWriter{outputStream=stdout}"));
-  }
-
-  @Test
-  void stdoutComponentProviderConfig() {
-    StructuredConfigProperties properties = mock(StructuredConfigProperties.class);
-
-    assertStdoutProperties(
-        exporterFromComponentProvider(properties),
-        ImmutableMap.of(
-            "wrapperJsonObject", "true",
-            "jsonWriter", "StreamJsonWriter{outputStream=stdout}"));
-  }
-
-  @SuppressWarnings("unchecked")
-  protected T exporterFromComponentProvider(StructuredConfigProperties properties) {
-    return (T)
-        ((ComponentProvider<?>)
-                loadSpi(ComponentProvider.class)
-                    .filter(
-                        p -> {
-                          ComponentProvider<?> c = (ComponentProvider<?>) p;
-                          return "otlp-stdout".equals(c.getName())
-                              && c.getType().equals(componentProviderType);
-                        })
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("No provider found")))
-            .create(properties);
+        loadExporter(DefaultConfigProperties.createFromMap(emptyMap()), type), defaultConfigString);
   }
 
   @SuppressWarnings("unchecked")
@@ -280,20 +219,12 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
         .orElseThrow(() -> new IllegalStateException("No provider found"));
   }
 
-  private static Stream<?> loadSpi(Class<?> type) {
+  protected static Stream<?> loadSpi(Class<?> type) {
     return Streams.stream(ServiceLoader.load(type, type.getClassLoader()).iterator());
   }
 
   private void assertFullToString(T exporter, String expected) {
     assertThat(exporter.toString()).isEqualTo(expected);
     assertThat(toBuilderAndBack(exporter).toString()).isEqualTo(expected);
-  }
-
-  private void assertStdoutProperties(T exporter, Map<String, String> expected) {
-    AbstractObjectAssert<?, ?> assertThat = assertThat(exporter).extracting("delegate");
-
-    expected.forEach(
-        (key, value) -> assertThat.extracting(key).extracting(Object::toString).isEqualTo(value));
-    assertThat(toBuilderAndBack(exporter).toString()).isEqualTo(exporter.toString());
   }
 }
