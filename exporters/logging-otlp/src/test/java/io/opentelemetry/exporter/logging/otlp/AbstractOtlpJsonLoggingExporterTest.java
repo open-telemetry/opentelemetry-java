@@ -9,6 +9,7 @@ import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import com.google.common.io.Resources;
@@ -147,19 +148,21 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
 
   @SuppressWarnings("SystemOut")
   public static Stream<Arguments> exportTestCases() {
-    return Stream.of(System.out, null)
-        .flatMap(
-            outputStream ->
-                Stream.of(true, false)
-                    .flatMap(
-                        wrapperJsonObject ->
-                            Stream.of(
-                                Arguments.of(
-                                    "OutputStream="
-                                        + (outputStream == null ? "logger" : "System.out")
-                                        + ", wrapperJsonObject="
-                                        + wrapperJsonObject,
-                                    new TestCase(outputStream, wrapperJsonObject)))));
+    return ImmutableList.of(
+        testCase(System.out, true),
+        testCase(System.out, false),
+        testCase(null, true),
+        testCase(null, false))
+        .stream();
+  }
+
+  private static Arguments testCase(@Nullable PrintStream outputStream, boolean wrapperJsonObject) {
+    return Arguments.of(
+        "OutputStream="
+            + (outputStream == null ? "logger" : "System.out")
+            + ", wrapperJsonObject="
+            + wrapperJsonObject,
+        new TestCase(outputStream, wrapperJsonObject));
   }
 
   @ParameterizedTest(name = "{0}")
