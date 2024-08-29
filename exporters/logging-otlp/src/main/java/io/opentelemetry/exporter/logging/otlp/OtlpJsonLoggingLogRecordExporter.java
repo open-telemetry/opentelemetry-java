@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.Collection;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,7 +35,6 @@ public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter
 
   private final JsonWriter jsonWriter;
 
-  private final Function<Collection<LogRecordData>, CompletableResultCode> marshaler;
   private final boolean wrapperJsonObject;
 
   static {
@@ -59,30 +57,6 @@ public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter
   OtlpJsonLoggingLogRecordExporter(JsonWriter jsonWriter, boolean wrapperJsonObject) {
     this.wrapperJsonObject = wrapperJsonObject;
     this.jsonWriter = jsonWriter;
-
-    marshaler = createMarshaler(jsonWriter, wrapperJsonObject);
-  }
-
-  private static Function<Collection<LogRecordData>, CompletableResultCode> createMarshaler(
-      JsonWriter jsonWriter, boolean wrapperJsonObject) {
-
-    if (wrapperJsonObject) {
-      return logs -> {
-        LogsRequestMarshaler request = LogsRequestMarshaler.create(logs);
-        return jsonWriter.write(request);
-      };
-    } else {
-      return logs -> {
-        for (ResourceLogsMarshaler resourceLogs : ResourceLogsMarshaler.create(logs)) {
-          CompletableResultCode resultCode = jsonWriter.write(resourceLogs);
-          if (!resultCode.isSuccess()) {
-            // already logged
-            return resultCode;
-          }
-        }
-        return CompletableResultCode.ofSuccess();
-      };
-    }
   }
 
   @Override
@@ -91,7 +65,19 @@ public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter
       return CompletableResultCode.ofFailure();
     }
 
-    return marshaler.apply(logs);
+    if (wrapperJsonObject) {
+      LogsRequestMarshaler request = LogsRequestMarshaler.create(logs);
+      return jsonWriter.write(request);
+    } else {
+      for (ResourceLogsMarshaler resourceLogs : ResourceLogsMarshaler.create(logs)) {
+        CompletableResultCode resultCode = jsonWriter.write(resourceLogs);
+        if (!resultCode.isSuccess()) {
+          // already logged
+          return resultCode;
+        }
+      }
+      return CompletableResultCode.ofSuccess();
+    }
   }
 
   @Override
