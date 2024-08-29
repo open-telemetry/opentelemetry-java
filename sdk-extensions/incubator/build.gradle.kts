@@ -26,6 +26,7 @@ dependencies {
 
   // io.opentelemetry.sdk.extension.incubator.fileconfig
   implementation("com.fasterxml.jackson.core:jackson-databind")
+  api("com.fasterxml.jackson.core:jackson-annotations")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
   implementation(project(":sdk-extensions:autoconfigure"))
 

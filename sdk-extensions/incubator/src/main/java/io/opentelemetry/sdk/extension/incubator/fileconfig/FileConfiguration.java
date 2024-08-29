@@ -123,14 +123,24 @@ public final class FileConfiguration {
   }
 
   /**
-   * Convert the {@code model} to a generic {@link StructuredConfigProperties}, which can be used to
-   * read configuration not part of the model.
+   * Convert the {@code model} to a generic {@link StructuredConfigProperties}.
    *
    * @param model the configuration model
    * @return a generic {@link StructuredConfigProperties} representation of the model
    */
   public static StructuredConfigProperties toConfigProperties(OpenTelemetryConfiguration model) {
     return toConfigProperties((Object) model);
+  }
+
+  /**
+   * Convert the {@code configuration} YAML to a generic {@link StructuredConfigProperties}.
+   *
+   * @param configuration configuration YAML
+   * @return a generic {@link StructuredConfigProperties} representation of the model
+   */
+  public static StructuredConfigProperties toConfigProperties(InputStream configuration) {
+    Object yamlObj = loadYaml(configuration, System.getenv());
+    return toConfigProperties(yamlObj);
   }
 
   static StructuredConfigProperties toConfigProperties(Object model) {
