@@ -282,8 +282,8 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
   }
 
   private void assertFullToString(T exporter, String expected) {
-    assertThat(exporter.toString()).contains(expected);
-    assertThat(toBuilderAndBack(exporter).toString()).contains(expected);
+    assertThat(exporter.toString()).isEqualTo(expected);
+    assertThat(toBuilderAndBack(exporter).toString()).isEqualTo(expected);
   }
 
   private void assertStdoutProperties(T exporter, Map<String, String> expected) {

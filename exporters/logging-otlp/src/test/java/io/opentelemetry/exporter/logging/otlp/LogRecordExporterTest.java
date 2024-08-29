@@ -14,6 +14,7 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpJsonLoggingLogRecordExporterBuilder;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporterBuilder;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
@@ -109,7 +110,7 @@ class LogRecordExporterTest extends AbstractOtlpJsonLoggingExporterTest<LogRecor
           (OtlpStdoutLogRecordExporter) exporter;
       return otlpStdoutLogRecordExporter.toBuilder().build();
     }
-    return OtlpStdoutLogRecordExporterBuilder.createFromExporter(
+    return OtlpJsonLoggingLogRecordExporterBuilder.createFromExporter(
             (OtlpJsonLoggingLogRecordExporter) exporter)
         .build();
   }

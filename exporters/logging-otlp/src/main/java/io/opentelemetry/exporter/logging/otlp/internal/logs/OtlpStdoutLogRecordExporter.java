@@ -45,8 +45,14 @@ public class OtlpStdoutLogRecordExporter implements LogRecordExporter {
         .setWrapperJsonObject(true);
   }
 
+  /**
+   * Returns a new {@link OtlpStdoutLogRecordExporterBuilder} from an existing exporter.
+   *
+   * @return a new {@link OtlpStdoutLogRecordExporterBuilder}.
+   */
   public OtlpStdoutLogRecordExporterBuilder toBuilder() {
-    return OtlpStdoutLogRecordExporterBuilder.createFromExporter(delegate);
+    return new OtlpStdoutLogRecordExporterBuilder(
+        OtlpJsonLoggingLogRecordExporterBuilder.createFromExporter(delegate));
   }
 
   @Override
