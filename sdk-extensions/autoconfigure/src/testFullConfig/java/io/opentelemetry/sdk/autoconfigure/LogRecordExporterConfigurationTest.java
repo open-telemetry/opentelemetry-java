@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogRecordExporter;
+import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -38,6 +39,9 @@ class LogRecordExporterConfigurationTest {
     assertThat(
             LogRecordExporterConfiguration.configureExporter("logging-otlp", spiExportersManager))
         .isInstanceOf(OtlpJsonLoggingLogRecordExporter.class);
+    assertThat(
+            LogRecordExporterConfiguration.configureExporter("otlp-stdout", spiExportersManager))
+        .isInstanceOf(OtlpStdoutLogRecordExporter.class);
     assertThat(LogRecordExporterConfiguration.configureExporter("otlp", spiExportersManager))
         .isInstanceOf(OtlpGrpcLogRecordExporter.class);
   }
