@@ -21,20 +21,19 @@ import java.util.logging.Logger;
  * at any time.
  */
 public class InternalBuilder {
-  private final Logger logger;
   private final String type;
   private JsonWriter jsonWriter;
   private boolean wrapperJsonObject = false;
 
-  public InternalBuilder(Logger logger, String type) {
-    this.logger = logger;
+  public InternalBuilder(LoggerJsonWriter jsonWriter, String type) {
     this.type = type;
-    this.jsonWriter = new LoggerJsonWriter(logger, type);
+    this.jsonWriter = jsonWriter;
   }
 
   public static InternalBuilder forLogs() {
-    return new InternalBuilder(
-        Logger.getLogger(OtlpJsonLoggingLogRecordExporter.class.getName()), "log records");
+    Logger logger = Logger.getLogger(OtlpJsonLoggingLogRecordExporter.class.getName());
+    String type = "log records";
+    return new InternalBuilder(new LoggerJsonWriter(logger, type), type);
   }
 
   public JsonWriter getJsonWriter() {
@@ -49,11 +48,6 @@ public class InternalBuilder {
   public InternalBuilder setOutputStream(OutputStream outputStream) {
     requireNonNull(outputStream, "outputStream");
     this.jsonWriter = new StreamJsonWriter(outputStream, type);
-    return this;
-  }
-
-  public InternalBuilder setUseLogger() {
-    this.jsonWriter = new LoggerJsonWriter(logger, type);
     return this;
   }
 

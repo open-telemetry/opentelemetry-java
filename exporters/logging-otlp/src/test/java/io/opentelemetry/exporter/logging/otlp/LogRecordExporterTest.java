@@ -14,8 +14,8 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporterBuilder;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporter;
+import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporterBuilder;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -88,9 +88,7 @@ class LogRecordExporterTest
       @Nullable OutputStream outputStream, boolean wrapperJsonObject) {
     OtlpStdoutLogRecordExporterBuilder builder =
         OtlpStdoutLogRecordExporterBuilder.create();
-    if (outputStream == null) {
-      builder.setUseLogger();
-    } else {
+    if (outputStream != null) {
       builder.setOutputStream(outputStream);
     }
     return builder.setWrapperJsonObject(wrapperJsonObject).build();

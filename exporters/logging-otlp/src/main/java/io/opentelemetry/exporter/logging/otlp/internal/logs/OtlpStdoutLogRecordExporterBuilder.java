@@ -55,12 +55,6 @@ public final class OtlpStdoutLogRecordExporterBuilder {
     return this;
   }
 
-  /** Sets the exporter to use the logger for output. */
-  public OtlpStdoutLogRecordExporterBuilder setUseLogger() {
-    builder.setUseLogger();
-    return this;
-  }
-
   /**
    * Sets the exporter to use the specified output stream.
    *
