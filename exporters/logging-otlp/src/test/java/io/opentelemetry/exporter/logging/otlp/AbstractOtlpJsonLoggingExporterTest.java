@@ -74,8 +74,6 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
 
   protected abstract T createDefaultExporter();
 
-  protected abstract T toBuilderAndBack(T exporter);
-
   private String output(@Nullable OutputStream outputStream) {
     if (outputStream == null) {
       return logs.getEvents().stream()
@@ -225,6 +223,5 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
 
   private void assertFullToString(T exporter, String expected) {
     assertThat(exporter.toString()).isEqualTo(expected);
-    assertThat(toBuilderAndBack(exporter).toString()).isEqualTo(expected);
   }
 }

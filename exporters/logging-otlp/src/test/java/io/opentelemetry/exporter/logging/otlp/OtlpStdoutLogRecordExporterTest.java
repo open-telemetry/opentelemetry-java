@@ -21,31 +21,27 @@ class OtlpStdoutLogRecordExporterTest
     super(
         "otlp-stdout",
         TestDataExporter.forLogs(),
-        OtlpJsonLoggingLogRecordExporter.class,
+        OtlpStdoutLogRecordExporter.class,
         ConfigurableLogRecordExporterProvider.class,
         LogRecordExporter.class,
         "expected-logs.json",
         "expected-logs-wrapper.json",
-        "OtlpStdoutLogRecordExporter{delegate=OtlpJsonLoggingLogRecordExporter{wrapperJsonObject=true, jsonWriter=StreamJsonWriter{outputStream=stdout}}}");
+        "OtlpStdoutLogRecordExporter{jsonWriter=StreamJsonWriter{outputStream=stdout}, wrapperJsonObject=true}");
   }
 
   @Override
   protected OtlpStdoutLogRecordExporter createExporter(
       @Nullable OutputStream outputStream, boolean wrapperJsonObject) {
-    OtlpStdoutLogRecordExporterBuilder builder = OtlpStdoutLogRecordExporterBuilder.create();
+    OtlpStdoutLogRecordExporterBuilder builder =
+        OtlpStdoutLogRecordExporter.builder().setWrapperJsonObject(wrapperJsonObject);
     if (outputStream != null) {
       builder.setOutputStream(outputStream);
     }
-    return builder.setWrapperJsonObject(wrapperJsonObject).build();
+    return builder.build();
   }
 
   @Override
   protected OtlpStdoutLogRecordExporter createDefaultExporter() {
-    return (OtlpStdoutLogRecordExporter) OtlpStdoutLogRecordExporter.create();
-  }
-
-  @Override
-  protected OtlpStdoutLogRecordExporter toBuilderAndBack(OtlpStdoutLogRecordExporter exporter) {
-    return exporter.toBuilder().build();
+    return OtlpStdoutLogRecordExporter.create();
   }
 }

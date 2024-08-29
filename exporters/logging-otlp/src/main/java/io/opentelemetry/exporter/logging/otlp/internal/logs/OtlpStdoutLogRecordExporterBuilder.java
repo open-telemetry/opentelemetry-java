@@ -5,8 +5,14 @@
 
 package io.opentelemetry.exporter.logging.otlp.internal.logs;
 
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogRecordExporter;
+import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonWriter;
+import io.opentelemetry.exporter.logging.otlp.internal.writer.LoggerJsonWriter;
+import io.opentelemetry.exporter.logging.otlp.internal.writer.StreamJsonWriter;
 import java.io.OutputStream;
+import java.util.logging.Logger;
 
 /**
  * Builder for {@link OtlpJsonLoggingLogRecordExporter}.
@@ -16,19 +22,15 @@ import java.io.OutputStream;
  */
 public final class OtlpStdoutLogRecordExporterBuilder {
 
-  private final OtlpJsonLoggingLogRecordExporterBuilder delegate;
+  private static final String TYPE = "log records";
 
-  OtlpStdoutLogRecordExporterBuilder(OtlpJsonLoggingLogRecordExporterBuilder delegate) {
-    this.delegate = delegate;
-  }
+  private final Logger logger;
+  private JsonWriter jsonWriter;
+  private boolean wrapperJsonObject = true;
 
-  /**
-   * Creates a new {@link OtlpStdoutLogRecordExporterBuilder} with default settings.
-   *
-   * @return a new {@link OtlpStdoutLogRecordExporterBuilder}.
-   */
-  public static OtlpStdoutLogRecordExporterBuilder create() {
-    return new OtlpStdoutLogRecordExporterBuilder(OtlpJsonLoggingLogRecordExporterBuilder.create());
+  public OtlpStdoutLogRecordExporterBuilder(Logger logger) {
+    this.logger = logger;
+    this.jsonWriter = new LoggerJsonWriter(logger, TYPE);
   }
 
   /**
@@ -38,7 +40,7 @@ public final class OtlpStdoutLogRecordExporterBuilder {
    *     object.
    */
   public OtlpStdoutLogRecordExporterBuilder setWrapperJsonObject(boolean wrapperJsonObject) {
-    delegate.setWrapperJsonObject(wrapperJsonObject);
+    this.wrapperJsonObject = wrapperJsonObject;
     return this;
   }
 
@@ -48,7 +50,8 @@ public final class OtlpStdoutLogRecordExporterBuilder {
    * @param outputStream the output stream to use.
    */
   public OtlpStdoutLogRecordExporterBuilder setOutputStream(OutputStream outputStream) {
-    delegate.setOutputStream(outputStream);
+    requireNonNull(outputStream, "outputStream");
+    this.jsonWriter = new StreamJsonWriter(outputStream, TYPE);
     return this;
   }
 
@@ -58,6 +61,6 @@ public final class OtlpStdoutLogRecordExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpStdoutLogRecordExporter build() {
-    return new OtlpStdoutLogRecordExporter(delegate.build());
+    return new OtlpStdoutLogRecordExporter(logger, jsonWriter, wrapperJsonObject);
   }
 }

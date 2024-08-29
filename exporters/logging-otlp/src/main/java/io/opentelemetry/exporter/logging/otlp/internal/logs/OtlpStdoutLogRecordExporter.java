@@ -5,11 +5,17 @@
 
 package io.opentelemetry.exporter.logging.otlp.internal.logs;
 
-import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogRecordExporter;
+import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
+import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
+import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.Collection;
+import java.util.StringJoiner;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Exporter for sending OTLP log records to stdout.
@@ -18,60 +24,72 @@ import java.util.Collection;
  * at any time.
  */
 public class OtlpStdoutLogRecordExporter implements LogRecordExporter {
-  private final OtlpJsonLoggingLogRecordExporter delegate;
 
-  OtlpStdoutLogRecordExporter(OtlpJsonLoggingLogRecordExporter delegate) {
-    this.delegate = delegate;
+  private static final Logger LOGGER =
+      Logger.getLogger(OtlpStdoutLogRecordExporter.class.getName());
+
+  private final AtomicBoolean isShutdown = new AtomicBoolean();
+
+  private final Logger logger;
+  private final JsonWriter jsonWriter;
+  private final boolean wrapperJsonObject;
+
+  OtlpStdoutLogRecordExporter(Logger logger, JsonWriter jsonWriter, boolean wrapperJsonObject) {
+    this.logger = logger;
+    this.jsonWriter = jsonWriter;
+    this.wrapperJsonObject = wrapperJsonObject;
   }
 
-  /**
-   * Returns a new {@link OtlpJsonLoggingLogRecordExporter} with default settings.
-   *
-   * @return a new {@link OtlpJsonLoggingLogRecordExporter}.
-   */
-  public static LogRecordExporter create() {
+  /** Returns a new {@link OtlpStdoutLogRecordExporter} with default settings. */
+  public static OtlpStdoutLogRecordExporter create() {
     return builder().build();
   }
 
-  /**
-   * Returns a new {@link OtlpStdoutLogRecordExporterBuilder} with default settings.
-   *
-   * @return a new {@link OtlpStdoutLogRecordExporterBuilder}.
-   */
+  /** Returns a new {@link OtlpStdoutLogRecordExporterBuilder}. */
   @SuppressWarnings("SystemOut")
   public static OtlpStdoutLogRecordExporterBuilder builder() {
-    return OtlpStdoutLogRecordExporterBuilder.create()
-        .setOutputStream(System.out)
-        .setWrapperJsonObject(true);
-  }
-
-  /**
-   * Returns a new {@link OtlpStdoutLogRecordExporterBuilder} from an existing exporter.
-   *
-   * @return a new {@link OtlpStdoutLogRecordExporterBuilder}.
-   */
-  public OtlpStdoutLogRecordExporterBuilder toBuilder() {
-    return new OtlpStdoutLogRecordExporterBuilder(
-        OtlpJsonLoggingLogRecordExporterBuilder.createFromExporter(delegate));
+    return new OtlpStdoutLogRecordExporterBuilder(LOGGER).setOutputStream(System.out);
   }
 
   @Override
   public CompletableResultCode export(Collection<LogRecordData> logs) {
-    return delegate.export(logs);
+    if (isShutdown.get()) {
+      return CompletableResultCode.ofFailure();
+    }
+
+    if (wrapperJsonObject) {
+      LogsRequestMarshaler request = LogsRequestMarshaler.create(logs);
+      return jsonWriter.write(request);
+    } else {
+      for (ResourceLogsMarshaler resourceLogs : ResourceLogsMarshaler.create(logs)) {
+        CompletableResultCode resultCode = jsonWriter.write(resourceLogs);
+        if (!resultCode.isSuccess()) {
+          // already logged
+          return resultCode;
+        }
+      }
+      return CompletableResultCode.ofSuccess();
+    }
   }
 
   @Override
   public CompletableResultCode flush() {
-    return delegate.flush();
+    return jsonWriter.flush();
   }
 
   @Override
   public CompletableResultCode shutdown() {
-    return delegate.shutdown();
+    if (!isShutdown.compareAndSet(false, true)) {
+      logger.log(Level.INFO, "Calling shutdown() multiple times.");
+    }
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override
   public String toString() {
-    return "OtlpStdoutLogRecordExporter{" + "delegate=" + delegate + '}';
+    StringJoiner joiner = new StringJoiner(", ", "OtlpStdoutLogRecordExporter{", "}");
+    joiner.add("jsonWriter=" + jsonWriter);
+    joiner.add("wrapperJsonObject=" + wrapperJsonObject);
+    return joiner.toString();
   }
 }
