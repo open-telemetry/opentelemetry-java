@@ -26,13 +26,13 @@ public class OtlpStdoutLogRecordExporter {
   }
 
   /**
-   * Returns a new {@link OtlpJsonLoggingLogRecordExporterBuilder} with default settings.
+   * Returns a new {@link OtlpStdoutLogRecordExporterBuilder} with default settings.
    *
-   * @return a new {@link OtlpJsonLoggingLogRecordExporterBuilder}.
+   * @return a new {@link OtlpStdoutLogRecordExporterBuilder}.
    */
   @SuppressWarnings("SystemOut")
-  public static OtlpJsonLoggingLogRecordExporterBuilder builder() {
-    return OtlpJsonLoggingLogRecordExporterBuilder.create()
+  public static OtlpStdoutLogRecordExporterBuilder builder() {
+    return OtlpStdoutLogRecordExporterBuilder.create()
         .setOutputStream(System.out)
         .setWrapperJsonObject(true);
   }

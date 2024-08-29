@@ -18,7 +18,7 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 public class OtlpStdoutLogRecordExporterProvider implements ConfigurableLogRecordExporterProvider {
   @Override
   public LogRecordExporter createExporter(ConfigProperties config) {
-    OtlpJsonLoggingLogRecordExporterBuilder builder = OtlpStdoutLogRecordExporter.builder();
+    OtlpStdoutLogRecordExporterBuilder builder = OtlpStdoutLogRecordExporter.builder();
     return builder.build();
   }
 

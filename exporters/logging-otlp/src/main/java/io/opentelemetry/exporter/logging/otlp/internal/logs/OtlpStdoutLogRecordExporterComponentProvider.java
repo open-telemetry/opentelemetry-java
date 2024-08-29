@@ -30,7 +30,7 @@ public class OtlpStdoutLogRecordExporterComponentProvider
 
   @Override
   public LogRecordExporter create(StructuredConfigProperties config) {
-    OtlpJsonLoggingLogRecordExporterBuilder builder = OtlpStdoutLogRecordExporter.builder();
+    OtlpStdoutLogRecordExporterBuilder builder = OtlpStdoutLogRecordExporter.builder();
     return builder.build();
   }
 }

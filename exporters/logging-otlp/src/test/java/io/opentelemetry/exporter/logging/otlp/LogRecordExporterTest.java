@@ -14,7 +14,7 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpJsonLoggingLogRecordExporterBuilder;
+import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporterBuilder;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporter;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider;
@@ -86,8 +86,8 @@ class LogRecordExporterTest
   @Override
   protected OtlpJsonLoggingLogRecordExporter createExporter(
       @Nullable OutputStream outputStream, boolean wrapperJsonObject) {
-    OtlpJsonLoggingLogRecordExporterBuilder builder =
-        OtlpJsonLoggingLogRecordExporterBuilder.create();
+    OtlpStdoutLogRecordExporterBuilder builder =
+        OtlpStdoutLogRecordExporterBuilder.create();
     if (outputStream == null) {
       builder.setUseLogger();
     } else {
@@ -109,7 +109,7 @@ class LogRecordExporterTest
   @Override
   protected OtlpJsonLoggingLogRecordExporter toBuilderAndBack(
       OtlpJsonLoggingLogRecordExporter exporter) {
-    return OtlpJsonLoggingLogRecordExporterBuilder.createFromExporter(exporter).build();
+    return OtlpStdoutLogRecordExporterBuilder.createFromExporter(exporter).build();
   }
 
   @Override
