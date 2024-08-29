@@ -28,9 +28,8 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
-@SuppressLogger(OtlpJsonLoggingLogRecordExporter.class)
-class LogRecordExporterTest
-    extends AbstractOtlpJsonLoggingExporterTest<OtlpJsonLoggingLogRecordExporter> {
+@SuppressLogger(LogRecordExporter.class)
+class LogRecordExporterTest extends AbstractOtlpJsonLoggingExporterTest<LogRecordExporter> {
 
   private static final LogRecordData LOG1 =
       TestLogRecordData.builder()
@@ -84,10 +83,9 @@ class LogRecordExporterTest
   }
 
   @Override
-  protected OtlpJsonLoggingLogRecordExporter createExporter(
+  protected LogRecordExporter createExporter(
       @Nullable OutputStream outputStream, boolean wrapperJsonObject) {
-    OtlpStdoutLogRecordExporterBuilder builder =
-        OtlpStdoutLogRecordExporterBuilder.create();
+    OtlpStdoutLogRecordExporterBuilder builder = OtlpStdoutLogRecordExporterBuilder.create();
     if (outputStream != null) {
       builder.setOutputStream(outputStream);
     }
@@ -95,33 +93,39 @@ class LogRecordExporterTest
   }
 
   @Override
-  protected OtlpJsonLoggingLogRecordExporter createDefaultExporter() {
-    return (OtlpJsonLoggingLogRecordExporter) OtlpJsonLoggingLogRecordExporter.create();
+  protected LogRecordExporter createDefaultExporter() {
+    return OtlpJsonLoggingLogRecordExporter.create();
   }
 
   @Override
-  protected OtlpJsonLoggingLogRecordExporter createDefaultStdoutExporter() {
+  protected LogRecordExporter createDefaultStdoutExporter() {
     return OtlpStdoutLogRecordExporter.create();
   }
 
   @Override
-  protected OtlpJsonLoggingLogRecordExporter toBuilderAndBack(
-      OtlpJsonLoggingLogRecordExporter exporter) {
-    return OtlpStdoutLogRecordExporterBuilder.createFromExporter(exporter).build();
+  protected LogRecordExporter toBuilderAndBack(LogRecordExporter exporter) {
+    if (exporter instanceof OtlpStdoutLogRecordExporter) {
+      OtlpStdoutLogRecordExporter otlpStdoutLogRecordExporter =
+          (OtlpStdoutLogRecordExporter) exporter;
+      return otlpStdoutLogRecordExporter.toBuilder().build();
+    }
+    return OtlpStdoutLogRecordExporterBuilder.createFromExporter(
+            (OtlpJsonLoggingLogRecordExporter) exporter)
+        .build();
   }
 
   @Override
-  protected CompletableResultCode export(OtlpJsonLoggingLogRecordExporter exporter) {
+  protected CompletableResultCode export(LogRecordExporter exporter) {
     return exporter.export(Arrays.asList(LOG1, LOG2));
   }
 
   @Override
-  protected CompletableResultCode flush(OtlpJsonLoggingLogRecordExporter exporter) {
+  protected CompletableResultCode flush(LogRecordExporter exporter) {
     return exporter.flush();
   }
 
   @Override
-  protected CompletableResultCode shutdown(OtlpJsonLoggingLogRecordExporter exporter) {
+  protected CompletableResultCode shutdown(LogRecordExporter exporter) {
     return exporter.shutdown();
   }
 }

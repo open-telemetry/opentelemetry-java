@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.logging.otlp;
 
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
 import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
-import io.opentelemetry.exporter.logging.otlp.internal.InternalBuilder;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.LogRecordBuilderAccessUtil;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporterBuilder;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonWriter;
@@ -39,14 +38,13 @@ public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter
 
   static {
     LogRecordBuilderAccessUtil.setToExporter(
-        builder ->
+        argument ->
             new OtlpJsonLoggingLogRecordExporter(
-                builder.getJsonWriter(), builder.isWrapperJsonObject()));
+                argument.getJsonWriter(), argument.isWrapperJsonObject()));
     LogRecordBuilderAccessUtil.setToBuilder(
         exporter ->
-            InternalBuilder.forLogs()
-                .setJsonWriter(exporter.jsonWriter)
-                .setWrapperJsonObject(exporter.wrapperJsonObject));
+            new LogRecordBuilderAccessUtil.Argument(
+                exporter.jsonWriter, exporter.wrapperJsonObject));
   }
 
   /** Returns a new {@link OtlpJsonLoggingLogRecordExporter}. */

@@ -5,9 +5,14 @@
 
 package io.opentelemetry.exporter.logging.otlp.internal.logs;
 
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogRecordExporter;
-import io.opentelemetry.exporter.logging.otlp.internal.InternalBuilder;
+import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonWriter;
+import io.opentelemetry.exporter.logging.otlp.internal.writer.LoggerJsonWriter;
+import io.opentelemetry.exporter.logging.otlp.internal.writer.StreamJsonWriter;
 import java.io.OutputStream;
+import java.util.logging.Logger;
 
 /**
  * Builder for {@link OtlpJsonLoggingLogRecordExporter}.
@@ -17,10 +22,13 @@ import java.io.OutputStream;
  */
 public final class OtlpStdoutLogRecordExporterBuilder {
 
-  private final InternalBuilder builder;
+  private static final String TYPE = "log records";
+  private JsonWriter jsonWriter;
+  private boolean wrapperJsonObject;
 
-  OtlpStdoutLogRecordExporterBuilder(InternalBuilder builder) {
-    this.builder = builder;
+  OtlpStdoutLogRecordExporterBuilder(JsonWriter jsonWriter, boolean wrapperJsonObject) {
+    this.jsonWriter = jsonWriter;
+    this.wrapperJsonObject = wrapperJsonObject;
   }
 
   /**
@@ -29,7 +37,10 @@ public final class OtlpStdoutLogRecordExporterBuilder {
    * @return a new {@link OtlpStdoutLogRecordExporterBuilder}.
    */
   public static OtlpStdoutLogRecordExporterBuilder create() {
-    return new OtlpStdoutLogRecordExporterBuilder(InternalBuilder.forLogs());
+    return new OtlpStdoutLogRecordExporterBuilder(
+        new LoggerJsonWriter(
+            Logger.getLogger(OtlpJsonLoggingLogRecordExporter.class.getName()), TYPE),
+        /* wrapperJsonObject= */ false);
   }
 
   /**
@@ -40,8 +51,10 @@ public final class OtlpStdoutLogRecordExporterBuilder {
    */
   public static OtlpStdoutLogRecordExporterBuilder createFromExporter(
       OtlpJsonLoggingLogRecordExporter exporter) {
+    LogRecordBuilderAccessUtil.Argument argument =
+        LogRecordBuilderAccessUtil.getToBuilder().apply(exporter);
     return new OtlpStdoutLogRecordExporterBuilder(
-        LogRecordBuilderAccessUtil.getToBuilder().apply(exporter));
+        argument.getJsonWriter(), argument.isWrapperJsonObject());
   }
 
   /**
@@ -51,7 +64,7 @@ public final class OtlpStdoutLogRecordExporterBuilder {
    *     object.
    */
   public OtlpStdoutLogRecordExporterBuilder setWrapperJsonObject(boolean wrapperJsonObject) {
-    builder.setWrapperJsonObject(wrapperJsonObject);
+    this.wrapperJsonObject = wrapperJsonObject;
     return this;
   }
 
@@ -61,7 +74,8 @@ public final class OtlpStdoutLogRecordExporterBuilder {
    * @param outputStream the output stream to use.
    */
   public OtlpStdoutLogRecordExporterBuilder setOutputStream(OutputStream outputStream) {
-    builder.setOutputStream(outputStream);
+    requireNonNull(outputStream, "outputStream");
+    this.jsonWriter = new StreamJsonWriter(outputStream, TYPE);
     return this;
   }
 
@@ -70,7 +84,9 @@ public final class OtlpStdoutLogRecordExporterBuilder {
    *
    * @return a new exporter's instance
    */
-  public OtlpJsonLoggingLogRecordExporter build() {
-    return LogRecordBuilderAccessUtil.getToExporter().apply(builder);
+  public OtlpStdoutLogRecordExporter build() {
+    return new OtlpStdoutLogRecordExporter(
+        LogRecordBuilderAccessUtil.getToExporter()
+            .apply(new LogRecordBuilderAccessUtil.Argument(jsonWriter, wrapperJsonObject)));
   }
 }

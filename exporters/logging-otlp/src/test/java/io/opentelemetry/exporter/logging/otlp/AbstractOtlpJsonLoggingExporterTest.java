@@ -31,6 +31,7 @@ import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import org.assertj.core.api.AbstractObjectAssert;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -207,13 +208,13 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
 
   @Test
   void stdoutProviderConfig() {
-    assertToStringProperties(
+    assertStdoutProperties(
         createDefaultStdoutExporter(),
         ImmutableMap.of(
             "wrapperJsonObject", "true",
             "jsonWriter", "StreamJsonWriter{outputStream=stdout}"));
 
-    assertToStringProperties(
+    assertStdoutProperties(
         loadExporter(DefaultConfigProperties.createFromMap(emptyMap()), "otlp-stdout"),
         ImmutableMap.of(
             "wrapperJsonObject", "true",
@@ -224,7 +225,7 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
   void stdoutComponentProviderConfig() {
     StructuredConfigProperties properties = mock(StructuredConfigProperties.class);
 
-    assertToStringProperties(
+    assertStdoutProperties(
         exporterFromComponentProvider(properties),
         ImmutableMap.of(
             "wrapperJsonObject", "true",
@@ -281,14 +282,15 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
   }
 
   private void assertFullToString(T exporter, String expected) {
-    assertThat(exporter.toString()).isEqualTo(expected);
-    assertThat(toBuilderAndBack(exporter).toString()).isEqualTo(expected);
+    assertThat(exporter.toString()).contains(expected);
+    assertThat(toBuilderAndBack(exporter).toString()).contains(expected);
   }
 
-  private void assertToStringProperties(T exporter, Map<String, String> expected) {
+  private void assertStdoutProperties(T exporter, Map<String, String> expected) {
+    AbstractObjectAssert<?, ?> assertThat = assertThat(exporter).extracting("delegate");
+
     expected.forEach(
-        (key, value) ->
-            assertThat(exporter).extracting(key).extracting(Object::toString).isEqualTo(value));
+        (key, value) -> assertThat.extracting(key).extracting(Object::toString).isEqualTo(value));
     assertThat(toBuilderAndBack(exporter).toString()).isEqualTo(exporter.toString());
   }
 }

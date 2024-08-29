@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.logging.otlp.internal.logs;
 
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogRecordExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.AccessUtil;
-import io.opentelemetry.exporter.logging.otlp.internal.InternalBuilder;
+import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonWriter;
 import java.util.function.Function;
 
 /**
@@ -21,26 +21,43 @@ public class LogRecordBuilderAccessUtil {
     AccessUtil.ensureLoaded(OtlpJsonLoggingLogRecordExporter.class);
   }
 
+  public static class Argument {
+    JsonWriter jsonWriter;
+    boolean wrapperJsonObject;
+
+    public Argument(JsonWriter jsonWriter, boolean wrapperJsonObject) {
+      this.jsonWriter = jsonWriter;
+      this.wrapperJsonObject = wrapperJsonObject;
+    }
+
+    public JsonWriter getJsonWriter() {
+      return jsonWriter;
+    }
+
+    public boolean isWrapperJsonObject() {
+      return wrapperJsonObject;
+    }
+  }
+
   private LogRecordBuilderAccessUtil() {}
 
-  private static Function<InternalBuilder, OtlpJsonLoggingLogRecordExporter> toExporter;
-  private static Function<OtlpJsonLoggingLogRecordExporter, InternalBuilder> toBuilder;
+  private static Function<Argument, OtlpJsonLoggingLogRecordExporter> toExporter;
+  private static Function<OtlpJsonLoggingLogRecordExporter, Argument> toBuilder;
 
-  public static Function<InternalBuilder, OtlpJsonLoggingLogRecordExporter> getToExporter() {
+  public static Function<Argument, OtlpJsonLoggingLogRecordExporter> getToExporter() {
     return toExporter;
   }
 
   public static void setToExporter(
-      Function<InternalBuilder, OtlpJsonLoggingLogRecordExporter> toExporter) {
+      Function<Argument, OtlpJsonLoggingLogRecordExporter> toExporter) {
     LogRecordBuilderAccessUtil.toExporter = toExporter;
   }
 
-  public static Function<OtlpJsonLoggingLogRecordExporter, InternalBuilder> getToBuilder() {
+  public static Function<OtlpJsonLoggingLogRecordExporter, Argument> getToBuilder() {
     return toBuilder;
   }
 
-  public static void setToBuilder(
-      Function<OtlpJsonLoggingLogRecordExporter, InternalBuilder> toBuilder) {
+  public static void setToBuilder(Function<OtlpJsonLoggingLogRecordExporter, Argument> toBuilder) {
     LogRecordBuilderAccessUtil.toBuilder = toBuilder;
   }
 }

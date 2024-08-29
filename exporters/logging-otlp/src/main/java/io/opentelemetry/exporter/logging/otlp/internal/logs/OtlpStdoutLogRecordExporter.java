@@ -6,6 +6,10 @@
 package io.opentelemetry.exporter.logging.otlp.internal.logs;
 
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogRecordExporter;
+import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import java.util.Collection;
 
 /**
  * Exporter for sending OTLP log records to stdout.
@@ -13,15 +17,19 @@ import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingLogRecordExporter;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class OtlpStdoutLogRecordExporter {
-  private OtlpStdoutLogRecordExporter() {}
+public class OtlpStdoutLogRecordExporter implements LogRecordExporter {
+  private final OtlpJsonLoggingLogRecordExporter delegate;
+
+  OtlpStdoutLogRecordExporter(OtlpJsonLoggingLogRecordExporter delegate) {
+    this.delegate = delegate;
+  }
 
   /**
    * Returns a new {@link OtlpJsonLoggingLogRecordExporter} with default settings.
    *
    * @return a new {@link OtlpJsonLoggingLogRecordExporter}.
    */
-  public static OtlpJsonLoggingLogRecordExporter create() {
+  public static OtlpStdoutLogRecordExporter create() {
     return builder().build();
   }
 
@@ -35,5 +43,29 @@ public class OtlpStdoutLogRecordExporter {
     return OtlpStdoutLogRecordExporterBuilder.create()
         .setOutputStream(System.out)
         .setWrapperJsonObject(true);
+  }
+
+  public OtlpStdoutLogRecordExporterBuilder toBuilder() {
+    return OtlpStdoutLogRecordExporterBuilder.createFromExporter(delegate);
+  }
+
+  @Override
+  public CompletableResultCode export(Collection<LogRecordData> logs) {
+    return delegate.export(logs);
+  }
+
+  @Override
+  public CompletableResultCode flush() {
+    return delegate.flush();
+  }
+
+  @Override
+  public CompletableResultCode shutdown() {
+    return delegate.shutdown();
+  }
+
+  @Override
+  public String toString() {
+    return "OtlpStdoutLogRecordExporter{" + "delegate=" + delegate + '}';
   }
 }
