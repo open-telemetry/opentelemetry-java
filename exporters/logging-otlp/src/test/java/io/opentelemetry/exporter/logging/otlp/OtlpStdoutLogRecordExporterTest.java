@@ -35,8 +35,6 @@ class OtlpStdoutLogRecordExporterTest
         TestDataExporter.forLogs(),
         OtlpStdoutLogRecordExporter.class,
         ConfigurableLogRecordExporterProvider.class,
-        "expected-logs.json",
-        "expected-logs-wrapper.json",
         "OtlpStdoutLogRecordExporter{jsonWriter=StreamJsonWriter{outputStream=stdout}, wrapperJsonObject=true}");
     this.componentProviderType = LogRecordExporter.class;
   }

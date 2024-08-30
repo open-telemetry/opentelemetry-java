@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Streams;
-import com.google.common.io.Resources;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -50,23 +49,16 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
   protected final Class<?> exporterClass;
   private final Class<?> providerClass;
 
-  private final String expectedFileNoWrapper;
-  private final String expectedFileWrapper;
-
   public AbstractOtlpJsonLoggingExporterTest(
       String type,
       TestDataExporter<? super T> testDataExporter,
       Class<?> exporterClass,
       Class<?> providerClass,
-      String expectedFileNoWrapper,
-      String expectedFileWrapper,
       String defaultConfigString) {
     this.type = type;
     this.testDataExporter = testDataExporter;
     this.exporterClass = exporterClass;
     this.providerClass = providerClass;
-    this.expectedFileNoWrapper = expectedFileNoWrapper;
-    this.expectedFileWrapper = expectedFileWrapper;
     logs = LogCapturer.create().captureForType(exporterClass);
     this.defaultConfigString = defaultConfigString;
   }
@@ -158,13 +150,7 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
     testDataExporter.flush(exporter);
 
     String output = output(testCase.getOutputStream());
-
-    String expectedFile =
-        testCase.isWrapperJsonObject() ? expectedFileWrapper : expectedFileNoWrapper;
-
-    String expectedJson =
-        Resources.toString(Resources.getResource(expectedFile), StandardCharsets.UTF_8);
-
+    String expectedJson = testDataExporter.getExpectedJson(testCase.isWrapperJsonObject());
     JSONAssert.assertEquals("Got \n" + output, expectedJson, output, false);
 
     if (testCase.isWrapperJsonObject()) {

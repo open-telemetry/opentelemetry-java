@@ -9,6 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import com.google.common.io.Resources;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
@@ -20,11 +21,15 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-public interface TestDataExporter<T> {
+abstract class TestDataExporter<T> {
 
+  private final String expectedFileNoWrapper;
+  private final String expectedFileWrapper;
   Resource RESOURCE = Resource.create(Attributes.builder().put("key", "value").build());
 
   LogRecordData LOG1 =
@@ -68,14 +73,25 @@ public interface TestDataExporter<T> {
                   TraceState.getDefault()))
           .build();
 
-  CompletableResultCode export(T exporter);
+  public TestDataExporter(String expectedFileNoWrapper, String expectedFileWrapper) {
+    this.expectedFileNoWrapper = expectedFileNoWrapper;
+    this.expectedFileWrapper = expectedFileWrapper;
+  }
 
-  CompletableResultCode flush(T exporter);
+  public String getExpectedJson(boolean withWrapper) throws IOException {
+    String file = withWrapper ? expectedFileWrapper : expectedFileNoWrapper;
+    return Resources.toString(Resources.getResource(file), StandardCharsets.UTF_8);
+  }
 
-  CompletableResultCode shutdown(T exporter);
+  abstract CompletableResultCode export(T exporter);
+
+  abstract CompletableResultCode flush(T exporter);
+
+  abstract CompletableResultCode shutdown(T exporter);
 
   static TestDataExporter<LogRecordExporter> forLogs() {
-    return new TestDataExporter<LogRecordExporter>() {
+    return new TestDataExporter<LogRecordExporter>(
+        "expected-logs.json", "expected-logs-wrapper.json") {
       @Override
       public CompletableResultCode export(LogRecordExporter exporter) {
         return exporter.export(Arrays.asList(LOG1, LOG2));
