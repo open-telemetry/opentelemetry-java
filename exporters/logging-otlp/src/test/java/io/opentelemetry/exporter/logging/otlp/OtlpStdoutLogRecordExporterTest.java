@@ -25,8 +25,7 @@ import org.junit.jupiter.api.Test;
 
 @SuppressLogger(LogRecordExporter.class)
 class OtlpStdoutLogRecordExporterTest
-    extends
-    AbstractOtlpJsonLoggingExporterTest<OtlpStdoutLogRecordExporter> {
+    extends AbstractOtlpJsonLoggingExporterTest<OtlpStdoutLogRecordExporter> {
 
   private final Class<?> componentProviderType;
 
@@ -49,7 +48,7 @@ class OtlpStdoutLogRecordExporterTest
         OtlpStdoutLogRecordExporter.builder().setWrapperJsonObject(wrapperJsonObject);
     if (outputStream != null) {
       builder.setOutputStream(outputStream);
-    }  else {
+    } else {
       builder.setLogger(Logger.getLogger(exporterClass.getName()));
     }
     return builder.build();
@@ -91,8 +90,7 @@ class OtlpStdoutLogRecordExporterTest
       OtlpStdoutLogRecordExporter exporter, Map<String, String> expected) {
     AbstractObjectAssert<?, ?> assertThat = assertThat(exporter);
 
-        expected.forEach(
-            (key, value) ->
-     assertThat.extracting(key).extracting(Object::toString).isEqualTo(value));
+    expected.forEach(
+        (key, value) -> assertThat.extracting(key).extracting(Object::toString).isEqualTo(value));
   }
 }

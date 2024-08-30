@@ -55,9 +55,7 @@ public final class OtlpStdoutLogRecordExporterBuilder {
     return this;
   }
 
-  /**
-   * Sets the exporter to use the specified logger.
-   */
+  /** Sets the exporter to use the specified logger. */
   public OtlpStdoutLogRecordExporterBuilder setLogger(Logger logger) {
     requireNonNull(logger, "logger");
     this.logger = logger;
