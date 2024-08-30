@@ -30,9 +30,10 @@ abstract class TestDataExporter<T> {
 
   private final String expectedFileNoWrapper;
   private final String expectedFileWrapper;
-  Resource RESOURCE = Resource.create(Attributes.builder().put("key", "value").build());
+  private static final Resource RESOURCE =
+      Resource.create(Attributes.builder().put("key", "value").build());
 
-  LogRecordData LOG1 =
+  private static final LogRecordData LOG1 =
       TestLogRecordData.builder()
           .setResource(RESOURCE)
           .setInstrumentationScopeInfo(
@@ -54,7 +55,7 @@ abstract class TestDataExporter<T> {
                   TraceState.getDefault()))
           .build();
 
-  LogRecordData LOG2 =
+  private static final LogRecordData LOG2 =
       TestLogRecordData.builder()
           .setResource(RESOURCE)
           .setInstrumentationScopeInfo(
