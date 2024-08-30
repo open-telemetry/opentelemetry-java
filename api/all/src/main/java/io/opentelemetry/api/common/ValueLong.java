@@ -3,25 +3,25 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.incubator.logs;
+package io.opentelemetry.api.common;
 
 import java.util.Objects;
 
-final class AnyValueLong implements AnyValue<Long> {
+final class ValueLong implements Value<Long> {
 
   private final long value;
 
-  private AnyValueLong(long value) {
+  private ValueLong(long value) {
     this.value = value;
   }
 
-  static AnyValue<Long> create(long value) {
-    return new AnyValueLong(value);
+  static Value<Long> create(long value) {
+    return new ValueLong(value);
   }
 
   @Override
-  public AnyValueType getType() {
-    return AnyValueType.LONG;
+  public ValueType getType() {
+    return ValueType.LONG;
   }
 
   @Override
@@ -36,7 +36,7 @@ final class AnyValueLong implements AnyValue<Long> {
 
   @Override
   public String toString() {
-    return "AnyValueLong{" + asString() + "}";
+    return "ValueLong{" + asString() + "}";
   }
 
   @Override
@@ -44,7 +44,7 @@ final class AnyValueLong implements AnyValue<Long> {
     if (this == o) {
       return true;
     }
-    return (o instanceof AnyValue) && Objects.equals(this.value, ((AnyValue<?>) o).getValue());
+    return (o instanceof Value) && Objects.equals(this.value, ((Value<?>) o).getValue());
   }
 
   @Override
