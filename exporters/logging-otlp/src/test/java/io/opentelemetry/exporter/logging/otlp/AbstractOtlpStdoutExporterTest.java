@@ -5,12 +5,14 @@
 
 package io.opentelemetry.exporter.logging.otlp;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import java.util.Map;
+import org.assertj.core.api.AbstractObjectAssert;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractOtlpStdoutExporterTest<T>
@@ -66,10 +68,10 @@ public abstract class AbstractOtlpStdoutExporterTest<T>
   }
 
   private void assertStdoutProperties(T exporter, Map<String, String> expected) {
-    //    AbstractObjectAssert<?, ?> assertThat = assertThat(exporter).extracting("delegate");
-    //
-    //    expected.forEach(
-    //        (key, value) ->
-    // assertThat.extracting(key).extracting(Object::toString).isEqualTo(value));
+    AbstractObjectAssert<?, ?> assertThat = assertThat(exporter);
+
+        expected.forEach(
+            (key, value) ->
+     assertThat.extracting(key).extracting(Object::toString).isEqualTo(value));
   }
 }
