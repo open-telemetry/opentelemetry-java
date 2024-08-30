@@ -7,12 +7,16 @@ package io.opentelemetry.exporter.logging.otlp;
 
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Streams;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporter;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -35,7 +39,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.event.LoggingEvent;
 
-abstract class AbstractOtlpJsonLoggingExporterTest<T> {
+abstract class AbstractOtlpStdoutExporterTest<T> {
 
   private static PrintStream systemOut;
 
@@ -48,12 +52,14 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
   private final TestDataExporter<? super T> testDataExporter;
   protected final Class<?> exporterClass;
   private final Class<?> providerClass;
+  private final Class<?> componentProviderType;
 
-  public AbstractOtlpJsonLoggingExporterTest(
+  public AbstractOtlpStdoutExporterTest(
       String type,
       TestDataExporter<? super T> testDataExporter,
       Class<?> exporterClass,
       Class<?> providerClass,
+      Class<?> componentProviderType,
       String defaultConfigString) {
     this.type = type;
     this.testDataExporter = testDataExporter;
@@ -61,6 +67,7 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
     this.providerClass = providerClass;
     logs = LogCapturer.create().captureForType(exporterClass);
     this.defaultConfigString = defaultConfigString;
+    this.componentProviderType = componentProviderType;
   }
 
   protected abstract T createExporter(
@@ -174,6 +181,34 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
 
     assertFullToString(
         loadExporter(DefaultConfigProperties.createFromMap(emptyMap()), type), defaultConfigString);
+  }
+
+  protected OtlpStdoutLogRecordExporter exporterFromComponentProvider(
+      StructuredConfigProperties properties) {
+    return (OtlpStdoutLogRecordExporter)
+        ((ComponentProvider<?>)
+                loadSpi(ComponentProvider.class)
+                    .filter(
+                        p -> {
+                          ComponentProvider<?> c = (ComponentProvider<?>) p;
+                          return "otlp-stdout".equals(c.getName())
+                              && c.getType().equals(componentProviderType);
+                        })
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("No provider found")))
+            .create(properties);
+  }
+
+  @Test
+  void componentProviderConfig() {
+    StructuredConfigProperties properties = mock(StructuredConfigProperties.class);
+    OtlpStdoutLogRecordExporter exporter = exporterFromComponentProvider(properties);
+
+    assertThat(exporter).extracting("wrapperJsonObject").isEqualTo(true);
+    assertThat(exporter)
+        .extracting("jsonWriter")
+        .extracting(Object::toString)
+        .isEqualTo("StreamJsonWriter{outputStream=stdout}");
   }
 
   @SuppressWarnings("unchecked")
