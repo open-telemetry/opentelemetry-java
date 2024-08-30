@@ -40,11 +40,6 @@ public class OtlpStdoutLogRecordExporter implements LogRecordExporter {
     this.wrapperJsonObject = wrapperJsonObject;
   }
 
-  /** Returns a new {@link OtlpStdoutLogRecordExporter} with default settings. */
-  public static OtlpStdoutLogRecordExporter create() {
-    return builder().build();
-  }
-
   /** Returns a new {@link OtlpStdoutLogRecordExporterBuilder}. */
   @SuppressWarnings("SystemOut")
   public static OtlpStdoutLogRecordExporterBuilder builder() {

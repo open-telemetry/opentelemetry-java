@@ -45,6 +45,6 @@ class OtlpStdoutLogRecordExporterTest
 
   @Override
   protected OtlpStdoutLogRecordExporter createDefaultExporter() {
-    return OtlpStdoutLogRecordExporter.create();
+    return OtlpStdoutLogRecordExporter.builder().build();
   }
 }
