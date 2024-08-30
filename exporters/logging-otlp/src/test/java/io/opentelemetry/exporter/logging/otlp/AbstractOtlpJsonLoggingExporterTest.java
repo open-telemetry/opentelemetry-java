@@ -47,6 +47,7 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
   private final String defaultConfigString;
   private final String type;
   private final TestDataExporter<? super T> testDataExporter;
+  protected final Class<?> exporterClass;
   private final Class<?> providerClass;
 
   private final String expectedFileNoWrapper;
@@ -62,6 +63,7 @@ abstract class AbstractOtlpJsonLoggingExporterTest<T> {
       String defaultConfigString) {
     this.type = type;
     this.testDataExporter = testDataExporter;
+    this.exporterClass = exporterClass;
     this.providerClass = providerClass;
     this.expectedFileNoWrapper = expectedFileNoWrapper;
     this.expectedFileWrapper = expectedFileWrapper;

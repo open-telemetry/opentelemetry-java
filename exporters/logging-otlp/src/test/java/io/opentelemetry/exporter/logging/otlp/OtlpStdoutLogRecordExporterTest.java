@@ -11,6 +11,7 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.io.OutputStream;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 @SuppressLogger(LogRecordExporter.class)
@@ -36,6 +37,8 @@ class OtlpStdoutLogRecordExporterTest
         OtlpStdoutLogRecordExporter.builder().setWrapperJsonObject(wrapperJsonObject);
     if (outputStream != null) {
       builder.setOutputStream(outputStream);
+    }  else {
+      builder.setLogger(Logger.getLogger(exporterClass.getName()));
     }
     return builder.build();
   }

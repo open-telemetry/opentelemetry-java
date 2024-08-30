@@ -24,7 +24,7 @@ public final class OtlpStdoutLogRecordExporterBuilder {
 
   private static final String TYPE = "log records";
 
-  private final Logger logger;
+  private Logger logger;
   private JsonWriter jsonWriter;
   private boolean wrapperJsonObject = true;
 
@@ -52,6 +52,16 @@ public final class OtlpStdoutLogRecordExporterBuilder {
   public OtlpStdoutLogRecordExporterBuilder setOutputStream(OutputStream outputStream) {
     requireNonNull(outputStream, "outputStream");
     this.jsonWriter = new StreamJsonWriter(outputStream, TYPE);
+    return this;
+  }
+
+  /**
+   * Sets the exporter to use the specified logger.
+   */
+  public OtlpStdoutLogRecordExporterBuilder setLogger(Logger logger) {
+    requireNonNull(logger, "logger");
+    this.logger = logger;
+    this.jsonWriter = new LoggerJsonWriter(logger, TYPE);
     return this;
   }
 
