@@ -81,7 +81,7 @@ val DEPENDENCIES = listOf(
   "org.junit-pioneer:junit-pioneer:1.9.1",
   "org.mock-server:mockserver-netty:5.15.0:shaded",
   "org.skyscreamer:jsonassert:1.5.3",
-  "com.android.tools:desugar_jdk_libs:2.0.4",
+  "com.android.tools:desugar_jdk_libs:2.1.1",
 )
 
 javaPlatform {
