@@ -17,12 +17,15 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -33,6 +36,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -43,8 +47,8 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
 
   private static PrintStream systemOut;
 
-  private static final ByteArrayOutputStream STREAM = new ByteArrayOutputStream();
-  private static final PrintStream PRINT_STREAM = new PrintStream(STREAM);
+  private static final ByteArrayOutputStream SYSTEM_OUT_STREAM = new ByteArrayOutputStream();
+  private static final PrintStream SYSTEM_OUT_PRINT_STREAM = new PrintStream(SYSTEM_OUT_STREAM);
 
   @RegisterExtension LogCapturer logs;
   private final String defaultConfigString;
@@ -53,6 +57,8 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
   protected final Class<?> exporterClass;
   private final Class<?> providerClass;
   private final Class<?> componentProviderType;
+
+  @TempDir Path tempDir;
 
   public AbstractOtlpStdoutExporterTest(
       String type,
@@ -75,7 +81,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
 
   protected abstract T createDefaultExporter();
 
-  private String output(@Nullable OutputStream outputStream) {
+  private String output(@Nullable OutputStream outputStream, @Nullable Path file) {
     if (outputStream == null) {
       return logs.getEvents().stream()
           .map(LoggingEvent::getMessage)
@@ -83,8 +89,16 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
           .trim();
     }
 
+    if (file != null) {
+      try {
+        return new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
     try {
-      return STREAM.toString(StandardCharsets.UTF_8.name());
+      return SYSTEM_OUT_STREAM.toString(StandardCharsets.UTF_8.name());
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException(e);
     }
@@ -94,7 +108,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
   @SuppressWarnings("SystemOut")
   static void setUpStatic() {
     systemOut = System.out;
-    System.setOut(PRINT_STREAM);
+    System.setOut(SYSTEM_OUT_PRINT_STREAM);
   }
 
   @AfterAll
@@ -105,21 +119,28 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
 
   @BeforeEach
   void setUp() {
-    STREAM.reset();
+    SYSTEM_OUT_STREAM.reset();
+  }
+
+  enum OutputType {
+    LOGGER,
+    SYSTEM_OUT,
+    FILE,
+    FILE_AND_BUFFERED_WRITER
   }
 
   public static class TestCase {
-    @Nullable private final OutputStream outputStream;
-    private final boolean wrapperJsonObject;
 
-    public TestCase(@Nullable OutputStream outputStream, boolean wrapperJsonObject) {
-      this.outputStream = outputStream;
+    private final boolean wrapperJsonObject;
+    private final OutputType outputType;
+
+    public TestCase(OutputType outputType, boolean wrapperJsonObject) {
+      this.outputType = outputType;
       this.wrapperJsonObject = wrapperJsonObject;
     }
 
-    @Nullable
-    public OutputStream getOutputStream() {
-      return outputStream;
+    public OutputType getOutputType() {
+      return outputType;
     }
 
     public boolean isWrapperJsonObject() {
@@ -127,36 +148,57 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     }
   }
 
-  @SuppressWarnings("SystemOut")
-  public static Stream<Arguments> exportTestCases() {
+  static Stream<Arguments> exportTestCases() {
     return ImmutableList.of(
-        testCase(System.out, /* wrapperJsonObject= */ true),
-        testCase(System.out, /* wrapperJsonObject= */ false),
-        testCase(null, /* wrapperJsonObject= */ true),
-        testCase(null, /* wrapperJsonObject= */ false))
+        testCase(OutputType.SYSTEM_OUT, /* wrapperJsonObject= */ true),
+        testCase(OutputType.SYSTEM_OUT, /* wrapperJsonObject= */ false),
+        testCase(OutputType.FILE, /* wrapperJsonObject= */ true),
+        testCase(OutputType.FILE, /* wrapperJsonObject= */ false),
+        testCase(OutputType.FILE_AND_BUFFERED_WRITER, /* wrapperJsonObject= */ true),
+        testCase(OutputType.FILE_AND_BUFFERED_WRITER, /* wrapperJsonObject= */ false),
+        testCase(OutputType.LOGGER, /* wrapperJsonObject= */ true),
+        testCase(OutputType.LOGGER, /* wrapperJsonObject= */ false))
         .stream();
   }
 
-  private static Arguments testCase(@Nullable PrintStream outputStream, boolean wrapperJsonObject) {
+  private static Arguments testCase(OutputType type, boolean wrapperJsonObject) {
     return Arguments.of(
-        "OutputStream="
-            + (outputStream == null ? "logger" : "System.out")
-            + ", wrapperJsonObject="
-            + wrapperJsonObject,
-        new TestCase(outputStream, wrapperJsonObject));
+        "output=" + type + ", wrapperJsonObject=" + wrapperJsonObject,
+        new TestCase(type, wrapperJsonObject));
   }
 
+  @SuppressWarnings("SystemOut")
   @ParameterizedTest(name = "{0}")
   @MethodSource("exportTestCases")
   void exportWithProgrammaticConfig(String name, TestCase testCase)
       throws JSONException, IOException {
     setUp();
 
-    T exporter = createExporter(testCase.getOutputStream(), testCase.isWrapperJsonObject());
+    OutputStream outputStream;
+    Path file = null;
+    switch (testCase.getOutputType()) {
+      case LOGGER:
+        outputStream = null;
+        break;
+      case SYSTEM_OUT:
+        outputStream = System.out;
+        break;
+      case FILE:
+        file = tempDir.resolve("test.log");
+        outputStream = Files.newOutputStream(file);
+        break;
+      case FILE_AND_BUFFERED_WRITER:
+        file = tempDir.resolve("test.log");
+        outputStream = new BufferedOutputStream(Files.newOutputStream(file));
+        break;
+      default:
+        throw new IllegalStateException("Unexpected value: " + testCase.getOutputType());
+    }
+    T exporter = createExporter(outputStream, testCase.isWrapperJsonObject());
     testDataExporter.export(exporter);
     testDataExporter.flush(exporter);
 
-    String output = output(testCase.getOutputStream());
+    String output = output(outputStream, file);
     String expectedJson = testDataExporter.getExpectedJson(testCase.isWrapperJsonObject());
     JSONAssert.assertEquals("Got \n" + output, expectedJson, output, false);
 
@@ -170,7 +212,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     T exporter = createDefaultExporter();
     assertThat(testDataExporter.shutdown(exporter).isSuccess()).isTrue();
     assertThat(testDataExporter.export(exporter).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
-    assertThat(output(null)).isEmpty();
+    assertThat(output(null, null)).isEmpty();
     assertThat(testDataExporter.shutdown(exporter).isSuccess()).isTrue();
     logs.assertContains("Calling shutdown() multiple times.");
   }
