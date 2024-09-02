@@ -55,7 +55,7 @@ class ExtendedSpanProcessorUsageTest {
   }
 
   @Test
-  public void extendedSpanProcessorUsage() {
+  void extendedSpanProcessorUsage() {
     InMemorySpanExporter exporter = InMemorySpanExporter.create();
 
     try (SdkTracerProvider tracerProvider =
