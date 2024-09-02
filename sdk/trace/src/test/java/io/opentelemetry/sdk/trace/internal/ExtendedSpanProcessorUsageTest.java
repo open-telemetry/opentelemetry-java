@@ -19,7 +19,7 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import org.junit.jupiter.api.Test;
 
 /** Demonstrating usage of {@link ExtendedSpanProcessor}. */
-public class ExtendedSpanProcessorUsageTest {
+class ExtendedSpanProcessorUsageTest {
 
   private static final AttributeKey<String> FOO_KEY = AttributeKey.stringKey("foo");
   private static final AttributeKey<String> BAR_KEY = AttributeKey.stringKey("bar");
@@ -55,7 +55,7 @@ public class ExtendedSpanProcessorUsageTest {
   }
 
   @Test
-  public void testExtendedSpanProcessorUsage() {
+  public void extendedSpanProcessorUsage() {
     InMemorySpanExporter exporter = InMemorySpanExporter.create();
 
     try (SdkTracerProvider tracerProvider =
