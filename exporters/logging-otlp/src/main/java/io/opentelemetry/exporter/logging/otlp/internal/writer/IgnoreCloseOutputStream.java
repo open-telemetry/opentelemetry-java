@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.logging.otlp.internal.writer;
 
 import java.io.FilterOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 
 /** An {@link OutputStream} that ignores calls to {@link #close()}. */
@@ -16,7 +17,8 @@ class IgnoreCloseOutputStream extends FilterOutputStream {
   }
 
   @Override
-  public void close() {
-    // ignore
+  public void close() throws IOException {
+    // we don't want to close the underlying stream, because this breaks System.out and System.err
+    flush();
   }
 }

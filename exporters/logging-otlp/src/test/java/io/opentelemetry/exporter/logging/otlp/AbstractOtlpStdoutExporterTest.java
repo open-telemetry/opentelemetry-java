@@ -196,7 +196,6 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     }
     T exporter = createExporter(outputStream, testCase.isWrapperJsonObject());
     testDataExporter.export(exporter);
-    testDataExporter.flush(exporter);
 
     String output = output(outputStream, file);
     String expectedJson = testDataExporter.getExpectedJson(testCase.isWrapperJsonObject());
