@@ -319,7 +319,7 @@ final class SdkSpan implements ReadWriteSpan {
       return this;
     }
     synchronized (lock) {
-      if (isSpanUnmodifiableByCurrentThread()) {
+      if (!isModifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
         return this;
       }
@@ -335,9 +335,9 @@ final class SdkSpan implements ReadWriteSpan {
   }
 
   @GuardedBy("lock")
-  private boolean isSpanUnmodifiableByCurrentThread() {
-    return hasEnded == EndState.ENDED
-        || (hasEnded == EndState.ENDING && Thread.currentThread() != spanEndingThread);
+  private boolean isModifiableByCurrentThread() {
+    return hasEnded == EndState.NOT_ENDED
+        || (hasEnded == EndState.ENDING && Thread.currentThread() == spanEndingThread);
   }
 
   @Override
@@ -402,7 +402,7 @@ final class SdkSpan implements ReadWriteSpan {
 
   private void addTimedEvent(EventData timedEvent) {
     synchronized (lock) {
-      if (isSpanUnmodifiableByCurrentThread()) {
+      if (!isModifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
         return;
       }
@@ -422,7 +422,7 @@ final class SdkSpan implements ReadWriteSpan {
       return this;
     }
     synchronized (lock) {
-      if (isSpanUnmodifiableByCurrentThread()) {
+      if (!isModifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return this;
       } else if (this.status.getStatusCode() == StatusCode.OK) {
@@ -460,7 +460,7 @@ final class SdkSpan implements ReadWriteSpan {
       return this;
     }
     synchronized (lock) {
-      if (isSpanUnmodifiableByCurrentThread()) {
+      if (!isModifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling updateName() on an ended Span.");
         return this;
       }
@@ -485,7 +485,7 @@ final class SdkSpan implements ReadWriteSpan {
                 spanLimits.getMaxNumberOfAttributesPerLink(),
                 spanLimits.getMaxAttributeValueLength()));
     synchronized (lock) {
-      if (isSpanUnmodifiableByCurrentThread()) {
+      if (!isModifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling addLink() on an ended Span.");
         return this;
       }
