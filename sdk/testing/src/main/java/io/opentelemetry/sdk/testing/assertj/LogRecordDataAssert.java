@@ -6,17 +6,22 @@
 package io.opentelemetry.sdk.testing.assertj;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static java.util.stream.Collectors.toList;
+import static org.junit.Assert.assertNotNull;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -163,6 +168,104 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
           "Expected log to have body <%s> but was <%s>",
           body,
           actual.getBodyValue());
+    }
+    return this;
+  }
+
+  //  @SuppressWarnings({"MethodCanBeStatic"})
+  //  private void bodyIsAnyValue() {
+  //    // Actually, we can't do these two checks because the body is still STRING type
+  //        assertThat(actual.getBodyValue().getType()).isNotSameAs(ValueType.EMPTY);
+  //        assertThat(actual.getBodyValue().getType()).isNotSameAs(ValueType.STRING);
+  //    // TODO: breedx-splk simplify this when ANY_VALUE is promoted with stability
+  //  }
+
+  public LogRecordDataAssert hasBodyField(String key, String value) {
+    return hasBodyField(key, Value.of(value));
+  }
+
+  public LogRecordDataAssert hasBodyField(String key, long value) {
+    return hasBodyField(key, Value.of(value));
+  }
+
+  public LogRecordDataAssert hasBodyField(String key, double value) {
+    return hasBodyField(key, Value.of(value));
+  }
+
+  public LogRecordDataAssert hasBodyField(String key, boolean value) {
+    return hasBodyField(key, Value.of(value));
+  }
+
+  public LogRecordDataAssert hasBodyField(String key, String... value) {
+    List<Value<?>> values = new ArrayList<>(value.length);
+    for (String val : value) {
+      values.add(Value.of(val));
+    }
+    return hasBodyField(key, Value.of(values));
+  }
+
+  public LogRecordDataAssert hasBodyField(String key, long... value) {
+    List<Value<?>> values = new ArrayList<>(value.length);
+    for (long val : value) {
+      values.add(Value.of(val));
+    }
+    return hasBodyField(key, Value.of(values));
+  }
+
+  public LogRecordDataAssert hasBodyField(String key, double... value) {
+    List<Value<?>> values = new ArrayList<>(value.length);
+    for (double val : value) {
+      values.add(Value.of(val));
+    }
+    return hasBodyField(key, Value.of(values));
+  }
+
+  public LogRecordDataAssert hasBodyField(String key, boolean... value) {
+    List<Value<?>> values = new ArrayList<>(value.length);
+    for (boolean val : value) {
+      values.add(Value.of(val));
+    }
+    return hasBodyField(key, Value.of(values));
+  }
+
+  @SuppressWarnings({"unchecked"})
+  public LogRecordDataAssert hasBodyField(String key, Value<?> value) {
+    isNotNull();
+    Value<?> bodyValue = actual.getBodyValue();
+    assertNotNull(bodyValue); // Can't use assertj or nullaway complains
+    Value<List<KeyValue>> body = (Value<List<KeyValue>>) bodyValue;
+    List<KeyValue> payload = body.getValue();
+    KeyValue expected = KeyValue.of(key, value);
+    assertThat(payload).contains(expected);
+    return this;
+  }
+
+  @SuppressWarnings({"unchecked"})
+  public <T> LogRecordDataAssert hasBodyField(AttributeKey<T> key, T value) {
+    switch (key.getType()) {
+      case STRING:
+        return hasBodyField(key.getKey(), (String) value);
+      case BOOLEAN:
+        return hasBodyField(key.getKey(), (boolean) value);
+      case LONG:
+        return hasBodyField(key.getKey(), (long) value);
+      case DOUBLE:
+        return hasBodyField(key.getKey(), (double) value);
+      case STRING_ARRAY:
+        return hasBodyField(
+            key.getKey(),
+            Value.of(((List<String>) value).stream().map(Value::of).collect(toList())));
+      case BOOLEAN_ARRAY:
+        return hasBodyField(
+            key.getKey(),
+            Value.of(((List<Boolean>) value).stream().map(Value::of).collect(toList())));
+      case LONG_ARRAY:
+        return hasBodyField(
+            key.getKey(), Value.of(((List<Long>) value).stream().map(Value::of).collect(toList())));
+      case DOUBLE_ARRAY:
+        return hasBodyField(
+            key.getKey(),
+            Value.of(((List<Double>) value).stream().map(Value::of).collect(toList())));
     }
     return this;
   }

@@ -8,6 +8,7 @@ otelJava.moduleName.set("io.opentelemetry.sdk.testing")
 
 dependencies {
   api(project(":api:all"))
+  api(project(":api:incubator"))
   api(project(":sdk:all"))
 
   compileOnly("org.assertj:assertj-core")

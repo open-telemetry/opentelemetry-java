@@ -13,15 +13,22 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.incubator.events.EventLogger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
+import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
@@ -275,5 +282,39 @@ public class LogAssertionsTest {
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasTotalAttributeCount(11))
         .isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  void eventBodyAssertions() {
+    InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
+    SdkLoggerProvider loggerProvider =
+        SdkLoggerProvider.builder()
+            .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter))
+            .build();
+    EventLogger eventLogger = SdkEventLoggerProvider.create(loggerProvider).get("test.test");
+    eventLogger
+        .builder("foo")
+        .put("foostr", "bar")
+        .put("foobool", true)
+        .put("foolong", 12)
+        .put("foodbl", 12.0)
+        .put("foostra", "bar", "baz", "buzz")
+        .put("foolonga", 9, 0, 2, 1, 0)
+        .put("foodbla", 9.1, 0.2, 2.3, 1.4, 0.5)
+        .put("fooboola", true, true, true, false)
+        .put("fooany", Value.of("grim"))
+        .emit();
+    List<LogRecordData> logs = exporter.getFinishedLogRecordItems();
+    assertThat(logs).hasSize(1);
+    assertThat(logs.get(0))
+        .hasBodyField("foostr", "bar")
+        .hasBodyField("foobool", true)
+        .hasBodyField("foolong", 12)
+        .hasBodyField("foodbl", 12.0)
+        .hasBodyField("foostra", "bar", "baz", "buzz")
+        .hasBodyField("foolonga", 9, 0, 2, 1, 0)
+        .hasBodyField("foodbla", 9.1, 0.2, 2.3, 1.4, 0.5)
+        .hasBodyField("fooboola", true, true, true, false)
+        .hasBodyField("fooany", Value.of("grim"));
   }
 }
