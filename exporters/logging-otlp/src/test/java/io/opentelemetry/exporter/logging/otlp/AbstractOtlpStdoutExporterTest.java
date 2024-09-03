@@ -211,6 +211,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     T exporter = createDefaultExporter();
     assertThat(testDataExporter.shutdown(exporter).isSuccess()).isTrue();
     assertThat(testDataExporter.export(exporter).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+    assertThat(testDataExporter.flush(exporter).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
     assertThat(output(null, null)).isEmpty();
     assertThat(testDataExporter.shutdown(exporter).isSuccess()).isTrue();
     logs.assertContains("Calling shutdown() multiple times.");
