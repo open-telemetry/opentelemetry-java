@@ -15,7 +15,8 @@ import java.util.logging.Logger;
 
 public class JaegerRemoteSamplerProvider implements ConfigurableSamplerProvider {
 
-  private static final Logger LOGGER = Logger.getLogger(JaegerRemoteSampler.class.getName());
+  private static final Logger LOGGER =
+      Logger.getLogger(JaegerRemoteSamplerProvider.class.getName());
 
   // visible for testing
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
