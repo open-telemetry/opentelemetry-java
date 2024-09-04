@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -30,6 +31,7 @@ class DefaultLoggerTest {
                     .setSeverity(Severity.DEBUG)
                     .setSeverityText("debug")
                     .setBody("body")
+                    .setBody(Value.of("body"))
                     .setAttribute(AttributeKey.stringKey("key1"), "value1")
                     .setAllAttributes(Attributes.builder().put("key2", "value2").build())
                     .emit())

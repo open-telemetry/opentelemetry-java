@@ -1,2 +1,15 @@
 Comparing source compatibility of opentelemetry-sdk-logs-1.42.0-SNAPSHOT.jar against opentelemetry-sdk-logs-1.41.0.jar
-No changes.
+===  UNCHANGED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.logs.data.Body  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	===  UNCHANGED METHOD: PUBLIC ABSTRACT io.opentelemetry.sdk.logs.data.Body$Type getType()
+		+++  NEW ANNOTATION: java.lang.Deprecated
+	+++  NEW ANNOTATION: java.lang.Deprecated
+===  UNCHANGED ENUM: PUBLIC STATIC FINAL io.opentelemetry.sdk.logs.data.Body$Type  (compatible)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.logs.data.LogRecordData  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	===  UNCHANGED METHOD: PUBLIC ABSTRACT io.opentelemetry.sdk.logs.data.Body getBody()
+		+++  NEW ANNOTATION: java.lang.Deprecated
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.Value<?> getBodyValue()
+		+++  NEW ANNOTATION: javax.annotation.Nullable

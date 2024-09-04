@@ -8,17 +8,13 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import java.io.Closeable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 final class TextMapPropagatorFactory implements Factory<List<String>, TextMapPropagator> {
 
@@ -45,22 +41,15 @@ final class TextMapPropagatorFactory implements Factory<List<String>, TextMapPro
       return TextMapPropagator.noop();
     }
 
-    NamedSpiManager<TextMapPropagator> spiPropagatorsManager =
-        spiHelper.loadConfigurable(
-            ConfigurablePropagatorProvider.class,
-            ConfigurablePropagatorProvider::getName,
-            ConfigurablePropagatorProvider::getPropagator,
-            DefaultConfigProperties.createFromMap(Collections.emptyMap()));
-    Set<TextMapPropagator> propagators = new LinkedHashSet<>();
+    List<TextMapPropagator> propagators = new ArrayList<>();
     for (String propagator : model) {
-      propagators.add(getPropagator(propagator, spiPropagatorsManager));
+      propagators.add(getPropagator(spiHelper, propagator));
     }
 
     return TextMapPropagator.composite(propagators);
   }
 
-  private static TextMapPropagator getPropagator(
-      String name, NamedSpiManager<TextMapPropagator> spiPropagatorsManager) {
+  private static TextMapPropagator getPropagator(SpiHelper spiHelper, String name) {
     if (name.equals("tracecontext")) {
       return W3CTraceContextPropagator.getInstance();
     }
@@ -68,10 +57,7 @@ final class TextMapPropagatorFactory implements Factory<List<String>, TextMapPro
       return W3CBaggagePropagator.getInstance();
     }
 
-    TextMapPropagator spiPropagator = spiPropagatorsManager.getByName(name);
-    if (spiPropagator != null) {
-      return spiPropagator;
-    }
-    throw new ConfigurationException("Unrecognized propagator: " + name);
+    return FileConfigUtil.loadComponent(
+        spiHelper, TextMapPropagator.class, name, Collections.emptyMap());
   }
 }

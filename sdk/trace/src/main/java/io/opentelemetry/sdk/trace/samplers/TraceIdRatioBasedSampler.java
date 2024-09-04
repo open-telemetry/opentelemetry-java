@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.List;
+import java.util.Locale;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -112,7 +113,7 @@ final class TraceIdRatioBasedSampler implements Sampler {
   }
 
   private static String decimalFormat(double value) {
-    DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance();
+    DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance(Locale.ROOT);
     decimalFormatSymbols.setDecimalSeparator('.');
 
     DecimalFormat decimalFormat = new DecimalFormat("0.000000", decimalFormatSymbols);

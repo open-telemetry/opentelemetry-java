@@ -13,6 +13,7 @@ import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.component.SamplerComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOff;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOn;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.JaegerRemote;
@@ -116,23 +117,41 @@ class SamplerFactoryTest {
             JaegerRemoteSampler.builder()
                 .setEndpoint("http://jaeger-remote-endpoint")
                 .setPollingInterval(Duration.ofSeconds(10))
+                .setInitialSampler(io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOff())
                 .build()));
   }
 
   @Test
-  void create_SpiExporter() {
+  void create_SpiExporter_Unknown() {
     List<Closeable> closeables = new ArrayList<>();
 
     assertThatThrownBy(
             () ->
                 SamplerFactory.getInstance()
                     .create(
-                        new Sampler()
-                            .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
+                        new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
+                                .Sampler()
+                            .withAdditionalProperty(
+                                "unknown_key", ImmutableMap.of("key1", "value1")),
                         spiHelper,
                         new ArrayList<>()))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unrecognized sampler(s): [test]");
+        .hasMessage(
+            "No component provider detected for io.opentelemetry.sdk.trace.samplers.Sampler with name \"unknown_key\".");
     cleanup.addCloseables(closeables);
+  }
+
+  @Test
+  void create_SpiExporter_Valid() {
+    io.opentelemetry.sdk.trace.samplers.Sampler sampler =
+        SamplerFactory.getInstance()
+            .create(
+                new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sampler()
+                    .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
+                spiHelper,
+                new ArrayList<>());
+    assertThat(sampler).isInstanceOf(SamplerComponentProvider.TestSampler.class);
+    assertThat(((SamplerComponentProvider.TestSampler) sampler).config.getString("key1"))
+        .isEqualTo("value1");
   }
 }
