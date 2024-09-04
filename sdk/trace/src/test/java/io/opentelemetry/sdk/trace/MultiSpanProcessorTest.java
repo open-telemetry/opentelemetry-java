@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.trace.internal.ExtendedSpanProcessor;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,18 +28,20 @@ import org.mockito.quality.Strictness;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class MultiSpanProcessorTest {
-  @Mock private SpanProcessor spanProcessor1;
-  @Mock private SpanProcessor spanProcessor2;
+  @Mock private ExtendedSpanProcessor spanProcessor1;
+  @Mock private ExtendedSpanProcessor spanProcessor2;
   @Mock private ReadableSpan readableSpan;
   @Mock private ReadWriteSpan readWriteSpan;
 
   @BeforeEach
   void setUp() {
     when(spanProcessor1.isStartRequired()).thenReturn(true);
+    when(spanProcessor1.isOnEndingRequired()).thenReturn(true);
     when(spanProcessor1.isEndRequired()).thenReturn(true);
     when(spanProcessor1.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
     when(spanProcessor1.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     when(spanProcessor2.isStartRequired()).thenReturn(true);
+    when(spanProcessor2.isOnEndingRequired()).thenReturn(true);
     when(spanProcessor2.isEndRequired()).thenReturn(true);
     when(spanProcessor2.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
     when(spanProcessor2.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
@@ -61,11 +64,16 @@ class MultiSpanProcessorTest {
 
   @Test
   void twoSpanProcessor() {
-    SpanProcessor multiSpanProcessor =
-        SpanProcessor.composite(Arrays.asList(spanProcessor1, spanProcessor2));
+    ExtendedSpanProcessor multiSpanProcessor =
+        (ExtendedSpanProcessor)
+            SpanProcessor.composite(Arrays.asList(spanProcessor1, spanProcessor2));
     multiSpanProcessor.onStart(Context.root(), readWriteSpan);
     verify(spanProcessor1).onStart(same(Context.root()), same(readWriteSpan));
     verify(spanProcessor2).onStart(same(Context.root()), same(readWriteSpan));
+
+    multiSpanProcessor.onEnding(readWriteSpan);
+    verify(spanProcessor1).onEnding(same(readWriteSpan));
+    verify(spanProcessor2).onEnding(same(readWriteSpan));
 
     multiSpanProcessor.onEnd(readableSpan);
     verify(spanProcessor1).onEnd(same(readableSpan));
@@ -83,9 +91,11 @@ class MultiSpanProcessorTest {
   @Test
   void twoSpanProcessor_DifferentRequirements() {
     when(spanProcessor1.isEndRequired()).thenReturn(false);
+    when(spanProcessor2.isOnEndingRequired()).thenReturn(false);
     when(spanProcessor2.isStartRequired()).thenReturn(false);
-    SpanProcessor multiSpanProcessor =
-        SpanProcessor.composite(Arrays.asList(spanProcessor1, spanProcessor2));
+    ExtendedSpanProcessor multiSpanProcessor =
+        (ExtendedSpanProcessor)
+            SpanProcessor.composite(Arrays.asList(spanProcessor1, spanProcessor2));
 
     assertThat(multiSpanProcessor.isStartRequired()).isTrue();
     assertThat(multiSpanProcessor.isEndRequired()).isTrue();
@@ -93,6 +103,10 @@ class MultiSpanProcessorTest {
     multiSpanProcessor.onStart(Context.root(), readWriteSpan);
     verify(spanProcessor1).onStart(same(Context.root()), same(readWriteSpan));
     verify(spanProcessor2, times(0)).onStart(any(Context.class), any(ReadWriteSpan.class));
+
+    multiSpanProcessor.onEnding(readWriteSpan);
+    verify(spanProcessor1).onEnding(same(readWriteSpan));
+    verify(spanProcessor2, times(0)).onEnding(any(ReadWriteSpan.class));
 
     multiSpanProcessor.onEnd(readableSpan);
     verify(spanProcessor1, times(0)).onEnd(any(ReadableSpan.class));
@@ -117,6 +131,7 @@ class MultiSpanProcessorTest {
         .hasToString(
             "MultiSpanProcessor{"
                 + "spanProcessorsStart=[spanProcessor1, spanProcessor1], "
+                + "spanProcessorsEnding=[spanProcessor1, spanProcessor1], "
                 + "spanProcessorsEnd=[spanProcessor1, spanProcessor1], "
                 + "spanProcessorsAll=[spanProcessor1, spanProcessor1]}");
   }
