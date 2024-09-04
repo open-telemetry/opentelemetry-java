@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
+import static io.opentelemetry.api.common.ValueType.KEY_VALUE_LIST;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertNotNull;
@@ -261,7 +262,9 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
   public LogRecordDataAssert hasBodyField(String key, Value<?> value) {
     isNotNull();
     Value<?> bodyValue = actual.getBodyValue();
-    assertNotNull(bodyValue); // Can't use assertj or nullaway complains
+    assertNotNull(
+        "Body was not expected to be null.", bodyValue); // Can't use assertj or nullaway complains
+    assertThat(bodyValue.getType()).isEqualTo(KEY_VALUE_LIST);
     Value<List<KeyValue>> body = (Value<List<KeyValue>>) bodyValue;
     List<KeyValue> payload = body.getValue();
     KeyValue expected = KeyValue.of(key, value);
