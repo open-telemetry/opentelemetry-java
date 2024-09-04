@@ -10,8 +10,12 @@ import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class JaegerRemoteSamplerProvider implements ConfigurableSamplerProvider {
+
+  private static final Logger LOGGER = Logger.getLogger(JaegerRemoteSampler.class.getName());
 
   // visible for testing
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
@@ -43,9 +47,23 @@ public class JaegerRemoteSamplerProvider implements ConfigurableSamplerProvider 
       builder.setEndpoint(endpoint);
     }
     String pollingInterval = params.get(POLLING_INTERVAL);
+    // Previously, we mistakenly read from pollingInterval. For backwards compatibility, check
+    // pollingInterval and log warning if set.
+    if (pollingInterval == null) {
+      pollingInterval = params.get("pollingInterval");
+      if (pollingInterval != null) {
+        LOGGER.log(
+            Level.WARNING,
+            SAMPLER_ARG_PROPERTY
+                + " contains deprecated \"pollingInterval\" property. Please use \""
+                + POLLING_INTERVAL
+                + "\" instead.");
+      }
+    }
     if (pollingInterval != null) {
       builder.setPollingInterval(Integer.valueOf(pollingInterval), TimeUnit.MILLISECONDS);
     }
+
     String initialSamplingRate = params.get(INITIAL_SAMPLING_RATE);
     if (initialSamplingRate != null) {
       builder.setInitialSampler(
