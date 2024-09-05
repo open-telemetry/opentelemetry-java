@@ -10,6 +10,7 @@ Comparing source compatibility of opentelemetry-sdk-testing-1.42.0-SNAPSHOT.jar 
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasBodyField(java.lang.String, long[])
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasBodyField(java.lang.String, double[])
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasBodyField(java.lang.String, boolean[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasBodyField(java.lang.String, io.opentelemetry.api.common.Value<?>)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasBodyField(io.opentelemetry.api.common.AttributeKey<T>, java.lang.Object)
 		GENERIC TEMPLATES: +++ T:java.lang.Object
 **** MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.testing.logs.TestLogRecordData  (not serializable)
