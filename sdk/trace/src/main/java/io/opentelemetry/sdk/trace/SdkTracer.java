@@ -19,6 +19,7 @@ final class SdkTracer implements ExtendedTracer {
 
   private final TracerSharedState sharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
+
   // TODO: add dedicated API for updating scope config.
   @SuppressWarnings("FieldCanBeFinal") // For now, allow updating reflectively.
   private boolean tracerEnabled;
