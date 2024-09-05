@@ -488,7 +488,18 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       long startTimeMillis = System.currentTimeMillis();
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
+
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+
+      assertThat(result.getFailureThrowable())
+          .asInstanceOf(
+              InstanceOfAssertFactories.throwable(FailedExportException.GrpcExportException.class))
+          .returns(false, Assertions.from(FailedExportException::failedWithResponse))
+          .satisfies(
+              ex -> {
+                assertThat(ex.getResponse()).isNull();
+                assertThat(ex.getCause()).isNotNull();
+              });
 
       // Assert that the export request fails well before the default connect timeout of 10s
       assertThat(System.currentTimeMillis() - startTimeMillis)
@@ -597,12 +608,12 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   .getFailureThrowable())
           .asInstanceOf(
               InstanceOfAssertFactories.throwable(FailedExportException.GrpcExportException.class))
-          .returns(false, Assertions.from(FailedExportException::failedWithResponse))
+          .returns(true, Assertions.from(FailedExportException::failedWithResponse))
           .satisfies(
               ex -> {
-                assertThat(ex.getResponse()).isNull();
+                assertThat(ex.getResponse()).isNotNull();
 
-                assertThat(ex.getCause()).isNotNull();
+                assertThat(ex.getCause()).isNull();
               });
     } finally {
       exporter.shutdown();

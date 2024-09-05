@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.internal.grpc;
 
 import static io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE;
 import static io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil.GRPC_STATUS_UNIMPLEMENTED;
-import static io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil.GRPC_STATUS_UNKNOWN;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterMetrics;
@@ -62,41 +61,27 @@ public final class GrpcExporter<T extends Marshaler> {
 
     grpcSender.send(
         exportRequest,
-        () -> {
-          exporterMetrics.addSuccess(numItems);
-          result.succeed();
-        },
-        (response, throwable) -> {
-          exporterMetrics.addFailed(numItems);
-
-          logFailureMessage(response, throwable);
-
-          switch (response.grpcStatusValue()) {
-            case GRPC_STATUS_UNKNOWN:
-              result.failExceptionally(FailedExportException.grpcFailedExceptionally(throwable));
-              break;
-            default:
-              result.failExceptionally(FailedExportException.grpcFailedWithResponse(response));
-              break;
-          }
-        });
+        grpcResponse -> onResponse(result, numItems, grpcResponse),
+        throwable -> onError(result, numItems, throwable));
 
     return result;
   }
 
-  public CompletableResultCode shutdown() {
-    if (!isShutdown.compareAndSet(false, true)) {
-      logger.log(Level.INFO, "Calling shutdown() multiple times.");
-      return CompletableResultCode.ofSuccess();
-    }
-    return grpcSender.shutdown();
-  }
+  private void onResponse(CompletableResultCode result, int numItems, GrpcResponse grpcResponse) {
+    int statusCode = grpcResponse.grpcStatusValue();
 
-  private void logFailureMessage(GrpcResponse response, Throwable throwable) {
-    switch (response.grpcStatusValue()) {
+    if (statusCode == 0) {
+      exporterMetrics.addSuccess(numItems);
+      result.succeed();
+      return;
+    }
+
+    exporterMetrics.addFailed(numItems);
+    switch (statusCode) {
       case GRPC_STATUS_UNIMPLEMENTED:
         if (loggedUnimplemented.compareAndSet(false, true)) {
-          GrpcExporterUtil.logUnimplemented(internalLogger, type, response.grpcStatusDescription());
+          GrpcExporterUtil.logUnimplemented(
+              internalLogger, type, grpcResponse.grpcStatusDescription());
         }
         break;
       case GRPC_STATUS_UNAVAILABLE:
@@ -107,7 +92,7 @@ public final class GrpcExporter<T extends Marshaler> {
                 + "s. Server is UNAVAILABLE. "
                 + "Make sure your collector is running and reachable from this network. "
                 + "Full error message:"
-                + response.grpcStatusDescription());
+                + grpcResponse.grpcStatusDescription());
         break;
       default:
         logger.log(
@@ -115,14 +100,34 @@ public final class GrpcExporter<T extends Marshaler> {
             "Failed to export "
                 + type
                 + "s. Server responded with gRPC status code "
-                + response.grpcStatusValue()
+                + statusCode
                 + ". Error message: "
-                + response.grpcStatusDescription());
+                + grpcResponse.grpcStatusDescription());
         break;
     }
+    result.failExceptionally(FailedExportException.grpcFailedWithResponse(grpcResponse));
+  }
 
+  private void onError(CompletableResultCode result, int numItems, Throwable e) {
+    exporterMetrics.addFailed(numItems);
+    logger.log(
+        Level.SEVERE,
+        "Failed to export "
+            + type
+            + "s. The request could not be executed. Error message: "
+            + e.getMessage(),
+        e);
     if (logger.isLoggable(Level.FINEST)) {
-      logger.log(Level.FINEST, "Failed to export " + type + "s. Details follow: " + throwable);
+      logger.log(Level.FINEST, "Failed to export " + type + "s. Details follow: " + e);
     }
+    result.failExceptionally(FailedExportException.grpcFailedExceptionally(e));
+  }
+
+  public CompletableResultCode shutdown() {
+    if (!isShutdown.compareAndSet(false, true)) {
+      logger.log(Level.INFO, "Calling shutdown() multiple times.");
+      return CompletableResultCode.ofSuccess();
+    }
+    return grpcSender.shutdown();
   }
 }
