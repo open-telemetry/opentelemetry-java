@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -344,6 +345,14 @@ public final class MarshalerUtil {
       return 0;
     }
     return field.getTagSize() + CodedOutputStream.computeByteArraySizeNoTag(message);
+  }
+
+  /** Returns the size of a bytes field based on the buffer's capacity. */
+  public static int sizeByteBuffer(ProtoFieldInfo field, ByteBuffer message) {
+    if (message.capacity() == 0) {
+      return 0;
+    }
+    return field.getTagSize() + CodedOutputStream.computeByteBufferSizeNoTag(message);
   }
 
   /** Returns the size of a enum field. */

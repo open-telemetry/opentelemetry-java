@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -253,7 +254,21 @@ public abstract class Serializer implements AutoCloseable {
     writeBytes(field, value);
   }
 
+  /**
+   * Serializes a protobuf {@code bytes} field. Writes all content of the ByteBuffer regardless of
+   * the current position and limit. Does not alter the position or limit of the provided
+   * ByteBuffer.
+   */
+  public void serializeByteBuffer(ProtoFieldInfo field, ByteBuffer value) throws IOException {
+    if (value.capacity() == 0) {
+      return;
+    }
+    writeByteBuffer(field, value);
+  }
+
   public abstract void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException;
+
+  public abstract void writeByteBuffer(ProtoFieldInfo field, ByteBuffer value) throws IOException;
 
   protected abstract void writeStartMessage(ProtoFieldInfo field, int protoMessageSize)
       throws IOException;
