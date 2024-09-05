@@ -61,62 +61,66 @@ public final class GrpcExporter<T extends Marshaler> {
 
     grpcSender.send(
         exportRequest,
-        grpcResponse -> {
-          int statusCode = grpcResponse.grpcStatusValue();
-
-          if (statusCode == 0) {
-            exporterMetrics.addSuccess(numItems);
-            result.succeed();
-            return;
-          }
-
-          exporterMetrics.addFailed(numItems);
-          switch (grpcResponse.grpcStatusValue()) {
-            case GRPC_STATUS_UNIMPLEMENTED:
-              if (loggedUnimplemented.compareAndSet(false, true)) {
-                GrpcExporterUtil.logUnimplemented(
-                    internalLogger, type, grpcResponse.grpcStatusDescription());
-              }
-              break;
-            case GRPC_STATUS_UNAVAILABLE:
-              logger.log(
-                  Level.SEVERE,
-                  "Failed to export "
-                      + type
-                      + "s. Server is UNAVAILABLE. "
-                      + "Make sure your collector is running and reachable from this network. "
-                      + "Full error message:"
-                      + grpcResponse.grpcStatusDescription());
-              break;
-            default:
-              logger.log(
-                  Level.WARNING,
-                  "Failed to export "
-                      + type
-                      + "s. Server responded with gRPC status code "
-                      + grpcResponse.grpcStatusValue()
-                      + ". Error message: "
-                      + grpcResponse.grpcStatusDescription());
-              break;
-          }
-          result.failExceptionally(FailedExportException.grpcFailedWithResponse(grpcResponse));
-        },
-        e -> {
-          exporterMetrics.addFailed(numItems);
-          logger.log(
-              Level.SEVERE,
-              "Failed to export "
-                  + type
-                  + "s. The request could not be executed. Error message: "
-                  + e.getMessage(),
-              e);
-          if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "Failed to export " + type + "s. Details follow: " + e);
-          }
-          result.failExceptionally(FailedExportException.grpcFailedExceptionally(e));
-        });
+        grpcResponse -> onResponse(result, numItems, grpcResponse),
+        throwable -> onError(result, numItems, throwable));
 
     return result;
+  }
+
+  private void onResponse(CompletableResultCode result, int numItems, GrpcResponse grpcResponse) {
+    int statusCode = grpcResponse.grpcStatusValue();
+
+    if (statusCode == 0) {
+      exporterMetrics.addSuccess(numItems);
+      result.succeed();
+      return;
+    }
+
+    exporterMetrics.addFailed(numItems);
+    switch (statusCode) {
+      case GRPC_STATUS_UNIMPLEMENTED:
+        if (loggedUnimplemented.compareAndSet(false, true)) {
+          GrpcExporterUtil.logUnimplemented(
+              internalLogger, type, grpcResponse.grpcStatusDescription());
+        }
+        break;
+      case GRPC_STATUS_UNAVAILABLE:
+        logger.log(
+            Level.SEVERE,
+            "Failed to export "
+                + type
+                + "s. Server is UNAVAILABLE. "
+                + "Make sure your collector is running and reachable from this network. "
+                + "Full error message:"
+                + grpcResponse.grpcStatusDescription());
+        break;
+      default:
+        logger.log(
+            Level.WARNING,
+            "Failed to export "
+                + type
+                + "s. Server responded with gRPC status code "
+                + statusCode
+                + ". Error message: "
+                + grpcResponse.grpcStatusDescription());
+        break;
+    }
+    result.failExceptionally(FailedExportException.grpcFailedWithResponse(grpcResponse));
+  }
+
+  private void onError(CompletableResultCode result, int numItems, Throwable e) {
+    exporterMetrics.addFailed(numItems);
+    logger.log(
+        Level.SEVERE,
+        "Failed to export "
+            + type
+            + "s. The request could not be executed. Error message: "
+            + e.getMessage(),
+        e);
+    if (logger.isLoggable(Level.FINEST)) {
+      logger.log(Level.FINEST, "Failed to export " + type + "s. Details follow: " + e);
+    }
+    result.failExceptionally(FailedExportException.grpcFailedExceptionally(e));
   }
 
   public CompletableResultCode shutdown() {

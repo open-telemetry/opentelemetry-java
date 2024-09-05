@@ -80,11 +80,11 @@ public final class UpstreamGrpcSender<T extends Marshaler> implements GrpcSender
           @Override
           public void onFailure(Throwable t) {
             Status status = fromThrowable(t);
-            if (status != null) {
+            if (status == null) {
+              onError.accept(t);
+            } else {
               onResponse.accept(
                   GrpcResponse.create(status.getCode().value(), status.getDescription()));
-            } else {
-              onError.accept(t);
             }
           }
         },
