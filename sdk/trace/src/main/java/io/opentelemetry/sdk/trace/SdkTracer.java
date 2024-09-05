@@ -19,7 +19,7 @@ final class SdkTracer implements ExtendedTracer {
 
   private final TracerSharedState sharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
-  private final boolean tracerEnabled;
+  private volatile boolean tracerEnabled;
 
   SdkTracer(
       TracerSharedState sharedState,
