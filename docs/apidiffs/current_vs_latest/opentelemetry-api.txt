@@ -1,2 +1,41 @@
 Comparing source compatibility of opentelemetry-api-1.42.0-SNAPSHOT.jar against opentelemetry-api-1.41.0.jar
-No changes.
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.KeyValue  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getKey()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.Value<?> getValue()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.KeyValue of(java.lang.String, io.opentelemetry.api.common.Value<?>)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.Value  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String asString()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.ValueType getType()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Object getValue()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.Value<java.lang.String> of(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.Value<java.lang.Boolean> of(boolean)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.Value<java.lang.Long> of(long)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.Value<java.lang.Double> of(double)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.Value<java.nio.ByteBuffer> of(byte[])
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.Value<java.util.List<io.opentelemetry.api.common.Value<?>>> of(io.opentelemetry.api.common.Value[]<?>)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.Value<java.util.List<io.opentelemetry.api.common.Value<?>>> of(java.util.List<io.opentelemetry.api.common.Value<?>>)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.Value<java.util.List<io.opentelemetry.api.common.KeyValue>> of(io.opentelemetry.api.common.KeyValue[])
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.Value<java.util.List<io.opentelemetry.api.common.KeyValue>> of(java.util.Map<java.lang.String,io.opentelemetry.api.common.Value<?>>)
++++  NEW ENUM: PUBLIC(+) FINAL(+) io.opentelemetry.api.common.ValueType  (compatible)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.lang.constant.Constable
+	+++  NEW INTERFACE: java.lang.Comparable
+	+++  NEW INTERFACE: java.io.Serializable
+	+++  NEW SUPERCLASS: java.lang.Enum
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ValueType BYTES
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ValueType ARRAY
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ValueType KEY_VALUE_LIST
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ValueType STRING
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ValueType DOUBLE
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ValueType BOOLEAN
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ValueType LONG
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.ValueType valueOf(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.ValueType[] values()
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.logs.LogRecordBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.LogRecordBuilder setBody(io.opentelemetry.api.common.Value<?>)

@@ -15,7 +15,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
   "com.squareup.okio:okio-bom:3.9.0", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.66.0",
-  "io.netty:netty-bom:4.1.112.Final",
+  "io.netty:netty-bom:4.1.113.Final",
   "io.zipkin.brave:brave-bom:6.0.3",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.4.0",
   "org.assertj:assertj-bom:3.26.3",
@@ -25,7 +25,7 @@ val DEPENDENCY_BOMS = listOf(
 )
 
 val autoValueVersion = "1.11.0"
-val errorProneVersion = "2.29.2"
+val errorProneVersion = "2.31.0"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
@@ -81,7 +81,7 @@ val DEPENDENCIES = listOf(
   "org.junit-pioneer:junit-pioneer:1.9.1",
   "org.mock-server:mockserver-netty:5.15.0:shaded",
   "org.skyscreamer:jsonassert:1.5.3",
-  "com.android.tools:desugar_jdk_libs:2.0.4",
+  "com.android.tools:desugar_jdk_libs:2.1.2",
 )
 
 javaPlatform {

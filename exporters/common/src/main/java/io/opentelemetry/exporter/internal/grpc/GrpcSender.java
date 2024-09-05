@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.internal.grpc;
 
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * An exporter of a messages encoded by {@link Marshaler} using the gRPC wire format.
@@ -17,7 +17,7 @@ import java.util.function.BiConsumer;
  */
 public interface GrpcSender<T extends Marshaler> {
 
-  void send(T request, Runnable onSuccess, BiConsumer<GrpcResponse, Throwable> onError);
+  void send(T request, Consumer<GrpcResponse> onResponse, Consumer<Throwable> onError);
 
   /** Shutdown the sender. */
   CompletableResultCode shutdown();

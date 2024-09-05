@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.internal.http;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterMetrics;
+import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -62,49 +63,55 @@ public final class HttpExporter<T extends Marshaler> {
     httpSender.send(
         exportRequest,
         exportRequest.getBinarySerializedSize(),
-        httpResponse -> {
-          int statusCode = httpResponse.statusCode();
-
-          if (statusCode >= 200 && statusCode < 300) {
-            exporterMetrics.addSuccess(numItems);
-            result.succeed();
-            return;
-          }
-
-          exporterMetrics.addFailed(numItems);
-
-          byte[] body = null;
-          try {
-            body = httpResponse.responseBody();
-          } catch (IOException ex) {
-            logger.log(Level.FINE, "Unable to obtain response body", ex);
-          }
-
-          String status = extractErrorStatus(httpResponse.statusMessage(), body);
-
-          logger.log(
-              Level.WARNING,
-              "Failed to export "
-                  + type
-                  + "s. Server responded with HTTP status code "
-                  + statusCode
-                  + ". Error message: "
-                  + status);
-          result.fail();
-        },
-        e -> {
-          exporterMetrics.addFailed(numItems);
-          logger.log(
-              Level.SEVERE,
-              "Failed to export "
-                  + type
-                  + "s. The request could not be executed. Full error message: "
-                  + e.getMessage(),
-              e);
-          result.fail();
-        });
+        httpResponse -> onResponse(result, numItems, httpResponse),
+        throwable -> onError(result, numItems, throwable));
 
     return result;
+  }
+
+  private void onResponse(
+      CompletableResultCode result, int numItems, HttpSender.Response httpResponse) {
+    int statusCode = httpResponse.statusCode();
+
+    if (statusCode >= 200 && statusCode < 300) {
+      exporterMetrics.addSuccess(numItems);
+      result.succeed();
+      return;
+    }
+
+    exporterMetrics.addFailed(numItems);
+
+    byte[] body = null;
+    try {
+      body = httpResponse.responseBody();
+    } catch (IOException ex) {
+      logger.log(Level.FINE, "Unable to obtain response body", ex);
+    }
+
+    String status = extractErrorStatus(httpResponse.statusMessage(), body);
+
+    logger.log(
+        Level.WARNING,
+        "Failed to export "
+            + type
+            + "s. Server responded with HTTP status code "
+            + statusCode
+            + ". Error message: "
+            + status);
+
+    result.failExceptionally(FailedExportException.httpFailedWithResponse(httpResponse));
+  }
+
+  private void onError(CompletableResultCode result, int numItems, Throwable e) {
+    exporterMetrics.addFailed(numItems);
+    logger.log(
+        Level.SEVERE,
+        "Failed to export "
+            + type
+            + "s. The request could not be executed. Full error message: "
+            + e.getMessage(),
+        e);
+    result.failExceptionally(FailedExportException.httpFailedExceptionally(e));
   }
 
   public CompletableResultCode shutdown() {

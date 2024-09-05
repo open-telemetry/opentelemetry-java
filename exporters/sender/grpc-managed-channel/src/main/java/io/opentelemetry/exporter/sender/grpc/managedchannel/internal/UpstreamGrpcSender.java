@@ -11,6 +11,8 @@ import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.grpc.Status;
+import io.grpc.StatusException;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.exporter.internal.grpc.GrpcResponse;
 import io.opentelemetry.exporter.internal.grpc.GrpcSender;
@@ -20,9 +22,9 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Nullable;
 
 /**
  * A {@link GrpcSender} which uses the upstream grpc-java library.
@@ -50,7 +52,7 @@ public final class UpstreamGrpcSender<T extends Marshaler> implements GrpcSender
   }
 
   @Override
-  public void send(T request, Runnable onSuccess, BiConsumer<GrpcResponse, Throwable> onError) {
+  public void send(T request, Consumer<GrpcResponse> onResponse, Consumer<Throwable> onError) {
     MarshalerServiceStub<T, ?, ?> stub = this.stub;
     if (timeoutNanos > 0) {
       stub = stub.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
@@ -71,17 +73,39 @@ public final class UpstreamGrpcSender<T extends Marshaler> implements GrpcSender
         new FutureCallback<Object>() {
           @Override
           public void onSuccess(@Nullable Object unused) {
-            onSuccess.run();
+            onResponse.accept(
+                GrpcResponse.create(Status.OK.getCode().value(), Status.OK.getDescription()));
           }
 
           @Override
           public void onFailure(Throwable t) {
-            Status status = Status.fromThrowable(t);
-            onError.accept(
-                GrpcResponse.create(status.getCode().value(), status.getDescription()), t);
+            Status status = fromThrowable(t);
+            if (status == null) {
+              onError.accept(t);
+            } else {
+              onResponse.accept(
+                  GrpcResponse.create(status.getCode().value(), status.getDescription()));
+            }
           }
         },
         MoreExecutors.directExecutor());
+  }
+
+  /**
+   * Copy of {@link Status#fromThrowable(Throwable)} which returns null instead of {@link
+   * Status#UNKNOWN} when no status can be found.
+   */
+  @Nullable
+  private static Status fromThrowable(Throwable cause) {
+    while (cause != null) {
+      if (cause instanceof StatusException) {
+        return ((StatusException) cause).getStatus();
+      } else if (cause instanceof StatusRuntimeException) {
+        return ((StatusRuntimeException) cause).getStatus();
+      }
+      cause = cause.getCause();
+    }
+    return null;
   }
 
   @Override

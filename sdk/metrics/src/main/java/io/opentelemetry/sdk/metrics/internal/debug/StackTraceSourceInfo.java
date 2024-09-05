@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.debug;
 
+import java.util.Locale;
+
 /** Diagnostic information derived from stack traces. */
 final class StackTraceSourceInfo implements SourceInfo {
 
@@ -19,7 +21,7 @@ final class StackTraceSourceInfo implements SourceInfo {
     if (stackTraceElements.length > 0) {
       for (StackTraceElement e : stackTraceElements) {
         if (isInterestingStackTrace(e)) {
-          return String.format("%s:%d", e.getFileName(), e.getLineNumber());
+          return String.format(Locale.ROOT, "%s:%d", e.getFileName(), e.getLineNumber());
         }
       }
     }

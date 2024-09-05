@@ -5,19 +5,29 @@
 
 package io.opentelemetry.sdk.autoconfigure.spi.internal;
 
+import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 
 /**
  * Provides configured instances of SDK extension components. {@link ComponentProvider} allows SDK
  * extension components which are not part of the core SDK to be referenced in file based
  * configuration.
  *
+ * <p>NOTE: when {@link #getType()} is {@link Resource}, the {@link #getName()} is not (currently)
+ * used, and {@link #create(StructuredConfigProperties)} is (currently) called with an empty {@link
+ * StructuredConfigProperties}.
+ *
  * @param <T> the type of the SDK extension component. See {@link #getType()}. Supported values
- *     include: {@link SpanExporter}, {@link MetricExporter}, {@link LogRecordExporter}.
+ *     include: {@link SpanExporter}, {@link MetricExporter}, {@link LogRecordExporter}, {@link
+ *     SpanProcessor}, {@link LogRecordProcessor}, {@link TextMapPropagator}, {@link Sampler},
+ *     {@link Resource}.
  */
-// TODO: add support for Sampler, LogRecordProcessor, SpanProcessor, MetricReader
 public interface ComponentProvider<T> {
 
   /**
@@ -31,7 +41,8 @@ public interface ComponentProvider<T> {
    * instances of a custom span exporter for the "acme" protocol, the name might be "acme".
    *
    * <p>This name MUST not be the same as any other component provider name which returns components
-   * of the same {@link #getType() type}.
+   * of the same {@link #getType() type}. In other words, {@link #getType()} and name form a
+   * composite key uniquely identifying the provider.
    */
   String getName();
 

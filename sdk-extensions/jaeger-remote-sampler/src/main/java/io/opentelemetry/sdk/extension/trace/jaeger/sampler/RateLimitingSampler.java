@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * {@link RateLimitingSampler} sampler uses a leaky bucket rate limiter to ensure that traces are
@@ -73,7 +74,7 @@ class RateLimitingSampler implements Sampler {
   }
 
   private static String decimalFormat(double value) {
-    DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance();
+    DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance(Locale.ROOT);
     decimalFormatSymbols.setDecimalSeparator('.');
 
     DecimalFormat decimalFormat = new DecimalFormat("0.00", decimalFormatSymbols);
