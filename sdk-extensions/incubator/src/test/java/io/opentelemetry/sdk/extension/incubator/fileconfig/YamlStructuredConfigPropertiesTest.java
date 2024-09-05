@@ -33,6 +33,7 @@ class YamlStructuredConfigPropertiesTest {
           + "  int_key: 1\n"
           + "  float_key: 1.1\n"
           + "  bool_key: true\n"
+          + "  null_key:\n"
           + "  str_list_key: [val1, val2]\n"
           + "  int_list_key: [1, 2]\n"
           + "  float_list_key: [1.1, 2.2]\n"
@@ -90,6 +91,7 @@ class YamlStructuredConfigPropertiesTest {
                 "int_key",
                 "float_key",
                 "bool_key",
+                "null_key",
                 "str_list_key",
                 "int_list_key",
                 "float_list_key",
@@ -101,7 +103,10 @@ class YamlStructuredConfigPropertiesTest {
     assertThat(otherProps.getInt("int_key")).isEqualTo(1);
     assertThat(otherProps.getLong("int_key")).isEqualTo(1);
     assertThat(otherProps.getDouble("float_key")).isEqualTo(1.1);
-    assertThat(otherProps.getBoolean("bool_key")).isTrue();
+    assertThat(otherProps.getString("null_key")).isNull();
+    assertThat(otherProps.getInt("null_key")).isNull();
+    assertThat(otherProps.getLong("null_key")).isNull();
+    assertThat(otherProps.getBoolean("null_key")).isNull();
     assertThat(otherProps.getScalarList("str_list_key", String.class))
         .isEqualTo(Arrays.asList("val1", "val2"));
     assertThat(otherProps.getScalarList("int_list_key", Long.class))
