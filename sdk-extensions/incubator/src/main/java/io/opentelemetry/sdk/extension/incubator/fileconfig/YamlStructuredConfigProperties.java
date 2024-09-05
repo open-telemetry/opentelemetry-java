@@ -64,7 +64,7 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
     for (Map.Entry<String, Object> entry : properties.entrySet()) {
       String key = entry.getKey();
       Object value = entry.getValue();
-      if (isPrimitive(value)) {
+      if (isPrimitive(value) || value == null) {
         simpleEntries.put(key, value);
         continue;
       }
@@ -283,7 +283,7 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
   }
 
   /** Return a map representation of the data. */
-  Map<String, Object> toMap() {
+  public Map<String, Object> toMap() {
     Map<String, Object> result = new HashMap<>(simpleEntries);
     listEntries.forEach(
         (key, value) ->
