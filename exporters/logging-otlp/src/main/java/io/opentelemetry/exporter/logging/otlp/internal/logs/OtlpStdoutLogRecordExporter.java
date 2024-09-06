@@ -43,7 +43,7 @@ public class OtlpStdoutLogRecordExporter implements LogRecordExporter {
   /** Returns a new {@link OtlpStdoutLogRecordExporterBuilder}. */
   @SuppressWarnings("SystemOut")
   public static OtlpStdoutLogRecordExporterBuilder builder() {
-    return new OtlpStdoutLogRecordExporterBuilder(LOGGER).setOutputStream(System.out);
+    return new OtlpStdoutLogRecordExporterBuilder(LOGGER).setOutput(System.out);
   }
 
   @Override

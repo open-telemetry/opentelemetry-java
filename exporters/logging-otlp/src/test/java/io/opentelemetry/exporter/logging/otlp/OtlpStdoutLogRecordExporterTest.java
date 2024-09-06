@@ -39,9 +39,9 @@ class OtlpStdoutLogRecordExporterTest
     OtlpStdoutLogRecordExporterBuilder builder =
         OtlpStdoutLogRecordExporter.builder().setWrapperJsonObject(wrapperJsonObject);
     if (outputStream != null) {
-      builder.setOutputStream(outputStream);
+      builder.setOutput(outputStream);
     } else {
-      builder.setLogger(Logger.getLogger(exporterClass.getName()));
+      builder.setOutput(Logger.getLogger(exporterClass.getName()));
     }
     return builder.build();
   }
