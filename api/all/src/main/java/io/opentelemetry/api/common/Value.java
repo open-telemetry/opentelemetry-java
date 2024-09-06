@@ -32,6 +32,7 @@ import java.util.Map;
  * io.opentelemetry.api.logs.LogRecordBuilder#setBody(Value)}.
  *
  * @param <T> the type. See {@link #getValue()} for description of types.
+ * @since 1.42.0
  */
 public interface Value<T> {
 

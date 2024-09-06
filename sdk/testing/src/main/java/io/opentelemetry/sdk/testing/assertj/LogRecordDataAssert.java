@@ -160,7 +160,11 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
     return hasBody(Value.of(body));
   }
 
-  /** Asserts the log has the given body. */
+  /**
+   * Asserts the log has the given body.
+   *
+   * @since 1.42.0
+   */
   public LogRecordDataAssert hasBody(@Nullable Value<?> body) {
     isNotNull();
     if (!Objects.equals(actual.getBodyValue(), body)) {
@@ -177,6 +181,8 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
   /**
    * Asserts the log has a body of type {@link ValueType#KEY_VALUE_LIST}, containing a field with
    * the given {@code key} and String {@code value}.
+   *
+   * @since 1.42.0
    */
   public LogRecordDataAssert hasBodyField(String key, String value) {
     return hasBodyField(key, Value.of(value));
@@ -185,6 +191,8 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
   /**
    * Asserts the log has a body of type {@link ValueType#KEY_VALUE_LIST}, containing a field with
    * the given {@code key} and long {@code value}.
+   *
+   * @since 1.42.0
    */
   public LogRecordDataAssert hasBodyField(String key, long value) {
     return hasBodyField(key, Value.of(value));
@@ -193,6 +201,8 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
   /**
    * Asserts the log has a body of type {@link ValueType#KEY_VALUE_LIST}, containing a field with
    * the given {@code key} and double {@code value}.
+   *
+   * @since 1.42.0
    */
   public LogRecordDataAssert hasBodyField(String key, double value) {
     return hasBodyField(key, Value.of(value));
@@ -201,6 +211,8 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
   /**
    * Asserts the log has a body of type {@link ValueType#KEY_VALUE_LIST}, containing a field with
    * the given {@code key} and boolean {@code value}.
+   *
+   * @since 1.42.0
    */
   public LogRecordDataAssert hasBodyField(String key, boolean value) {
     return hasBodyField(key, Value.of(value));
@@ -209,6 +221,8 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
   /**
    * Asserts the log has a body of type {@link ValueType#KEY_VALUE_LIST}, containing a field with
    * the given {@code key} and list of String {@code value}s.
+   *
+   * @since 1.42.0
    */
   public LogRecordDataAssert hasBodyField(String key, String... value) {
     List<Value<?>> values = new ArrayList<>(value.length);
@@ -221,6 +235,8 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
   /**
    * Asserts the log has a body of type {@link ValueType#KEY_VALUE_LIST}, containing a field with
    * the given {@code key} and list of long {@code value}s.
+   *
+   * @since 1.42.0
    */
   public LogRecordDataAssert hasBodyField(String key, long... value) {
     List<Value<?>> values = new ArrayList<>(value.length);
@@ -233,6 +249,8 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
   /**
    * Asserts the log has a body of type {@link ValueType#KEY_VALUE_LIST}, containing a field with
    * the given {@code key} and list of double {@code value}s.
+   *
+   * @since 1.42.0
    */
   public LogRecordDataAssert hasBodyField(String key, double... value) {
     List<Value<?>> values = new ArrayList<>(value.length);
@@ -245,6 +263,8 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
   /**
    * Asserts the log has a body of type {@link ValueType#KEY_VALUE_LIST}, containing a field with
    * the given {@code key} and list of boolean {@code value}s.
+   *
+   * @since 1.42.0
    */
   public LogRecordDataAssert hasBodyField(String key, boolean... value) {
     List<Value<?>> values = new ArrayList<>(value.length);
@@ -257,6 +277,8 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
   /**
    * Asserts the log has a body of type {@link ValueType#KEY_VALUE_LIST}, containing a field with
    * the given {@code key} and {@code value}.
+   *
+   * @since 1.42.0
    */
   @SuppressWarnings({"unchecked"})
   public LogRecordDataAssert hasBodyField(String key, Value<?> value) {
@@ -275,6 +297,8 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
   /**
    * Asserts the log has a body of type {@link ValueType#KEY_VALUE_LIST}, containing a field with
    * the given attribute {@code key} and {@code value}.
+   *
+   * @since 1.42.0
    */
   @SuppressWarnings({"unchecked"})
   public <T> LogRecordDataAssert hasBodyField(AttributeKey<T> key, T value) {

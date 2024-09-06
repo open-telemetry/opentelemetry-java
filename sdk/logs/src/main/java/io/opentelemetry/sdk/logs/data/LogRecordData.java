@@ -59,7 +59,11 @@ public interface LogRecordData {
   @Deprecated
   Body getBody();
 
-  /** Returns the {@link Value} representation of the log body, of null if unset. */
+  /**
+   * Returns the {@link Value} representation of the log body, of null if unset.
+   *
+   * @since 1.42.0
+   */
   @Nullable
   @SuppressWarnings("deprecation") // Default impl uses deprecated code for backwards compatibility
   default Value<?> getBodyValue() {
