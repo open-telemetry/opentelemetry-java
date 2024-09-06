@@ -16,9 +16,14 @@ class IgnoreCloseOutputStream extends FilterOutputStream {
     super(outputStream);
   }
 
+  @SuppressWarnings("SystemOut")
   @Override
   public void close() throws IOException {
-    // we don't want to close the underlying stream, because this breaks System.out and System.err
-    flush();
+    if (out == System.out || out == System.err) {
+      // close() on System.out and System.err breaks the output stream, so we ignore it
+      flush();
+    } else {
+      super.close();
+    }
   }
 }
