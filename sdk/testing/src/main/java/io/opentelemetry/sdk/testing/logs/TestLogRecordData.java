@@ -51,6 +51,11 @@ public abstract class TestLogRecordData implements LogRecordData {
         : io.opentelemetry.sdk.logs.data.Body.string(valueBody.asString());
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @since 1.42.0
+   */
   @Override
   @Nullable
   public abstract Value<?> getBodyValue();
@@ -156,7 +161,11 @@ public abstract class TestLogRecordData implements LogRecordData {
       return this;
     }
 
-    /** Set the body. */
+    /**
+     * Set the body.
+     *
+     * @since 1.42.0
+     */
     public abstract Builder setBodyValue(@Nullable Value<?> body);
 
     /** Set the attributes. */

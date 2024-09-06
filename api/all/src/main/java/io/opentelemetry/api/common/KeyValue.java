@@ -9,6 +9,7 @@ package io.opentelemetry.api.common;
  * Key-value pair of {@link String} key and {@link Value} value.
  *
  * @see Value#of(KeyValue...)
+ * @since 1.42.0
  */
 public interface KeyValue {
 

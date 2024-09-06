@@ -74,7 +74,11 @@ public interface LogRecordBuilder {
    */
   LogRecordBuilder setBody(String body);
 
-  /** Set the body {@link Value}. */
+  /**
+   * Set the body {@link Value}.
+   *
+   * @since 1.42.0
+   */
   default LogRecordBuilder setBody(Value<?> body) {
     setBody(body.asString());
     return this;
