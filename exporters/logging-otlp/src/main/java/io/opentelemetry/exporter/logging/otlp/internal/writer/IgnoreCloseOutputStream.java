@@ -9,7 +9,10 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-/** An {@link OutputStream} that ignores calls to {@link #close()}. */
+/**
+ * An {@link OutputStream} that ignores calls to {@link #close()}. if the underlying stream is
+ * {@link System#out} or {@link System#err}.
+ */
 class IgnoreCloseOutputStream extends FilterOutputStream {
 
   public IgnoreCloseOutputStream(OutputStream outputStream) {
