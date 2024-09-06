@@ -20,6 +20,5 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
 
-  testImplementation("com.google.guava:guava")
   testImplementation("org.skyscreamer:jsonassert")
 }

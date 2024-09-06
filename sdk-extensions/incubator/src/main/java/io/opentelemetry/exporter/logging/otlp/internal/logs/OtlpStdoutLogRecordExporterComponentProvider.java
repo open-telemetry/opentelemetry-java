@@ -25,7 +25,7 @@ public class OtlpStdoutLogRecordExporterComponentProvider
 
   @Override
   public String getName() {
-    return "otlp-stdout";
+    return "otlp/stdout";
   }
 
   @Override
