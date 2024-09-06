@@ -23,7 +23,7 @@
 
 #### Exporters
 
-* Suppress zipkin exporters instrumentations
+* Suppress zipkin exporter instrumentation
   ([#6552](https://github.com/open-telemetry/opentelemetry-java/pull/6552))
 * OTLP exporters return status code exceptions via CompletableResultCode in GrpcExporter and
   HttpExporter.
