@@ -11,7 +11,7 @@ extensions:
   health_check:
 
 exporters:
-  logging:
+  debug:
 
 service:
   extensions: [health_check]
@@ -19,4 +19,4 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging]
+      exporters: [debug]
