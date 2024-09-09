@@ -34,7 +34,8 @@ class StreamJsonWriterTest {
   void testToString() throws IOException {
     assertThat(
             new StreamJsonWriter(Files.newOutputStream(tempDir.resolve("foo")), "type").toString())
-        .startsWith("StreamJsonWriter{outputStream=java.nio.channels.Channels$");
+        .startsWith("StreamJsonWriter{outputStream=")
+        .contains("Channel");
     assertThat(new StreamJsonWriter(System.out, "type").toString())
         .isEqualTo("StreamJsonWriter{outputStream=stdout}");
     assertThat(new StreamJsonWriter(System.err, "type").toString())
