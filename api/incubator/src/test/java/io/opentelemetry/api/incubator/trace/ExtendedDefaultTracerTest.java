@@ -8,7 +8,7 @@ package io.opentelemetry.api.incubator.trace;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.trace.AbstractDefaultTracerTest;
+import io.opentelemetry.api.testing.internal.AbstractDefaultTracerTest;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import org.junit.jupiter.api.Test;
