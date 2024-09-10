@@ -104,8 +104,8 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     }
   }
 
-  @SuppressWarnings("SystemOut")
   @BeforeAll
+  @SuppressWarnings("SystemOut")
   static void setUpStatic() {
     systemOut = System.out;
     System.setOut(SYSTEM_OUT_PRINT_STREAM);
@@ -233,7 +233,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
                     .filter(
                         p -> {
                           ComponentProvider<?> c = (ComponentProvider<?>) p;
-                          return "otlp/stdout".equals(c.getName())
+                          return "otlp-stdout".equals(c.getName())
                               && c.getType().equals(componentProviderType);
                         })
                     .findFirst()

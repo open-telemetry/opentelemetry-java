@@ -29,7 +29,6 @@ dependencies {
   api("com.fasterxml.jackson.core:jackson-annotations")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
   implementation(project(":sdk-extensions:autoconfigure"))
-  implementation(project(":exporters:logging-otlp"))
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
@@ -44,7 +43,6 @@ dependencies {
   testImplementation("com.linecorp.armeria:armeria-junit5")
 
   testImplementation("com.google.guava:guava-testlib")
-  testImplementation("org.skyscreamer:jsonassert")
 }
 
 // The following tasks download the JSON Schema files from open-telemetry/opentelemetry-configuration and generate classes from the type definitions which are used with jackson-databind to parse JSON / YAML to the configuration schema.

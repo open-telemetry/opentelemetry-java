@@ -1,1 +1,2 @@
 io.opentelemetry.exporter.logging.otlp.internal.logs.LoggingLogRecordExporterProvider
+io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporterProvider
