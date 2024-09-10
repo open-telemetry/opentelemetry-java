@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.logs;
 
+import io.opentelemetry.api.testing.internal.AbstractDefaultLoggerTest;
+
 class DefaultLoggerTest extends AbstractDefaultLoggerTest {
 
   @Override

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.trace;
+package io.opentelemetry.api.testing.internal;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,12 +11,19 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link DefaultTracer}. */
+/** Unit tests for No-op {@link Tracer}. */
 // Need to suppress warnings for MustBeClosed because Android 14 does not support
 // try-with-resources.
 @SuppressWarnings("MustBeClosedChecker")
@@ -56,6 +63,7 @@ public abstract class AbstractDefaultTracerTest {
   }
 
   @Test
+  @SuppressWarnings("NullAway")
   void spanContextPropagationExplicitParent() {
     assertThat(
             defaultTracer
@@ -109,6 +117,7 @@ public abstract class AbstractDefaultTracerTest {
   }
 
   @Test
+  @SuppressWarnings("NullAway")
   void doNotCrash_NoopImplementation() {
     assertThatCode(
             () -> {

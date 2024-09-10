@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.metrics;
 
+import io.opentelemetry.api.testing.internal.AbstractDefaultMeterTest;
+
 public class DefaultMeterTest extends AbstractDefaultMeterTest {
 
   @Override
