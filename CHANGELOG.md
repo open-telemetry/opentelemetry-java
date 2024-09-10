@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### API
+
+* Revert `java-test-fixtures` plugin to remove test dependencies from `pom.xml`.
+  ([#6695](https://github.com/open-telemetry/opentelemetry-java/pull/6695))
+
 ## Version 1.42.0 (2024-09-06)
 
 ### API
