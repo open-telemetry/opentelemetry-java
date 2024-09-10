@@ -105,7 +105,7 @@ public final class TracesAssert
     hasSize(assertionsList.size());
     // Avoid zipSatisfy - https://github.com/assertj/assertj-core/issues/2300
     for (int i = 0; i < assertionsList.size(); i++) {
-      assertionsList.get(i).accept(new TraceAssert(actual.get(i)));
+      assertionsList.get(i).accept(new TraceAssert(actual.get(i)).describedAs("Trace " + i));
     }
     return this;
   }
