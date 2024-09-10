@@ -49,7 +49,7 @@ class LogRecordExporterConfigurationTest {
     assertThatThrownBy(() -> configureExporter("otlp/stdout", spiExportersManager))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage(
-            "otel.logs.exporter set to \"otlp/stdout\" but opentelemetry-sdk-extensions-incubator"
+            "otel.logs.exporter set to \"otlp/stdout\" but opentelemetry-exporter-logging-otlp"
                 + " not found on classpath. Make sure to add it as a dependency.");
     assertThatThrownBy(() -> configureExporter("otlp", spiExportersManager))
         .isInstanceOf(ConfigurationException.class)
