@@ -7,6 +7,7 @@ package io.opentelemetry.api.testing.internal;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -20,7 +21,6 @@ import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for No-op {@link Tracer}. */
@@ -119,7 +119,7 @@ public abstract class AbstractDefaultTracerTest {
   @Test
   @SuppressWarnings("NullAway")
   void doNotCrash_NoopImplementation() {
-    Assertions.assertThatCode(
+    assertThatCode(
             () -> {
               SpanBuilder spanBuilder = defaultTracer.spanBuilder(null);
               spanBuilder.setSpanKind(null);

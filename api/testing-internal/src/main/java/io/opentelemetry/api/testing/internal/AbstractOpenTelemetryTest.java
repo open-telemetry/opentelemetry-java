@@ -6,6 +6,7 @@
 package io.opentelemetry.api.testing.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
@@ -13,7 +14,6 @@ import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -91,7 +91,7 @@ public abstract class AbstractOpenTelemetryTest {
   @Test
   void setThenSet() {
     setOpenTelemetry();
-    Assertions.assertThatThrownBy(() -> GlobalOpenTelemetry.set(getOpenTelemetry()))
+    assertThatThrownBy(() -> GlobalOpenTelemetry.set(getOpenTelemetry()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("GlobalOpenTelemetry.set has already been called")
         .hasStackTraceContaining("setOpenTelemetry");
@@ -101,7 +101,7 @@ public abstract class AbstractOpenTelemetryTest {
   void getThenSet() {
     assertThat(getGlobalOpenTelemetry().getClass().getName())
         .isEqualTo("io.opentelemetry.api.DefaultOpenTelemetry");
-    Assertions.assertThatThrownBy(() -> GlobalOpenTelemetry.set(getOpenTelemetry()))
+    assertThatThrownBy(() -> GlobalOpenTelemetry.set(getOpenTelemetry()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("GlobalOpenTelemetry.set has already been called")
         .hasStackTraceContaining("getGlobalOpenTelemetry");
