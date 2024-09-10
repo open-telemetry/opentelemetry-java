@@ -3,11 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api;
+package io.opentelemetry.api.testing.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
@@ -17,8 +19,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-/** Unit tests for {@link OpenTelemetry}. */
+/** Unit tests for No-op {@link OpenTelemetry}. */
 public abstract class AbstractOpenTelemetryTest {
+
   @BeforeAll
   public static void beforeClass() {
     GlobalOpenTelemetry.resetForTest();
@@ -96,7 +99,8 @@ public abstract class AbstractOpenTelemetryTest {
 
   @Test
   void getThenSet() {
-    assertThat(getGlobalOpenTelemetry()).isInstanceOf(DefaultOpenTelemetry.class);
+    assertThat(getGlobalOpenTelemetry().getClass().getName())
+        .isEqualTo("io.opentelemetry.api.DefaultOpenTelemetry");
     assertThatThrownBy(() -> GlobalOpenTelemetry.set(getOpenTelemetry()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("GlobalOpenTelemetry.set has already been called")

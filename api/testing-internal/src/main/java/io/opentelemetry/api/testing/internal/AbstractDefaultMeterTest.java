@@ -3,16 +3,28 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.metrics;
+package io.opentelemetry.api.testing.internal;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.DoubleCounter;
+import io.opentelemetry.api.metrics.DoubleGauge;
+import io.opentelemetry.api.metrics.DoubleHistogram;
+import io.opentelemetry.api.metrics.DoubleUpDownCounter;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.LongGauge;
+import io.opentelemetry.api.metrics.LongHistogram;
+import io.opentelemetry.api.metrics.LongUpDownCounter;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
+import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link DefaultMeter}. */
+/** Unit tests for No-op {@link Meter}. */
 @SuppressLogger()
 public abstract class AbstractDefaultMeterTest {
   private final Meter meter = getMeter();
@@ -245,6 +257,7 @@ public abstract class AbstractDefaultMeterTest {
   }
 
   @Test
+  @SuppressWarnings("NullAway")
   void noopBatchCallback_doesNotThrow() {
     meter.batchCallback(() -> {}, null);
   }

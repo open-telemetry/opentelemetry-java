@@ -8,9 +8,9 @@ package io.opentelemetry.api.incubator.logs;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.logs.AbstractDefaultLoggerTest;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerProvider;
+import io.opentelemetry.api.testing.internal.AbstractDefaultLoggerTest;
 import org.junit.jupiter.api.Test;
 
 class ExtendedDefaultLoggerTest extends AbstractDefaultLoggerTest {

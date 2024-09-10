@@ -7,6 +7,7 @@ package io.opentelemetry.api;
 
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.testing.internal.AbstractOpenTelemetryTest;
 import io.opentelemetry.api.trace.TracerProvider;
 
 class OpenTelemetryTest extends AbstractOpenTelemetryTest {

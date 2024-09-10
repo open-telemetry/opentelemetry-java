@@ -7,7 +7,6 @@ package io.opentelemetry.api.incubator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.AbstractOpenTelemetryTest;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.incubator.logs.ExtendedDefaultLoggerProvider;
 import io.opentelemetry.api.incubator.logs.ExtendedLogger;
@@ -17,6 +16,7 @@ import io.opentelemetry.api.incubator.trace.ExtendedDefaultTracerProvider;
 import io.opentelemetry.api.incubator.trace.ExtendedTracer;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.testing.internal.AbstractOpenTelemetryTest;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import org.junit.jupiter.api.Test;

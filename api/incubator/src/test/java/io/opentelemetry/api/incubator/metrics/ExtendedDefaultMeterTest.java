@@ -8,9 +8,9 @@ package io.opentelemetry.api.incubator.metrics;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.metrics.AbstractDefaultMeterTest;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.testing.internal.AbstractDefaultMeterTest;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
