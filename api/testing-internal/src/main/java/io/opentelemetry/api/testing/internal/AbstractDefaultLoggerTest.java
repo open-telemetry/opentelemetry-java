@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.logs;
+package io.opentelemetry.api.testing.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -11,12 +11,15 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.api.logs.LoggerProvider;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link DefaultLogger}. */
+/** Unit tests for No-op {@link Logger}. */
 public abstract class AbstractDefaultLoggerTest {
 
   protected abstract LoggerProvider getLoggerProvider();
