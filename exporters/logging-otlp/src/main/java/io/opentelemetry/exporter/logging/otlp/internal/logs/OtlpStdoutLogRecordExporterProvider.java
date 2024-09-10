@@ -24,6 +24,6 @@ public class OtlpStdoutLogRecordExporterProvider implements ConfigurableLogRecor
 
   @Override
   public String getName() {
-    return "otlp-stdout";
+    return "experimental-otlp/stdout";
   }
 }

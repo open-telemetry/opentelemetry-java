@@ -20,7 +20,7 @@ class OtlpStdoutLogRecordExporterTest
 
   public OtlpStdoutLogRecordExporterTest() {
     super(
-        "otlp-stdout",
+        "experimental-otlp/stdout",
         TestDataExporter.forLogs(),
         OtlpStdoutLogRecordExporter.class,
         ConfigurableLogRecordExporterProvider.class,

@@ -233,7 +233,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
                     .filter(
                         p -> {
                           ComponentProvider<?> c = (ComponentProvider<?>) p;
-                          return "otlp-stdout".equals(c.getName())
+                          return "experimental-otlp/stdout".equals(c.getName())
                               && c.getType().equals(componentProviderType);
                         })
                     .findFirst()
