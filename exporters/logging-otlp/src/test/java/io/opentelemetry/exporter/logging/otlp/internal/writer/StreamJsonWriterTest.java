@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import java.io.FilterOutputStream;
@@ -45,9 +46,7 @@ class StreamJsonWriterTest {
   @Test
   void errorWriting() throws IOException {
     Marshaler marshaler = mock(Marshaler.class);
-    Mockito.doThrow(new IOException("test"))
-        .when(marshaler)
-        .writeJsonWithoutCloseTo(any(OutputStream.class));
+    Mockito.doThrow(new IOException("test")).when(marshaler).writeJsonTo(any(JsonGenerator.class));
 
     StreamJsonWriter writer = new StreamJsonWriter(System.out, "type");
     writer.write(marshaler);
