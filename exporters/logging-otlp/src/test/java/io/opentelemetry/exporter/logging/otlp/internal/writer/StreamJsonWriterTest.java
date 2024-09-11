@@ -55,7 +55,7 @@ class StreamJsonWriterTest {
   }
 
   @Test
-  void errorFlushing() throws IOException {
+  void errorFlushing() {
     OutputStream outputStream =
         new FilterOutputStream(System.out) {
           @Override
