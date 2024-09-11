@@ -34,7 +34,6 @@ public abstract class Marshaler {
     try (JsonSerializer serializer = new JsonSerializer(generator)) {
       serializer.writeMessageValue(this);
     }
-    ;
   }
 
   /** Marshals into the {@link OutputStream} in proto JSON format. */
