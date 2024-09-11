@@ -139,6 +139,24 @@ public interface Context {
   }
 
   /**
+   * Returns an {@link ScheduledExecutorService} which delegates to the provided {@code
+   * executorService}, wrapping all invocations of {@link ExecutorService} methods such as {@link
+   * ExecutorService#execute(Runnable)} or {@link ExecutorService#submit(Runnable)} with the
+   * {@linkplain Context#current() current context} at the time of invocation.
+   *
+   * <p>This is generally used to create an {@link ScheduledExecutorService} which will forward the
+   * {@link Context} during an invocation to another thread. For example, you may use something like
+   * {@code ScheduledExecutorService dbExecutor = Context.wrapTasks(threadPool)} to ensure calls
+   * like {@code dbExecutor.execute(() -> database.query())} have {@link Context} available on the
+   * thread executing database queries.
+   *
+   * @since 1.43.0
+   */
+  static ScheduledExecutorService taskWrapping(ScheduledExecutorService executorService) {
+    return new CurrentContextScheduledExecutorService(executorService);
+  }
+
+  /**
    * Returns the value stored in this {@link Context} for the given {@link ContextKey}, or {@code
    * null} if there is no value for the key in this context.
    */
