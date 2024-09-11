@@ -14,7 +14,6 @@ import com.google.common.collect.Streams;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporterBuilder;
-import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -48,7 +47,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.event.LoggingEvent;
 
-@SuppressLogger(LogRecordExporter.class)
 class OtlpStdoutLogRecordExporterTest {
 
   private static final ByteArrayOutputStream SYSTEM_OUT_STREAM = new ByteArrayOutputStream();

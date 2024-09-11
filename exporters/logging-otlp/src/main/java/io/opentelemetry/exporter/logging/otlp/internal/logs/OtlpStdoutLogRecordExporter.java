@@ -77,7 +77,7 @@ public class OtlpStdoutLogRecordExporter implements LogRecordExporter {
     if (!isShutdown.compareAndSet(false, true)) {
       logger.log(Level.INFO, "Calling shutdown() multiple times.");
     } else {
-       jsonWriter.close();
+      jsonWriter.close();
     }
     return CompletableResultCode.ofSuccess();
   }
