@@ -39,7 +39,9 @@ class LogRecordExporterConfigurationTest {
     assertThat(
             LogRecordExporterConfiguration.configureExporter("logging-otlp", spiExportersManager))
         .isInstanceOf(OtlpJsonLoggingLogRecordExporter.class);
-    assertThat(LogRecordExporterConfiguration.configureExporter("experimental-otlp/stdout", spiExportersManager))
+    assertThat(
+            LogRecordExporterConfiguration.configureExporter(
+                "experimental-otlp/stdout", spiExportersManager))
         .isInstanceOf(OtlpStdoutLogRecordExporter.class);
     assertThat(LogRecordExporterConfiguration.configureExporter("otlp", spiExportersManager))
         .isInstanceOf(OtlpGrpcLogRecordExporter.class);

@@ -54,6 +54,11 @@ public class LoggerJsonWriter implements JsonWriter {
   }
 
   @Override
+  public CompletableResultCode close() {
+    return CompletableResultCode.ofSuccess();
+  }
+
+  @Override
   public String toString() {
     return "LoggerJsonWriter";
   }

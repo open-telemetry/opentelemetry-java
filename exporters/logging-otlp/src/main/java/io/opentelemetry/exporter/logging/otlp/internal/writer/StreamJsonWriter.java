@@ -24,19 +24,17 @@ public class StreamJsonWriter implements JsonWriter {
   private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
   private final String type;
-  private final OutputStream originalStream;
   private final OutputStream outputStream;
 
   public StreamJsonWriter(OutputStream originalStream, String type) {
-    this.originalStream = originalStream;
-    this.outputStream = new IgnoreCloseOutputStream(originalStream);
+    this.outputStream = originalStream;
     this.type = type;
   }
 
   @Override
   public CompletableResultCode write(Marshaler exportRequest) {
     try {
-      exportRequest.writeJsonTo(outputStream);
+      exportRequest.writeJsonWithoutCloseTo(outputStream);
       return CompletableResultCode.ofSuccess();
     } catch (IOException e) {
       logger.log(Level.WARNING, "Unable to write OTLP JSON " + type, e);
@@ -55,9 +53,25 @@ public class StreamJsonWriter implements JsonWriter {
     }
   }
 
+  @SuppressWarnings("SystemOut")
+  @Override
+  public CompletableResultCode close() {
+    if (outputStream == System.out || outputStream == System.err) {
+      // closing System.out or System.err is not allowed - it breaks the output stream
+      return CompletableResultCode.ofSuccess();
+    }
+    try {
+      outputStream.close();
+      return CompletableResultCode.ofSuccess();
+    } catch (IOException e) {
+      logger.log(Level.WARNING, "Failed to close stream", e);
+      return CompletableResultCode.ofFailure();
+    }
+  }
+
   @Override
   public String toString() {
-    return "StreamJsonWriter{" + "outputStream=" + getName(originalStream) + '}';
+    return "StreamJsonWriter{" + "outputStream=" + getName(outputStream) + '}';
   }
 
   @SuppressWarnings("SystemOut")

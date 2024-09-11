@@ -16,4 +16,6 @@ public interface JsonWriter {
   CompletableResultCode write(Marshaler exportRequest);
 
   CompletableResultCode flush();
+
+  CompletableResultCode close();
 }

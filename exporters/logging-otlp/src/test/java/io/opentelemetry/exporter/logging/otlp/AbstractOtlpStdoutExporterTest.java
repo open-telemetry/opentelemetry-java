@@ -172,8 +172,6 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
   @MethodSource("exportTestCases")
   void exportWithProgrammaticConfig(String name, TestCase testCase)
       throws JSONException, IOException {
-    setUp();
-
     OutputStream outputStream;
     Path file = null;
     switch (testCase.getOutputType()) {

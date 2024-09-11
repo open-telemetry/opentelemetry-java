@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.marshal;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,11 +18,23 @@ import java.io.OutputStream;
  */
 public abstract class Marshaler {
 
+  public static final JsonFactory JSON_FACTORY = new JsonFactory();
+
   /** Marshals into the {@link OutputStream} in proto binary format. */
   public final void writeBinaryTo(OutputStream output) throws IOException {
     try (Serializer serializer = new ProtoSerializer(output)) {
       writeTo(serializer);
     }
+  }
+
+  /** Marshals into the {@link OutputStream} in proto JSON format. */
+  public final void writeJsonWithoutCloseTo(OutputStream output) throws IOException {
+    JsonGenerator generator =
+        JSON_FACTORY.createGenerator(output).disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
+    try (JsonSerializer serializer = new JsonSerializer(generator)) {
+      serializer.writeMessageValue(this);
+    }
+    ;
   }
 
   /** Marshals into the {@link OutputStream} in proto JSON format. */
