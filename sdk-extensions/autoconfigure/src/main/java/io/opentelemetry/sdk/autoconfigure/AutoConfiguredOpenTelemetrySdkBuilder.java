@@ -551,7 +551,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       Object model = parse.invoke(null, fis);
       Class<?> openTelemetryConfiguration =
           Class.forName(
-              "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration");
+              "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel");
       Method create = configurationFactory.getMethod("create", openTelemetryConfiguration);
       OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model);
       Method toConfigProperties =
