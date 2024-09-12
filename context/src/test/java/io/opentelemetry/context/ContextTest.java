@@ -366,6 +366,10 @@ class ContextTest {
     protected ExecutorService wrapped;
     protected AtomicReference<String> value;
 
+    protected ExecutorService wrap(ScheduledExecutorService executorService) {
+      return CAT.wrap(executorService);
+    }
+
     protected ExecutorService wrap(ExecutorService executorService) {
       return CAT.wrap(executorService);
     }
@@ -506,6 +510,30 @@ class ContextTest {
   class CurrentContextWrappingExecutorService extends WrapExecutorService {
     @Override
     protected ExecutorService wrap(ExecutorService executorService) {
+      return Context.taskWrapping(executorService);
+    }
+
+    private Scope scope;
+
+    @BeforeEach
+    // Closed in AfterEach
+    @SuppressWarnings("MustBeClosedChecker")
+    void makeCurrent() {
+      scope = CAT.makeCurrent();
+    }
+
+    @AfterEach
+    void close() {
+      scope.close();
+      scope = null;
+    }
+  }
+
+  @Nested
+  @TestInstance(Lifecycle.PER_CLASS)
+  class CurrentContextWrappingScheduledExecutorService extends WrapExecutorService {
+    @Override
+    protected ExecutorService wrap(ScheduledExecutorService executorService) {
       return Context.taskWrapping(executorService);
     }
 
