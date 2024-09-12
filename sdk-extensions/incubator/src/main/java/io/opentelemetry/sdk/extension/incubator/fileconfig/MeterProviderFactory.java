@@ -8,17 +8,17 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNonNull;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReader;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Selector;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Stream;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.View;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterProviderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SelectorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.StreamModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewModel;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import java.io.Closeable;
 import java.util.List;
 
-final class MeterProviderFactory implements Factory<MeterProvider, SdkMeterProviderBuilder> {
+final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeterProviderBuilder> {
 
   private static final MeterProviderFactory INSTANCE = new MeterProviderFactory();
 
@@ -30,10 +30,10 @@ final class MeterProviderFactory implements Factory<MeterProvider, SdkMeterProvi
 
   @Override
   public SdkMeterProviderBuilder create(
-      MeterProvider model, SpiHelper spiHelper, List<Closeable> closeables) {
+      MeterProviderModel model, SpiHelper spiHelper, List<Closeable> closeables) {
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
 
-    List<MetricReader> readerModels = model.getReaders();
+    List<MetricReaderModel> readerModels = model.getReaders();
     if (readerModels != null) {
       readerModels.forEach(
           readerModel -> {
@@ -45,12 +45,12 @@ final class MeterProviderFactory implements Factory<MeterProvider, SdkMeterProvi
           });
     }
 
-    List<View> viewModels = model.getViews();
+    List<ViewModel> viewModels = model.getViews();
     if (viewModels != null) {
       viewModels.forEach(
           viewModel -> {
-            Selector selector = requireNonNull(viewModel.getSelector(), "view selector");
-            Stream stream = requireNonNull(viewModel.getStream(), "view stream");
+            SelectorModel selector = requireNonNull(viewModel.getSelector(), "view selector");
+            StreamModel stream = requireNonNull(viewModel.getStream(), "view stream");
             builder.registerView(
                 InstrumentSelectorFactory.getInstance().create(selector, spiHelper, closeables),
                 ViewFactory.getInstance().create(stream, spiHelper, closeables));

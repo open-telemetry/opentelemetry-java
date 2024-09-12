@@ -9,20 +9,18 @@ import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporter;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReader;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Prometheus;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReader;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PrometheusModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReaderModel;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.List;
 
-final class MetricReaderFactory
-    implements Factory<
-        io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReader,
-        MetricReader> {
+final class MetricReaderFactory implements Factory<MetricReaderModel, MetricReader> {
 
   private static final MetricReaderFactory INSTANCE = new MetricReaderFactory();
 
@@ -34,12 +32,10 @@ final class MetricReaderFactory
 
   @Override
   public MetricReader create(
-      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReader model,
-      SpiHelper spiHelper,
-      List<Closeable> closeables) {
-    PeriodicMetricReader periodicModel = model.getPeriodic();
+      MetricReaderModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+    PeriodicMetricReaderModel periodicModel = model.getPeriodic();
     if (periodicModel != null) {
-      MetricExporter exporterModel =
+      MetricExporterModel exporterModel =
           requireNonNull(periodicModel.getExporter(), "periodic metric reader exporter");
       io.opentelemetry.sdk.metrics.export.MetricExporter metricExporter =
           MetricExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
@@ -52,11 +48,11 @@ final class MetricReaderFactory
       return FileConfigUtil.addAndReturn(closeables, builder.build());
     }
 
-    PullMetricReader pullModel = model.getPull();
+    PullMetricReaderModel pullModel = model.getPull();
     if (pullModel != null) {
-      MetricExporter exporterModel =
+      MetricExporterModel exporterModel =
           requireNonNull(pullModel.getExporter(), "pull metric reader exporter");
-      Prometheus prometheusModel = exporterModel.getPrometheus();
+      PrometheusModel prometheusModel = exporterModel.getPrometheus();
       if (prometheusModel != null) {
         MetricReader metricReader =
             FileConfigUtil.loadComponent(

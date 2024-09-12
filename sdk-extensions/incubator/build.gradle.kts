@@ -100,6 +100,7 @@ jsonSchema2Pojo {
   // Force java 9+ @Generated annotation, since java 8 @Generated annotation isn't detected by
   // jsonSchema2Pojo and annotation is skipped altogether
   targetVersion = "1.9"
+  classNameSuffix = "Model"
 }
 
 val generateJsonSchema2Pojo = tasks.getByName("generateJsonSchema2Pojo")

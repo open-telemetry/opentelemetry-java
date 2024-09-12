@@ -24,10 +24,10 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.SpanExporterComponentProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Console;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Headers;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Zipkin;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.HeadersModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ZipkinModel;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.io.IOException;
@@ -70,8 +70,8 @@ class SpanExporterFactoryTest {
         SpanExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .SpanExporter()
-                    .withOtlp(new Otlp()),
+                        .SpanExporterModel()
+                    .withOtlp(new OtlpModel()),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(exporter);
@@ -122,13 +122,13 @@ class SpanExporterFactoryTest {
         SpanExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .SpanExporter()
+                        .SpanExporterModel()
                     .withOtlp(
-                        new Otlp()
+                        new OtlpModel()
                             .withProtocol("http/protobuf")
                             .withEndpoint("http://example:4318")
                             .withHeaders(
-                                new Headers()
+                                new HeadersModel()
                                     .withAdditionalProperty("key1", "value1")
                                     .withAdditionalProperty("key2", "value2"))
                             .withCompression("gzip")
@@ -172,8 +172,8 @@ class SpanExporterFactoryTest {
         SpanExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .SpanExporter()
-                    .withConsole(new Console()),
+                        .SpanExporterModel()
+                    .withConsole(new ConsoleModel()),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(exporter);
@@ -194,8 +194,8 @@ class SpanExporterFactoryTest {
         SpanExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .SpanExporter()
-                    .withZipkin(new Zipkin()),
+                        .SpanExporterModel()
+                    .withZipkin(new ZipkinModel()),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(exporter);
@@ -226,9 +226,9 @@ class SpanExporterFactoryTest {
         SpanExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .SpanExporter()
+                        .SpanExporterModel()
                     .withZipkin(
-                        new Zipkin()
+                        new ZipkinModel()
                             .withEndpoint("http://zipkin:9411/v1/v2/spans")
                             .withTimeout(15_000)),
                 spiHelper,
@@ -255,7 +255,7 @@ class SpanExporterFactoryTest {
                 SpanExporterFactory.getInstance()
                     .create(
                         new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                                .SpanExporter()
+                                .SpanExporterModel()
                             .withAdditionalProperty(
                                 "unknown_key", ImmutableMap.of("key1", "value1")),
                         spiHelper,
@@ -272,7 +272,7 @@ class SpanExporterFactoryTest {
         SpanExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .SpanExporter()
+                        .SpanExporterModel()
                     .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
                 spiHelper,
                 new ArrayList<>());

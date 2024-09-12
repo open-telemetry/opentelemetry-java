@@ -9,7 +9,8 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.mockito.Mockito.spy;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Attributes;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributesModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -24,10 +25,9 @@ class ResourceFactoryTest {
     assertThat(
             ResourceFactory.getInstance()
                 .create(
-                    new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                            .Resource()
+                    new ResourceModel()
                         .withAttributes(
-                            new Attributes()
+                            new AttributesModel()
                                 .withServiceName("my-service")
                                 .withAdditionalProperty("key", "val")
                                 // Should override shape attribute from ResourceComponentProvider

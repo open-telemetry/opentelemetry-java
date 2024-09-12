@@ -6,21 +6,22 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimits;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
 import javax.annotation.Nullable;
 
 @AutoValue
 abstract class TracerProviderAndAttributeLimits {
 
   static TracerProviderAndAttributeLimits create(
-      @Nullable AttributeLimits attributeLimits, @Nullable TracerProvider tracerProvider) {
+      @Nullable AttributeLimitsModel attributeLimits,
+      @Nullable TracerProviderModel tracerProvider) {
     return new AutoValue_TracerProviderAndAttributeLimits(attributeLimits, tracerProvider);
   }
 
   @Nullable
-  abstract AttributeLimits getAttributeLimits();
+  abstract AttributeLimitsModel getAttributeLimits();
 
   @Nullable
-  abstract TracerProvider getTracerProvider();
+  abstract TracerProviderModel getTracerProvider();
 }
