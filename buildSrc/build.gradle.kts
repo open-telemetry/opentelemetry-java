@@ -50,6 +50,7 @@ repositories {
 }
 
 dependencies {
+  implementation("biz.aQute.bnd:biz.aQute.bnd.gradle:7.0.0")
   implementation(enforcedPlatform("com.squareup.wire:wire-bom:5.0.0"))
   implementation("com.google.auto.value:auto-value-annotations:1.11.0")
   // When updating, update above in plugins too

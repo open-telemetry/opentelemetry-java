@@ -8,6 +8,7 @@ plugins {
   eclipse
   idea
 
+  id("biz.aQute.bnd.builder")
   id("otel.errorprone-conventions")
   id("otel.jacoco-conventions")
   id("otel.spotless-conventions")
@@ -155,6 +156,8 @@ tasks {
         "Built-JDK" to System.getProperty("java.version"),
         "Implementation-Title" to project.name,
         "Implementation-Version" to project.version,
+        // BND plugin to export the packages as OSGi bundle
+        "-exportcontents" to "!${otelJava.moduleName.get()}.**.internal,${otelJava.moduleName.get()}.*"
       )
     }
   }
