@@ -9,6 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -192,7 +194,7 @@ class ContextTest {
     assertThat(dog).isNotSameAs("dog");
     Context context6 = context5.with(ANIMAL, dog);
     assertThat(context6.get(ANIMAL)).isEqualTo("dog");
-    // We reuse context object when values match by reference, not value.
+    // We reuse the context object when values match by reference, not value.
     assertThat(context6).isNotSameAs(context5);
   }
 
@@ -555,7 +557,7 @@ class ContextTest {
 
   @Test
   void keyToString() {
-    assertThat(ANIMAL.toString()).isEqualTo("animal");
+    assertThat(ANIMAL).hasToString("animal");
   }
 
   @Test
@@ -580,6 +582,7 @@ class ContextTest {
     @Test
     void delegatesCleanupMethods() throws Exception {
       ExecutorService wrapped = CAT.wrap(executor);
+      doNothing().when(executor).shutdown();
       wrapped.shutdown();
       verify(executor).shutdown();
       verifyNoMoreInteractions(executor);
@@ -605,38 +608,63 @@ class ContextTest {
   // a mock.
   @Nested
   @TestInstance(Lifecycle.PER_CLASS)
+  @SuppressWarnings("MockitoDoSetup")
   class DelegatesToScheduledExecutorService {
 
     @Mock private ScheduledExecutorService executor;
-    @Mock private ScheduledFuture scheduledFuture;
+    @Mock private ScheduledFuture<?> scheduledFuture;
 
     @Test
     void delegatesCleanupMethods() throws Exception {
       ScheduledExecutorService wrapped = CAT.wrap(executor);
+
       wrapped.shutdown();
       verify(executor).shutdown();
       verifyNoMoreInteractions(executor);
+
       wrapped.shutdownNow();
       verify(executor).shutdownNow();
       verifyNoMoreInteractions(executor);
+
       when(executor.isShutdown()).thenReturn(true);
       assertThat(wrapped.isShutdown()).isTrue();
       verify(executor).isShutdown();
       verifyNoMoreInteractions(executor);
+
       when(wrapped.isTerminated()).thenReturn(true);
       assertThat(wrapped.isTerminated()).isTrue();
       verify(executor).isTerminated();
       verifyNoMoreInteractions(executor);
+
       when(executor.awaitTermination(anyLong(), any())).thenReturn(true);
-      assertThat(wrapped.awaitTermination(1, TimeUnit.SECONDS)).isTrue();
-      verify(executor).awaitTermination(1, TimeUnit.SECONDS);
+      assertThat(wrapped.awaitTermination(1L, TimeUnit.SECONDS)).isTrue();
+      verify(executor).awaitTermination(1L, TimeUnit.SECONDS);
       verifyNoMoreInteractions(executor);
-      when(executor.schedule(any(Runnable.class), 1, TimeUnit.SECONDS)).thenReturn(scheduledFuture);
-      assertThat((Future<?>) wrapped.schedule(() -> {}, 1, TimeUnit.SECONDS)).isSameAs(scheduledFuture);
-      when(executor.scheduleAtFixedRate(any(Runnable.class), 1, 1, TimeUnit.SECONDS)).thenReturn(scheduledFuture);
-      assertThat((Future<?>) wrapped.scheduleAtFixedRate(() -> {}, 1, 1, TimeUnit.SECONDS)).isSameAs(scheduledFuture);
-      when(executor.scheduleWithFixedDelay(any(Runnable.class), 1, 1, TimeUnit.SECONDS)).thenReturn(scheduledFuture);
-      assertThat((Future<?>) wrapped.scheduleWithFixedDelay(() -> {}, 1, 1, TimeUnit.SECONDS)).isSameAs(scheduledFuture);
+
+      doReturn(scheduledFuture)
+          .when(executor)
+          .schedule(any(Runnable.class), anyLong(), any(TimeUnit.class));
+      assertThat((Future<?>) wrapped.schedule(() -> {}, 1L, TimeUnit.SECONDS))
+          .isSameAs(scheduledFuture);
+      verify(executor).schedule(any(Runnable.class), anyLong(), any(TimeUnit.class));
+      verifyNoMoreInteractions(executor);
+
+      doReturn(scheduledFuture)
+          .when(executor)
+          .scheduleAtFixedRate(any(Runnable.class), anyLong(), anyLong(), any(TimeUnit.class));
+      assertThat((Future<?>) wrapped.scheduleAtFixedRate(() -> {}, 1L, 1L, TimeUnit.SECONDS))
+          .isSameAs(scheduledFuture);
+      verify(executor)
+          .scheduleAtFixedRate(any(Runnable.class), anyLong(), anyLong(), any(TimeUnit.class));
+      verifyNoMoreInteractions(executor);
+
+      doReturn(scheduledFuture)
+          .when(executor)
+          .scheduleWithFixedDelay(any(Runnable.class), anyLong(), anyLong(), any(TimeUnit.class));
+      assertThat((Future<?>) wrapped.scheduleWithFixedDelay(() -> {}, 1L, 1L, TimeUnit.SECONDS))
+          .isSameAs(scheduledFuture);
+      verify(executor)
+          .scheduleWithFixedDelay(any(Runnable.class), anyLong(), anyLong(), any(TimeUnit.class));
       verifyNoMoreInteractions(executor);
     }
   }
