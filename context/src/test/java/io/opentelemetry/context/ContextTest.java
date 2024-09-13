@@ -601,6 +601,46 @@ class ContextTest {
     }
   }
 
+  // We test real context-related above but should test cleanup gets delegated, which is best with
+  // a mock.
+  @Nested
+  @TestInstance(Lifecycle.PER_CLASS)
+  class DelegatesToScheduledExecutorService {
+
+    @Mock private ScheduledExecutorService executor;
+    @Mock private ScheduledFuture scheduledFuture;
+
+    @Test
+    void delegatesCleanupMethods() throws Exception {
+      ScheduledExecutorService wrapped = CAT.wrap(executor);
+      wrapped.shutdown();
+      verify(executor).shutdown();
+      verifyNoMoreInteractions(executor);
+      wrapped.shutdownNow();
+      verify(executor).shutdownNow();
+      verifyNoMoreInteractions(executor);
+      when(executor.isShutdown()).thenReturn(true);
+      assertThat(wrapped.isShutdown()).isTrue();
+      verify(executor).isShutdown();
+      verifyNoMoreInteractions(executor);
+      when(wrapped.isTerminated()).thenReturn(true);
+      assertThat(wrapped.isTerminated()).isTrue();
+      verify(executor).isTerminated();
+      verifyNoMoreInteractions(executor);
+      when(executor.awaitTermination(anyLong(), any())).thenReturn(true);
+      assertThat(wrapped.awaitTermination(1, TimeUnit.SECONDS)).isTrue();
+      verify(executor).awaitTermination(1, TimeUnit.SECONDS);
+      verifyNoMoreInteractions(executor);
+      when(executor.schedule(any(Runnable.class), 1, TimeUnit.SECONDS)).thenReturn(scheduledFuture);
+      assertThat((Future<?>) wrapped.schedule(() -> {}, 1, TimeUnit.SECONDS)).isSameAs(scheduledFuture);
+      when(executor.scheduleAtFixedRate(any(Runnable.class), 1, 1, TimeUnit.SECONDS)).thenReturn(scheduledFuture);
+      assertThat((Future<?>) wrapped.scheduleAtFixedRate(() -> {}, 1, 1, TimeUnit.SECONDS)).isSameAs(scheduledFuture);
+      when(executor.scheduleWithFixedDelay(any(Runnable.class), 1, 1, TimeUnit.SECONDS)).thenReturn(scheduledFuture);
+      assertThat((Future<?>) wrapped.scheduleWithFixedDelay(() -> {}, 1, 1, TimeUnit.SECONDS)).isSameAs(scheduledFuture);
+      verifyNoMoreInteractions(executor);
+    }
+  }
+
   @Nested
   @TestInstance(Lifecycle.PER_CLASS)
   class WrapScheduledExecutorService extends WrapExecutorService {
