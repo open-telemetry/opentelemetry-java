@@ -428,7 +428,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
     ConfigProperties config = getConfig();
 
-    AutoConfiguredOpenTelemetrySdk fromFileConfiguration = maybeConfigureFromFile(config);
+    AutoConfiguredOpenTelemetrySdk fromFileConfiguration =
+        maybeConfigureFromFile(config, spiHelper);
     if (fromFileConfiguration != null) {
       maybeRegisterShutdownHook(fromFileConfiguration.getOpenTelemetrySdk());
       maybeSetAsGlobal(fromFileConfiguration.getOpenTelemetrySdk());
@@ -527,7 +528,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   @Nullable
-  private static AutoConfiguredOpenTelemetrySdk maybeConfigureFromFile(ConfigProperties config) {
+  private static AutoConfiguredOpenTelemetrySdk maybeConfigureFromFile(
+      ConfigProperties config, SpiHelper spiHelper) {
     String otelConfigFile = config.getString("otel.config.file");
     if (otelConfigFile != null && !otelConfigFile.isEmpty()) {
       logger.warning(
@@ -552,8 +554,9 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       Class<?> openTelemetryConfiguration =
           Class.forName(
               "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration");
-      Method create = configurationFactory.getMethod("create", openTelemetryConfiguration);
-      OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model);
+      Method create =
+          configurationFactory.getMethod("create", openTelemetryConfiguration, SpiHelper.class);
+      OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model, spiHelper);
       Method toConfigProperties =
           configurationFactory.getMethod("toConfigProperties", openTelemetryConfiguration);
       StructuredConfigProperties structuredConfigProperties =

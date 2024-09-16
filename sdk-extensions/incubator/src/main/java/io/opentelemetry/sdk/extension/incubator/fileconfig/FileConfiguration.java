@@ -86,10 +86,21 @@ public final class FileConfiguration {
    * @throws ConfigurationException if unable to interpret
    */
   public static OpenTelemetrySdk create(OpenTelemetryConfiguration configurationModel) {
+    return create(configurationModel, SpiHelper.create(FileConfiguration.class.getClassLoader()));
+  }
+
+  /**
+   * Interpret the {@code configurationModel} to create {@link OpenTelemetrySdk} instance
+   * corresponding to the configuration.
+   *
+   * @param configurationModel the configuration model
+   * @return the {@link OpenTelemetrySdk}
+   * @throws ConfigurationException if unable to interpret
+   */
+  public static OpenTelemetrySdk create(
+      OpenTelemetryConfiguration configurationModel, SpiHelper spiHelper) {
     return createAndMaybeCleanup(
-        OpenTelemetryConfigurationFactory.getInstance(),
-        SpiHelper.create(FileConfiguration.class.getClassLoader()),
-        configurationModel);
+        OpenTelemetryConfigurationFactory.getInstance(), spiHelper, configurationModel);
   }
 
   /**
