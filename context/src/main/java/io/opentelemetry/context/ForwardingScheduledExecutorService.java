@@ -5,57 +5,46 @@
 
 package io.opentelemetry.context;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /** A {@link ScheduledExecutorService} that implements methods that don't need {@link Context}. */
-abstract class ForwardingScheduledExecutorService implements ScheduledExecutorService {
+abstract class ForwardingScheduledExecutorService extends ForwardingExecutorService
+    implements ScheduledExecutorService {
 
   private final ScheduledExecutorService delegate;
 
   protected ForwardingScheduledExecutorService(ScheduledExecutorService delegate) {
+    super(delegate);
     this.delegate = delegate;
   }
 
+  @Override
   ScheduledExecutorService delegate() {
     return delegate;
   }
 
   @Override
-  public final void shutdown() {
-    delegate.shutdown();
+  public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
+    return delegate().schedule(command, delay, unit);
   }
 
   @Override
-  public final List<Runnable> shutdownNow() {
-    return delegate.shutdownNow();
+  public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
+    return delegate().schedule(callable, delay, unit);
   }
 
   @Override
-  public final boolean isShutdown() {
-    return delegate.isShutdown();
+  public ScheduledFuture<?> scheduleAtFixedRate(
+      Runnable command, long initialDelay, long period, TimeUnit unit) {
+    return delegate().scheduleAtFixedRate(command, initialDelay, period, unit);
   }
 
   @Override
-  public final boolean isTerminated() {
-    return delegate.isTerminated();
-  }
-
-  @Override
-  public final boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-    return delegate.awaitTermination(timeout, unit);
-  }
-
-  protected static <T> Collection<? extends Callable<T>> wrap(
-      Context context, Collection<? extends Callable<T>> tasks) {
-    List<Callable<T>> wrapped = new ArrayList<>();
-    for (Callable<T> task : tasks) {
-      wrapped.add(context.wrap(task));
-    }
-    return wrapped;
+  public ScheduledFuture<?> scheduleWithFixedDelay(
+      Runnable command, long initialDelay, long delay, TimeUnit unit) {
+    return delegate().scheduleWithFixedDelay(command, initialDelay, delay, unit);
   }
 }
