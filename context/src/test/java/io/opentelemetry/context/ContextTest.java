@@ -667,7 +667,7 @@ class ContextTest {
     }
 
     @Test
-    void scheduleAtFixedRate() throws Exception {
+    void scheduleAtFixedRate() {
       LongAdder longAdder = new LongAdder();
       Runnable runnable =
           () -> {
@@ -676,14 +676,21 @@ class ContextTest {
           };
       Future<?> future = wrapped.scheduleAtFixedRate(runnable, 1L, 2L, TimeUnit.NANOSECONDS);
       assertThat(future).isNotNull();
-      Thread.sleep(5L);
-      future.cancel(true);
+      await()
+          .await()
+          .untilAsserted(
+              () -> {
+                if (!future.isCancelled()) {
+                  future.cancel(true);
+                }
+                assertThat(longAdder.intValue()).isGreaterThan(1);
+              });
       assertThat(longAdder.intValue()).isGreaterThan(1);
       assertThat(value).hasValue("cat");
     }
 
     @Test
-    void scheduleWithFixedDelay() throws Exception {
+    void scheduleWithFixedDelay() {
       LongAdder longAdder = new LongAdder();
       Runnable runnable =
           () -> {
@@ -692,9 +699,15 @@ class ContextTest {
           };
       Future<?> future = wrapped.scheduleWithFixedDelay(runnable, 1L, 2L, TimeUnit.NANOSECONDS);
       assertThat(future).isNotNull();
-      Thread.sleep(5L);
-      future.cancel(true);
-      assertThat(longAdder.intValue()).isGreaterThan(1);
+      await()
+          .await()
+          .untilAsserted(
+              () -> {
+                if (!future.isCancelled()) {
+                  future.cancel(true);
+                }
+                assertThat(longAdder.intValue()).isGreaterThan(1);
+              });
       assertThat(value).hasValue("cat");
     }
   }
