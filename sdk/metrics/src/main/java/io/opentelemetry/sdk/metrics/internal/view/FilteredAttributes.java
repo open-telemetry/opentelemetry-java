@@ -31,30 +31,15 @@ import javax.annotation.Nullable;
  * also true for the default attributes implementation.
  */
 @SuppressWarnings("unchecked")
-final class FilteredAttributes implements Attributes {
-
-  private static final int BITS_PER_INTEGER = 32;
+abstract class FilteredAttributes implements Attributes {
 
   // Backing source data from ImmutableKeyValuePairs.data. This array MUST NOT be mutated.
   private final Object[] sourceData;
-  // The bits of filteredIndices track whether the first 32 key-values of sourceData should be
-  // excluded in the output. A bit equal to 1 indicates the sourceData key at i*2 should be
-  // excluded. overflowFilteredIndices is used when more than 32 key-value pairs are present in
-  // sourceData.
-  private final int filteredIndices;
-  @Nullable private final BitSet overflowFilteredIndices;
   private final int hashcode;
   private final int size;
 
-  private FilteredAttributes(
-      Object[] sourceData,
-      int filteredIndices,
-      @Nullable BitSet overflowFilteredIndices,
-      int hashcode,
-      int size) {
+  private FilteredAttributes(Object[] sourceData, int hashcode, int size) {
     this.sourceData = sourceData;
-    this.filteredIndices = filteredIndices;
-    this.overflowFilteredIndices = overflowFilteredIndices;
     this.hashcode = hashcode;
     this.size = size;
   }
@@ -78,25 +63,24 @@ final class FilteredAttributes implements Attributes {
       throw new IllegalStateException(
           "Expected ImmutableKeyValuePairs based implementation of Attributes. This is a programming error.");
     }
-    // Compute filteredIndices (and overflowIndices if needed) during initialization. Compute
+    // Compute filteredIndices (and filteredIndicesBitSet if needed) during initialization. Compute
     // hashcode at the same time to avoid iteration later.
     Object[] sourceData = ((ImmutableKeyValuePairs<?, ?>) source).getData();
     int filteredIndices = 0;
-    BitSet overflowFilteredIndices =
-        source.size() > BITS_PER_INTEGER ? new BitSet(source.size() - BITS_PER_INTEGER) : null;
+    BitSet filteredIndicesBitSet =
+        source.size() > SmallFilteredAttributes.BITS_PER_INTEGER ? new BitSet(source.size()) : null;
     int hashcode = 1;
     int size = 0;
     for (int i = 0; i < sourceData.length; i += 2) {
       int filterIndex = i / 2;
       // If the sourceData key isn't present in includedKeys, record the exclusion in
-      // filteredIndices (or
-      // overflowFilteredIndices based on the index).
+      // filteredIndices or filteredIndicesBitSet (depending on size)
       if (!includedKeys.contains(sourceData[i])) {
         // Record
-        if (filterIndex < BITS_PER_INTEGER) {
-          filteredIndices = filteredIndices | (1 << filterIndex);
+        if (filteredIndicesBitSet != null) {
+          filteredIndicesBitSet.set(filterIndex);
         } else {
-          overflowFilteredIndices.set(filterIndex - BITS_PER_INTEGER);
+          filteredIndices = filteredIndices | (1 << filterIndex);
         }
       } else { // The key-value is included in the output, record in the hashcode and size.
         hashcode = 31 * hashcode + sourceData[i].hashCode();
@@ -108,8 +92,50 @@ final class FilteredAttributes implements Attributes {
     if (size == 0) {
       return Attributes.empty();
     }
-    return new FilteredAttributes(
-        sourceData, filteredIndices, overflowFilteredIndices, hashcode, size);
+    return filteredIndicesBitSet != null
+        ? new RegularFilteredAttributes(sourceData, hashcode, size, filteredIndicesBitSet)
+        : new SmallFilteredAttributes(sourceData, hashcode, size, filteredIndices);
+  }
+
+  /**
+   * Implementation that relies on the source having less than {@link #BITS_PER_INTEGER} attributes,
+   * and storing entry filter status in the bits of an integer.
+   */
+  private static class SmallFilteredAttributes extends FilteredAttributes {
+
+    private static final int BITS_PER_INTEGER = 32;
+
+    private final int filteredIndices;
+
+    private SmallFilteredAttributes(
+        Object[] sourceData, int hashcode, int size, int filteredIndices) {
+      super(sourceData, hashcode, size);
+      this.filteredIndices = filteredIndices;
+    }
+
+    @Override
+    boolean includeIndexInOutput(int sourceIndex) {
+      return (filteredIndices & (1 << (sourceIndex / 2))) == 0;
+    }
+  }
+
+  /**
+   * Implementation that can handle attributes of arbitrary size by storing filter status in a
+   * {@link BitSet}.
+   */
+  private static class RegularFilteredAttributes extends FilteredAttributes {
+
+    private final BitSet bitSet;
+
+    private RegularFilteredAttributes(Object[] sourceData, int hashcode, int size, BitSet bitSet) {
+      super(sourceData, hashcode, size);
+      this.bitSet = bitSet;
+    }
+
+    @Override
+    boolean includeIndexInOutput(int sourceIndex) {
+      return !bitSet.get(sourceIndex / 2);
+    }
   }
 
   private static Attributes convertToStandardImplementation(Attributes source) {
@@ -189,7 +215,7 @@ final class FilteredAttributes implements Attributes {
     // FilteredAttributes is used for a key in a map, it must be used for all the keys. Note, this
     // same requirement exists for the default Attributes implementation - you can not mix
     // implementations.
-    if (object == null || getClass() != object.getClass()) {
+    if (object == null || !(object instanceof FilteredAttributes)) {
       return false;
     }
 
@@ -254,12 +280,5 @@ final class FilteredAttributes implements Attributes {
     return joiner.toString();
   }
 
-  @SuppressWarnings("NullAway")
-  private boolean includeIndexInOutput(int sourceIndex) {
-    int bitIndex = sourceIndex / 2;
-    if (bitIndex < BITS_PER_INTEGER) {
-      return (filteredIndices & (1 << bitIndex)) == 0;
-    }
-    return !overflowFilteredIndices.get(bitIndex - BITS_PER_INTEGER);
-  }
+  abstract boolean includeIndexInOutput(int sourceIndex);
 }
