@@ -11,7 +11,7 @@ import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Attributes;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributesModel;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Stream;
@@ -24,7 +24,7 @@ class AttributesFactoryTest {
 
   @ParameterizedTest
   @MethodSource("invalidAttributes")
-  void create_InvalidAttributes(Attributes model, String expectedMessage) {
+  void create_InvalidAttributes(AttributesModel model, String expectedMessage) {
     assertThatThrownBy(
             () ->
                 AttributesFactory.getInstance()
@@ -36,16 +36,16 @@ class AttributesFactoryTest {
   private static Stream<Arguments> invalidAttributes() {
     return Stream.of(
         Arguments.of(
-            new Attributes().withAdditionalProperty("key", null),
+            new AttributesModel().withAdditionalProperty("key", null),
             "Error processing attribute with key \"key\": unexpected null value"),
         Arguments.of(
-            new Attributes().withAdditionalProperty("key", new Object()),
+            new AttributesModel().withAdditionalProperty("key", new Object()),
             "Error processing attribute with key \"key\": unrecognized value type java.lang.Object"),
         Arguments.of(
-            new Attributes().withAdditionalProperty("key", Arrays.asList(1L, 1)),
+            new AttributesModel().withAdditionalProperty("key", Arrays.asList(1L, 1)),
             "Error processing attribute with key \"key\": expected value entries to be of type class java.lang.Long but found entry with type class java.lang.Integer"),
         Arguments.of(
-            new Attributes().withAdditionalProperty("key", Arrays.asList(1L, null)),
+            new AttributesModel().withAdditionalProperty("key", Arrays.asList(1L, null)),
             "Error processing attribute with key \"key\": unexpected null element in value"));
   }
 
@@ -54,7 +54,7 @@ class AttributesFactoryTest {
     assertThat(
             AttributesFactory.getInstance()
                 .create(
-                    new Attributes()
+                    new AttributesModel()
                         .withServiceName("my-service")
                         .withAdditionalProperty("strKey", "val")
                         .withAdditionalProperty("longKey", 1L)

@@ -22,8 +22,9 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordExporterComponentProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Headers;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.HeadersModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.io.Closeable;
 import java.io.IOException;
@@ -67,8 +68,8 @@ class LogRecordExporterFactoryTest {
         LogRecordExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .LogRecordExporter()
-                    .withOtlp(new Otlp()),
+                        .LogRecordExporterModel()
+                    .withOtlp(new OtlpModel()),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(exporter);
@@ -122,13 +123,13 @@ class LogRecordExporterFactoryTest {
         LogRecordExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .LogRecordExporter()
+                        .LogRecordExporterModel()
                     .withOtlp(
-                        new Otlp()
+                        new OtlpModel()
                             .withProtocol("http/protobuf")
                             .withEndpoint("http://example:4318")
                             .withHeaders(
-                                new Headers()
+                                new HeadersModel()
                                     .withAdditionalProperty("key1", "value1")
                                     .withAdditionalProperty("key2", "value2"))
                             .withCompression("gzip")
@@ -171,7 +172,7 @@ class LogRecordExporterFactoryTest {
                 LogRecordExporterFactory.getInstance()
                     .create(
                         new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                                .LogRecordExporter()
+                                .LogRecordExporterModel()
                             .withAdditionalProperty(
                                 "unknown_key", ImmutableMap.of("key1", "value1")),
                         spiHelper,
@@ -187,8 +188,7 @@ class LogRecordExporterFactoryTest {
     LogRecordExporter logRecordExporter =
         LogRecordExporterFactory.getInstance()
             .create(
-                new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .LogRecordExporter()
+                new LogRecordExporterModel()
                     .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
                 spiHelper,
                 new ArrayList<>());

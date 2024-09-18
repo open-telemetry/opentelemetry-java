@@ -9,18 +9,17 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.JaegerRemote;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBased;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceIdRatioBased;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.JaegerRemoteModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBasedModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceIdRatioBasedModel;
 import io.opentelemetry.sdk.trace.samplers.ParentBasedSamplerBuilder;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 
-final class SamplerFactory
-    implements Factory<
-        io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sampler, Sampler> {
+final class SamplerFactory implements Factory<SamplerModel, Sampler> {
 
   private static final SamplerFactory INSTANCE = new SamplerFactory();
 
@@ -31,17 +30,14 @@ final class SamplerFactory
   }
 
   @Override
-  public Sampler create(
-      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sampler model,
-      SpiHelper spiHelper,
-      List<Closeable> closeables) {
+  public Sampler create(SamplerModel model, SpiHelper spiHelper, List<Closeable> closeables) {
     if (model.getAlwaysOn() != null) {
       return Sampler.alwaysOn();
     }
     if (model.getAlwaysOff() != null) {
       return Sampler.alwaysOff();
     }
-    TraceIdRatioBased traceIdRatioBasedModel = model.getTraceIdRatioBased();
+    TraceIdRatioBasedModel traceIdRatioBasedModel = model.getTraceIdRatioBased();
     if (traceIdRatioBasedModel != null) {
       Double ratio = traceIdRatioBasedModel.getRatio();
       if (ratio == null) {
@@ -49,7 +45,7 @@ final class SamplerFactory
       }
       return Sampler.traceIdRatioBased(ratio);
     }
-    ParentBased parentBasedModel = model.getParentBased();
+    ParentBasedModel parentBasedModel = model.getParentBased();
     if (parentBasedModel != null) {
       Sampler root =
           parentBasedModel.getRoot() == null
@@ -77,7 +73,7 @@ final class SamplerFactory
       return builder.build();
     }
 
-    JaegerRemote jaegerRemoteModel = model.getJaegerRemote();
+    JaegerRemoteModel jaegerRemoteModel = model.getJaegerRemote();
     if (jaegerRemoteModel != null) {
       model.getAdditionalProperties().put("jaeger_remote", jaegerRemoteModel);
     }

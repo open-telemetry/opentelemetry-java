@@ -6,21 +6,21 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimits;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimits;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimitsModel;
 import javax.annotation.Nullable;
 
 @AutoValue
 abstract class LogRecordLimitsAndAttributeLimits {
 
   static LogRecordLimitsAndAttributeLimits create(
-      @Nullable AttributeLimits attributeLimits, @Nullable LogRecordLimits spanLimits) {
+      @Nullable AttributeLimitsModel attributeLimits, @Nullable LogRecordLimitsModel spanLimits) {
     return new AutoValue_LogRecordLimitsAndAttributeLimits(attributeLimits, spanLimits);
   }
 
   @Nullable
-  abstract AttributeLimits getAttributeLimits();
+  abstract AttributeLimitsModel getAttributeLimits();
 
   @Nullable
-  abstract LogRecordLimits getLogRecordLimits();
+  abstract LogRecordLimitsModel getLogRecordLimits();
 }

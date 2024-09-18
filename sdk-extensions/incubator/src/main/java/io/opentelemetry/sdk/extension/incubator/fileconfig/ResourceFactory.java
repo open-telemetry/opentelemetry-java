@@ -10,7 +10,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Attributes;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributesModel;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -21,7 +21,8 @@ import java.util.stream.Collectors;
 
 final class ResourceFactory
     implements Factory<
-        io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Resource, Resource> {
+        io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel,
+        Resource> {
 
   private static final StructuredConfigProperties EMPTY_CONFIG =
       FileConfiguration.toConfigProperties(Collections.emptyMap());
@@ -35,7 +36,7 @@ final class ResourceFactory
 
   @Override
   public Resource create(
-      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Resource model,
+      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel model,
       SpiHelper spiHelper,
       List<Closeable> closeables) {
     Resource result = Resource.getDefault();
@@ -45,7 +46,7 @@ final class ResourceFactory
       result = result.merge(resourceProviderResource);
     }
 
-    Attributes attributesModel = model.getAttributes();
+    AttributesModel attributesModel = model.getAttributes();
     if (attributesModel != null) {
       result =
           result.toBuilder()

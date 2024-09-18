@@ -11,12 +11,12 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Attributes;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributesModel;
 import java.io.Closeable;
 import java.util.List;
 
 final class AttributesFactory
-    implements Factory<Attributes, io.opentelemetry.api.common.Attributes> {
+    implements Factory<AttributesModel, io.opentelemetry.api.common.Attributes> {
 
   private static final AttributesFactory INSTANCE = new AttributesFactory();
 
@@ -28,7 +28,7 @@ final class AttributesFactory
 
   @Override
   public io.opentelemetry.api.common.Attributes create(
-      Attributes model, SpiHelper spiHelper, List<Closeable> closeables) {
+      AttributesModel model, SpiHelper spiHelper, List<Closeable> closeables) {
     AttributesBuilder builder = io.opentelemetry.api.common.Attributes.builder();
 
     String serviceName = model.getServiceName();

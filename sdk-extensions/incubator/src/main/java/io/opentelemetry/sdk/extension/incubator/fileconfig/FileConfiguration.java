@@ -14,8 +14,8 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sampler;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,12 +68,12 @@ public final class FileConfiguration {
   private FileConfiguration() {}
 
   /**
-   * Combines {@link #parse(InputStream)} and {@link #create(OpenTelemetryConfiguration)}.
+   * Combines {@link #parse(InputStream)} and {@link #create(OpenTelemetryConfigurationModel)}.
    *
    * @throws ConfigurationException if unable to parse or interpret
    */
   public static OpenTelemetrySdk parseAndCreate(InputStream inputStream) {
-    OpenTelemetryConfiguration configurationModel = parse(inputStream);
+    OpenTelemetryConfigurationModel configurationModel = parse(inputStream);
     return create(configurationModel);
   }
 
@@ -85,7 +85,7 @@ public final class FileConfiguration {
    * @return the {@link OpenTelemetrySdk}
    * @throws ConfigurationException if unable to interpret
    */
-  public static OpenTelemetrySdk create(OpenTelemetryConfiguration configurationModel) {
+  public static OpenTelemetrySdk create(OpenTelemetryConfigurationModel configurationModel) {
     return createAndMaybeCleanup(
         OpenTelemetryConfigurationFactory.getInstance(),
         SpiHelper.create(FileConfiguration.class.getClassLoader()),
@@ -93,14 +93,14 @@ public final class FileConfiguration {
   }
 
   /**
-   * Parse the {@code configuration} YAML and return the {@link OpenTelemetryConfiguration}.
+   * Parse the {@code configuration} YAML and return the {@link OpenTelemetryConfigurationModel}.
    *
    * <p>Before parsing, environment variable substitution is performed as described in {@link
    * EnvSubstitutionConstructor}.
    *
    * @throws ConfigurationException if unable to parse
    */
-  public static OpenTelemetryConfiguration parse(InputStream configuration) {
+  public static OpenTelemetryConfigurationModel parse(InputStream configuration) {
     try {
       return parse(configuration, System.getenv());
     } catch (RuntimeException e) {
@@ -109,10 +109,10 @@ public final class FileConfiguration {
   }
 
   // Visible for testing
-  static OpenTelemetryConfiguration parse(
+  static OpenTelemetryConfigurationModel parse(
       InputStream configuration, Map<String, String> environmentVariables) {
     Object yamlObj = loadYaml(configuration, environmentVariables);
-    return MAPPER.convertValue(yamlObj, OpenTelemetryConfiguration.class);
+    return MAPPER.convertValue(yamlObj, OpenTelemetryConfigurationModel.class);
   }
 
   // Visible for testing
@@ -128,7 +128,8 @@ public final class FileConfiguration {
    * @param model the configuration model
    * @return a generic {@link StructuredConfigProperties} representation of the model
    */
-  public static StructuredConfigProperties toConfigProperties(OpenTelemetryConfiguration model) {
+  public static StructuredConfigProperties toConfigProperties(
+      OpenTelemetryConfigurationModel model) {
     return toConfigProperties((Object) model);
   }
 
@@ -150,18 +151,18 @@ public final class FileConfiguration {
   }
 
   /**
-   * Create a {@link Sampler} from the {@code samplerModel} representing the sampler config.
+   * Create a {@link SamplerModel} from the {@code samplerModel} representing the sampler config.
    *
    * <p>This is used when samplers are composed, with one sampler accepting one or more additional
    * samplers as config properties. The {@link ComponentProvider} implementation can call this to
-   * configure a delegate {@link Sampler} from the {@link StructuredConfigProperties} corresponding
-   * to a particular config property.
+   * configure a delegate {@link SamplerModel} from the {@link StructuredConfigProperties}
+   * corresponding to a particular config property.
    */
   // TODO(jack-berg): add create methods for all SDK extension components supported by
   // ComponentProvider
   public static io.opentelemetry.sdk.trace.samplers.Sampler createSampler(
       StructuredConfigProperties genericSamplerModel) {
-    Sampler samplerModel = convertToModel(genericSamplerModel, Sampler.class);
+    SamplerModel samplerModel = convertToModel(genericSamplerModel, SamplerModel.class);
     return createAndMaybeCleanup(
         SamplerFactory.getInstance(),
         SpiHelper.create(FileConfiguration.class.getClassLoader()),

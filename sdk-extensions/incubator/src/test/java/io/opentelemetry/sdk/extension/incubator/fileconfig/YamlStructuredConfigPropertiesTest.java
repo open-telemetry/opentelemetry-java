@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -58,7 +58,7 @@ class YamlStructuredConfigPropertiesTest {
 
   @BeforeEach
   void setup() {
-    OpenTelemetryConfiguration configuration =
+    OpenTelemetryConfigurationModel configuration =
         FileConfiguration.parse(
             new ByteArrayInputStream(extendedSchema.getBytes(StandardCharsets.UTF_8)));
     structuredConfigProps = FileConfiguration.toConfigProperties(configuration);

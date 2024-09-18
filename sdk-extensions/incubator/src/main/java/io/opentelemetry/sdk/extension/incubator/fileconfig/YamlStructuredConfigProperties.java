@@ -10,7 +10,7 @@ import static java.util.stream.Collectors.toList;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,7 +54,7 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
    * com.fasterxml.jackson.databind.ObjectMapper}), and have values which are scalars, lists of
    * scalars, lists of maps, and maps.
    *
-   * @see FileConfiguration#toConfigProperties(OpenTelemetryConfiguration)
+   * @see FileConfiguration#toConfigProperties(OpenTelemetryConfigurationModel)
    */
   @SuppressWarnings("unchecked")
   static YamlStructuredConfigProperties create(Map<String, Object> properties) {

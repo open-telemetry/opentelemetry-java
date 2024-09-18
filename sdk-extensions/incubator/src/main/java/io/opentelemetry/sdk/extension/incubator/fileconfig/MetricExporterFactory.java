@@ -9,16 +9,14 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 
-final class MetricExporterFactory
-    implements Factory<
-        io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporter,
-        MetricExporter> {
+final class MetricExporterFactory implements Factory<MetricExporterModel, MetricExporter> {
 
   private static final MetricExporterFactory INSTANCE = new MetricExporterFactory();
 
@@ -30,10 +28,8 @@ final class MetricExporterFactory
 
   @Override
   public MetricExporter create(
-      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporter model,
-      SpiHelper spiHelper,
-      List<Closeable> closeables) {
-    OtlpMetric otlpModel = model.getOtlp();
+      MetricExporterModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+    OtlpMetricModel otlpModel = model.getOtlp();
     if (otlpModel != null) {
       model.getAdditionalProperties().put("otlp", otlpModel);
     }
