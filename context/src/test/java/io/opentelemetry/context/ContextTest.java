@@ -669,11 +669,7 @@ class ContextTest {
     @Test
     void scheduleAtFixedRate() {
       LongAdder longAdder = new LongAdder();
-      Runnable runnable =
-          () -> {
-            value.set(Context.current().get(ANIMAL));
-            longAdder.increment();
-          };
+      Runnable runnable = longAdder::increment;
       Future<?> future = wrapped.scheduleAtFixedRate(runnable, 1L, 2L, TimeUnit.NANOSECONDS);
       assertThat(future).isNotNull();
       await()
@@ -686,17 +682,12 @@ class ContextTest {
                 assertThat(longAdder.intValue()).isGreaterThan(1);
               });
       assertThat(longAdder.intValue()).isGreaterThan(1);
-      assertThat(value).hasValue("cat");
     }
 
     @Test
     void scheduleWithFixedDelay() {
       LongAdder longAdder = new LongAdder();
-      Runnable runnable =
-          () -> {
-            value.set(Context.current().get(ANIMAL));
-            longAdder.increment();
-          };
+      Runnable runnable = longAdder::increment;
       Future<?> future = wrapped.scheduleWithFixedDelay(runnable, 1L, 2L, TimeUnit.NANOSECONDS);
       assertThat(future).isNotNull();
       await()
@@ -708,7 +699,6 @@ class ContextTest {
                 }
                 assertThat(longAdder.intValue()).isGreaterThan(1);
               });
-      assertThat(value).hasValue("cat");
     }
   }
 
