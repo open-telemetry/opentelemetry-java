@@ -146,6 +146,13 @@ uses [google-java-format](https://github.com/google/google-java-format) library:
     synchronized (lock) { ... }
   }
   ```
+* Don't
+  use [gradle test fixtures](https://docs.gradle.org/current/userguide/java_testing.html#sec:java_test_fixtures) (
+  i.e. `java-test-fixtures` plugin) to reuse code for internal testing. The test fixtures plugin has
+  side effects where test dependencies are added to the `pom.xml` and publishes an
+  extra `*-test-fixtures.jar` artifact which is unnecessary for internal testing. Instead, create a
+  new `*:testing-internal` module and omit the `otel.java-conventions`. For example,
+  see [/exporters/otlp/testing-internal](./exporters/otlp/testing-internal).
 
 If you notice any practice being applied in the project consistently that isn't listed here, please
 consider a pull request to add it.

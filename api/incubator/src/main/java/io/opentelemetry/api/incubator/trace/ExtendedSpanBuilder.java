@@ -29,13 +29,6 @@ public interface ExtendedSpanBuilder extends SpanBuilder {
    * <p>The span context will be extracted from the <code>carrier</code>, which you usually get from
    * HTTP headers of the metadata of a message you're processing.
    *
-   * <p>A typical usage would be: <code>
-   * ExtendedTracer.create(tracer)
-   * .setSpanKind(SpanKind.SERVER)
-   * .setParentFrom(propagators, carrier)
-   * .run("my-span", () -> { ... });
-   * </code>
-   *
    * @param propagators provide the propagators from {@link OpenTelemetry#getPropagators()}
    * @param carrier the string map where to extract the span context from
    */
