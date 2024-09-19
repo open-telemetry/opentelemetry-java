@@ -11,6 +11,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -121,7 +122,7 @@ class ContextTest {
   }
 
   @Test
-  public void closingScopeWhenNotActiveIsNoopAndLogged() {
+  void closingScopeWhenNotActiveIsNoopAndLogged() {
     Context initial = Context.current();
     Context context = initial.with(ANIMAL, "cat");
     try (Scope scope = context.makeCurrent()) {
@@ -140,7 +141,7 @@ class ContextTest {
 
   @SuppressWarnings("MustBeClosedChecker")
   @Test
-  public void closeScopeIsIdempotent() {
+  void closeScopeIsIdempotent() {
     Context initial = Context.current();
     Context context1 = Context.root().with(ANIMAL, "cat");
     Scope scope1 = context1.makeCurrent();
@@ -191,8 +192,7 @@ class ContextTest {
     assertThat(context5).isSameAs(context4);
 
     String dog = new String("dog");
-    assertThat(dog).isEqualTo("dog");
-    assertThat(dog).isNotSameAs("dog");
+    assertThat(dog).isEqualTo("dog").isNotSameAs("dog");
     Context context6 = context5.with(ANIMAL, dog);
     assertThat(context6.get(ANIMAL)).isEqualTo("dog");
     // We reuse the context object when values match by reference, not value.
@@ -237,7 +237,7 @@ class ContextTest {
   void wrapFunction() {
     AtomicReference<String> value = new AtomicReference<>();
     Function<String, String> callback =
-        (a) -> {
+        a -> {
           value.set(Context.current().get(ANIMAL));
           return "foo";
         };
@@ -276,7 +276,7 @@ class ContextTest {
     AtomicReference<String> value = new AtomicReference<>();
     AtomicBoolean consumed = new AtomicBoolean();
     Consumer<String> callback =
-        (a) -> {
+        a -> {
           value.set(Context.current().get(ANIMAL));
           consumed.set(true);
         };
@@ -867,7 +867,7 @@ class ContextTest {
 
   @Test
   void emptyContext() {
-    assertThat(Context.root().get(new HashCollidingKey())).isEqualTo(null);
+    assertThat(Context.root().get(new HashCollidingKey())).isNull();
   }
 
   @Test
@@ -888,6 +888,20 @@ class ContextTest {
 
     assertThat(twoKeys.get(wine)).isEqualTo("boone's farm");
     assertThat(twoKeys.get(cheese)).isEqualTo("whiz");
+  }
+
+  @Test
+  void doNotWrapExecutorService() {
+    ExecutorService executor = mock(CurrentContextExecutorService.class);
+    ExecutorService wrapped = Context.taskWrapping(executor);
+    assertThat(wrapped).isSameAs(executor);
+  }
+
+  @Test
+  void doNotWrapScheduledExecutorService() {
+    ScheduledExecutorService executor = mock(CurrentContextScheduledExecutorService.class);
+    ScheduledExecutorService wrapped = Context.taskWrapping(executor);
+    assertThat(wrapped).isSameAs(executor);
   }
 
   @SuppressWarnings("HashCodeToString")

@@ -135,6 +135,9 @@ public interface Context {
    * @since 1.1.0
    */
   static ExecutorService taskWrapping(ExecutorService executorService) {
+    if (executorService instanceof CurrentContextExecutorService) {
+      return executorService;
+    }
     return new CurrentContextExecutorService(executorService);
   }
 
@@ -153,6 +156,9 @@ public interface Context {
    * @since 1.43.0
    */
   static ScheduledExecutorService taskWrapping(ScheduledExecutorService executorService) {
+    if (executorService instanceof CurrentContextScheduledExecutorService) {
+      return executorService;
+    }
     return new CurrentContextScheduledExecutorService(executorService);
   }
 
