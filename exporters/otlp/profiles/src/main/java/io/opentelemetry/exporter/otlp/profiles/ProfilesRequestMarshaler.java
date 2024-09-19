@@ -23,7 +23,7 @@ import java.util.Collection;
  */
 public final class ProfilesRequestMarshaler extends MarshalerWithSize {
 
-  public static final ProtoFieldInfo RESOURCE_PROFILES =
+  private static final ProtoFieldInfo RESOURCE_PROFILES =
       ExportProfilesServiceRequest.RESOURCE_PROFILES;
 
   private final ResourceProfilesMarshaler[] resourceProfilesMarshalers;

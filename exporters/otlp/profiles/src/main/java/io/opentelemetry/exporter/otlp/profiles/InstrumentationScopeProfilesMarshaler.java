@@ -11,17 +11,18 @@ import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.otlp.InstrumentationScopeMarshaler;
 import io.opentelemetry.proto.profiles.v1experimental.internal.ScopeProfiles;
 import java.io.IOException;
+import java.util.List;
 
 final class InstrumentationScopeProfilesMarshaler extends MarshalerWithSize {
 
   private final InstrumentationScopeMarshaler instrumentationScope;
-  private final ProfileContainerMarshaler[] profileContainerMarshalers;
+  private final List<ProfileContainerMarshaler> profileContainerMarshalers;
   private final byte[] schemaUrlUtf8;
 
   InstrumentationScopeProfilesMarshaler(
       InstrumentationScopeMarshaler instrumentationScope,
       byte[] schemaUrlUtf8,
-      ProfileContainerMarshaler[] profileContainerMarshalers) {
+      List<ProfileContainerMarshaler> profileContainerMarshalers) {
     super(calculateSize(instrumentationScope, schemaUrlUtf8, profileContainerMarshalers));
     this.instrumentationScope = instrumentationScope;
     this.schemaUrlUtf8 = schemaUrlUtf8;
@@ -29,7 +30,7 @@ final class InstrumentationScopeProfilesMarshaler extends MarshalerWithSize {
   }
 
   @Override
-  protected void writeTo(Serializer output) throws IOException {
+  public void writeTo(Serializer output) throws IOException {
     output.serializeMessage(ScopeProfiles.SCOPE, instrumentationScope);
     output.serializeRepeatedMessage(ScopeProfiles.PROFILES, profileContainerMarshalers);
     output.serializeString(ScopeProfiles.SCHEMA_URL, schemaUrlUtf8);
@@ -38,7 +39,7 @@ final class InstrumentationScopeProfilesMarshaler extends MarshalerWithSize {
   private static int calculateSize(
       InstrumentationScopeMarshaler instrumentationScope,
       byte[] schemaUrlUtf8,
-      ProfileContainerMarshaler[] profileContainerMarshalers) {
+      List<ProfileContainerMarshaler> profileContainerMarshalers) {
     int size = 0;
     size += MarshalerUtil.sizeMessage(ScopeProfiles.SCOPE, instrumentationScope);
     size += MarshalerUtil.sizeRepeatedMessage(ScopeProfiles.PROFILES, profileContainerMarshalers);

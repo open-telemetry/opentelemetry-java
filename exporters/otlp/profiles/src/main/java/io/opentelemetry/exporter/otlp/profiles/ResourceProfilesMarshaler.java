@@ -45,7 +45,7 @@ final class ResourceProfilesMarshaler extends MarshalerWithSize {
             new InstrumentationScopeProfilesMarshaler(
                 InstrumentationScopeMarshaler.create(entryIs.getKey()),
                 MarshalerUtil.toBytes(entryIs.getKey().getSchemaUrl()),
-                entryIs.getValue().toArray(new ProfileContainerMarshaler[0]));
+                entryIs.getValue());
       }
 
       resourceProfilesMarshalers[posResource++] =
