@@ -622,6 +622,15 @@ class FileConfigurationParseTest {
         Arguments.of(
             "key1: ${STR_1} value1\n" + "key2: value2\n",
             mapOf(entry("key1", "value1 value1"), entry("key2", "value2"))),
+        // Default cases
+        Arguments.of("key1: ${NOT_SET:-value1}\n", mapOf(entry("key1", "value1"))),
+        Arguments.of("key1: ${NOT_SET:-true}\n", mapOf(entry("key1", true))),
+        Arguments.of("key1: ${NOT_SET:-1}\n", mapOf(entry("key1", 1))),
+        Arguments.of("key1: ${NOT_SET:-1.1}\n", mapOf(entry("key1", 1.1))),
+        Arguments.of("key1: ${NOT_SET:-0xdeadbeef}\n", mapOf(entry("key1", 3735928559L))),
+        Arguments.of(
+            "key1: ${NOT_SET:-value1} value2\n" + "key2: value2\n",
+            mapOf(entry("key1", "value1 value2"), entry("key2", "value2"))),
         // Multiple environment variables referenced
         Arguments.of("key1: ${STR_1}${STR_2}\n", mapOf(entry("key1", "value1value2"))),
         Arguments.of("key1: ${STR_1} ${STR_2}\n", mapOf(entry("key1", "value1 value2"))),
