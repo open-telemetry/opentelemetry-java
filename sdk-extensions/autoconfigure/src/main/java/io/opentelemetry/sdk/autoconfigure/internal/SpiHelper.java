@@ -41,12 +41,22 @@ public final class SpiHelper {
 
   /** Create a {@link SpiHelper} which loads SPIs using the {@code classLoader}. */
   public static SpiHelper create(ClassLoader classLoader) {
-    return new SpiHelper(new ServiceLoaderComponentLoader(classLoader));
+    return new SpiHelper(serviceComponentLoader(classLoader));
   }
 
   /** Create a {@link SpiHelper} which loads SPIs using the {@code componentLoader}. */
   public static SpiHelper create(ComponentLoader componentLoader) {
     return new SpiHelper(componentLoader);
+  }
+
+  /** Create a {@link ComponentLoader} which loads using the {@code classLoader}. */
+  public static ComponentLoader serviceComponentLoader(ClassLoader classLoader) {
+    return new ServiceLoaderComponentLoader(classLoader);
+  }
+
+  /** Return the backing underlying {@link ComponentLoader}. */
+  public ComponentLoader getComponentLoader() {
+    return componentLoader;
   }
 
   /**

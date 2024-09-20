@@ -34,7 +34,9 @@ final class ResourceFactory
         Resource> {
 
   private static final StructuredConfigProperties EMPTY_CONFIG =
-      FileConfiguration.toConfigProperties(Collections.emptyMap());
+      FileConfiguration.toConfigProperties(
+          Collections.emptyMap(),
+          SpiHelper.serviceComponentLoader(ResourceFactory.class.getClassLoader()));
   private static final ResourceFactory INSTANCE = new ResourceFactory();
 
   private ResourceFactory() {}
