@@ -6,21 +6,21 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimits;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimits;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimitsModel;
 import javax.annotation.Nullable;
 
 @AutoValue
 abstract class SpanLimitsAndAttributeLimits {
 
   static SpanLimitsAndAttributeLimits create(
-      @Nullable AttributeLimits attributeLimits, @Nullable SpanLimits spanLimits) {
+      @Nullable AttributeLimitsModel attributeLimits, @Nullable SpanLimitsModel spanLimits) {
     return new AutoValue_SpanLimitsAndAttributeLimits(attributeLimits, spanLimits);
   }
 
   @Nullable
-  abstract AttributeLimits getAttributeLimits();
+  abstract AttributeLimitsModel getAttributeLimits();
 
   @Nullable
-  abstract SpanLimits getSpanLimits();
+  abstract SpanLimitsModel getSpanLimits();
 }

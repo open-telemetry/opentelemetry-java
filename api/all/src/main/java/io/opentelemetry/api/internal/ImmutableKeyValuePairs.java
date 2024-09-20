@@ -274,4 +274,13 @@ public abstract class ImmutableKeyValuePairs<K, V> {
     sb.append("}");
     return sb.toString();
   }
+
+  /**
+   * Return the backing data array for these attributes. This is only exposed for internal use by
+   * opentelemetry authors. The contents of the array MUST NOT be modified.
+   */
+  @SuppressWarnings("AvoidObjectArrays")
+  public Object[] getData() {
+    return data;
+  }
 }

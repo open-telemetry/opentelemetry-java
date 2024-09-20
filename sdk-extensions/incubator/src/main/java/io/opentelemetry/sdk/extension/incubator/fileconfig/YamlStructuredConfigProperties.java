@@ -8,9 +8,10 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
+import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,14 +38,17 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
 
   private final Map<String, List<YamlStructuredConfigProperties>> listEntries;
   private final Map<String, YamlStructuredConfigProperties> mapEntries;
+  private final ComponentLoader componentLoader;
 
   private YamlStructuredConfigProperties(
       Map<String, Object> simpleEntries,
       Map<String, List<YamlStructuredConfigProperties>> listEntries,
-      Map<String, YamlStructuredConfigProperties> mapEntries) {
+      Map<String, YamlStructuredConfigProperties> mapEntries,
+      ComponentLoader componentLoader) {
     this.simpleEntries = simpleEntries;
     this.listEntries = listEntries;
     this.mapEntries = mapEntries;
+    this.componentLoader = componentLoader;
   }
 
   /**
@@ -54,10 +58,11 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
    * com.fasterxml.jackson.databind.ObjectMapper}), and have values which are scalars, lists of
    * scalars, lists of maps, and maps.
    *
-   * @see FileConfiguration#toConfigProperties(OpenTelemetryConfiguration)
+   * @see FileConfiguration#toConfigProperties(OpenTelemetryConfigurationModel)
    */
   @SuppressWarnings("unchecked")
-  static YamlStructuredConfigProperties create(Map<String, Object> properties) {
+  static YamlStructuredConfigProperties create(
+      Map<String, Object> properties, ComponentLoader componentLoader) {
     Map<String, Object> simpleEntries = new HashMap<>();
     Map<String, List<YamlStructuredConfigProperties>> listEntries = new HashMap<>();
     Map<String, YamlStructuredConfigProperties> mapEntries = new HashMap<>();
@@ -75,13 +80,15 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
       if (isListOfMaps(value)) {
         List<YamlStructuredConfigProperties> list =
             ((List<Map<String, Object>>) value)
-                .stream().map(YamlStructuredConfigProperties::create).collect(toList());
+                .stream()
+                    .map(map -> YamlStructuredConfigProperties.create(map, componentLoader))
+                    .collect(toList());
         listEntries.put(key, list);
         continue;
       }
       if (isMap(value)) {
         YamlStructuredConfigProperties configProperties =
-            YamlStructuredConfigProperties.create((Map<String, Object>) value);
+            YamlStructuredConfigProperties.create((Map<String, Object>) value, componentLoader);
         mapEntries.put(key, configProperties);
         continue;
       }
@@ -91,7 +98,8 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
               + "\" has unrecognized object type "
               + value.getClass().getName());
     }
-    return new YamlStructuredConfigProperties(simpleEntries, listEntries, mapEntries);
+    return new YamlStructuredConfigProperties(
+        simpleEntries, listEntries, mapEntries, componentLoader);
   }
 
   private static boolean isPrimitiveList(Object object) {
@@ -291,5 +299,10 @@ final class YamlStructuredConfigProperties implements StructuredConfigProperties
                 key, value.stream().map(YamlStructuredConfigProperties::toMap).collect(toList())));
     mapEntries.forEach((key, value) -> result.put(key, value.toMap()));
     return Collections.unmodifiableMap(result);
+  }
+
+  /** Return the {@link ComponentLoader}. */
+  public ComponentLoader getComponentLoader() {
+    return componentLoader;
   }
 }

@@ -9,8 +9,8 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimits;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimits;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimitsModel;
 import io.opentelemetry.sdk.logs.LogLimits;
 import java.util.Collections;
 import java.util.stream.Stream;
@@ -34,17 +34,24 @@ class LogLimitsFactoryTest {
         Arguments.of(
             LogRecordLimitsAndAttributeLimits.create(null, null), LogLimits.builder().build()),
         Arguments.of(
-            LogRecordLimitsAndAttributeLimits.create(new AttributeLimits(), new LogRecordLimits()),
+            LogRecordLimitsAndAttributeLimits.create(
+                new AttributeLimitsModel(), new LogRecordLimitsModel()),
             LogLimits.builder().build()),
         Arguments.of(
             LogRecordLimitsAndAttributeLimits.create(
-                new AttributeLimits().withAttributeValueLengthLimit(1).withAttributeCountLimit(2),
-                new LogRecordLimits()),
+                new AttributeLimitsModel()
+                    .withAttributeValueLengthLimit(1)
+                    .withAttributeCountLimit(2),
+                new LogRecordLimitsModel()),
             LogLimits.builder().setMaxAttributeValueLength(1).setMaxNumberOfAttributes(2).build()),
         Arguments.of(
             LogRecordLimitsAndAttributeLimits.create(
-                new AttributeLimits().withAttributeValueLengthLimit(1).withAttributeCountLimit(2),
-                new LogRecordLimits().withAttributeValueLengthLimit(3).withAttributeCountLimit(4)),
+                new AttributeLimitsModel()
+                    .withAttributeValueLengthLimit(1)
+                    .withAttributeCountLimit(2),
+                new LogRecordLimitsModel()
+                    .withAttributeValueLengthLimit(3)
+                    .withAttributeCountLimit(4)),
             LogLimits.builder().setMaxAttributeValueLength(3).setMaxNumberOfAttributes(4).build()));
   }
 }

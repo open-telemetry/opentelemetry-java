@@ -10,13 +10,13 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporter;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReader;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReader;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Selector;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Stream;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterProviderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SelectorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.StreamModel;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.View;
@@ -42,7 +42,7 @@ class MeterProviderFactoryTest {
 
     SdkMeterProvider provider =
         MeterProviderFactory.getInstance()
-            .create(new MeterProvider(), spiHelper, closeables)
+            .create(new MeterProviderModel(), spiHelper, closeables)
             .build();
     cleanup.addCloseable(provider);
     cleanup.addCloseables(closeables);
@@ -68,21 +68,25 @@ class MeterProviderFactoryTest {
     SdkMeterProvider provider =
         MeterProviderFactory.getInstance()
             .create(
-                new MeterProvider()
+                new MeterProviderModel()
                     .withReaders(
                         Collections.singletonList(
-                            new MetricReader()
+                            new MetricReaderModel()
                                 .withPeriodic(
-                                    new PeriodicMetricReader()
+                                    new PeriodicMetricReaderModel()
                                         .withExporter(
-                                            new MetricExporter().withOtlp(new OtlpMetric())))))
+                                            new MetricExporterModel()
+                                                .withOtlp(new OtlpMetricModel())))))
                     .withViews(
                         Collections.singletonList(
                             new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                                    .View()
-                                .withSelector(new Selector().withInstrumentName("instrument-name"))
+                                    .ViewModel()
+                                .withSelector(
+                                    new SelectorModel().withInstrumentName("instrument-name"))
                                 .withStream(
-                                    new Stream().withName("stream-name").withAttributeKeys(null)))),
+                                    new StreamModel()
+                                        .withName("stream-name")
+                                        .withAttributeKeys(null)))),
                 spiHelper,
                 closeables)
             .build();

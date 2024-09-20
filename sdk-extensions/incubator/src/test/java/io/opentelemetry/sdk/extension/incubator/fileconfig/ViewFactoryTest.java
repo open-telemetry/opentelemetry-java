@@ -9,9 +9,9 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Aggregation;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogram;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Stream;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AggregationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.StreamModel;
 import io.opentelemetry.sdk.metrics.View;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,7 +27,7 @@ class ViewFactoryTest {
     View view =
         ViewFactory.getInstance()
             .create(
-                new Stream().withAttributeKeys(null),
+                new StreamModel().withAttributeKeys(null),
                 mock(SpiHelper.class),
                 Collections.emptyList());
 
@@ -49,14 +49,14 @@ class ViewFactoryTest {
     View view =
         ViewFactory.getInstance()
             .create(
-                new Stream()
+                new StreamModel()
                     .withName("name")
                     .withDescription("description")
                     .withAttributeKeys(Arrays.asList("foo", "bar"))
                     .withAggregation(
-                        new Aggregation()
+                        new AggregationModel()
                             .withExplicitBucketHistogram(
-                                new ExplicitBucketHistogram()
+                                new ExplicitBucketHistogramModel()
                                     .withBoundaries(Arrays.asList(1.0, 2.0)))),
                 mock(SpiHelper.class),
                 Collections.emptyList());

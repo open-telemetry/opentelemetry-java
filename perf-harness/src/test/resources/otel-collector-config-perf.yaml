@@ -4,8 +4,8 @@ receivers:
         grpc:
 
 exporters:
-  logging:
-    loglevel: info
+  debug:
+    verbosity: normal
     sampling_initial: 1
     sampling_thereafter: 1
 
@@ -25,8 +25,8 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging]
+      exporters: [debug]
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging]
+      exporters: [debug]

@@ -23,11 +23,10 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.MetricExporterComponentProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Console;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Headers;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric.DefaultHistogramAggregation;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Prometheus;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.HeadersModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PrometheusModel;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -74,8 +73,8 @@ class MetricExporterFactoryTest {
         MetricExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .MetricExporter()
-                    .withOtlp(new OtlpMetric()),
+                        .MetricExporterModel()
+                    .withOtlp(new OtlpMetricModel()),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(exporter);
@@ -132,13 +131,13 @@ class MetricExporterFactoryTest {
         MetricExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .MetricExporter()
+                        .MetricExporterModel()
                     .withOtlp(
-                        new OtlpMetric()
+                        new OtlpMetricModel()
                             .withProtocol("http/protobuf")
                             .withEndpoint("http://example:4318")
                             .withHeaders(
-                                new Headers()
+                                new HeadersModel()
                                     .withAdditionalProperty("key1", "value1")
                                     .withAdditionalProperty("key2", "value2"))
                             .withCompression("gzip")
@@ -148,7 +147,8 @@ class MetricExporterFactoryTest {
                             .withClientCertificate(clientCertificatePath)
                             .withTemporalityPreference("delta")
                             .withDefaultHistogramAggregation(
-                                DefaultHistogramAggregation.BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)),
+                                OtlpMetricModel.DefaultHistogramAggregation
+                                    .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(exporter);
@@ -188,8 +188,8 @@ class MetricExporterFactoryTest {
         MetricExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .MetricExporter()
-                    .withConsole(new Console()),
+                        .MetricExporterModel()
+                    .withConsole(new ConsoleModel()),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(exporter);
@@ -207,8 +207,8 @@ class MetricExporterFactoryTest {
                 MetricExporterFactory.getInstance()
                     .create(
                         new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                                .MetricExporter()
-                            .withPrometheus(new Prometheus()),
+                                .MetricExporterModel()
+                            .withPrometheus(new PrometheusModel()),
                         spiHelper,
                         closeables))
         .isInstanceOf(ConfigurationException.class)
@@ -223,7 +223,7 @@ class MetricExporterFactoryTest {
                 MetricExporterFactory.getInstance()
                     .create(
                         new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                                .MetricExporter()
+                                .MetricExporterModel()
                             .withAdditionalProperty(
                                 "unknown_key", ImmutableMap.of("key1", "value1")),
                         spiHelper,
@@ -239,7 +239,7 @@ class MetricExporterFactoryTest {
         MetricExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .MetricExporter()
+                        .MetricExporterModel()
                     .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
                 spiHelper,
                 new ArrayList<>());

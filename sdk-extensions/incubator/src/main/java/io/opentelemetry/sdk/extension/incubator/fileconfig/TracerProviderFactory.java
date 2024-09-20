@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessor;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
@@ -30,7 +30,7 @@ final class TracerProviderFactory
   public SdkTracerProviderBuilder create(
       TracerProviderAndAttributeLimits model, SpiHelper spiHelper, List<Closeable> closeables) {
     SdkTracerProviderBuilder builder = SdkTracerProvider.builder();
-    TracerProvider tracerProviderModel = model.getTracerProvider();
+    TracerProviderModel tracerProviderModel = model.getTracerProvider();
     if (tracerProviderModel == null) {
       return builder;
     }
@@ -51,7 +51,7 @@ final class TracerProviderFactory
       builder.setSampler(sampler);
     }
 
-    List<SpanProcessor> processors = tracerProviderModel.getProcessors();
+    List<SpanProcessorModel> processors = tracerProviderModel.getProcessors();
     if (processors != null) {
       processors.forEach(
           processor ->

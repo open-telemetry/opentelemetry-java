@@ -5,11 +5,12 @@
 
 package io.opentelemetry.exporter.logging.otlp;
 
-import static io.opentelemetry.exporter.logging.otlp.JsonUtil.JSON_FACTORY;
+import static io.opentelemetry.exporter.logging.otlp.internal.writer.JsonUtil.JSON_FACTORY;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SegmentedStringWriter;
 import io.opentelemetry.exporter.internal.otlp.metrics.ResourceMetricsMarshaler;
+import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
