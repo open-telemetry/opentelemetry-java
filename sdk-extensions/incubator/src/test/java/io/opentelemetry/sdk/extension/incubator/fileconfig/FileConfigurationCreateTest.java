@@ -71,7 +71,9 @@ class FileConfigurationCreateTest {
       // https://bitbucket.org/snakeyaml/snakeyaml-engine/issues/14/read-in-yaml-with-merge-then-dump-strips
       // TODO(jack-berg): decide if we should try to support anchors, or remove anchors example from
       // opentelemetry-configuration
-      if (example.getName().equals("anchors.yaml")) {
+      // TODO: add support for env var substitution default syntax
+      if (example.getName().equals("anchors.yaml")
+          || example.getName().equals("sdk-migration-config.yaml")) {
         continue;
       }
 

@@ -9,9 +9,10 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.mockito.Mockito.spy;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributesModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -27,11 +28,14 @@ class ResourceFactoryTest {
                 .create(
                     new ResourceModel()
                         .withAttributes(
-                            new AttributesModel()
-                                .withServiceName("my-service")
-                                .withAdditionalProperty("key", "val")
-                                // Should override shape attribute from ResourceComponentProvider
-                                .withAdditionalProperty("shape", "circle")),
+                            Arrays.asList(
+                                new AttributeNameValueModel()
+                                    .withName("service.name")
+                                    .withValue("my-service"),
+                                new AttributeNameValueModel().withName("key").withValue("val"),
+                                new AttributeNameValueModel()
+                                    .withName("shape")
+                                    .withValue("circle"))),
                     spiHelper,
                     Collections.emptyList()))
         .isEqualTo(
@@ -46,4 +50,6 @@ class ResourceFactoryTest {
                 .put("order", "second")
                 .build());
   }
+
+  // TODO: add test coverage for .attributes_list, .detectors
 }

@@ -17,12 +17,13 @@ import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PrometheusModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReaderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -72,7 +73,7 @@ class MetricReaderFactoryTest {
                     .withPeriodic(
                         new PeriodicMetricReaderModel()
                             .withExporter(
-                                new MetricExporterModel().withOtlp(new OtlpMetricModel()))),
+                                new PushMetricExporterModel().withOtlp(new OtlpMetricModel()))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(reader);
@@ -97,7 +98,8 @@ class MetricReaderFactoryTest {
                 new MetricReaderModel()
                     .withPeriodic(
                         new PeriodicMetricReaderModel()
-                            .withExporter(new MetricExporterModel().withOtlp(new OtlpMetricModel()))
+                            .withExporter(
+                                new PushMetricExporterModel().withOtlp(new OtlpMetricModel()))
                             .withInterval(1)),
                 spiHelper,
                 closeables);
@@ -123,7 +125,7 @@ class MetricReaderFactoryTest {
                     .withPull(
                         new PullMetricReaderModel()
                             .withExporter(
-                                new MetricExporterModel()
+                                new PullMetricExporterModel()
                                     .withPrometheus(new PrometheusModel().withPort(port)))),
                 spiHelper,
                 closeables);
@@ -153,7 +155,7 @@ class MetricReaderFactoryTest {
                     .withPull(
                         new PullMetricReaderModel()
                             .withExporter(
-                                new MetricExporterModel()
+                                new PullMetricExporterModel()
                                     .withPrometheus(
                                         new PrometheusModel()
                                             .withHost("localhost")
@@ -187,21 +189,7 @@ class MetricReaderFactoryTest {
                         new MetricReaderModel()
                             .withPull(
                                 new PullMetricReaderModel()
-                                    .withExporter(new MetricExporterModel())),
-                        spiHelper,
-                        Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage("prometheus is the only currently supported pull reader");
-
-    assertThatThrownBy(
-            () ->
-                MetricReaderFactory.getInstance()
-                    .create(
-                        new MetricReaderModel()
-                            .withPull(
-                                new PullMetricReaderModel()
-                                    .withExporter(
-                                        new MetricExporterModel().withOtlp(new OtlpMetricModel()))),
+                                    .withExporter(new PullMetricExporterModel())),
                         spiHelper,
                         Collections.emptyList()))
         .isInstanceOf(ConfigurationException.class)

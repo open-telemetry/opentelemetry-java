@@ -56,7 +56,7 @@ dependencies {
 // ... proceed with normal sourcesJar, compileJava, etc
 
 val configurationTag = "0.1.0"
-val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
+val configurationRef = "9c8ff31553a6a48c09fe99a288596e28b63c4cdb" // Replace with commit SHA to point to experiment with a specific commit
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 
@@ -79,7 +79,10 @@ val unzipConfigurationSchema by tasks.registering(Copy::class) {
 }
 
 jsonSchema2Pojo {
-  sourceFiles = setOf(file("$buildDirectory/configuration/schema"))
+  val jsonSchemaFiles = fileTree("$buildDirectory/configuration/schema/") {
+    include("**/*.json")
+  }.files
+  sourceFiles = jsonSchemaFiles
   targetDirectory = file("$buildDirectory/generated/sources/js2p/java/main")
   targetPackage = "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model"
 

@@ -26,7 +26,8 @@ class YamlStructuredConfigPropertiesTest {
           + "\n"
           + "resource:\n"
           + "  attributes:\n"
-          + "    service.name: \"unknown_service\"\n"
+          + "    - name: service.name\n"
+          + "      value: \"unknown_service\"\n"
           + "\n"
           + "other:\n"
           + "  str_key: str_value\n"
@@ -70,9 +71,15 @@ class YamlStructuredConfigPropertiesTest {
     assertThat(structuredConfigProps.getString("file_format")).isEqualTo("0.1");
     StructuredConfigProperties resourceProps = structuredConfigProps.getStructured("resource");
     assertThat(resourceProps).isNotNull();
-    StructuredConfigProperties resourceAttributesProps = resourceProps.getStructured("attributes");
-    assertThat(resourceAttributesProps).isNotNull();
-    assertThat(resourceAttributesProps.getString("service.name")).isEqualTo("unknown_service");
+    List<StructuredConfigProperties> resourceAttributesList =
+        resourceProps.getStructuredList("attributes");
+    assertThat(resourceAttributesList)
+        .isNotNull()
+        .satisfiesExactly(
+            attributeEntry -> {
+              assertThat(attributeEntry.getString("name")).isEqualTo("service.name");
+              assertThat(attributeEntry.getString("value")).isEqualTo("unknown_service");
+            });
   }
 
   @Test

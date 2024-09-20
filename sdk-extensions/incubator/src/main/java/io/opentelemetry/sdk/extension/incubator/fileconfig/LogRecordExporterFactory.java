@@ -9,6 +9,7 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
@@ -32,6 +33,11 @@ final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, 
     OtlpModel otlpModel = model.getOtlp();
     if (otlpModel != null) {
       model.getAdditionalProperties().put("otlp", otlpModel);
+    }
+
+    ConsoleModel consoleModel = model.getConsole();
+    if (consoleModel != null) {
+      model.getAdditionalProperties().put("console", consoleModel);
     }
 
     if (!model.getAdditionalProperties().isEmpty()) {
