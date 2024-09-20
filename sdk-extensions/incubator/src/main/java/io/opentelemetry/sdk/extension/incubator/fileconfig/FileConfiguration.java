@@ -97,7 +97,8 @@ public final class FileConfiguration {
    * corresponding to the configuration.
    *
    * @param configurationModel the configuration model
-   * @param componentLoader the component loader used to load {@link ComponentProvider} implementations
+   * @param componentLoader the component loader used to load {@link ComponentProvider}
+   *     implementations
    * @return the {@link OpenTelemetrySdk}
    * @throws ConfigurationException if unable to interpret
    */
