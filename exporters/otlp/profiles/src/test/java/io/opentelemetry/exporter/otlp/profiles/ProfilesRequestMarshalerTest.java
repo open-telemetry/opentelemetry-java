@@ -19,9 +19,11 @@ import io.opentelemetry.exporter.otlp.internal.data.ImmutableLineData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableLinkData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableLocationData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableMappingData;
+import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfileContainerData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfileData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableSampleData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableValueTypeData;
+import io.opentelemetry.proto.common.v1.InstrumentationScope;
 import io.opentelemetry.proto.profiles.v1experimental.AttributeUnit;
 import io.opentelemetry.proto.profiles.v1experimental.Function;
 import io.opentelemetry.proto.profiles.v1experimental.Line;
@@ -29,13 +31,20 @@ import io.opentelemetry.proto.profiles.v1experimental.Link;
 import io.opentelemetry.proto.profiles.v1experimental.Location;
 import io.opentelemetry.proto.profiles.v1experimental.Mapping;
 import io.opentelemetry.proto.profiles.v1experimental.Profile;
+import io.opentelemetry.proto.profiles.v1experimental.ProfileContainer;
+import io.opentelemetry.proto.profiles.v1experimental.ResourceProfiles;
 import io.opentelemetry.proto.profiles.v1experimental.Sample;
+import io.opentelemetry.proto.profiles.v1experimental.ScopeProfiles;
 import io.opentelemetry.proto.profiles.v1experimental.ValueType;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -131,47 +140,89 @@ public class ProfilesRequestMarshalerTest {
   }
 
   @Test
-  void compareProfileMarshaling() {
-    ProfileData input =
-        ImmutableProfileData.create(
-            Collections.emptyList(),
-            Collections.emptyList(),
-            Collections.emptyList(),
-            Collections.emptyList(),
-            listOf(1L, 2L),
-            Collections.emptyList(),
+  void compareProfileContainerMarshaling() {
+    String profileId = "0123456789abcdef0123456789abcdef";
+    ProfileContainerData input =
+        ImmutableProfileContainerData.create(
+            Resource.getDefault(),
+            InstrumentationScopeInfo.empty(),
+            profileId,
+            1,
+            2,
             Attributes.empty(),
-            Collections.emptyList(),
-            Collections.emptyList(),
-            Collections.emptyList(),
             3,
-            4,
-            5,
-            6,
-            ImmutableValueTypeData.create(1, 2, AggregationTemporality.CUMULATIVE),
-            7,
-            listOf(8L, 9L),
-            10);
-    Profile builderResult =
-        Profile.newBuilder()
-            .addAllLocationIndices(listOf(1L, 2L))
-            .setDropFrames(3)
-            .setKeepFrames(4)
-            .setTimeNanos(5)
-            .setDurationNanos(6)
-            .setPeriod(7)
-            .setPeriodType(
-                ValueType.newBuilder()
-                    .setType(1)
-                    .setUnit(2)
-                    .setAggregationTemporality(
-                        io.opentelemetry.proto.profiles.v1experimental.AggregationTemporality
-                            .AGGREGATION_TEMPORALITY_CUMULATIVE)
-                    .build())
-            .addAllComment(listOf(8L, 9L))
-            .setDefaultSampleType(10)
+            "format",
+            ByteBuffer.wrap(new byte[] {4, 5}),
+            sampleProfileData());
+
+    ProfileContainer builderResult =
+        ProfileContainer.newBuilder()
+            .setProfileId(ByteString.fromHex(profileId))
+            .setStartTimeUnixNano(1)
+            .setEndTimeUnixNano(2)
+            .setDroppedAttributesCount(3)
+            .setOriginalPayloadFormat("format")
+            .setOriginalPayload(ByteString.copyFrom(new byte[] {4, 5}))
+            .setProfile(sampleProfileBuilder().build())
             .build();
 
+    ProfileContainer roundTripResult =
+        parse(ProfileContainer.getDefaultInstance(), ProfileContainerMarshaler.create(input));
+    assertThat(roundTripResult).isEqualTo(builderResult);
+  }
+
+  @Test
+  void compareResourceProfilesMarshaling() {
+
+    String profileId = "0123456789abcdef0123456789abcdef";
+    ProfileContainerData profileContainerData =
+        ImmutableProfileContainerData.create(
+            Resource.create(Attributes.empty()),
+            InstrumentationScopeInfo.create("testscope"),
+            profileId,
+            1,
+            2,
+            Attributes.empty(),
+            3,
+            "format",
+            ByteBuffer.wrap(new byte[] {4, 5}),
+            sampleProfileData());
+
+    Collection<ProfileContainerData> input = new ArrayList<>();
+    input.add(profileContainerData);
+
+    ProfileContainer profileContainer =
+        ProfileContainer.newBuilder()
+            .setProfileId(ByteString.fromHex(profileId))
+            .setStartTimeUnixNano(1)
+            .setEndTimeUnixNano(2)
+            .setDroppedAttributesCount(3)
+            .setOriginalPayloadFormat("format")
+            .setOriginalPayload(ByteString.copyFrom(new byte[] {4, 5}))
+            .setProfile(sampleProfileBuilder().build())
+            .build();
+
+    ResourceProfiles builderResult =
+        ResourceProfiles.newBuilder()
+            .setResource(io.opentelemetry.proto.resource.v1.Resource.newBuilder().build())
+            .addScopeProfiles(
+                ScopeProfiles.newBuilder()
+                    .setScope(InstrumentationScope.newBuilder().setName("testscope").build())
+                    .addProfiles(profileContainer)
+                    .build())
+            .build();
+
+    ResourceProfilesMarshaler[] marshalers = ResourceProfilesMarshaler.create(input);
+    assertThat(marshalers.length).isEqualTo(1);
+    ResourceProfiles roundTripResult = parse(ResourceProfiles.getDefaultInstance(), marshalers[0]);
+    assertThat(roundTripResult).isEqualTo(builderResult);
+    // TODO
+  }
+
+  @Test
+  void compareProfileMarshaling() {
+    ProfileData input = sampleProfileData();
+    Profile builderResult = sampleProfileBuilder().build();
     Profile roundTripResult = parse(Profile.getDefaultInstance(), ProfileMarshaler.create(input));
     assertThat(roundTripResult).isEqualTo(builderResult);
   }
@@ -210,6 +261,50 @@ public class ProfilesRequestMarshalerTest {
     ValueType roundTripResult =
         parse(ValueType.getDefaultInstance(), ValueTypeMarshaler.create(input));
     assertThat(roundTripResult).isEqualTo(builderResult);
+  }
+
+  // twin of sampleProfileBuilder
+  private static ProfileData sampleProfileData() {
+    return ImmutableProfileData.create(
+        Collections.emptyList(),
+        Collections.emptyList(),
+        Collections.emptyList(),
+        Collections.emptyList(),
+        listOf(1L, 2L),
+        Collections.emptyList(),
+        Attributes.empty(),
+        Collections.emptyList(),
+        Collections.emptyList(),
+        Collections.emptyList(),
+        3,
+        4,
+        5,
+        6,
+        ImmutableValueTypeData.create(1, 2, AggregationTemporality.CUMULATIVE),
+        7,
+        listOf(8L, 9L),
+        10);
+  }
+
+  // twin of sampleProfileData
+  private static Profile.Builder sampleProfileBuilder() {
+    return Profile.newBuilder()
+        .addAllLocationIndices(listOf(1L, 2L))
+        .setDropFrames(3)
+        .setKeepFrames(4)
+        .setTimeNanos(5)
+        .setDurationNanos(6)
+        .setPeriod(7)
+        .setPeriodType(
+            ValueType.newBuilder()
+                .setType(1)
+                .setUnit(2)
+                .setAggregationTemporality(
+                    io.opentelemetry.proto.profiles.v1experimental.AggregationTemporality
+                        .AGGREGATION_TEMPORALITY_CUMULATIVE)
+                .build())
+        .addAllComment(listOf(8L, 9L))
+        .setDefaultSampleType(10);
   }
 
   private static <T> List<T> listOf(T a, T b) {
