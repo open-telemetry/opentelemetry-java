@@ -179,14 +179,6 @@ public final class OtlpConfigUtil {
     String protocol = getStructuredConfigOtlpProtocol(config);
     boolean isHttpProtobuf = protocol.equals(PROTOCOL_HTTP_PROTOBUF);
     URL endpoint = validateEndpoint(config.getString("endpoint"), isHttpProtobuf);
-    if (endpoint != null && isHttpProtobuf) {
-      String path = endpoint.getPath();
-      if (!path.endsWith("/")) {
-        path += "/";
-      }
-      path += signalPath(dataType);
-      endpoint = createUrl(endpoint, path);
-    }
     if (endpoint != null) {
       setEndpoint.accept(endpoint.toString());
     }

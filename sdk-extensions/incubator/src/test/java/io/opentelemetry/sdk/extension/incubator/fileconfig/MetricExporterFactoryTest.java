@@ -134,7 +134,7 @@ class MetricExporterFactoryTest {
                     .withOtlp(
                         new OtlpMetricModel()
                             .withProtocol("http/protobuf")
-                            .withEndpoint("http://example:4318")
+                            .withEndpoint("http://example:4318/v1/metrics")
                             .withHeaders(
                                 Arrays.asList(
                                     new NameStringValuePairModel()
@@ -164,7 +164,7 @@ class MetricExporterFactoryTest {
     verify(spiHelper).loadComponent(eq(MetricExporter.class), eq("otlp"), configCaptor.capture());
     StructuredConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("protocol")).isEqualTo("http/protobuf");
-    assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318");
+    assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318/v1/metrics");
     List<StructuredConfigProperties> headers = configProperties.getStructuredList("headers");
     assertThat(headers)
         .isNotNull()

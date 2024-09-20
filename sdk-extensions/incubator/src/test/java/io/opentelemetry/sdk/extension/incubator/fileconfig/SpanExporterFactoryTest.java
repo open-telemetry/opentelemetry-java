@@ -126,7 +126,7 @@ class SpanExporterFactoryTest {
                     .withOtlp(
                         new OtlpModel()
                             .withProtocol("http/protobuf")
-                            .withEndpoint("http://example:4318")
+                            .withEndpoint("http://example:4318/v1/traces")
                             .withHeaders(
                                 Arrays.asList(
                                     new NameStringValuePairModel()
@@ -152,7 +152,7 @@ class SpanExporterFactoryTest {
     verify(spiHelper).loadComponent(eq(SpanExporter.class), eq("otlp"), configCaptor.capture());
     StructuredConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("protocol")).isEqualTo("http/protobuf");
-    assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318");
+    assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318/v1/traces");
     List<StructuredConfigProperties> headers = configProperties.getStructuredList("headers");
     assertThat(headers)
         .isNotNull()
