@@ -28,10 +28,6 @@ import org.junit.jupiter.api.Test;
 @SuppressLogger()
 public abstract class AbstractDefaultMeterTest {
   private final Meter meter = getMeter();
-  private final String strDesc = "The size I'm measuring";
-  private final String strDescCurrTemp = "The current temperature";
-  private final String strDescTemp = "temperature";
-
 
   protected abstract Meter getMeter();
 
@@ -59,7 +55,7 @@ public abstract class AbstractDefaultMeterTest {
   @Test
   void noopLongCounter_doesNotThrow() {
     LongCounter counter =
-        meter.counterBuilder("size").setDescription(strDesc).setUnit("1").build();
+        meter.counterBuilder("size").setDescription("The size I'm measuring").setUnit("1").build();
     counter.add(1);
     counter.add(1, Attributes.of(stringKey("thing"), "car"));
     counter.add(1, Attributes.of(stringKey("thing"), "car"), Context.current());
@@ -71,7 +67,7 @@ public abstract class AbstractDefaultMeterTest {
         meter
             .counterBuilder("size")
             .ofDoubles()
-            .setDescription(strDesc)
+            .setDescription("The size I'm measuring")
             .setUnit("1")
             .build();
     counter.add(1.2);
@@ -84,7 +80,7 @@ public abstract class AbstractDefaultMeterTest {
     LongUpDownCounter counter =
         meter
             .upDownCounterBuilder("size")
-            .setDescription(strDesc)
+            .setDescription("The size I'm measuring")
             .setUnit("1")
             .build();
     counter.add(-1);
@@ -98,7 +94,7 @@ public abstract class AbstractDefaultMeterTest {
         meter
             .upDownCounterBuilder("size")
             .ofDoubles()
-            .setDescription(strDesc)
+            .setDescription("The size I'm measuring")
             .setUnit("1")
             .build();
     counter.add(-2e4);
@@ -112,7 +108,7 @@ public abstract class AbstractDefaultMeterTest {
         meter
             .histogramBuilder("size")
             .ofLongs()
-            .setDescription(strDesc)
+            .setDescription("The size I'm measuring")
             .setUnit("1")
             .build();
     histogram.record(-1);
@@ -125,7 +121,7 @@ public abstract class AbstractDefaultMeterTest {
     DoubleHistogram histogram =
         meter
             .histogramBuilder("size")
-            .setDescription(strDesc)
+            .setDescription("The size I'm measuring")
             .setUnit("1")
             .build();
     histogram.record(-2e4);
@@ -137,9 +133,9 @@ public abstract class AbstractDefaultMeterTest {
   void noopLongGauage_doesNotThrow() {
     LongGauge gauge =
         meter
-            .gaugeBuilder(strDescTemp)
+            .gaugeBuilder("temperature")
             .ofLongs()
-            .setDescription(strDescCurrTemp)
+            .setDescription("The current temperature")
             .setUnit("C")
             .build();
     gauge.set(1);
@@ -148,9 +144,9 @@ public abstract class AbstractDefaultMeterTest {
 
     ObservableLongMeasurement measurement =
         meter
-            .gaugeBuilder(strDescTemp)
+            .gaugeBuilder("temperature")
             .ofLongs()
-            .setDescription(strDescCurrTemp)
+            .setDescription("The current temperature")
             .setUnit("C")
             .buildObserver();
     measurement.record(1);
@@ -160,9 +156,9 @@ public abstract class AbstractDefaultMeterTest {
   @Test
   void noopObservableLongGauage_doesNotThrow() {
     meter
-        .gaugeBuilder(strDescTemp)
+        .gaugeBuilder("temperature")
         .ofLongs()
-        .setDescription(strDescCurrTemp)
+        .setDescription("The current temperature")
         .setUnit("C")
         .buildWithCallback(
             m -> {
@@ -175,8 +171,8 @@ public abstract class AbstractDefaultMeterTest {
   void noopDoubleGauage_doesNotThrow() {
     DoubleGauge gauge =
         meter
-            .gaugeBuilder(strDescTemp)
-            .setDescription(strDescCurrTemp)
+            .gaugeBuilder("temperature")
+            .setDescription("The current temperature")
             .setUnit("C")
             .build();
     gauge.set(1);
@@ -185,8 +181,8 @@ public abstract class AbstractDefaultMeterTest {
 
     ObservableDoubleMeasurement measurement =
         meter
-            .gaugeBuilder(strDescTemp)
-            .setDescription(strDescCurrTemp)
+            .gaugeBuilder("temperature")
+            .setDescription("The current temperature")
             .setUnit("C")
             .buildObserver();
     measurement.record(1.0);
@@ -196,8 +192,8 @@ public abstract class AbstractDefaultMeterTest {
   @Test
   void noopObservableDoubleGauage_doesNotThrow() {
     meter
-        .gaugeBuilder(strDescTemp)
-        .setDescription(strDescCurrTemp)
+        .gaugeBuilder("temperature")
+        .setDescription("The current temperature")
         .setUnit("C")
         .buildWithCallback(
             m -> {
@@ -209,8 +205,8 @@ public abstract class AbstractDefaultMeterTest {
   @Test
   void noopObservableLongCounter_doesNotThrow() {
     meter
-        .counterBuilder(strDescTemp)
-        .setDescription(strDescCurrTemp)
+        .counterBuilder("temperature")
+        .setDescription("The current temperature")
         .setUnit("C")
         .buildWithCallback(
             m -> {
@@ -222,9 +218,9 @@ public abstract class AbstractDefaultMeterTest {
   @Test
   void noopObservableDoubleCounter_doesNotThrow() {
     meter
-        .counterBuilder(strDescTemp)
+        .counterBuilder("temperature")
         .ofDoubles()
-        .setDescription(strDescCurrTemp)
+        .setDescription("The current temperature")
         .setUnit("C")
         .buildWithCallback(
             m -> {
@@ -236,8 +232,8 @@ public abstract class AbstractDefaultMeterTest {
   @Test
   void noopObservableLongUpDownCounter_doesNotThrow() {
     meter
-        .upDownCounterBuilder(strDescTemp)
-        .setDescription(strDescCurrTemp)
+        .upDownCounterBuilder("temperature")
+        .setDescription("The current temperature")
         .setUnit("C")
         .buildWithCallback(
             m -> {
@@ -249,9 +245,9 @@ public abstract class AbstractDefaultMeterTest {
   @Test
   void noopObservableDoubleUpDownCounter_doesNotThrow() {
     meter
-        .upDownCounterBuilder(strDescTemp)
+        .upDownCounterBuilder("temperature")
         .ofDoubles()
-        .setDescription(strDescCurrTemp)
+        .setDescription("The current temperature")
         .setUnit("C")
         .buildWithCallback(
             m -> {
