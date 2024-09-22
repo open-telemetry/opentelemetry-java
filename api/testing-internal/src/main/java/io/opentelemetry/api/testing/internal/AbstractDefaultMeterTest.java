@@ -33,6 +33,8 @@ public abstract class AbstractDefaultMeterTest {
 
   protected abstract MeterProvider getMeterProvider();
 
+  private static final String srtval = "The size I'm measuring";
+
   @Test
   void noopMeterProvider_getDoesNotThrow() {
     MeterProvider provider = getMeterProvider();
@@ -55,7 +57,7 @@ public abstract class AbstractDefaultMeterTest {
   @Test
   void noopLongCounter_doesNotThrow() {
     LongCounter counter =
-        meter.counterBuilder("size").setDescription("The size I'm measuring").setUnit("1").build();
+        meter.counterBuilder("size").setDescription(srtval).setUnit("1").build();
     counter.add(1);
     counter.add(1, Attributes.of(stringKey("thing"), "car"));
     counter.add(1, Attributes.of(stringKey("thing"), "car"), Context.current());
@@ -67,7 +69,7 @@ public abstract class AbstractDefaultMeterTest {
         meter
             .counterBuilder("size")
             .ofDoubles()
-            .setDescription("The size I'm measuring")
+            .setDescription(srtval)
             .setUnit("1")
             .build();
     counter.add(1.2);
@@ -80,7 +82,7 @@ public abstract class AbstractDefaultMeterTest {
     LongUpDownCounter counter =
         meter
             .upDownCounterBuilder("size")
-            .setDescription("The size I'm measuring")
+            .setDescription(srtval)
             .setUnit("1")
             .build();
     counter.add(-1);
@@ -94,7 +96,7 @@ public abstract class AbstractDefaultMeterTest {
         meter
             .upDownCounterBuilder("size")
             .ofDoubles()
-            .setDescription("The size I'm measuring")
+            .setDescription(srtval)
             .setUnit("1")
             .build();
     counter.add(-2e4);
@@ -108,7 +110,7 @@ public abstract class AbstractDefaultMeterTest {
         meter
             .histogramBuilder("size")
             .ofLongs()
-            .setDescription("The size I'm measuring")
+            .setDescription(srtval)
             .setUnit("1")
             .build();
     histogram.record(-1);
@@ -121,7 +123,7 @@ public abstract class AbstractDefaultMeterTest {
     DoubleHistogram histogram =
         meter
             .histogramBuilder("size")
-            .setDescription("The size I'm measuring")
+            .setDescription(srtval)
             .setUnit("1")
             .build();
     histogram.record(-2e4);
