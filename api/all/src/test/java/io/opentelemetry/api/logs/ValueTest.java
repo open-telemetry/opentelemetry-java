@@ -145,7 +145,7 @@ class ValueTest {
 
   @Test
   void value_NullsNotAllowed() {
-    private static final String strValNul = "value must not be null";
+     String strValNul = "value must not be null";
 
     assertThatThrownBy(() -> Value.of((String) null))
         .isInstanceOf(NullPointerException.class)
