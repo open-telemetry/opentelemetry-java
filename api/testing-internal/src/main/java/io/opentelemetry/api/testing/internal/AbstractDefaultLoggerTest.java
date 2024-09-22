@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for No-op {@link Logger}. */
 public abstract class AbstractDefaultLoggerTest {
+  private static final String strscope = "scope-name";
 
   protected abstract LoggerProvider getLoggerProvider();
 
@@ -31,17 +32,17 @@ public abstract class AbstractDefaultLoggerTest {
     LoggerProvider provider = LoggerProvider.noop();
 
     assertThat(provider).isSameAs(getLoggerProvider());
-    assertThatCode(() -> provider.get("scope-name")).doesNotThrowAnyException();
+    assertThatCode(() -> provider.get(strscope)).doesNotThrowAnyException();
     assertThatCode(
             () ->
                 provider
-                    .loggerBuilder("scope-name")
+                    .loggerBuilder(strscope)
                     .setInstrumentationVersion("1.0")
                     .setSchemaUrl("http://schema.com")
                     .build())
         .doesNotThrowAnyException();
 
-    assertThatCode(() -> provider.loggerBuilder("scope-name").build().logRecordBuilder())
+    assertThatCode(() -> provider.loggerBuilder(strscope).build().logRecordBuilder())
         .doesNotThrowAnyException();
   }
 
