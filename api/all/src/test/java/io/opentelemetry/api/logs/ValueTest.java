@@ -145,23 +145,21 @@ class ValueTest {
 
   @Test
   void value_NullsNotAllowed() {
-     String strValNul = "value must not be null";
-
     assertThatThrownBy(() -> Value.of((String) null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining(strValNul);
+        .hasMessageContaining("value must not be null");
     assertThatThrownBy(() -> Value.of((byte[]) null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining(strValNul);
+        .hasMessageContaining("value must not be null");
     assertThatThrownBy(() -> Value.of((Value<?>[]) null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining(strValNul);
+        .hasMessageContaining("value must not be null");
     assertThatThrownBy(() -> Value.of((KeyValue[]) null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining(strValNul);
+        .hasMessageContaining("value must not be null");
     assertThatThrownBy(() -> Value.of((Map<String, Value<?>>) null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining(strValNul);
+        .hasMessageContaining("value must not be null");
   }
 
   @ParameterizedTest
