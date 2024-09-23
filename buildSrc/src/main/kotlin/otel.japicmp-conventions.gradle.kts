@@ -181,7 +181,13 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
 
         // this is needed so that we only consider the current artifact, and not dependencies
         ignoreMissingClasses.set(true)
-        packageExcludes.addAll("*.internal", "*.internal.*", "io.opentelemetry.internal.shaded.jctools.*")
+        packageExcludes.addAll(
+          "*.internal",
+          "*.internal.*",
+          "io.opentelemetry.internal.shaded.jctools.*",
+          // Temporarily suppress warnings from public generated classes from :sdk-extensions:jaeger-remote-sampler
+          "io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2"
+        )
         val baseVersionString = if (apiBaseVersion == null) "latest" else baselineVersion
         txtOutputFile.set(
           apiNewVersion?.let { file("$rootDir/docs/apidiffs/${apiNewVersion}_vs_$baselineVersion/${base.archivesName.get()}.txt") }
