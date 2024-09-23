@@ -49,10 +49,11 @@ dependencies {
 // The sequence of tasks is:
 // 1. downloadConfigurationSchema - download configuration schema from open-telemetry/opentelemetry-configuration
 // 2. unzipConfigurationSchema - unzip the configuration schema archive contents to $buildDir/configuration/
-// 3. generateJsonSchema2Pojo - generate java POJOs from the configuration schema
-// 4. jsonSchema2PojoPostProcessing - perform various post processing on the generated POJOs, e.g. replace javax.annotation.processing.Generated with javax.annotation.Generated, add @SuppressWarning("rawtypes") annotation
-// 5. overwriteJs2p - overwrite original generated classes with versions containing updated @Generated annotation
-// 6. deleteJs2pTmp - delete tmp directory
+// 3. deleteTypeDescriptions - delete type_descriptions.yaml $buildDir/configuration/schema, which is not part of core schema and causes problems resolving type refs
+// 4. generateJsonSchema2Pojo - generate java POJOs from the configuration schema
+// 5. jsonSchema2PojoPostProcessing - perform various post processing on the generated POJOs, e.g. replace javax.annotation.processing.Generated with javax.annotation.Generated, add @SuppressWarning("rawtypes") annotation
+// 6. overwriteJs2p - overwrite original generated classes with versions containing updated @Generated annotation
+// 7. deleteJs2pTmp - delete tmp directory
 // ... proceed with normal sourcesJar, compileJava, etc
 
 val configurationTag = "0.3.0"
@@ -78,11 +79,13 @@ val unzipConfigurationSchema by tasks.registering(Copy::class) {
   into("$buildDirectory/configuration/")
 }
 
+val deleteTypeDescriptions by tasks.registering(Delete::class) {
+  dependsOn(unzipConfigurationSchema)
+  delete("$buildDirectory/configuration/schema/type_descriptions.yaml")
+}
+
 jsonSchema2Pojo {
-  val jsonSchemaFiles = fileTree("$buildDirectory/configuration/schema/") {
-    include("**/*.json")
-  }.files
-  sourceFiles = jsonSchemaFiles
+  sourceFiles = setOf(file("$buildDirectory/configuration/schema"))
   targetDirectory = file("$buildDirectory/generated/sources/js2p/java/main")
   targetPackage = "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model"
 
@@ -109,7 +112,7 @@ jsonSchema2Pojo {
 }
 
 val generateJsonSchema2Pojo = tasks.getByName("generateJsonSchema2Pojo")
-generateJsonSchema2Pojo.dependsOn(unzipConfigurationSchema)
+generateJsonSchema2Pojo.dependsOn(deleteTypeDescriptions)
 
 val jsonSchema2PojoPostProcessing by tasks.registering(Copy::class) {
   dependsOn(generateJsonSchema2Pojo)
