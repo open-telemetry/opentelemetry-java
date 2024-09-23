@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
@@ -49,6 +50,8 @@ public final class FileConfiguration {
   private static final Logger logger = Logger.getLogger(FileConfiguration.class.getName());
   private static final Pattern ENV_VARIABLE_REFERENCE =
       Pattern.compile("\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)}");
+  private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
+      SpiHelper.serviceComponentLoader(FileConfiguration.class.getClassLoader());
 
   private static final ObjectMapper MAPPER;
 
@@ -86,9 +89,24 @@ public final class FileConfiguration {
    * @throws ConfigurationException if unable to interpret
    */
   public static OpenTelemetrySdk create(OpenTelemetryConfigurationModel configurationModel) {
+    return create(configurationModel, DEFAULT_COMPONENT_LOADER);
+  }
+
+  /**
+   * Interpret the {@code configurationModel} to create {@link OpenTelemetrySdk} instance
+   * corresponding to the configuration.
+   *
+   * @param configurationModel the configuration model
+   * @param componentLoader the component loader used to load {@link ComponentProvider}
+   *     implementations
+   * @return the {@link OpenTelemetrySdk}
+   * @throws ConfigurationException if unable to interpret
+   */
+  public static OpenTelemetrySdk create(
+      OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
     return createAndMaybeCleanup(
         OpenTelemetryConfigurationFactory.getInstance(),
-        SpiHelper.create(FileConfiguration.class.getClassLoader()),
+        SpiHelper.create(componentLoader),
         configurationModel);
   }
 
@@ -130,7 +148,7 @@ public final class FileConfiguration {
    */
   public static StructuredConfigProperties toConfigProperties(
       OpenTelemetryConfigurationModel model) {
-    return toConfigProperties((Object) model);
+    return toConfigProperties(model, DEFAULT_COMPONENT_LOADER);
   }
 
   /**
@@ -141,13 +159,14 @@ public final class FileConfiguration {
    */
   public static StructuredConfigProperties toConfigProperties(InputStream configuration) {
     Object yamlObj = loadYaml(configuration, System.getenv());
-    return toConfigProperties(yamlObj);
+    return toConfigProperties(yamlObj, DEFAULT_COMPONENT_LOADER);
   }
 
-  static StructuredConfigProperties toConfigProperties(Object model) {
+  static StructuredConfigProperties toConfigProperties(
+      Object model, ComponentLoader componentLoader) {
     Map<String, Object> configurationMap =
         MAPPER.convertValue(model, new TypeReference<Map<String, Object>>() {});
-    return YamlStructuredConfigProperties.create(configurationMap);
+    return YamlStructuredConfigProperties.create(configurationMap, componentLoader);
   }
 
   /**
@@ -162,21 +181,27 @@ public final class FileConfiguration {
   // ComponentProvider
   public static io.opentelemetry.sdk.trace.samplers.Sampler createSampler(
       StructuredConfigProperties genericSamplerModel) {
-    SamplerModel samplerModel = convertToModel(genericSamplerModel, SamplerModel.class);
+    YamlStructuredConfigProperties yamlStructuredConfigProperties =
+        requireYamlStructuredConfigProperties(genericSamplerModel);
+    SamplerModel samplerModel = convertToModel(yamlStructuredConfigProperties, SamplerModel.class);
     return createAndMaybeCleanup(
         SamplerFactory.getInstance(),
-        SpiHelper.create(FileConfiguration.class.getClassLoader()),
+        SpiHelper.create(yamlStructuredConfigProperties.getComponentLoader()),
         samplerModel);
   }
 
-  static <T> T convertToModel(
-      StructuredConfigProperties structuredConfigProperties, Class<T> modelType) {
+  private static YamlStructuredConfigProperties requireYamlStructuredConfigProperties(
+      StructuredConfigProperties structuredConfigProperties) {
     if (!(structuredConfigProperties instanceof YamlStructuredConfigProperties)) {
       throw new ConfigurationException(
           "Only YamlStructuredConfigProperties can be converted to model");
     }
-    return MAPPER.convertValue(
-        ((YamlStructuredConfigProperties) structuredConfigProperties).toMap(), modelType);
+    return (YamlStructuredConfigProperties) structuredConfigProperties;
+  }
+
+  static <T> T convertToModel(
+      YamlStructuredConfigProperties structuredConfigProperties, Class<T> modelType) {
+    return MAPPER.convertValue(structuredConfigProperties.toMap(), modelType);
   }
 
   static <M, R> R createAndMaybeCleanup(Factory<M, R> factory, SpiHelper spiHelper, M model) {
