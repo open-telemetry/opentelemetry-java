@@ -10,7 +10,7 @@ rootProject.extra["versions"] = dependencyVersions
 val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.17.2",
   "com.google.guava:guava-bom:33.3.0-jre",
-  "com.google.protobuf:protobuf-bom:3.25.4",
+  "com.google.protobuf:protobuf-bom:3.25.5",
   "com.linecorp.armeria:armeria-bom:1.30.1",
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
   "com.squareup.okio:okio-bom:3.9.1", // applies to transitive dependencies of okhttp
@@ -61,7 +61,7 @@ val DEPENDENCIES = listOf(
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit5:1.3.0",
-  "com.uber.nullaway:nullaway:0.11.2",
+  "com.uber.nullaway:nullaway:0.11.3",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
