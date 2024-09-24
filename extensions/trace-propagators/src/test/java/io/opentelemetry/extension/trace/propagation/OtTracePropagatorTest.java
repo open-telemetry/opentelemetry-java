@@ -32,6 +32,8 @@ class OtTracePropagatorTest {
   private static final String SHORT_TRACE_ID = "ff00000000000000";
   private static final String SHORT_TRACE_ID_FULL = "0000000000000000ff00000000000000";
   private static final String SPAN_ID = "ff00000000000041";
+  private static final String SHORT_SPAN_ID = "f00000000000041";
+  private static final String SHORT_SPAN_ID_FULL = "0f00000000000041";
   private static final TextMapSetter<Map<String, String>> setter = Map::put;
   private static final TextMapGetter<Map<String, String>> getter =
       new TextMapGetter<Map<String, String>>() {
@@ -259,6 +261,45 @@ class OtTracePropagatorTest {
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 SHORT_TRACE_ID_FULL, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()));
+  }
+
+  @Test
+  void extract_SampledContext_Int_Short_SPanId() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID);
+    carrier.put(OtTracePropagator.SPAN_ID_HEADER, SHORT_SPAN_ID);
+    carrier.put(OtTracePropagator.SAMPLED_HEADER, Common.TRUE_INT);
+
+    assertThat(getSpanContext(propagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SHORT_SPAN_ID_FULL, TraceFlags.getSampled(), TraceState.getDefault()));
+  }
+
+  @Test
+  void extract_SampledContext_Bool_Short_SpanId() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID);
+    carrier.put(OtTracePropagator.SPAN_ID_HEADER, SHORT_SPAN_ID);
+    carrier.put(OtTracePropagator.SAMPLED_HEADER, "true");
+
+    assertThat(getSpanContext(propagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SHORT_SPAN_ID_FULL, TraceFlags.getSampled(), TraceState.getDefault()));
+  }
+
+  @Test
+  void extract_NotSampledContext_Short_SpanId() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID);
+    carrier.put(OtTracePropagator.SPAN_ID_HEADER, SHORT_SPAN_ID);
+    carrier.put(OtTracePropagator.SAMPLED_HEADER, Common.FALSE_INT);
+
+    assertThat(getSpanContext(propagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SHORT_SPAN_ID_FULL, TraceFlags.getDefault(), TraceState.getDefault()));
   }
 
   @Test
