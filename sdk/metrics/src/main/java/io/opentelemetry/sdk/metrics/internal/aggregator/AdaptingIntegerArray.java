@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import java.util.Arrays;
 import javax.annotation.Nullable;
+import java.util.Collection;
 
 /**
  * An integer array that automatically expands its memory consumption (via copy/allocation) when
@@ -184,36 +185,24 @@ final class AdaptingIntegerArray {
   /** Convert from byte => short backing array. */
   @SuppressWarnings("NullAway")
   private void resizeToShort() {
-    short[] shortBacking = new short[this.byteBacking.length];
-    for (int i = 0; i < this.byteBacking.length; i++) {
-      shortBacking[i] = this.byteBacking[i];
-    }
     this.cellSize = ArrayCellSize.SHORT;
-    this.shortBacking = shortBacking;
+    this.shortBacking = Array.copyOf(byteBacking, byteBacking.length);
     this.byteBacking = null;
   }
 
   /** Convert from short => int backing array. */
   @SuppressWarnings("NullAway")
   private void resizeToInt() {
-    int[] intBacking = new int[this.shortBacking.length];
-    for (int i = 0; i < this.shortBacking.length; i++) {
-      intBacking[i] = this.shortBacking[i];
-    }
     this.cellSize = ArrayCellSize.INT;
-    this.intBacking = intBacking;
+    this.intBacking = Array.copyOf(shortBacking, shortBacking.length);
     this.shortBacking = null;
   }
 
   /** convert from int => long backing array. */
   @SuppressWarnings("NullAway")
   private void resizeToLong() {
-    long[] longBacking = new long[this.intBacking.length];
-    for (int i = 0; i < this.intBacking.length; i++) {
-      longBacking[i] = this.intBacking[i];
-    }
     this.cellSize = ArrayCellSize.LONG;
-    this.longBacking = longBacking;
+    this.longBacking = Array.copyOf(intBacking, intBacking.length);
     this.intBacking = null;
   }
 }
