@@ -5,11 +5,9 @@
 
 package io.opentelemetry.api.internal;
 
-import java.util.AbstractMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 /**
@@ -36,18 +34,12 @@ public final class ConfigUtil {
    */
   public static String getString(String key, String defaultValue) {
     String normalizedKey = normalizePropertyKey(key);
-    Set<Map.Entry<String, String>> properties =
-        System.getProperties().stringPropertyNames().stream()
-            .map(
-                propertyName ->
-                    new AbstractMap.SimpleEntry<>(propertyName, System.getProperty(propertyName)))
-            .filter(entry -> entry.getKey() != null)
-            .collect(Collectors.<Map.Entry<String, String>>toSet());
 
     String systemProperty =
-        properties.stream()
-            .filter(entry -> normalizedKey.equals(normalizePropertyKey(entry.getKey())))
-            .map(Map.Entry::getValue)
+        System.getProperties().stringPropertyNames().stream()
+            .filter(propertyName -> normalizedKey.equals(normalizePropertyKey(propertyName)))
+            .map(System::getProperty)
+            .filter(Objects::nonNull)
             .findFirst()
             .orElse(null);
     if (systemProperty != null) {
