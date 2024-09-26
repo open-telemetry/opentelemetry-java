@@ -30,8 +30,7 @@ import java.util.logging.Logger;
  */
 public class OtlpStdoutMetricExporter implements MetricExporter {
 
-  private static final Logger LOGGER =
-      Logger.getLogger(OtlpStdoutMetricExporter.class.getName());
+  private static final Logger LOGGER = Logger.getLogger(OtlpStdoutMetricExporter.class.getName());
 
   private final AtomicBoolean isShutdown = new AtomicBoolean();
 
@@ -41,7 +40,10 @@ public class OtlpStdoutMetricExporter implements MetricExporter {
   private final AggregationTemporalitySelector aggregationTemporalitySelector;
   private final DefaultAggregationSelector defaultAggregationSelector;
 
-  OtlpStdoutMetricExporter(Logger logger, JsonWriter jsonWriter, boolean wrapperJsonObject,
+  OtlpStdoutMetricExporter(
+      Logger logger,
+      JsonWriter jsonWriter,
+      boolean wrapperJsonObject,
       AggregationTemporalitySelector aggregationTemporalitySelector,
       DefaultAggregationSelector defaultAggregationSelector) {
     this.logger = logger;

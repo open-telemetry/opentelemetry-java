@@ -25,8 +25,7 @@ import java.util.logging.Logger;
  */
 public class OtlpStdoutSpanExporter implements SpanExporter {
 
-  private static final Logger LOGGER =
-      Logger.getLogger(OtlpStdoutSpanExporter.class.getName());
+  private static final Logger LOGGER = Logger.getLogger(OtlpStdoutSpanExporter.class.getName());
 
   private final AtomicBoolean isShutdown = new AtomicBoolean();
 

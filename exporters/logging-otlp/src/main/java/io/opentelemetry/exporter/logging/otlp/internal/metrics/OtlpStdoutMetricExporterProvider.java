@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.logging.otlp.internal.metrics;
 
+import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -19,6 +20,10 @@ public class OtlpStdoutMetricExporterProvider implements ConfigurableMetricExpor
   @Override
   public MetricExporter createExporter(ConfigProperties config) {
     OtlpStdoutMetricExporterBuilder builder = OtlpStdoutMetricExporter.builder();
+    ExporterBuilderUtil.configureOtlpAggregationTemporality(
+        config, builder::setAggregationTemporalitySelector);
+    ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
+        config, builder::setDefaultAggregationSelector);
     return builder.build();
   }
 

@@ -87,88 +87,87 @@ abstract class TestDataExporter<T> {
                   TraceState.getDefault()))
           .build();
 
-   static final SpanData SPAN1 =
-       TestSpanData.builder()
-           .setHasEnded(true)
-           .setSpanContext(
-               SpanContext.create(
-                   "12345678876543211234567887654321",
-                   "8765432112345678",
-                   TraceFlags.getSampled(),
-                   TraceState.getDefault()))
-           .setStartEpochNanos(100)
-           .setEndEpochNanos(100 + 1000)
-           .setStatus(StatusData.ok())
-           .setName("testSpan1")
-           .setKind(SpanKind.INTERNAL)
-           .setAttributes(Attributes.of(stringKey("animal"), "cat", longKey("lives"), 9L))
-           .setEvents(
-               Collections.singletonList(
-                   EventData.create(
-                       100 + 500,
-                       "somethingHappenedHere",
-                       Attributes.of(booleanKey("important"), true))))
-           .setTotalAttributeCount(2)
-           .setTotalRecordedEvents(1)
-           .setTotalRecordedLinks(0)
-           .setInstrumentationScopeInfo(
-               InstrumentationScopeInfo.builder("instrumentation")
-                   .setVersion("1")
-                   .setAttributes(Attributes.builder().put("key", "value").build())
-                   .build())
-           .setResource(RESOURCE)
-           .build();
+  static final SpanData SPAN1 =
+      TestSpanData.builder()
+          .setHasEnded(true)
+          .setSpanContext(
+              SpanContext.create(
+                  "12345678876543211234567887654321",
+                  "8765432112345678",
+                  TraceFlags.getSampled(),
+                  TraceState.getDefault()))
+          .setStartEpochNanos(100)
+          .setEndEpochNanos(100 + 1000)
+          .setStatus(StatusData.ok())
+          .setName("testSpan1")
+          .setKind(SpanKind.INTERNAL)
+          .setAttributes(Attributes.of(stringKey("animal"), "cat", longKey("lives"), 9L))
+          .setEvents(
+              Collections.singletonList(
+                  EventData.create(
+                      100 + 500,
+                      "somethingHappenedHere",
+                      Attributes.of(booleanKey("important"), true))))
+          .setTotalAttributeCount(2)
+          .setTotalRecordedEvents(1)
+          .setTotalRecordedLinks(0)
+          .setInstrumentationScopeInfo(
+              InstrumentationScopeInfo.builder("instrumentation")
+                  .setVersion("1")
+                  .setAttributes(Attributes.builder().put("key", "value").build())
+                  .build())
+          .setResource(RESOURCE)
+          .build();
 
-   private static final SpanData SPAN2 =
-       TestSpanData.builder()
-           .setHasEnded(false)
-           .setSpanContext(
-               SpanContext.create(
-                   "12340000000043211234000000004321",
-                   "8765000000005678",
-                   TraceFlags.getSampled(),
-                   TraceState.getDefault()))
-           .setStartEpochNanos(500)
-           .setEndEpochNanos(500 + 1001)
-           .setStatus(StatusData.error())
-           .setName("testSpan2")
-           .setKind(SpanKind.CLIENT)
-           .setResource(RESOURCE)
-           .setInstrumentationScopeInfo(
-               InstrumentationScopeInfo.builder("instrumentation2").setVersion("2").build())
-           .build();
+  private static final SpanData SPAN2 =
+      TestSpanData.builder()
+          .setHasEnded(false)
+          .setSpanContext(
+              SpanContext.create(
+                  "12340000000043211234000000004321",
+                  "8765000000005678",
+                  TraceFlags.getSampled(),
+                  TraceState.getDefault()))
+          .setStartEpochNanos(500)
+          .setEndEpochNanos(500 + 1001)
+          .setStatus(StatusData.error())
+          .setName("testSpan2")
+          .setKind(SpanKind.CLIENT)
+          .setResource(RESOURCE)
+          .setInstrumentationScopeInfo(
+              InstrumentationScopeInfo.builder("instrumentation2").setVersion("2").build())
+          .build();
 
   static final MetricData METRIC1 =
-       ImmutableMetricData.createDoubleSum(
-           RESOURCE,
-           InstrumentationScopeInfo.builder("instrumentation")
-               .setVersion("1")
-               .setAttributes(Attributes.builder().put("key", "value").build())
-               .build(),
-           "metric1",
-           "metric1 description",
-           "m",
-           ImmutableSumData.create(
-               true,
-               AggregationTemporality.CUMULATIVE,
-               Collections.singletonList(
-                   ImmutableDoublePointData.create(
-                       1, 2, Attributes.of(stringKey("cat"), "meow"), 4))));
+      ImmutableMetricData.createDoubleSum(
+          RESOURCE,
+          InstrumentationScopeInfo.builder("instrumentation")
+              .setVersion("1")
+              .setAttributes(Attributes.builder().put("key", "value").build())
+              .build(),
+          "metric1",
+          "metric1 description",
+          "m",
+          ImmutableSumData.create(
+              true,
+              AggregationTemporality.CUMULATIVE,
+              Collections.singletonList(
+                  ImmutableDoublePointData.create(
+                      1, 2, Attributes.of(stringKey("cat"), "meow"), 4))));
 
-   private static final MetricData METRIC2 =
-       ImmutableMetricData.createDoubleSum(
-           RESOURCE,
-           InstrumentationScopeInfo.builder("instrumentation2").setVersion("2").build(),
-           "metric2",
-           "metric2 description",
-           "s",
-           ImmutableSumData.create(
-               true,
-               AggregationTemporality.CUMULATIVE,
-               Collections.singletonList(
-                   ImmutableDoublePointData.create(
-                       1, 2, Attributes.of(stringKey("cat"), "meow"), 4))));
-
+  private static final MetricData METRIC2 =
+      ImmutableMetricData.createDoubleSum(
+          RESOURCE,
+          InstrumentationScopeInfo.builder("instrumentation2").setVersion("2").build(),
+          "metric2",
+          "metric2 description",
+          "s",
+          ImmutableSumData.create(
+              true,
+              AggregationTemporality.CUMULATIVE,
+              Collections.singletonList(
+                  ImmutableDoublePointData.create(
+                      1, 2, Attributes.of(stringKey("cat"), "meow"), 4))));
 
   public TestDataExporter(String expectedFileNoWrapper, String expectedFileWrapper) {
     this.expectedFileNoWrapper = expectedFileNoWrapper;

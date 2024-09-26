@@ -47,8 +47,8 @@ public final class OtlpStdoutSpanExporterBuilder {
   /**
    * Sets the exporter to use the specified output stream.
    *
-   * <p>The output stream will be closed when {@link OtlpStdoutSpanExporter#shutdown()} is
-   * called unless it's {@link System#out} or {@link System#err}.
+   * <p>The output stream will be closed when {@link OtlpStdoutSpanExporter#shutdown()} is called
+   * unless it's {@link System#out} or {@link System#err}.
    *
    * @param outputStream the output stream to use.
    */

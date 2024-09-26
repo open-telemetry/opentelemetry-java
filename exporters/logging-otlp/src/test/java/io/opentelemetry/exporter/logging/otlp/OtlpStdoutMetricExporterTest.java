@@ -30,35 +30,34 @@ import org.junit.jupiter.api.Test;
 class OtlpStdoutMetricExporterTest
     extends AbstractOtlpStdoutExporterTest<OtlpStdoutMetricExporter> {
 
-      public OtlpStdoutMetricExporterTest() {
-        super(
-            TestDataExporter.forMetrics(),
-            OtlpStdoutMetricExporter.class,
-            ConfigurableMetricExporterProvider.class,
-            MetricExporter.class,
-            "OtlpStdoutMetricExporter{jsonWriter=StreamJsonWriter{outputStream=stdout}, wrapperJsonObject=true}");
-      }
+  public OtlpStdoutMetricExporterTest() {
+    super(
+        TestDataExporter.forMetrics(),
+        OtlpStdoutMetricExporter.class,
+        ConfigurableMetricExporterProvider.class,
+        MetricExporter.class,
+        "OtlpStdoutMetricExporter{jsonWriter=StreamJsonWriter{outputStream=stdout}, wrapperJsonObject=true}");
+  }
 
-      @Override
-      protected OtlpStdoutMetricExporter createDefaultExporter() {
-        return OtlpStdoutMetricExporter.builder().build();
-      }
+  @Override
+  protected OtlpStdoutMetricExporter createDefaultExporter() {
+    return OtlpStdoutMetricExporter.builder().build();
+  }
 
-      @Override
-      protected OtlpStdoutMetricExporter createExporter(
-          @Nullable OutputStream outputStream, boolean wrapperJsonObject) {
-        OtlpStdoutMetricExporterBuilder builder =
-            OtlpStdoutMetricExporter.builder().setWrapperJsonObject(wrapperJsonObject);
-        if (outputStream != null) {
-          builder.setOutput(outputStream);
-        } else {
-          builder.setOutput(Logger.getLogger(exporterClass.getName()));
-        }
-        return builder.build();
-      }
+  @Override
+  protected OtlpStdoutMetricExporter createExporter(
+      @Nullable OutputStream outputStream, boolean wrapperJsonObject) {
+    OtlpStdoutMetricExporterBuilder builder =
+        OtlpStdoutMetricExporter.builder().setWrapperJsonObject(wrapperJsonObject);
+    if (outputStream != null) {
+      builder.setOutput(outputStream);
+    } else {
+      builder.setOutput(Logger.getLogger(exporterClass.getName()));
+    }
+    return builder.build();
+  }
 
   /** Test configuration specific to metric exporter. */
-
   @Test
   void providerMetricConfig() {
     OtlpStdoutMetricExporter exporter =
@@ -84,7 +83,8 @@ class OtlpStdoutMetricExporterTest
     when(properties.getString("default_histogram_aggregation"))
         .thenReturn("BASE2_EXPONENTIAL_BUCKET_HISTOGRAM");
 
-    OtlpStdoutMetricExporter exporter = (OtlpStdoutMetricExporter) exporterFromComponentProvider(properties);
+    OtlpStdoutMetricExporter exporter =
+        (OtlpStdoutMetricExporter) exporterFromComponentProvider(properties);
     assertThat(exporter.getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.DELTA);
 
@@ -92,7 +92,7 @@ class OtlpStdoutMetricExporterTest
         .isEqualTo(Aggregation.base2ExponentialBucketHistogram());
   }
 
-   @Test
+  @Test
   void validMetricConfig() {
     assertThatCode(
             () ->

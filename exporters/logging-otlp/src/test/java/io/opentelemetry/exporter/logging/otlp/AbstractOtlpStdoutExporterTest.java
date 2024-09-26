@@ -221,20 +221,18 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
         loadExporter(DefaultConfigProperties.createFromMap(emptyMap())), defaultConfigString);
   }
 
-  protected Object exporterFromComponentProvider(
-      StructuredConfigProperties properties) {
-    return
-        ((ComponentProvider<?>)
-                loadSpi(ComponentProvider.class)
-                    .filter(
-                        p -> {
-                          ComponentProvider<?> c = (ComponentProvider<?>) p;
-                          return "experimental-otlp/stdout".equals(c.getName())
-                              && c.getType().equals(componentProviderType);
-                        })
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("No provider found")))
-            .create(properties);
+  protected Object exporterFromComponentProvider(StructuredConfigProperties properties) {
+    return ((ComponentProvider<?>)
+            loadSpi(ComponentProvider.class)
+                .filter(
+                    p -> {
+                      ComponentProvider<?> c = (ComponentProvider<?>) p;
+                      return "experimental-otlp/stdout".equals(c.getName())
+                          && c.getType().equals(componentProviderType);
+                    })
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No provider found")))
+        .create(properties);
   }
 
   @Test
@@ -269,7 +267,8 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
         .filter(
             p -> {
               try {
-                return AbstractOtlpStdoutExporterTest.TYPE.equals(p.getClass().getDeclaredMethod("getName").invoke(p));
+                return AbstractOtlpStdoutExporterTest.TYPE.equals(
+                    p.getClass().getDeclaredMethod("getName").invoke(p));
               } catch (Exception e) {
                 throw new RuntimeException(e);
               }

@@ -60,8 +60,8 @@ public final class OtlpStdoutMetricExporterBuilder {
   /**
    * Sets the exporter to use the specified output stream.
    *
-   * <p>The output stream will be closed when {@link OtlpStdoutMetricExporter#shutdown()} is
-   * called unless it's {@link System#out} or {@link System#err}.
+   * <p>The output stream will be closed when {@link OtlpStdoutMetricExporter#shutdown()} is called
+   * unless it's {@link System#out} or {@link System#err}.
    *
    * @param outputStream the output stream to use.
    */
@@ -90,8 +90,8 @@ public final class OtlpStdoutMetricExporterBuilder {
   public OtlpStdoutMetricExporterBuilder setAggregationTemporalitySelector(
       AggregationTemporalitySelector aggregationTemporalitySelector) {
     requireNonNull(aggregationTemporalitySelector, "aggregationTemporalitySelector");
-      this.aggregationTemporalitySelector = aggregationTemporalitySelector;
-      return this;
+    this.aggregationTemporalitySelector = aggregationTemporalitySelector;
+    return this;
   }
 
   /**
@@ -114,6 +114,11 @@ public final class OtlpStdoutMetricExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpStdoutMetricExporter build() {
-    return new OtlpStdoutMetricExporter(logger, jsonWriter, wrapperJsonObject, aggregationTemporalitySelector, defaultAggregationSelector);
+    return new OtlpStdoutMetricExporter(
+        logger,
+        jsonWriter,
+        wrapperJsonObject,
+        aggregationTemporalitySelector,
+        defaultAggregationSelector);
   }
 }
