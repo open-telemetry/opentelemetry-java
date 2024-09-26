@@ -98,8 +98,6 @@ public final class ExporterBuilderUtil {
     }
   }
 
-  private ExporterBuilderUtil() {}
-
   /**
    * Invoke the {@code aggregationTemporalitySelectorConsumer} with the configured {@link
    * AggregationTemporality}.
@@ -189,4 +187,6 @@ public final class ExporterBuilderUtil {
           "Unrecognized default_histogram_aggregation: " + defaultHistogramAggregation);
     }
   }
+
+  private ExporterBuilderUtil() {}
 }
