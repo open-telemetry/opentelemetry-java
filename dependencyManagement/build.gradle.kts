@@ -73,7 +73,7 @@ val DEPENDENCIES = listOf(
   "io.opentracing:opentracing-noop:0.33.0",
   "io.prometheus:prometheus-metrics-exporter-httpserver:1.3.1",
   "junit:junit:4.13.2",
-  "nl.jqno.equalsverifier:equalsverifier:3.16.2",
+  "nl.jqno.equalsverifier:equalsverifier:3.17",
   "org.awaitility:awaitility:4.2.2",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
   "org.codehaus.mojo:animal-sniffer-annotations:1.24",
