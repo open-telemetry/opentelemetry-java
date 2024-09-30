@@ -9,11 +9,12 @@ import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PrometheusModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReaderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
 import java.io.Closeable;
@@ -35,7 +36,7 @@ final class MetricReaderFactory implements Factory<MetricReaderModel, MetricRead
       MetricReaderModel model, SpiHelper spiHelper, List<Closeable> closeables) {
     PeriodicMetricReaderModel periodicModel = model.getPeriodic();
     if (periodicModel != null) {
-      MetricExporterModel exporterModel =
+      PushMetricExporterModel exporterModel =
           requireNonNull(periodicModel.getExporter(), "periodic metric reader exporter");
       io.opentelemetry.sdk.metrics.export.MetricExporter metricExporter =
           MetricExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
@@ -50,7 +51,7 @@ final class MetricReaderFactory implements Factory<MetricReaderModel, MetricRead
 
     PullMetricReaderModel pullModel = model.getPull();
     if (pullModel != null) {
-      MetricExporterModel exporterModel =
+      PullMetricExporterModel exporterModel =
           requireNonNull(pullModel.getExporter(), "pull metric reader exporter");
       PrometheusModel prometheusModel = exporterModel.getPrometheus();
       if (prometheusModel != null) {

@@ -49,7 +49,7 @@ public final class FileConfiguration {
 
   private static final Logger logger = Logger.getLogger(FileConfiguration.class.getName());
   private static final Pattern ENV_VARIABLE_REFERENCE =
-      Pattern.compile("\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)}");
+      Pattern.compile("\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)(:-([^\n]*))?\\}");
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
       SpiHelper.serviceComponentLoader(FileConfiguration.class.getClassLoader());
 
@@ -313,7 +313,12 @@ public final class FileConfiguration {
       ScalarStyle scalarStyle = ((ScalarNode) node).getScalarStyle();
       do {
         MatchResult matchResult = matcher.toMatchResult();
-        String replacement = environmentVariables.getOrDefault(matcher.group(1), "");
+        String envVarKey = matcher.group(1);
+        String defaultValue = matcher.group(3);
+        if (defaultValue == null) {
+          defaultValue = "";
+        }
+        String replacement = environmentVariables.getOrDefault(envVarKey, defaultValue);
         newVal.append(val, offset, matchResult.start()).append(replacement);
         offset = matchResult.end();
       } while (matcher.find());

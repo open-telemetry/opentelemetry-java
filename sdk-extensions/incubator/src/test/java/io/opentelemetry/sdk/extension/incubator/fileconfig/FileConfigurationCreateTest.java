@@ -86,10 +86,7 @@ class FileConfigurationCreateTest {
                   "client_key: .*\n", "client_key: " + clientKeyPath + System.lineSeparator())
               .replaceAll(
                   "client_certificate: .*\n",
-                  "client_certificate: " + clientCertificatePath + System.lineSeparator())
-              // TODO: remove once ComponentProvider SPI implemented in
-              // https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-xray-propagator
-              .replaceAll("xray,", "");
+                  "client_certificate: " + clientCertificatePath + System.lineSeparator());
       InputStream is =
           new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
 

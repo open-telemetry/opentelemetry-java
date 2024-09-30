@@ -13,7 +13,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
@@ -22,8 +21,8 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordExporterComponentProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.HeadersModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.NameStringValuePairModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.io.Closeable;
@@ -32,6 +31,7 @@ import java.nio.file.Path;
 import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -127,11 +127,15 @@ class LogRecordExporterFactoryTest {
                     .withOtlp(
                         new OtlpModel()
                             .withProtocol("http/protobuf")
-                            .withEndpoint("http://example:4318")
+                            .withEndpoint("http://example:4318/v1/logs")
                             .withHeaders(
-                                new HeadersModel()
-                                    .withAdditionalProperty("key1", "value1")
-                                    .withAdditionalProperty("key2", "value2"))
+                                Arrays.asList(
+                                    new NameStringValuePairModel()
+                                        .withName("key1")
+                                        .withValue("value1"),
+                                    new NameStringValuePairModel()
+                                        .withName("key2")
+                                        .withValue("value2")))
                             .withCompression("gzip")
                             .withTimeout(15_000)
                             .withCertificate(certificatePath)
@@ -150,12 +154,19 @@ class LogRecordExporterFactoryTest {
         .loadComponent(eq(LogRecordExporter.class), eq("otlp"), configCaptor.capture());
     StructuredConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("protocol")).isEqualTo("http/protobuf");
-    assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318");
-    StructuredConfigProperties headers = configProperties.getStructured("headers");
-    assertThat(headers).isNotNull();
-    assertThat(headers.getPropertyKeys()).isEqualTo(ImmutableSet.of("key1", "key2"));
-    assertThat(headers.getString("key1")).isEqualTo("value1");
-    assertThat(headers.getString("key2")).isEqualTo("value2");
+    assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318/v1/logs");
+    List<StructuredConfigProperties> headers = configProperties.getStructuredList("headers");
+    assertThat(headers)
+        .isNotNull()
+        .satisfiesExactly(
+            header -> {
+              assertThat(header.getString("name")).isEqualTo("key1");
+              assertThat(header.getString("value")).isEqualTo("value1");
+            },
+            header -> {
+              assertThat(header.getString("name")).isEqualTo("key2");
+              assertThat(header.getString("value")).isEqualTo("value2");
+            });
     assertThat(configProperties.getString("compression")).isEqualTo("gzip");
     assertThat(configProperties.getInt("timeout")).isEqualTo(Duration.ofSeconds(15).toMillis());
     assertThat(configProperties.getString("certificate")).isEqualTo(certificatePath);
