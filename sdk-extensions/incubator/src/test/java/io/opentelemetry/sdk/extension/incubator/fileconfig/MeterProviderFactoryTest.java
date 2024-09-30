@@ -11,10 +11,10 @@ import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterProviderModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SelectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.StreamModel;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
@@ -75,7 +75,7 @@ class MeterProviderFactoryTest {
                                 .withPeriodic(
                                     new PeriodicMetricReaderModel()
                                         .withExporter(
-                                            new MetricExporterModel()
+                                            new PushMetricExporterModel()
                                                 .withOtlp(new OtlpMetricModel())))))
                     .withViews(
                         Collections.singletonList(

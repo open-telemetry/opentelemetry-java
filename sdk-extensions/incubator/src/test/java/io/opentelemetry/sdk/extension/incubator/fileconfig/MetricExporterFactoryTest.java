@@ -13,7 +13,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
@@ -24,9 +23,8 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.MetricExporterComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.HeadersModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.NameStringValuePairModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PrometheusModel;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -38,6 +36,7 @@ import java.nio.file.Path;
 import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -73,7 +72,7 @@ class MetricExporterFactoryTest {
         MetricExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .MetricExporterModel()
+                        .PushMetricExporterModel()
                     .withOtlp(new OtlpMetricModel()),
                 spiHelper,
                 closeables);
@@ -131,15 +130,19 @@ class MetricExporterFactoryTest {
         MetricExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .MetricExporterModel()
+                        .PushMetricExporterModel()
                     .withOtlp(
                         new OtlpMetricModel()
                             .withProtocol("http/protobuf")
-                            .withEndpoint("http://example:4318")
+                            .withEndpoint("http://example:4318/v1/metrics")
                             .withHeaders(
-                                new HeadersModel()
-                                    .withAdditionalProperty("key1", "value1")
-                                    .withAdditionalProperty("key2", "value2"))
+                                Arrays.asList(
+                                    new NameStringValuePairModel()
+                                        .withName("key1")
+                                        .withValue("value1"),
+                                    new NameStringValuePairModel()
+                                        .withName("key2")
+                                        .withValue("value2")))
                             .withCompression("gzip")
                             .withTimeout(15_000)
                             .withCertificate(certificatePath)
@@ -161,12 +164,19 @@ class MetricExporterFactoryTest {
     verify(spiHelper).loadComponent(eq(MetricExporter.class), eq("otlp"), configCaptor.capture());
     StructuredConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("protocol")).isEqualTo("http/protobuf");
-    assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318");
-    StructuredConfigProperties headers = configProperties.getStructured("headers");
-    assertThat(headers).isNotNull();
-    assertThat(headers.getPropertyKeys()).isEqualTo(ImmutableSet.of("key1", "key2"));
-    assertThat(headers.getString("key1")).isEqualTo("value1");
-    assertThat(headers.getString("key2")).isEqualTo("value2");
+    assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318/v1/metrics");
+    List<StructuredConfigProperties> headers = configProperties.getStructuredList("headers");
+    assertThat(headers)
+        .isNotNull()
+        .satisfiesExactly(
+            header -> {
+              assertThat(header.getString("name")).isEqualTo("key1");
+              assertThat(header.getString("value")).isEqualTo("value1");
+            },
+            header -> {
+              assertThat(header.getString("name")).isEqualTo("key2");
+              assertThat(header.getString("value")).isEqualTo("value2");
+            });
     assertThat(configProperties.getString("compression")).isEqualTo("gzip");
     assertThat(configProperties.getInt("timeout")).isEqualTo(Duration.ofSeconds(15).toMillis());
     assertThat(configProperties.getString("certificate")).isEqualTo(certificatePath);
@@ -188,7 +198,7 @@ class MetricExporterFactoryTest {
         MetricExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .MetricExporterModel()
+                        .PushMetricExporterModel()
                     .withConsole(new ConsoleModel()),
                 spiHelper,
                 closeables);
@@ -199,31 +209,13 @@ class MetricExporterFactoryTest {
   }
 
   @Test
-  void create_PrometheusExporter() {
-    List<Closeable> closeables = new ArrayList<>();
-
-    assertThatThrownBy(
-            () ->
-                MetricExporterFactory.getInstance()
-                    .create(
-                        new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                                .MetricExporterModel()
-                            .withPrometheus(new PrometheusModel()),
-                        spiHelper,
-                        closeables))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage("prometheus exporter not supported in this context");
-    cleanup.addCloseables(closeables);
-  }
-
-  @Test
   void create_SpiExporter_Unknown() {
     assertThatThrownBy(
             () ->
                 MetricExporterFactory.getInstance()
                     .create(
                         new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                                .MetricExporterModel()
+                                .PushMetricExporterModel()
                             .withAdditionalProperty(
                                 "unknown_key", ImmutableMap.of("key1", "value1")),
                         spiHelper,
@@ -239,7 +231,7 @@ class MetricExporterFactoryTest {
         MetricExporterFactory.getInstance()
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .MetricExporterModel()
+                        .PushMetricExporterModel()
                     .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
                 spiHelper,
                 new ArrayList<>());

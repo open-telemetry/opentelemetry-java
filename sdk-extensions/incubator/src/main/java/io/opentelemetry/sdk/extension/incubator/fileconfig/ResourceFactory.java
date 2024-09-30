@@ -5,19 +5,28 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import static io.opentelemetry.sdk.internal.GlobUtil.toGlobPatternPredicate;
+
+import io.opentelemetry.sdk.autoconfigure.ResourceConfiguration;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributesModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorAttributesModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorsModel;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 final class ResourceFactory
     implements Factory<
@@ -41,23 +50,39 @@ final class ResourceFactory
       io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel model,
       SpiHelper spiHelper,
       List<Closeable> closeables) {
-    Resource result = Resource.getDefault();
+    ResourceBuilder builder = Resource.getDefault().toBuilder();
 
+    ResourceBuilder detectedResourceBuilder = Resource.builder();
     List<Resource> resourceDetectorResources = loadFromResourceDetectors(spiHelper);
     for (Resource resourceProviderResource : resourceDetectorResources) {
-      result = result.merge(resourceProviderResource);
+      detectedResourceBuilder.putAll(resourceProviderResource);
+    }
+    Predicate<String> detectorAttributeFilter = detectorAttributeFilter(model.getDetectors());
+    builder
+        .putAll(
+            detectedResourceBuilder.build().getAttributes().toBuilder()
+                .removeIf(attributeKey -> !detectorAttributeFilter.test(attributeKey.getKey()))
+                .build())
+        .build();
+
+    String attributeList = model.getAttributesList();
+    if (attributeList != null) {
+      builder.putAll(
+          ResourceConfiguration.createEnvironmentResource(
+              DefaultConfigProperties.createFromMap(
+                  Collections.singletonMap("otel.resource.attributes", attributeList))));
     }
 
-    AttributesModel attributesModel = model.getAttributes();
-    if (attributesModel != null) {
-      result =
-          result.toBuilder()
-              .putAll(
-                  AttributesFactory.getInstance().create(attributesModel, spiHelper, closeables))
-              .build();
+    List<AttributeNameValueModel> attributeNameValueModel = model.getAttributes();
+    if (attributeNameValueModel != null) {
+      builder
+          .putAll(
+              AttributeListFactory.getInstance()
+                  .create(attributeNameValueModel, spiHelper, closeables))
+          .build();
     }
 
-    return result;
+    return builder.build();
   }
 
   /**
@@ -114,5 +139,55 @@ final class ResourceFactory
     private int order() {
       return order;
     }
+  }
+
+  private static boolean matchAll(String attributeKey) {
+    return true;
+  }
+
+  private static Predicate<String> detectorAttributeFilter(
+      @Nullable DetectorsModel detectorsModel) {
+    if (detectorsModel == null) {
+      return ResourceFactory::matchAll;
+    }
+    DetectorAttributesModel detectorAttributesModel = detectorsModel.getAttributes();
+    if (detectorAttributesModel == null) {
+      return ResourceFactory::matchAll;
+    }
+    List<String> included = detectorAttributesModel.getIncluded();
+    List<String> excluded = detectorAttributesModel.getExcluded();
+    if (included == null && excluded == null) {
+      return ResourceFactory::matchAll;
+    }
+    if (included == null) {
+      return excludedPredicate(excluded);
+    }
+    if (excluded == null) {
+      return includedPredicate(included);
+    }
+    return includedPredicate(included).and(excludedPredicate(excluded));
+  }
+
+  /**
+   * Returns a predicate which matches strings matching any of the {@code included} glob patterns.
+   */
+  private static Predicate<String> includedPredicate(List<String> included) {
+    Predicate<String> result = attributeKey -> false;
+    for (String include : included) {
+      result = result.or(toGlobPatternPredicate(include));
+    }
+    return result;
+  }
+
+  /**
+   * Returns a predicate which matches strings NOT matching any of the {@code excluded} glob
+   * patterns.
+   */
+  private static Predicate<String> excludedPredicate(List<String> excluded) {
+    Predicate<String> result = attributeKey -> true;
+    for (String exclude : excluded) {
+      result = result.and(toGlobPatternPredicate(exclude).negate());
+    }
+    return result;
   }
 }
