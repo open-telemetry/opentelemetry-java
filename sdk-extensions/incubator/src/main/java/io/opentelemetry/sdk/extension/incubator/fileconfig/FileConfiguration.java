@@ -49,7 +49,7 @@ public final class FileConfiguration {
 
   private static final Logger logger = Logger.getLogger(FileConfiguration.class.getName());
   private static final Pattern ENV_VARIABLE_REFERENCE =
-      Pattern.compile("\\$\\{(?<ENVKEY>[a-zA-Z_][a-zA-Z0-9_]*)(:-(?<DEFAULTVALUE>[^\n]*))?\\}");
+      Pattern.compile("\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)(:-([^\n]*))?\\}");
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
       SpiHelper.serviceComponentLoader(FileConfiguration.class.getClassLoader());
 

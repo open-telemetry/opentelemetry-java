@@ -9,6 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
@@ -61,6 +62,22 @@ class AttributeListFactoryTest {
 
   @Test
   void create() {
+    Attributes expectedAttributes =
+        Attributes.builder()
+            .put("service.name", "my-service")
+            .put("strKey", "val")
+            .put("longKey", 1L)
+            .put("intKey", 2)
+            .put("doubleKey", 1.0d)
+            .put("floatKey", 2.0f)
+            .put("boolKey", true)
+            .put("strArrKey", "val1", "val2")
+            .put("longArrKey", 1L, 2L)
+            .put("intArrKey", 1, 2)
+            .put("doubleArrKey", 1.0d, 2.0d)
+            .put("floatArrKey", 1.0f, 2.0f)
+            .put("boolArrKey", true, false)
+            .build();
     assertThat(
             AttributeListFactory.getInstance()
                 .create(
@@ -118,21 +135,6 @@ class AttributeListFactoryTest {
                             .withType(AttributeNameValueModel.Type.BOOL_ARRAY)),
                     mock(SpiHelper.class),
                     Collections.emptyList()))
-        .isEqualTo(
-            io.opentelemetry.api.common.Attributes.builder()
-                .put("service.name", "my-service")
-                .put("strKey", "val")
-                .put("longKey", 1L)
-                .put("intKey", 2)
-                .put("doubleKey", 1.0d)
-                .put("floatKey", 2.0f)
-                .put("boolKey", true)
-                .put("strArrKey", "val1", "val2")
-                .put("longArrKey", 1L, 2L)
-                .put("intArrKey", 1, 2)
-                .put("doubleArrKey", 1.0d, 2.0d)
-                .put("floatArrKey", 1.0f, 2.0f)
-                .put("boolArrKey", true, false)
-                .build());
+        .isEqualTo(expectedAttributes);
   }
 }

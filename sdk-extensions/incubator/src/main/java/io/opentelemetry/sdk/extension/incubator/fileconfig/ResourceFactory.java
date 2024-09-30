@@ -158,9 +158,11 @@ final class ResourceFactory
     List<String> excluded = detectorAttributesModel.getExcluded();
     if (included == null && excluded == null) {
       return ResourceFactory::matchAll;
-    } else if (included == null) {
+    }
+    if (included == null) {
       return excludedPredicate(excluded);
-    } else if (excluded == null) {
+    }
+    if (excluded == null) {
       return includedPredicate(included);
     }
     return includedPredicate(included).and(excludedPredicate(excluded));
