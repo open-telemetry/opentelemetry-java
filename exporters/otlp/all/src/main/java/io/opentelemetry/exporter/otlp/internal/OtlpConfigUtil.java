@@ -22,7 +22,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -245,96 +244,6 @@ public final class OtlpConfigUtil {
       } catch (Exception e) {
         throw new ConfigurationException("Cannot decode header value: " + value, e);
       }
-    }
-  }
-
-  /**
-   * Invoke the {@code aggregationTemporalitySelectorConsumer} with the configured {@link
-   * AggregationTemporality}.
-   */
-  public static void configureOtlpAggregationTemporality(
-      ConfigProperties config,
-      Consumer<AggregationTemporalitySelector> aggregationTemporalitySelectorConsumer) {
-    String temporalityStr = config.getString("otel.exporter.otlp.metrics.temporality.preference");
-    if (temporalityStr == null) {
-      return;
-    }
-    AggregationTemporalitySelector temporalitySelector;
-    switch (temporalityStr.toLowerCase(Locale.ROOT)) {
-      case "cumulative":
-        temporalitySelector = AggregationTemporalitySelector.alwaysCumulative();
-        break;
-      case "delta":
-        temporalitySelector = AggregationTemporalitySelector.deltaPreferred();
-        break;
-      case "lowmemory":
-        temporalitySelector = AggregationTemporalitySelector.lowMemory();
-        break;
-      default:
-        throw new ConfigurationException("Unrecognized aggregation temporality: " + temporalityStr);
-    }
-    aggregationTemporalitySelectorConsumer.accept(temporalitySelector);
-  }
-
-  public static void configureOtlpAggregationTemporality(
-      StructuredConfigProperties config,
-      Consumer<AggregationTemporalitySelector> aggregationTemporalitySelectorConsumer) {
-    String temporalityStr = config.getString("temporality_preference");
-    if (temporalityStr == null) {
-      return;
-    }
-    AggregationTemporalitySelector temporalitySelector;
-    switch (temporalityStr.toLowerCase(Locale.ROOT)) {
-      case "cumulative":
-        temporalitySelector = AggregationTemporalitySelector.alwaysCumulative();
-        break;
-      case "delta":
-        temporalitySelector = AggregationTemporalitySelector.deltaPreferred();
-        break;
-      case "lowmemory":
-        temporalitySelector = AggregationTemporalitySelector.lowMemory();
-        break;
-      default:
-        throw new ConfigurationException("Unrecognized temporality_preference: " + temporalityStr);
-    }
-    aggregationTemporalitySelectorConsumer.accept(temporalitySelector);
-  }
-
-  /**
-   * Invoke the {@code defaultAggregationSelectorConsumer} with the configured {@link
-   * DefaultAggregationSelector}.
-   */
-  public static void configureOtlpHistogramDefaultAggregation(
-      ConfigProperties config,
-      Consumer<DefaultAggregationSelector> defaultAggregationSelectorConsumer) {
-    String defaultHistogramAggregation =
-        config.getString("otel.exporter.otlp.metrics.default.histogram.aggregation");
-    if (defaultHistogramAggregation != null) {
-      ExporterBuilderUtil.configureHistogramDefaultAggregation(
-          defaultHistogramAggregation, defaultAggregationSelectorConsumer);
-    }
-  }
-
-  /**
-   * Invoke the {@code defaultAggregationSelectorConsumer} with the configured {@link
-   * DefaultAggregationSelector}.
-   */
-  public static void configureOtlpHistogramDefaultAggregation(
-      StructuredConfigProperties config,
-      Consumer<DefaultAggregationSelector> defaultAggregationSelectorConsumer) {
-    String defaultHistogramAggregation = config.getString("default_histogram_aggregation");
-    if (defaultHistogramAggregation == null) {
-      return;
-    }
-    if (AggregationUtil.aggregationName(Aggregation.base2ExponentialBucketHistogram())
-        .equalsIgnoreCase(defaultHistogramAggregation)) {
-      defaultAggregationSelectorConsumer.accept(
-          DefaultAggregationSelector.getDefault()
-              .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()));
-    } else if (!AggregationUtil.aggregationName(explicitBucketHistogram())
-        .equalsIgnoreCase(defaultHistogramAggregation)) {
-      throw new ConfigurationException(
-          "Unrecognized default_histogram_aggregation: " + defaultHistogramAggregation);
     }
   }
 
