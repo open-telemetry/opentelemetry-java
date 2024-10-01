@@ -27,6 +27,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -152,6 +153,10 @@ public interface Context {
    * {@code ScheduledExecutorService dbExecutor = Context.wrapTasks(threadPool)} to ensure calls
    * like {@code dbExecutor.execute(() -> database.query())} have {@link Context} available on the
    * thread executing database queries.
+   *
+   * <p>Note: The context will not be propagated for {@link
+   * ScheduledExecutorService#scheduleAtFixedRate(Runnable, long, long, TimeUnit)} and {@link
+   * ScheduledExecutorService#scheduleWithFixedDelay(Runnable, long, long, TimeUnit)} calls.
    *
    * @since 1.43.0
    */
