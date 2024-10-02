@@ -1,2 +1,29 @@
 Comparing source compatibility of opentelemetry-api-1.43.0-SNAPSHOT.jar against opentelemetry-api-1.42.1.jar
-No changes.
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.EventBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void emit()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.EventBuilder put(java.lang.String, java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.EventBuilder put(java.lang.String, long)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.EventBuilder put(java.lang.String, double)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.EventBuilder put(java.lang.String, boolean)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.EventBuilder put(java.lang.String, java.lang.String[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.EventBuilder put(java.lang.String, long[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.EventBuilder put(java.lang.String, double[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.EventBuilder put(java.lang.String, boolean[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.EventBuilder put(io.opentelemetry.api.common.AttributeKey<T>, java.lang.Object)
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.EventBuilder put(java.lang.String, io.opentelemetry.api.common.Value<?>)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.EventBuilder setAttributes(io.opentelemetry.api.common.Attributes)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.EventBuilder setContext(io.opentelemetry.context.Context)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.EventBuilder setSeverity(io.opentelemetry.api.logs.Severity)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.EventBuilder setTimestamp(long, java.util.concurrent.TimeUnit)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.logs.EventBuilder setTimestamp(java.time.Instant)
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.logs.Logger  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.EventBuilder eventBuilder(java.lang.String)
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.OpenTelemetry  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.Logger getLogger(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.LoggerBuilder getLoggerBuilder(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.LoggerProvider getLoggerProvider()

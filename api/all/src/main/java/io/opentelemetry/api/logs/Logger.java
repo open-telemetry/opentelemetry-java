@@ -43,5 +43,8 @@ public interface Logger {
    *     href="https://opentelemetry.io/docs/specs/semconv/general/events/">event.name semantic
    *     conventions</a> for more details.
    */
-  EventBuilder eventBuilder(String eventName);
+  default EventBuilder eventBuilder(String eventName) {
+    // TODO could implement this on top of logRecordBuilder, or return a no-op implementation
+    throw new UnsupportedOperationException();
+  }
 }
