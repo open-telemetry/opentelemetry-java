@@ -33,4 +33,15 @@ public interface Logger {
    * LogRecordBuilder#emit()}.
    */
   LogRecordBuilder logRecordBuilder();
+
+  /**
+   * Return a {@link LogRecordBuilder} to emit an event.
+   *
+   * @param eventName the event name, which identifies the class or type of event. Event with the
+   *     same name are structurally similar to one another. Event names are subject to the same
+   *     naming rules as attribute names. Notably, they are namespaced to avoid collisions. See <a
+   *     href="https://opentelemetry.io/docs/specs/semconv/general/events/">event.name semantic
+   *     conventions</a> for more details.
+   */
+  EventBuilder eventBuilder(String eventName);
 }
