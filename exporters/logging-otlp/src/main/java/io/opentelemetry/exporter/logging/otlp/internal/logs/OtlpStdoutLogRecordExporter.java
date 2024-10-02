@@ -23,7 +23,7 @@ import java.util.logging.Logger;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class OtlpStdoutLogRecordExporter implements LogRecordExporter {
+public final class OtlpStdoutLogRecordExporter implements LogRecordExporter {
 
   private static final Logger LOGGER =
       Logger.getLogger(OtlpStdoutLogRecordExporter.class.getName());

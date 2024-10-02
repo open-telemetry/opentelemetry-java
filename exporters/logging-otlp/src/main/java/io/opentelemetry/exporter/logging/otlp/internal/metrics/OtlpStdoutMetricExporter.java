@@ -23,12 +23,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Exporter for sending OTLP log records to stdout.
+ * Exporter for sending OTLP metrics to stdout.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class OtlpStdoutMetricExporter implements MetricExporter {
+public final class OtlpStdoutMetricExporter implements MetricExporter {
 
   private static final Logger LOGGER = Logger.getLogger(OtlpStdoutMetricExporter.class.getName());
 

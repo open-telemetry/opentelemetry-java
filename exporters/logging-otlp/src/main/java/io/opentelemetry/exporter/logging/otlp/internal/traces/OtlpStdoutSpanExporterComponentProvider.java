@@ -15,7 +15,8 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class OtlpStdoutSpanExporterComponentProvider implements ComponentProvider<SpanExporter> {
+public final class OtlpStdoutSpanExporterComponentProvider
+    implements ComponentProvider<SpanExporter> {
 
   @Override
   public Class<SpanExporter> getType() {
