@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import static io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties.empty;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableSet;
@@ -171,6 +172,18 @@ class YamlStructuredConfigPropertiesTest {
   }
 
   @Test
+  void treeWalking() {
+    // Validate common pattern of walking down tree path which is not defined
+    // Access string at .foo.bar.baz without null checking and without exception.
+    assertThat(
+            structuredConfigProps
+                .getStructured("foo", empty())
+                .getStructured("bar", empty())
+                .getString("baz"))
+        .isNull();
+  }
+
+  @Test
   void defaults() {
     assertThat(structuredConfigProps.getString("foo", "bar")).isEqualTo("bar");
     assertThat(structuredConfigProps.getInt("foo", 1)).isEqualTo(1);
@@ -181,6 +194,9 @@ class YamlStructuredConfigPropertiesTest {
             structuredConfigProps.getScalarList(
                 "foo", String.class, Collections.singletonList("bar")))
         .isEqualTo(Collections.singletonList("bar"));
+    assertThat(structuredConfigProps.getStructured("foo", empty())).isEqualTo(empty());
+    assertThat(structuredConfigProps.getStructuredList("foo", Collections.emptyList()))
+        .isEqualTo(Collections.emptyList());
   }
 
   @Test
@@ -208,5 +224,27 @@ class YamlStructuredConfigPropertiesTest {
     assertThat(otherProps.getScalarList("str_key", String.class)).isNull();
     assertThat(otherProps.getStructured("str_key")).isNull();
     assertThat(otherProps.getStructuredList("str_key")).isNull();
+  }
+
+  @Test
+  void emptyProperties() {
+    assertThat(empty().getString("foo")).isNull();
+    assertThat(empty().getInt("foo")).isNull();
+    assertThat(empty().getLong("foo")).isNull();
+    assertThat(empty().getDouble("foo")).isNull();
+    assertThat(empty().getBoolean("foo")).isNull();
+    assertThat(empty().getScalarList("foo", String.class)).isNull();
+    assertThat(empty().getStructured("foo")).isNull();
+    assertThat(empty().getStructuredList("foo")).isNull();
+    assertThat(empty().getString("foo", "bar")).isEqualTo("bar");
+    assertThat(empty().getInt("foo", 1)).isEqualTo(1);
+    assertThat(empty().getLong("foo", 1)).isEqualTo(1);
+    assertThat(empty().getDouble("foo", 1.1)).isEqualTo(1.1);
+    assertThat(empty().getBoolean("foo", true)).isTrue();
+    assertThat(empty().getScalarList("foo", String.class, Collections.singletonList("bar")))
+        .isEqualTo(Collections.singletonList("bar"));
+    assertThat(empty().getStructured("foo", empty())).isEqualTo(empty());
+    assertThat(empty().getStructuredList("foo", Collections.emptyList()))
+        .isEqualTo(Collections.emptyList());
   }
 }
