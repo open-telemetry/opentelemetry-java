@@ -2,6 +2,67 @@
 
 ## Unreleased
 
+## Version 1.42.1 (2024-09-10)
+
+### API
+
+* Revert `java-test-fixtures` plugin to remove test dependencies from `pom.xml`.
+  ([#6695](https://github.com/open-telemetry/opentelemetry-java/pull/6695))
+
+## Version 1.42.0 (2024-09-06)
+
+### API
+
+* BREAKING: Stabilize log support for AnyValue bodies. Rename `AnyValue` to `Value`, promote
+  from `opentelemetry-api-incubator` to `opentelemetry-api`, change package
+  from `io.opentelemetry.api.incubator.logs` to `io.opentelemetry.api.common`.
+  ([#6591](https://github.com/open-telemetry/opentelemetry-java/pull/6591))
+* Noop implementations detect when `opentelemetry-api-incubator` is present and return extended noop
+  implementations.
+  ([#6617](https://github.com/open-telemetry/opentelemetry-java/pull/6617))%
+
+### SDK
+
+#### Traces
+
+* Added experimental support for SpanProcessor OnEnding callback
+  ([#6367](https://github.com/open-telemetry/opentelemetry-java/pull/6367))
+* Remove final modifier from SdkTracer.tracerEnabled
+  ([#6687](https://github.com/open-telemetry/opentelemetry-java/pull/6687))
+
+#### Exporters
+
+* Suppress zipkin exporter instrumentation
+  ([#6552](https://github.com/open-telemetry/opentelemetry-java/pull/6552))
+* OTLP exporters return status code exceptions via CompletableResultCode in GrpcExporter and
+  HttpExporter.
+  ([#6645](https://github.com/open-telemetry/opentelemetry-java/pull/6645))
+* Align GrpcSender contract with HttpSender
+  ([#6658](https://github.com/open-telemetry/opentelemetry-java/pull/6658))
+
+#### Extensions
+
+* Add autoconfigure support for ns and us durations
+  ([#6654](https://github.com/open-telemetry/opentelemetry-java/pull/6654))
+* Add declarative configuration ComponentProvider support for resources
+  ([#6625](https://github.com/open-telemetry/opentelemetry-java/pull/6625))
+* Add declarative configuration ComponentProvider support for processors
+  ([#6623](https://github.com/open-telemetry/opentelemetry-java/pull/6623))
+* Add declarative configuration ComponentProvider support for samplers
+  ([#6494](https://github.com/open-telemetry/opentelemetry-java/pull/6494))
+* Add declarative configuration ComponentProvider support for propagators
+  ([#6624](https://github.com/open-telemetry/opentelemetry-java/pull/6624))
+* Add declarative configuration missing pieces
+  ([#6677](https://github.com/open-telemetry/opentelemetry-java/pull/6677))
+* Change jaeger remote sampler autoconfigure property from `pollingInterval` to `pollingIntervalMs`
+  to match spec.
+  ([#6672](https://github.com/open-telemetry/opentelemetry-java/pull/6672))
+
+#### Testing
+
+* Add asserts for log record body fields
+  ([#6509](https://github.com/open-telemetry/opentelemetry-java/pull/6509))
+
 ## Version 1.41.0 (2024-08-09)
 
 ### API

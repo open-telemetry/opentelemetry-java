@@ -49,7 +49,8 @@ final class FileConfigUtil {
    */
   static <T> T loadComponent(SpiHelper spiHelper, Class<T> type, String name, Object model) {
     // Map model to generic structured config properties
-    DeclarativeConfigProperties config = DeclarativeConfiguration.toConfigProperties(model);
+    DeclarativeConfigProperties config =
+        DeclarativeConfiguration.toConfigProperties(model, spiHelper.getComponentLoader());
     return spiHelper.loadComponent(type, name, config);
   }
 }

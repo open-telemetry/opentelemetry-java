@@ -23,6 +23,17 @@ import javax.annotation.Nullable;
 public interface DeclarativeConfigProperties {
 
   /**
+   * Return an empty {@link DeclarativeConfigProperties} instance.
+   *
+   * <p>Useful for walking the tree without checking for null. For example, to access a string key
+   * nested at .foo.bar.baz, call: {@code config.getStructured("foo", empty()).getStructured("bar",
+   * empty()).getString("baz")}.
+   */
+  static DeclarativeConfigProperties empty() {
+    return EmptyDeclarativeConfigProperties.getInstance();
+  }
+
+  /**
    * Returns a {@link String} configuration property.
    *
    * @return null if the property has not been configured
@@ -171,12 +182,36 @@ public interface DeclarativeConfigProperties {
   /**
    * Returns a list of {@link DeclarativeConfigProperties} configuration property.
    *
+   * @return a map-valued configuration property, or {@code defaultValue} if {@code name} has not
+   *     been configured
+   * @throws DeclarativeConfigException if the property is not a mapping
+   */
+  default DeclarativeConfigProperties getStructured(
+      String name, DeclarativeConfigProperties defaultValue) {
+    return defaultIfNull(getStructured(name), defaultValue);
+  }
+
+  /**
+   * Returns a list of {@link DeclarativeConfigProperties} configuration property.
+   *
    * @return a list of map-valued configuration property, or {@code null} if {@code name} has not
    *     been configured
    * @throws DeclarativeConfigException if the property is not a sequence of mappings
    */
   @Nullable
   List<DeclarativeConfigProperties> getStructuredList(String name);
+
+  /**
+   * Returns a list of {@link DeclarativeConfigProperties} configuration property.
+   *
+   * @return a list of map-valued configuration property, or {@code defaultValue} if {@code name}
+   *     has not been configured
+   * @throws DeclarativeConfigException if the property is not a sequence of mappings
+   */
+  default List<DeclarativeConfigProperties> getStructuredList(
+      String name, List<DeclarativeConfigProperties> defaultValue) {
+    return defaultIfNull(getStructuredList(name), defaultValue);
+  }
 
   /**
    * Returns a set of all configuration property keys.

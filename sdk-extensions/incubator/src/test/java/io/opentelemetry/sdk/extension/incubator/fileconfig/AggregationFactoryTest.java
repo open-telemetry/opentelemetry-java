@@ -9,12 +9,12 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Aggregation;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2ExponentialBucketHistogram;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Drop;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogram;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LastValue;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sum;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AggregationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2ExponentialBucketHistogramModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DropModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LastValueModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SumModel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -26,7 +26,7 @@ class AggregationFactoryTest {
 
   @ParameterizedTest
   @MethodSource("createTestCases")
-  void create(Aggregation model, io.opentelemetry.sdk.metrics.Aggregation expectedResult) {
+  void create(AggregationModel model, io.opentelemetry.sdk.metrics.Aggregation expectedResult) {
     io.opentelemetry.sdk.metrics.Aggregation aggregation =
         AggregationFactory.getInstance().create(model, mock(SpiHelper.class), new ArrayList<>());
     assertThat(aggregation.toString()).isEqualTo(expectedResult.toString());
@@ -35,32 +35,34 @@ class AggregationFactoryTest {
   private static Stream<Arguments> createTestCases() {
     return Stream.of(
         Arguments.of(
-            new Aggregation(), io.opentelemetry.sdk.metrics.Aggregation.defaultAggregation()),
+            new AggregationModel(), io.opentelemetry.sdk.metrics.Aggregation.defaultAggregation()),
         Arguments.of(
-            new Aggregation().withDrop(new Drop()),
+            new AggregationModel().withDrop(new DropModel()),
             io.opentelemetry.sdk.metrics.Aggregation.drop()),
         Arguments.of(
-            new Aggregation().withSum(new Sum()), io.opentelemetry.sdk.metrics.Aggregation.sum()),
+            new AggregationModel().withSum(new SumModel()),
+            io.opentelemetry.sdk.metrics.Aggregation.sum()),
         Arguments.of(
-            new Aggregation().withLastValue(new LastValue()),
+            new AggregationModel().withLastValue(new LastValueModel()),
             io.opentelemetry.sdk.metrics.Aggregation.lastValue()),
         Arguments.of(
-            new Aggregation()
-                .withBase2ExponentialBucketHistogram(new Base2ExponentialBucketHistogram()),
+            new AggregationModel()
+                .withBase2ExponentialBucketHistogram(new Base2ExponentialBucketHistogramModel()),
             io.opentelemetry.sdk.metrics.Aggregation.base2ExponentialBucketHistogram()),
         Arguments.of(
-            new Aggregation()
+            new AggregationModel()
                 .withBase2ExponentialBucketHistogram(
-                    new Base2ExponentialBucketHistogram().withMaxSize(2).withMaxScale(2)),
+                    new Base2ExponentialBucketHistogramModel().withMaxSize(2).withMaxScale(2)),
             io.opentelemetry.sdk.metrics.Aggregation.base2ExponentialBucketHistogram(2, 2)),
         Arguments.of(
-            new Aggregation()
-                .withExplicitBucketHistogram(new ExplicitBucketHistogram().withBoundaries(null)),
+            new AggregationModel()
+                .withExplicitBucketHistogram(
+                    new ExplicitBucketHistogramModel().withBoundaries(null)),
             io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram()),
         Arguments.of(
-            new Aggregation()
+            new AggregationModel()
                 .withExplicitBucketHistogram(
-                    new ExplicitBucketHistogram().withBoundaries(Arrays.asList(1.0, 2.0))),
+                    new ExplicitBucketHistogramModel().withBoundaries(Arrays.asList(1.0, 2.0))),
             io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram(
                 Arrays.asList(1.0, 2.0))));
   }

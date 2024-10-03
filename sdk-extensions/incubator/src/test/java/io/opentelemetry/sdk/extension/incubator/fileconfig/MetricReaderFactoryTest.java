@@ -17,12 +17,13 @@ import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporter;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReader;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetric;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReader;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Prometheus;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReader;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PrometheusModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReaderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -49,7 +50,7 @@ class MetricReaderFactoryTest {
             () ->
                 MetricReaderFactory.getInstance()
                     .create(
-                        new MetricReader().withPeriodic(new PeriodicMetricReader()),
+                        new MetricReaderModel().withPeriodic(new PeriodicMetricReaderModel()),
                         spiHelper,
                         Collections.emptyList()))
         .isInstanceOf(DeclarativeConfigException.class)
@@ -68,10 +69,11 @@ class MetricReaderFactoryTest {
     io.opentelemetry.sdk.metrics.export.MetricReader reader =
         MetricReaderFactory.getInstance()
             .create(
-                new MetricReader()
+                new MetricReaderModel()
                     .withPeriodic(
-                        new PeriodicMetricReader()
-                            .withExporter(new MetricExporter().withOtlp(new OtlpMetric()))),
+                        new PeriodicMetricReaderModel()
+                            .withExporter(
+                                new PushMetricExporterModel().withOtlp(new OtlpMetricModel()))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(reader);
@@ -93,10 +95,11 @@ class MetricReaderFactoryTest {
     io.opentelemetry.sdk.metrics.export.MetricReader reader =
         MetricReaderFactory.getInstance()
             .create(
-                new MetricReader()
+                new MetricReaderModel()
                     .withPeriodic(
-                        new PeriodicMetricReader()
-                            .withExporter(new MetricExporter().withOtlp(new OtlpMetric()))
+                        new PeriodicMetricReaderModel()
+                            .withExporter(
+                                new PushMetricExporterModel().withOtlp(new OtlpMetricModel()))
                             .withInterval(1)),
                 spiHelper,
                 closeables);
@@ -118,12 +121,12 @@ class MetricReaderFactoryTest {
     io.opentelemetry.sdk.metrics.export.MetricReader reader =
         MetricReaderFactory.getInstance()
             .create(
-                new MetricReader()
+                new MetricReaderModel()
                     .withPull(
-                        new PullMetricReader()
+                        new PullMetricReaderModel()
                             .withExporter(
-                                new MetricExporter()
-                                    .withPrometheus(new Prometheus().withPort(port)))),
+                                new PullMetricExporterModel()
+                                    .withPrometheus(new PrometheusModel().withPort(port)))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(reader);
@@ -148,13 +151,15 @@ class MetricReaderFactoryTest {
     io.opentelemetry.sdk.metrics.export.MetricReader reader =
         MetricReaderFactory.getInstance()
             .create(
-                new MetricReader()
+                new MetricReaderModel()
                     .withPull(
-                        new PullMetricReader()
+                        new PullMetricReaderModel()
                             .withExporter(
-                                new MetricExporter()
+                                new PullMetricExporterModel()
                                     .withPrometheus(
-                                        new Prometheus().withHost("localhost").withPort(port)))),
+                                        new PrometheusModel()
+                                            .withHost("localhost")
+                                            .withPort(port)))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(reader);
@@ -171,7 +176,7 @@ class MetricReaderFactoryTest {
             () ->
                 MetricReaderFactory.getInstance()
                     .create(
-                        new MetricReader().withPull(new PullMetricReader()),
+                        new MetricReaderModel().withPull(new PullMetricReaderModel()),
                         spiHelper,
                         Collections.emptyList()))
         .isInstanceOf(DeclarativeConfigException.class)
@@ -181,21 +186,10 @@ class MetricReaderFactoryTest {
             () ->
                 MetricReaderFactory.getInstance()
                     .create(
-                        new MetricReader()
-                            .withPull(new PullMetricReader().withExporter(new MetricExporter())),
-                        spiHelper,
-                        Collections.emptyList()))
-        .isInstanceOf(DeclarativeConfigException.class)
-        .hasMessage("prometheus is the only currently supported pull reader");
-
-    assertThatThrownBy(
-            () ->
-                MetricReaderFactory.getInstance()
-                    .create(
-                        new MetricReader()
+                        new MetricReaderModel()
                             .withPull(
-                                new PullMetricReader()
-                                    .withExporter(new MetricExporter().withOtlp(new OtlpMetric()))),
+                                new PullMetricReaderModel()
+                                    .withExporter(new PullMetricExporterModel())),
                         spiHelper,
                         Collections.emptyList()))
         .isInstanceOf(DeclarativeConfigException.class)

@@ -9,14 +9,14 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
 import java.util.List;
 import java.util.Objects;
 
 final class OpenTelemetryConfigurationFactory
-    implements Factory<OpenTelemetryConfiguration, OpenTelemetrySdk> {
+    implements Factory<OpenTelemetryConfigurationModel, OpenTelemetrySdk> {
 
   private static final OpenTelemetryConfigurationFactory INSTANCE =
       new OpenTelemetryConfigurationFactory();
@@ -29,7 +29,7 @@ final class OpenTelemetryConfigurationFactory
 
   @Override
   public OpenTelemetrySdk create(
-      OpenTelemetryConfiguration model, SpiHelper spiHelper, List<Closeable> closeables) {
+      OpenTelemetryConfigurationModel model, SpiHelper spiHelper, List<Closeable> closeables) {
     OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
     if (!"0.1".equals(model.getFileFormat())) {
       throw new DeclarativeConfigException(

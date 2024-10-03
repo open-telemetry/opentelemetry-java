@@ -9,8 +9,8 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimits;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimits;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimitsModel;
 import java.util.Collections;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -36,20 +36,24 @@ class SpanLimitsFactoryTest {
             SpanLimitsAndAttributeLimits.create(null, null),
             io.opentelemetry.sdk.trace.SpanLimits.getDefault()),
         Arguments.of(
-            SpanLimitsAndAttributeLimits.create(new AttributeLimits(), new SpanLimits()),
+            SpanLimitsAndAttributeLimits.create(new AttributeLimitsModel(), new SpanLimitsModel()),
             io.opentelemetry.sdk.trace.SpanLimits.getDefault()),
         Arguments.of(
             SpanLimitsAndAttributeLimits.create(
-                new AttributeLimits().withAttributeCountLimit(1).withAttributeValueLengthLimit(2),
-                new SpanLimits()),
+                new AttributeLimitsModel()
+                    .withAttributeCountLimit(1)
+                    .withAttributeValueLengthLimit(2),
+                new SpanLimitsModel()),
             io.opentelemetry.sdk.trace.SpanLimits.builder()
                 .setMaxNumberOfAttributes(1)
                 .setMaxAttributeValueLength(2)
                 .build()),
         Arguments.of(
             SpanLimitsAndAttributeLimits.create(
-                new AttributeLimits().withAttributeCountLimit(1).withAttributeValueLengthLimit(2),
-                new SpanLimits()
+                new AttributeLimitsModel()
+                    .withAttributeCountLimit(1)
+                    .withAttributeValueLengthLimit(2),
+                new SpanLimitsModel()
                     .withAttributeCountLimit(3)
                     .withAttributeValueLengthLimit(4)
                     .withEventCountLimit(5)

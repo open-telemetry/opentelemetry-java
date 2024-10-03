@@ -13,16 +13,18 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessor;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessor;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporter;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessor;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.component.SpanProcessorComponentProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -39,7 +41,7 @@ class SpanProcessorFactoryTest {
             () ->
                 SpanProcessorFactory.getInstance()
                     .create(
-                        new SpanProcessor().withBatch(new BatchSpanProcessor()),
+                        new SpanProcessorModel().withBatch(new BatchSpanProcessorModel()),
                         spiHelper,
                         Collections.emptyList()))
         .isInstanceOf(DeclarativeConfigException.class)
@@ -58,10 +60,10 @@ class SpanProcessorFactoryTest {
     io.opentelemetry.sdk.trace.SpanProcessor processor =
         SpanProcessorFactory.getInstance()
             .create(
-                new SpanProcessor()
+                new SpanProcessorModel()
                     .withBatch(
-                        new BatchSpanProcessor()
-                            .withExporter(new SpanExporter().withOtlp(new Otlp()))),
+                        new BatchSpanProcessorModel()
+                            .withExporter(new SpanExporterModel().withOtlp(new OtlpModel()))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(processor);
@@ -85,10 +87,10 @@ class SpanProcessorFactoryTest {
     io.opentelemetry.sdk.trace.SpanProcessor processor =
         SpanProcessorFactory.getInstance()
             .create(
-                new SpanProcessor()
+                new SpanProcessorModel()
                     .withBatch(
-                        new BatchSpanProcessor()
-                            .withExporter(new SpanExporter().withOtlp(new Otlp()))
+                        new BatchSpanProcessorModel()
+                            .withExporter(new SpanExporterModel().withOtlp(new OtlpModel()))
                             .withScheduleDelay(1)
                             .withMaxExportBatchSize(2)
                             .withExportTimeout(3)),
@@ -106,7 +108,7 @@ class SpanProcessorFactoryTest {
             () ->
                 SpanProcessorFactory.getInstance()
                     .create(
-                        new SpanProcessor().withSimple(new SimpleSpanProcessor()),
+                        new SpanProcessorModel().withSimple(new SimpleSpanProcessorModel()),
                         spiHelper,
                         Collections.emptyList()))
         .isInstanceOf(DeclarativeConfigException.class)
@@ -124,10 +126,10 @@ class SpanProcessorFactoryTest {
     io.opentelemetry.sdk.trace.SpanProcessor processor =
         SpanProcessorFactory.getInstance()
             .create(
-                new SpanProcessor()
+                new SpanProcessorModel()
                     .withSimple(
-                        new SimpleSpanProcessor()
-                            .withExporter(new SpanExporter().withOtlp(new Otlp()))),
+                        new SimpleSpanProcessorModel()
+                            .withExporter(new SpanExporterModel().withOtlp(new OtlpModel()))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(processor);
@@ -137,19 +139,34 @@ class SpanProcessorFactoryTest {
   }
 
   @Test
-  void create_SpiProcessor() {
-    List<Closeable> closeables = new ArrayList<>();
-
+  void create_SpiProcessor_Unknown() {
     assertThatThrownBy(
             () ->
                 SpanProcessorFactory.getInstance()
                     .create(
-                        new SpanProcessor()
-                            .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
+                        new SpanProcessorModel()
+                            .withAdditionalProperty(
+                                "unknown_key", ImmutableMap.of("key1", "value1")),
                         spiHelper,
-                        closeables))
+                        new ArrayList<>()))
         .isInstanceOf(DeclarativeConfigException.class)
-        .hasMessage("Unrecognized span processor(s): [test]");
-    cleanup.addCloseables(closeables);
+        .hasMessage(
+            "No component provider detected for io.opentelemetry.sdk.trace.SpanProcessor with name \"unknown_key\".");
+  }
+
+  @Test
+  void create_SpiExporter_Valid() {
+    io.opentelemetry.sdk.trace.SpanProcessor spanProcessor =
+        SpanProcessorFactory.getInstance()
+            .create(
+                new SpanProcessorModel()
+                    .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
+                spiHelper,
+                new ArrayList<>());
+    assertThat(spanProcessor).isInstanceOf(SpanProcessorComponentProvider.TestSpanProcessor.class);
+    Assertions.assertThat(
+            ((SpanProcessorComponentProvider.TestSpanProcessor) spanProcessor)
+                .config.getString("key1"))
+        .isEqualTo("value1");
   }
 }

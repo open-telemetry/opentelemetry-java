@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimits;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimits;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimitsModel;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.LogLimitsBuilder;
 import java.io.Closeable;
@@ -28,7 +28,7 @@ final class LogLimitsFactory implements Factory<LogRecordLimitsAndAttributeLimit
       LogRecordLimitsAndAttributeLimits model, SpiHelper spiHelper, List<Closeable> closeables) {
     LogLimitsBuilder builder = LogLimits.builder();
 
-    AttributeLimits attributeLimitsModel = model.getAttributeLimits();
+    AttributeLimitsModel attributeLimitsModel = model.getAttributeLimits();
     if (attributeLimitsModel != null) {
       if (attributeLimitsModel.getAttributeCountLimit() != null) {
         builder.setMaxNumberOfAttributes(attributeLimitsModel.getAttributeCountLimit());
@@ -38,7 +38,7 @@ final class LogLimitsFactory implements Factory<LogRecordLimitsAndAttributeLimit
       }
     }
 
-    LogRecordLimits logRecordLimitsModel = model.getLogRecordLimits();
+    LogRecordLimitsModel logRecordLimitsModel = model.getLogRecordLimits();
     if (logRecordLimitsModel != null) {
       if (logRecordLimitsModel.getAttributeCountLimit() != null) {
         builder.setMaxNumberOfAttributes(logRecordLimitsModel.getAttributeCountLimit());

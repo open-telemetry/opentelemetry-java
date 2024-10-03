@@ -20,6 +20,7 @@ dependencies {
   testImplementation("com.fasterxml.jackson.core:jackson-databind")
 
   testImplementation(project(":sdk:testing"))
+  testImplementation(project(":api:testing-internal"))
 
   testImplementation("io.opentelemetry.semconv:opentelemetry-semconv-incubating")
 

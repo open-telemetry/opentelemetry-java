@@ -86,7 +86,10 @@ class DeclarativeConfigurationCreateTest {
                   "client_key: .*\n", "client_key: " + clientKeyPath + System.lineSeparator())
               .replaceAll(
                   "client_certificate: .*\n",
-                  "client_certificate: " + clientCertificatePath + System.lineSeparator());
+                  "client_certificate: " + clientCertificatePath + System.lineSeparator())
+              // TODO: remove once updated ComponentProvider SPI contract implemented in
+              // https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-xray-propagator
+              .replaceAll("xray,", "");
       InputStream is =
           new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
 
@@ -121,7 +124,7 @@ class DeclarativeConfigurationCreateTest {
         .hasMessage(
             "No component provider detected for io.opentelemetry.sdk.logs.export.LogRecordExporter with name \"foo\".");
     logCapturer.assertContains(
-        "Error encountered interpreting configuration model. Closing partially configured components.");
+        "Error encountered interpreting model. Closing partially configured components.");
     logCapturer.assertContains(
         "Closing io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter");
     logCapturer.assertContains("Closing io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor");

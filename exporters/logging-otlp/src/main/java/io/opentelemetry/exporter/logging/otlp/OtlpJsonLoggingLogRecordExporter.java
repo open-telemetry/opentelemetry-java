@@ -5,18 +5,12 @@
 
 package io.opentelemetry.exporter.logging.otlp;
 
-import static io.opentelemetry.exporter.logging.otlp.JsonUtil.JSON_FACTORY;
-
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.io.SegmentedStringWriter;
-import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
+import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporter;
+import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporterBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
-import java.io.IOException;
 import java.util.Collection;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -30,49 +24,31 @@ public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter
   private static final Logger logger =
       Logger.getLogger(OtlpJsonLoggingLogRecordExporter.class.getName());
 
-  private final AtomicBoolean isShutdown = new AtomicBoolean();
+  private final OtlpStdoutLogRecordExporter delegate;
 
   /** Returns a new {@link OtlpJsonLoggingLogRecordExporter}. */
   public static LogRecordExporter create() {
-    return new OtlpJsonLoggingLogRecordExporter();
+    OtlpStdoutLogRecordExporter delegate =
+        new OtlpStdoutLogRecordExporterBuilder(logger).setWrapperJsonObject(false).build();
+    return new OtlpJsonLoggingLogRecordExporter(delegate);
   }
 
-  private OtlpJsonLoggingLogRecordExporter() {}
+  OtlpJsonLoggingLogRecordExporter(OtlpStdoutLogRecordExporter delegate) {
+    this.delegate = delegate;
+  }
 
   @Override
   public CompletableResultCode export(Collection<LogRecordData> logs) {
-    if (isShutdown.get()) {
-      return CompletableResultCode.ofFailure();
-    }
-
-    ResourceLogsMarshaler[] allResourceLogs = ResourceLogsMarshaler.create(logs);
-    for (ResourceLogsMarshaler resourceLogs : allResourceLogs) {
-      SegmentedStringWriter sw = new SegmentedStringWriter(JSON_FACTORY._getBufferRecycler());
-      try (JsonGenerator gen = JsonUtil.create(sw)) {
-        resourceLogs.writeJsonTo(gen);
-      } catch (IOException e) {
-        // Shouldn't happen in practice, just skip it.
-        continue;
-      }
-      try {
-        logger.log(Level.INFO, sw.getAndClear());
-      } catch (IOException e) {
-        logger.log(Level.WARNING, "Unable to read OTLP JSON log records", e);
-      }
-    }
-    return CompletableResultCode.ofSuccess();
+    return delegate.export(logs);
   }
 
   @Override
   public CompletableResultCode flush() {
-    return CompletableResultCode.ofSuccess();
+    return delegate.flush();
   }
 
   @Override
   public CompletableResultCode shutdown() {
-    if (!isShutdown.compareAndSet(false, true)) {
-      logger.log(Level.INFO, "Calling shutdown() multiple times.");
-    }
-    return CompletableResultCode.ofSuccess();
+    return delegate.shutdown();
   }
 }

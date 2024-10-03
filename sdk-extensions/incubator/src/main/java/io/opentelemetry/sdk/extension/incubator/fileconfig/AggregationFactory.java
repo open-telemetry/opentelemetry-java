@@ -7,14 +7,14 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Aggregation;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2ExponentialBucketHistogram;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogram;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AggregationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2ExponentialBucketHistogramModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramModel;
 import java.io.Closeable;
 import java.util.List;
 
 final class AggregationFactory
-    implements Factory<Aggregation, io.opentelemetry.sdk.metrics.Aggregation> {
+    implements Factory<AggregationModel, io.opentelemetry.sdk.metrics.Aggregation> {
 
   private static final AggregationFactory INSTANCE = new AggregationFactory();
 
@@ -26,7 +26,7 @@ final class AggregationFactory
 
   @Override
   public io.opentelemetry.sdk.metrics.Aggregation create(
-      Aggregation model, SpiHelper spiHelper, List<Closeable> closeables) {
+      AggregationModel model, SpiHelper spiHelper, List<Closeable> closeables) {
     if (model.getDrop() != null) {
       return io.opentelemetry.sdk.metrics.Aggregation.drop();
     }
@@ -36,7 +36,7 @@ final class AggregationFactory
     if (model.getLastValue() != null) {
       return io.opentelemetry.sdk.metrics.Aggregation.lastValue();
     }
-    Base2ExponentialBucketHistogram exponentialBucketHistogram =
+    Base2ExponentialBucketHistogramModel exponentialBucketHistogram =
         model.getBase2ExponentialBucketHistogram();
     if (exponentialBucketHistogram != null) {
       Integer maxScale = exponentialBucketHistogram.getMaxScale();
@@ -54,7 +54,7 @@ final class AggregationFactory
         throw new DeclarativeConfigException("Invalid exponential bucket histogram", e);
       }
     }
-    ExplicitBucketHistogram explicitBucketHistogram = model.getExplicitBucketHistogram();
+    ExplicitBucketHistogramModel explicitBucketHistogram = model.getExplicitBucketHistogram();
     if (explicitBucketHistogram != null) {
       List<Double> boundaries = explicitBucketHistogram.getBoundaries();
       if (boundaries == null) {

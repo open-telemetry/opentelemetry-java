@@ -42,7 +42,7 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "10.17.0"
+  toolVersion = "10.18.2"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
@@ -87,7 +87,6 @@ tasks {
             "-Xlint:-processing",
             // We suppress the "options" warning because it prevents compilation on modern JDKs
             "-Xlint:-options",
-
             // Fail build on any warning
             "-Werror",
           ),

@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimits;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimits;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimitsModel;
 import io.opentelemetry.sdk.trace.SpanLimitsBuilder;
 import java.io.Closeable;
 import java.util.List;
@@ -28,7 +28,7 @@ final class SpanLimitsFactory
       SpanLimitsAndAttributeLimits model, SpiHelper spiHelper, List<Closeable> closeables) {
     SpanLimitsBuilder builder = io.opentelemetry.sdk.trace.SpanLimits.builder();
 
-    AttributeLimits attributeLimitsModel = model.getAttributeLimits();
+    AttributeLimitsModel attributeLimitsModel = model.getAttributeLimits();
     if (attributeLimitsModel != null) {
       if (attributeLimitsModel.getAttributeCountLimit() != null) {
         builder.setMaxNumberOfAttributes(attributeLimitsModel.getAttributeCountLimit());
@@ -38,7 +38,7 @@ final class SpanLimitsFactory
       }
     }
 
-    SpanLimits spanLimitsModel = model.getSpanLimits();
+    SpanLimitsModel spanLimitsModel = model.getSpanLimits();
     if (spanLimitsModel != null) {
       if (spanLimitsModel.getAttributeCountLimit() != null) {
         builder.setMaxNumberOfAttributes(spanLimitsModel.getAttributeCountLimit());

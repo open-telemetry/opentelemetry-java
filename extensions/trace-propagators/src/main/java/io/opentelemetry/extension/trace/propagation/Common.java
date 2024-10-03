@@ -29,6 +29,8 @@ final class Common {
   static final int MAX_TRACE_ID_LENGTH = TraceId.getLength();
   static final int MIN_TRACE_ID_LENGTH = MAX_TRACE_ID_LENGTH / 2;
 
+  static final int MAX_SPAN_ID_LENGTH = SpanId.getLength();
+
   private Common() {}
 
   static SpanContext buildSpanContext(
@@ -44,7 +46,7 @@ final class Common {
 
       return SpanContext.createFromRemoteParent(
           StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH),
-          spanId,
+          StringUtils.padLeft(spanId, MAX_SPAN_ID_LENGTH),
           traceFlags,
           TraceState.getDefault());
     } catch (RuntimeException e) {

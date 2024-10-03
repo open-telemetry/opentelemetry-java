@@ -14,11 +14,14 @@ dependencies {
   implementation(project(":sdk:logs"))
 
   implementation(project(":exporters:otlp:common"))
+  compileOnly(project(":api:incubator"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
 
   implementation("com.fasterxml.jackson.core:jackson-core")
 
+  testImplementation(project(":api:incubator"))
   testImplementation(project(":sdk:testing"))
 
+  testImplementation("com.google.guava:guava")
   testImplementation("org.skyscreamer:jsonassert")
 }

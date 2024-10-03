@@ -11,6 +11,7 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.Aggregation;
@@ -27,6 +28,8 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -97,21 +100,7 @@ public final class OtlpConfigUtil {
       setEndpoint.accept(endpoint.toString());
     }
 
-    Map<String, String> headers = config.getMap("otel.exporter.otlp." + dataType + ".headers");
-    if (headers.isEmpty()) {
-      headers = config.getMap("otel.exporter.otlp.headers");
-    }
-    for (Map.Entry<String, String> entry : headers.entrySet()) {
-      String key = entry.getKey();
-      String value = entry.getValue();
-      try {
-        // headers are encoded as URL - see
-        // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md#specifying-headers-via-environment-variables
-        addHeader.accept(key, URLDecoder.decode(value, StandardCharsets.UTF_8.displayName()));
-      } catch (Exception e) {
-        throw new ConfigurationException("Cannot decode header value: " + value, e);
-      }
-    }
+    configureOtlpHeaders(config, dataType, addHeader);
 
     String compression = config.getString("otel.exporter.otlp." + dataType + ".compression");
     if (compression == null) {
@@ -190,29 +179,28 @@ public final class OtlpConfigUtil {
     String protocol = getStructuredConfigOtlpProtocol(config);
     boolean isHttpProtobuf = protocol.equals(PROTOCOL_HTTP_PROTOBUF);
     URL endpoint = validateEndpoint(config.getString("endpoint"), isHttpProtobuf);
-    if (endpoint != null && isHttpProtobuf) {
-      String path = endpoint.getPath();
-      if (!path.endsWith("/")) {
-        path += "/";
-      }
-      path += signalPath(dataType);
-      endpoint = createUrl(endpoint, path);
-    }
     if (endpoint != null) {
       setEndpoint.accept(endpoint.toString());
     }
 
-    DeclarativeConfigProperties headers = config.getStructured("headers");
+    String headerList = config.getString("headers_list");
+    if (headerList != null) {
+      ConfigProperties headersListConfig =
+          DefaultConfigProperties.createFromMap(
+              Collections.singletonMap("otel.exporter.otlp.headers", headerList));
+      configureOtlpHeaders(headersListConfig, dataType, addHeader);
+    }
+
+    List<DeclarativeConfigProperties> headers = config.getStructuredList("headers");
     if (headers != null) {
-      headers
-          .getPropertyKeys()
-          .forEach(
-              header -> {
-                String value = headers.getString(header);
-                if (value != null) {
-                  addHeader.accept(header, value);
-                }
-              });
+      headers.forEach(
+          header -> {
+            String name = header.getString("name");
+            String value = header.getString("value");
+            if (name != null && value != null) {
+              addHeader.accept(name, value);
+            }
+          });
     }
 
     String compression = config.getString("compression");
@@ -247,6 +235,25 @@ public final class OtlpConfigUtil {
     }
 
     ExporterBuilderUtil.configureExporterMemoryMode(config, setMemoryMode);
+  }
+
+  private static void configureOtlpHeaders(
+      ConfigProperties config, String dataType, BiConsumer<String, String> addHeader) {
+    Map<String, String> headers = config.getMap("otel.exporter.otlp." + dataType + ".headers");
+    if (headers.isEmpty()) {
+      headers = config.getMap("otel.exporter.otlp.headers");
+    }
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      String key = entry.getKey();
+      String value = entry.getValue();
+      try {
+        // headers are encoded as URL - see
+        // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md#specifying-headers-via-environment-variables
+        addHeader.accept(key, URLDecoder.decode(value, StandardCharsets.UTF_8.displayName()));
+      } catch (Exception e) {
+        throw new ConfigurationException("Cannot decode header value: " + value, e);
+      }
+    }
   }
 
   /**

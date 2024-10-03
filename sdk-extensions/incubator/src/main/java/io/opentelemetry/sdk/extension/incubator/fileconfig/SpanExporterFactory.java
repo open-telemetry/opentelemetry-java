@@ -9,17 +9,15 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Zipkin;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ZipkinModel;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 
-final class SpanExporterFactory
-    implements Factory<
-        io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporter,
-        SpanExporter> {
+final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExporter> {
 
   private static final SpanExporterFactory INSTANCE = new SpanExporterFactory();
 
@@ -31,10 +29,8 @@ final class SpanExporterFactory
 
   @Override
   public SpanExporter create(
-      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporter model,
-      SpiHelper spiHelper,
-      List<Closeable> closeables) {
-    Otlp otlpModel = model.getOtlp();
+      SpanExporterModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+    OtlpModel otlpModel = model.getOtlp();
     if (otlpModel != null) {
       model.getAdditionalProperties().put("otlp", otlpModel);
     }
@@ -43,7 +39,7 @@ final class SpanExporterFactory
       model.getAdditionalProperties().put("console", model.getConsole());
     }
 
-    Zipkin zipkinModel = model.getZipkin();
+    ZipkinModel zipkinModel = model.getZipkin();
     if (zipkinModel != null) {
       model.getAdditionalProperties().put("zipkin", model.getZipkin());
     }

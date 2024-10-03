@@ -10,7 +10,7 @@ receivers:
           static_configs:
             - targets: ['${APP_ENDPOINT}']
 exporters:
-  logging:
+  debug:
     verbosity: ${LOGGING_EXPORTER_VERBOSITY}
   otlp:
     endpoint: ${OTLP_EXPORTER_ENDPOINT}
@@ -22,4 +22,4 @@ service:
   pipelines:
     metrics:
       receivers: [prometheus]
-      exporters: [logging, otlp]
+      exporters: [debug, otlp]
