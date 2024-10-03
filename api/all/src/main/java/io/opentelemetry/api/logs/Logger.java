@@ -44,7 +44,6 @@ public interface Logger {
    *     conventions</a> for more details.
    */
   default EventBuilder eventBuilder(String eventName) {
-    // TODO could implement this on top of logRecordBuilder, or return a no-op implementation
-    throw new UnsupportedOperationException();
+    return DefaultLogger.getInstance().eventBuilder(eventName);
   }
 }
