@@ -46,19 +46,16 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
 
   private final Map<String, List<YamlDeclarativeConfigProperties>> listEntries;
   private final Map<String, YamlDeclarativeConfigProperties> mapEntries;
-  private final Set<String> nullKeys;
   private final ComponentLoader componentLoader;
 
   private YamlDeclarativeConfigProperties(
       Map<String, Object> simpleEntries,
       Map<String, List<YamlDeclarativeConfigProperties>> listEntries,
       Map<String, YamlDeclarativeConfigProperties> mapEntries,
-      Set<String> nullKeys,
       ComponentLoader componentLoader) {
     this.simpleEntries = simpleEntries;
     this.listEntries = listEntries;
     this.mapEntries = mapEntries;
-    this.nullKeys = nullKeys;
     this.componentLoader = componentLoader;
   }
 
@@ -72,12 +69,11 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
    * @see DeclarativeConfiguration#toConfigProperties(OpenTelemetryConfigurationModel)
    */
   @SuppressWarnings("unchecked")
-  public static YamlDeclarativeConfigProperties create(
+  static YamlDeclarativeConfigProperties create(
       Map<String, Object> properties, ComponentLoader componentLoader) {
     Map<String, Object> simpleEntries = new LinkedHashMap<>();
     Map<String, List<YamlDeclarativeConfigProperties>> listEntries = new LinkedHashMap<>();
     Map<String, YamlDeclarativeConfigProperties> mapEntries = new LinkedHashMap<>();
-    Set<String> nullKeys = new LinkedHashSet<>();
     for (Map.Entry<String, Object> entry : properties.entrySet()) {
       String key = entry.getKey();
       Object value = entry.getValue();
@@ -104,10 +100,6 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
         mapEntries.put(key, configProperties);
         continue;
       }
-      if (value == null) {
-        nullKeys.add(key);
-        continue;
-      }
       throw new DeclarativeConfigException(
           "Unable to initialize ExtendedConfigProperties. Key \""
               + key
@@ -115,7 +107,7 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
               + value.getClass().getName());
     }
     return new YamlDeclarativeConfigProperties(
-        simpleEntries, listEntries, mapEntries, nullKeys, componentLoader);
+        simpleEntries, listEntries, mapEntries, componentLoader);
   }
 
   private static boolean isPrimitiveList(Object object) {
@@ -290,17 +282,15 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
     keys.addAll(simpleEntries.keySet());
     keys.addAll(listEntries.keySet());
     keys.addAll(mapEntries.keySet());
-    keys.addAll(nullKeys);
     return Collections.unmodifiableSet(keys);
   }
 
   @Override
   public String toString() {
-    StringJoiner joiner = new StringJoiner(", ", "YamlStructuredConfigProperties{", "}");
+    StringJoiner joiner = new StringJoiner(", ", "YamlDeclarativeConfigProperties{", "}");
     simpleEntries.forEach((key, value) -> joiner.add(key + "=" + value));
     listEntries.forEach((key, value) -> joiner.add(key + "=" + value));
     mapEntries.forEach((key, value) -> joiner.add(key + "=" + value));
-    nullKeys.forEach((key) -> joiner.add(key + "=null"));
     return joiner.toString();
   }
 
@@ -312,7 +302,6 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
             result.put(
                 key, value.stream().map(YamlDeclarativeConfigProperties::toMap).collect(toList())));
     mapEntries.forEach((key, value) -> result.put(key, value.toMap()));
-    nullKeys.forEach(key -> result.put(key, null));
     return Collections.unmodifiableMap(result);
   }
 

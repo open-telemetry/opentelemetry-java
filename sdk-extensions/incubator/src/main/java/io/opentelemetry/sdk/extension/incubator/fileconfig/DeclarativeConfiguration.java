@@ -184,7 +184,7 @@ public final class DeclarativeConfiguration {
   public static io.opentelemetry.sdk.trace.samplers.Sampler createSampler(
       DeclarativeConfigProperties genericSamplerModel) {
     YamlDeclarativeConfigProperties yamlDeclarativeConfigProperties =
-        requireYamlStructuredConfigProperties(genericSamplerModel);
+        requireYamlDeclarativeConfigProperties(genericSamplerModel);
     SamplerModel samplerModel = convertToModel(yamlDeclarativeConfigProperties, SamplerModel.class);
     return createAndMaybeCleanup(
         SamplerFactory.getInstance(),
@@ -192,7 +192,7 @@ public final class DeclarativeConfiguration {
         samplerModel);
   }
 
-  private static YamlDeclarativeConfigProperties requireYamlStructuredConfigProperties(
+  private static YamlDeclarativeConfigProperties requireYamlDeclarativeConfigProperties(
       DeclarativeConfigProperties declarativeConfigProperties) {
     if (!(declarativeConfigProperties instanceof YamlDeclarativeConfigProperties)) {
       throw new DeclarativeConfigException(
@@ -202,8 +202,8 @@ public final class DeclarativeConfiguration {
   }
 
   static <T> T convertToModel(
-      YamlDeclarativeConfigProperties structuredConfigProperties, Class<T> modelType) {
-    return MAPPER.convertValue(structuredConfigProperties.toMap(), modelType);
+      YamlDeclarativeConfigProperties yamlDeclarativeConfigProperties, Class<T> modelType) {
+    return MAPPER.convertValue(yamlDeclarativeConfigProperties.toMap(), modelType);
   }
 
   static <M, R> R createAndMaybeCleanup(Factory<M, R> factory, SpiHelper spiHelper, M model) {

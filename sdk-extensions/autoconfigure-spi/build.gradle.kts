@@ -8,5 +8,5 @@ otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure.spi")
 
 dependencies {
   api(project(":sdk:all"))
-  implementation(project(":api:incubator"))
+  compileOnly(project(":api:incubator"))
 }
