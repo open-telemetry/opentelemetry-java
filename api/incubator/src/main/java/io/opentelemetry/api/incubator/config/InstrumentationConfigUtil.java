@@ -8,7 +8,7 @@ package io.opentelemetry.api.incubator.config;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 
 /**
@@ -16,8 +16,6 @@ import javax.annotation.Nullable;
  * ConfigProvider#getInstrumentationConfig()}.
  */
 public class InstrumentationConfigUtil {
-
-  // TODO (jack-berg): add helper function to access nested structures with dot notation
 
   /**
    * Return a map representation of the peer service map entries in {@code
@@ -27,25 +25,24 @@ public class InstrumentationConfigUtil {
    */
   @Nullable
   public static Map<String, String> peerServiceMapping(ConfigProvider configProvider) {
-    Optional<List<DeclarativeConfigProperties>> optServiceMappingList =
-        Optional.ofNullable(configProvider.getInstrumentationConfig())
-            .map(instrumentationConfig -> instrumentationConfig.getStructured("general"))
-            .map(generalConfig -> generalConfig.getStructured("peer"))
-            .map(httpConfig -> httpConfig.getStructuredList("service_mapping"));
-    if (!optServiceMappingList.isPresent()) {
+    List<DeclarativeConfigProperties> serviceMappingList =
+        getOrNull(
+            configProvider,
+            config -> config.getStructuredList("service_mapping"),
+            "general",
+            "peer");
+    if (serviceMappingList == null) {
       return null;
     }
     Map<String, String> serviceMapping = new LinkedHashMap<>();
-    optServiceMappingList
-        .get()
-        .forEach(
-            entry -> {
-              String peer = entry.getString("peer");
-              String service = entry.getString("service");
-              if (peer != null && service != null) {
-                serviceMapping.put(peer, service);
-              }
-            });
+    serviceMappingList.forEach(
+        entry -> {
+          String peer = entry.getString("peer");
+          String service = entry.getString("service");
+          if (peer != null && service != null) {
+            serviceMapping.put(peer, service);
+          }
+        });
     return serviceMapping.isEmpty() ? null : serviceMapping;
   }
 
@@ -57,13 +54,12 @@ public class InstrumentationConfigUtil {
    */
   @Nullable
   public static List<String> httpClientRequestCapturedHeaders(ConfigProvider configProvider) {
-    return Optional.ofNullable(configProvider.getInstrumentationConfig())
-        .map(instrumentationConfig -> instrumentationConfig.getStructured("general"))
-        .map(generalConfig -> generalConfig.getStructured("http"))
-        .map(httpConfig -> httpConfig.getStructured("client"))
-        .map(clientConfig -> clientConfig.getScalarList("request_captured_headers", String.class))
-        .filter(list -> !list.isEmpty())
-        .orElse(null);
+    return getOrNull(
+        configProvider,
+        config -> config.getScalarList("request_captured_headers", String.class),
+        "general",
+        "http",
+        "client");
   }
 
   /**
@@ -74,13 +70,12 @@ public class InstrumentationConfigUtil {
    */
   @Nullable
   public static List<String> httpClientResponseCapturedHeaders(ConfigProvider configProvider) {
-    return Optional.ofNullable(configProvider.getInstrumentationConfig())
-        .map(instrumentationConfig -> instrumentationConfig.getStructured("general"))
-        .map(generalConfig -> generalConfig.getStructured("http"))
-        .map(httpConfig -> httpConfig.getStructured("client"))
-        .map(clientConfig -> clientConfig.getScalarList("response_captured_headers", String.class))
-        .filter(list -> !list.isEmpty())
-        .orElse(null);
+    return getOrNull(
+        configProvider,
+        config -> config.getScalarList("response_captured_headers", String.class),
+        "general",
+        "http",
+        "client");
   }
 
   /**
@@ -91,13 +86,12 @@ public class InstrumentationConfigUtil {
    */
   @Nullable
   public static List<String> httpServerRequestCapturedHeaders(ConfigProvider configProvider) {
-    return Optional.ofNullable(configProvider.getInstrumentationConfig())
-        .map(instrumentationConfig -> instrumentationConfig.getStructured("general"))
-        .map(generalConfig -> generalConfig.getStructured("http"))
-        .map(httpConfig -> httpConfig.getStructured("server"))
-        .map(clientConfig -> clientConfig.getScalarList("request_captured_headers", String.class))
-        .filter(list -> !list.isEmpty())
-        .orElse(null);
+    return getOrNull(
+        configProvider,
+        config -> config.getScalarList("request_captured_headers", String.class),
+        "general",
+        "http",
+        "server");
   }
 
   /**
@@ -108,13 +102,12 @@ public class InstrumentationConfigUtil {
    */
   @Nullable
   public static List<String> httpSeverResponseCapturedHeaders(ConfigProvider configProvider) {
-    return Optional.ofNullable(configProvider.getInstrumentationConfig())
-        .map(instrumentationConfig -> instrumentationConfig.getStructured("general"))
-        .map(generalConfig -> generalConfig.getStructured("http"))
-        .map(httpConfig -> httpConfig.getStructured("server"))
-        .map(clientConfig -> clientConfig.getScalarList("response_captured_headers", String.class))
-        .filter(list -> !list.isEmpty())
-        .orElse(null);
+    return getOrNull(
+        configProvider,
+        config -> config.getScalarList("response_captured_headers", String.class),
+        "general",
+        "http",
+        "server");
   }
 
   /**
@@ -125,10 +118,25 @@ public class InstrumentationConfigUtil {
   @Nullable
   public static DeclarativeConfigProperties javaInstrumentationConfig(
       ConfigProvider configProvider, String instrumentationName) {
-    return Optional.ofNullable(configProvider.getInstrumentationConfig())
-        .map(instrumentationConfig -> instrumentationConfig.getStructured("java"))
-        .map(generalConfig -> generalConfig.getStructured(instrumentationName))
-        .orElse(null);
+    return getOrNull(configProvider, config -> config.getStructured(instrumentationName), "java");
+  }
+
+  @Nullable
+  private static <T> T getOrNull(
+      ConfigProvider configProvider,
+      Function<DeclarativeConfigProperties, T> accessor,
+      String... segments) {
+    DeclarativeConfigProperties config = configProvider.getInstrumentationConfig();
+    if (config == null) {
+      return null;
+    }
+    for (String segment : segments) {
+      config = config.getStructured(segment);
+      if (config == null) {
+        return null;
+      }
+    }
+    return accessor.apply(config);
   }
 
   private InstrumentationConfigUtil() {}
