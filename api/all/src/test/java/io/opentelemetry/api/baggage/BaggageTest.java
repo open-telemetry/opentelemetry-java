@@ -27,4 +27,15 @@ class BaggageTest {
       assertThat(result.getEntryValue("foo")).isEqualTo("bar");
     }
   }
+
+  @Test
+  void getEntry() {
+    BaggageEntryMetadata metadata = BaggageEntryMetadata.create("flib");
+    try (Scope scope =
+        Context.root().with(Baggage.builder().put("a", "b", metadata).build()).makeCurrent()) {
+      Baggage result = Baggage.current();
+      assertThat(result.getEntry("a").getValue()).isEqualTo("b");
+      assertThat(result.getEntry("a").getMetadata().getValue()).isEqualTo("flib");
+    }
+  }
 }
