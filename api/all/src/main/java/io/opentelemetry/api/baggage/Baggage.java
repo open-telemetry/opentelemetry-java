@@ -107,5 +107,7 @@ public interface Baggage extends ImplicitContextKeyed {
    *     Entry} with the given {@code entryKey} is in this {@code Baggage}.
    */
   @Nullable
-  BaggageEntry getEntry(String entryKey);
+  default BaggageEntry getEntry(String entryKey) {
+    return asMap().get(entryKey);
+  }
 }
