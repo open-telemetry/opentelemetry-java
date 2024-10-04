@@ -37,7 +37,7 @@ final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry
     return entry != null ? entry.getValue() : null;
   }
 
-  // Overrides the default implementation to provide a more performant implementation
+  // Overrides the default implementation to provide a more performant implementation.
   @Nullable
   @Override
   public BaggageEntry getEntry(String entryKey) {
