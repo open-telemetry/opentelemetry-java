@@ -3,22 +3,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure.spi.internal;
+package io.opentelemetry.api.incubator.config;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 
-/** Empty instance of {@link StructuredConfigProperties}. */
-final class EmptyStructuredConfigProperties implements StructuredConfigProperties {
+/** Empty instance of {@link DeclarativeConfigProperties}. */
+final class EmptyDeclarativeConfigProperties implements DeclarativeConfigProperties {
 
-  private static final EmptyStructuredConfigProperties INSTANCE =
-      new EmptyStructuredConfigProperties();
+  private static final EmptyDeclarativeConfigProperties INSTANCE =
+      new EmptyDeclarativeConfigProperties();
 
-  private EmptyStructuredConfigProperties() {}
+  private EmptyDeclarativeConfigProperties() {}
 
-  static EmptyStructuredConfigProperties getInstance() {
+  static EmptyDeclarativeConfigProperties getInstance() {
     return INSTANCE;
   }
 
@@ -60,13 +60,13 @@ final class EmptyStructuredConfigProperties implements StructuredConfigPropertie
 
   @Nullable
   @Override
-  public StructuredConfigProperties getStructured(String name) {
+  public DeclarativeConfigProperties getStructured(String name) {
     return null;
   }
 
   @Nullable
   @Override
-  public List<StructuredConfigProperties> getStructuredList(String name) {
+  public List<DeclarativeConfigProperties> getStructuredList(String name) {
     return null;
   }
 

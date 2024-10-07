@@ -14,14 +14,14 @@ import static org.mockito.Mockito.verify;
 
 import com.google.common.collect.ImmutableMap;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.SpanExporterComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.NameStringValuePairModel;
@@ -79,10 +79,10 @@ class SpanExporterFactoryTest {
 
     assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
 
-    ArgumentCaptor<StructuredConfigProperties> configCaptor =
-        ArgumentCaptor.forClass(StructuredConfigProperties.class);
+    ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
+        ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     verify(spiHelper).loadComponent(eq(SpanExporter.class), eq("otlp"), configCaptor.capture());
-    StructuredConfigProperties configProperties = configCaptor.getValue();
+    DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("protocol")).isNull();
     assertThat(configProperties.getString("endpoint")).isNull();
     assertThat(configProperties.getStructured("headers")).isNull();
@@ -147,13 +147,13 @@ class SpanExporterFactoryTest {
 
     assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
 
-    ArgumentCaptor<StructuredConfigProperties> configCaptor =
-        ArgumentCaptor.forClass(StructuredConfigProperties.class);
+    ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
+        ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     verify(spiHelper).loadComponent(eq(SpanExporter.class), eq("otlp"), configCaptor.capture());
-    StructuredConfigProperties configProperties = configCaptor.getValue();
+    DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("protocol")).isEqualTo("http/protobuf");
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318/v1/traces");
-    List<StructuredConfigProperties> headers = configProperties.getStructuredList("headers");
+    List<DeclarativeConfigProperties> headers = configProperties.getStructuredList("headers");
     assertThat(headers)
         .isNotNull()
         .satisfiesExactly(
@@ -214,10 +214,10 @@ class SpanExporterFactoryTest {
 
     assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
 
-    ArgumentCaptor<StructuredConfigProperties> configCaptor =
-        ArgumentCaptor.forClass(StructuredConfigProperties.class);
+    ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
+        ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     verify(spiHelper).loadComponent(eq(SpanExporter.class), eq("zipkin"), configCaptor.capture());
-    StructuredConfigProperties configProperties = configCaptor.getValue();
+    DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isNull();
     assertThat(configProperties.getLong("timeout")).isNull();
   }
@@ -249,10 +249,10 @@ class SpanExporterFactoryTest {
 
     assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
 
-    ArgumentCaptor<StructuredConfigProperties> configCaptor =
-        ArgumentCaptor.forClass(StructuredConfigProperties.class);
+    ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
+        ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     verify(spiHelper).loadComponent(eq(SpanExporter.class), eq("zipkin"), configCaptor.capture());
-    StructuredConfigProperties configProperties = configCaptor.getValue();
+    DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://zipkin:9411/v1/v2/spans");
     assertThat(configProperties.getLong("timeout")).isEqualTo(15_000);
   }
@@ -271,7 +271,7 @@ class SpanExporterFactoryTest {
                                 "unknown_key", ImmutableMap.of("key1", "value1")),
                         spiHelper,
                         new ArrayList<>()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
             "No component provider detected for io.opentelemetry.sdk.trace.export.SpanExporter with name \"unknown_key\".");
     cleanup.addCloseables(closeables);

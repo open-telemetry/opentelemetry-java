@@ -14,13 +14,13 @@ import static org.mockito.Mockito.verify;
 
 import com.google.common.collect.ImmutableMap;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.MetricExporterComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.NameStringValuePairModel;
@@ -81,10 +81,10 @@ class MetricExporterFactoryTest {
 
     assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
 
-    ArgumentCaptor<StructuredConfigProperties> configCaptor =
-        ArgumentCaptor.forClass(StructuredConfigProperties.class);
+    ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
+        ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     verify(spiHelper).loadComponent(eq(MetricExporter.class), eq("otlp"), configCaptor.capture());
-    StructuredConfigProperties configProperties = configCaptor.getValue();
+    DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("protocol")).isNull();
     assertThat(configProperties.getString("endpoint")).isNull();
     assertThat(configProperties.getStructured("headers")).isNull();
@@ -159,13 +159,13 @@ class MetricExporterFactoryTest {
 
     assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
 
-    ArgumentCaptor<StructuredConfigProperties> configCaptor =
-        ArgumentCaptor.forClass(StructuredConfigProperties.class);
+    ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
+        ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
     verify(spiHelper).loadComponent(eq(MetricExporter.class), eq("otlp"), configCaptor.capture());
-    StructuredConfigProperties configProperties = configCaptor.getValue();
+    DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("protocol")).isEqualTo("http/protobuf");
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318/v1/metrics");
-    List<StructuredConfigProperties> headers = configProperties.getStructuredList("headers");
+    List<DeclarativeConfigProperties> headers = configProperties.getStructuredList("headers");
     assertThat(headers)
         .isNotNull()
         .satisfiesExactly(
@@ -220,7 +220,7 @@ class MetricExporterFactoryTest {
                                 "unknown_key", ImmutableMap.of("key1", "value1")),
                         spiHelper,
                         new ArrayList<>()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
             "No component provider detected for io.opentelemetry.sdk.metrics.export.MetricExporter with name \"unknown_key\".");
   }

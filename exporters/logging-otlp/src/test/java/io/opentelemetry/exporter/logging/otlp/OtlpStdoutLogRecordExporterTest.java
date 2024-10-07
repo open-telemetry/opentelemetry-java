@@ -12,12 +12,12 @@ import static org.mockito.Mockito.mock;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Streams;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.io.BufferedOutputStream;
@@ -205,7 +205,7 @@ class OtlpStdoutLogRecordExporterTest {
   }
 
   private OtlpStdoutLogRecordExporter exporterFromComponentProvider(
-      StructuredConfigProperties properties) {
+      DeclarativeConfigProperties properties) {
     return (OtlpStdoutLogRecordExporter)
         ((ComponentProvider<?>)
                 loadSpi(ComponentProvider.class)
@@ -222,7 +222,7 @@ class OtlpStdoutLogRecordExporterTest {
 
   @Test
   void componentProviderConfig() {
-    StructuredConfigProperties properties = mock(StructuredConfigProperties.class);
+    DeclarativeConfigProperties properties = mock(DeclarativeConfigProperties.class);
     OtlpStdoutLogRecordExporter exporter = exporterFromComponentProvider(properties);
 
     assertThat(exporter).extracting("wrapperJsonObject").isEqualTo(true);

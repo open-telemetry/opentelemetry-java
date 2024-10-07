@@ -7,13 +7,13 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.internal.GlobUtil.toGlobPatternPredicate;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.ResourceConfiguration;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorAttributesModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorsModel;
@@ -33,10 +33,6 @@ final class ResourceFactory
         io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel,
         Resource> {
 
-  private static final StructuredConfigProperties EMPTY_CONFIG =
-      FileConfiguration.toConfigProperties(
-          Collections.emptyMap(),
-          SpiHelper.serviceComponentLoader(ResourceFactory.class.getClassLoader()));
   private static final ResourceFactory INSTANCE = new ResourceFactory();
 
   private ResourceFactory() {}
@@ -91,7 +87,7 @@ final class ResourceFactory
    * <p>In file configuration, a resource detector is a {@link ComponentProvider} with {@link
    * ComponentProvider#getType()} set to {@link Resource}. Unlike other {@link ComponentProvider}s,
    * the resource detector version does not use {@link ComponentProvider#getName()} (except for
-   * debug messages), and {@link ComponentProvider#create(StructuredConfigProperties)} is called
+   * debug messages), and {@link ComponentProvider#create(DeclarativeConfigProperties)} is called
    * with an empty instance. Additionally, the {@link Ordered#order()} value is respected for
    * resource detectors which implement {@link Ordered}.
    */
@@ -105,9 +101,9 @@ final class ResourceFactory
       }
       Resource resource;
       try {
-        resource = (Resource) componentProvider.create(EMPTY_CONFIG);
+        resource = (Resource) componentProvider.create(DeclarativeConfigProperties.empty());
       } catch (Throwable throwable) {
-        throw new ConfigurationException(
+        throw new DeclarativeConfigException(
             "Error configuring "
                 + Resource.class.getName()
                 + " with name \""

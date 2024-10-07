@@ -5,8 +5,8 @@
 
 package io.opentelemetry.exporter.logging.otlp.internal.logs;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 
 /**
@@ -29,7 +29,7 @@ public class OtlpStdoutLogRecordExporterComponentProvider
   }
 
   @Override
-  public LogRecordExporter create(StructuredConfigProperties config) {
+  public LogRecordExporter create(DeclarativeConfigProperties config) {
     OtlpStdoutLogRecordExporterBuilder builder = OtlpStdoutLogRecordExporter.builder();
     return builder.build();
   }
