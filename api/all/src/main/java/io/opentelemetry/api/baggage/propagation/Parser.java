@@ -37,7 +37,7 @@ class Parser {
 
   private boolean skipToNext;
 
-  public Parser(String baggageHeader) {
+  Parser(String baggageHeader) {
     this.baggageHeader = baggageHeader;
     reset(0);
   }

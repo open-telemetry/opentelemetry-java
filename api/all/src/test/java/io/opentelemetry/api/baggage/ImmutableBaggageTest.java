@@ -9,6 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
 import com.google.common.testing.EqualsTester;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -189,5 +191,16 @@ class ImmutableBaggageTest {
         .addEqualityGroup(Baggage.builder().put(K1, V2, TMD).put(K2, V1, TMD).build())
         .addEqualityGroup(baggage2, baggage3)
         .testEquals();
+  }
+
+  @Test
+  void getEntry() {
+    BaggageEntryMetadata metadata = BaggageEntryMetadata.create("flib");
+    try (Scope scope =
+        Context.root().with(Baggage.builder().put("a", "b", metadata).build()).makeCurrent()) {
+      Baggage result = Baggage.current();
+      assertThat(result.getEntry("a").getValue()).isEqualTo("b");
+      assertThat(result.getEntry("a").getMetadata().getValue()).isEqualTo("flib");
+    }
   }
 }
