@@ -5,19 +5,12 @@
 
 package io.opentelemetry.exporter.logging.otlp;
 
-import static io.opentelemetry.exporter.logging.otlp.internal.writer.JsonUtil.JSON_FACTORY;
-
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.io.SegmentedStringWriter;
-import io.opentelemetry.exporter.internal.otlp.traces.ResourceSpansMarshaler;
-import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonUtil;
+import io.opentelemetry.exporter.logging.otlp.internal.traces.OtlpStdoutSpanExporter;
+import io.opentelemetry.exporter.logging.otlp.internal.traces.OtlpStdoutSpanExporterBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.io.IOException;
 import java.util.Collection;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -29,49 +22,31 @@ public final class OtlpJsonLoggingSpanExporter implements SpanExporter {
   private static final Logger logger =
       Logger.getLogger(OtlpJsonLoggingSpanExporter.class.getName());
 
-  private final AtomicBoolean isShutdown = new AtomicBoolean();
+  private final OtlpStdoutSpanExporter delegate;
 
   /** Returns a new {@link OtlpJsonLoggingSpanExporter}. */
   public static SpanExporter create() {
-    return new OtlpJsonLoggingSpanExporter();
+    OtlpStdoutSpanExporter delegate =
+        new OtlpStdoutSpanExporterBuilder(logger).setWrapperJsonObject(false).build();
+    return new OtlpJsonLoggingSpanExporter(delegate);
   }
 
-  private OtlpJsonLoggingSpanExporter() {}
+  OtlpJsonLoggingSpanExporter(OtlpStdoutSpanExporter delegate) {
+    this.delegate = delegate;
+  }
 
   @Override
-  public CompletableResultCode export(Collection<SpanData> spans) {
-    if (isShutdown.get()) {
-      return CompletableResultCode.ofFailure();
-    }
-
-    ResourceSpansMarshaler[] allResourceSpans = ResourceSpansMarshaler.create(spans);
-    for (ResourceSpansMarshaler resourceSpans : allResourceSpans) {
-      SegmentedStringWriter sw = new SegmentedStringWriter(JSON_FACTORY._getBufferRecycler());
-      try (JsonGenerator gen = JsonUtil.create(sw)) {
-        resourceSpans.writeJsonTo(gen);
-      } catch (IOException e) {
-        // Shouldn't happen in practice, just skip it.
-        continue;
-      }
-      try {
-        logger.log(Level.INFO, sw.getAndClear());
-      } catch (IOException e) {
-        logger.log(Level.WARNING, "Unable to read OTLP JSON spans", e);
-      }
-    }
-    return CompletableResultCode.ofSuccess();
+  public CompletableResultCode export(Collection<SpanData> logs) {
+    return delegate.export(logs);
   }
 
   @Override
   public CompletableResultCode flush() {
-    return CompletableResultCode.ofSuccess();
+    return delegate.flush();
   }
 
   @Override
   public CompletableResultCode shutdown() {
-    if (!isShutdown.compareAndSet(false, true)) {
-      logger.log(Level.INFO, "Calling shutdown() multiple times.");
-    }
-    return CompletableResultCode.ofSuccess();
+    return delegate.shutdown();
   }
 }
