@@ -141,8 +141,10 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
     private static final Logger logger = Logger.getLogger(Worker.class.getName());
 
     private final LongCounter processedLogsCounter;
+    private final LongCounter logsExportFailureCounter;
     private final Attributes droppedAttrs;
     private final Attributes exportedAttrs;
+    private final Attributes exportFailureAttrs;
 
     private final LogRecordExporter logRecordExporter;
     private final long scheduleDelayNanos;
@@ -197,6 +199,13 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
                   "The number of logs processed by the BatchLogRecordProcessor. "
                       + "[dropped=true if they were dropped due to high throughput]")
               .build();
+      logsExportFailureCounter =
+          meter
+              .counterBuilder("logsExportFailure")
+              .setUnit("1")
+              .setDescription(
+                  "Logs export failure in BatchLogRecordProcessor.")
+              .build();
       droppedAttrs =
           Attributes.of(
               LOG_RECORD_PROCESSOR_TYPE_LABEL,
@@ -209,6 +218,10 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
               LOG_RECORD_PROCESSOR_TYPE_VALUE,
               LOG_RECORD_PROCESSOR_DROPPED_LABEL,
               false);
+      exportFailureAttrs =
+          Attributes.of(
+              LOG_RECORD_PROCESSOR_TYPE_LABEL,
+              LOG_RECORD_PROCESSOR_TYPE_VALUE);
 
       this.batch = new ArrayList<>(this.maxExportBatchSize);
     }
@@ -324,6 +337,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
           processedLogsCounter.add(batch.size(), exportedAttrs);
         } else {
           logger.log(Level.FINE, "Exporter failed");
+          logsExportFailureCounter.add(1, exportFailureAttrs);
         }
       } catch (RuntimeException e) {
         logger.log(Level.WARNING, "Exporter threw an Exception", e);
