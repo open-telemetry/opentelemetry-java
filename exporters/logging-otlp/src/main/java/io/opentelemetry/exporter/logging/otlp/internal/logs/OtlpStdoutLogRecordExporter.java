@@ -5,10 +5,12 @@
 
 package io.opentelemetry.exporter.logging.otlp.internal.logs;
 
-import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.internal.otlp.logs.LogReusableDataMarshaler;
 import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.Collection;
@@ -33,11 +35,14 @@ public final class OtlpStdoutLogRecordExporter implements LogRecordExporter {
   private final Logger logger;
   private final JsonWriter jsonWriter;
   private final boolean wrapperJsonObject;
+  private final MemoryMode memoryMode;
 
-  OtlpStdoutLogRecordExporter(Logger logger, JsonWriter jsonWriter, boolean wrapperJsonObject) {
+  OtlpStdoutLogRecordExporter(
+      Logger logger, JsonWriter jsonWriter, boolean wrapperJsonObject, MemoryMode memoryMode) {
     this.logger = logger;
     this.jsonWriter = jsonWriter;
     this.wrapperJsonObject = wrapperJsonObject;
+    this.memoryMode = memoryMode;
   }
 
   /** Returns a new {@link OtlpStdoutLogRecordExporterBuilder}. */
@@ -53,8 +58,12 @@ public final class OtlpStdoutLogRecordExporter implements LogRecordExporter {
     }
 
     if (wrapperJsonObject) {
-      LogsRequestMarshaler request = LogsRequestMarshaler.create(logs);
-      return jsonWriter.write(request);
+      return new LogReusableDataMarshaler(memoryMode) {
+        @Override
+        public CompletableResultCode doExport(Marshaler exportRequest, int numItems) {
+          return jsonWriter.write(exportRequest);
+        }
+      }.export(logs);
     } else {
       for (ResourceLogsMarshaler resourceLogs : ResourceLogsMarshaler.create(logs)) {
         CompletableResultCode resultCode = jsonWriter.write(resourceLogs);
@@ -87,6 +96,7 @@ public final class OtlpStdoutLogRecordExporter implements LogRecordExporter {
     StringJoiner joiner = new StringJoiner(", ", "OtlpStdoutLogRecordExporter{", "}");
     joiner.add("jsonWriter=" + jsonWriter);
     joiner.add("wrapperJsonObject=" + wrapperJsonObject);
+    joiner.add("memoryMode=" + memoryMode);
     return joiner.toString();
   }
 }

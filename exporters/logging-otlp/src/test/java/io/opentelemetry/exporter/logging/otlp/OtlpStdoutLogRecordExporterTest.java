@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.logging.otlp;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogRecordExporterProvider;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.io.OutputStream;
 import java.util.logging.Logger;
@@ -22,7 +23,7 @@ class OtlpStdoutLogRecordExporterTest
         OtlpStdoutLogRecordExporter.class,
         ConfigurableLogRecordExporterProvider.class,
         LogRecordExporter.class,
-        "OtlpStdoutLogRecordExporter{jsonWriter=StreamJsonWriter{outputStream=stdout}, wrapperJsonObject=true}");
+        "OtlpStdoutLogRecordExporter{jsonWriter=StreamJsonWriter{outputStream=stdout}, wrapperJsonObject=true, memoryMode=IMMUTABLE_DATA}");
   }
 
   @Override
@@ -32,9 +33,11 @@ class OtlpStdoutLogRecordExporterTest
 
   @Override
   protected OtlpStdoutLogRecordExporter createExporter(
-      @Nullable OutputStream outputStream, boolean wrapperJsonObject) {
+      @Nullable OutputStream outputStream, MemoryMode memoryMode, boolean wrapperJsonObject) {
     OtlpStdoutLogRecordExporterBuilder builder =
-        OtlpStdoutLogRecordExporter.builder().setWrapperJsonObject(wrapperJsonObject);
+        OtlpStdoutLogRecordExporter.builder()
+            .setMemoryMode(memoryMode)
+            .setWrapperJsonObject(wrapperJsonObject);
     if (outputStream != null) {
       builder.setOutput(outputStream);
     } else {

@@ -32,6 +32,7 @@ public final class OtlpStdoutMetricExporterComponentProvider
   @Override
   public MetricExporter create(StructuredConfigProperties config) {
     OtlpStdoutMetricExporterBuilder builder = OtlpStdoutMetricExporter.builder();
+    ExporterBuilderUtil.configureExporterMemoryMode(config, builder::setMemoryMode);
     ExporterBuilderUtil.configureOtlpAggregationTemporality(
         config, builder::setAggregationTemporalitySelector);
     ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
