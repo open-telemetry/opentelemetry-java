@@ -203,8 +203,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
           meter
               .counterBuilder("logsExportFailure")
               .setUnit("1")
-              .setDescription(
-                  "Logs export failure in BatchLogRecordProcessor.")
+              .setDescription("Logs export failure in BatchLogRecordProcessor.")
               .build();
       droppedAttrs =
           Attributes.of(
@@ -219,9 +218,7 @@ public final class BatchLogRecordProcessor implements LogRecordProcessor {
               LOG_RECORD_PROCESSOR_DROPPED_LABEL,
               false);
       exportFailureAttrs =
-          Attributes.of(
-              LOG_RECORD_PROCESSOR_TYPE_LABEL,
-              LOG_RECORD_PROCESSOR_TYPE_VALUE);
+          Attributes.of(LOG_RECORD_PROCESSOR_TYPE_LABEL, LOG_RECORD_PROCESSOR_TYPE_VALUE);
 
       this.batch = new ArrayList<>(this.maxExportBatchSize);
     }
