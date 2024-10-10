@@ -5,10 +5,12 @@
 
 package io.opentelemetry.exporter.logging.otlp.internal.traces;
 
+import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.traces.ResourceSpansMarshaler;
-import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
+import io.opentelemetry.exporter.internal.otlp.traces.SpanReusableDataMarshaler;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
@@ -32,11 +34,14 @@ public final class OtlpStdoutSpanExporter implements SpanExporter {
   private final Logger logger;
   private final JsonWriter jsonWriter;
   private final boolean wrapperJsonObject;
+  private final MemoryMode memoryMode;
 
-  OtlpStdoutSpanExporter(Logger logger, JsonWriter jsonWriter, boolean wrapperJsonObject) {
+  OtlpStdoutSpanExporter(
+      Logger logger, JsonWriter jsonWriter, boolean wrapperJsonObject, MemoryMode memoryMode) {
     this.logger = logger;
     this.jsonWriter = jsonWriter;
     this.wrapperJsonObject = wrapperJsonObject;
+    this.memoryMode = memoryMode;
   }
 
   /** Returns a new {@link OtlpStdoutSpanExporterBuilder}. */
@@ -52,8 +57,12 @@ public final class OtlpStdoutSpanExporter implements SpanExporter {
     }
 
     if (wrapperJsonObject) {
-      TraceRequestMarshaler request = TraceRequestMarshaler.create(spans);
-      return jsonWriter.write(request);
+      return new SpanReusableDataMarshaler(memoryMode) {
+        @Override
+        public CompletableResultCode doExport(Marshaler exportRequest, int numItems) {
+          return jsonWriter.write(exportRequest);
+        }
+      }.export(spans);
     } else {
       for (ResourceSpansMarshaler resourceSpans : ResourceSpansMarshaler.create(spans)) {
         CompletableResultCode resultCode = jsonWriter.write(resourceSpans);
@@ -86,6 +95,7 @@ public final class OtlpStdoutSpanExporter implements SpanExporter {
     StringJoiner joiner = new StringJoiner(", ", "OtlpStdoutSpanExporter{", "}");
     joiner.add("jsonWriter=" + jsonWriter);
     joiner.add("wrapperJsonObject=" + wrapperJsonObject);
+    joiner.add("memoryMode=" + memoryMode);
     return joiner.toString();
   }
 }

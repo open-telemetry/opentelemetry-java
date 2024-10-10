@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.logging.otlp;
 import io.opentelemetry.exporter.logging.otlp.internal.traces.OtlpStdoutSpanExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.traces.OtlpStdoutSpanExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.OutputStream;
 import java.util.logging.Logger;
@@ -21,7 +22,7 @@ class OtlpStdoutSpanExporterTest extends AbstractOtlpStdoutExporterTest<OtlpStdo
         OtlpStdoutSpanExporter.class,
         ConfigurableSpanExporterProvider.class,
         SpanExporter.class,
-        "OtlpStdoutSpanExporter{jsonWriter=StreamJsonWriter{outputStream=stdout}, wrapperJsonObject=true}");
+        "OtlpStdoutSpanExporter{jsonWriter=StreamJsonWriter{outputStream=stdout}, wrapperJsonObject=true, memoryMode=IMMUTABLE_DATA}");
   }
 
   @Override
@@ -31,9 +32,11 @@ class OtlpStdoutSpanExporterTest extends AbstractOtlpStdoutExporterTest<OtlpStdo
 
   @Override
   protected OtlpStdoutSpanExporter createExporter(
-      @Nullable OutputStream outputStream, boolean wrapperJsonObject) {
+      @Nullable OutputStream outputStream, MemoryMode memoryMode, boolean wrapperJsonObject) {
     OtlpStdoutSpanExporterBuilder builder =
-        OtlpStdoutSpanExporter.builder().setWrapperJsonObject(wrapperJsonObject);
+        OtlpStdoutSpanExporter.builder()
+            .setMemoryMode(memoryMode)
+            .setWrapperJsonObject(wrapperJsonObject);
     if (outputStream != null) {
       builder.setOutput(outputStream);
     } else {

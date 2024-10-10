@@ -16,6 +16,7 @@ import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricE
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -36,7 +37,7 @@ class OtlpStdoutMetricExporterTest
         OtlpStdoutMetricExporter.class,
         ConfigurableMetricExporterProvider.class,
         MetricExporter.class,
-        "OtlpStdoutMetricExporter{jsonWriter=StreamJsonWriter{outputStream=stdout}, wrapperJsonObject=true}");
+        "OtlpStdoutMetricExporter{jsonWriter=StreamJsonWriter{outputStream=stdout}, wrapperJsonObject=true, memoryMode=IMMUTABLE_DATA, aggregationTemporalitySelector=AggregationTemporalitySelector{COUNTER=CUMULATIVE, UP_DOWN_COUNTER=CUMULATIVE, HISTOGRAM=CUMULATIVE, OBSERVABLE_COUNTER=CUMULATIVE, OBSERVABLE_UP_DOWN_COUNTER=CUMULATIVE, OBSERVABLE_GAUGE=CUMULATIVE, GAUGE=CUMULATIVE}, defaultAggregationSelector=DefaultAggregationSelector{COUNTER=default, UP_DOWN_COUNTER=default, HISTOGRAM=default, OBSERVABLE_COUNTER=default, OBSERVABLE_UP_DOWN_COUNTER=default, OBSERVABLE_GAUGE=default, GAUGE=default}}");
   }
 
   @Override
@@ -46,9 +47,11 @@ class OtlpStdoutMetricExporterTest
 
   @Override
   protected OtlpStdoutMetricExporter createExporter(
-      @Nullable OutputStream outputStream, boolean wrapperJsonObject) {
+      @Nullable OutputStream outputStream, MemoryMode memoryMode, boolean wrapperJsonObject) {
     OtlpStdoutMetricExporterBuilder builder =
-        OtlpStdoutMetricExporter.builder().setWrapperJsonObject(wrapperJsonObject);
+        OtlpStdoutMetricExporter.builder()
+            .setMemoryMode(memoryMode)
+            .setWrapperJsonObject(wrapperJsonObject);
     if (outputStream != null) {
       builder.setOutput(outputStream);
     } else {
@@ -61,7 +64,7 @@ class OtlpStdoutMetricExporterTest
   @Test
   void providerMetricConfig() {
     OtlpStdoutMetricExporter exporter =
-        loadExporter(
+        exporterFromProvider(
             DefaultConfigProperties.createFromMap(
                 ImmutableMap.of(
                     "otel.exporter.otlp.metrics.temporality.preference",
@@ -83,8 +86,7 @@ class OtlpStdoutMetricExporterTest
     when(properties.getString("default_histogram_aggregation"))
         .thenReturn("BASE2_EXPONENTIAL_BUCKET_HISTOGRAM");
 
-    OtlpStdoutMetricExporter exporter =
-        (OtlpStdoutMetricExporter) exporterFromComponentProvider(properties);
+    OtlpStdoutMetricExporter exporter = exporterFromComponentProvider(properties);
     assertThat(exporter.getAggregationTemporality(InstrumentType.COUNTER))
         .isEqualTo(AggregationTemporality.DELTA);
 

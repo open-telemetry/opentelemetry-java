@@ -8,15 +8,12 @@ package io.opentelemetry.exporter.otlp.http.trace;
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.internal.otlp.traces.LowAllocationTraceRequestMarshaler;
-import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
+import io.opentelemetry.exporter.internal.otlp.traces.SpanReusableDataMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.util.ArrayDeque;
 import java.util.Collection;
-import java.util.Deque;
 import java.util.StringJoiner;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -28,10 +25,9 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpHttpSpanExporter implements SpanExporter {
 
-  private final Deque<LowAllocationTraceRequestMarshaler> marshalerPool = new ArrayDeque<>();
   private final HttpExporterBuilder<Marshaler> builder;
   private final HttpExporter<Marshaler> delegate;
-  private final MemoryMode memoryMode;
+  private final SpanReusableDataMarshaler marshaler;
 
   OtlpHttpSpanExporter(
       HttpExporterBuilder<Marshaler> builder,
@@ -39,7 +35,13 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
       MemoryMode memoryMode) {
     this.builder = builder;
     this.delegate = delegate;
-    this.memoryMode = memoryMode;
+    this.marshaler =
+        new SpanReusableDataMarshaler(memoryMode) {
+          @Override
+          public CompletableResultCode doExport(Marshaler exportRequest, int numItems) {
+            return delegate.export(exportRequest, numItems);
+          }
+        };
   }
 
   /**
@@ -71,7 +73,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
    * @since 1.29.0
    */
   public OtlpHttpSpanExporterBuilder toBuilder() {
-    return new OtlpHttpSpanExporterBuilder(builder.copy(), memoryMode);
+    return new OtlpHttpSpanExporterBuilder(builder.copy(), marshaler.getMemoryMode());
   }
 
   /**
@@ -82,24 +84,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
-    if (memoryMode == MemoryMode.REUSABLE_DATA) {
-      LowAllocationTraceRequestMarshaler marshaler = marshalerPool.poll();
-      if (marshaler == null) {
-        marshaler = new LowAllocationTraceRequestMarshaler();
-      }
-      LowAllocationTraceRequestMarshaler exportMarshaler = marshaler;
-      exportMarshaler.initialize(spans);
-      return delegate
-          .export(exportMarshaler, spans.size())
-          .whenComplete(
-              () -> {
-                exportMarshaler.reset();
-                marshalerPool.add(exportMarshaler);
-              });
-    }
-    // MemoryMode == MemoryMode.IMMUTABLE_DATA
-    TraceRequestMarshaler request = TraceRequestMarshaler.create(spans);
-    return delegate.export(request, spans.size());
+    return marshaler.export(spans);
   }
 
   /**
@@ -122,7 +107,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   public String toString() {
     StringJoiner joiner = new StringJoiner(", ", "OtlpHttpSpanExporter{", "}");
     joiner.add(builder.toString(false));
-    joiner.add("memoryMode=" + memoryMode);
+    joiner.add("memoryMode=" + marshaler.getMemoryMode());
     return joiner.toString();
   }
 }

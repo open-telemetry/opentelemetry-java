@@ -8,9 +8,11 @@ package io.opentelemetry.exporter.logging.otlp.internal.traces;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingSpanExporter;
+import io.opentelemetry.exporter.logging.otlp.internal.OtlpStdoutExporterBuilderUtil;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonWriter;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.LoggerJsonWriter;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.StreamJsonWriter;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import java.io.OutputStream;
 import java.util.logging.Logger;
 
@@ -27,6 +29,7 @@ public final class OtlpStdoutSpanExporterBuilder {
   private final Logger logger;
   private JsonWriter jsonWriter;
   private boolean wrapperJsonObject = true;
+  private MemoryMode memoryMode = MemoryMode.IMMUTABLE_DATA;
 
   public OtlpStdoutSpanExporterBuilder(Logger logger) {
     this.logger = logger;
@@ -41,6 +44,17 @@ public final class OtlpStdoutSpanExporterBuilder {
    */
   public OtlpStdoutSpanExporterBuilder setWrapperJsonObject(boolean wrapperJsonObject) {
     this.wrapperJsonObject = wrapperJsonObject;
+    return this;
+  }
+
+  /**
+   * Set the {@link MemoryMode}. If unset, defaults to {@link MemoryMode#IMMUTABLE_DATA}.
+   *
+   * <p>When memory mode is {@link MemoryMode#REUSABLE_DATA}, serialization is optimized to reduce
+   * memory allocation.
+   */
+  public OtlpStdoutSpanExporterBuilder setMemoryMode(MemoryMode memoryMode) {
+    this.memoryMode = memoryMode;
     return this;
   }
 
@@ -71,6 +85,7 @@ public final class OtlpStdoutSpanExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpStdoutSpanExporter build() {
-    return new OtlpStdoutSpanExporter(logger, jsonWriter, wrapperJsonObject);
+    OtlpStdoutExporterBuilderUtil.validate(memoryMode, wrapperJsonObject);
+    return new OtlpStdoutSpanExporter(logger, jsonWriter, wrapperJsonObject, memoryMode);
   }
 }

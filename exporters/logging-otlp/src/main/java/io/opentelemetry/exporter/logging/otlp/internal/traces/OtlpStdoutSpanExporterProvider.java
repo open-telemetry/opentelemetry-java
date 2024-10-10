@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.logging.otlp.internal.traces;
 
+import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -19,6 +20,7 @@ public final class OtlpStdoutSpanExporterProvider implements ConfigurableSpanExp
   @Override
   public SpanExporter createExporter(ConfigProperties config) {
     OtlpStdoutSpanExporterBuilder builder = OtlpStdoutSpanExporter.builder();
+    ExporterBuilderUtil.configureExporterMemoryMode(config, builder::setMemoryMode);
     return builder.build();
   }
 
