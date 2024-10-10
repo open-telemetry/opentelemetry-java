@@ -2,6 +2,48 @@
 
 ## Unreleased
 
+### API
+
+* Add helper class to capture context using ScheduledExecutorService
+  ([#6712](https://github.com/open-telemetry/opentelemetry-java/pull/6712))
+
+#### Extensions
+
+* Fix ottracepropagation for short span ids
+  ([#6734](https://github.com/open-telemetry/opentelemetry-java/pull/6734))
+
+### SDK
+
+#### Metrics
+
+* Optimize advice with FilteredAttributes
+  ([#6633](https://github.com/open-telemetry/opentelemetry-java/pull/6633))
+
+#### Exporters
+
+* Add experimental stdout log, metric, trace exporters for printing records to stdout in standard
+  OTLP JSON format.
+  ([#6675](https://github.com/open-telemetry/opentelemetry-java/pull/6675), [#6750](https://github.com/open-telemetry/opentelemetry-java/pull/6750))
+* Add Marshalers for profiling signal type
+  ([#6680](https://github.com/open-telemetry/opentelemetry-java/pull/6680))
+
+#### Extensions
+
+* Add `*Model` suffix to declarative config generated classes.
+  ([#6721](https://github.com/open-telemetry/opentelemetry-java/pull/6721))
+* Use autoconfigured ClassLoader to load declarative config
+  ([#6725](https://github.com/open-telemetry/opentelemetry-java/pull/6725))
+* Update declarative config to use opentelemetry-configuration v0.3.0
+  ([#6733](https://github.com/open-telemetry/opentelemetry-java/pull/6733))
+* Add `StructuredConfigProperties#getStructured` default method,
+  add `StructuredConfigProperties.empty()`
+  ([#6759](https://github.com/open-telemetry/opentelemetry-java/pull/6759))
+
+#### Testing
+
+* Add context info about wrong span or trace.
+  ([#6703](https://github.com/open-telemetry/opentelemetry-java/pull/6703))
+
 ## Version 1.42.1 (2024-09-10)
 
 ### API
