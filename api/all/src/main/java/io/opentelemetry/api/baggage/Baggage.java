@@ -99,4 +99,22 @@ public interface Baggage extends ImplicitContextKeyed {
    * be set to not use an implicit parent, so any parent assignment must be done manually.
    */
   BaggageBuilder toBuilder();
+
+  /**
+   * Returns the {@code BaggageEntry} associated with the given key.
+   *
+   * @param entryKey entry key to return the {@code BaggageEntry} for, or {@code null} if no {@code
+   *     Entry} with the given {@code entryKey} is in this {@code Baggage}.
+   */
+  @Nullable
+  default BaggageEntry getEntry(String entryKey) {
+    BaggageEntry[] result = new BaggageEntry[] {null};
+    forEach(
+        (key, entry) -> {
+          if (entryKey.equals(key)) {
+            result[0] = entry;
+          }
+        });
+    return result[0];
+  }
 }
