@@ -105,6 +105,7 @@ public interface Baggage extends ImplicitContextKeyed {
    *
    * @param entryKey entry key to return the {@code BaggageEntry} for, or {@code null} if no {@code
    *     Entry} with the given {@code entryKey} is in this {@code Baggage}.
+   * @since 1.43.0
    */
   @Nullable
   default BaggageEntry getEntry(String entryKey) {
