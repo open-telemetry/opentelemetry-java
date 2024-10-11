@@ -55,7 +55,7 @@ class FileConfigurationTest {
   @BeforeEach
   void setup() throws IOException {
     String yaml =
-        "file_format: \"0.1\"\n"
+        "file_format: \"0.3\"\n"
             + "resource:\n"
             + "  attributes:\n"
             + "    - name: service.name\n"
@@ -160,7 +160,7 @@ class FileConfigurationTest {
   @Test
   void configFile_Error(@TempDir Path tempDir) throws IOException {
     String yaml =
-        "file_format: \"0.1\"\n"
+        "file_format: \"0.3\"\n"
             + "resource:\n"
             + "  attributes:\n"
             + "    - name: service.name\n"
