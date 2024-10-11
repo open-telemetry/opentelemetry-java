@@ -6,6 +6,8 @@
 
 * Add helper class to capture context using ScheduledExecutorService
   ([#6712](https://github.com/open-telemetry/opentelemetry-java/pull/6712))
+* Adds Baggage.getEntry(String key)
+  ([#6765](https://github.com/open-telemetry/opentelemetry-java/pull/6765))
 
 #### Extensions
 
