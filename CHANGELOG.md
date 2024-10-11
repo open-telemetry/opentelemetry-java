@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.43.0 (2024-10-11)
+
 ### API
 
 * Add helper class to capture context using ScheduledExecutorService
