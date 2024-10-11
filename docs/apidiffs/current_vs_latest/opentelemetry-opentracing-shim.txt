@@ -1,2 +1,2 @@
-Comparing source compatibility of opentelemetry-opentracing-shim-1.43.0-SNAPSHOT.jar against opentelemetry-opentracing-shim-1.42.1.jar
+Comparing source compatibility of opentelemetry-opentracing-shim-1.44.0-SNAPSHOT.jar against opentelemetry-opentracing-shim-1.43.0.jar
 No changes.
