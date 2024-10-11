@@ -108,6 +108,13 @@ public interface Baggage extends ImplicitContextKeyed {
    */
   @Nullable
   default BaggageEntry getEntry(String entryKey) {
-    return asMap().get(entryKey);
+    BaggageEntry[] result = new BaggageEntry[] {null};
+    forEach(
+        (key, entry) -> {
+          if (entryKey.equals(key)) {
+            result[0] = entry;
+          }
+        });
+    return result[0];
   }
 }

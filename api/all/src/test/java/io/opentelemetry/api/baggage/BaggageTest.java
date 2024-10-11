@@ -35,14 +35,14 @@ class BaggageTest {
   @Test
   void getEntryDefault() {
     BaggageEntryMetadata metadata = BaggageEntryMetadata.create("flib");
+    Map<String, BaggageEntry> result = new HashMap<>();
+    result.put("a", ImmutableEntry.create("b", metadata));
     // Implementation that only implements asMap() which is used by getEntry()
     Baggage baggage =
         new Baggage() {
 
           @Override
           public Map<String, BaggageEntry> asMap() {
-            Map<String, BaggageEntry> result = new HashMap<>();
-            result.put("a", ImmutableEntry.create("b", metadata));
             return result;
           }
 
@@ -52,7 +52,9 @@ class BaggageTest {
           }
 
           @Override
-          public void forEach(BiConsumer<? super String, ? super BaggageEntry> consumer) {}
+          public void forEach(BiConsumer<? super String, ? super BaggageEntry> consumer) {
+            result.forEach(consumer);
+          }
 
           @Nullable
           @Override
