@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 1.43.0 (2024-10-11)
 
 ### API
 
