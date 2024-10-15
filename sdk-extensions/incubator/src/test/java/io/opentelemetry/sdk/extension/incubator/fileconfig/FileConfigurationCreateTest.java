@@ -103,7 +103,7 @@ class FileConfigurationCreateTest {
     // exporter with OTLP exporter, following by invalid batch exporter which references invalid
     // exporter "foo".
     String yaml =
-        "file_format: \"0.1\"\n"
+        "file_format: \"0.3\"\n"
             + "logger_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
