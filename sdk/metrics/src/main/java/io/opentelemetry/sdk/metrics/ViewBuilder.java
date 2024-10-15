@@ -110,18 +110,12 @@ public final class ViewBuilder {
   /**
    * Set the cardinality limit.
    *
-   * <p>This method is experimental so not public. You may reflectively call it using {@link
-   * SdkMeterProviderUtil#setCardinalityLimit(ViewBuilder, int)}
-   *
-   * <p>Note: not currently stable but cardinality limit can be configured via
-   * SdkMeterProviderUtil#setCardinalityLimit(ViewBuilder, int).
-   *
    * <p>Read {@link MemoryMode} to understand the memory usage behavior of reaching cardinality
    * limit.
    *
    * @param cardinalityLimit the maximum number of series for a metric
    */
-  ViewBuilder setCardinalityLimit(int cardinalityLimit) {
+  public ViewBuilder setCardinalityLimit(int cardinalityLimit) {
     if (cardinalityLimit <= 0) {
       throw new IllegalArgumentException("cardinalityLimit must be > 0");
     }
