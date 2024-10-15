@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.trace.internal.data;
+package io.opentelemetry.sdk.trace.data;
 
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
@@ -16,10 +16,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import javax.annotation.concurrent.Immutable;
 
-/** An effectively immutable implementation of {@link ExceptionEventData}. */
 @AutoValue
 @Immutable
-abstract class ImmutableExceptionEventData implements ExceptionEventData {
+abstract class ImmutableExceptionEventData
+    implements io.opentelemetry.sdk.trace.data.ExceptionEventData {
 
   private static final AttributeKey<String> EXCEPTION_TYPE =
       AttributeKey.stringKey("exception.type");
