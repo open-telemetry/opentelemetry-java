@@ -83,7 +83,7 @@ class OpenTelemetryConfigurationFactoryTest {
                   OpenTelemetryConfigurationFactory.getInstance()
                       .create(testCase, spiHelper, closeables))
           .isInstanceOf(ConfigurationException.class)
-          .hasMessage("Unsupported file format. Supported formats include: 0.1");
+          .hasMessage("Unsupported file format. Supported formats include: 0.3");
       cleanup.addCloseables(closeables);
     }
   }
@@ -97,7 +97,7 @@ class OpenTelemetryConfigurationFactoryTest {
     OpenTelemetrySdk sdk =
         OpenTelemetryConfigurationFactory.getInstance()
             .create(
-                new OpenTelemetryConfigurationModel().withFileFormat("0.1"), spiHelper, closeables);
+                new OpenTelemetryConfigurationModel().withFileFormat("0.3"), spiHelper, closeables);
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 
@@ -114,7 +114,7 @@ class OpenTelemetryConfigurationFactoryTest {
         OpenTelemetryConfigurationFactory.getInstance()
             .create(
                 new OpenTelemetryConfigurationModel()
-                    .withFileFormat("0.1")
+                    .withFileFormat("0.3")
                     .withDisabled(true)
                     // Logger provider configuration should be ignored since SDK is disabled
                     .withLoggerProvider(
@@ -208,7 +208,7 @@ class OpenTelemetryConfigurationFactoryTest {
         OpenTelemetryConfigurationFactory.getInstance()
             .create(
                 new OpenTelemetryConfigurationModel()
-                    .withFileFormat("0.1")
+                    .withFileFormat("0.3")
                     .withPropagator(
                         new PropagatorModel()
                             .withComposite(
