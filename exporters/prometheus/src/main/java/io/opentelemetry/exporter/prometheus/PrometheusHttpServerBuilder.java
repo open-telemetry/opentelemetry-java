@@ -153,7 +153,7 @@ public final class PrometheusHttpServerBuilder {
   public PrometheusHttpServer build() {
     if (memoryMode == MemoryMode.REUSABLE_DATA && executor != null) {
       throw new IllegalArgumentException(
-          "MemoryMode is REUSEABLE_DATA cannot be used with custom executo, "
+          "MemoryMode is REUSEABLE_DATA cannot be used with custom executor, "
               + "since data may be corrupted if reading metrics concurrently");
     }
     return new PrometheusHttpServer(
