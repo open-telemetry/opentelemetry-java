@@ -634,6 +634,9 @@ class FileConfigurationParseTest {
         // Multiple environment variables referenced
         Arguments.of("key1: ${STR_1}${STR_2}\n", mapOf(entry("key1", "value1value2"))),
         Arguments.of("key1: ${STR_1} ${STR_2}\n", mapOf(entry("key1", "value1 value2"))),
+        Arguments.of(
+            "key1: ${STR_1} ${NOT_SET:-default} ${STR_2}\n",
+            mapOf(entry("key1", "value1 default value2"))),
         // Undefined / empty environment variable
         Arguments.of("key1: ${EMPTY_STR}\n", mapOf(entry("key1", null))),
         Arguments.of("key1: ${STR_3}\n", mapOf(entry("key1", null))),
