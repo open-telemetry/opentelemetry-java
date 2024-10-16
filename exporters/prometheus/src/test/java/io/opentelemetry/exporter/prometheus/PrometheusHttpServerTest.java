@@ -427,6 +427,8 @@ class PrometheusHttpServerTest {
         PrometheusHttpServer.builder()
             .setHost("localhost")
             .setPort(port)
+            // Memory mode must be IMMUTABLE_DATA to set custom executor
+            .setMemoryMode(MemoryMode.IMMUTABLE_DATA)
             .setExecutor(scheduledExecutor)
             .build()) {
       assertThat(server)
@@ -520,7 +522,7 @@ class PrometheusHttpServerTest {
     builder.setAllowedResourceAttributesFilter(resourceAttributesFilter);
 
     ExecutorService executor = Executors.newSingleThreadExecutor();
-    builder.setExecutor(executor);
+    builder.setExecutor(executor).setMemoryMode(MemoryMode.IMMUTABLE_DATA);
 
     PrometheusRegistry prometheusRegistry = new PrometheusRegistry();
     builder.setPrometheusRegistry(prometheusRegistry);

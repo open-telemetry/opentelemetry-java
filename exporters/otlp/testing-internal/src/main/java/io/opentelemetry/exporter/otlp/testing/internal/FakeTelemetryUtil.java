@@ -33,6 +33,11 @@ public class FakeTelemetryUtil {
 
   private static final String TRACE_ID = "00000000000000000000000000abc123";
   private static final String SPAN_ID = "0000000000def456";
+  private static final InstrumentationScopeInfo SCOPE_INFO =
+      InstrumentationScopeInfo.builder("testLib")
+          .setVersion("1.0")
+          .setSchemaUrl("http://url")
+          .build();
 
   /** Generate a fake {@link MetricData}. */
   public static MetricData generateFakeMetricData() {
@@ -40,7 +45,7 @@ public class FakeTelemetryUtil {
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
     return ImmutableMetricData.createLongSum(
         Resource.empty(),
-        InstrumentationScopeInfo.empty(),
+        SCOPE_INFO,
         "name",
         "description",
         "1",
@@ -69,11 +74,7 @@ public class FakeTelemetryUtil {
         .setLinks(Collections.emptyList())
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)
-        .setInstrumentationScopeInfo(
-            InstrumentationScopeInfo.builder("testLib")
-                .setVersion("1.0")
-                .setSchemaUrl("http://url")
-                .build())
+        .setInstrumentationScopeInfo(SCOPE_INFO)
         .build();
   }
 
@@ -81,11 +82,7 @@ public class FakeTelemetryUtil {
   public static LogRecordData generateFakeLogRecordData() {
     return TestLogRecordData.builder()
         .setResource(Resource.getDefault())
-        .setInstrumentationScopeInfo(
-            InstrumentationScopeInfo.builder("testLib")
-                .setVersion("1.0")
-                .setSchemaUrl("http://url")
-                .build())
+        .setInstrumentationScopeInfo(SCOPE_INFO)
         .setBody("log body")
         .setAttributes(Attributes.builder().put("key", "value").build())
         .setSeverity(Severity.INFO)
