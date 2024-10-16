@@ -16,6 +16,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import javax.annotation.concurrent.Immutable;
 
+/** An effectively immutable implementation of {@link ExceptionEventData}. */
 @AutoValue
 @Immutable
 abstract class ImmutableExceptionEventData implements ExceptionEventData {
