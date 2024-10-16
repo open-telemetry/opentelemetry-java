@@ -15,7 +15,6 @@ import static org.mockito.Mockito.verify;
 import com.google.common.collect.ImmutableMap;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -61,7 +60,7 @@ class LogRecordExporterFactoryTest {
   void create_OtlpDefaults() {
     spiHelper = spy(spiHelper);
     List<Closeable> closeables = new ArrayList<>();
-    OtlpGrpcLogRecordExporter expectedExporter = OtlpGrpcLogRecordExporter.getDefault();
+    OtlpHttpLogRecordExporter expectedExporter = OtlpHttpLogRecordExporter.getDefault();
     cleanup.addCloseable(expectedExporter);
 
     LogRecordExporter exporter =

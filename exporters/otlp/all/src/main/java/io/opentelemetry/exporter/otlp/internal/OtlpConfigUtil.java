@@ -51,7 +51,14 @@ public final class OtlpConfigUtil {
 
   /** Determine the configured OTLP protocol for the {@code dataType}. */
   public static String getStructuredConfigOtlpProtocol(StructuredConfigProperties config) {
-    return config.getString("protocol", PROTOCOL_GRPC);
+    // NOTE: The default OTLP protocol is different for declarative config than for env var / system
+    // property based config. This is intentional. OpenTelemetry changed the default protocol
+    // recommendation from grpc to http/protobuf, but the autoconfigure's env var / system property
+    // based config did not update to reflect this before stabilizing, and changing is a breaking
+    // change requiring a major version bump. Declarative config is not yet stable and therefore can
+    // switch to the current default recommendation, which aligns also aligns with the behavior of
+    // the OpenTelemetry Java Agent 2.x+.
+    return config.getString("protocol", PROTOCOL_HTTP_PROTOBUF);
   }
 
   /** Invoke the setters with the OTLP configuration for the {@code dataType}. */

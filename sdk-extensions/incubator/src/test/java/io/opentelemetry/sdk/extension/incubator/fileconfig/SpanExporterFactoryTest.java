@@ -16,7 +16,6 @@ import com.google.common.collect.ImmutableMap;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -63,7 +62,7 @@ class SpanExporterFactoryTest {
   void create_OtlpDefaults() {
     spiHelper = spy(spiHelper);
     List<Closeable> closeables = new ArrayList<>();
-    OtlpGrpcSpanExporter expectedExporter = OtlpGrpcSpanExporter.getDefault();
+    OtlpHttpSpanExporter expectedExporter = OtlpHttpSpanExporter.getDefault();
     cleanup.addCloseable(expectedExporter);
 
     SpanExporter exporter =

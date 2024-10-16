@@ -9,7 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -53,7 +53,7 @@ class SpanProcessorFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     io.opentelemetry.sdk.trace.export.BatchSpanProcessor expectedProcessor =
         io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(
-                OtlpGrpcSpanExporter.getDefault())
+                OtlpHttpSpanExporter.getDefault())
             .build();
     cleanup.addCloseable(expectedProcessor);
 
@@ -77,7 +77,7 @@ class SpanProcessorFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     io.opentelemetry.sdk.trace.export.BatchSpanProcessor expectedProcessor =
         io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(
-                OtlpGrpcSpanExporter.getDefault())
+                OtlpHttpSpanExporter.getDefault())
             .setScheduleDelay(Duration.ofMillis(1))
             .setMaxExportBatchSize(2)
             .setExporterTimeout(Duration.ofMillis(3))
@@ -120,7 +120,7 @@ class SpanProcessorFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     io.opentelemetry.sdk.trace.SpanProcessor expectedProcessor =
         io.opentelemetry.sdk.trace.export.SimpleSpanProcessor.create(
-            OtlpGrpcSpanExporter.getDefault());
+            OtlpHttpSpanExporter.getDefault());
     cleanup.addCloseable(expectedProcessor);
 
     io.opentelemetry.sdk.trace.SpanProcessor processor =
