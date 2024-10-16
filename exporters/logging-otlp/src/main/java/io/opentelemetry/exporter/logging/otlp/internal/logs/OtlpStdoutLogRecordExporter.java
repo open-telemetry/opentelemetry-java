@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.Collection;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,6 +36,7 @@ public final class OtlpStdoutLogRecordExporter implements LogRecordExporter {
   private final JsonWriter jsonWriter;
   private final boolean wrapperJsonObject;
   private final MemoryMode memoryMode;
+  private final Function<Collection<LogRecordData>, CompletableResultCode> marshaler;
 
   OtlpStdoutLogRecordExporter(
       Logger logger, JsonWriter jsonWriter, boolean wrapperJsonObject, MemoryMode memoryMode) {
@@ -42,6 +44,7 @@ public final class OtlpStdoutLogRecordExporter implements LogRecordExporter {
     this.jsonWriter = jsonWriter;
     this.wrapperJsonObject = wrapperJsonObject;
     this.memoryMode = memoryMode;
+    marshaler = createMarshaler(jsonWriter, memoryMode, wrapperJsonObject);
   }
 
   /** Returns a new {@link OtlpStdoutLogRecordExporterBuilder}. */
@@ -50,26 +53,35 @@ public final class OtlpStdoutLogRecordExporter implements LogRecordExporter {
     return new OtlpStdoutLogRecordExporterBuilder(LOGGER).setOutput(System.out);
   }
 
+  private static Function<Collection<LogRecordData>, CompletableResultCode> createMarshaler(
+      JsonWriter jsonWriter, MemoryMode memoryMode, boolean wrapperJsonObject) {
+    if (wrapperJsonObject) {
+      LogReusableDataMarshaler reusableDataMarshaler =
+          new LogReusableDataMarshaler(
+              memoryMode, (marshaler, numItems) -> jsonWriter.write(marshaler));
+      return reusableDataMarshaler::export;
+    } else {
+      return logs -> {
+        // no support for low allocation marshaler
+        for (ResourceLogsMarshaler marshaler : ResourceLogsMarshaler.create(logs)) {
+          CompletableResultCode resultCode = jsonWriter.write(marshaler);
+          if (!resultCode.isSuccess()) {
+            // already logged
+            return resultCode;
+          }
+        }
+        return CompletableResultCode.ofSuccess();
+      };
+    }
+  }
+
   @Override
   public CompletableResultCode export(Collection<LogRecordData> logs) {
     if (isShutdown.get()) {
       return CompletableResultCode.ofFailure();
     }
 
-    if (wrapperJsonObject) {
-      return new LogReusableDataMarshaler(
-              memoryMode, (marshaler, numItems) -> jsonWriter.write(marshaler))
-          .export(logs);
-    } else {
-      for (ResourceLogsMarshaler resourceLogs : ResourceLogsMarshaler.create(logs)) {
-        CompletableResultCode resultCode = jsonWriter.write(resourceLogs);
-        if (!resultCode.isSuccess()) {
-          // already logged
-          return resultCode;
-        }
-      }
-      return CompletableResultCode.ofSuccess();
-    }
+    return marshaler.apply(logs);
   }
 
   @Override

@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,6 +40,7 @@ public final class OtlpStdoutMetricExporter implements MetricExporter {
   private final JsonWriter jsonWriter;
   private final boolean wrapperJsonObject;
   private final MemoryMode memoryMode;
+  private final Function<Collection<MetricData>, CompletableResultCode> marshaler;
   private final AggregationTemporalitySelector aggregationTemporalitySelector;
   private final DefaultAggregationSelector defaultAggregationSelector;
 
@@ -55,12 +57,35 @@ public final class OtlpStdoutMetricExporter implements MetricExporter {
     this.memoryMode = memoryMode;
     this.aggregationTemporalitySelector = aggregationTemporalitySelector;
     this.defaultAggregationSelector = defaultAggregationSelector;
+    marshaler = createMarshaler(jsonWriter, memoryMode, wrapperJsonObject);
   }
 
   /** Returns a new {@link OtlpStdoutMetricExporterBuilder}. */
   @SuppressWarnings("SystemOut")
   public static OtlpStdoutMetricExporterBuilder builder() {
     return new OtlpStdoutMetricExporterBuilder(LOGGER).setOutput(System.out);
+  }
+
+  private static Function<Collection<MetricData>, CompletableResultCode> createMarshaler(
+      JsonWriter jsonWriter, MemoryMode memoryMode, boolean wrapperJsonObject) {
+    if (wrapperJsonObject) {
+      MetricReusableDataMarshaler reusableDataMarshaler =
+          new MetricReusableDataMarshaler(
+              memoryMode, (marshaler, numItems) -> jsonWriter.write(marshaler));
+      return reusableDataMarshaler::export;
+    } else {
+      return metrics -> {
+        // no support for low allocation marshaler
+        for (ResourceMetricsMarshaler marshaler : ResourceMetricsMarshaler.create(metrics)) {
+          CompletableResultCode resultCode = jsonWriter.write(marshaler);
+          if (!resultCode.isSuccess()) {
+            // already logged
+            return resultCode;
+          }
+        }
+        return CompletableResultCode.ofSuccess();
+      };
+    }
   }
 
   @Override
@@ -84,20 +109,7 @@ public final class OtlpStdoutMetricExporter implements MetricExporter {
       return CompletableResultCode.ofFailure();
     }
 
-    if (wrapperJsonObject) {
-      return new MetricReusableDataMarshaler(
-              memoryMode, (marshaler, numItems) -> jsonWriter.write(marshaler))
-          .export(metrics);
-    } else {
-      for (ResourceMetricsMarshaler resourceMetrics : ResourceMetricsMarshaler.create(metrics)) {
-        CompletableResultCode resultCode = jsonWriter.write(resourceMetrics);
-        if (!resultCode.isSuccess()) {
-          // already logged
-          return resultCode;
-        }
-      }
-      return CompletableResultCode.ofSuccess();
-    }
+    return marshaler.apply(metrics);
   }
 
   @Override
