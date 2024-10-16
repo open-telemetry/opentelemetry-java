@@ -18,8 +18,7 @@ import javax.annotation.concurrent.Immutable;
 
 @AutoValue
 @Immutable
-abstract class ImmutableExceptionEventData
-    implements io.opentelemetry.sdk.trace.data.ExceptionEventData {
+abstract class ImmutableExceptionEventData implements ExceptionEventData {
 
   private static final AttributeKey<String> EXCEPTION_TYPE =
       AttributeKey.stringKey("exception.type");
