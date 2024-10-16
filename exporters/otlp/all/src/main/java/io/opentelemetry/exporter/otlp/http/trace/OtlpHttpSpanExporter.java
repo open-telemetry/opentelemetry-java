@@ -35,13 +35,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
       MemoryMode memoryMode) {
     this.builder = builder;
     this.delegate = delegate;
-    this.marshaler =
-        new SpanReusableDataMarshaler(memoryMode) {
-          @Override
-          public CompletableResultCode doExport(Marshaler exportRequest, int numItems) {
-            return delegate.export(exportRequest, numItems);
-          }
-        };
+    this.marshaler = new SpanReusableDataMarshaler(memoryMode, delegate::export);
   }
 
   /**

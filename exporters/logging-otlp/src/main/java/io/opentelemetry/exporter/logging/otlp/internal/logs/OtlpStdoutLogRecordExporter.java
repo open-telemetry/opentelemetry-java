@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.logging.otlp.internal.logs;
 
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.logs.LogReusableDataMarshaler;
 import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonWriter;
@@ -58,12 +57,9 @@ public final class OtlpStdoutLogRecordExporter implements LogRecordExporter {
     }
 
     if (wrapperJsonObject) {
-      return new LogReusableDataMarshaler(memoryMode) {
-        @Override
-        public CompletableResultCode doExport(Marshaler exportRequest, int numItems) {
-          return jsonWriter.write(exportRequest);
-        }
-      }.export(logs);
+      return new LogReusableDataMarshaler(
+              memoryMode, (marshaler, numItems) -> jsonWriter.write(marshaler))
+          .export(logs);
     } else {
       for (ResourceLogsMarshaler resourceLogs : ResourceLogsMarshaler.create(logs)) {
         CompletableResultCode resultCode = jsonWriter.write(resourceLogs);

@@ -56,13 +56,7 @@ public final class OtlpGrpcLogRecordExporter implements LogRecordExporter {
       MemoryMode memoryMode) {
     this.builder = builder;
     this.delegate = delegate;
-    this.marshaler =
-        new LogReusableDataMarshaler(memoryMode) {
-          @Override
-          public CompletableResultCode doExport(Marshaler exportRequest, int numItems) {
-            return delegate.export(exportRequest, numItems);
-          }
-        };
+    this.marshaler = new LogReusableDataMarshaler(memoryMode, delegate::export);
   }
 
   /**

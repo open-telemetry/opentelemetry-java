@@ -46,13 +46,7 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
     this.delegate = delegate;
     this.aggregationTemporalitySelector = aggregationTemporalitySelector;
     this.defaultAggregationSelector = defaultAggregationSelector;
-    this.marshaler =
-        new MetricReusableDataMarshaler(memoryMode) {
-          @Override
-          public CompletableResultCode doExport(Marshaler exportRequest, int numItems) {
-            return delegate.export(exportRequest, numItems);
-          }
-        };
+    this.marshaler = new MetricReusableDataMarshaler(memoryMode, delegate::export);
   }
 
   /**

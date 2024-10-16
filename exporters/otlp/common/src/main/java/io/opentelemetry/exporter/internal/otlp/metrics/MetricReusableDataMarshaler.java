@@ -12,22 +12,24 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.function.BiFunction;
 
-public abstract class MetricReusableDataMarshaler {
+public class MetricReusableDataMarshaler {
 
   private final Deque<LowAllocationMetricsRequestMarshaler> marshalerPool = new ArrayDeque<>();
 
   private final MemoryMode memoryMode;
+  private final BiFunction<Marshaler, Integer, CompletableResultCode> doExport;
 
-  public MetricReusableDataMarshaler(MemoryMode memoryMode) {
+  public MetricReusableDataMarshaler(
+      MemoryMode memoryMode, BiFunction<Marshaler, Integer, CompletableResultCode> doExport) {
     this.memoryMode = memoryMode;
+    this.doExport = doExport;
   }
 
   public MemoryMode getMemoryMode() {
     return memoryMode;
   }
-
-  public abstract CompletableResultCode doExport(Marshaler exportRequest, int numItems);
 
   public CompletableResultCode export(Collection<MetricData> metrics) {
     if (memoryMode == MemoryMode.REUSABLE_DATA) {
@@ -37,7 +39,8 @@ public abstract class MetricReusableDataMarshaler {
       }
       LowAllocationMetricsRequestMarshaler exportMarshaler = marshaler;
       exportMarshaler.initialize(metrics);
-      return doExport(exportMarshaler, metrics.size())
+      return doExport
+          .apply(exportMarshaler, metrics.size())
           .whenComplete(
               () -> {
                 exportMarshaler.reset();
@@ -46,6 +49,6 @@ public abstract class MetricReusableDataMarshaler {
     }
     // MemoryMode == MemoryMode.IMMUTABLE_DATA
     MetricsRequestMarshaler request = MetricsRequestMarshaler.create(metrics);
-    return doExport(request, metrics.size());
+    return doExport.apply(request, metrics.size());
   }
 }

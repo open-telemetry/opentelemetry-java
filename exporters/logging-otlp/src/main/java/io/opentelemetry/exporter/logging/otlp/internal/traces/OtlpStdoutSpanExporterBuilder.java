@@ -8,7 +8,6 @@ package io.opentelemetry.exporter.logging.otlp.internal.traces;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingSpanExporter;
-import io.opentelemetry.exporter.logging.otlp.internal.OtlpStdoutExporterBuilderUtil;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonWriter;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.LoggerJsonWriter;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.StreamJsonWriter;
@@ -85,7 +84,10 @@ public final class OtlpStdoutSpanExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpStdoutSpanExporter build() {
-    OtlpStdoutExporterBuilderUtil.validate(memoryMode, wrapperJsonObject);
+    if (memoryMode == MemoryMode.REUSABLE_DATA && !wrapperJsonObject) {
+      throw new IllegalArgumentException(
+          "Reusable data mode is not supported without wrapperJsonObject");
+    }
     return new OtlpStdoutSpanExporter(logger, jsonWriter, wrapperJsonObject, memoryMode);
   }
 }

@@ -12,22 +12,24 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.function.BiFunction;
 
-public abstract class SpanReusableDataMarshaler {
+public class SpanReusableDataMarshaler {
 
   private final Deque<LowAllocationTraceRequestMarshaler> marshalerPool = new ArrayDeque<>();
 
   private final MemoryMode memoryMode;
+  private final BiFunction<Marshaler, Integer, CompletableResultCode> doExport;
 
-  public SpanReusableDataMarshaler(MemoryMode memoryMode) {
+  public SpanReusableDataMarshaler(
+      MemoryMode memoryMode, BiFunction<Marshaler, Integer, CompletableResultCode> doExport) {
     this.memoryMode = memoryMode;
+    this.doExport = doExport;
   }
 
   public MemoryMode getMemoryMode() {
     return memoryMode;
   }
-
-  public abstract CompletableResultCode doExport(Marshaler exportRequest, int numItems);
 
   public CompletableResultCode export(Collection<SpanData> spans) {
     if (memoryMode == MemoryMode.REUSABLE_DATA) {
@@ -37,7 +39,8 @@ public abstract class SpanReusableDataMarshaler {
       }
       LowAllocationTraceRequestMarshaler exportMarshaler = marshaler;
       exportMarshaler.initialize(spans);
-      return doExport(exportMarshaler, spans.size())
+      return doExport
+          .apply(exportMarshaler, spans.size())
           .whenComplete(
               () -> {
                 exportMarshaler.reset();
@@ -46,6 +49,6 @@ public abstract class SpanReusableDataMarshaler {
     }
     // MemoryMode == MemoryMode.IMMUTABLE_DATA
     TraceRequestMarshaler request = TraceRequestMarshaler.create(spans);
-    return doExport(request, spans.size());
+    return doExport.apply(request, spans.size());
   }
 }

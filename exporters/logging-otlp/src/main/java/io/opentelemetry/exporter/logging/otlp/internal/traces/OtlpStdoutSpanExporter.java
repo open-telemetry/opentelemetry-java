@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.logging.otlp.internal.traces;
 
-import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.otlp.traces.ResourceSpansMarshaler;
 import io.opentelemetry.exporter.internal.otlp.traces.SpanReusableDataMarshaler;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonWriter;
@@ -57,12 +56,9 @@ public final class OtlpStdoutSpanExporter implements SpanExporter {
     }
 
     if (wrapperJsonObject) {
-      return new SpanReusableDataMarshaler(memoryMode) {
-        @Override
-        public CompletableResultCode doExport(Marshaler exportRequest, int numItems) {
-          return jsonWriter.write(exportRequest);
-        }
-      }.export(spans);
+      return new SpanReusableDataMarshaler(
+              memoryMode, (marshaler, numItems) -> jsonWriter.write(marshaler))
+          .export(spans);
     } else {
       for (ResourceSpansMarshaler resourceSpans : ResourceSpansMarshaler.create(spans)) {
         CompletableResultCode resultCode = jsonWriter.write(resourceSpans);
