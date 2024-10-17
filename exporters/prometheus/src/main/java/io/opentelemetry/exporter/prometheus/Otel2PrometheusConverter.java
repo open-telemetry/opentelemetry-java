@@ -425,7 +425,7 @@ final class Otel2PrometheusConverter {
           Level.WARNING,
           "exemplar labels have "
               + codePoints
-              + " codePoints, exceeding the limit of "
+              + " unicode code points, exceeding the limit of "
               + EXEMPLAR_MAX_CODE_POINTS);
       return null;
     }
