@@ -14,6 +14,10 @@ import java.util.Collection;
 import java.util.Deque;
 import java.util.function.BiFunction;
 
+/**
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
+ */
 public class LogReusableDataMarshaler {
 
   private final Deque<LowAllocationLogsRequestMarshaler> marshalerPool = new ArrayDeque<>();
