@@ -6,8 +6,11 @@
 package io.opentelemetry.exporter.logging.otlp;
 
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Streams;
@@ -16,6 +19,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -27,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.json.JSONException;
@@ -75,7 +80,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
   }
 
   protected abstract T createExporter(
-      @Nullable OutputStream outputStream, boolean wrapperJsonObject);
+      @Nullable OutputStream outputStream, MemoryMode memoryMode, boolean wrapperJsonObject);
 
   protected abstract T createDefaultExporter();
 
@@ -128,12 +133,13 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
   }
 
   public static class TestCase {
-
+    private final MemoryMode memoryMode;
     private final boolean wrapperJsonObject;
     private final OutputType outputType;
 
-    public TestCase(OutputType outputType, boolean wrapperJsonObject) {
+    public TestCase(OutputType outputType, MemoryMode memoryMode, boolean wrapperJsonObject) {
       this.outputType = outputType;
+      this.memoryMode = memoryMode;
       this.wrapperJsonObject = wrapperJsonObject;
     }
 
@@ -144,25 +150,55 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     public boolean isWrapperJsonObject() {
       return wrapperJsonObject;
     }
+
+    public MemoryMode getMemoryMode() {
+      return memoryMode;
+    }
   }
 
   static Stream<Arguments> exportTestCases() {
     return ImmutableList.of(
-        testCase(OutputType.SYSTEM_OUT, /* wrapperJsonObject= */ true),
-        testCase(OutputType.SYSTEM_OUT, /* wrapperJsonObject= */ false),
-        testCase(OutputType.FILE, /* wrapperJsonObject= */ true),
-        testCase(OutputType.FILE, /* wrapperJsonObject= */ false),
-        testCase(OutputType.FILE_AND_BUFFERED_WRITER, /* wrapperJsonObject= */ true),
-        testCase(OutputType.FILE_AND_BUFFERED_WRITER, /* wrapperJsonObject= */ false),
-        testCase(OutputType.LOGGER, /* wrapperJsonObject= */ true),
-        testCase(OutputType.LOGGER, /* wrapperJsonObject= */ false))
+        testCase(OutputType.SYSTEM_OUT, MemoryMode.IMMUTABLE_DATA, /* wrapperJsonObject= */ true),
+        testCase(OutputType.SYSTEM_OUT, MemoryMode.IMMUTABLE_DATA, /* wrapperJsonObject= */ false),
+        testCase(OutputType.FILE, MemoryMode.IMMUTABLE_DATA, /* wrapperJsonObject= */ true),
+        testCase(OutputType.FILE, MemoryMode.IMMUTABLE_DATA, /* wrapperJsonObject= */ false),
+        testCase(
+            OutputType.FILE_AND_BUFFERED_WRITER,
+            MemoryMode.IMMUTABLE_DATA,
+            /* wrapperJsonObject= */ true),
+        testCase(
+            OutputType.FILE_AND_BUFFERED_WRITER,
+            MemoryMode.IMMUTABLE_DATA,
+            /* wrapperJsonObject= */ false),
+        testCase(OutputType.LOGGER, MemoryMode.IMMUTABLE_DATA, /* wrapperJsonObject= */ true),
+        testCase(OutputType.LOGGER, MemoryMode.IMMUTABLE_DATA, /* wrapperJsonObject= */ false),
+        testCase(OutputType.SYSTEM_OUT, MemoryMode.REUSABLE_DATA, /* wrapperJsonObject= */ true),
+        testCase(OutputType.SYSTEM_OUT, MemoryMode.REUSABLE_DATA, /* wrapperJsonObject= */ false),
+        testCase(OutputType.FILE, MemoryMode.REUSABLE_DATA, /* wrapperJsonObject= */ true),
+        testCase(OutputType.FILE, MemoryMode.REUSABLE_DATA, /* wrapperJsonObject= */ false),
+        testCase(
+            OutputType.FILE_AND_BUFFERED_WRITER,
+            MemoryMode.REUSABLE_DATA,
+            /* wrapperJsonObject= */ true),
+        testCase(
+            OutputType.FILE_AND_BUFFERED_WRITER,
+            MemoryMode.REUSABLE_DATA,
+            /* wrapperJsonObject= */ false),
+        testCase(OutputType.LOGGER, MemoryMode.REUSABLE_DATA, /* wrapperJsonObject= */ true),
+        testCase(OutputType.LOGGER, MemoryMode.REUSABLE_DATA, /* wrapperJsonObject= */ false))
         .stream();
   }
 
-  private static Arguments testCase(OutputType type, boolean wrapperJsonObject) {
+  private static Arguments testCase(
+      OutputType type, MemoryMode memoryMode, boolean wrapperJsonObject) {
     return Arguments.of(
-        "output=" + type + ", wrapperJsonObject=" + wrapperJsonObject,
-        new TestCase(type, wrapperJsonObject));
+        "output="
+            + type
+            + ", wrapperJsonObject="
+            + wrapperJsonObject
+            + ", memoryMode="
+            + memoryMode,
+        new TestCase(type, memoryMode, wrapperJsonObject));
   }
 
   @SuppressWarnings("SystemOut")
@@ -190,8 +226,19 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
       default:
         throw new IllegalStateException("Unexpected value: " + testCase.getOutputType());
     }
-    T exporter = createExporter(outputStream, testCase.isWrapperJsonObject());
-    testDataExporter.export(exporter);
+
+    Supplier<T> exporter =
+        () ->
+            createExporter(outputStream, testCase.getMemoryMode(), testCase.isWrapperJsonObject());
+
+    if (testCase.getMemoryMode() == MemoryMode.REUSABLE_DATA && !testCase.isWrapperJsonObject()) {
+      assertThatExceptionOfType(IllegalArgumentException.class)
+          .isThrownBy(exporter::get)
+          .withMessage("Reusable data mode is not supported without wrapperJsonObject");
+      return;
+    }
+
+    testDataExporter.export(exporter.get());
 
     String output = output(outputStream, file);
     String expectedJson = testDataExporter.getExpectedJson(testCase.isWrapperJsonObject());
@@ -215,40 +262,69 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
 
   @Test
   void defaultToString() {
-    assertFullToString(createDefaultExporter(), defaultConfigString);
+    assertThat(createDefaultExporter()).hasToString(defaultConfigString);
 
-    assertFullToString(
-        loadExporter(DefaultConfigProperties.createFromMap(emptyMap())), defaultConfigString);
+    assertThat(exporterFromProvider(DefaultConfigProperties.createFromMap(emptyMap())))
+        .hasToString(defaultConfigString);
   }
 
-  protected Object exporterFromComponentProvider(StructuredConfigProperties properties) {
-    return ((ComponentProvider<?>)
-            loadSpi(ComponentProvider.class)
-                .filter(
-                    p -> {
-                      ComponentProvider<?> c = (ComponentProvider<?>) p;
-                      return "experimental-otlp/stdout".equals(c.getName())
-                          && c.getType().equals(componentProviderType);
-                    })
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No provider found")))
-        .create(properties);
+  @Test
+  void providerConfig() {
+    assertThat(
+            exporterFromProvider(
+                DefaultConfigProperties.createFromMap(
+                    singletonMap("otel.java.experimental.exporter.memory_mode", "immutable_data"))))
+        .extracting("memoryMode")
+        .isEqualTo(MemoryMode.IMMUTABLE_DATA);
+    assertThat(
+            exporterFromProvider(
+                DefaultConfigProperties.createFromMap(
+                    singletonMap("otel.java.experimental.exporter.memory_mode", "reusable_data"))))
+        .extracting("memoryMode")
+        .isEqualTo(MemoryMode.REUSABLE_DATA);
   }
 
   @Test
   void componentProviderConfig() {
     StructuredConfigProperties properties = mock(StructuredConfigProperties.class);
-    Object exporter = exporterFromComponentProvider(properties);
+    T exporter = exporterFromComponentProvider(properties);
 
     assertThat(exporter).extracting("wrapperJsonObject").isEqualTo(true);
+    assertThat(exporter).extracting("memoryMode").isEqualTo(MemoryMode.IMMUTABLE_DATA);
     assertThat(exporter)
         .extracting("jsonWriter")
         .extracting(Object::toString)
         .isEqualTo("StreamJsonWriter{outputStream=stdout}");
+
+    when(properties.getString("memory_mode")).thenReturn("IMMUTABLE_DATA");
+    assertThat(exporterFromComponentProvider(properties))
+        .extracting("memoryMode")
+        .isEqualTo(MemoryMode.IMMUTABLE_DATA);
+
+    when(properties.getString("memory_mode")).thenReturn("REUSABLE_DATA");
+    assertThat(exporterFromComponentProvider(properties))
+        .extracting("memoryMode")
+        .isEqualTo(MemoryMode.REUSABLE_DATA);
   }
 
   @SuppressWarnings("unchecked")
-  protected T loadExporter(ConfigProperties config) {
+  protected T exporterFromComponentProvider(StructuredConfigProperties properties) {
+    return (T)
+        ((ComponentProvider<?>)
+                loadSpi(ComponentProvider.class)
+                    .filter(
+                        p -> {
+                          ComponentProvider<?> c = (ComponentProvider<?>) p;
+                          return "experimental-otlp/stdout".equals(c.getName())
+                              && c.getType().equals(componentProviderType);
+                        })
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("No provider found")))
+            .create(properties);
+  }
+
+  @SuppressWarnings("unchecked")
+  protected T exporterFromProvider(ConfigProperties config) {
     Object provider = loadProvider();
 
     try {
@@ -279,9 +355,5 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
 
   protected static Stream<?> loadSpi(Class<?> type) {
     return Streams.stream(ServiceLoader.load(type, type.getClassLoader()).iterator());
-  }
-
-  private void assertFullToString(T exporter, String expected) {
-    assertThat(exporter.toString()).isEqualTo(expected);
   }
 }

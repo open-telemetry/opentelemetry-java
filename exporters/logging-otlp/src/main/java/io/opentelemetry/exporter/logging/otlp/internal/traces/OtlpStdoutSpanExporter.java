@@ -6,14 +6,16 @@
 package io.opentelemetry.exporter.logging.otlp.internal.traces;
 
 import io.opentelemetry.exporter.internal.otlp.traces.ResourceSpansMarshaler;
-import io.opentelemetry.exporter.internal.otlp.traces.TraceRequestMarshaler;
+import io.opentelemetry.exporter.internal.otlp.traces.SpanReusableDataMarshaler;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,11 +34,16 @@ public final class OtlpStdoutSpanExporter implements SpanExporter {
   private final Logger logger;
   private final JsonWriter jsonWriter;
   private final boolean wrapperJsonObject;
+  private final MemoryMode memoryMode;
+  private final Function<Collection<SpanData>, CompletableResultCode> marshaler;
 
-  OtlpStdoutSpanExporter(Logger logger, JsonWriter jsonWriter, boolean wrapperJsonObject) {
+  OtlpStdoutSpanExporter(
+      Logger logger, JsonWriter jsonWriter, boolean wrapperJsonObject, MemoryMode memoryMode) {
     this.logger = logger;
     this.jsonWriter = jsonWriter;
     this.wrapperJsonObject = wrapperJsonObject;
+    this.memoryMode = memoryMode;
+    marshaler = createMarshaler(jsonWriter, memoryMode, wrapperJsonObject);
   }
 
   /** Returns a new {@link OtlpStdoutSpanExporterBuilder}. */
@@ -45,25 +52,35 @@ public final class OtlpStdoutSpanExporter implements SpanExporter {
     return new OtlpStdoutSpanExporterBuilder(LOGGER).setOutput(System.out);
   }
 
+  private static Function<Collection<SpanData>, CompletableResultCode> createMarshaler(
+      JsonWriter jsonWriter, MemoryMode memoryMode, boolean wrapperJsonObject) {
+    if (wrapperJsonObject) {
+      SpanReusableDataMarshaler reusableDataMarshaler =
+          new SpanReusableDataMarshaler(
+              memoryMode, (marshaler, numItems) -> jsonWriter.write(marshaler));
+      return reusableDataMarshaler::export;
+    } else {
+      return spans -> {
+        // no support for low allocation marshaler
+        for (ResourceSpansMarshaler marshaler : ResourceSpansMarshaler.create(spans)) {
+          CompletableResultCode resultCode = jsonWriter.write(marshaler);
+          if (!resultCode.isSuccess()) {
+            // already logged
+            return resultCode;
+          }
+        }
+        return CompletableResultCode.ofSuccess();
+      };
+    }
+  }
+
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
     if (isShutdown.get()) {
       return CompletableResultCode.ofFailure();
     }
 
-    if (wrapperJsonObject) {
-      TraceRequestMarshaler request = TraceRequestMarshaler.create(spans);
-      return jsonWriter.write(request);
-    } else {
-      for (ResourceSpansMarshaler resourceSpans : ResourceSpansMarshaler.create(spans)) {
-        CompletableResultCode resultCode = jsonWriter.write(resourceSpans);
-        if (!resultCode.isSuccess()) {
-          // already logged
-          return resultCode;
-        }
-      }
-      return CompletableResultCode.ofSuccess();
-    }
+    return marshaler.apply(spans);
   }
 
   @Override
@@ -86,6 +103,7 @@ public final class OtlpStdoutSpanExporter implements SpanExporter {
     StringJoiner joiner = new StringJoiner(", ", "OtlpStdoutSpanExporter{", "}");
     joiner.add("jsonWriter=" + jsonWriter);
     joiner.add("wrapperJsonObject=" + wrapperJsonObject);
+    joiner.add("memoryMode=" + memoryMode);
     return joiner.toString();
   }
 }

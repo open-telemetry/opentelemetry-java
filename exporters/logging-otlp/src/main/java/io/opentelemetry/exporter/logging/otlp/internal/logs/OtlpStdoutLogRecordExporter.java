@@ -5,15 +5,17 @@
 
 package io.opentelemetry.exporter.logging.otlp.internal.logs;
 
-import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
+import io.opentelemetry.exporter.internal.otlp.logs.LogReusableDataMarshaler;
 import io.opentelemetry.exporter.internal.otlp.logs.ResourceLogsMarshaler;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonWriter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.Collection;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,11 +35,16 @@ public final class OtlpStdoutLogRecordExporter implements LogRecordExporter {
   private final Logger logger;
   private final JsonWriter jsonWriter;
   private final boolean wrapperJsonObject;
+  private final MemoryMode memoryMode;
+  private final Function<Collection<LogRecordData>, CompletableResultCode> marshaler;
 
-  OtlpStdoutLogRecordExporter(Logger logger, JsonWriter jsonWriter, boolean wrapperJsonObject) {
+  OtlpStdoutLogRecordExporter(
+      Logger logger, JsonWriter jsonWriter, boolean wrapperJsonObject, MemoryMode memoryMode) {
     this.logger = logger;
     this.jsonWriter = jsonWriter;
     this.wrapperJsonObject = wrapperJsonObject;
+    this.memoryMode = memoryMode;
+    marshaler = createMarshaler(jsonWriter, memoryMode, wrapperJsonObject);
   }
 
   /** Returns a new {@link OtlpStdoutLogRecordExporterBuilder}. */
@@ -46,25 +53,35 @@ public final class OtlpStdoutLogRecordExporter implements LogRecordExporter {
     return new OtlpStdoutLogRecordExporterBuilder(LOGGER).setOutput(System.out);
   }
 
+  private static Function<Collection<LogRecordData>, CompletableResultCode> createMarshaler(
+      JsonWriter jsonWriter, MemoryMode memoryMode, boolean wrapperJsonObject) {
+    if (wrapperJsonObject) {
+      LogReusableDataMarshaler reusableDataMarshaler =
+          new LogReusableDataMarshaler(
+              memoryMode, (marshaler, numItems) -> jsonWriter.write(marshaler));
+      return reusableDataMarshaler::export;
+    } else {
+      return logs -> {
+        // no support for low allocation marshaler
+        for (ResourceLogsMarshaler marshaler : ResourceLogsMarshaler.create(logs)) {
+          CompletableResultCode resultCode = jsonWriter.write(marshaler);
+          if (!resultCode.isSuccess()) {
+            // already logged
+            return resultCode;
+          }
+        }
+        return CompletableResultCode.ofSuccess();
+      };
+    }
+  }
+
   @Override
   public CompletableResultCode export(Collection<LogRecordData> logs) {
     if (isShutdown.get()) {
       return CompletableResultCode.ofFailure();
     }
 
-    if (wrapperJsonObject) {
-      LogsRequestMarshaler request = LogsRequestMarshaler.create(logs);
-      return jsonWriter.write(request);
-    } else {
-      for (ResourceLogsMarshaler resourceLogs : ResourceLogsMarshaler.create(logs)) {
-        CompletableResultCode resultCode = jsonWriter.write(resourceLogs);
-        if (!resultCode.isSuccess()) {
-          // already logged
-          return resultCode;
-        }
-      }
-      return CompletableResultCode.ofSuccess();
-    }
+    return marshaler.apply(logs);
   }
 
   @Override
@@ -87,6 +104,7 @@ public final class OtlpStdoutLogRecordExporter implements LogRecordExporter {
     StringJoiner joiner = new StringJoiner(", ", "OtlpStdoutLogRecordExporter{", "}");
     joiner.add("jsonWriter=" + jsonWriter);
     joiner.add("wrapperJsonObject=" + wrapperJsonObject);
+    joiner.add("memoryMode=" + memoryMode);
     return joiner.toString();
   }
 }

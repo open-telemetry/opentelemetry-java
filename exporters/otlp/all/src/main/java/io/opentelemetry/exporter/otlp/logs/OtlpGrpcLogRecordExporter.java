@@ -8,15 +8,12 @@ package io.opentelemetry.exporter.otlp.logs;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
-import io.opentelemetry.exporter.internal.otlp.logs.LowAllocationLogsRequestMarshaler;
+import io.opentelemetry.exporter.internal.otlp.logs.LogReusableDataMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
-import java.util.ArrayDeque;
 import java.util.Collection;
-import java.util.Deque;
 import java.util.StringJoiner;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -28,10 +25,9 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpGrpcLogRecordExporter implements LogRecordExporter {
 
-  private final Deque<LowAllocationLogsRequestMarshaler> marshalerPool = new ArrayDeque<>();
   private final GrpcExporterBuilder<Marshaler> builder;
   private final GrpcExporter<Marshaler> delegate;
-  private final MemoryMode memoryMode;
+  private final LogReusableDataMarshaler marshaler;
 
   /**
    * Returns a new {@link OtlpGrpcLogRecordExporter} using the default values.
@@ -60,7 +56,7 @@ public final class OtlpGrpcLogRecordExporter implements LogRecordExporter {
       MemoryMode memoryMode) {
     this.builder = builder;
     this.delegate = delegate;
-    this.memoryMode = memoryMode;
+    this.marshaler = new LogReusableDataMarshaler(memoryMode, delegate::export);
   }
 
   /**
@@ -71,7 +67,7 @@ public final class OtlpGrpcLogRecordExporter implements LogRecordExporter {
    * @since 1.29.0
    */
   public OtlpGrpcLogRecordExporterBuilder toBuilder() {
-    return new OtlpGrpcLogRecordExporterBuilder(builder.copy(), memoryMode);
+    return new OtlpGrpcLogRecordExporterBuilder(builder.copy(), marshaler.getMemoryMode());
   }
 
   /**
@@ -82,24 +78,7 @@ public final class OtlpGrpcLogRecordExporter implements LogRecordExporter {
    */
   @Override
   public CompletableResultCode export(Collection<LogRecordData> logs) {
-    if (memoryMode == MemoryMode.REUSABLE_DATA) {
-      LowAllocationLogsRequestMarshaler marshaler = marshalerPool.poll();
-      if (marshaler == null) {
-        marshaler = new LowAllocationLogsRequestMarshaler();
-      }
-      LowAllocationLogsRequestMarshaler exportMarshaler = marshaler;
-      exportMarshaler.initialize(logs);
-      return delegate
-          .export(exportMarshaler, logs.size())
-          .whenComplete(
-              () -> {
-                exportMarshaler.reset();
-                marshalerPool.add(exportMarshaler);
-              });
-    }
-    // MemoryMode == MemoryMode.IMMUTABLE_DATA
-    LogsRequestMarshaler request = LogsRequestMarshaler.create(logs);
-    return delegate.export(request, logs.size());
+    return marshaler.export(logs);
   }
 
   @Override
@@ -120,7 +99,7 @@ public final class OtlpGrpcLogRecordExporter implements LogRecordExporter {
   public String toString() {
     StringJoiner joiner = new StringJoiner(", ", "OtlpGrpcLogRecordExporter{", "}");
     joiner.add(builder.toString(false));
-    joiner.add("memoryMode=" + memoryMode);
+    joiner.add("memoryMode=" + marshaler.getMemoryMode());
     return joiner.toString();
   }
 }

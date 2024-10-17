@@ -20,6 +20,7 @@ public final class OtlpStdoutMetricExporterProvider implements ConfigurableMetri
   @Override
   public MetricExporter createExporter(ConfigProperties config) {
     OtlpStdoutMetricExporterBuilder builder = OtlpStdoutMetricExporter.builder();
+    ExporterBuilderUtil.configureExporterMemoryMode(config, builder::setMemoryMode);
     ExporterBuilderUtil.configureOtlpAggregationTemporality(
         config, builder::setAggregationTemporalitySelector);
     ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
