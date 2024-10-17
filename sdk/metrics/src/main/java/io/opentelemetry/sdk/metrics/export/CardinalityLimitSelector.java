@@ -3,19 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.internal.export;
+package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 
 /**
  * Customize the {@link io.opentelemetry.sdk.metrics.export.MetricReader} cardinality limit as a
  * function of {@link InstrumentType}. Register via {@link
- * SdkMeterProviderUtil#registerMetricReaderWithCardinalitySelector(SdkMeterProviderBuilder,
- * MetricReader, CardinalityLimitSelector)}.
+ * SdkMeterProviderBuilder#registerMetricReader(MetricReader, CardinalityLimitSelector)}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
