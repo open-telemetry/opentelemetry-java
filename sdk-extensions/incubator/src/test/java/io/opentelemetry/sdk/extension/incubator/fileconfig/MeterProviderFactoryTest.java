@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterProviderModel;
@@ -57,7 +57,7 @@ class MeterProviderFactoryTest {
         SdkMeterProvider.builder()
             .registerMetricReader(
                 io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
-                        OtlpGrpcMetricExporter.getDefault())
+                        OtlpHttpMetricExporter.getDefault())
                     .build())
             .registerView(
                 InstrumentSelector.builder().setName("instrument-name").build(),
