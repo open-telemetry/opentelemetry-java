@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.resources.EntityDetector;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-
 import javax.annotation.Nullable;
 
 /** Detects the `service` entity. */

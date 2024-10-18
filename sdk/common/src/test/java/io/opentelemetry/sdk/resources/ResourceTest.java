@@ -236,6 +236,7 @@ class ResourceTest {
 
   @Test
   void testDefaultResources() {
+    // TODO - testing full set of attributes should move to EntityDetector unit tests.
     Resource resource = Resource.getDefault();
     assertThat(resource.getAttribute(stringKey("service.name"))).isEqualTo("unknown_service:java");
     assertThat(resource.getAttribute(stringKey("telemetry.sdk.name"))).isEqualTo("opentelemetry");

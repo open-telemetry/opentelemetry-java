@@ -15,8 +15,12 @@ import io.opentelemetry.sdk.resources.detectors.ServiceDetector;
 import io.opentelemetry.sdk.resources.detectors.TelemetrySdkDetector;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -92,6 +96,21 @@ public abstract class Resource {
    * @throws IllegalArgumentException if attribute key or attribute value is not a valid printable
    *     ASCII string or exceed {@link #MAX_LENGTH} characters.
    */
+  public static Resource create(Attributes attributes, @Nullable String schemaUrl) {
+    checkAttributes(Objects.requireNonNull(attributes, "attributes"));
+    return new AutoValue_Resource(schemaUrl, attributes, Collections.emptyList());
+  }
+
+  /**
+   * Returns a {@link Resource}.
+   *
+   * @param attributes a map of {@link Attributes} that describe the resource.
+   * @param schemaUrl The URL of the OpenTelemetry schema used to create this Resource.
+   * @return a {@code Resource}.
+   * @throws NullPointerException if {@code attributes} is null.
+   * @throws IllegalArgumentException if attribute key or attribute value is not a valid printable
+   *     ASCII string or exceed {@link #MAX_LENGTH} characters.
+   */
   public static Resource create(
       Attributes attributes, @Nullable String schemaUrl, Collection<Entity> entities) {
     checkAttributes(Objects.requireNonNull(attributes, "attributes"));
@@ -149,6 +168,49 @@ public abstract class Resource {
     return getAttributes().get(key);
   }
 
+  private static final Collection<Entity> mergeEntities(
+      Collection<Entity> lhs, Collection<Entity> rhs) {
+    if (lhs.isEmpty()) {
+      return rhs;
+    }
+    if (rhs.isEmpty()) {
+      return lhs;
+    }
+    Map<String, Entity> entities = new HashMap<>();
+    lhs.forEach(e -> entities.put(e.getType(), e));
+    for (Entity e : rhs) {
+      if (!entities.containsKey(e.getType())) {
+        entities.put(e.getType(), e);
+      } else {
+        Entity old = entities.get(e.getType());
+        // If the entity identity is the same, but schema_url is different: drop the new entity d'
+        // Note: We could offer configuration in this case
+        if (old.getSchemaUrl() == null || old.getSchemaUrl().equals(e.getSchemaUrl())) {
+          // If the entity identity is different: drop the new entity d'.
+          if (old.getIdentifyingAttributes().equals(e.getIdentifyingAttributes())) {
+            // If the entity identiy and schema_url are the same, merge the descriptive attributes
+            // of d' into e':
+            //   For each descriptive attribute da' in d'
+            //     If da'.key does not exist in e', then add da' to ei
+            //     otherwise, ignore.
+            old.toBuilder()
+                .withDescriptive(
+                    builder -> {
+                      // Clean existing attributes.
+                      builder.removeIf(ignore -> true);
+                      // For attributes, last one wins.
+                      // To ensure the previous attributes override,
+                      // we write them second.
+                      builder.putAll(e.getAttributes());
+                      builder.putAll(old.getAttributes());
+                    });
+          }
+        }
+      }
+    }
+    return entities.values();
+  }
+
   /**
    * Returns a new, merged {@link Resource} by merging the current {@code Resource} with the {@code
    * other} {@code Resource}. In case of a collision, the "other" {@code Resource} takes precedence.
@@ -161,18 +223,35 @@ public abstract class Resource {
     if (other == null || other == EMPTY) {
       return this;
     }
-
+    // First merge entities.
+    Collection<Entity> entities = mergeEntities(getEntites(), other.getEntites());
+    // Now perform merge logic, but ignore attributes from entities.
+    // TODO - Ignore attributes already on entities.
     AttributesBuilder attrBuilder = Attributes.builder();
     attrBuilder.putAll(this.getAttributes());
     attrBuilder.putAll(other.getAttributes());
 
+    // Check if entities all share the same URL.
+    Set<String> entitySchemas =
+        entities.stream().map(Entity::getSchemaUrl).collect(Collectors.toSet());
+    // If we have no entities, we preserve previous schema url behavior.
+    String schemaUrl = getSchemaUrl();
+    if (entitySchemas.size() == 1) {
+      // Updated Entities use same schema, we can preserve it.
+      schemaUrl = entitySchemas.iterator().next();
+    } else if (entitySchemas.size() > 1) {
+      // Entities use different schemas, resource must treat this as no schema_url.
+      schemaUrl = null;
+    }
+
     if (other.getSchemaUrl() == null) {
-      return create(attrBuilder.build(), getSchemaUrl(), Collections.emptyList());
+      return create(attrBuilder.build(), schemaUrl, entities);
     }
-    if (getSchemaUrl() == null) {
-      return create(attrBuilder.build(), other.getSchemaUrl(), Collections.emptyList());
+    // We fall back to old behavior here when entities aren't in the mix.
+    if (schemaUrl == null && getEntites().isEmpty()) {
+      return create(attrBuilder.build(), other.getSchemaUrl(), entities);
     }
-    if (!other.getSchemaUrl().equals(getSchemaUrl())) {
+    if (!other.getSchemaUrl().equals(schemaUrl)) {
       logger.info(
           "Attempting to merge Resources with different schemaUrls. "
               + "The resulting Resource will have no schemaUrl assigned. Schema 1: "
@@ -181,9 +260,9 @@ public abstract class Resource {
               + other.getSchemaUrl());
       // currently, behavior is undefined if schema URLs don't match. In the future, we may
       // apply schema transformations if possible.
-      return create(attrBuilder.build(), null, Collections.emptyList());
+      return create(attrBuilder.build(), null, entities);
     }
-    return create(attrBuilder.build(), getSchemaUrl(), Collections.emptyList());
+    return create(attrBuilder.build(), schemaUrl, entities);
   }
 
   private static void checkAttributes(Attributes attributes) {

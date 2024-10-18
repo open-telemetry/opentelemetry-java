@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.resources;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-
 import java.util.Objects;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
