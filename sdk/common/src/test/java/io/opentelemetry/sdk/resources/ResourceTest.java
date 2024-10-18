@@ -13,6 +13,7 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -191,7 +192,7 @@ class ResourceTest {
   }
 
   @Test
-  void testMergeResources_schema() {
+  void testMergeResources_schema_no_entities() {
     Resource noSchemaOne = Resource.builder().put("a", 1).build();
     Resource noSchemaTwo = Resource.builder().put("b", 2).build();
     Resource schemaOne = Resource.builder().setSchemaUrl("http://schema.1").put("c", 3).build();
@@ -201,6 +202,7 @@ class ResourceTest {
 
     assertThat(noSchemaOne.merge(noSchemaTwo).getSchemaUrl()).isNull();
     assertThat(schemaOne.merge(noSchemaOne).getSchemaUrl()).isEqualTo(schemaOne.getSchemaUrl());
+    // Note: this no logner preservces the second
     assertThat(noSchemaOne.merge(schemaOne).getSchemaUrl()).isEqualTo(schemaOne.getSchemaUrl());
     assertThat(schemaTwo.merge(schemaTwoAgain).getSchemaUrl()).isEqualTo(schemaTwo.getSchemaUrl());
     assertThat(schemaOne.merge(schemaTwo).getSchemaUrl()).isNull();
@@ -208,7 +210,7 @@ class ResourceTest {
   }
 
   @Test
-  void testMergeResources_Resource1() {
+  void testMergeResources_Resource1_no_entities() {
     Attributes expectedAttributes = Attributes.of(stringKey("a"), "1", stringKey("b"), "2");
 
     Resource resource = Resource.empty().merge(resource1);
@@ -232,6 +234,156 @@ class ResourceTest {
     Attributes expectedAttributes = Attributes.of(stringKey("a"), "1", stringKey("b"), "2");
     Resource resource = Resource.empty().merge(resource1).merge(null);
     assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
+  }
+
+  @Test
+  void testMergeResources_entities_separate_types() {
+    Resource resource1 =
+        Resource.builder()
+            .add(
+                Entity.builder()
+                    .setEntityType("a")
+                    .setSchemaUrl("one")
+                    .withIdentifying(
+                        builder -> {
+                          builder.put("a.id", "a");
+                        })
+                    .build())
+            .build();
+    Resource resource2 =
+        Resource.builder()
+            .add(
+                Entity.builder()
+                    .setEntityType("b")
+                    .setSchemaUrl("one")
+                    .withIdentifying(
+                        builder -> {
+                          builder.put("b.id", "b");
+                        })
+                    .build())
+            .build();
+    Resource merged = resource1.merge(resource2);
+    assertThat(merged.getSchemaUrl()).isEqualTo("one");
+    assertThat(merged.getEntites()).hasSize(2);
+    assertThat(merged.getAttributes()).containsEntry("a.id", "a");
+    assertThat(merged.getAttributes()).containsEntry("b.id", "b");
+  }
+
+  @Test
+  void testMergeResources_entities_separate_types_and_schema() {
+    Resource resource1 =
+        Resource.builder()
+            .add(
+                Entity.builder()
+                    .setEntityType("a")
+                    .setSchemaUrl("one")
+                    .withIdentifying(
+                        builder -> {
+                          builder.put("a.id", "a");
+                        })
+                    .build())
+            .build();
+    Resource resource2 =
+        Resource.builder()
+            .add(
+                Entity.builder()
+                    .setEntityType("b")
+                    .setSchemaUrl("two")
+                    .withIdentifying(
+                        builder -> {
+                          builder.put("b.id", "b");
+                        })
+                    .build())
+            .build();
+    Resource merged = resource1.merge(resource2);
+    assertThat(merged.getSchemaUrl()).isNull();
+    assertThat(merged.getEntites()).hasSize(2);
+    assertThat(merged.getAttributes()).containsEntry("a.id", "a");
+    assertThat(merged.getAttributes()).containsEntry("b.id", "b");
+  }
+
+  @Test
+  void testMergeResources_entities_same_types_and_id() {
+    Resource resource1 =
+        Resource.builder()
+            .add(
+                Entity.builder()
+                    .setEntityType("a")
+                    .setSchemaUrl("one")
+                    .withIdentifying(
+                        builder -> {
+                          builder.put("a.id", "a");
+                        })
+                    .withDescriptive(
+                        builder -> {
+                          builder.put("a.desc1", "a");
+                        })
+                    .build())
+            .build();
+    Resource resource2 =
+        Resource.builder()
+            .add(
+                Entity.builder()
+                    .setEntityType("a")
+                    .setSchemaUrl("one")
+                    .withIdentifying(
+                        builder -> {
+                          builder.put("a.id", "a");
+                        })
+                    .withDescriptive(
+                        builder -> {
+                          builder.put("a.desc2", "b");
+                        })
+                    .build())
+            .build();
+    Resource merged = resource1.merge(resource2);
+    assertThat(merged.getSchemaUrl()).isEqualTo("one");
+    assertThat(merged.getEntites()).hasSize(1);
+    assertThat(merged.getAttributes()).containsEntry("a.id", "a");
+    assertThat(merged.getAttributes()).containsEntry("a.desc1", "a");
+    assertThat(merged.getAttributes()).containsEntry("a.desc2", "b");
+  }
+
+  @Test
+  void testMergeResources_entities_same_types_different_id() {
+    Resource resource1 =
+        Resource.builder()
+            .add(
+                Entity.builder()
+                    .setEntityType("a")
+                    .setSchemaUrl("one")
+                    .withIdentifying(
+                        builder -> {
+                          builder.put("a.id", "a");
+                        })
+                    .withDescriptive(
+                        builder -> {
+                          builder.put("a.desc1", "a");
+                        })
+                    .build())
+            .build();
+    Resource resource2 =
+        Resource.builder()
+            .add(
+                Entity.builder()
+                    .setEntityType("a")
+                    .setSchemaUrl("one")
+                    .withIdentifying(
+                        builder -> {
+                          builder.put("a.id", "b");
+                        })
+                    .withDescriptive(
+                        builder -> {
+                          builder.put("a.desc2", "b");
+                        })
+                    .build())
+            .build();
+    Resource merged = resource1.merge(resource2);
+    assertThat(merged.getSchemaUrl()).isEqualTo("one");
+    assertThat(merged.getEntites()).hasSize(1);
+    assertThat(merged.getAttributes()).containsEntry("a.id", "a");
+    assertThat(merged.getAttributes()).containsEntry("a.desc1", "a");
+    assertThat(merged.getAttributes()).doesNotContainKey("a.desc2");
   }
 
   @Test

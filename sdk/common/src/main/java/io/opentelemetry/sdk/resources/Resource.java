@@ -145,7 +145,7 @@ public abstract class Resource {
    *
    * @return a map of attributes.
    */
-  public Attributes getAttributes() {
+  public final Attributes getAttributes() {
     // TODO - cache this.
     AttributesBuilder result = Attributes.builder();
     getEntites()
@@ -187,23 +187,35 @@ public abstract class Resource {
         // Note: We could offer configuration in this case
         if (old.getSchemaUrl() == null || old.getSchemaUrl().equals(e.getSchemaUrl())) {
           // If the entity identity is different: drop the new entity d'.
-          if (old.getIdentifyingAttributes().equals(e.getIdentifyingAttributes())) {
+          if (!old.getIdentifyingAttributes().equals(e.getIdentifyingAttributes())) {
+            logger.info(
+                "Discovered conflicting entities. Entity ["
+                    + old.getType()
+                    + "] has identity ["
+                    + old.getIdentifyingAttributes()
+                    + "], new entity ["
+                    + e.getIdentifyingAttributes()
+                    + "] is dropped.");
+          } else {
             // If the entity identiy and schema_url are the same, merge the descriptive attributes
             // of d' into e':
             //   For each descriptive attribute da' in d'
             //     If da'.key does not exist in e', then add da' to ei
             //     otherwise, ignore.
-            old.toBuilder()
-                .withDescriptive(
-                    builder -> {
-                      // Clean existing attributes.
-                      builder.removeIf(ignore -> true);
-                      // For attributes, last one wins.
-                      // To ensure the previous attributes override,
-                      // we write them second.
-                      builder.putAll(e.getAttributes());
-                      builder.putAll(old.getAttributes());
-                    });
+            Entity next =
+                old.toBuilder()
+                    .withDescriptive(
+                        builder -> {
+                          // Clean existing attributes.
+                          builder.removeIf(ignore -> true);
+                          // For attributes, last one wins.
+                          // To ensure the previous attributes override,
+                          // we write them second.
+                          builder.putAll(e.getAttributes());
+                          builder.putAll(old.getAttributes());
+                        })
+                    .build();
+            entities.put(next.getType(), next);
           }
         }
       }
@@ -228,8 +240,8 @@ public abstract class Resource {
     // Now perform merge logic, but ignore attributes from entities.
     // TODO - Ignore attributes already on entities.
     AttributesBuilder attrBuilder = Attributes.builder();
-    attrBuilder.putAll(this.getAttributes());
-    attrBuilder.putAll(other.getAttributes());
+    attrBuilder.putAll(this.getRawAttributes());
+    attrBuilder.putAll(other.getRawAttributes());
 
     // Check if entities all share the same URL.
     Set<String> entitySchemas =

@@ -174,7 +174,7 @@ public class ResourceBuilder {
   public ResourceBuilder putAll(Resource resource) {
     if (resource != null) {
       attributesBuilder.putAll(resource.getRawAttributes());
-      addAll(resource.getEntites());
+      addAll(new ArrayList<Entity>(resource.getEntites()));
     }
     return this;
   }
