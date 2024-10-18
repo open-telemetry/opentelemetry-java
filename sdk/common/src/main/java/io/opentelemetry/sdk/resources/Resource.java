@@ -11,7 +11,10 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.internal.Utils;
-import io.opentelemetry.sdk.common.internal.OtelVersion;
+import io.opentelemetry.sdk.resources.detectors.ServiceDetector;
+import io.opentelemetry.sdk.resources.detectors.TelemetrySdkDetector;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -25,15 +28,6 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 public abstract class Resource {
   private static final Logger logger = Logger.getLogger(Resource.class.getName());
-
-  private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
-  private static final AttributeKey<String> TELEMETRY_SDK_LANGUAGE =
-      AttributeKey.stringKey("telemetry.sdk.language");
-  private static final AttributeKey<String> TELEMETRY_SDK_NAME =
-      AttributeKey.stringKey("telemetry.sdk.name");
-  private static final AttributeKey<String> TELEMETRY_SDK_VERSION =
-      AttributeKey.stringKey("telemetry.sdk.version");
-
   private static final int MAX_LENGTH = 255;
   private static final String ERROR_MESSAGE_INVALID_CHARS =
       " should be a ASCII string with a length greater than 0 and not exceed "
@@ -42,26 +36,17 @@ public abstract class Resource {
   private static final String ERROR_MESSAGE_INVALID_VALUE =
       " should be a ASCII string with a length not exceed " + MAX_LENGTH + " characters.";
   private static final Resource EMPTY = create(Attributes.empty());
-  private static final Resource TELEMETRY_SDK;
-
-  /**
-   * The MANDATORY Resource instance contains the mandatory attributes that must be used if they are
-   * not provided by the Resource that is given to an SDK signal provider.
-   */
-  private static final Resource MANDATORY =
-      create(Attributes.of(SERVICE_NAME, "unknown_service:java"));
+  private static final Resource DEFAULT;
 
   static {
-    TELEMETRY_SDK =
-        create(
-            Attributes.builder()
-                .put(TELEMETRY_SDK_NAME, "opentelemetry")
-                .put(TELEMETRY_SDK_LANGUAGE, "java")
-                .put(TELEMETRY_SDK_VERSION, OtelVersion.VERSION)
-                .build());
+    // Update previous default to use new resource provider interface.
+    DEFAULT =
+        ResourceProvider.builder()
+            .addEntityDetector(TelemetrySdkDetector.INSTANCE)
+            .addEntityDetector(ServiceDetector.INSTANCE)
+            .build()
+            .getResource();
   }
-
-  private static final Resource DEFAULT = MANDATORY.merge(TELEMETRY_SDK);
 
   /**
    * Returns the default {@link Resource}. This resource contains the default attributes provided by
@@ -94,7 +79,7 @@ public abstract class Resource {
    *     ASCII string or exceed {@link #MAX_LENGTH} characters.
    */
   public static Resource create(Attributes attributes) {
-    return create(attributes, null);
+    return create(attributes, null, Collections.emptyList());
   }
 
   /**
@@ -107,9 +92,10 @@ public abstract class Resource {
    * @throws IllegalArgumentException if attribute key or attribute value is not a valid printable
    *     ASCII string or exceed {@link #MAX_LENGTH} characters.
    */
-  public static Resource create(Attributes attributes, @Nullable String schemaUrl) {
+  public static Resource create(
+      Attributes attributes, @Nullable String schemaUrl, Collection<Entity> entities) {
     checkAttributes(Objects.requireNonNull(attributes, "attributes"));
-    return new AutoValue_Resource(schemaUrl, attributes);
+    return new AutoValue_Resource(schemaUrl, attributes, entities);
   }
 
   /**
@@ -122,11 +108,36 @@ public abstract class Resource {
   public abstract String getSchemaUrl();
 
   /**
+   * Returns a map of attributes that describe the resource, not associated with entites.
+   *
+   * @return a map of attributes.
+   */
+  abstract Attributes getRawAttributes();
+
+  /**
+   * Returns a collectoion of associated entities.
+   *
+   * @return a collection of entities.
+   */
+  public abstract Collection<Entity> getEntites();
+
+  /**
    * Returns a map of attributes that describe the resource.
    *
    * @return a map of attributes.
    */
-  public abstract Attributes getAttributes();
+  public Attributes getAttributes() {
+    // TODO - cache this.
+    AttributesBuilder result = Attributes.builder();
+    getEntites()
+        .forEach(
+            e -> {
+              result.putAll(e.getIdentifyingAttributes());
+              result.putAll(e.getAttributes());
+            });
+    result.putAll(getRawAttributes());
+    return result.build();
+  }
 
   /**
    * Returns the value for a given resource attribute key.
@@ -146,6 +157,7 @@ public abstract class Resource {
    * @return the newly merged {@code Resource}.
    */
   public Resource merge(@Nullable Resource other) {
+    // TODO - Fix this.
     if (other == null || other == EMPTY) {
       return this;
     }
@@ -155,10 +167,10 @@ public abstract class Resource {
     attrBuilder.putAll(other.getAttributes());
 
     if (other.getSchemaUrl() == null) {
-      return create(attrBuilder.build(), getSchemaUrl());
+      return create(attrBuilder.build(), getSchemaUrl(), Collections.emptyList());
     }
     if (getSchemaUrl() == null) {
-      return create(attrBuilder.build(), other.getSchemaUrl());
+      return create(attrBuilder.build(), other.getSchemaUrl(), Collections.emptyList());
     }
     if (!other.getSchemaUrl().equals(getSchemaUrl())) {
       logger.info(
@@ -169,9 +181,9 @@ public abstract class Resource {
               + other.getSchemaUrl());
       // currently, behavior is undefined if schema URLs don't match. In the future, we may
       // apply schema transformations if possible.
-      return create(attrBuilder.build(), null);
+      return create(attrBuilder.build(), null, Collections.emptyList());
     }
-    return create(attrBuilder.build(), getSchemaUrl());
+    return create(attrBuilder.build(), getSchemaUrl(), Collections.emptyList());
   }
 
   private static void checkAttributes(Attributes attributes) {

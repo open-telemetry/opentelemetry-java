@@ -8,6 +8,9 @@ package io.opentelemetry.sdk.resources;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
@@ -20,6 +23,7 @@ import javax.annotation.Nullable;
 public class ResourceBuilder {
 
   private final AttributesBuilder attributesBuilder = Attributes.builder();
+  private final List<Entity> entities = new ArrayList<>();
   @Nullable private String schemaUrl;
 
   /**
@@ -166,10 +170,11 @@ public class ResourceBuilder {
     return this;
   }
 
-  /** Puts all attributes from {@link Resource} into this. */
+  /** Puts all attributes + entities from {@link Resource} into this. */
   public ResourceBuilder putAll(Resource resource) {
     if (resource != null) {
-      attributesBuilder.putAll(resource.getAttributes());
+      attributesBuilder.putAll(resource.getRawAttributes());
+      addAll(resource.getEntites());
     }
     return this;
   }
@@ -192,8 +197,19 @@ public class ResourceBuilder {
     return this;
   }
 
+  public ResourceBuilder add(Entity e) {
+    // TODO - should we perform merge logic here?
+    this.entities.add(e);
+    return this;
+  }
+
+  public ResourceBuilder addAll(Collection<Entity> entities) {
+    this.entities.addAll(entities);
+    return this;
+  }
+
   /** Create the {@link Resource} from this. */
   public Resource build() {
-    return Resource.create(attributesBuilder.build(), schemaUrl);
+    return Resource.create(attributesBuilder.build(), schemaUrl, entities);
   }
 }
