@@ -14,11 +14,18 @@ public final class ResourceProviderBuilder {
   private final List<EntityDetector> entityDetectors = new ArrayList<>();
   private final List<Resource> detectedResources = new ArrayList<>();
 
+  /** Adds an entity detector, which will detect {@link Entity}s to place in the resource. */
   public ResourceProviderBuilder addEntityDetector(EntityDetector detector) {
     this.entityDetectors.add(detector);
     return this;
   }
 
+  /**
+   * * Adds a discovered resource to include in resolving the SDK's resource.
+   *
+   * @deprecated Use {@link #addEntityDetector(EntityDetector)}.
+   */
+  @Deprecated
   public ResourceProviderBuilder addDetectedResource(Resource resource) {
     this.detectedResources.add(resource);
     return this;
@@ -35,6 +42,11 @@ public final class ResourceProviderBuilder {
     return result;
   }
 
+  /**
+   * Returns the SDK resource provider which uses these detectors.
+   *
+   * @return the ResourceProvider.
+   */
   public ResourceProvider build() {
     return new ResourceProvider(mergeDetectedAndRaw());
   }

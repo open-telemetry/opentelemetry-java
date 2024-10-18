@@ -13,5 +13,10 @@ import java.util.List;
  * it may provide an Entity for that pod.
  */
 public interface EntityDetector {
+  /**
+   * Discovers {@link Entity} and their current attributes.
+   *
+   * @return a list of discovered entities.
+   */
   List<Entity> detectEntities();
 }

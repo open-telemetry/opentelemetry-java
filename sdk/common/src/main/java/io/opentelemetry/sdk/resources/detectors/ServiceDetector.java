@@ -15,7 +15,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 /** Detects the `service` entity. */
-public class ServiceDetector implements EntityDetector {
+public final class ServiceDetector implements EntityDetector {
 
   private static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.28.0";
   private static final String ENTITY_TYPE = "service";
