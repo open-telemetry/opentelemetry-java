@@ -345,6 +345,32 @@ class ResourceTest {
   }
 
   @Test
+  void testMergeResources_entity_vs_raw_attribute() {
+    Resource resource1 =
+        Resource.builder()
+            .add(
+                Entity.builder()
+                    .setEntityType("a")
+                    .setSchemaUrl("one")
+                    .withIdentifying(
+                        builder -> {
+                          builder.put("a.id", "a");
+                        })
+                    .withDescriptive(
+                        builder -> {
+                          builder.put("a.desc1", "a");
+                        })
+                    .build())
+            .build();
+    Resource resource2 = Resource.builder().setSchemaUrl("two").put("a.id", "b").build();
+    Resource merged = resource1.merge(resource2);
+    assertThat(merged.getSchemaUrl()).isNull();
+    assertThat(merged.getEntites()).hasSize(1);
+    assertThat(merged.getAttributes()).containsEntry("a.id", "a");
+    assertThat(merged.getAttributes()).containsEntry("a.desc1", "a");
+  }
+
+  @Test
   void testMergeResources_entities_same_types_different_id() {
     Resource resource1 =
         Resource.builder()

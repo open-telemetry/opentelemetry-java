@@ -148,13 +148,15 @@ public abstract class Resource {
   public final Attributes getAttributes() {
     // TODO - cache this.
     AttributesBuilder result = Attributes.builder();
+    // Entities will override "raw".
+    result.putAll(getRawAttributes());
     getEntites()
         .forEach(
             e -> {
               result.putAll(e.getIdentifyingAttributes());
               result.putAll(e.getAttributes());
             });
-    result.putAll(getRawAttributes());
+
     return result.build();
   }
 
