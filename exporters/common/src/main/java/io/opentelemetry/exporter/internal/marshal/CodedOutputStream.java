@@ -44,6 +44,7 @@ import static io.opentelemetry.exporter.internal.marshal.WireFormat.MAX_VARINT_S
 import io.opentelemetry.api.internal.ConfigUtil;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 
 /**
  * Protobuf wire encoder.
@@ -56,7 +57,7 @@ import java.io.OutputStream;
 //
 // Differences
 // - No support for Message/Lite
-// - No support for ByteString or ByteBuffer
+// - No support for ByteString
 // - No support for message set extensions
 // - No support for Unsafe
 // - No support for Java String, only UTF-8 bytes
@@ -329,6 +330,11 @@ public abstract class CodedOutputStream {
     return computeLengthDelimitedFieldSize(value.length);
   }
 
+  /** Compute the number of bytes that would be needed to encode a {@code bytes} field. */
+  public static int computeByteBufferSizeNoTag(final ByteBuffer value) {
+    return computeLengthDelimitedFieldSize(value.capacity());
+  }
+
   static int computeLengthDelimitedFieldSize(int fieldLength) {
     return computeUInt32SizeNoTag(fieldLength) + fieldLength;
   }
@@ -374,6 +380,8 @@ public abstract class CodedOutputStream {
   /** Write a {@code bytes} field to the stream. */
   abstract void writeByteArrayNoTag(final byte[] value, final int offset, final int length)
       throws IOException;
+
+  abstract void writeByteBufferNoTag(final ByteBuffer value) throws IOException;
 
   // =================================================================
 
@@ -485,6 +493,49 @@ public abstract class CodedOutputStream {
     void writeByteArrayNoTag(final byte[] value, int offset, int length) throws IOException {
       writeUInt32NoTag(length);
       write(value, offset, length);
+    }
+
+    @Override
+    void writeByteBufferNoTag(final ByteBuffer value) throws IOException {
+      writeUInt32NoTag(value.capacity());
+      if (value.hasArray()) {
+        write(value.array(), value.arrayOffset(), value.capacity());
+      } else {
+        write((ByteBuffer) value.duplicate().clear());
+      }
+    }
+
+    void write(ByteBuffer value) throws IOException {
+      int length = value.remaining();
+      if (limit - position >= length) {
+        // We have room in the current buffer.
+        value.get(buffer, position, length);
+        position += length;
+        totalBytesWritten += length;
+      } else {
+        // Write extends past current buffer.  Fill the rest of this buffer and
+        // flush.
+        final int bytesWritten = limit - position;
+        value.get(buffer, position, bytesWritten);
+        length -= bytesWritten;
+        position = limit;
+        totalBytesWritten += bytesWritten;
+        doFlush();
+
+        // Now deal with the rest.
+        // Since we have an output stream, this is our buffer
+        // and buffer offset == 0
+        while (length > limit) {
+          // Copy data into the buffer before writing it to OutputStream.
+          value.get(buffer, 0, limit);
+          out.write(buffer, 0, limit);
+          length -= limit;
+          totalBytesWritten += limit;
+        }
+        value.get(buffer, 0, length);
+        position = length;
+        totalBytesWritten += length;
+      }
     }
 
     @Override
