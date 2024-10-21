@@ -24,7 +24,7 @@ public final class PrometheusHttpServerBuilder {
 
   static final int DEFAULT_PORT = 9464;
   private static final String DEFAULT_HOST = "0.0.0.0";
-  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
+  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
 
   private String host = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
@@ -46,6 +46,7 @@ public final class PrometheusHttpServerBuilder {
     this.otelScopeEnabled = builder.otelScopeEnabled;
     this.allowedResourceAttributesFilter = builder.allowedResourceAttributesFilter;
     this.executor = builder.executor;
+    this.memoryMode = builder.memoryMode;
     this.defaultAggregationSelector = builder.defaultAggregationSelector;
   }
 
@@ -150,6 +151,11 @@ public final class PrometheusHttpServerBuilder {
    * registered with a {@link io.opentelemetry.sdk.metrics.SdkMeterProvider}.
    */
   public PrometheusHttpServer build() {
+    if (memoryMode == MemoryMode.REUSABLE_DATA && executor != null) {
+      throw new IllegalArgumentException(
+          "MemoryMode REUSEABLE_DATA cannot be used with custom executor, "
+              + "since data may be corrupted if reading metrics concurrently");
+    }
     return new PrometheusHttpServer(
         new PrometheusHttpServerBuilder(this), // copy to prevent modification
         host,
