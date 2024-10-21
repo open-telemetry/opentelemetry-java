@@ -11,6 +11,7 @@ import io.opentelemetry.exporter.logging.otlp.OtlpJsonLoggingMetricExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.JsonWriter;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.LoggerJsonWriter;
 import io.opentelemetry.exporter.logging.otlp.internal.writer.StreamJsonWriter;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
@@ -40,6 +41,7 @@ public final class OtlpStdoutMetricExporterBuilder {
   private final Logger logger;
   private JsonWriter jsonWriter;
   private boolean wrapperJsonObject = true;
+  private MemoryMode memoryMode = MemoryMode.IMMUTABLE_DATA;
 
   public OtlpStdoutMetricExporterBuilder(Logger logger) {
     this.logger = logger;
@@ -54,6 +56,17 @@ public final class OtlpStdoutMetricExporterBuilder {
    */
   public OtlpStdoutMetricExporterBuilder setWrapperJsonObject(boolean wrapperJsonObject) {
     this.wrapperJsonObject = wrapperJsonObject;
+    return this;
+  }
+
+  /**
+   * Set the {@link MemoryMode}. If unset, defaults to {@link MemoryMode#IMMUTABLE_DATA}.
+   *
+   * <p>When memory mode is {@link MemoryMode#REUSABLE_DATA}, serialization is optimized to reduce
+   * memory allocation.
+   */
+  public OtlpStdoutMetricExporterBuilder setMemoryMode(MemoryMode memoryMode) {
+    this.memoryMode = memoryMode;
     return this;
   }
 
@@ -114,10 +127,15 @@ public final class OtlpStdoutMetricExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpStdoutMetricExporter build() {
+    if (memoryMode == MemoryMode.REUSABLE_DATA && !wrapperJsonObject) {
+      throw new IllegalArgumentException(
+          "Reusable data mode is not supported without wrapperJsonObject");
+    }
     return new OtlpStdoutMetricExporter(
         logger,
         jsonWriter,
         wrapperJsonObject,
+        memoryMode,
         aggregationTemporalitySelector,
         defaultAggregationSelector);
   }

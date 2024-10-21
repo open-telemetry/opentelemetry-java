@@ -25,7 +25,7 @@ val DEPENDENCY_BOMS = listOf(
 )
 
 val autoValueVersion = "1.11.0"
-val errorProneVersion = "2.33.0"
+val errorProneVersion = "2.34.0"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
@@ -61,7 +61,7 @@ val DEPENDENCIES = listOf(
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit5:1.3.0",
-  "com.uber.nullaway:nullaway:0.11.3",
+  "com.uber.nullaway:nullaway:0.12.0",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",

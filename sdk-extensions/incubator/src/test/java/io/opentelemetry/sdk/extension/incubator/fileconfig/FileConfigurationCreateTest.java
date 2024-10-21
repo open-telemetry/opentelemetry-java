@@ -123,7 +123,7 @@ class FileConfigurationCreateTest {
     logCapturer.assertContains(
         "Error encountered interpreting model. Closing partially configured components.");
     logCapturer.assertContains(
-        "Closing io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter");
+        "Closing io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter");
     logCapturer.assertContains("Closing io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor");
   }
 }
