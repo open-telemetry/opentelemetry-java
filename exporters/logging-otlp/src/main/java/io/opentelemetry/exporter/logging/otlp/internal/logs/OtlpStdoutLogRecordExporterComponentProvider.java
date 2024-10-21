@@ -11,7 +11,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigPropertie
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 
 /**
- * File configuration SPI implementation for {@link OtlpStdoutLogRecordExporter}.
+ * Declarative configuration SPI implementation for {@link OtlpStdoutLogRecordExporter}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
