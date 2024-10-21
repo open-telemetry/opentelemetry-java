@@ -112,7 +112,8 @@ class ResourceConfigurationTest {
   @Test
   void filterAttributes() {
     ConfigProperties configProperties =
-        DefaultConfigProperties.createFromMap(ImmutableMap.of(DISABLED_ATTRIBUTE_KEYS, "foo,bar"));
+        DefaultConfigProperties.createFromMap(
+            ImmutableMap.of(DISABLED_ATTRIBUTE_KEYS, "foo,bar"));
 
     Resource resourceNoSchema =
         Resource.builder().put("foo", "val").put("bar", "val").put("baz", "val").build();

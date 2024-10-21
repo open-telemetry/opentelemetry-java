@@ -21,9 +21,11 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.logging.Logger;
 
 /**
  * Auto-configuration for the OpenTelemetry {@link Resource}.
@@ -32,12 +34,16 @@ import java.util.function.BiFunction;
  */
 public final class ResourceConfiguration {
 
+  private static final Logger logger = Logger.getLogger(ResourceConfiguration.class.getName());
+
   private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
 
   // Visible for testing
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
   static final String SERVICE_NAME_PROPERTY = "otel.service.name";
-  static final String DISABLED_ATTRIBUTE_KEYS = "otel.experimental.resource.disabled.keys";
+  static final String EXPERIMENTAL_DISABLED_ATTRIBUTE_KEYS =
+      "otel.experimental.resource.disabled.keys";
+  static final String DISABLED_ATTRIBUTE_KEYS = "otel.resource.disabled.keys";
 
   /**
    * Create a {@link Resource} from the environment. The resource contains attributes parsed from
@@ -113,7 +119,16 @@ public final class ResourceConfiguration {
 
   // visible for testing
   static Resource filterAttributes(Resource resource, ConfigProperties configProperties) {
-    Set<String> disabledKeys = new HashSet<>(configProperties.getList(DISABLED_ATTRIBUTE_KEYS));
+    List<String> disabledAttibuteKeys = configProperties.getList(DISABLED_ATTRIBUTE_KEYS);
+    // TODO: Remove this once the deprecated property is removed.
+    if (disabledAttibuteKeys.isEmpty()) {
+      disabledAttibuteKeys = configProperties.getList(EXPERIMENTAL_DISABLED_ATTRIBUTE_KEYS);
+      if (!disabledAttibuteKeys.isEmpty()) {
+        logger.warning(
+            "otel.experimental.resource.disabled.keys is deprecated. Please use otel.resource.disabled.keys instead.");
+      }
+    }
+    Set<String> disabledKeys = new HashSet<>(disabledAttibuteKeys);
 
     ResourceBuilder builder =
         resource.toBuilder().removeIf(attributeKey -> disabledKeys.contains(attributeKey.getKey()));
