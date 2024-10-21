@@ -434,10 +434,10 @@ final class Otel2PrometheusConverter {
 
   private static int getCodePoints(Labels labels) {
     int codePoints = 0;
-    for (Label l : labels) {
+    for (Label label : labels) {
       codePoints +=
-          l.getName().codePointCount(0, l.getName().length())
-              + l.getValue().codePointCount(0, l.getValue().length());
+          label.getName().codePointCount(0, label.getName().length())
+              + label.getValue().codePointCount(0, label.getValue().length());
     }
     return codePoints;
   }
