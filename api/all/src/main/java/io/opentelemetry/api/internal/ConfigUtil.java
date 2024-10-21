@@ -7,6 +7,8 @@ package io.opentelemetry.api.internal;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
 import javax.annotation.Nullable;
 
 /**
@@ -33,12 +35,17 @@ public final class ConfigUtil {
    */
   public static String getString(String key, String defaultValue) {
     String normalizedKey = normalizePropertyKey(key);
+
+    // Cloning in order to avoid ConcurrentModificationException
+    // see https://github.com/open-telemetry/opentelemetry-java/issues/6732
     String systemProperty =
-        System.getProperties().entrySet().stream()
-            .filter(entry -> normalizedKey.equals(normalizePropertyKey(entry.getKey().toString())))
-            .map(entry -> entry.getValue().toString())
-            .findFirst()
-            .orElse(null);
+        ((Properties) System.getProperties().clone())
+            .stringPropertyNames().stream()
+                .filter(propertyName -> normalizedKey.equals(normalizePropertyKey(propertyName)))
+                .map(System::getProperty)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     if (systemProperty != null) {
       return systemProperty;
     }
