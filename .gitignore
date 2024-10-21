@@ -34,3 +34,5 @@ bin
 
 # Vim
 .swp
+
+.fake
