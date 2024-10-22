@@ -16,7 +16,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 
 /**
  * Provides configured instances of SDK extension components. {@link ComponentProvider} allows SDK
- * extension components which are not part of the core SDK to be referenced in file based
+ * extension components which are not part of the core SDK to be referenced in declarative based
  * configuration.
  *
  * <p>NOTE: when {@link #getType()} is {@link Resource}, the {@link #getName()} is not (currently)

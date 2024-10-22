@@ -68,7 +68,7 @@ class YamlStructuredConfigPropertiesTest {
 
   @Test
   void configurationSchema() {
-    // Validate can read file configuration schema properties
+    // Validate can read declarative configuration schema properties
     assertThat(structuredConfigProps.getString("file_format")).isEqualTo("0.3");
     StructuredConfigProperties resourceProps = structuredConfigProps.getStructured("resource");
     assertThat(resourceProps).isNotNull();
