@@ -125,7 +125,7 @@ public final class ResourceConfiguration {
       disabledAttibuteKeys = configProperties.getList(EXPERIMENTAL_DISABLED_ATTRIBUTE_KEYS);
       if (!disabledAttibuteKeys.isEmpty()) {
         logger.warning(
-            "otel.experimental.resource.disabled.keys is deprecated. Please use otel.resource.disabled.keys instead.");
+            "otel.experimental.resource.disabled.keys is deprecated and will be removed after 1.45.0 release. Please use otel.resource.disabled.keys instead.");
       }
     }
     Set<String> disabledKeys = new HashSet<>(disabledAttibuteKeys);
