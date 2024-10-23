@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -32,6 +33,8 @@ import javax.annotation.Nullable;
  * any time.
  */
 public final class OtlpConfigUtil {
+
+  private static final Logger logger = Logger.getLogger(OtlpConfigUtil.class.getName());
 
   public static final String DATA_TYPE_TRACES = "traces";
   public static final String DATA_TYPE_METRICS = "metrics";
@@ -263,7 +266,7 @@ public final class OtlpConfigUtil {
   }
 
   @Nullable
-  private static URL validateEndpoint(@Nullable String endpoint, boolean allowPath) {
+  private static URL validateEndpoint(@Nullable String endpoint, boolean isHttpProtobuf) {
     if (endpoint == null) {
       return null;
     }
@@ -285,9 +288,27 @@ public final class OtlpConfigUtil {
       throw new ConfigurationException(
           "OTLP endpoint must not have a fragment: " + endpointUrl.getRef());
     }
-    if (!allowPath && (!endpointUrl.getPath().isEmpty() && !endpointUrl.getPath().equals("/"))) {
+    if (!isHttpProtobuf
+        && (!endpointUrl.getPath().isEmpty() && !endpointUrl.getPath().equals("/"))) {
       throw new ConfigurationException(
           "OTLP endpoint must not have a path: " + endpointUrl.getPath());
+    }
+    if ((endpointUrl.getPort() == 4317 && isHttpProtobuf)
+        || (endpointUrl.getPort() == 4318 && !isHttpProtobuf)) {
+      int expectedPort = isHttpProtobuf ? 4318 : 4317;
+      String protocol = isHttpProtobuf ? PROTOCOL_HTTP_PROTOBUF : PROTOCOL_GRPC;
+      logger.warning(
+          "OTLP exporter endpoint port is likely incorrect for protocol version \""
+              + protocol
+              + "\". The endpoint "
+              + endpointUrl
+              + " has port "
+              + endpointUrl.getPort()
+              + ". Typically, the \""
+              + protocol
+              + "\" version of OTLP uses port "
+              + expectedPort
+              + ".");
     }
     return endpointUrl;
   }

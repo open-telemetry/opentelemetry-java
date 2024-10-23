@@ -20,7 +20,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigPropertie
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 
 /**
- * File configuration SPI implementation for {@link OtlpHttpMetricExporter} and {@link
+ * Declarative configuration SPI implementation for {@link OtlpHttpMetricExporter} and {@link
  * OtlpGrpcMetricExporter}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
