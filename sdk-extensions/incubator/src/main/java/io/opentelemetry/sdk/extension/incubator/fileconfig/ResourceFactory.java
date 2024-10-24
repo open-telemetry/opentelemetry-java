@@ -88,7 +88,7 @@ final class ResourceFactory
   /**
    * Load resources from resource detectors, in order of lowest priority to highest priority.
    *
-   * <p>In file configuration, a resource detector is a {@link ComponentProvider} with {@link
+   * <p>In declarative configuration, a resource detector is a {@link ComponentProvider} with {@link
    * ComponentProvider#getType()} set to {@link Resource}. Unlike other {@link ComponentProvider}s,
    * the resource detector version does not use {@link ComponentProvider#getName()} (except for
    * debug messages), and {@link ComponentProvider#create(StructuredConfigProperties)} is called

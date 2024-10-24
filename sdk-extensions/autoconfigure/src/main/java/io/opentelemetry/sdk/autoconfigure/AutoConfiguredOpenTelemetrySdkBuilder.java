@@ -563,7 +563,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
           configurationFactory.getMethod("toConfigProperties", openTelemetryConfiguration);
       StructuredConfigProperties structuredConfigProperties =
           (StructuredConfigProperties) toConfigProperties.invoke(null, model);
-      // Note: can't access file configuration resource without reflection so setting a dummy
+      // Note: can't access declarative configuration resource without reflection so setting a dummy
       // resource
       return AutoConfiguredOpenTelemetrySdk.create(
           sdk, Resource.getDefault(), null, structuredConfigProperties);
