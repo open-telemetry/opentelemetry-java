@@ -11,6 +11,7 @@ import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
 import io.opentelemetry.proto.profiles.v1experimental.internal.ProfileContainer;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 final class ProfileContainerMarshaler extends MarshalerWithSize {
 
@@ -20,17 +21,19 @@ final class ProfileContainerMarshaler extends MarshalerWithSize {
   private final KeyValueMarshaler[] attributeMarshalers;
   private final int droppedAttributesCount;
   private final byte[] originalPayloadFormatUtf8;
-  private final byte[] originalPayload;
+  private final ByteBuffer originalPayload;
   private final ProfileMarshaler profileMarshaler;
 
   static ProfileContainerMarshaler create(ProfileContainerData profileContainerData) {
     int droppedAttributesCount =
         profileContainerData.getTotalAttributeCount() - profileContainerData.getAttributes().size();
 
-    // Not ideal, but this will do for now. ByteBuffer support in
-    // Serialzer/CodedOutputStream/MarshalerUtilwill follow in a separate step.
-    byte[] originalPayload = new byte[profileContainerData.getOriginalPayload().remaining()];
-    profileContainerData.getOriginalPayload().get(originalPayload);
+    ByteBuffer originalPayload = profileContainerData.getOriginalPayload();
+    if (originalPayload == null) {
+      originalPayload = ByteBuffer.allocate(0);
+    } else {
+      originalPayload = originalPayload.duplicate().asReadOnlyBuffer();
+    }
 
     return new ProfileContainerMarshaler(
         profileContainerData.getProfileIdBytes(),
@@ -50,7 +53,7 @@ final class ProfileContainerMarshaler extends MarshalerWithSize {
       KeyValueMarshaler[] attributeMarshalers,
       int droppedAttributesCount,
       byte[] originalPayloadFormat,
-      byte[] originalPayload,
+      ByteBuffer originalPayload,
       ProfileMarshaler profileMarshaler) {
     super(
         calculateSize(
@@ -80,7 +83,7 @@ final class ProfileContainerMarshaler extends MarshalerWithSize {
     output.serializeRepeatedMessage(ProfileContainer.ATTRIBUTES, attributeMarshalers);
     output.serializeUInt32(ProfileContainer.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
     output.serializeString(ProfileContainer.ORIGINAL_PAYLOAD_FORMAT, originalPayloadFormatUtf8);
-    output.serializeBytes(ProfileContainer.ORIGINAL_PAYLOAD, originalPayload);
+    output.serializeByteBuffer(ProfileContainer.ORIGINAL_PAYLOAD, originalPayload);
     output.serializeMessage(ProfileContainer.PROFILE, profileMarshaler);
   }
 
@@ -91,7 +94,7 @@ final class ProfileContainerMarshaler extends MarshalerWithSize {
       KeyValueMarshaler[] attributeMarshalers,
       int droppedAttributesCount,
       byte[] originalPayloadFormat,
-      byte[] originalPayload,
+      ByteBuffer originalPayload,
       ProfileMarshaler profileMarshaler) {
     int size;
     size = 0;
@@ -103,7 +106,7 @@ final class ProfileContainerMarshaler extends MarshalerWithSize {
         MarshalerUtil.sizeUInt32(ProfileContainer.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
     size +=
         MarshalerUtil.sizeBytes(ProfileContainer.ORIGINAL_PAYLOAD_FORMAT, originalPayloadFormat);
-    size += MarshalerUtil.sizeBytes(ProfileContainer.ORIGINAL_PAYLOAD, originalPayload);
+    size += MarshalerUtil.sizeByteBuffer(ProfileContainer.ORIGINAL_PAYLOAD, originalPayload);
     size += MarshalerUtil.sizeMessage(ProfileContainer.PROFILE, profileMarshaler);
     return size;
   }
