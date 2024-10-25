@@ -68,8 +68,9 @@ dependencies {
 }
 
 // We can't apply conventions to this build so include important ones such as the Java compilation
+// target.
 java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(17))
+  }
 }
