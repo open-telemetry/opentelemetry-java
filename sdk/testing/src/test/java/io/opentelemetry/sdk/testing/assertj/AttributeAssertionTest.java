@@ -23,6 +23,9 @@ class AttributeAssertionTest {
                     .getAssertion()
                     .accept(AttributeAssertion.attributeValueAssertion(key, null)))
         .isInstanceOf(AssertionError.class)
-        .hasMessage("[STRING attribute 'flib'] \nExpecting actual not to be null");
+        .hasMessage(
+            "[STRING attribute 'flib'] "
+                + System.lineSeparator()
+                + "Expecting actual not to be null");
   }
 }
