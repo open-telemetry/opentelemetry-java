@@ -152,7 +152,7 @@ class WeakConcurrentMapTest {
       assertThat(values.isEmpty(), is(true));
       key1 = key2 = null; // Make eligible for GC
       System.gc();
-      Thread.sleep(200L);
+      Thread.sleep(1000L);
       triggerClean();
       assertThat(map.get(key3), is(value3));
       assertThat(map.getIfPresent(key3), is(value3));
