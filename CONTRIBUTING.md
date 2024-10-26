@@ -40,7 +40,7 @@ analysis.
    formatting:
 
    `gradlew.bat`
-  
+
   > **Note:** For Windows users, the command `./gradlew :exporters:prometheus:test` may fail. It is recommended to use `./gradlew assemble` instead.
 
 
