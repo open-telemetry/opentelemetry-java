@@ -96,7 +96,8 @@ class PrometheusMetricReaderProviderTest {
           .extracting("server", as(InstanceOfAssertFactories.type(HttpServer.class)))
           .satisfies(
               server -> {
-                assertThat(server.getAddress().getHostName()).isEqualTo("localhost");
+                assertThat(server.getAddress().getHostName())
+                    .isIn("localhost", "kubernetes.docker.internal");
                 assertThat(server.getAddress().getPort()).isEqualTo(port);
               });
       assertThat(metricReader.getMemoryMode()).isEqualTo(MemoryMode.IMMUTABLE_DATA);
