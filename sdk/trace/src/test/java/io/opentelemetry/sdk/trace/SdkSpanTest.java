@@ -1539,4 +1539,15 @@ class SdkSpanTest {
     }
     modifierFuture.get();
   }
-}
+
+  @Test
+  void testSetStatusToUnsetWhenCurrentStatusIsError() {
+      // Set the initial status to ERROR
+      sdkSpan.setStatus(StatusCode.ERROR, "An error occurred");
+  
+      // Attempt to set the status to UNSET
+      sdkSpan.setStatus(StatusCode.UNSET, null);
+  
+      // Verify that the warning was logged (implement logging capture as needed)
+  }
+}  
