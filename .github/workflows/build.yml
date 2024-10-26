@@ -69,7 +69,7 @@ jobs:
             ./gradlew build
             ${{ matrix.coverage && 'jacocoTestReport' || '' }}
             -PtestJavaVersion=${{ matrix.test-java-version }}
-            -Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }},${{ steps.setup-java.outputs.path }}
+            -Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }}
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
           # JMH-based tests run only  if this environment variable is set to true
