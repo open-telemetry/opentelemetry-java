@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -25,6 +26,8 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.internal.ExtendedSpanProcessor;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -436,7 +439,9 @@ final class SdkSpan implements ReadWriteSpan {
 
   @Override
   public ReadWriteSpan recordException(Throwable exception) {
-    recordException(exception, Attributes.empty());
+    Attributes attributes =
+        this.getAttributes() == null ? Attributes.empty() : this.getAttributes();
+    recordException(exception, attributes);
     return this;
   }
 
@@ -449,8 +454,62 @@ final class SdkSpan implements ReadWriteSpan {
       additionalAttributes = Attributes.empty();
     }
 
-    addTimedEvent(
-        ExceptionEventData.create(spanLimits, clock.now(), exception, additionalAttributes));
+    AttributeKey<String> exceptionTypeAttributeKey = AttributeKey.stringKey("exception.type");
+    AttributeKey<String> exceptionMessageAttributeKey = AttributeKey.stringKey("exception.message");
+    AttributeKey<String> exceptionStackTraceAttributeKey =
+        AttributeKey.stringKey("exception.stacktrace");
+
+    AttributesBuilder attributesBuilder = Attributes.builder();
+    String exceptionName = exception.getClass().getCanonicalName();
+    String exceptionMessage = exception.getMessage();
+    StringWriter stringWriter = new StringWriter();
+    try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+      exception.printStackTrace(printWriter);
+    }
+    String stackTrace = stringWriter.toString();
+
+    if (this.spanLimits.getMaxNumberOfAttributes() > 0
+        && this.spanLimits.getMaxAttributeValueLength() != Integer.MAX_VALUE) {
+      if (exceptionName != null) {
+        exceptionName =
+            exceptionName.substring(
+                0, Math.min(exceptionName.length(), this.spanLimits.getMaxAttributeValueLength()));
+      }
+
+      if (exceptionMessage != null) {
+        exceptionMessage =
+            exceptionMessage.substring(
+                0,
+                Math.min(exceptionMessage.length(), this.spanLimits.getMaxAttributeValueLength()));
+      }
+
+      if (stackTrace != null) {
+        stackTrace =
+            stackTrace.substring(
+                0, Math.min(stackTrace.length(), this.spanLimits.getMaxAttributeValueLength()));
+      }
+    }
+
+    if (exceptionName != null) {
+      attributesBuilder.put(exceptionTypeAttributeKey, exceptionName);
+    }
+    if (exceptionMessage != null) {
+      attributesBuilder.put(exceptionMessageAttributeKey, exceptionMessage);
+    }
+    if (stackTrace != null) {
+      attributesBuilder.put(exceptionStackTraceAttributeKey, stackTrace);
+    }
+
+    attributesBuilder.putAll(additionalAttributes);
+
+    AttributeUtil.applyAttributesLimit(
+        attributesBuilder.build(),
+        spanLimits.getMaxNumberOfAttributesPerEvent(),
+        spanLimits.getMaxAttributeValueLength());
+
+    Attributes attributes = attributesBuilder.build();
+
+    addTimedEvent(ExceptionEventData.create(clock.now(), exception, attributes));
     return this;
   }
 

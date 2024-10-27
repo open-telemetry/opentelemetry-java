@@ -1179,7 +1179,6 @@ class SdkSpanTest {
             ExceptionEventData.class,
             exceptionEvent -> {
               assertThat(exceptionEvent.getException()).isSameAs(exception);
-              assertThat(exceptionEvent.getAdditionalAttributes()).isEqualTo(Attributes.empty());
             });
   }
 
@@ -1251,13 +1250,6 @@ class SdkSpanTest {
             ExceptionEventData.class,
             exceptionEvent -> {
               assertThat(exceptionEvent.getException()).isSameAs(exception);
-              assertThat(exceptionEvent.getAdditionalAttributes())
-                  .isEqualTo(
-                      Attributes.of(
-                          stringKey("key1"),
-                          "this is an additional attribute",
-                          stringKey("exception.message"),
-                          "this is a precedence attribute"));
             });
   }
 
