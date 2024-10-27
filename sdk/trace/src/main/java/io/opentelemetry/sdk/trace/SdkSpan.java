@@ -118,6 +118,13 @@ final class SdkSpan implements ReadWriteSpan {
   @Nullable
   private Thread spanEndingThread;
 
+  private static final AttributeKey<String> EXCEPTION_TYPE =
+      AttributeKey.stringKey("exception.type");
+  private static final AttributeKey<String> EXCEPTION_MESSAGE =
+      AttributeKey.stringKey("exception.message");
+  private static final AttributeKey<String> EXCEPTION_STACKTRACE =
+      AttributeKey.stringKey("exception.stacktrace");
+
   private SdkSpan(
       SpanContext context,
       String name,
@@ -453,11 +460,6 @@ final class SdkSpan implements ReadWriteSpan {
       additionalAttributes = Attributes.empty();
     }
 
-    AttributeKey<String> exceptionTypeAttributeKey = AttributeKey.stringKey("exception.type");
-    AttributeKey<String> exceptionMessageAttributeKey = AttributeKey.stringKey("exception.message");
-    AttributeKey<String> exceptionStackTraceAttributeKey =
-        AttributeKey.stringKey("exception.stacktrace");
-
     AttributesBuilder attributesBuilder = Attributes.builder();
     String exceptionName = exception.getClass().getCanonicalName();
     String exceptionMessage = exception.getMessage();
@@ -490,13 +492,13 @@ final class SdkSpan implements ReadWriteSpan {
     }
 
     if (exceptionName != null) {
-      attributesBuilder.put(exceptionTypeAttributeKey, exceptionName);
+      attributesBuilder.put(EXCEPTION_TYPE, exceptionName);
     }
     if (exceptionMessage != null) {
-      attributesBuilder.put(exceptionMessageAttributeKey, exceptionMessage);
+      attributesBuilder.put(EXCEPTION_MESSAGE, exceptionMessage);
     }
     if (stackTrace != null) {
-      attributesBuilder.put(exceptionStackTraceAttributeKey, stackTrace);
+      attributesBuilder.put(EXCEPTION_STACKTRACE, stackTrace);
     }
 
     attributesBuilder.putAll(additionalAttributes);
