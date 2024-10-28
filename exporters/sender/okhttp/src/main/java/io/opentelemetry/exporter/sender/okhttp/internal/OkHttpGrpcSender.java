@@ -201,14 +201,12 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
 
   /** Whether response is retriable or not. */
   public static boolean isRetryable(Response response) {
-    // Only retry on gRPC codes which will always come with an HTTP success
-    if (!response.isSuccessful()) {
-      return false;
-    }
-
     // We don't check trailers for retry since retryable error codes always come with response
     // headers, not trailers, in practice.
     String grpcStatus = response.header(GRPC_STATUS);
+    if (grpcStatus == null) {
+      return false;
+    }
     return RetryUtil.retryableGrpcStatusCodes().contains(grpcStatus);
   }
 
