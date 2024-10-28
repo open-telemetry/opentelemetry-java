@@ -95,7 +95,7 @@ class DefaultLogger implements Logger {
   private static class NoopEventBuilder implements EventBuilder {
 
     @Override
-    public EventBuilder put(String key, Value<?> value) {
+    public EventBuilder setBody(Value<?> body) {
       return this;
     }
 

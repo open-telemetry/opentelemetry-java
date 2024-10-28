@@ -14,15 +14,12 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 class SdkEventBuilder implements EventBuilder {
 
   private static final AttributeKey<String> EVENT_NAME = AttributeKey.stringKey("event.name");
 
-  private final Map<String, Value<?>> payload = new HashMap<>();
   private final Clock clock;
   private final LogRecordBuilder logRecordBuilder;
   private final String eventName;
@@ -35,8 +32,8 @@ class SdkEventBuilder implements EventBuilder {
   }
 
   @Override
-  public EventBuilder put(String key, Value<?> value) {
-    payload.put(key, value);
+  public EventBuilder setBody(Value<?> body) {
+    this.logRecordBuilder.setBody(body);
     return this;
   }
 
@@ -74,9 +71,6 @@ class SdkEventBuilder implements EventBuilder {
 
   @Override
   public void emit() {
-    if (!payload.isEmpty()) {
-      logRecordBuilder.setBody(Value.of(payload));
-    }
     if (!hasTimestamp) {
       logRecordBuilder.setTimestamp(clock.now(), TimeUnit.NANOSECONDS);
     }
