@@ -460,7 +460,7 @@ final class SdkSpan implements ReadWriteSpan {
       additionalAttributes = Attributes.empty();
     }
 
-    AttributesBuilder attributesBuilder = Attributes.builder();
+    AttributesMap attributes =AttributesMap.create(spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
     String exceptionName = exception.getClass().getCanonicalName();
     String exceptionMessage = exception.getMessage();
     StringWriter stringWriter = new StringWriter();
@@ -469,46 +469,17 @@ final class SdkSpan implements ReadWriteSpan {
     }
     String stackTrace = stringWriter.toString();
 
-    if (this.spanLimits.getMaxNumberOfAttributes() > 0
-        && this.spanLimits.getMaxAttributeValueLength() != Integer.MAX_VALUE) {
-      if (exceptionName != null) {
-        exceptionName =
-            exceptionName.substring(
-                0, Math.min(exceptionName.length(), this.spanLimits.getMaxAttributeValueLength()));
-      }
-
-      if (exceptionMessage != null) {
-        exceptionMessage =
-            exceptionMessage.substring(
-                0,
-                Math.min(exceptionMessage.length(), this.spanLimits.getMaxAttributeValueLength()));
-      }
-
-      if (stackTrace != null) {
-        stackTrace =
-            stackTrace.substring(
-                0, Math.min(stackTrace.length(), this.spanLimits.getMaxAttributeValueLength()));
-      }
-    }
-
     if (exceptionName != null) {
-      attributesBuilder.put(EXCEPTION_TYPE, exceptionName);
+      attributes.put(EXCEPTION_TYPE, exceptionName);
     }
     if (exceptionMessage != null) {
-      attributesBuilder.put(EXCEPTION_MESSAGE, exceptionMessage);
+      attributes.put(EXCEPTION_MESSAGE, exceptionMessage);
     }
     if (stackTrace != null) {
-      attributesBuilder.put(EXCEPTION_STACKTRACE, stackTrace);
+      attributes.put(EXCEPTION_STACKTRACE, stackTrace);
     }
 
-    attributesBuilder.putAll(additionalAttributes);
-
-    AttributeUtil.applyAttributesLimit(
-        attributesBuilder.build(),
-        spanLimits.getMaxNumberOfAttributesPerEvent(),
-        spanLimits.getMaxAttributeValueLength());
-
-    Attributes attributes = attributesBuilder.build();
+    additionalAttributes.forEach(attributes::put);
 
     addTimedEvent(ExceptionEventData.create(clock.now(), exception, attributes));
     return this;
