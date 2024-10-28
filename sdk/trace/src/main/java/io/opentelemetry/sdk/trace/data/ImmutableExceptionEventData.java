@@ -45,7 +45,6 @@ abstract class ImmutableExceptionEventData implements ExceptionEventData {
    */
   static ExceptionEventData create(
       long epochNanos, Throwable exception, Attributes attributes, int totalAttributeCount) {
-
     return new AutoValue_ImmutableExceptionEventData(
         attributes, epochNanos, totalAttributeCount, exception);
   }
