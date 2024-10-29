@@ -61,7 +61,7 @@ public abstract class View {
   abstract AttributesProcessor getAttributesProcessor();
 
   /** Returns the cardinality limit for this view. */
-  abstract int getCardinalityLimit();
+  public abstract int getCardinalityLimit();
 
   @Override
   public final String toString() {

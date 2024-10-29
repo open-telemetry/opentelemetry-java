@@ -8,7 +8,7 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.18.0",
+  "com.fasterxml.jackson:jackson-bom:2.18.1",
   "com.google.guava:guava-bom:33.3.1-jre",
   "com.google.protobuf:protobuf-bom:3.25.5",
   "com.linecorp.armeria:armeria-bom:1.30.1",
@@ -19,13 +19,13 @@ val DEPENDENCY_BOMS = listOf(
   "io.zipkin.brave:brave-bom:6.0.3",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.4.2",
   "org.assertj:assertj-bom:3.26.3",
-  "org.junit:junit-bom:5.11.2",
-  "org.testcontainers:testcontainers-bom:1.20.2",
+  "org.junit:junit-bom:5.11.3",
+  "org.testcontainers:testcontainers-bom:1.20.3",
   "org.snakeyaml:snakeyaml-engine:2.8"
 )
 
 val autoValueVersion = "1.11.0"
-val errorProneVersion = "2.33.0"
+val errorProneVersion = "2.35.1"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
@@ -56,18 +56,18 @@ val DEPENDENCIES = listOf(
   "io.prometheus:simpleclient_httpserver:${prometheusClientVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.46.0",
+  "com.google.api.grpc:proto-google-common-protos:2.48.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit5:1.3.0",
-  "com.uber.nullaway:nullaway:0.11.3",
+  "com.uber.nullaway:nullaway:0.12.1",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
   "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.39.0-alpha",
-  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.27.0-alpha",
+  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.28.0-alpha",
   "io.opentelemetry.proto:opentelemetry-proto:1.3.2-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",

@@ -103,7 +103,7 @@ class FileConfigurationCreateTest {
     // exporter with OTLP exporter, following by invalid batch exporter which references invalid
     // exporter "foo".
     String yaml =
-        "file_format: \"0.1\"\n"
+        "file_format: \"0.3\"\n"
             + "logger_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -123,7 +123,7 @@ class FileConfigurationCreateTest {
     logCapturer.assertContains(
         "Error encountered interpreting model. Closing partially configured components.");
     logCapturer.assertContains(
-        "Closing io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter");
+        "Closing io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter");
     logCapturer.assertContains("Closing io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor");
   }
 }

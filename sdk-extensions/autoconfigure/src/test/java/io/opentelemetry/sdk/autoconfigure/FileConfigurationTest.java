@@ -31,7 +31,7 @@ class FileConfigurationTest {
   @Test
   void configFile(@TempDir Path tempDir) throws IOException {
     String yaml =
-        "file_format: \"0.1\"\n"
+        "file_format: \"0.3\"\n"
             + "resource:\n"
             + "  attributes:\n"
             + "    - name: service.name\n"

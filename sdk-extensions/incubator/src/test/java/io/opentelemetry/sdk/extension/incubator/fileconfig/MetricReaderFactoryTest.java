@@ -11,7 +11,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import io.github.netmikey.logunit.api.LogCapturer;
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -62,7 +62,7 @@ class MetricReaderFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     io.opentelemetry.sdk.metrics.export.PeriodicMetricReader expectedReader =
         io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
-                OtlpGrpcMetricExporter.getDefault())
+                OtlpHttpMetricExporter.getDefault())
             .build();
     cleanup.addCloseable(expectedReader);
 
@@ -87,7 +87,7 @@ class MetricReaderFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     io.opentelemetry.sdk.metrics.export.MetricReader expectedReader =
         io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
-                OtlpGrpcMetricExporter.getDefault())
+                OtlpHttpMetricExporter.getDefault())
             .setInterval(Duration.ofMillis(1))
             .build();
     cleanup.addCloseable(expectedReader);

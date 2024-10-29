@@ -90,9 +90,8 @@ public class InstrumentGarbageCollectionBenchmark {
               // Effectively disable periodic reading so reading is only done on #flush()
               .setInterval(Duration.ofSeconds(Integer.MAX_VALUE))
               .build();
-      SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
-      SdkMeterProviderUtil.registerMetricReaderWithCardinalitySelector(
-          builder, metricReader, unused -> cardinality + 1);
+      SdkMeterProviderBuilder builder =
+          SdkMeterProvider.builder().registerMetricReader(metricReader, unused -> cardinality + 1);
 
       attributesList = AttributesGenerator.generate(cardinality);
 

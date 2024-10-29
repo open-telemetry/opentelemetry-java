@@ -26,7 +26,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -82,7 +83,13 @@ public final class PrometheusHttpServer implements MetricReader {
     // sequentially.
     if (memoryMode == MemoryMode.REUSABLE_DATA) {
       executor =
-          Executors.newSingleThreadExecutor(new DaemonThreadFactory("prometheus-http-server"));
+          new ThreadPoolExecutor(
+              1,
+              1,
+              0L,
+              TimeUnit.MILLISECONDS,
+              new LinkedBlockingQueue<>(),
+              new DaemonThreadFactory("prometheus-http-server"));
     }
     try {
       this.httpServer =

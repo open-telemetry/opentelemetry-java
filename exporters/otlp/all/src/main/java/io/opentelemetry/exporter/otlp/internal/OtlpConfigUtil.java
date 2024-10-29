@@ -5,8 +5,6 @@
 
 package io.opentelemetry.exporter.otlp.internal;
 
-import static io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram;
-
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -14,12 +12,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.metrics.Aggregation;
-import io.opentelemetry.sdk.metrics.InstrumentType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
-import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -30,10 +22,10 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -41,6 +33,8 @@ import javax.annotation.Nullable;
  * any time.
  */
 public final class OtlpConfigUtil {
+
+  private static final Logger logger = Logger.getLogger(OtlpConfigUtil.class.getName());
 
   public static final String DATA_TYPE_TRACES = "traces";
   public static final String DATA_TYPE_METRICS = "metrics";
@@ -60,7 +54,14 @@ public final class OtlpConfigUtil {
 
   /** Determine the configured OTLP protocol for the {@code dataType}. */
   public static String getStructuredConfigOtlpProtocol(StructuredConfigProperties config) {
-    return config.getString("protocol", PROTOCOL_GRPC);
+    // NOTE: The default OTLP protocol is different for declarative config than for env var / system
+    // property based config. This is intentional. OpenTelemetry changed the default protocol
+    // recommendation from grpc to http/protobuf, but the autoconfigure's env var / system property
+    // based config did not update to reflect this before stabilizing, and changing is a breaking
+    // change requiring a major version bump. Declarative config is not yet stable and therefore can
+    // switch to the current default recommendation, which aligns also aligns with the behavior of
+    // the OpenTelemetry Java Agent 2.x+.
+    return config.getString("protocol", PROTOCOL_HTTP_PROTOBUF);
   }
 
   /** Invoke the setters with the OTLP configuration for the {@code dataType}. */
@@ -256,96 +257,6 @@ public final class OtlpConfigUtil {
     }
   }
 
-  /**
-   * Invoke the {@code aggregationTemporalitySelectorConsumer} with the configured {@link
-   * AggregationTemporality}.
-   */
-  public static void configureOtlpAggregationTemporality(
-      ConfigProperties config,
-      Consumer<AggregationTemporalitySelector> aggregationTemporalitySelectorConsumer) {
-    String temporalityStr = config.getString("otel.exporter.otlp.metrics.temporality.preference");
-    if (temporalityStr == null) {
-      return;
-    }
-    AggregationTemporalitySelector temporalitySelector;
-    switch (temporalityStr.toLowerCase(Locale.ROOT)) {
-      case "cumulative":
-        temporalitySelector = AggregationTemporalitySelector.alwaysCumulative();
-        break;
-      case "delta":
-        temporalitySelector = AggregationTemporalitySelector.deltaPreferred();
-        break;
-      case "lowmemory":
-        temporalitySelector = AggregationTemporalitySelector.lowMemory();
-        break;
-      default:
-        throw new ConfigurationException("Unrecognized aggregation temporality: " + temporalityStr);
-    }
-    aggregationTemporalitySelectorConsumer.accept(temporalitySelector);
-  }
-
-  public static void configureOtlpAggregationTemporality(
-      StructuredConfigProperties config,
-      Consumer<AggregationTemporalitySelector> aggregationTemporalitySelectorConsumer) {
-    String temporalityStr = config.getString("temporality_preference");
-    if (temporalityStr == null) {
-      return;
-    }
-    AggregationTemporalitySelector temporalitySelector;
-    switch (temporalityStr.toLowerCase(Locale.ROOT)) {
-      case "cumulative":
-        temporalitySelector = AggregationTemporalitySelector.alwaysCumulative();
-        break;
-      case "delta":
-        temporalitySelector = AggregationTemporalitySelector.deltaPreferred();
-        break;
-      case "lowmemory":
-        temporalitySelector = AggregationTemporalitySelector.lowMemory();
-        break;
-      default:
-        throw new ConfigurationException("Unrecognized temporality_preference: " + temporalityStr);
-    }
-    aggregationTemporalitySelectorConsumer.accept(temporalitySelector);
-  }
-
-  /**
-   * Invoke the {@code defaultAggregationSelectorConsumer} with the configured {@link
-   * DefaultAggregationSelector}.
-   */
-  public static void configureOtlpHistogramDefaultAggregation(
-      ConfigProperties config,
-      Consumer<DefaultAggregationSelector> defaultAggregationSelectorConsumer) {
-    String defaultHistogramAggregation =
-        config.getString("otel.exporter.otlp.metrics.default.histogram.aggregation");
-    if (defaultHistogramAggregation != null) {
-      ExporterBuilderUtil.configureHistogramDefaultAggregation(
-          defaultHistogramAggregation, defaultAggregationSelectorConsumer);
-    }
-  }
-
-  /**
-   * Invoke the {@code defaultAggregationSelectorConsumer} with the configured {@link
-   * DefaultAggregationSelector}.
-   */
-  public static void configureOtlpHistogramDefaultAggregation(
-      StructuredConfigProperties config,
-      Consumer<DefaultAggregationSelector> defaultAggregationSelectorConsumer) {
-    String defaultHistogramAggregation = config.getString("default_histogram_aggregation");
-    if (defaultHistogramAggregation == null) {
-      return;
-    }
-    if (AggregationUtil.aggregationName(Aggregation.base2ExponentialBucketHistogram())
-        .equalsIgnoreCase(defaultHistogramAggregation)) {
-      defaultAggregationSelectorConsumer.accept(
-          DefaultAggregationSelector.getDefault()
-              .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()));
-    } else if (!AggregationUtil.aggregationName(explicitBucketHistogram())
-        .equalsIgnoreCase(defaultHistogramAggregation)) {
-      throw new ConfigurationException(
-          "Unrecognized default_histogram_aggregation: " + defaultHistogramAggregation);
-    }
-  }
-
   private static URL createUrl(URL context, String spec) {
     try {
       return new URL(context, spec);
@@ -355,7 +266,7 @@ public final class OtlpConfigUtil {
   }
 
   @Nullable
-  private static URL validateEndpoint(@Nullable String endpoint, boolean allowPath) {
+  private static URL validateEndpoint(@Nullable String endpoint, boolean isHttpProtobuf) {
     if (endpoint == null) {
       return null;
     }
@@ -377,9 +288,27 @@ public final class OtlpConfigUtil {
       throw new ConfigurationException(
           "OTLP endpoint must not have a fragment: " + endpointUrl.getRef());
     }
-    if (!allowPath && (!endpointUrl.getPath().isEmpty() && !endpointUrl.getPath().equals("/"))) {
+    if (!isHttpProtobuf
+        && (!endpointUrl.getPath().isEmpty() && !endpointUrl.getPath().equals("/"))) {
       throw new ConfigurationException(
           "OTLP endpoint must not have a path: " + endpointUrl.getPath());
+    }
+    if ((endpointUrl.getPort() == 4317 && isHttpProtobuf)
+        || (endpointUrl.getPort() == 4318 && !isHttpProtobuf)) {
+      int expectedPort = isHttpProtobuf ? 4318 : 4317;
+      String protocol = isHttpProtobuf ? PROTOCOL_HTTP_PROTOBUF : PROTOCOL_GRPC;
+      logger.warning(
+          "OTLP exporter endpoint port is likely incorrect for protocol version \""
+              + protocol
+              + "\". The endpoint "
+              + endpointUrl
+              + " has port "
+              + endpointUrl.getPort()
+              + ". Typically, the \""
+              + protocol
+              + "\" version of OTLP uses port "
+              + expectedPort
+              + ".");
     }
     return endpointUrl;
   }

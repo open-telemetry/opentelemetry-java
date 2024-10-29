@@ -13,9 +13,9 @@ import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
@@ -83,7 +83,7 @@ class OpenTelemetryConfigurationFactoryTest {
                   OpenTelemetryConfigurationFactory.getInstance()
                       .create(testCase, spiHelper, closeables))
           .isInstanceOf(ConfigurationException.class)
-          .hasMessage("Unsupported file format. Supported formats include: 0.1");
+          .hasMessage("Unsupported file format. Supported formats include: 0.3");
       cleanup.addCloseables(closeables);
     }
   }
@@ -97,7 +97,7 @@ class OpenTelemetryConfigurationFactoryTest {
     OpenTelemetrySdk sdk =
         OpenTelemetryConfigurationFactory.getInstance()
             .create(
-                new OpenTelemetryConfigurationModel().withFileFormat("0.1"), spiHelper, closeables);
+                new OpenTelemetryConfigurationModel().withFileFormat("0.3"), spiHelper, closeables);
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 
@@ -114,7 +114,7 @@ class OpenTelemetryConfigurationFactoryTest {
         OpenTelemetryConfigurationFactory.getInstance()
             .create(
                 new OpenTelemetryConfigurationModel()
-                    .withFileFormat("0.1")
+                    .withFileFormat("0.3")
                     .withDisabled(true)
                     // Logger provider configuration should be ignored since SDK is disabled
                     .withLoggerProvider(
@@ -169,7 +169,7 @@ class OpenTelemetryConfigurationFactoryTest {
                                 .build())
                     .addLogRecordProcessor(
                         io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor.builder(
-                                OtlpGrpcLogRecordExporter.getDefault())
+                                OtlpHttpLogRecordExporter.getDefault())
                             .build())
                     .build())
             .setTracerProvider(
@@ -187,7 +187,7 @@ class OpenTelemetryConfigurationFactoryTest {
                     .setSampler(alwaysOn())
                     .addSpanProcessor(
                         io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(
-                                OtlpGrpcSpanExporter.getDefault())
+                                OtlpHttpSpanExporter.getDefault())
                             .build())
                     .build())
             .setMeterProvider(
@@ -195,7 +195,7 @@ class OpenTelemetryConfigurationFactoryTest {
                     .setResource(expectedResource)
                     .registerMetricReader(
                         io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
-                                OtlpGrpcMetricExporter.getDefault())
+                                OtlpHttpMetricExporter.getDefault())
                             .build())
                     .registerView(
                         InstrumentSelector.builder().setName("instrument-name").build(),
@@ -208,7 +208,7 @@ class OpenTelemetryConfigurationFactoryTest {
         OpenTelemetryConfigurationFactory.getInstance()
             .create(
                 new OpenTelemetryConfigurationModel()
-                    .withFileFormat("0.1")
+                    .withFileFormat("0.3")
                     .withPropagator(
                         new PropagatorModel()
                             .withComposite(
