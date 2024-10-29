@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -460,7 +459,9 @@ final class SdkSpan implements ReadWriteSpan {
       additionalAttributes = Attributes.empty();
     }
 
-    AttributesMap attributes =AttributesMap.create(spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
+    AttributesMap attributes =
+        AttributesMap.create(
+            spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
     String exceptionName = exception.getClass().getCanonicalName();
     String exceptionMessage = exception.getMessage();
     StringWriter stringWriter = new StringWriter();

@@ -26,12 +26,11 @@ abstract class ImmutableExceptionEventData implements ExceptionEventData {
    *
    * @param epochNanos epoch timestamp in nanos of the {@code Event}.
    * @param exception the {@link Throwable exception} of the {@code Event}.
-   * @param additionalAttributes the additional {@link Attributes} of the {@code Event}.
+   * @param attributes the additional {@link Attributes} of the {@code Event}.
    * @return a new immutable {@code Event<T>}
    */
-  static ExceptionEventData create(
-      long epochNanos, Throwable exception, Attributes additionalAttributes) {
-    return create(epochNanos, exception, additionalAttributes, additionalAttributes.size());
+  static ExceptionEventData create(long epochNanos, Throwable exception, Attributes attributes) {
+    return create(epochNanos, exception, attributes, attributes.size());
   }
 
   /**

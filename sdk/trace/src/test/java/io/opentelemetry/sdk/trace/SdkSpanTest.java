@@ -1166,14 +1166,11 @@ class SdkSpanTest {
     EventData event = events.get(0);
     assertThat(event.getName()).isEqualTo("exception");
     assertThat(event.getEpochNanos()).isEqualTo(timestamp);
-    assertThat(event.getAttributes())
-        .isEqualTo(
-            Attributes.builder()
-                .put("exception.type", "java.lang.IllegalStateException")
-                .put("exception.message", "there was an exception")
-                .put("exception.stacktrace", stacktrace)
-                .build());
-
+    assertThat(event.getAttributes().get(stringKey("exception.message")))
+        .isEqualTo("there was an exception");
+    assertThat(event.getAttributes().get(stringKey("exception.type")))
+        .isEqualTo(exception.getClass().getName());
+    assertThat(event.getAttributes().get(stringKey("exception.stacktrace"))).isEqualTo(stacktrace);
     assertThat(event)
         .isInstanceOfSatisfying(
             ExceptionEventData.class,
@@ -1236,14 +1233,13 @@ class SdkSpanTest {
     EventData event = events.get(0);
     assertThat(event.getName()).isEqualTo("exception");
     assertThat(event.getEpochNanos()).isEqualTo(timestamp);
-    assertThat(event.getAttributes())
-        .isEqualTo(
-            Attributes.builder()
-                .put("key1", "this is an additional attribute")
-                .put("exception.type", "java.lang.IllegalStateException")
-                .put("exception.message", "this is a precedence attribute")
-                .put("exception.stacktrace", stacktrace)
-                .build());
+    assertThat(event.getAttributes().get(stringKey("exception.message")))
+        .isEqualTo("this is a precedence attribute");
+    assertThat(event.getAttributes().get(stringKey("key1")))
+        .isEqualTo("this is an additional attribute");
+    assertThat(event.getAttributes().get(stringKey("exception.type")))
+        .isEqualTo("java.lang.IllegalStateException");
+    assertThat(event.getAttributes().get(stringKey("exception.stacktrace"))).isEqualTo(stacktrace);
 
     assertThat(event)
         .isInstanceOfSatisfying(
