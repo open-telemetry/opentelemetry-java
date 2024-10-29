@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
 
 /**
- * File configuration SPI implementation for {@link ZipkinSpanExporter}.
+ * Declarative configuration SPI implementation for {@link ZipkinSpanExporter}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.

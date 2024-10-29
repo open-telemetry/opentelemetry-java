@@ -43,7 +43,7 @@ public final class OtlpHttpMetricExporterBuilder {
 
   private static final AggregationTemporalitySelector DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR =
       AggregationTemporalitySelector.alwaysCumulative();
-  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
+  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
 
   private final HttpExporterBuilder<Marshaler> delegate;
   private AggregationTemporalitySelector aggregationTemporalitySelector =

@@ -35,7 +35,7 @@ import javax.net.ssl.X509TrustManager;
 public final class OtlpHttpSpanExporterBuilder {
 
   private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/traces";
-  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
+  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
 
   private final HttpExporterBuilder<Marshaler> delegate;
   private MemoryMode memoryMode;

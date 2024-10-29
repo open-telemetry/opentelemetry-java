@@ -62,7 +62,7 @@ class PrometheusMetricReaderProviderTest {
                 assertThat(server.getAddress().getHostName()).isEqualTo("0:0:0:0:0:0:0:0");
                 assertThat(server.getAddress().getPort()).isEqualTo(9464);
               });
-      assertThat(metricReader.getMemoryMode()).isEqualTo(MemoryMode.IMMUTABLE_DATA);
+      assertThat(metricReader.getMemoryMode()).isEqualTo(MemoryMode.REUSABLE_DATA);
       assertThat(metricReader.getDefaultAggregation(InstrumentType.HISTOGRAM))
           .isEqualTo(Aggregation.defaultAggregation());
     }
@@ -81,7 +81,7 @@ class PrometheusMetricReaderProviderTest {
     Map<String, String> config = new HashMap<>();
     config.put("otel.exporter.prometheus.host", "localhost");
     config.put("otel.exporter.prometheus.port", String.valueOf(port));
-    config.put("otel.java.experimental.exporter.memory_mode", "reusable_data");
+    config.put("otel.java.exporter.memory_mode", "immutable_data");
     config.put(
         "otel.java.experimental.exporter.prometheus.metrics.default.histogram.aggregation",
         "BASE2_EXPONENTIAL_BUCKET_HISTOGRAM");
@@ -99,7 +99,7 @@ class PrometheusMetricReaderProviderTest {
                 assertThat(server.getAddress().getHostName()).isEqualTo("localhost");
                 assertThat(server.getAddress().getPort()).isEqualTo(port);
               });
-      assertThat(metricReader.getMemoryMode()).isEqualTo(MemoryMode.REUSABLE_DATA);
+      assertThat(metricReader.getMemoryMode()).isEqualTo(MemoryMode.IMMUTABLE_DATA);
       assertThat(metricReader.getDefaultAggregation(InstrumentType.HISTOGRAM))
           .isEqualTo(Aggregation.base2ExponentialBucketHistogram());
     }
