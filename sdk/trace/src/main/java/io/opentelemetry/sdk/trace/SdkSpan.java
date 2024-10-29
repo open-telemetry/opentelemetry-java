@@ -482,7 +482,9 @@ final class SdkSpan implements ReadWriteSpan {
 
     additionalAttributes.forEach(attributes::put);
 
-    addTimedEvent(ExceptionEventData.create(clock.now(), exception, attributes));
+    addTimedEvent(
+        ExceptionEventData.create(
+            clock.now(), exception, attributes, attributes.getTotalAddedValues()));
     return this;
   }
 
