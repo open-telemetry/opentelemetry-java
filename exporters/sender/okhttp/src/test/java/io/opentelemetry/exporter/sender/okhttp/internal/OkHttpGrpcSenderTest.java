@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class OkHttpGrpcSenderTest {
+class OkHttpGrpcSenderTest {
 
   private static final String GRPC_STATUS = "grpc-status";
   private static final MediaType TEXT_PLAIN = MediaType.get("text/plain");
@@ -31,14 +31,14 @@ public class OkHttpGrpcSenderTest {
 
   @ParameterizedTest(name = "isRetryable should return true for GRPC status code: {0}")
   @MethodSource("provideRetryableGrpcStatusCodes")
-  public void isRetryable_RetryableGrpcStatus(String retryableGrpcStatus) {
+  void isRetryable_RetryableGrpcStatus(String retryableGrpcStatus) {
     Response response = createResponse(503, retryableGrpcStatus, "Retryable");
     boolean isRetryable = OkHttpGrpcSender.isRetryable(response);
     assertTrue(isRetryable);
   }
 
   @Test
-  public void isRetryable_NonRetryableGrpcStatus() {
+  void isRetryable_NonRetryableGrpcStatus() {
     String nonRetryableGrpcStatus =
         Integer.valueOf(GrpcExporterUtil.GRPC_STATUS_UNKNOWN).toString(); // INVALID_ARGUMENT
     Response response = createResponse(503, nonRetryableGrpcStatus, "Non-retryable");
