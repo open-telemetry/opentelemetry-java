@@ -6,13 +6,13 @@
 package io.opentelemetry.sdk.metrics.internal.view;
 
 import static io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor.append;
-import static io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor.setIncludes;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static java.util.Collections.singleton;
 
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import java.util.Collections;
+import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
 import org.junit.jupiter.api.Test;
 
 /** Tests for the {@link AttributesProcessor} DSL-ish library. */
@@ -30,25 +30,14 @@ class AttributesProcessorTest {
   }
 
   @Test
-  void filterKeyName_SetIncludes() {
-    AttributesProcessor processor =
-        AttributesProcessor.filterByKeyName(setIncludes(Collections.singleton("test")));
-
-    assertThat(
-            processor.process(
-                Attributes.builder().put("remove", "me").put("test", "keep").build(),
-                Context.root()))
-        .hasSize(1)
-        .containsEntry("test", "keep");
-  }
-
-  @Test
   void filterKeyName_toString() {
     AttributesProcessor processor =
-        AttributesProcessor.filterByKeyName(setIncludes(Collections.singleton("test")));
+        AttributesProcessor.filterByKeyName(
+            IncludeExcludePredicate.createExactMatching(singleton("test"), null));
 
     assertThat(processor.toString())
-        .isEqualTo("AttributeKeyFilteringProcessor{nameFilter=SetIncludesPredicate{set=[test]}}");
+        .isEqualTo(
+            "AttributeKeyFilteringProcessor{nameFilter=IncludeExcludePredicate{globMatchingEnabled=false, included=[test]}}");
   }
 
   @Test
@@ -117,12 +106,13 @@ class AttributesProcessorTest {
   @Test
   void appendBaggage_toString() {
     AttributesProcessor processor =
-        AttributesProcessor.appendBaggageByKeyName(setIncludes(Collections.singleton("keep")));
+        AttributesProcessor.appendBaggageByKeyName(
+            IncludeExcludePredicate.createExactMatching(singleton("keep"), null));
 
     assertThat(processor.toString())
         .isEqualTo(
             "BaggageAppendingAttributesProcessor{"
-                + "nameFilter=SetIncludesPredicate{set=[keep]}"
+                + "nameFilter=IncludeExcludePredicate{globMatchingEnabled=false, included=[keep]}"
                 + "}");
   }
 
@@ -143,13 +133,14 @@ class AttributesProcessorTest {
   @Test
   void joinedAttributes_toString() {
     AttributesProcessor processor =
-        AttributesProcessor.appendBaggageByKeyName(setIncludes(Collections.singleton("keep")))
+        AttributesProcessor.appendBaggageByKeyName(
+                IncludeExcludePredicate.createExactMatching(singleton("keep"), null))
             .then(append(Attributes.builder().put("key", "value").build()));
 
     assertThat(processor.toString())
         .isEqualTo(
             "JoinedAttributesProcessor{processors=["
-                + "BaggageAppendingAttributesProcessor{nameFilter=SetIncludesPredicate{set=[keep]}}, "
+                + "BaggageAppendingAttributesProcessor{nameFilter=IncludeExcludePredicate{globMatchingEnabled=false, included=[keep]}}, "
                 + "AppendingAttributesProcessor{additionalAttributes={key=\"value\"}}"
                 + "]}");
   }

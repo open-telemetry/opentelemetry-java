@@ -13,10 +13,10 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Aggreg
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.StreamModel;
+import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.metrics.View;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import org.junit.jupiter.api.Test;
 
 class ViewFactoryTest {
@@ -41,7 +41,9 @@ class ViewFactoryTest {
         View.builder()
             .setName("name")
             .setDescription("description")
-            .setAttributeFilter(new HashSet<>(Arrays.asList("foo", "bar")))
+            .setAttributeFilter(
+                IncludeExcludePredicate.createExactMatching(
+                    Arrays.asList("foo", "bar"), Collections.singletonList("baz")))
             .setAggregation(
                 io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram(
                     Arrays.asList(1.0, 2.0)))
@@ -54,7 +56,9 @@ class ViewFactoryTest {
                     .withName("name")
                     .withDescription("description")
                     .withAttributeKeys(
-                        new IncludeExcludeModel().withIncluded(Arrays.asList("foo", "bar")))
+                        new IncludeExcludeModel()
+                            .withIncluded(Arrays.asList("foo", "bar"))
+                            .withExcluded(Collections.singletonList("baz")))
                     .withAggregation(
                         new AggregationModel()
                             .withExplicitBucketHistogram(

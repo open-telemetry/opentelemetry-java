@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -17,6 +18,7 @@ import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
@@ -24,6 +26,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Promet
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
+import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -144,7 +147,14 @@ class MetricReaderFactoryTest {
     spiHelper = spy(spiHelper);
     List<Closeable> closeables = new ArrayList<>();
     PrometheusHttpServer expectedReader =
-        PrometheusHttpServer.builder().setHost("localhost").setPort(port).build();
+        PrometheusHttpServer.builder()
+            .setHost("localhost")
+            .setPort(port)
+            .setOtelScopeEnabled(false)
+            .setAllowedResourceAttributesFilter(
+                IncludeExcludePredicate.createPatternMatching(
+                    singletonList("foo"), singletonList("bar")))
+            .build();
     // Close the reader to avoid port conflict with the new instance created by MetricReaderFactory
     expectedReader.close();
 
@@ -159,7 +169,14 @@ class MetricReaderFactoryTest {
                                     .withPrometheus(
                                         new PrometheusModel()
                                             .withHost("localhost")
-                                            .withPort(port)))),
+                                            .withPort(port)
+                                            .withWithResourceConstantLabels(
+                                                new IncludeExcludeModel()
+                                                    .withIncluded(singletonList("foo"))
+                                                    .withExcluded(singletonList("bar")))
+                                            .withWithoutScopeInfo(true)
+                                            .withWithoutTypeSuffix(true)
+                                            .withWithoutUnits(true)))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(reader);
