@@ -574,6 +574,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       }
       throw new ConfigurationException("Unexpected error configuring from file", e);
     } catch (IOException e) {
+      // IOException (other than FileNotFoundException which is caught above) is only thrown
+      // above by FileInputStream.close()
       throw new ConfigurationException("Error closing file", e);
     }
   }
