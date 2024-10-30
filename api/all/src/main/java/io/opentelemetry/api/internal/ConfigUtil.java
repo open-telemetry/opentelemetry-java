@@ -47,8 +47,6 @@ public final class ConfigUtil {
   public static String getString(String key, String defaultValue) {
     String normalizedKey = normalizePropertyKey(key);
 
-    // Cloning in order to avoid ConcurrentModificationException
-    // see https://github.com/open-telemetry/opentelemetry-java/issues/6732
     String systemProperty =
         safeSystemProperties().entrySet().stream()
             .filter(entry -> normalizedKey.equals(normalizePropertyKey(entry.getKey().toString())))
