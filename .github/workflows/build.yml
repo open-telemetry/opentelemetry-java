@@ -29,6 +29,7 @@ jobs:
           - 11
           - 17
           - 21
+          - 23
         # Collect coverage on latest LTS
         include:
           - os: ubuntu-20.04
@@ -45,6 +46,8 @@ jobs:
             test-java-version: 17
           - os: macos-13
             test-java-version: 21
+          - os: macos-13
+            test-java-version: 23
     steps:
       - uses: actions/checkout@v4
 

@@ -8,13 +8,13 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.18.0",
+  "com.fasterxml.jackson:jackson-bom:2.18.1",
   "com.google.guava:guava-bom:33.3.1-jre",
   "com.google.protobuf:protobuf-bom:3.25.5",
   "com.linecorp.armeria:armeria-bom:1.30.1",
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
   "com.squareup.okio:okio-bom:3.9.1", // applies to transitive dependencies of okhttp
-  "io.grpc:grpc-bom:1.68.0",
+  "io.grpc:grpc-bom:1.68.1",
   "io.netty:netty-bom:4.1.114.Final",
   "io.zipkin.brave:brave-bom:6.0.3",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.4.2",
@@ -25,7 +25,7 @@ val DEPENDENCY_BOMS = listOf(
 )
 
 val autoValueVersion = "1.11.0"
-val errorProneVersion = "2.34.0"
+val errorProneVersion = "2.35.1"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
@@ -61,7 +61,7 @@ val DEPENDENCIES = listOf(
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit5:1.3.0",
-  "com.uber.nullaway:nullaway:0.12.0",
+  "com.uber.nullaway:nullaway:0.12.1",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
@@ -71,7 +71,7 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.proto:opentelemetry-proto:1.3.2-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
-  "io.prometheus:prometheus-metrics-exporter-httpserver:1.3.1",
+  "io.prometheus:prometheus-metrics-exporter-httpserver:1.3.2",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.17.1",
   "org.awaitility:awaitility:4.2.2",
