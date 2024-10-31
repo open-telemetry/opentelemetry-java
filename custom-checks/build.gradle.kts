@@ -42,6 +42,14 @@ tasks {
       )
     }
   }
+
+  // only test on java 17+
+  val testJavaVersion: String? by project
+  if (testJavaVersion != null && Integer.valueOf(testJavaVersion) < 17) {
+    test {
+      enabled = false
+    }
+  }
 }
 
 tasks.withType<Test>().configureEach {
