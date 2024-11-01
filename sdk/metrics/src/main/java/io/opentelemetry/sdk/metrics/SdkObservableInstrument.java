@@ -14,7 +14,6 @@ import io.opentelemetry.api.metrics.ObservableLongGauge;
 import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.state.CallbackRegistration;
-import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,13 +30,12 @@ class SdkObservableInstrument
   private static final Logger logger = Logger.getLogger(SdkObservableInstrument.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
-  private final MeterSharedState meterSharedState;
+  private final SdkMeter sdkMeter;
   private final CallbackRegistration callbackRegistration;
   private final AtomicBoolean removed = new AtomicBoolean(false);
 
-  SdkObservableInstrument(
-      MeterSharedState meterSharedState, CallbackRegistration callbackRegistration) {
-    this.meterSharedState = meterSharedState;
+  SdkObservableInstrument(SdkMeter sdkMeter, CallbackRegistration callbackRegistration) {
+    this.sdkMeter = sdkMeter;
     this.callbackRegistration = callbackRegistration;
   }
 
@@ -48,7 +46,7 @@ class SdkObservableInstrument
           Level.WARNING, callbackRegistration + " has called close() multiple times.");
       return;
     }
-    meterSharedState.removeCallback(callbackRegistration);
+    sdkMeter.removeCallback(callbackRegistration);
   }
 
   @Override
