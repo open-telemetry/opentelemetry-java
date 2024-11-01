@@ -541,13 +541,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       return null;
     }
     logger.fine("Autoconfiguring from configuration file: " + configurationFile);
-    FileInputStream fis;
-    try {
-      fis = new FileInputStream(configurationFile);
-    } catch (FileNotFoundException e) {
-      throw new ConfigurationException("Configuration file not found", e);
-    }
-    try {
+    try (FileInputStream fis = new FileInputStream(configurationFile)) {
       Class<?> configurationFactory =
           Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfiguration");
       Method parse = configurationFactory.getMethod("parse", InputStream.class);
@@ -567,6 +561,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       // resource
       return AutoConfiguredOpenTelemetrySdk.create(
           sdk, Resource.getDefault(), null, structuredConfigProperties);
+    } catch (FileNotFoundException e) {
+      throw new ConfigurationException("Configuration file not found", e);
     } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
       throw new ConfigurationException(
           "Error configuring from file. Is opentelemetry-sdk-extension-incubator on the classpath?",
@@ -577,6 +573,10 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         throw (ConfigurationException) cause;
       }
       throw new ConfigurationException("Unexpected error configuring from file", e);
+    } catch (IOException e) {
+      // IOException (other than FileNotFoundException which is caught above) is only thrown
+      // above by FileInputStream.close()
+      throw new ConfigurationException("Error closing file", e);
     }
   }
 
