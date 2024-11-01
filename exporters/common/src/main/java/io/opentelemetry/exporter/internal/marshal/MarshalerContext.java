@@ -21,6 +21,9 @@ import javax.annotation.Nullable;
  * objects, that we call data. Both integers and objects can be read from the state in the order
  * they were added (first in, first out). Additionally, this class provides various pools and caches
  * for objects that can be reused between marshalling attempts.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 public final class MarshalerContext {
   private final boolean marshalStringNoAllocation;
@@ -203,6 +206,10 @@ public final class MarshalerContext {
 
   private static final AtomicInteger KEY_INDEX = new AtomicInteger();
 
+  /**
+   * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+   * any time.
+   */
   public static class Key {
     final int index = KEY_INDEX.getAndIncrement();
   }

@@ -12,7 +12,12 @@ import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
 import java.io.IOException;
 
-/** A Marshaler of key value pairs. See {@link AnyValueMarshaler}. */
+/**
+ * A Marshaler of key value pairs. See {@link AnyValueMarshaler}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public final class KeyValueStatelessMarshaler implements StatelessMarshaler<KeyValue> {
 
   public static final KeyValueStatelessMarshaler INSTANCE = new KeyValueStatelessMarshaler();

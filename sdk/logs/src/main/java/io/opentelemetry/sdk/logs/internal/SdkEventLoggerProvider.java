@@ -21,6 +21,9 @@ import io.opentelemetry.sdk.common.Clock;
  *
  * <p>Delegates all calls to the configured {@link LoggerProvider}, and its {@link LoggerBuilder}s,
  * {@link Logger}s.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 public final class SdkEventLoggerProvider implements EventLoggerProvider {
 

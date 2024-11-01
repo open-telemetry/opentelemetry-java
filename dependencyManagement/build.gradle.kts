@@ -38,6 +38,7 @@ val DEPENDENCIES = listOf(
   "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
   "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
   "com.google.errorprone:error_prone_core:${errorProneVersion}",
+  "com.google.errorprone:error_prone_test_helpers:${errorProneVersion}",
   "io.opencensus:opencensus-api:${opencensusVersion}",
   "io.opencensus:opencensus-impl-core:${opencensusVersion}",
   "io.opencensus:opencensus-impl:${opencensusVersion}",

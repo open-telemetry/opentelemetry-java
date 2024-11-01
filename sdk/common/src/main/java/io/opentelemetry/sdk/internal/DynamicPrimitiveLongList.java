@@ -43,8 +43,8 @@ import java.util.AbstractList;
  *       elements to zero.
  * </ul>
  *
- * <p>This class is an internal part of the OpenTelemetry SDK and is not intended for public use.
- * Its API is unstable and subject to change.
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  *
  * <p>This class is not thread-safe.
  */

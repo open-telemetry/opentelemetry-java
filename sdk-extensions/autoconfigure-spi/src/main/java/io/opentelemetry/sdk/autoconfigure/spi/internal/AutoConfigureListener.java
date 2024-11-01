@@ -13,6 +13,9 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
  *
  * <p>This is not a standalone SPI. Instead, implementations of other SPIs can also implement this
  * interface to receive a callback with the configured SDK.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 public interface AutoConfigureListener {
 
