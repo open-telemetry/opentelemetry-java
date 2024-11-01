@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.javaagent.customchecks;
+package io.opentelemetry.gradle.customchecks;
 
 import com.google.errorprone.CompilationTestHelper;
 import org.junit.jupiter.api.Test;

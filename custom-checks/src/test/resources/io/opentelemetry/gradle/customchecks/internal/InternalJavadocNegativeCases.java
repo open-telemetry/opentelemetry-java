@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.javaagent.customchecks.internal;
+package io.opentelemetry.gradle.customchecks.internal;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at

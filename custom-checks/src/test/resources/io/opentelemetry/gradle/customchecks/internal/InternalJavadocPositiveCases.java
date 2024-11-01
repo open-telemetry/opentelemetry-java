@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.javaagent.customchecks.internal;
+package io.opentelemetry.gradle.customchecks.internal;
 
 // BUG: Diagnostic contains: doesn't end with the javadoc disclaimer
 public class InternalJavadocPositiveCases {
