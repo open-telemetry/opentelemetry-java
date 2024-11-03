@@ -39,7 +39,7 @@ public final class OtlpGrpcSpanExporterBuilder {
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
   private static final long DEFAULT_TIMEOUT_SECS = 10;
-  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
+  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
 
   // Visible for testing
   final GrpcExporterBuilder<Marshaler> delegate;

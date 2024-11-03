@@ -46,7 +46,12 @@ public abstract class FailedExportException extends Exception {
   /** Returns true if the export failed with a response from the server. */
   public abstract boolean failedWithResponse();
 
-  /** Represents the failure of an HTTP exporter. */
+  /**
+   * Represents the failure of an HTTP exporter.
+   *
+   * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+   * at any time.
+   */
   public static final class HttpExportException extends FailedExportException {
 
     private static final long serialVersionUID = -6787390183017184775L;
@@ -85,7 +90,12 @@ public abstract class FailedExportException extends Exception {
     }
   }
 
-  /** Represents the failure of a gRPC exporter. */
+  /**
+   * Represents the failure of a gRPC exporter.
+   *
+   * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+   * at any time.
+   */
   public static final class GrpcExportException extends FailedExportException {
 
     private static final long serialVersionUID = -9157548250286695364L;

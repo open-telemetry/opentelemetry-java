@@ -23,6 +23,9 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
  * used, and {@link #create(StructuredConfigProperties)} is (currently) called with an empty {@link
  * StructuredConfigProperties}.
  *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ *
  * @param <T> the type of the SDK extension component. See {@link #getType()}. Supported values
  *     include: {@link SpanExporter}, {@link MetricExporter}, {@link LogRecordExporter}, {@link
  *     SpanProcessor}, {@link LogRecordProcessor}, {@link TextMapPropagator}, {@link Sampler},

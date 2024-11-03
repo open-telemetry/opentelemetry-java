@@ -322,8 +322,7 @@ public final class OtlpConfigUtil {
     if (!file.exists()) {
       throw new ConfigurationException("Invalid OTLP certificate/key path: " + filePath);
     }
-    try {
-      RandomAccessFile raf = new RandomAccessFile(file, "r");
+    try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
       byte[] bytes = new byte[(int) raf.length()];
       raf.readFully(bytes);
       return bytes;

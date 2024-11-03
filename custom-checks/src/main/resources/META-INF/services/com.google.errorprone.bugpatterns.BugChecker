@@ -1,0 +1,2 @@
+io.opentelemetry.gradle.customchecks.OtelInternalJavadoc
+io.opentelemetry.gradle.customchecks.OtelPrivateConstructorForUtilityClass

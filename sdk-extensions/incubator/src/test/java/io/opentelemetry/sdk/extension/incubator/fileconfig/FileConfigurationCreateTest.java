@@ -81,12 +81,16 @@ class FileConfigurationCreateTest {
       String rewrittenExampleContent =
           exampleContent
               .replaceAll(
-                  "certificate: .*\n", "certificate: " + certificatePath + System.lineSeparator())
+                  "certificate: .*\n",
+                  "certificate: " + certificatePath.replace("\\", "\\\\") + System.lineSeparator())
               .replaceAll(
-                  "client_key: .*\n", "client_key: " + clientKeyPath + System.lineSeparator())
+                  "client_key: .*\n",
+                  "client_key: " + clientKeyPath.replace("\\", "\\\\") + System.lineSeparator())
               .replaceAll(
                   "client_certificate: .*\n",
-                  "client_certificate: " + clientCertificatePath + System.lineSeparator());
+                  "client_certificate: "
+                      + clientCertificatePath.replace("\\", "\\\\")
+                      + System.lineSeparator());
       InputStream is =
           new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
 

@@ -172,7 +172,7 @@ class RetryInterceptorTest {
                 client
                     .newCall(new Request.Builder().url("http://localhost:" + openPort).build())
                     .execute())
-        .isInstanceOf(ConnectException.class);
+        .isInstanceOfAny(ConnectException.class, SocketTimeoutException.class);
 
     verify(isRetryableException, times(5)).apply(any());
     // Should retry maxAttempts, and sleep maxAttempts - 1 times

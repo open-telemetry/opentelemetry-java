@@ -1,6 +1,6 @@
 pluginManagement {
   plugins {
-    id("com.gradleup.shadow") version "8.3.3"
+    id("com.gradleup.shadow") version "8.3.4"
     id("com.gradle.develocity") version "3.18.1"
     id("de.undercouch.download") version "5.6.0"
     id("org.jsonschema2pojo") version "1.2.2"
@@ -29,6 +29,7 @@ include(":api:testing-internal")
 include(":bom")
 include(":bom-alpha")
 include(":context")
+include(":custom-checks")
 include(":dependencyManagement")
 include(":extensions:kotlin")
 include(":extensions:trace-propagators")

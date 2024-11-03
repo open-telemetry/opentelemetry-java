@@ -17,6 +17,9 @@ import javax.annotation.concurrent.Immutable;
 /**
  * A collection of configuration options which define the behavior of a {@link Logger}.
  *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ *
  * @see SdkLoggerProviderUtil#setLoggerConfigurator(SdkLoggerProviderBuilder, ScopeConfigurator)
  * @see SdkLoggerProviderUtil#addLoggerConfiguratorCondition(SdkLoggerProviderBuilder, Predicate,
  *     LoggerConfig)
