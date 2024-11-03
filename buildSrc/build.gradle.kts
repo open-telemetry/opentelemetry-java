@@ -1,28 +1,29 @@
 plugins {
-    `kotlin-dsl`
-    // When updating, update below in dependencies too
-    id("com.diffplug.spotless") version "6.25.0"
+  `kotlin-dsl`
+
+  // When updating, update below in dependencies too
+  id("com.diffplug.spotless") version "6.25.0"
 }
 
 if (!hasLauncherForJavaVersion(17)) {
-    throw GradleException(
-        "JDK 17 is required to build and gradle was unable to detect it on the system. " +
-            "Please install it and see https://docs.gradle.org/current/userguide/toolchains.html#sec:auto_detection " +
-            "for details on how gradle detects java toolchains."
-    )
+  throw GradleException(
+    "JDK 17 is required to build and gradle was unable to detect it on the system.  " +
+        "Please install it and see https://docs.gradle.org/current/userguide/toolchains.html#sec:auto_detection " +
+        "for details on how gradle detects java toolchains."
+  )
 }
 
 fun hasLauncherForJavaVersion(version: Int): Boolean {
-    return try {
-        javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(version)) }.get()
-        true
-    } catch (e: Exception) {
-        false
-    }
+  return try {
+    javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(version) }.get()
+    true
+  } catch (e: Exception) {
+    false
+  }
 }
 
 spotless {
-kotlinGradle {
+  kotlinGradle {
     ktlint().editorConfigOverride(mapOf(
       "indent_size" to "2",
       "continuation_indent_size" to "2",
@@ -43,28 +44,30 @@ kotlinGradle {
 }
 
 repositories {
-    mavenCentral()
-    gradlePluginPortal()
-    mavenLocal()
+  mavenCentral()
+  gradlePluginPortal()
+  mavenLocal()
 }
 
 dependencies {
-    implementation(enforcedPlatform("com.squareup.wire:wire-bom:5.1.0"))
-    implementation("com.google.auto.value:auto-value-annotations:1.11.0")
-    implementation("com.diffplug.spotless:spotless-plugin-gradle:6.25.0")
-    implementation("com.google.guava:guava:33.3.1-jre")
-    implementation("com.squareup:javapoet:1.13.0")
-    implementation("com.squareup.wire:wire-compiler")
-    implementation("com.squareup.wire:wire-gradle-plugin")
-    implementation("gradle.plugin.com.google.protobuf:protobuf-gradle-plugin:0.8.18")
-    implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.6")
-    implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.3")
-    implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.2")
-    implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.0.1")
-    implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.0.0")
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21")
-    implementation("org.owasp:dependency-check-gradle:10.0.4")
-    implementation("ru.vyarus:gradle-animalsniffer-plugin:1.7.1")
+  implementation(enforcedPlatform("com.squareup.wire:wire-bom:5.1.0"))
+  implementation("com.google.auto.value:auto-value-annotations:1.11.0")
+  // When updating, update above in plugins too
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.25.0")
+  // Needed for japicmp but not automatically brought in for some reason.
+  implementation("com.google.guava:guava:33.3.1-jre")
+  implementation("com.squareup:javapoet:1.13.0")
+  implementation("com.squareup.wire:wire-compiler")
+  implementation("com.squareup.wire:wire-gradle-plugin")
+  implementation("gradle.plugin.com.google.protobuf:protobuf-gradle-plugin:0.8.18")
+  implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.6")
+  implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.4")
+  implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.2")
+  implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.1.0")
+  implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.1.0")
+  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21")
+  implementation("org.owasp:dependency-check-gradle:11.1.0")
+  implementation("ru.vyarus:gradle-animalsniffer-plugin:1.7.1")
 }
 
 // We can't apply conventions to this build so include important ones such as the Java compilation
