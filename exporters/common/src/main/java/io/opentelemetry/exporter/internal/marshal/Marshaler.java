@@ -38,6 +38,14 @@ public abstract class Marshaler {
     }
   }
 
+  /** Marshals into the {@link JsonGenerator} in proto JSON format and adds a newline. */
+  public final void writeJsonWithNewline(JsonGenerator output) throws IOException {
+    try (JsonSerializer serializer = new JsonSerializer(output)) {
+      serializer.writeMessageValue(this);
+      output.writeRaw('\n');
+    }
+  }
+
   /** Returns the number of bytes this Marshaler will write in proto binary format. */
   public abstract int getBinarySerializedSize();
 
