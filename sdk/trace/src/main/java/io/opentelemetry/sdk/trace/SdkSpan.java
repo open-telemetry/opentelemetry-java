@@ -439,7 +439,7 @@ final class SdkSpan implements ReadWriteSpan {
       // Check the current status and enforce priority rules
       StatusCode currentStatusCode = this.status.getStatusCode();
 
-      // Prevent setting a lower priority status
+      // Prevent setting a lower priority status.
       if (currentStatusCode == StatusCode.OK) {
         return this; // Do not allow lower priority status to override OK
       } else if (currentStatusCode == StatusCode.ERROR && statusCode == StatusCode.UNSET) {
