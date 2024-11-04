@@ -46,7 +46,7 @@ class StreamJsonWriterTest {
   @Test
   void errorWriting() throws IOException {
     Marshaler marshaler = mock(Marshaler.class);
-    Mockito.doThrow(new IOException("test")).when(marshaler).writeJsonTo(any(JsonGenerator.class));
+    Mockito.doThrow(new IOException("test")).when(marshaler).writeJsonWithNewline(any(JsonGenerator.class));
 
     StreamJsonWriter writer = new StreamJsonWriter(System.out, "type");
     writer.write(marshaler);
