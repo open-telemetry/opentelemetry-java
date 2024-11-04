@@ -447,7 +447,7 @@ final class SdkSpan implements ReadWriteSpan {
         return this; // Do not allow UNSET to override ERROR
       }
 
-      // Set the status, ignoring description if status is not ERROR
+      // Set the status, ignoring description if status is not ERROR.
       if (statusCode == StatusCode.ERROR) {
         this.status = StatusData.create(statusCode, description); // Allow description for ERROR
       } else {
