@@ -41,7 +41,7 @@ import java.util.logging.Logger;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarData>
+public final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarData>
     implements MetricStorage {
   private static final Logger logger = Logger.getLogger(AsynchronousMetricStorage.class.getName());
 
@@ -101,10 +101,11 @@ final class AsynchronousMetricStorage<T extends PointData, U extends ExemplarDat
    * Create an asynchronous storage instance for the {@link View} and {@link InstrumentDescriptor}.
    */
   // TODO(anuraaga): The cast to generic type here looks suspicious.
-  static <T extends PointData, U extends ExemplarData> AsynchronousMetricStorage<T, U> create(
-      RegisteredReader registeredReader,
-      RegisteredView registeredView,
-      InstrumentDescriptor instrumentDescriptor) {
+  public static <T extends PointData, U extends ExemplarData>
+      AsynchronousMetricStorage<T, U> create(
+          RegisteredReader registeredReader,
+          RegisteredView registeredView,
+          InstrumentDescriptor instrumentDescriptor) {
     View view = registeredView.getView();
     MetricDescriptor metricDescriptor =
         MetricDescriptor.create(view, registeredView.getViewSourceInfo(), instrumentDescriptor);

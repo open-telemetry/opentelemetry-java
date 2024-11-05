@@ -16,23 +16,19 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
-import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.List;
 import java.util.function.Consumer;
 
 final class SdkLongUpDownCounter extends AbstractInstrument implements ExtendedLongUpDownCounter {
 
-  private final MeterSharedState meterSharedState;
+  private final SdkMeter sdkMeter;
   private final WriteableMetricStorage storage;
 
   private SdkLongUpDownCounter(
-      InstrumentDescriptor descriptor,
-      MeterSharedState meterSharedState,
-      WriteableMetricStorage storage) {
+      InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     super(descriptor);
-    this.meterSharedState = meterSharedState;
+    this.sdkMeter = sdkMeter;
     this.storage = storage;
   }
 
@@ -53,24 +49,17 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements ExtendedL
 
   @Override
   public boolean isEnabled() {
-    return meterSharedState.isMeterEnabled() && storage.isEnabled();
+    return sdkMeter.isMeterEnabled() && storage.isEnabled();
   }
 
   static final class SdkLongUpDownCounterBuilder implements ExtendedLongUpDownCounterBuilder {
 
     private final InstrumentBuilder builder;
 
-    SdkLongUpDownCounterBuilder(
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        String name) {
+    SdkLongUpDownCounterBuilder(SdkMeter sdkMeter, String name) {
       this.builder =
           new InstrumentBuilder(
-              name,
-              InstrumentType.UP_DOWN_COUNTER,
-              InstrumentValueType.LONG,
-              meterProviderSharedState,
-              meterSharedState);
+              name, InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG, sdkMeter);
     }
 
     @Override

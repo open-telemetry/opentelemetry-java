@@ -16,8 +16,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
-import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.List;
 import java.util.function.Consumer;
@@ -28,15 +26,13 @@ final class SdkDoubleCounter extends AbstractInstrument implements ExtendedDoubl
   private static final Logger logger = Logger.getLogger(SdkDoubleCounter.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
-  private final MeterSharedState meterSharedState;
+  private final SdkMeter sdkMeter;
   private final WriteableMetricStorage storage;
 
   private SdkDoubleCounter(
-      InstrumentDescriptor descriptor,
-      MeterSharedState meterSharedState,
-      WriteableMetricStorage storage) {
+      InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     super(descriptor);
-    this.meterSharedState = meterSharedState;
+    this.sdkMeter = sdkMeter;
     this.storage = storage;
   }
 
@@ -65,7 +61,7 @@ final class SdkDoubleCounter extends AbstractInstrument implements ExtendedDoubl
 
   @Override
   public boolean isEnabled() {
-    return meterSharedState.isMeterEnabled() && storage.isEnabled();
+    return sdkMeter.isMeterEnabled() && storage.isEnabled();
   }
 
   static final class SdkDoubleCounterBuilder implements ExtendedDoubleCounterBuilder {
@@ -73,19 +69,13 @@ final class SdkDoubleCounter extends AbstractInstrument implements ExtendedDoubl
     private final InstrumentBuilder builder;
 
     SdkDoubleCounterBuilder(
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState sharedState,
+        SdkMeter sdkMeter,
         String name,
         String description,
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
       this.builder =
-          new InstrumentBuilder(
-                  name,
-                  InstrumentType.COUNTER,
-                  InstrumentValueType.DOUBLE,
-                  meterProviderSharedState,
-                  sharedState)
+          new InstrumentBuilder(name, InstrumentType.COUNTER, InstrumentValueType.DOUBLE, sdkMeter)
               .setUnit(unit)
               .setDescription(description)
               .setAdviceBuilder(adviceBuilder);
