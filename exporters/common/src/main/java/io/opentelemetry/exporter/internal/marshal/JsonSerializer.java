@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -124,6 +125,13 @@ final class JsonSerializer extends Serializer {
   @Override
   public void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
     generator.writeBinaryField(field.getJsonName(), value);
+  }
+
+  @Override
+  public void writeByteBuffer(ProtoFieldInfo field, ByteBuffer value) throws IOException {
+    byte[] data = new byte[value.capacity()];
+    ((ByteBuffer) value.duplicate().clear()).get(data);
+    generator.writeBinaryField(field.getJsonName(), data);
   }
 
   @Override
