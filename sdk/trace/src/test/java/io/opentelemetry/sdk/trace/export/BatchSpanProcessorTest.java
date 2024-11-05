@@ -111,9 +111,9 @@ class BatchSpanProcessorTest {
     assertThatThrownBy(
             () ->
                 BatchSpanProcessor.builder(mockSpanExporter)
-                    .setExporterTimeout(-1, TimeUnit.MILLISECONDS))
+                    .setExporterTimeout(0, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("timeout must be non-negative");
+        .hasMessage("timeout must be positive");
     assertThatThrownBy(
             () -> BatchSpanProcessor.builder(mockSpanExporter).setExporterTimeout(1, null))
         .isInstanceOf(NullPointerException.class)

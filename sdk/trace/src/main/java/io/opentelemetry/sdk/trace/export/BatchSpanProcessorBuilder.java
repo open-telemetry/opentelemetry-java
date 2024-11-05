@@ -78,7 +78,7 @@ public final class BatchSpanProcessorBuilder {
    */
   public BatchSpanProcessorBuilder setExporterTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
-    checkArgument(timeout >= 0, "timeout must be non-negative");
+    checkArgument(timeout > 0, "timeout must be positive");
     exporterTimeoutNanos = unit.toNanos(timeout);
     return this;
   }

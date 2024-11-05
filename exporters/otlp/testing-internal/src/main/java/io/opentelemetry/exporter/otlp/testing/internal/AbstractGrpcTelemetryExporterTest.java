@@ -814,9 +814,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressWarnings("PreferJavaTimeOverload")
   void validConfig() {
-    assertThatCode(() -> exporterBuilder().setTimeout(0, TimeUnit.MILLISECONDS))
+    assertThatCode(() -> exporterBuilder().setTimeout(1, TimeUnit.MILLISECONDS))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setTimeout(Duration.ofMillis(0)))
+    assertThatCode(() -> exporterBuilder().setTimeout(Duration.ofMillis(1)))
         .doesNotThrowAnyException();
     assertThatCode(() -> exporterBuilder().setTimeout(10, TimeUnit.MILLISECONDS))
         .doesNotThrowAnyException();
@@ -848,9 +848,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressWarnings({"PreferJavaTimeOverload", "NullAway"})
   void invalidConfig() {
-    assertThatThrownBy(() -> exporterBuilder().setTimeout(-1, TimeUnit.MILLISECONDS))
+    assertThatThrownBy(() -> exporterBuilder().setTimeout(0, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("timeout must be non-negative");
+        .hasMessage("timeout must be positive");
     assertThatThrownBy(() -> exporterBuilder().setTimeout(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("unit");

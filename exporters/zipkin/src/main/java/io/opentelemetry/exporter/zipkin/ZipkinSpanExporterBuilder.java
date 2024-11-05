@@ -155,7 +155,7 @@ public final class ZipkinSpanExporterBuilder {
    */
   public ZipkinSpanExporterBuilder setReadTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
-    checkArgument(timeout >= 0, "timeout must be non-negative");
+    checkArgument(timeout > 0, "timeout must be positive");
     this.readTimeoutMillis = unit.toMillis(timeout);
     return this;
   }
