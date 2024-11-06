@@ -9,18 +9,16 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
+import javax.annotation.Nullable;
 
 /** Base for fixed-size reservoir sampling of Exemplars. */
 abstract class FixedSizeExemplarReservoir<T extends ExemplarData> implements ExemplarReservoir<T> {
 
-  @Nullable
-  private ReservoirCell[] storage;
-
+  @Nullable private ReservoirCell[] storage;
   private final ReservoirCellSelector reservoirCellSelector;
   private final BiFunction<ReservoirCell, Attributes, T> mapAndResetCell;
   private final int size;
@@ -42,7 +40,7 @@ abstract class FixedSizeExemplarReservoir<T extends ExemplarData> implements Exe
 
   @Override
   public void offerLongMeasurement(long value, Attributes attributes, Context context) {
-    if (this.storage == null) {
+    if (storage == null) {
       storage = initStorage();
     }
     int bucket = reservoirCellSelector.reservoirCellIndexFor(storage, value, attributes, context);
@@ -54,7 +52,7 @@ abstract class FixedSizeExemplarReservoir<T extends ExemplarData> implements Exe
 
   @Override
   public void offerDoubleMeasurement(double value, Attributes attributes, Context context) {
-    if (this.storage == null) {
+    if (storage == null) {
       storage = initStorage();
     }
     int bucket = reservoirCellSelector.reservoirCellIndexFor(storage, value, attributes, context);
@@ -77,7 +75,7 @@ abstract class FixedSizeExemplarReservoir<T extends ExemplarData> implements Exe
     if (!hasMeasurements) {
       return Collections.emptyList();
     }
-    if (this.storage == null) {
+    if (storage == null) {
       storage = initStorage();
     }
     // Note: we are collecting exemplars from buckets piecemeal, but we
