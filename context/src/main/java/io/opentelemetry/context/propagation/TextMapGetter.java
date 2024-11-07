@@ -37,7 +37,7 @@ public interface TextMapGetter<C> {
   String get(@Nullable C carrier, String key);
 
   /**
-   * If implemented, returns all values for a given {@code key}, in order.
+   * If implemented, returns all values for a given {@code key} in order, or returns an empty list.
    *
    * <p>The default method returns the first value of the given propagation {@code key} as a
    * singleton list, or returns an empty list.

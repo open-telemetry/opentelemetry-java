@@ -86,6 +86,12 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
     return URL_ESCAPER.escape(value);
   }
 
+  /**
+   * @param context the {@code Context} used to store the extracted value.
+   * @param carrier holds propagation fields. For example, an outgoing message or http request.
+   * @param getter invoked for each propagation key to get data from the carrier.
+   * @return the extracted context
+   */
   @Override
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     if (context == null) {
@@ -95,21 +101,26 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
       return context;
     }
 
-    String baggageHeader = getter.get(carrier, FIELD);
-    if (baggageHeader == null) {
-      return context;
-    }
-    if (baggageHeader.isEmpty()) {
+    List<String> baggageHeaders = getter.getList(carrier, FIELD);
+    if (baggageHeaders == null || baggageHeaders.isEmpty()) {
       return context;
     }
 
+    boolean extracted = false;
     BaggageBuilder baggageBuilder = Baggage.builder();
-    try {
-      extractEntries(baggageHeader, baggageBuilder);
-    } catch (RuntimeException e) {
-      return context;
+    for (String header : baggageHeaders) {
+      if (header.isEmpty()) {
+        continue;
+      }
+
+      try {
+        extractEntries(header, baggageBuilder);
+        extracted = true;
+      } catch (RuntimeException expected) {
+        // invalid baggage header, continue
+      }
     }
-    return context.with(baggageBuilder.build());
+    return extracted ? context.with(baggageBuilder.build()) : context;
   }
 
   private static void extractEntries(String baggageHeader, BaggageBuilder baggageBuilder) {
