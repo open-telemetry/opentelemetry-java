@@ -14,7 +14,7 @@ public final class ResourceProvider {
   }
 
   /**
-   * Provides the currently discovered {@link Resource}
+   * Provides the currently discovered {@link Resource}.
    *
    * @return the Resource.
    */

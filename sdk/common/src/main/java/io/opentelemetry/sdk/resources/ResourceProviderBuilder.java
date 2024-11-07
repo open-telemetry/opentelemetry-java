@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.resources;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Builder of {@link ResourceProvider} */
+/** Builder of {@link ResourceProvider}. */
 public final class ResourceProviderBuilder {
 
   private final List<EntityDetector> entityDetectors = new ArrayList<>();
