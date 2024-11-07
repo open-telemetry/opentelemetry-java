@@ -266,7 +266,7 @@ public abstract class Resource {
                         e.getIdentifyingAttributes().asMap().containsKey(key)
                             || e.getAttributes().asMap().containsKey(key)));
 
-    // TOOD - we need to update/identify conflicts in these with selected entities.
+    // TODO - we need to update/identify conflicts in these with selected entities.
     // This may cause us to drop entities.
     attrBuilder.putAll(other.getRawAttributes());
 
