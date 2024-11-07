@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.resources.Entity;
 import java.util.Collection;
 import org.junit.Test;
 
-/** Unit tests for {@link ServiceInstanceDetector} */
+/** Unit tests for {@link ServiceInstanceDetector}. */
 public class ServiceInstanceDetectorTest {
   @Test
   void detects_service() {

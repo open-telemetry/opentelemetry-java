@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.resources.Entity;
 import java.util.Collection;
 import org.junit.Test;
 
-/** Unit tests for {@link TelemetrySdkDetectorTest} */
+/** Unit tests for {@link TelemetrySdkDetectorTest}. */
 public class TelemetrySdkDetectorTest {
   @Test
   void detects_telemetrySdk() {
