@@ -13,6 +13,7 @@ import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.sdk.resources.detectors.ServiceDetector;
 import io.opentelemetry.sdk.resources.detectors.TelemetrySdkDetector;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -239,6 +240,7 @@ public abstract class Resource {
    * @param other the {@code Resource} that will be merged with {@code this}.
    * @return the newly merged {@code Resource}.
    */
+  @SuppressWarnings("unchecked")
   public Resource merge(@Nullable Resource other) {
     if (other == null || other == EMPTY) {
       return this;
@@ -246,8 +248,6 @@ public abstract class Resource {
 
     // Merge Algorithm from
     // https://github.com/open-telemetry/oteps/blob/main/text/entities/0264-resource-and-entities.md#entity-merging-and-resource
-    // A few caveats:
-    //
 
     // First merge entities.
     Collection<Entity> entities = mergeEntities(getEntities(), other.getEntities());
@@ -267,9 +267,27 @@ public abstract class Resource {
                         e.getIdentifyingAttributes().asMap().containsKey(key)
                             || e.getAttributes().asMap().containsKey(key)));
 
-    // TODO - we need to update/identify conflicts in these with selected entities.
-    // This may cause us to drop entities.
-    attrBuilder.putAll(other.getRawAttributes());
+    // For every "raw" attribute on the other resource, we merge into the
+    // resource, but check for entity conflicts from previous entities.
+    if (!other.getRawAttributes().isEmpty()) {
+      other
+          .getRawAttributes()
+          .forEach(
+              (key, value) -> {
+                ArrayList<Entity> toRemove = new ArrayList<>();
+                for (Entity e : entities) {
+                  if (e.getIdentifyingAttributes().asMap().keySet().contains(key)
+                      || e.getAttributes().asMap().keySet().contains(key)) {
+                    // Remove the entity and push all attributes as raw,
+                    // we have an override.
+                    toRemove.add(e);
+                    attrBuilder.putAll(e.getIdentifyingAttributes()).putAll(e.getAttributes());
+                  }
+                }
+                attrBuilder.put((AttributeKey<Object>) key, value);
+                entities.removeAll(toRemove);
+              });
+    }
 
     // Check if entities all share the same URL.
     Set<String> entitySchemas =
@@ -285,6 +303,7 @@ public abstract class Resource {
     }
 
     if (other.getSchemaUrl() == null) {
+      // Use previous behavior?
       return create(attrBuilder.build(), schemaUrl, entities);
     }
     // We fall back to old behavior here when entities aren't in the mix.

@@ -365,8 +365,8 @@ class ResourceTest {
     Resource resource2 = Resource.builder().setSchemaUrl("two").put("a.id", "b").build();
     Resource merged = resource1.merge(resource2);
     assertThat(merged.getSchemaUrl()).isNull();
-    // TODO - Should we drop the entity when we have a merge that violates it?
-    assertThat(merged.getEntities()).hasSize(1);
+    // We drop the entity when we have a merge that violates it.
+    assertThat(merged.getEntities()).hasSize(0);
     assertThat(merged.getAttributes()).containsEntry("a.id", "b");
     assertThat(merged.getAttributes()).containsEntry("a.desc1", "a");
   }
@@ -507,6 +507,20 @@ class ResourceTest {
     assertThat(newResource).isNotSameAs(Resource.getDefault());
     assertThat(newResource.getAttribute(stringKey("foo"))).isEqualTo("val");
     assertThat(newResource.getSchemaUrl()).isEqualTo("http://example.com");
+  }
+
+  @Test
+  public void build_withEntities() {
+    Resource resource =
+        Resource.builder()
+            .add(
+                Entity.builder()
+                    .setSchemaUrl("http://example.com")
+                    .setEntityType("a")
+                    .withIdentifying(id -> id.put("a", "b"))
+                    .build())
+            .build();
+    assertThat(resource.getSchemaUrl()).isEqualTo("http://example.com");
   }
 
   @Test

@@ -11,7 +11,9 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /**
@@ -241,6 +243,16 @@ public class ResourceBuilder {
 
   /** Create the {@link Resource} from this. */
   public Resource build() {
+    // Derive schemaUrl from entitiy, if able.
+    if (schemaUrl == null) {
+      Set<String> entitySchemas =
+          entities.stream().map(Entity::getSchemaUrl).collect(Collectors.toSet());
+      if (entitySchemas.size() == 1) {
+        // Updated Entities use same schema, we can preserve it.
+        schemaUrl = entitySchemas.iterator().next();
+      }
+    }
+
     return Resource.create(attributesBuilder.build(), schemaUrl, entities);
   }
 }
