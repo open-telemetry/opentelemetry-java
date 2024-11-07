@@ -174,14 +174,38 @@ public class ResourceBuilder {
   public ResourceBuilder putAll(Resource resource) {
     if (resource != null) {
       attributesBuilder.putAll(resource.getRawAttributes());
-      addAll(new ArrayList<Entity>(resource.getEntites()));
+      addAll(new ArrayList<Entity>(resource.getEntities()));
     }
     return this;
   }
 
   /** Remove all attributes that satisfy the given predicate from {@link Resource}. */
   public ResourceBuilder removeIf(Predicate<AttributeKey<?>> filter) {
+    // Remove all raw attributes.
     attributesBuilder.removeIf(filter);
+    // Handle entities.
+    if (entities.isEmpty()) {
+      ArrayList<Entity> toAdd = new ArrayList<>();
+      ArrayList<Entity> toRemove = new ArrayList<>();
+      // If the predicate matches an identifying attribute we need to drop the entitiy.
+      for (Entity e : entities) {
+        if (e.getIdentifyingAttributes().asMap().keySet().stream().anyMatch(filter)) {
+          // We must remove the entity.
+          // We move all attributes into the "raw" section.
+          toRemove.add(e);
+          attributesBuilder.putAll(
+              e.getIdentifyingAttributes().toBuilder().removeIf(filter).build());
+          attributesBuilder.putAll(e.getAttributes().toBuilder().removeIf(filter).build());
+        } else if (e.getAttributes().asMap().keySet().stream().anyMatch(filter)) {
+          // We need to update the entity to remove the descirptive attribute.
+          Entity newEntity = e.toBuilder().withDescriptive(d -> d.removeIf(filter)).build();
+          toRemove.add(e);
+          toAdd.add(newEntity);
+        }
+      }
+      entities.removeAll(toRemove);
+      entities.addAll(toAdd);
+    }
     return this;
   }
 
@@ -198,8 +222,15 @@ public class ResourceBuilder {
   }
 
   public ResourceBuilder add(Entity e) {
-    // TODO - should we perform merge logic here?
     this.entities.add(e);
+    // When adding an entity, we remove any raw attributes it may conflict with.
+    this.attributesBuilder.removeIf(
+        key ->
+            entities.stream()
+                .anyMatch(
+                    entity ->
+                        entity.getAttributes().asMap().containsKey(key)
+                            || entity.getIdentifyingAttributes().asMap().containsKey(key)));
     return this;
   }
 

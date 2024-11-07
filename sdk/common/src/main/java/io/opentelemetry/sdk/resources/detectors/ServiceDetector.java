@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.resources.Entity;
 import io.opentelemetry.sdk.resources.EntityDetector;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import javax.annotation.Nullable;
 
 /** Detects the `service` entity. */
@@ -22,20 +21,12 @@ public final class ServiceDetector implements EntityDetector {
   private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
   private static final AttributeKey<String> SERVICE_NAMESPACE =
       AttributeKey.stringKey("service.namespace");
-  private static final AttributeKey<String> SERVICE_INSTANCE =
-      AttributeKey.stringKey("service.instance.id");
+
   private static final AttributeKey<String> SERVICE_VERSION =
       AttributeKey.stringKey("service.version");
 
-  private static final UUID FALLBACK_INSTANCE_ID = UUID.randomUUID();
-
   private static String getServiceName() {
     return System.getenv().getOrDefault("OTEL_SERVICE_NAME", "unknown_service:java");
-  }
-
-  private static String getInstanceId() {
-    // TODO - Specification lacks a way to specify non-fallabck right now.
-    return FALLBACK_INSTANCE_ID.toString();
   }
 
   private static String getNamespace() {
@@ -60,7 +51,6 @@ public final class ServiceDetector implements EntityDetector {
                   // Note: Identifying attributes MUST be provided together.
                   builder.put(SERVICE_NAME, getServiceName());
                   builder.put(SERVICE_NAMESPACE, getNamespace());
-                  builder.put(SERVICE_INSTANCE, getInstanceId());
                 })
             .withDescriptive(
                 builder -> {

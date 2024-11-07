@@ -138,7 +138,7 @@ public abstract class Resource {
    *
    * @return a collection of entities.
    */
-  public abstract Collection<Entity> getEntites();
+  public abstract Collection<Entity> getEntities();
 
   /**
    * Returns a map of attributes that describe the resource.
@@ -148,15 +148,14 @@ public abstract class Resource {
   public final Attributes getAttributes() {
     // TODO - cache this.
     AttributesBuilder result = Attributes.builder();
-    // Entities will override "raw".
-    result.putAll(getRawAttributes());
-    getEntites()
+    getEntities()
         .forEach(
             e -> {
               result.putAll(e.getIdentifyingAttributes());
               result.putAll(e.getAttributes());
             });
-
+    // In merge rules, raw comes last, so we return these last.
+    result.putAll(getRawAttributes());
     return result.build();
   }
 
@@ -187,38 +186,45 @@ public abstract class Resource {
         Entity old = entities.get(e.getType());
         // If the entity identity is the same, but schema_url is different: drop the new entity d'
         // Note: We could offer configuration in this case
-        if (old.getSchemaUrl() == null || old.getSchemaUrl().equals(e.getSchemaUrl())) {
+        if (old.getSchemaUrl() == null || !old.getSchemaUrl().equals(e.getSchemaUrl())) {
+          logger.info(
+              "Discovered conflicting entities. Entity ["
+                  + old.getType()
+                  + "] has different schema url ["
+                  + old.getSchemaUrl()
+                  + "], new entity  with schema url["
+                  + e.getSchemaUrl()
+                  + "] is dropped.");
+        } else if (!old.getIdentifyingAttributes().equals(e.getIdentifyingAttributes())) {
           // If the entity identity is different: drop the new entity d'.
-          if (!old.getIdentifyingAttributes().equals(e.getIdentifyingAttributes())) {
-            logger.info(
-                "Discovered conflicting entities. Entity ["
-                    + old.getType()
-                    + "] has identity ["
-                    + old.getIdentifyingAttributes()
-                    + "], new entity ["
-                    + e.getIdentifyingAttributes()
-                    + "] is dropped.");
-          } else {
-            // If the entity identiy and schema_url are the same, merge the descriptive attributes
-            // of d' into e':
-            //   For each descriptive attribute da' in d'
-            //     If da'.key does not exist in e', then add da' to ei
-            //     otherwise, ignore.
-            Entity next =
-                old.toBuilder()
-                    .withDescriptive(
-                        builder -> {
-                          // Clean existing attributes.
-                          builder.removeIf(ignore -> true);
-                          // For attributes, last one wins.
-                          // To ensure the previous attributes override,
-                          // we write them second.
-                          builder.putAll(e.getAttributes());
-                          builder.putAll(old.getAttributes());
-                        })
-                    .build();
-            entities.put(next.getType(), next);
-          }
+          logger.info(
+              "Discovered conflicting entities. Entity ["
+                  + old.getType()
+                  + "] has identity ["
+                  + old.getIdentifyingAttributes()
+                  + "], new entity ["
+                  + e.getIdentifyingAttributes()
+                  + "] is dropped.");
+        } else {
+          // If the entity identiy and schema_url are the same, merge the descriptive attributes
+          // of d' into e':
+          //   For each descriptive attribute da' in d'
+          //     If da'.key does not exist in e', then add da' to ei
+          //     otherwise, ignore.
+          Entity next =
+              old.toBuilder()
+                  .withDescriptive(
+                      builder -> {
+                        // Clean existing attributes.
+                        builder.removeIf(ignore -> true);
+                        // For attributes, last one wins.
+                        // To ensure the previous attributes override,
+                        // we write them second.
+                        builder.putAll(e.getAttributes());
+                        builder.putAll(old.getAttributes());
+                      })
+                  .build();
+          entities.put(next.getType(), next);
         }
       }
     }
@@ -233,16 +239,35 @@ public abstract class Resource {
    * @return the newly merged {@code Resource}.
    */
   public Resource merge(@Nullable Resource other) {
-    // TODO - Fix this.
     if (other == null || other == EMPTY) {
       return this;
     }
+
+    // Merge Algorithm from
+    // https://github.com/open-telemetry/oteps/blob/main/text/entities/0264-resource-and-entities.md#entity-merging-and-resource
+    // A few caveats:
+    //
+
     // First merge entities.
-    Collection<Entity> entities = mergeEntities(getEntites(), other.getEntites());
+    Collection<Entity> entities = mergeEntities(getEntities(), other.getEntities());
     // Now perform merge logic, but ignore attributes from entities.
-    // TODO - Ignore attributes already on entities.
+
+    // TODO - Warn on conflicts.
     AttributesBuilder attrBuilder = Attributes.builder();
     attrBuilder.putAll(this.getRawAttributes());
+    // We know attribute conflicts were handled perviously on the resource, so
+    // This needs to account for entity merge of new entities, and remove raw
+    // attributes that would have been removed with new entities.
+    attrBuilder.removeIf(
+        key ->
+            entities.stream()
+                .anyMatch(
+                    e ->
+                        e.getIdentifyingAttributes().asMap().containsKey(key)
+                            || e.getAttributes().asMap().containsKey(key)));
+
+    // TOOD - we need to update/identify conflicts in these with selected entities.
+    // This may cause us to drop entities.
     attrBuilder.putAll(other.getRawAttributes());
 
     // Check if entities all share the same URL.
@@ -262,7 +287,7 @@ public abstract class Resource {
       return create(attrBuilder.build(), schemaUrl, entities);
     }
     // We fall back to old behavior here when entities aren't in the mix.
-    if (schemaUrl == null && getEntites().isEmpty()) {
+    if (schemaUrl == null && getEntities().isEmpty()) {
       return create(attrBuilder.build(), other.getSchemaUrl(), entities);
     }
     if (!other.getSchemaUrl().equals(schemaUrl)) {
@@ -334,6 +359,8 @@ public abstract class Resource {
 
     return resourceBuilder;
   }
+
+  // TODO - Should we override toString to previous behavior?
 
   Resource() {}
 }

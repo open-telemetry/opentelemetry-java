@@ -264,7 +264,7 @@ class ResourceTest {
             .build();
     Resource merged = resource1.merge(resource2);
     assertThat(merged.getSchemaUrl()).isEqualTo("one");
-    assertThat(merged.getEntites()).hasSize(2);
+    assertThat(merged.getEntities()).hasSize(2);
     assertThat(merged.getAttributes()).containsEntry("a.id", "a");
     assertThat(merged.getAttributes()).containsEntry("b.id", "b");
   }
@@ -297,7 +297,7 @@ class ResourceTest {
             .build();
     Resource merged = resource1.merge(resource2);
     assertThat(merged.getSchemaUrl()).isNull();
-    assertThat(merged.getEntites()).hasSize(2);
+    assertThat(merged.getEntities()).hasSize(2);
     assertThat(merged.getAttributes()).containsEntry("a.id", "a");
     assertThat(merged.getAttributes()).containsEntry("b.id", "b");
   }
@@ -338,7 +338,7 @@ class ResourceTest {
             .build();
     Resource merged = resource1.merge(resource2);
     assertThat(merged.getSchemaUrl()).isEqualTo("one");
-    assertThat(merged.getEntites()).hasSize(1);
+    assertThat(merged.getEntities()).hasSize(1);
     assertThat(merged.getAttributes()).containsEntry("a.id", "a");
     assertThat(merged.getAttributes()).containsEntry("a.desc1", "a");
     assertThat(merged.getAttributes()).containsEntry("a.desc2", "b");
@@ -365,8 +365,9 @@ class ResourceTest {
     Resource resource2 = Resource.builder().setSchemaUrl("two").put("a.id", "b").build();
     Resource merged = resource1.merge(resource2);
     assertThat(merged.getSchemaUrl()).isNull();
-    assertThat(merged.getEntites()).hasSize(1);
-    assertThat(merged.getAttributes()).containsEntry("a.id", "a");
+    // TODO - Should we drop the entity when we have a merge that violates it?
+    assertThat(merged.getEntities()).hasSize(1);
+    assertThat(merged.getAttributes()).containsEntry("a.id", "b");
     assertThat(merged.getAttributes()).containsEntry("a.desc1", "a");
   }
 
@@ -406,7 +407,7 @@ class ResourceTest {
             .build();
     Resource merged = resource1.merge(resource2);
     assertThat(merged.getSchemaUrl()).isEqualTo("one");
-    assertThat(merged.getEntites()).hasSize(1);
+    assertThat(merged.getEntities()).hasSize(1);
     assertThat(merged.getAttributes()).containsEntry("a.id", "a");
     assertThat(merged.getAttributes()).containsEntry("a.desc1", "a");
     assertThat(merged.getAttributes()).doesNotContainKey("a.desc2");
