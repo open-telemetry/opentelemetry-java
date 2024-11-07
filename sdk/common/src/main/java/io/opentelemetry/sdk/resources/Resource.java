@@ -145,7 +145,8 @@ public abstract class Resource {
    *
    * @return a map of attributes.
    */
-  public final Attributes getAttributes() {
+  // TODO - making this final breaks binary compatibility checks.
+  public Attributes getAttributes() {
     // TODO - cache this.
     AttributesBuilder result = Attributes.builder();
     getEntities()
