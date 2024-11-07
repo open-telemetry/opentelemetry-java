@@ -72,11 +72,8 @@ abstract class FixedSizeExemplarReservoir<T extends ExemplarData> implements Exe
 
   @Override
   public List<T> collectAndReset(Attributes pointAttributes) {
-    if (!hasMeasurements) {
+    if (!hasMeasurements || storage == null) {
       return Collections.emptyList();
-    }
-    if (storage == null) {
-      storage = initStorage();
     }
     // Note: we are collecting exemplars from buckets piecemeal, but we
     // could still be sampling exemplars during this process.
