@@ -30,8 +30,6 @@ import io.opentelemetry.proto.metrics.v1.ScopeMetrics;
 import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.resources.ResourceProvider;
-import io.opentelemetry.sdk.resources.detectors.TelemetrySdkDetector;
 import java.io.UncheckedIOException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -75,17 +73,11 @@ class CollectorIntegrationTest {
   static void beforeAll() {
     PrometheusHttpServer prometheusHttpServer = PrometheusHttpServer.builder().setPort(0).build();
     prometheusPort = prometheusHttpServer.getAddress().getPort();
-    // Build a resource with no service information so prometheus will fill that out.
-    resource =
-        ResourceProvider.builder()
-            .addEntityDetector(TelemetrySdkDetector.INSTANCE)
-            .build()
-            .getResource();
+    resource = Resource.getDefault();
     meterProvider =
         SdkMeterProvider.builder()
             .setResource(resource)
             .registerMetricReader(prometheusHttpServer)
-            .addResource(Resource.builder().put("service.name", "test-service").build())
             .build();
     exposeHostPorts(prometheusPort);
 

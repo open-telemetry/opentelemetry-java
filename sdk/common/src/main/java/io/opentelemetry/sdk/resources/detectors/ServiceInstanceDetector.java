@@ -21,7 +21,7 @@ public final class ServiceInstanceDetector implements EntityDetector {
   private static final UUID FALLBACK_INSTANCE_ID = UUID.randomUUID();
 
   private static String getInstanceId() {
-    // TODO - Specification lacks a way to specify non-fallabck right now.
+    // Note: As specified by semantic conventions.
     return FALLBACK_INSTANCE_ID.toString();
   }
 
