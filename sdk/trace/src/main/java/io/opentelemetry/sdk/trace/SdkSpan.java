@@ -435,7 +435,11 @@ final class SdkSpan implements ReadWriteSpan {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return this;
       }
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> d9e11e8e4aebfe44bc79436b8e7ee42344e4a5aa
       StatusCode currentStatusCode = this.status.getStatusCode();
 
       // Prevent setting a lower priority status.
