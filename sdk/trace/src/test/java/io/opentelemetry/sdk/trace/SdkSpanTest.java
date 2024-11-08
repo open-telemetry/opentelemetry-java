@@ -1446,6 +1446,29 @@ class SdkSpanTest {
     spanDataAttributes.forEach((key, value) -> assertThat(attributes.get(key)).isEqualTo(value));
   }
 
+
+  @Test
+void setStatusCannotOverrideStatusError() {
+    SdkSpan testSpan = createTestRootSpan();
+    
+    // Set an initial status to ERROR
+    testSpan.setStatus(StatusCode.ERROR, "Initial error status");
+    assertThat(testSpan.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.ERROR);
+    
+    // Attempt to set status to OK (should not change)
+    testSpan.setStatus(StatusCode.OK);
+    assertThat(testSpan.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.ERROR);
+    
+    // Attempt to set status to UNSET (should not change)
+    testSpan.setStatus(StatusCode.UNSET);
+    assertThat(testSpan.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.ERROR);
+    
+    // Attempt to set status to ERROR again (should remain ERROR)
+    testSpan.setStatus(StatusCode.ERROR, "Another error status");
+    assertThat(testSpan.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.ERROR);
+}
+
+
   @Test
   void testAsSpanData() {
     String name = "GreatSpan";

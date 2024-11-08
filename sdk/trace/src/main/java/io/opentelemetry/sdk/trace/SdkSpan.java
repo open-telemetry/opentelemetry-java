@@ -433,31 +433,31 @@ final class SdkSpan implements ReadWriteSpan {
     synchronized (lock) {
       if (!isModifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
-        return this; // Prevent modification if the span has ended
+        return this;
       }
-
-      // Check the current status and enforce priority rules
+      
       StatusCode currentStatusCode = this.status.getStatusCode();
 
       // Prevent setting a lower priority status.
       if (currentStatusCode == StatusCode.OK) {
+        logger.log(Level.FINE, "Calling setStatus() on a Span that is already set to OK.");
         return this; // Do not allow lower priority status to override OK
-      } else if (currentStatusCode == StatusCode.ERROR && statusCode == StatusCode.UNSET) {
-        logger.log(Level.WARNING, "Cannot set status to UNSET when current status is ERROR.");
+      } if (currentStatusCode == StatusCode.ERROR && statusCode == StatusCode.UNSET) {
+        logger.log(Level.FINE, "Cannot set status to UNSET when current status is ERROR.");
         return this; // Do not allow UNSET to override ERROR
       }
 
       // Set the status, ignoring description if status is not ERROR.
       if (statusCode == StatusCode.ERROR) {
-        this.status = StatusData.create(statusCode, description); // Allow description for ERROR
+        this.status = StatusData.create(statusCode, description);
       } else {
         if (currentStatusCode != statusCode) {
           this.status =
-              StatusData.create(statusCode, null); // Ignore description for non-ERROR statuses
+              StatusData.create(statusCode, null);
         }
       }
     }
-    return this; // Return the current span for method chaining
+    return this;
   }
 
   @Override
