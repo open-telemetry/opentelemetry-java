@@ -33,7 +33,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.model.snapshots.ClassicHistogramBuckets;
 import io.prometheus.metrics.model.snapshots.CounterSnapshot;
 import io.prometheus.metrics.model.snapshots.CounterSnapshot.CounterDataPointSnapshot;
-import io.prometheus.metrics.model.snapshots.DataPointSnapshot;
 import io.prometheus.metrics.model.snapshots.Exemplar;
 import io.prometheus.metrics.model.snapshots.Exemplars;
 import io.prometheus.metrics.model.snapshots.GaugeSnapshot;
@@ -110,11 +109,11 @@ final class Otel2PrometheusConverter {
     if (metricDataCollection == null || metricDataCollection.isEmpty()) {
       return MetricSnapshots.of();
     }
-    Map<String, MetricSnapshot<?>> snapshotsByName = new HashMap<>(metricDataCollection.size());
+    Map<String, MetricSnapshot> snapshotsByName = new HashMap<>(metricDataCollection.size());
     Resource resource = null;
     Set<InstrumentationScopeInfo> scopes = new LinkedHashSet<>();
     for (MetricData metricData : metricDataCollection) {
-      MetricSnapshot<?> snapshot = convert(metricData);
+      MetricSnapshot snapshot = convert(metricData);
       if (snapshot == null) {
         continue;
       }
@@ -136,7 +135,7 @@ final class Otel2PrometheusConverter {
   }
 
   @Nullable
-  private MetricSnapshot<?> convert(MetricData metricData) {
+  private MetricSnapshot convert(MetricData metricData) {
 
     // Note that AggregationTemporality.DELTA should never happen
     // because PrometheusMetricReader#getAggregationTemporality returns CUMULATIVE.
@@ -549,10 +548,10 @@ final class Otel2PrometheusConverter {
   }
 
   private static void putOrMerge(
-      Map<String, MetricSnapshot<?>> snapshotsByName, MetricSnapshot<?> snapshot) {
+      Map<String, MetricSnapshot> snapshotsByName, MetricSnapshot snapshot) {
     String name = snapshot.getMetadata().getPrometheusName();
     if (snapshotsByName.containsKey(name)) {
-      MetricSnapshot<?> merged = merge(snapshotsByName.get(name), snapshot);
+      MetricSnapshot merged = merge(snapshotsByName.get(name), snapshot);
       if (merged != null) {
         snapshotsByName.put(name, merged);
       }
@@ -568,9 +567,7 @@ final class Otel2PrometheusConverter {
    * type. If the type differs, we log a message and drop one of them.
    */
   @Nullable
-  @SuppressWarnings("unchecked")
-  private static <T extends DataPointSnapshot> MetricSnapshot<T> merge(
-      MetricSnapshot<?> a, MetricSnapshot<?> b) {
+  private static MetricSnapshot merge(MetricSnapshot a, MetricSnapshot b) {
     MetricMetadata metadata = mergeMetadata(a.getMetadata(), b.getMetadata());
     if (metadata == null) {
       return null;
@@ -580,27 +577,27 @@ final class Otel2PrometheusConverter {
       List<GaugeDataPointSnapshot> dataPoints = new ArrayList<>(numberOfDataPoints);
       dataPoints.addAll(((GaugeSnapshot) a).getDataPoints());
       dataPoints.addAll(((GaugeSnapshot) b).getDataPoints());
-      return (MetricSnapshot<T>) new GaugeSnapshot(metadata, dataPoints);
+      return new GaugeSnapshot(metadata, dataPoints);
     } else if (a instanceof CounterSnapshot && b instanceof CounterSnapshot) {
       List<CounterDataPointSnapshot> dataPoints = new ArrayList<>(numberOfDataPoints);
       dataPoints.addAll(((CounterSnapshot) a).getDataPoints());
       dataPoints.addAll(((CounterSnapshot) b).getDataPoints());
-      return (MetricSnapshot<T>) new CounterSnapshot(metadata, dataPoints);
+      return new CounterSnapshot(metadata, dataPoints);
     } else if (a instanceof HistogramSnapshot && b instanceof HistogramSnapshot) {
       List<HistogramDataPointSnapshot> dataPoints = new ArrayList<>(numberOfDataPoints);
       dataPoints.addAll(((HistogramSnapshot) a).getDataPoints());
       dataPoints.addAll(((HistogramSnapshot) b).getDataPoints());
-      return (MetricSnapshot<T>) new HistogramSnapshot(metadata, dataPoints);
+      return new HistogramSnapshot(metadata, dataPoints);
     } else if (a instanceof SummarySnapshot && b instanceof SummarySnapshot) {
       List<SummaryDataPointSnapshot> dataPoints = new ArrayList<>(numberOfDataPoints);
       dataPoints.addAll(((SummarySnapshot) a).getDataPoints());
       dataPoints.addAll(((SummarySnapshot) b).getDataPoints());
-      return (MetricSnapshot<T>) new SummarySnapshot(metadata, dataPoints);
+      return new SummarySnapshot(metadata, dataPoints);
     } else if (a instanceof InfoSnapshot && b instanceof InfoSnapshot) {
       List<InfoDataPointSnapshot> dataPoints = new ArrayList<>(numberOfDataPoints);
       dataPoints.addAll(((InfoSnapshot) a).getDataPoints());
       dataPoints.addAll(((InfoSnapshot) b).getDataPoints());
-      return (MetricSnapshot<T>) new InfoSnapshot(metadata, dataPoints);
+      return new InfoSnapshot(metadata, dataPoints);
     } else {
       THROTTLING_LOGGER.log(
           Level.WARNING,
@@ -641,7 +638,7 @@ final class Otel2PrometheusConverter {
     return new MetricMetadata(name, help, unit);
   }
 
-  private static String typeString(MetricSnapshot<?> snapshot) {
+  private static String typeString(MetricSnapshot snapshot) {
     // Simple helper for a log message.
     return snapshot.getClass().getSimpleName().replace("Snapshot", "").toLowerCase(Locale.ENGLISH);
   }

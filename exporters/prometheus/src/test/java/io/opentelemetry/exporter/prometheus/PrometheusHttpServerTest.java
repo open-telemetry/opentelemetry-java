@@ -44,7 +44,7 @@ import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import io.prometheus.metrics.exporter.httpserver.MetricsHandler;
 import io.prometheus.metrics.expositionformats.generated.com_google_protobuf_4_28_2.Metrics;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
-import io.prometheus.metrics.shaded.com_google_protobuf_4_28_2.TextFormat;
+import io.prometheus.metrics.shaded.com_google_protobuf_4_28_3.TextFormat;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
