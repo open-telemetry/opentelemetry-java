@@ -139,6 +139,8 @@ public final class SdkMeterProviderBuilder {
    *
    * <p>If {@link #registerMetricReader(MetricReader)} is used, the {@link
    * CardinalityLimitSelector#defaultCardinalityLimitSelector()} is used.
+   *
+   * @since 1.44.0
    */
   public SdkMeterProviderBuilder registerMetricReader(
       MetricReader reader, CardinalityLimitSelector cardinalityLimitSelector) {

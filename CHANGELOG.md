@@ -36,7 +36,7 @@
 * Fix stdout exporter format by adding newline after each export
   ([#6848](https://github.com/open-telemetry/opentelemetry-java/pull/6848))
 
-#### Extension 
+#### Extension
 
 * Rebrand file configuration to declarative configuration in documentation
   ([#6812](https://github.com/open-telemetry/opentelemetry-java/pull/6812))
