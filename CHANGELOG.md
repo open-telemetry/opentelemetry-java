@@ -18,8 +18,6 @@
 
 * Stabilize metric cardinality limits
   ([#6794](https://github.com/open-telemetry/opentelemetry-java/pull/6794))
-* Enable reusuable_data memory mode by default
-  ([#6799](https://github.com/open-telemetry/opentelemetry-java/pull/6799))
 * Refactor metrics internals to remove MeterSharedState
   ([#6845](https://github.com/open-telemetry/opentelemetry-java/pull/6845))
 
@@ -35,6 +33,9 @@
   ([#6686](https://github.com/open-telemetry/opentelemetry-java/pull/6686))
 * Fix stdout exporter format by adding newline after each export
   ([#6848](https://github.com/open-telemetry/opentelemetry-java/pull/6848))
+* Enable `reusuable_data` memory mode by default for `OtlpGrpc{Signal}Exporter`,
+  `OtlpHttp{Signal}Exporter`, `OtlpStdout{Signal}Exporter`, and `PrometheusHttpServer`
+  ([#6799](https://github.com/open-telemetry/opentelemetry-java/pull/6799))
 
 #### Extension
 
