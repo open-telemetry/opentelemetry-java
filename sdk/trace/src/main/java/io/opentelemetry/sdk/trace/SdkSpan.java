@@ -436,7 +436,6 @@ final class SdkSpan implements ReadWriteSpan {
         return this; // Prevent modification if the span has ended
       }
 
-      // Check the current status and enforce priority rules
       StatusCode currentStatusCode = this.status.getStatusCode();
 
       // Prevent setting a lower priority status.
