@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.44.0 (2024-11-08)
+
 ### API
 
 * Fix ConfigUtil#getString ConcurrentModificationException
