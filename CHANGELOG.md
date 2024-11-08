@@ -2,6 +2,63 @@
 
 ## Unreleased
 
+### API
+
+* Fix ConfigUtil#getString ConcurrentModificationException
+  ([#6841](https://github.com/open-telemetry/opentelemetry-java/pull/6841))
+
+### SDK
+
+#### Traces
+
+* Stabilize ExceptionEventData
+  ([#6795](https://github.com/open-telemetry/opentelemetry-java/pull/6795))
+
+#### Metrics
+
+* Stabilize metric cardinality limits
+  ([#6794](https://github.com/open-telemetry/opentelemetry-java/pull/6794))
+* Refactor metrics internals to remove MeterSharedState
+  ([#6845](https://github.com/open-telemetry/opentelemetry-java/pull/6845))
+
+#### Exporters
+
+* Add memory mode option to stdout exporters
+  ([#6774](https://github.com/open-telemetry/opentelemetry-java/pull/6774))
+* Log a warning if OTLP endpoint port is likely incorrect given the protocol
+  ([#6813](https://github.com/open-telemetry/opentelemetry-java/pull/6813))
+* Fix OTLP gRPC retry mechanism for unsuccessful HTTP responses
+  ([#6829](https://github.com/open-telemetry/opentelemetry-java/pull/6829))
+* Add ByteBuffer field type marshaling support
+  ([#6686](https://github.com/open-telemetry/opentelemetry-java/pull/6686))
+* Fix stdout exporter format by adding newline after each export
+  ([#6848](https://github.com/open-telemetry/opentelemetry-java/pull/6848))
+* Enable `reusuable_data` memory mode by default for `OtlpGrpc{Signal}Exporter`,
+  `OtlpHttp{Signal}Exporter`, `OtlpStdout{Signal}Exporter`, and `PrometheusHttpServer`
+  ([#6799](https://github.com/open-telemetry/opentelemetry-java/pull/6799))
+
+#### Extension
+
+* Rebrand file configuration to declarative configuration in documentation
+  ([#6812](https://github.com/open-telemetry/opentelemetry-java/pull/6812))
+* Fix declarative config `file_format` validation
+  ([#6786](https://github.com/open-telemetry/opentelemetry-java/pull/6786))
+* Fix declarative config env substitution by disallowing '}' in default value
+  ([#6793](https://github.com/open-telemetry/opentelemetry-java/pull/6793))
+* Set declarative config default OTLP protocol to http/protobuf
+  ([#6800](https://github.com/open-telemetry/opentelemetry-java/pull/6800))
+* Stabilize autoconfigure disabling of resource keys via `otel.resource.disabled.keys`
+  ([#6809](https://github.com/open-telemetry/opentelemetry-java/pull/6809))
+
+### Tooling
+
+* Run tests on Java 23
+  ([#6825](https://github.com/open-telemetry/opentelemetry-java/pull/6825))
+* Test Windows in CI
+  ([#6824](https://github.com/open-telemetry/opentelemetry-java/pull/6824))
+* Add error prone checks for internal javadoc and private constructors
+  ([#6844](https://github.com/open-telemetry/opentelemetry-java/pull/6844))
+
 ## Version 1.43.0 (2024-10-11)
 
 ### API

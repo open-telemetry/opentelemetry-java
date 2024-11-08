@@ -8,7 +8,11 @@ package io.opentelemetry.sdk.trace.data;
 import io.opentelemetry.api.common.Attributes;
 import javax.annotation.concurrent.Immutable;
 
-/** Data representation of an event for a recorded exception. */
+/**
+ * Data representation of an event for a recorded exception.
+ *
+ * @since 1.44.0
+ */
 @Immutable
 public interface ExceptionEventData extends EventData {
 

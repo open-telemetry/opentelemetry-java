@@ -14,8 +14,7 @@ import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
  * function of {@link InstrumentType}. Register via {@link
  * SdkMeterProviderBuilder#registerMetricReader(MetricReader, CardinalityLimitSelector)}.
  *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
+ * @since 1.44.0
  */
 @FunctionalInterface
 public interface CardinalityLimitSelector {
