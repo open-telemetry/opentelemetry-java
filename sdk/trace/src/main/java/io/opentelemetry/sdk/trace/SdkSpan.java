@@ -456,7 +456,7 @@ final class SdkSpan implements ReadWriteSpan {
         }
       }
     }
-    return this; // Return the current span for method chaining
+    return this;
   }
 
   @Override
