@@ -452,7 +452,7 @@ final class SdkSpan implements ReadWriteSpan {
       } else {
         if (currentStatusCode != statusCode) {
           this.status =
-              StatusData.create(statusCode, null); // Ignore description for non-ERROR statuses
+              StatusData.create(statusCode, null);
         }
       }
     }
