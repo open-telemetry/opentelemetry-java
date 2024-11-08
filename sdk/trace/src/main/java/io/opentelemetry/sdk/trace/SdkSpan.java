@@ -433,7 +433,7 @@ final class SdkSpan implements ReadWriteSpan {
     synchronized (lock) {
       if (!isModifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
-        return this; // Prevent modification if the span has ended
+        return this;
       }
 
       StatusCode currentStatusCode = this.status.getStatusCode();
