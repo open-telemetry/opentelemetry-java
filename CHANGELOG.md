@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### SDK
+
+#### Traces
+
+* Fix regression in event attributes
+  ([#6865](https://github.com/open-telemetry/opentelemetry-java/pull/6865))
+
 ## Version 1.44.0 (2024-11-08)
 
 ### API
