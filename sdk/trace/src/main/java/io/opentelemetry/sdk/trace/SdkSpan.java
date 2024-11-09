@@ -445,8 +445,7 @@ final class SdkSpan implements ReadWriteSpan {
 
   @Override
   public ReadWriteSpan recordException(Throwable exception) {
-    Attributes attributes = this.getAttributes();
-    recordException(exception, attributes);
+    recordException(exception, Attributes.empty());
     return this;
   }
 

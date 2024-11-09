@@ -878,6 +878,7 @@ class SdkSpanTest {
       assertThat(event.getAttributes().get(stringKey("exception.message"))).isEqualTo(strVal);
       assertThat(event.getAttributes().get(stringKey("exception.stacktrace")).length())
           .isLessThanOrEqualTo(maxLength);
+      assertThat(event.getAttributes().size()).isEqualTo(3);
     } finally {
       span.end();
     }
@@ -1159,6 +1160,9 @@ class SdkSpanTest {
     testClock.advance(Duration.ofNanos(1000));
     long timestamp = testClock.now();
 
+    // make sure that span attributes don't leak down to the exception event
+    span.setAttribute("spankey", "val");
+
     span.recordException(exception);
 
     List<EventData> events = span.toSpanData().getEvents();
@@ -1171,6 +1175,7 @@ class SdkSpanTest {
     assertThat(event.getAttributes().get(stringKey("exception.type")))
         .isEqualTo(exception.getClass().getName());
     assertThat(event.getAttributes().get(stringKey("exception.stacktrace"))).isEqualTo(stacktrace);
+    assertThat(event.getAttributes().size()).isEqualTo(3);
     assertThat(event)
         .isInstanceOfSatisfying(
             ExceptionEventData.class,
@@ -1184,12 +1189,20 @@ class SdkSpanTest {
     IllegalStateException exception = new IllegalStateException();
     SdkSpan span = createTestRootSpan();
 
+    StringWriter writer = new StringWriter();
+    exception.printStackTrace(new PrintWriter(writer));
+    String stacktrace = writer.toString();
+
     span.recordException(exception);
 
     List<EventData> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(1);
     EventData event = events.get(0);
     assertThat(event.getAttributes().get(stringKey("exception.message"))).isNull();
+    assertThat(event.getAttributes().get(stringKey("exception.type")))
+        .isEqualTo("java.lang.IllegalStateException");
+    assertThat(event.getAttributes().get(stringKey("exception.stacktrace"))).isEqualTo(stacktrace);
+    assertThat(event.getAttributes().size()).isEqualTo(2);
   }
 
   private static class InnerClassException extends Exception {}
@@ -1199,6 +1212,10 @@ class SdkSpanTest {
     InnerClassException exception = new InnerClassException();
     SdkSpan span = createTestRootSpan();
 
+    StringWriter writer = new StringWriter();
+    exception.printStackTrace(new PrintWriter(writer));
+    String stacktrace = writer.toString();
+
     span.recordException(exception);
 
     List<EventData> events = span.toSpanData().getEvents();
@@ -1206,6 +1223,8 @@ class SdkSpanTest {
     EventData event = events.get(0);
     assertThat(event.getAttributes().get(stringKey("exception.type")))
         .isEqualTo("io.opentelemetry.sdk.trace.SdkSpanTest.InnerClassException");
+    assertThat(event.getAttributes().get(stringKey("exception.stacktrace"))).isEqualTo(stacktrace);
+    assertThat(event.getAttributes().size()).isEqualTo(2);
   }
 
   @Test
@@ -1219,6 +1238,9 @@ class SdkSpanTest {
 
     testClock.advance(Duration.ofNanos(1000));
     long timestamp = testClock.now();
+
+    // make sure that span attributes don't leak down to the exception event
+    span.setAttribute("spankey", "val");
 
     span.recordException(
         exception,
@@ -1240,6 +1262,7 @@ class SdkSpanTest {
     assertThat(event.getAttributes().get(stringKey("exception.type")))
         .isEqualTo("java.lang.IllegalStateException");
     assertThat(event.getAttributes().get(stringKey("exception.stacktrace"))).isEqualTo(stacktrace);
+    assertThat(event.getAttributes().size()).isEqualTo(4);
 
     assertThat(event)
         .isInstanceOfSatisfying(
