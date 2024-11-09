@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 1.44.1 (2024-11-09)
 
 ### SDK
 
