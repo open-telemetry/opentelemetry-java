@@ -13,9 +13,11 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.internal.propagation.ExtendedTextMapGetter;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +40,8 @@ class W3CBaggagePropagatorTest {
         }
       };
 
-  private static final TextMapGetter<Map<String, List<String>>> multiGetter =
-      new TextMapGetter<Map<String, List<String>>>() {
+  private static final ExtendedTextMapGetter<Map<String, List<String>>> multiGetter =
+      new ExtendedTextMapGetter<Map<String, List<String>>>() {
         @Override
         public Iterable<String> keys(Map<String, List<String>> carrier) {
           return carrier.keySet();
@@ -54,8 +56,9 @@ class W3CBaggagePropagatorTest {
         }
 
         @Override
-        public List<String> getList(Map<String, List<String>> carrier, String key) {
-          return carrier.getOrDefault(key, Collections.emptyList());
+        public Iterator<String> getAll(Map<String, List<String>> carrier, String key) {
+          List<String> values = carrier.get(key);
+          return values == null ? Collections.emptyIterator() : values.iterator();
         }
       };
 
