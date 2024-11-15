@@ -86,12 +86,6 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
     return URL_ESCAPER.escape(value);
   }
 
-  /**
-   * @param context the {@code Context} used to store the extracted value.
-   * @param carrier holds propagation fields. For example, an outgoing message or http request.
-   * @param getter invoked for each propagation key to get data from the carrier.
-   * @return the extracted context
-   */
   @Override
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     if (context == null) {
