@@ -33,12 +33,10 @@ public final class ResourceEntityRefMarshaler extends MarshalerWithSize {
       output.writeString(ResourceEntityRefExperimental.SCHEMA_URL, schemaUrlUtf8);
     }
     output.writeString(ResourceEntityRefExperimental.TYPE, typeUtf8);
-    for (byte[] keyUtf8 : identityAttributeKeysUtf8) {
-      output.serializeString(ResourceEntityRefExperimental.IDENTITY_ATTRIBUTES, keyUtf8);
-    }
-    for (byte[] keyUtf8 : descriptiveAttributeKeysUtf8) {
-      output.serializeString(ResourceEntityRefExperimental.DESCRIPTION_ATTRIBUTES, keyUtf8);
-    }
+    output.writeRepeatedString(
+        ResourceEntityRefExperimental.IDENTITY_ATTRIBUTES, identityAttributeKeysUtf8);
+    output.writeRepeatedString(
+        ResourceEntityRefExperimental.DESCRIPTION_ATTRIBUTES, descriptiveAttributeKeysUtf8);
   }
 
   public static ResourceEntityRefMarshaler createForEntity(Entity e) {
@@ -81,6 +79,7 @@ public final class ResourceEntityRefMarshaler extends MarshalerWithSize {
       size += MarshalerUtil.sizeBytes(ResourceEntityRefExperimental.SCHEMA_URL, schemaUrlUtf8);
     }
     size += MarshalerUtil.sizeBytes(ResourceEntityRefExperimental.TYPE, typeUtf8);
+    // TODO - we need repeated string support.
     for (byte[] keyUtf8 : identityAttributeKeysUtf8) {
       size += MarshalerUtil.sizeBytes(ResourceEntityRefExperimental.IDENTITY_ATTRIBUTES, keyUtf8);
     }
