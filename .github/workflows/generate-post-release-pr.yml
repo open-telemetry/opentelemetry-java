@@ -38,7 +38,11 @@ jobs:
             minor="${BASH_REMATCH[2]}"
             patch="${BASH_REMATCH[3]}"
             
-            two_releases_ago="$major.$((minor - 1)).$patch"
+            if [[ "$patch" == "0" ]]; then
+              two_releases_ago="$major.$((minor - 1)).$patch"
+            else
+              two_releases_ago="$major.$minor.$((patch - 1))"
+            fi
           else
             echo "unexpected prior version: $prior_version"
             exit 1
