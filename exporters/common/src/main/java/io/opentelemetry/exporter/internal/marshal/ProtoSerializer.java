@@ -164,6 +164,13 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   }
 
   @Override
+  public void writeRepeatedString(ProtoFieldInfo field, byte[][] utf8Bytes) throws IOException {
+    for (byte[] value : utf8Bytes) {
+      writeString(field, value);
+    }
+  }
+
+  @Override
   public void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
     output.writeUInt32NoTag(field.getTag());
     output.writeByteArrayNoTag(value);
