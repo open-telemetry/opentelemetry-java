@@ -214,6 +214,18 @@ public interface SpanBuilder {
   SpanBuilder setAttribute(String key, double value);
 
   /**
+   * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
+   * the key, the old value is replaced by the specified value.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @return this.
+   */
+  default SpanBuilder setAttribute(AttributeKey<Long> key, int value) {
+    return setAttribute(key, (long) value);
+  }
+
+  /**
    * Sets an attribute to the newly created {@code Span}. If {@code SpanBuilder} previously
    * contained a mapping for the key, the old value is replaced by the specified value.
    *
