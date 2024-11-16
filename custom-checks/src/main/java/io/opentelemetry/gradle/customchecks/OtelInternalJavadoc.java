@@ -22,7 +22,8 @@ import javax.lang.model.element.Modifier;
 @BugPattern(
     summary =
         "This public internal class doesn't end with any of the applicable javadoc disclaimers: \""
-            + OtelInternalJavadoc.EXPECTED_INTERNAL_COMMENT_V1 + "\", or \""
+            + OtelInternalJavadoc.EXPECTED_INTERNAL_COMMENT_V1
+            + "\", or \""
             + OtelInternalJavadoc.EXPECTED_INTERNAL_COMMENT_V2
             + "\"",
     severity = WARNING)
