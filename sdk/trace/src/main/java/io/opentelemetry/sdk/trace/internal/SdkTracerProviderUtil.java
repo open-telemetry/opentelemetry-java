@@ -16,8 +16,9 @@ import java.util.function.Predicate;
  * A collection of methods that allow use of experimental features prior to availability in public
  * APIs.
  *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
+ * <p>This class is internal and experimental. Its APIs are unstable and can change at any time. Its
+ * APIs (or a version of them) may be promoted to the public stable API in the future, but no
+ * guarantees are made.
  */
 public final class SdkTracerProviderUtil {
 

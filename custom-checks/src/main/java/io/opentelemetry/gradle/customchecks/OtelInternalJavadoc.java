@@ -21,8 +21,9 @@ import javax.lang.model.element.Modifier;
 
 @BugPattern(
     summary =
-        "This public internal class doesn't end with the javadoc disclaimer: \""
-            + OtelInternalJavadoc.EXPECTED_INTERNAL_COMMENT
+        "This public internal class doesn't end with any of the applicable javadoc disclaimers: \""
+            + OtelInternalJavadoc.EXPECTED_INTERNAL_COMMENT_V1
+            + OtelInternalJavadoc.EXPECTED_INTERNAL_COMMENT_V2
             + "\"",
     severity = WARNING)
 public class OtelInternalJavadoc extends BugChecker implements BugChecker.ClassTreeMatcher {
@@ -31,9 +32,14 @@ public class OtelInternalJavadoc extends BugChecker implements BugChecker.ClassT
 
   private static final Pattern INTERNAL_PACKAGE_PATTERN = Pattern.compile("\\binternal\\b");
 
-  static final String EXPECTED_INTERNAL_COMMENT =
+  static final String EXPECTED_INTERNAL_COMMENT_V1 =
       "This class is internal and is hence not for public use."
           + " Its APIs are unstable and can change at any time.";
+
+  static final String EXPECTED_INTERNAL_COMMENT_V2 =
+      "This class is internal and experimental. Its APIs are unstable and can change at any time."
+          + " Its APIs (or a version of them) may be promoted to the public stable API in the"
+          + " future, but no guarantees are made.";
 
   @Override
   public Description matchClass(ClassTree tree, VisitorState state) {
@@ -41,7 +47,9 @@ public class OtelInternalJavadoc extends BugChecker implements BugChecker.ClassT
       return Description.NO_MATCH;
     }
     String javadoc = getJavadoc(state);
-    if (javadoc != null && javadoc.contains(EXPECTED_INTERNAL_COMMENT)) {
+    if (javadoc != null
+        && (javadoc.contains(EXPECTED_INTERNAL_COMMENT_V1)
+            || javadoc.contains(EXPECTED_INTERNAL_COMMENT_V2))) {
       return Description.NO_MATCH;
     }
     return describeMatch(tree);
