@@ -217,18 +217,6 @@ public interface SpanBuilder {
    * Sets an attribute to the newly created {@code Span}. If {@code SpanBuilder} previously
    * contained a mapping for the key, the old value is replaced by the specified value.
    *
-   * @param key the key for this attribute.
-   * @param value the value for this attribute.
-   * @return this.
-   */
-  default SpanBuilder setAttribute(AttributeKey<Long> key, int value) {
-    return setAttribute(key, (long) value);
-  }
-
-  /**
-   * Sets an attribute to the newly created {@code Span}. If {@code SpanBuilder} previously
-   * contained a mapping for the key, the old value is replaced by the specified value.
-   *
    * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
    * pre-allocate your keys, if possible.
    *
@@ -249,6 +237,18 @@ public interface SpanBuilder {
    * @return this.
    */
   <T> SpanBuilder setAttribute(AttributeKey<T> key, T value);
+
+  /**
+   * Sets an attribute to the newly created {@code Span}. If {@code SpanBuilder} previously
+   * contained a mapping for the key, the old value is replaced by the specified value.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @return this.
+   */
+  default SpanBuilder setAttribute(AttributeKey<Long> key, int value) {
+    return setAttribute(key, (long) value);
+  }
 
   /**
    * Sets attributes to the {@link SpanBuilder}. If the {@link SpanBuilder} previously contained a
