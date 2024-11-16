@@ -41,6 +41,8 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
       Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
+  private final Object exporterLock = new Object();
+
   /**
    * Returns a new {@link SimpleLogRecordProcessor} which exports logs to the {@link
    * LogRecordExporter} synchronously.
@@ -64,7 +66,12 @@ public final class SimpleLogRecordProcessor implements LogRecordProcessor {
   public void onEmit(Context context, ReadWriteLogRecord logRecord) {
     try {
       List<LogRecordData> logs = Collections.singletonList(logRecord.toLogRecordData());
-      CompletableResultCode result = logRecordExporter.export(logs);
+      CompletableResultCode result;
+
+      synchronized (exporterLock) {
+        result = logRecordExporter.export(logs);
+      }
+
       pendingExports.add(result);
       result.whenComplete(
           () -> {
