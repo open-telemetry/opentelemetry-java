@@ -130,4 +130,23 @@ class FileConfigurationCreateTest {
         "Closing io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter");
     logCapturer.assertContains("Closing io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor");
   }
+
+  @Test
+  void parseAndCreate_EmptyComponentProviderConfig() {
+    String yaml =
+        "file_format: \"0.3\"\n"
+            + "logger_provider:\n"
+            + "  processors:\n"
+            + "    - test:\n"
+            + "tracer_provider:\n"
+            + "  processors:\n"
+            + "    - test:\n";
+
+    assertThatCode(
+            () ->
+                FileConfiguration.parseAndCreate(
+                    new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))))
+        .doesNotThrowAnyException();
+    ;
+  }
 }
