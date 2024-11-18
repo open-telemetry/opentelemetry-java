@@ -55,7 +55,7 @@ jobs:
       - name: Run jmh
         run: ./gradlew jmhJar
         env:
-          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
       - name: Run Benchmark
         run: |
