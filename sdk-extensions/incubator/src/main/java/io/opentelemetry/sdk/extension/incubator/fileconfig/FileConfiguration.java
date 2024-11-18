@@ -21,6 +21,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -166,6 +167,9 @@ public final class FileConfiguration {
       Object model, ComponentLoader componentLoader) {
     Map<String, Object> configurationMap =
         MAPPER.convertValue(model, new TypeReference<Map<String, Object>>() {});
+    if (configurationMap == null) {
+      configurationMap = Collections.emptyMap();
+    }
     return YamlStructuredConfigProperties.create(configurationMap, componentLoader);
   }
 
