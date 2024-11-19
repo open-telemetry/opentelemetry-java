@@ -32,7 +32,7 @@ public abstract class Marshaler {
   }
 
   /** Marshals into the {@link JsonGenerator} in proto JSON format. */
-  public final void writeJsonTo(JsonGenerator output) throws IOException {
+  public final void writeJsonToGenerator(JsonGenerator output) throws IOException {
     try (JsonSerializer serializer = new JsonSerializer(output)) {
       serializer.writeMessageValue(this);
     }
