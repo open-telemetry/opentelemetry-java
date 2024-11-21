@@ -19,6 +19,8 @@ final class SdkTracer implements ExtendedTracer {
 
   private final TracerSharedState sharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
+  // deliberately not volatile because of performance concerns
+  // - which means its eventually consistent
   private boolean tracerEnabled;
 
   SdkTracer(
