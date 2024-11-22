@@ -16,11 +16,20 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Attrib
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ScopeMatcherAndConfigModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerConfigModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerConfiguratorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
+import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
+import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,8 +75,7 @@ class TracerProviderFactoryTest {
                 new AttributeLimitsModel(),
                 new TracerProviderModel()
                     .withLimits(
-                        new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                                .SpanLimitsModel()
+                        new SpanLimitsModel()
                             .withAttributeCountLimit(1)
                             .withAttributeValueLengthLimit(2)
                             .withEventCountLimit(3)
@@ -81,8 +89,22 @@ class TracerProviderFactoryTest {
                                 .withBatch(
                                     new BatchSpanProcessorModel()
                                         .withExporter(
-                                            new SpanExporterModel().withOtlp(new OtlpModel())))))),
-            SdkTracerProvider.builder()
+                                            new SpanExporterModel().withOtlp(new OtlpModel())))))
+                    .withTracerConfigurator(
+                        new TracerConfiguratorModel()
+                            .withDefaultConfig(new TracerConfigModel().withEnabled(false))
+                            .withScopeConfigs(
+                                Collections.singletonList(
+                                    new ScopeMatcherAndConfigModel()
+                                        .withName("foo")
+                                        .withConfig(new TracerConfigModel().withEnabled(true)))))),
+            addTracerConfigurator(
+                    SdkTracerProvider.builder(),
+                    ScopeConfigurator.<TracerConfig>builder()
+                        .setDefault(TracerConfig.disabled())
+                        .addCondition(
+                            ScopeConfiguratorBuilder.nameMatchesGlob("foo"), TracerConfig.enabled())
+                        .build())
                 .setSpanLimits(
                     SpanLimits.builder()
                         .setMaxNumberOfAttributes(1)
@@ -98,5 +120,11 @@ class TracerProviderFactoryTest {
                             OtlpHttpSpanExporter.getDefault())
                         .build())
                 .build()));
+  }
+
+  private static SdkTracerProviderBuilder addTracerConfigurator(
+      SdkTracerProviderBuilder builder, ScopeConfigurator<TracerConfig> tracerConfigurator) {
+    SdkTracerProviderUtil.setTracerConfigurator(builder, tracerConfigurator);
+    return builder;
   }
 }

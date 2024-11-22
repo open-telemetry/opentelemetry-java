@@ -165,6 +165,8 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
         + sharedState.getSampler()
         + ", spanProcessor="
         + sharedState.getActiveSpanProcessor()
+        + ", tracerConfigurator="
+        + tracerConfigurator
         + '}';
   }
 }

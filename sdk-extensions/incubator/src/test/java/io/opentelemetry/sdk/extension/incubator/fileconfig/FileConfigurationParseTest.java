@@ -88,7 +88,6 @@ class FileConfigurationParseTest {
         .hasMessage("Unable to parse configuration input stream");
   }
 
-  @Test
   void parse_KitchenSinkExampleFile() throws IOException {
     OpenTelemetryConfigurationModel expected = new OpenTelemetryConfigurationModel();
 

@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.internal;
 
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
 /**
  * Utilities for glob pattern matching.
@@ -30,22 +31,7 @@ public final class GlobUtil {
    * </ul>
    */
   public static Predicate<String> toGlobPatternPredicate(String globPattern) {
-    // Match all
-    if (globPattern.equals("*")) {
-      return unused -> true;
-    }
-
-    // If globPattern contains '*' or '?', convert it to a regex and return corresponding predicate
-    for (int i = 0; i < globPattern.length(); i++) {
-      char c = globPattern.charAt(i);
-      if (c == '*' || c == '?') {
-        Pattern pattern = toRegexPattern(globPattern);
-        return string -> pattern.matcher(string).matches();
-      }
-    }
-
-    // Exact match, ignoring case
-    return globPattern::equalsIgnoreCase;
+    return new GlobPatternPredicate(globPattern);
   }
 
   /**
@@ -78,5 +64,43 @@ public final class GlobUtil {
       patternBuilder.append(Pattern.quote(globPattern.substring(tokenStart)));
     }
     return Pattern.compile(patternBuilder.toString());
+  }
+
+  private static class GlobPatternPredicate implements Predicate<String> {
+    private final String globPattern;
+    @Nullable private final Pattern pattern;
+
+    private GlobPatternPredicate(String globPattern) {
+      this.globPattern = globPattern;
+      // If globPattern contains '*' or '?', convert it to a regex and return corresponding
+      // predicate
+      Pattern pattern = null;
+      for (int i = 0; i < globPattern.length(); i++) {
+        char c = globPattern.charAt(i);
+        if (c == '*' || c == '?') {
+          pattern = toRegexPattern(globPattern);
+          break;
+        }
+      }
+      this.pattern = pattern;
+    }
+
+    @Override
+    public boolean test(String s) {
+      if (pattern != null) {
+        return pattern.matcher(s).matches();
+      }
+      // Match all
+      if (globPattern.equals("*")) {
+        return true;
+      }
+      // Exact match, ignoring case
+      return globPattern.equalsIgnoreCase(s);
+    }
+
+    @Override
+    public String toString() {
+      return "GlobPatternPredicate{globPattern=" + globPattern + "}";
+    }
   }
 }
