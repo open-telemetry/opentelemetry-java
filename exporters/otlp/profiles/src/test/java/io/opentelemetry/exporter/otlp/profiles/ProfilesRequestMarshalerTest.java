@@ -275,7 +275,7 @@ public class ProfilesRequestMarshalerTest {
         Attributes.empty(),
         Collections.emptyList(),
         Collections.emptyList(),
-        Collections.emptyList(),
+        listOf("foo", "bar"),
         3,
         4,
         5,
@@ -304,6 +304,8 @@ public class ProfilesRequestMarshalerTest {
                         .AGGREGATION_TEMPORALITY_CUMULATIVE)
                 .build())
         .addAllComment(listOf(8L, 9L))
+        .addStringTable("foo")
+        .addStringTable("bar")
         .setDefaultSampleType(10);
   }
 
