@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.trace.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;
