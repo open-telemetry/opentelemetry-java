@@ -20,9 +20,8 @@ import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.SumData;
+import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
-import io.opentelemetry.sdk.metrics.internal.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.internal.state.DefaultSynchronousMetricStorage;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
@@ -315,28 +314,24 @@ class CardinalityTest {
     // other instrument kinds
     CardinalityLimitSelector cardinalityLimitSelector =
         instrumentType -> instrumentType == InstrumentType.COUNTER ? counterLimit : generalLimit;
-    SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder()
+            // Register both the delta and cumulative reader with the customized cardinality
+            // selector
+            .registerMetricReader(deltaReader, cardinalityLimitSelector)
+            .registerMetricReader(cumulativeReader, cardinalityLimitSelector)
+            // Register a view which defines a custom cardinality limit for instrumented named
+            // "counter2"
+            .registerView(
+                InstrumentSelector.builder().setName("counter2").build(),
+                View.builder().setCardinalityLimit(counter2Limit).build())
+            // Register a view which defines a custom cardinality limit for instrumented named
+            // "asyncCounter"
+            .registerView(
+                InstrumentSelector.builder().setName("asyncCounter").build(),
+                View.builder().setCardinalityLimit(asyncCounterLimit).build())
+            .build();
 
-    // Register both the delta and cumulative reader with the customized cardinality selector
-    SdkMeterProviderUtil.registerMetricReaderWithCardinalitySelector(
-        builder, deltaReader, cardinalityLimitSelector);
-    SdkMeterProviderUtil.registerMetricReaderWithCardinalitySelector(
-        builder, cumulativeReader, cardinalityLimitSelector);
-
-    // Register a view which defines a custom cardinality limit for instrumented named "counter2"
-    ViewBuilder viewBuilder1 = View.builder();
-    SdkMeterProviderUtil.setCardinalityLimit(viewBuilder1, counter2Limit);
-    builder.registerView(
-        InstrumentSelector.builder().setName("counter2").build(), viewBuilder1.build());
-
-    // Register a view which defines a custom cardinality limit for instrumented named
-    // "asyncCounter"
-    ViewBuilder viewBuilder2 = View.builder();
-    SdkMeterProviderUtil.setCardinalityLimit(viewBuilder2, asyncCounterLimit);
-    builder.registerView(
-        InstrumentSelector.builder().setName("asyncCounter").build(), viewBuilder2.build());
-
-    SdkMeterProvider sdkMeterProvider = builder.build();
     meter = sdkMeterProvider.get(CardinalityTest.class.getName());
 
     LongCounter counter1 = meter.counterBuilder("counter1").build();

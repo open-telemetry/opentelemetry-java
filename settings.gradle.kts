@@ -1,9 +1,9 @@
 pluginManagement {
   plugins {
-    id("com.gradleup.shadow") version "8.3.2"
-    id("com.gradle.develocity") version "3.18.1"
+    id("com.gradleup.shadow") version "8.3.5"
+    id("com.gradle.develocity") version "3.18.2"
     id("de.undercouch.download") version "5.6.0"
-    id("org.jsonschema2pojo") version "1.2.1"
+    id("org.jsonschema2pojo") version "1.2.2"
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("org.graalvm.buildtools.native") version "0.10.3"
   }
@@ -29,6 +29,7 @@ include(":api:testing-internal")
 include(":bom")
 include(":bom-alpha")
 include(":context")
+include(":custom-checks")
 include(":dependencyManagement")
 include(":extensions:kotlin")
 include(":extensions:trace-propagators")
@@ -69,7 +70,7 @@ include(":animal-sniffer-signature")
 
 val gradleEnterpriseServer = "https://ge.opentelemetry.io"
 val isCI = System.getenv("CI") != null
-val geAccessKey = System.getenv("GRADLE_ENTERPRISE_ACCESS_KEY") ?: ""
+val geAccessKey = System.getenv("DEVELOCITY_ACCESS_KEY") ?: ""
 
 // if GE access key is not given and we are in CI, then we publish to scans.gradle.com
 val useScansGradleCom = isCI && geAccessKey.isEmpty()

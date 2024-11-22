@@ -2,9 +2,9 @@
 
 This artifact contains experimental code related to the trace and metric SDKs.
 
-## File Configuration
+## Declarative Configuration
 
-Allows for YAML based file configuration of `OpenTelemetrySdk` as defined in the [specification](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/data-model.md#file-based-configuration-model).
+The [declarative configuration interface](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/README.md#declarative-configuration) allows for YAML based file configuration of `OpenTelemetrySdk`.
 
 Usage:
 
@@ -19,8 +19,17 @@ try (FileInputStream yamlConfigFileInputStream = new FileInputStream("/path/to/c
 
 Notes:
 * Environment variable substitution is supported as [defined in the spec](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/data-model.md#environment-variable-substitution)
-* Currently, there is no support for the SPIs defined in [opentelemetry-sdk-extension-autoconfigure-spi](../autoconfigure-spi). Only built in samplers, processors, exporters, etc can be configured.
-* You can use file configuration with [autoconfigure](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure#file-configuration) to specify a configuration file via environment variable, e.g. `OTEL_EXPERIMENTAL_CONFIG_FILE=/path/to/config.yaml`.
+* Currently, there is no support for the customization (i.e. `AutoConfigurationCustomizerProvider`) SPIs defined in [opentelemetry-sdk-extension-autoconfigure-spi](../autoconfigure-spi).
+* Custom SDK extension components which reference the [ComponentProvider](https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure-spi/src/main/java/io/opentelemetry/sdk/autoconfigure/spi/internal/ComponentProvider.java) SPI can be referenced in declarative configuration. Supported types include:
+  * `Resource`
+  * `SpanExporter`
+  * `MetricExporter`
+  * `LogRecordExporter`
+  * `SpanProcessor`
+  * `LogRecordProcessor`
+  * `TextMapPropagator`
+  * `Sampler`
+* You can use declarative configuration with [autoconfigure](https://opentelemetry.io/docs/languages/java/configuration/#declarative-configuration) to specify a configuration file via environment variable, e.g. `OTEL_EXPERIMENTAL_CONFIG_FILE=/path/to/config.yaml`.
 
 ## View File Configuration
 

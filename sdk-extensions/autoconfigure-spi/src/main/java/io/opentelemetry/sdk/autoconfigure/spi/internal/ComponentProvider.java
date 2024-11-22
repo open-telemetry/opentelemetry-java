@@ -16,12 +16,15 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 
 /**
  * Provides configured instances of SDK extension components. {@link ComponentProvider} allows SDK
- * extension components which are not part of the core SDK to be referenced in file based
+ * extension components which are not part of the core SDK to be referenced in declarative based
  * configuration.
  *
  * <p>NOTE: when {@link #getType()} is {@link Resource}, the {@link #getName()} is not (currently)
  * used, and {@link #create(StructuredConfigProperties)} is (currently) called with an empty {@link
  * StructuredConfigProperties}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  *
  * @param <T> the type of the SDK extension component. See {@link #getType()}. Supported values
  *     include: {@link SpanExporter}, {@link MetricExporter}, {@link LogRecordExporter}, {@link

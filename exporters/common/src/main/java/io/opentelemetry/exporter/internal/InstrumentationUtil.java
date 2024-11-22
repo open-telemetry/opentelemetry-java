@@ -9,7 +9,7 @@ import io.opentelemetry.context.Context;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
- * any time
+ * any time.
  *
  * @deprecated use {@link io.opentelemetry.api.internal.InstrumentationUtil} instead. This class
  *     should be removed once instrumentation does not refer to it anymore.

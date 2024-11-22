@@ -62,8 +62,8 @@ final class MeterProviderConfiguration {
             config, spiHelper, metricReaderCustomizer, metricExporterCustomizer, closeables)
         .forEach(
             reader ->
-                SdkMeterProviderUtil.registerMetricReaderWithCardinalitySelector(
-                    meterProviderBuilder, reader, instrumentType -> cardinalityLimit));
+                meterProviderBuilder.registerMetricReader(
+                    reader, instrumentType -> cardinalityLimit));
   }
 
   static List<MetricReader> configureMetricReaders(

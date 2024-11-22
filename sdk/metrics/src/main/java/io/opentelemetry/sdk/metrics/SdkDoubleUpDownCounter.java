@@ -16,8 +16,6 @@ import io.opentelemetry.api.metrics.ObservableDoubleUpDownCounter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
-import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.List;
 import java.util.function.Consumer;
@@ -25,15 +23,13 @@ import java.util.function.Consumer;
 final class SdkDoubleUpDownCounter extends AbstractInstrument
     implements ExtendedDoubleUpDownCounter {
 
-  private final MeterSharedState meterSharedState;
+  private final SdkMeter sdkMeter;
   private final WriteableMetricStorage storage;
 
   private SdkDoubleUpDownCounter(
-      InstrumentDescriptor descriptor,
-      MeterSharedState meterSharedState,
-      WriteableMetricStorage storage) {
+      InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     super(descriptor);
-    this.meterSharedState = meterSharedState;
+    this.sdkMeter = sdkMeter;
     this.storage = storage;
   }
 
@@ -54,7 +50,7 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument
 
   @Override
   public boolean isEnabled() {
-    return meterSharedState.isMeterEnabled() && storage.isEnabled();
+    return sdkMeter.isMeterEnabled() && storage.isEnabled();
   }
 
   static final class SdkDoubleUpDownCounterBuilder implements ExtendedDoubleUpDownCounterBuilder {
@@ -62,19 +58,14 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument
     private final InstrumentBuilder builder;
 
     SdkDoubleUpDownCounterBuilder(
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState sharedState,
+        SdkMeter sdkMeter,
         String name,
         String description,
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
       this.builder =
           new InstrumentBuilder(
-                  name,
-                  InstrumentType.UP_DOWN_COUNTER,
-                  InstrumentValueType.DOUBLE,
-                  meterProviderSharedState,
-                  sharedState)
+                  name, InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.DOUBLE, sdkMeter)
               .setDescription(description)
               .setUnit(unit)
               .setAdviceBuilder(adviceBuilder);

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.testing.internal;
 
+import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -155,6 +156,7 @@ public abstract class AbstractDefaultTracerTest {
               spanBuilder.setStartTimestamp(12345L, TimeUnit.NANOSECONDS);
               spanBuilder.setStartTimestamp(Instant.EPOCH);
               spanBuilder.setStartTimestamp(null);
+              spanBuilder.setAttribute(longKey("MyLongAttributeKey"), 123);
               assertThat(spanBuilder.startSpan().getSpanContext().isValid()).isFalse();
             })
         .doesNotThrowAnyException();

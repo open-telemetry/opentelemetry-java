@@ -2,6 +2,120 @@
 
 ## Unreleased
 
+## Version 1.44.1 (2024-11-10)
+
+### SDK
+
+#### Traces
+
+* Fix regression in event attributes
+  ([#6865](https://github.com/open-telemetry/opentelemetry-java/pull/6865))
+
+## Version 1.44.0 (2024-11-08)
+
+### API
+
+* Fix ConfigUtil#getString ConcurrentModificationException
+  ([#6841](https://github.com/open-telemetry/opentelemetry-java/pull/6841))
+
+### SDK
+
+#### Traces
+
+* Stabilize ExceptionEventData
+  ([#6795](https://github.com/open-telemetry/opentelemetry-java/pull/6795))
+
+#### Metrics
+
+* Stabilize metric cardinality limits
+  ([#6794](https://github.com/open-telemetry/opentelemetry-java/pull/6794))
+* Refactor metrics internals to remove MeterSharedState
+  ([#6845](https://github.com/open-telemetry/opentelemetry-java/pull/6845))
+
+#### Exporters
+
+* Add memory mode option to stdout exporters
+  ([#6774](https://github.com/open-telemetry/opentelemetry-java/pull/6774))
+* Log a warning if OTLP endpoint port is likely incorrect given the protocol
+  ([#6813](https://github.com/open-telemetry/opentelemetry-java/pull/6813))
+* Fix OTLP gRPC retry mechanism for unsuccessful HTTP responses
+  ([#6829](https://github.com/open-telemetry/opentelemetry-java/pull/6829))
+* Add ByteBuffer field type marshaling support
+  ([#6686](https://github.com/open-telemetry/opentelemetry-java/pull/6686))
+* Fix stdout exporter format by adding newline after each export
+  ([#6848](https://github.com/open-telemetry/opentelemetry-java/pull/6848))
+* Enable `reusuable_data` memory mode by default for `OtlpGrpc{Signal}Exporter`,
+  `OtlpHttp{Signal}Exporter`, `OtlpStdout{Signal}Exporter`, and `PrometheusHttpServer`
+  ([#6799](https://github.com/open-telemetry/opentelemetry-java/pull/6799))
+
+#### Extension
+
+* Rebrand file configuration to declarative configuration in documentation
+  ([#6812](https://github.com/open-telemetry/opentelemetry-java/pull/6812))
+* Fix declarative config `file_format` validation
+  ([#6786](https://github.com/open-telemetry/opentelemetry-java/pull/6786))
+* Fix declarative config env substitution by disallowing '}' in default value
+  ([#6793](https://github.com/open-telemetry/opentelemetry-java/pull/6793))
+* Set declarative config default OTLP protocol to http/protobuf
+  ([#6800](https://github.com/open-telemetry/opentelemetry-java/pull/6800))
+* Stabilize autoconfigure disabling of resource keys via `otel.resource.disabled.keys`
+  ([#6809](https://github.com/open-telemetry/opentelemetry-java/pull/6809))
+
+### Tooling
+
+* Run tests on Java 23
+  ([#6825](https://github.com/open-telemetry/opentelemetry-java/pull/6825))
+* Test Windows in CI
+  ([#6824](https://github.com/open-telemetry/opentelemetry-java/pull/6824))
+* Add error prone checks for internal javadoc and private constructors
+  ([#6844](https://github.com/open-telemetry/opentelemetry-java/pull/6844))
+
+## Version 1.43.0 (2024-10-11)
+
+### API
+
+* Add helper class to capture context using ScheduledExecutorService
+  ([#6712](https://github.com/open-telemetry/opentelemetry-java/pull/6712))
+* Adds Baggage.getEntry(String key)
+  ([#6765](https://github.com/open-telemetry/opentelemetry-java/pull/6765))
+
+#### Extensions
+
+* Fix ottracepropagation for short span ids
+  ([#6734](https://github.com/open-telemetry/opentelemetry-java/pull/6734))
+
+### SDK
+
+#### Metrics
+
+* Optimize advice with FilteredAttributes
+  ([#6633](https://github.com/open-telemetry/opentelemetry-java/pull/6633))
+
+#### Exporters
+
+* Add experimental stdout log, metric, trace exporters for printing records to stdout in standard
+  OTLP JSON format.
+  ([#6675](https://github.com/open-telemetry/opentelemetry-java/pull/6675), [#6750](https://github.com/open-telemetry/opentelemetry-java/pull/6750))
+* Add Marshalers for profiling signal type
+  ([#6680](https://github.com/open-telemetry/opentelemetry-java/pull/6680))
+
+#### Extensions
+
+* Add `*Model` suffix to declarative config generated classes.
+  ([#6721](https://github.com/open-telemetry/opentelemetry-java/pull/6721))
+* Use autoconfigured ClassLoader to load declarative config
+  ([#6725](https://github.com/open-telemetry/opentelemetry-java/pull/6725))
+* Update declarative config to use opentelemetry-configuration v0.3.0
+  ([#6733](https://github.com/open-telemetry/opentelemetry-java/pull/6733))
+* Add `StructuredConfigProperties#getStructured` default method,
+  add `StructuredConfigProperties.empty()`
+  ([#6759](https://github.com/open-telemetry/opentelemetry-java/pull/6759))
+
+#### Testing
+
+* Add context info about wrong span or trace.
+  ([#6703](https://github.com/open-telemetry/opentelemetry-java/pull/6703))
+
 ## Version 1.42.1 (2024-09-10)
 
 ### API

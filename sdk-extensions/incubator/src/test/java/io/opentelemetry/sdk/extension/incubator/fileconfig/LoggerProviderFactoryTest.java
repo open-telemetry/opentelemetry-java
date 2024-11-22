@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
+import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
@@ -84,7 +84,7 @@ class LoggerProviderFactoryTest {
                             .build())
                 .addLogRecordProcessor(
                     io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor.builder(
-                            OtlpGrpcLogRecordExporter.getDefault())
+                            OtlpHttpLogRecordExporter.getDefault())
                         .build())
                 .build()));
   }

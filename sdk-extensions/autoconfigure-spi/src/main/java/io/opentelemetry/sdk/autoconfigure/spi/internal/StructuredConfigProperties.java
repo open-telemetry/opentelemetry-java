@@ -21,8 +21,22 @@ import javax.annotation.Nullable;
  * reading scalar properties, {@link #getStructured(String)} for reading children which are
  * themselves mappings, and {@link #getStructuredList(String)} for reading children which are
  * sequences of mappings.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 public interface StructuredConfigProperties {
+
+  /**
+   * Return an empty {@link StructuredConfigProperties} instance.
+   *
+   * <p>Useful for walking the tree without checking for null. For example, to access a string key
+   * nested at .foo.bar.baz, call: {@code config.getStructured("foo", empty()).getStructured("bar",
+   * empty()).getString("baz")}.
+   */
+  static StructuredConfigProperties empty() {
+    return EmptyStructuredConfigProperties.getInstance();
+  }
 
   /**
    * Returns a {@link String} configuration property.
@@ -169,6 +183,18 @@ public interface StructuredConfigProperties {
   StructuredConfigProperties getStructured(String name);
 
   /**
+   * Returns a {@link StructuredConfigProperties} configuration property.
+   *
+   * @return a map-valued configuration property, or {@code defaultValue} if {@code name} has not
+   *     been configured
+   * @throws ConfigurationException if the property is not a mapping
+   */
+  default StructuredConfigProperties getStructured(
+      String name, StructuredConfigProperties defaultValue) {
+    return defaultIfNull(getStructured(name), defaultValue);
+  }
+
+  /**
    * Returns a list of {@link StructuredConfigProperties} configuration property.
    *
    * @return a list of map-valued configuration property, or {@code null} if {@code name} has not
@@ -177,6 +203,18 @@ public interface StructuredConfigProperties {
    */
   @Nullable
   List<StructuredConfigProperties> getStructuredList(String name);
+
+  /**
+   * Returns a list of {@link StructuredConfigProperties} configuration property.
+   *
+   * @return a list of map-valued configuration property, or {@code defaultValue} if {@code name}
+   *     has not been configured
+   * @throws ConfigurationException if the property is not a sequence of mappings
+   */
+  default List<StructuredConfigProperties> getStructuredList(
+      String name, List<StructuredConfigProperties> defaultValue) {
+    return defaultIfNull(getStructuredList(name), defaultValue);
+  }
 
   /**
    * Returns a set of all configuration property keys.

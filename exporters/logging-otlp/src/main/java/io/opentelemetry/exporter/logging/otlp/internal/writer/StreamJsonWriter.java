@@ -38,7 +38,7 @@ public class StreamJsonWriter implements JsonWriter {
   @Override
   public CompletableResultCode write(Marshaler exportRequest) {
     try {
-      exportRequest.writeJsonTo(
+      exportRequest.writeJsonWithNewline(
           JSON_FACTORY
               .createGenerator(outputStream)
               .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET));

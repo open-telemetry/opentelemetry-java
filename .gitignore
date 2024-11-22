@@ -1,6 +1,7 @@
 # Gradle
 build
 .gradle
+.kotlin
 local.properties
 out/
 

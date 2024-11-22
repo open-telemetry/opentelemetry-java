@@ -13,9 +13,9 @@ import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
@@ -24,7 +24,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributesModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
@@ -32,13 +32,13 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRec
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LoggerProviderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterProviderModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PropagatorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SelectorModel;
@@ -83,7 +83,7 @@ class OpenTelemetryConfigurationFactoryTest {
                   OpenTelemetryConfigurationFactory.getInstance()
                       .create(testCase, spiHelper, closeables))
           .isInstanceOf(ConfigurationException.class)
-          .hasMessage("Unsupported file format. Supported formats include: 0.1");
+          .hasMessage("Unsupported file format. Supported formats include: 0.3");
       cleanup.addCloseables(closeables);
     }
   }
@@ -97,7 +97,7 @@ class OpenTelemetryConfigurationFactoryTest {
     OpenTelemetrySdk sdk =
         OpenTelemetryConfigurationFactory.getInstance()
             .create(
-                new OpenTelemetryConfigurationModel().withFileFormat("0.1"), spiHelper, closeables);
+                new OpenTelemetryConfigurationModel().withFileFormat("0.3"), spiHelper, closeables);
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 
@@ -114,7 +114,7 @@ class OpenTelemetryConfigurationFactoryTest {
         OpenTelemetryConfigurationFactory.getInstance()
             .create(
                 new OpenTelemetryConfigurationModel()
-                    .withFileFormat("0.1")
+                    .withFileFormat("0.3")
                     .withDisabled(true)
                     // Logger provider configuration should be ignored since SDK is disabled
                     .withLoggerProvider(
@@ -169,7 +169,7 @@ class OpenTelemetryConfigurationFactoryTest {
                                 .build())
                     .addLogRecordProcessor(
                         io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor.builder(
-                                OtlpGrpcLogRecordExporter.getDefault())
+                                OtlpHttpLogRecordExporter.getDefault())
                             .build())
                     .build())
             .setTracerProvider(
@@ -187,7 +187,7 @@ class OpenTelemetryConfigurationFactoryTest {
                     .setSampler(alwaysOn())
                     .addSpanProcessor(
                         io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(
-                                OtlpGrpcSpanExporter.getDefault())
+                                OtlpHttpSpanExporter.getDefault())
                             .build())
                     .build())
             .setMeterProvider(
@@ -195,7 +195,7 @@ class OpenTelemetryConfigurationFactoryTest {
                     .setResource(expectedResource)
                     .registerMetricReader(
                         io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
-                                OtlpGrpcMetricExporter.getDefault())
+                                OtlpHttpMetricExporter.getDefault())
                             .build())
                     .registerView(
                         InstrumentSelector.builder().setName("instrument-name").build(),
@@ -208,7 +208,7 @@ class OpenTelemetryConfigurationFactoryTest {
         OpenTelemetryConfigurationFactory.getInstance()
             .create(
                 new OpenTelemetryConfigurationModel()
-                    .withFileFormat("0.1")
+                    .withFileFormat("0.3")
                     .withPropagator(
                         new PropagatorModel()
                             .withComposite(
@@ -222,9 +222,13 @@ class OpenTelemetryConfigurationFactoryTest {
                     .withResource(
                         new ResourceModel()
                             .withAttributes(
-                                new AttributesModel()
-                                    .withServiceName("my-service")
-                                    .withAdditionalProperty("key", "val")))
+                                Arrays.asList(
+                                    new AttributeNameValueModel()
+                                        .withName("service.name")
+                                        .withValue("my-service"),
+                                    new AttributeNameValueModel()
+                                        .withName("key")
+                                        .withValue("val"))))
                     .withLoggerProvider(
                         new LoggerProviderModel()
                             .withLimits(
@@ -267,7 +271,7 @@ class OpenTelemetryConfigurationFactoryTest {
                                         .withPeriodic(
                                             new PeriodicMetricReaderModel()
                                                 .withExporter(
-                                                    new MetricExporterModel()
+                                                    new PushMetricExporterModel()
                                                         .withOtlp(new OtlpMetricModel())))))
                             .withViews(
                                 Collections.singletonList(

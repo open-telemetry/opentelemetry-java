@@ -41,11 +41,11 @@ import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.ExceptionEventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.internal.ExtendedSpanProcessor;
-import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Duration;
@@ -878,6 +878,7 @@ class SdkSpanTest {
       assertThat(event.getAttributes().get(stringKey("exception.message"))).isEqualTo(strVal);
       assertThat(event.getAttributes().get(stringKey("exception.stacktrace")).length())
           .isLessThanOrEqualTo(maxLength);
+      assertThat(event.getAttributes().size()).isEqualTo(3);
     } finally {
       span.end();
     }
@@ -1159,6 +1160,9 @@ class SdkSpanTest {
     testClock.advance(Duration.ofNanos(1000));
     long timestamp = testClock.now();
 
+    // make sure that span attributes don't leak down to the exception event
+    span.setAttribute("spankey", "val");
+
     span.recordException(exception);
 
     List<EventData> events = span.toSpanData().getEvents();
@@ -1166,20 +1170,17 @@ class SdkSpanTest {
     EventData event = events.get(0);
     assertThat(event.getName()).isEqualTo("exception");
     assertThat(event.getEpochNanos()).isEqualTo(timestamp);
-    assertThat(event.getAttributes())
-        .isEqualTo(
-            Attributes.builder()
-                .put("exception.type", "java.lang.IllegalStateException")
-                .put("exception.message", "there was an exception")
-                .put("exception.stacktrace", stacktrace)
-                .build());
-
+    assertThat(event.getAttributes().get(stringKey("exception.message")))
+        .isEqualTo("there was an exception");
+    assertThat(event.getAttributes().get(stringKey("exception.type")))
+        .isEqualTo(exception.getClass().getName());
+    assertThat(event.getAttributes().get(stringKey("exception.stacktrace"))).isEqualTo(stacktrace);
+    assertThat(event.getAttributes().size()).isEqualTo(3);
     assertThat(event)
         .isInstanceOfSatisfying(
             ExceptionEventData.class,
             exceptionEvent -> {
               assertThat(exceptionEvent.getException()).isSameAs(exception);
-              assertThat(exceptionEvent.getAdditionalAttributes()).isEqualTo(Attributes.empty());
             });
   }
 
@@ -1188,12 +1189,20 @@ class SdkSpanTest {
     IllegalStateException exception = new IllegalStateException();
     SdkSpan span = createTestRootSpan();
 
+    StringWriter writer = new StringWriter();
+    exception.printStackTrace(new PrintWriter(writer));
+    String stacktrace = writer.toString();
+
     span.recordException(exception);
 
     List<EventData> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(1);
     EventData event = events.get(0);
     assertThat(event.getAttributes().get(stringKey("exception.message"))).isNull();
+    assertThat(event.getAttributes().get(stringKey("exception.type")))
+        .isEqualTo("java.lang.IllegalStateException");
+    assertThat(event.getAttributes().get(stringKey("exception.stacktrace"))).isEqualTo(stacktrace);
+    assertThat(event.getAttributes().size()).isEqualTo(2);
   }
 
   private static class InnerClassException extends Exception {}
@@ -1203,6 +1212,10 @@ class SdkSpanTest {
     InnerClassException exception = new InnerClassException();
     SdkSpan span = createTestRootSpan();
 
+    StringWriter writer = new StringWriter();
+    exception.printStackTrace(new PrintWriter(writer));
+    String stacktrace = writer.toString();
+
     span.recordException(exception);
 
     List<EventData> events = span.toSpanData().getEvents();
@@ -1210,6 +1223,8 @@ class SdkSpanTest {
     EventData event = events.get(0);
     assertThat(event.getAttributes().get(stringKey("exception.type")))
         .isEqualTo("io.opentelemetry.sdk.trace.SdkSpanTest.InnerClassException");
+    assertThat(event.getAttributes().get(stringKey("exception.stacktrace"))).isEqualTo(stacktrace);
+    assertThat(event.getAttributes().size()).isEqualTo(2);
   }
 
   @Test
@@ -1224,6 +1239,9 @@ class SdkSpanTest {
     testClock.advance(Duration.ofNanos(1000));
     long timestamp = testClock.now();
 
+    // make sure that span attributes don't leak down to the exception event
+    span.setAttribute("spankey", "val");
+
     span.recordException(
         exception,
         Attributes.of(
@@ -1237,27 +1255,20 @@ class SdkSpanTest {
     EventData event = events.get(0);
     assertThat(event.getName()).isEqualTo("exception");
     assertThat(event.getEpochNanos()).isEqualTo(timestamp);
-    assertThat(event.getAttributes())
-        .isEqualTo(
-            Attributes.builder()
-                .put("key1", "this is an additional attribute")
-                .put("exception.type", "java.lang.IllegalStateException")
-                .put("exception.message", "this is a precedence attribute")
-                .put("exception.stacktrace", stacktrace)
-                .build());
+    assertThat(event.getAttributes().get(stringKey("exception.message")))
+        .isEqualTo("this is a precedence attribute");
+    assertThat(event.getAttributes().get(stringKey("key1")))
+        .isEqualTo("this is an additional attribute");
+    assertThat(event.getAttributes().get(stringKey("exception.type")))
+        .isEqualTo("java.lang.IllegalStateException");
+    assertThat(event.getAttributes().get(stringKey("exception.stacktrace"))).isEqualTo(stacktrace);
+    assertThat(event.getAttributes().size()).isEqualTo(4);
 
     assertThat(event)
         .isInstanceOfSatisfying(
             ExceptionEventData.class,
             exceptionEvent -> {
               assertThat(exceptionEvent.getException()).isSameAs(exception);
-              assertThat(exceptionEvent.getAdditionalAttributes())
-                  .isEqualTo(
-                      Attributes.of(
-                          stringKey("key1"),
-                          "this is an additional attribute",
-                          stringKey("exception.message"),
-                          "this is a precedence attribute"));
             });
   }
 

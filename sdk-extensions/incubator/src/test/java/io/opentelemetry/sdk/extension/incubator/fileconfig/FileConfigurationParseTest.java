@@ -13,30 +13,45 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Aggreg
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOffModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributesModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ClientModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorAttributesModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.HeadersModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.GeneralInstrumentationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.HttpModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.InstrumentationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LanguageSpecificInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LoggerProviderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterProviderModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricProducerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.NameStringValuePairModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpencensusModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBasedModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PrometheusModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PropagatorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReaderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SelectorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ServerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ServiceMappingModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimitsModel;
@@ -77,13 +92,57 @@ class FileConfigurationParseTest {
   void parse_KitchenSinkExampleFile() throws IOException {
     OpenTelemetryConfigurationModel expected = new OpenTelemetryConfigurationModel();
 
-    expected.withFileFormat("0.1");
+    expected.withFileFormat("0.3");
     expected.withDisabled(false);
 
     // General config
     ResourceModel resource =
         new ResourceModel()
-            .withAttributes(new AttributesModel().withServiceName("unknown_service"));
+            .withAttributes(
+                Arrays.asList(
+                    new AttributeNameValueModel()
+                        .withName("service.name")
+                        .withValue("unknown_service"),
+                    new AttributeNameValueModel()
+                        .withName("string_key")
+                        .withValue("value")
+                        .withType(AttributeNameValueModel.Type.STRING),
+                    new AttributeNameValueModel()
+                        .withName("bool_key")
+                        .withValue(true)
+                        .withType(AttributeNameValueModel.Type.BOOL),
+                    new AttributeNameValueModel()
+                        .withName("int_key")
+                        .withValue(1)
+                        .withType(AttributeNameValueModel.Type.INT),
+                    new AttributeNameValueModel()
+                        .withName("double_key")
+                        .withValue(1.1)
+                        .withType(AttributeNameValueModel.Type.DOUBLE),
+                    new AttributeNameValueModel()
+                        .withName("string_array_key")
+                        .withValue(Arrays.asList("value1", "value2"))
+                        .withType(AttributeNameValueModel.Type.STRING_ARRAY),
+                    new AttributeNameValueModel()
+                        .withName("bool_array_key")
+                        .withValue(Arrays.asList(true, false))
+                        .withType(AttributeNameValueModel.Type.BOOL_ARRAY),
+                    new AttributeNameValueModel()
+                        .withName("int_array_key")
+                        .withValue(Arrays.asList(1, 2))
+                        .withType(AttributeNameValueModel.Type.INT_ARRAY),
+                    new AttributeNameValueModel()
+                        .withName("double_array_key")
+                        .withValue(Arrays.asList(1.1, 2.2))
+                        .withType(AttributeNameValueModel.Type.DOUBLE_ARRAY)))
+            .withAttributesList("service.namespace=my-namespace,service.version=1.0.0")
+            .withDetectors(
+                new DetectorsModel()
+                    .withAttributes(
+                        new DetectorAttributesModel()
+                            .withIncluded(Collections.singletonList("process.*"))
+                            .withExcluded(Collections.singletonList("process.command_args"))))
+            .withSchemaUrl("https://opentelemetry.io/schemas/1.16.0");
     expected.withResource(resource);
 
     AttributeLimitsModel attributeLimits =
@@ -138,15 +197,19 @@ class FileConfigurationParseTest {
                             .withOtlp(
                                 new OtlpModel()
                                     .withProtocol("http/protobuf")
-                                    .withEndpoint("http://localhost:4318")
+                                    .withEndpoint("http://localhost:4318/v1/traces")
                                     .withCertificate("/app/cert.pem")
                                     .withClientKey("/app/cert.pem")
                                     .withClientCertificate("/app/cert.pem")
                                     .withHeaders(
-                                        new HeadersModel()
-                                            .withAdditionalProperty("api-key", "1234"))
+                                        Collections.singletonList(
+                                            new NameStringValuePairModel()
+                                                .withName("api-key")
+                                                .withValue("1234")))
+                                    .withHeadersList("api-key=1234")
                                     .withCompression("gzip")
-                                    .withTimeout(10_000))));
+                                    .withTimeout(10_000)
+                                    .withInsecure(false))));
     SpanProcessorModel spanProcessor2 =
         new SpanProcessorModel()
             .withBatch(
@@ -174,7 +237,7 @@ class FileConfigurationParseTest {
         new LogRecordLimitsModel().withAttributeValueLengthLimit(4096).withAttributeCountLimit(128);
     loggerProvider.withLimits(logRecordLimits);
 
-    LogRecordProcessorModel logRecordProcessor =
+    LogRecordProcessorModel logRecordProcessor1 =
         new LogRecordProcessorModel()
             .withBatch(
                 new BatchLogRecordProcessorModel()
@@ -187,16 +250,25 @@ class FileConfigurationParseTest {
                             .withOtlp(
                                 new OtlpModel()
                                     .withProtocol("http/protobuf")
-                                    .withEndpoint("http://localhost:4318")
+                                    .withEndpoint("http://localhost:4318/v1/logs")
                                     .withCertificate("/app/cert.pem")
                                     .withClientKey("/app/cert.pem")
                                     .withClientCertificate("/app/cert.pem")
                                     .withHeaders(
-                                        new HeadersModel()
-                                            .withAdditionalProperty("api-key", "1234"))
+                                        Collections.singletonList(
+                                            new NameStringValuePairModel()
+                                                .withName("api-key")
+                                                .withValue("1234")))
+                                    .withHeadersList("api-key=1234")
                                     .withCompression("gzip")
-                                    .withTimeout(10_000))));
-    loggerProvider.withProcessors(Collections.singletonList(logRecordProcessor));
+                                    .withTimeout(10_000)
+                                    .withInsecure(false))));
+    LogRecordProcessorModel logRecordProcessor2 =
+        new LogRecordProcessorModel()
+            .withSimple(
+                new SimpleLogRecordProcessorModel()
+                    .withExporter(new LogRecordExporterModel().withConsole(new ConsoleModel())));
+    loggerProvider.withProcessors(Arrays.asList(logRecordProcessor1, logRecordProcessor2));
 
     expected.withLoggerProvider(loggerProvider);
     // end LoggerProvider config
@@ -209,9 +281,22 @@ class FileConfigurationParseTest {
             .withPull(
                 new PullMetricReaderModel()
                     .withExporter(
-                        new MetricExporterModel()
+                        new PullMetricExporterModel()
                             .withPrometheus(
-                                new PrometheusModel().withHost("localhost").withPort(9464))));
+                                new PrometheusModel()
+                                    .withHost("localhost")
+                                    .withPort(9464)
+                                    .withWithoutUnits(false)
+                                    .withWithoutTypeSuffix(false)
+                                    .withWithoutScopeInfo(false)
+                                    .withWithResourceConstantLabels(
+                                        new IncludeExcludeModel()
+                                            .withIncluded(Collections.singletonList("service*"))
+                                            .withExcluded(
+                                                Collections.singletonList("service.attr1"))))))
+            .withProducers(
+                Collections.singletonList(
+                    new MetricProducerModel().withOpencensus(new OpencensusModel())));
     MetricReaderModel metricReader2 =
         new MetricReaderModel()
             .withPeriodic(
@@ -219,28 +304,36 @@ class FileConfigurationParseTest {
                     .withInterval(5_000)
                     .withTimeout(30_000)
                     .withExporter(
-                        new MetricExporterModel()
+                        new PushMetricExporterModel()
                             .withOtlp(
                                 new OtlpMetricModel()
                                     .withProtocol("http/protobuf")
-                                    .withEndpoint("http://localhost:4318")
+                                    .withEndpoint("http://localhost:4318/v1/metrics")
                                     .withCertificate("/app/cert.pem")
                                     .withClientKey("/app/cert.pem")
                                     .withClientCertificate("/app/cert.pem")
                                     .withHeaders(
-                                        new HeadersModel()
-                                            .withAdditionalProperty("api-key", "1234"))
+                                        Collections.singletonList(
+                                            new NameStringValuePairModel()
+                                                .withName("api-key")
+                                                .withValue("1234")))
+                                    .withHeadersList("api-key=1234")
                                     .withCompression("gzip")
                                     .withTimeout(10_000)
+                                    .withInsecure(false)
                                     .withTemporalityPreference("delta")
                                     .withDefaultHistogramAggregation(
                                         OtlpMetricModel.DefaultHistogramAggregation
-                                            .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM))));
+                                            .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM))))
+            .withProducers(
+                Collections.singletonList(
+                    new MetricProducerModel()
+                        .withAdditionalProperty("prometheus", Collections.emptyMap())));
     MetricReaderModel metricReader3 =
         new MetricReaderModel()
             .withPeriodic(
                 new PeriodicMetricReaderModel()
-                    .withExporter(new MetricExporterModel().withConsole(new ConsoleModel())));
+                    .withExporter(new PushMetricExporterModel().withConsole(new ConsoleModel())));
     meterProvider.withReaders(Arrays.asList(metricReader1, metricReader2, metricReader3));
 
     ViewModel view =
@@ -266,18 +359,97 @@ class FileConfigurationParseTest {
                                             0.0, 5.0, 10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0,
                                             750.0, 1000.0, 2500.0, 5000.0, 7500.0, 10000.0))
                                     .withRecordMinMax(true)))
-                    .withAttributeKeys(Arrays.asList("key1", "key2")));
+                    .withAttributeKeys(
+                        new IncludeExcludeModel()
+                            .withIncluded(Arrays.asList("key1", "key2"))
+                            .withExcluded(Collections.singletonList("key3"))));
     meterProvider.withViews(Collections.singletonList(view));
 
     expected.withMeterProvider(meterProvider);
     // end MeterProvider config
+
+    // start instrumentation config
+    InstrumentationModel instrumentation =
+        new InstrumentationModel()
+            .withGeneral(
+                new GeneralInstrumentationModel()
+                    .withPeer(
+                        new PeerModel()
+                            .withServiceMapping(
+                                Arrays.asList(
+                                    new ServiceMappingModel()
+                                        .withPeer("1.2.3.4")
+                                        .withService("FooService"),
+                                    new ServiceMappingModel()
+                                        .withPeer("2.3.4.5")
+                                        .withService("BarService"))))
+                    .withHttp(
+                        new HttpModel()
+                            .withClient(
+                                new ClientModel()
+                                    .withRequestCapturedHeaders(
+                                        Arrays.asList("Content-Type", "Accept"))
+                                    .withResponseCapturedHeaders(
+                                        Arrays.asList("Content-Type", "Content-Encoding")))
+                            .withServer(
+                                new ServerModel()
+                                    .withRequestCapturedHeaders(
+                                        Arrays.asList("Content-Type", "Accept"))
+                                    .withResponseCapturedHeaders(
+                                        Arrays.asList("Content-Type", "Content-Encoding")))))
+            .withCpp(
+                new LanguageSpecificInstrumentationModel()
+                    .withAdditionalProperty(
+                        "example", Collections.singletonMap("property", "value")))
+            .withDotnet(
+                new LanguageSpecificInstrumentationModel()
+                    .withAdditionalProperty(
+                        "example", Collections.singletonMap("property", "value")))
+            .withErlang(
+                new LanguageSpecificInstrumentationModel()
+                    .withAdditionalProperty(
+                        "example", Collections.singletonMap("property", "value")))
+            .withGo(
+                new LanguageSpecificInstrumentationModel()
+                    .withAdditionalProperty(
+                        "example", Collections.singletonMap("property", "value")))
+            .withJava(
+                new LanguageSpecificInstrumentationModel()
+                    .withAdditionalProperty(
+                        "example", Collections.singletonMap("property", "value")))
+            .withJs(
+                new LanguageSpecificInstrumentationModel()
+                    .withAdditionalProperty(
+                        "example", Collections.singletonMap("property", "value")))
+            .withPhp(
+                new LanguageSpecificInstrumentationModel()
+                    .withAdditionalProperty(
+                        "example", Collections.singletonMap("property", "value")))
+            .withPython(
+                new LanguageSpecificInstrumentationModel()
+                    .withAdditionalProperty(
+                        "example", Collections.singletonMap("property", "value")))
+            .withRuby(
+                new LanguageSpecificInstrumentationModel()
+                    .withAdditionalProperty(
+                        "example", Collections.singletonMap("property", "value")))
+            .withRust(
+                new LanguageSpecificInstrumentationModel()
+                    .withAdditionalProperty(
+                        "example", Collections.singletonMap("property", "value")))
+            .withSwift(
+                new LanguageSpecificInstrumentationModel()
+                    .withAdditionalProperty(
+                        "example", Collections.singletonMap("property", "value")));
+    expected.withInstrumentation(instrumentation);
+    // end instrumentation config
 
     try (FileInputStream configExampleFile =
         new FileInputStream(System.getenv("CONFIG_EXAMPLE_DIR") + "/kitchen-sink.yaml")) {
       OpenTelemetryConfigurationModel config = FileConfiguration.parse(configExampleFile);
 
       // General config
-      assertThat(config.getFileFormat()).isEqualTo("0.1");
+      assertThat(config.getFileFormat()).isEqualTo("0.3");
       assertThat(config.getResource()).isEqualTo(resource);
       assertThat(config.getAttributeLimits()).isEqualTo(attributeLimits);
       assertThat(config.getPropagator()).isEqualTo(propagator);
@@ -293,13 +465,17 @@ class FileConfigurationParseTest {
       LoggerProviderModel configLoggerProvider = config.getLoggerProvider();
       assertThat(configLoggerProvider.getLimits()).isEqualTo(logRecordLimits);
       assertThat(configLoggerProvider.getProcessors())
-          .isEqualTo(Collections.singletonList(logRecordProcessor));
+          .isEqualTo(Arrays.asList(logRecordProcessor1, logRecordProcessor2));
 
       // MeterProvider config
       MeterProviderModel configMeterProvider = config.getMeterProvider();
       assertThat(configMeterProvider.getReaders())
           .isEqualTo(Arrays.asList(metricReader1, metricReader2, metricReader3));
       assertThat(configMeterProvider.getViews()).isEqualTo(Collections.singletonList(view));
+
+      // Instrumentation config
+      InstrumentationModel configInstrumentation = config.getInstrumentation();
+      assertThat(configInstrumentation).isEqualTo(instrumentation);
 
       // All configuration
       assertThat(config).isEqualTo(expected);
@@ -309,7 +485,7 @@ class FileConfigurationParseTest {
   @Test
   void parse_nullValuesParsedToEmptyObjects() {
     String objectPlaceholderString =
-        "file_format: \"0.1\"\n"
+        "file_format: \"0.3\"\n"
             + "tracer_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -327,7 +503,7 @@ class FileConfigurationParseTest {
             new ByteArrayInputStream(objectPlaceholderString.getBytes(StandardCharsets.UTF_8)));
 
     String noOjbectPlaceholderString =
-        "file_format: \"0.1\"\n"
+        "file_format: \"0.3\"\n"
             + "tracer_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -446,9 +622,21 @@ class FileConfigurationParseTest {
         Arguments.of(
             "key1: ${STR_1} value1\n" + "key2: value2\n",
             mapOf(entry("key1", "value1 value1"), entry("key2", "value2"))),
+        // Default cases
+        Arguments.of("key1: ${NOT_SET:-value1}\n", mapOf(entry("key1", "value1"))),
+        Arguments.of("key1: ${NOT_SET:-true}\n", mapOf(entry("key1", true))),
+        Arguments.of("key1: ${NOT_SET:-1}\n", mapOf(entry("key1", 1))),
+        Arguments.of("key1: ${NOT_SET:-1.1}\n", mapOf(entry("key1", 1.1))),
+        Arguments.of("key1: ${NOT_SET:-0xdeadbeef}\n", mapOf(entry("key1", 3735928559L))),
+        Arguments.of(
+            "key1: ${NOT_SET:-value1} value2\n" + "key2: value2\n",
+            mapOf(entry("key1", "value1 value2"), entry("key2", "value2"))),
         // Multiple environment variables referenced
         Arguments.of("key1: ${STR_1}${STR_2}\n", mapOf(entry("key1", "value1value2"))),
         Arguments.of("key1: ${STR_1} ${STR_2}\n", mapOf(entry("key1", "value1 value2"))),
+        Arguments.of(
+            "key1: ${STR_1} ${NOT_SET:-default} ${STR_2}\n",
+            mapOf(entry("key1", "value1 default value2"))),
         // Undefined / empty environment variable
         Arguments.of("key1: ${EMPTY_STR}\n", mapOf(entry("key1", null))),
         Arguments.of("key1: ${STR_3}\n", mapOf(entry("key1", null))),
@@ -487,7 +675,7 @@ class FileConfigurationParseTest {
   @Test
   void read_WithEnvironmentVariables() {
     String yaml =
-        "file_format: \"0.1\"\n"
+        "file_format: \"0.3\"\n"
             + "tracer_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -506,7 +694,7 @@ class FileConfigurationParseTest {
     assertThat(model)
         .isEqualTo(
             new OpenTelemetryConfigurationModel()
-                .withFileFormat("0.1")
+                .withFileFormat("0.3")
                 .withTracerProvider(
                     new TracerProviderModel()
                         .withProcessors(
