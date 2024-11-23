@@ -75,7 +75,6 @@ jobs:
             "-Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }}"
             "-Porg.gradle.java.installations.auto-download=false"
         env:
-          DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
           # JMH-based tests run only  if this environment variable is set to true
           RUN_JMH_BASED_TESTS: ${{ matrix.jmh-based-tests }}
 
