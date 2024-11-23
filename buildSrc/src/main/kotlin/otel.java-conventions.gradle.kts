@@ -134,12 +134,6 @@ tasks {
       breakIterator(true)
 
       addBooleanOption("html5", true)
-
-      // TODO (trask) revisit to see if url is fixed
-      // currently broken because https://docs.oracle.com/javase/8/docs/api/element-list is missing
-      // and redirects
-      // links("https://docs.oracle.com/javase/8/docs/api/")
-
       addBooleanOption("Xdoclint:all,-missing", true)
     }
   }
