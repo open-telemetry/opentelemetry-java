@@ -72,7 +72,7 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.proto:opentelemetry-proto:1.3.2-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
-  "io.prometheus:prometheus-metrics-exporter-httpserver:1.3.3",
+  "io.prometheus:prometheus-metrics-exporter-httpserver:1.3.4",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.17.3",
   "org.awaitility:awaitility:4.2.2",
