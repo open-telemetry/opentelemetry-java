@@ -68,41 +68,10 @@ include(":sdk-extensions:jaeger-remote-sampler")
 include(":testing-internal")
 include(":animal-sniffer-signature")
 
-val gradleEnterpriseServer = "https://ge.opentelemetry.io"
-val isCI = System.getenv("CI") != null
-val geAccessKey = System.getenv("DEVELOCITY_ACCESS_KEY") ?: ""
-
-// if GE access key is not given and we are in CI, then we publish to scans.gradle.com
-val useScansGradleCom = isCI && geAccessKey.isEmpty()
-
-if (useScansGradleCom) {
-  develocity {
-    buildScan {
-      termsOfUseUrl.set("https://gradle.com/terms-of-service")
-      termsOfUseAgree.set("yes")
-      uploadInBackground.set(!isCI)
-      publishing.onlyIf { true }
-
-      capture {
-        fileFingerprints.set(true)
-      }
-    }
-  }
-} else {
-  develocity {
-    server = gradleEnterpriseServer
-    buildScan {
-      uploadInBackground.set(!isCI)
-      publishing.onlyIf {
-        it.isAuthenticated
-      }
-
-      capture {
-        fileFingerprints.set(true)
-      }
-
-      gradle.startParameter.projectProperties["testJavaVersion"]?.let { tag(it) }
-      gradle.startParameter.projectProperties["testJavaVM"]?.let { tag(it) }
-    }
+develocity {
+  buildScan {
+    publishing.onlyIf { System.getenv("CI") != null }
+    termsOfUseUrl.set("https://gradle.com/help/legal-terms-of-use")
+    termsOfUseAgree.set("yes")
   }
 }
