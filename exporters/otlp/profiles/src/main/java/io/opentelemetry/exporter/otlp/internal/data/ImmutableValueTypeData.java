@@ -27,8 +27,8 @@ public abstract class ImmutableValueTypeData implements ValueTypeData {
    * @return a new ValueTypeData describing the given type and unit characteristics.
    */
   public static ValueTypeData create(
-      long type, long unit, AggregationTemporality aggregationTemporality) {
-    return new AutoValue_ImmutableValueTypeData(type, unit, aggregationTemporality);
+      int typeStrindex, int unitStrindex, AggregationTemporality aggregationTemporality) {
+    return new AutoValue_ImmutableValueTypeData(typeStrindex, unitStrindex, aggregationTemporality);
   }
 
   ImmutableValueTypeData() {}

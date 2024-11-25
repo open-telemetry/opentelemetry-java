@@ -25,7 +25,7 @@ public abstract class ImmutableLineData implements LineData {
    *
    * @return a new LineData describing the given details a specific line in a source code.
    */
-  public static LineData create(long functionIndex, long line, long column) {
+  public static LineData create(int functionIndex, long line, long column) {
     return new AutoValue_ImmutableLineData(functionIndex, line, column);
   }
 

@@ -122,12 +122,25 @@ public abstract class Serializer implements AutoCloseable {
 
   protected abstract void writeSInt32(ProtoFieldInfo info, int value) throws IOException;
 
-  /** Serializes a protobuf {@code uint32} field. */
+  /** Serializes a protobuf {@code int32} field. */
   public void serializeInt32(ProtoFieldInfo field, int value) throws IOException {
     if (value == 0) {
       return;
     }
     writeint32(field, value);
+  }
+
+  /** Serializes a protobuf {@code int32} field. */
+  public void serializeInt32Optional(ProtoFieldInfo field, int value) throws IOException {
+    writeint32(field, value);
+  }
+
+  /** Serializes a protobuf {@code int32} field. */
+  public void serializeInt32Optional(ProtoFieldInfo field, @Nullable Integer value)
+      throws IOException {
+    if (value != null) {
+      serializeInt32Optional(field, (int) value);
+    }
   }
 
   protected abstract void writeint32(ProtoFieldInfo field, int value) throws IOException;
@@ -339,6 +352,25 @@ public abstract class Serializer implements AutoCloseable {
       throws IOException;
 
   protected abstract void writeEndRepeatedVarint() throws IOException;
+
+  /** Serializes a {@code repeated int32} field. */
+  public void serializeRepeatedInt32(ProtoFieldInfo field, List<Integer> values)
+      throws IOException {
+    if (values.isEmpty()) {
+      return;
+    }
+
+    int payloadSize = 0;
+    for (int v : values) {
+      payloadSize += CodedOutputStream.computeInt32SizeNoTag(v);
+    }
+
+    writeStartRepeatedVarint(field, payloadSize);
+    for (int value : values) {
+      writeUInt64Value(value);
+    }
+    writeEndRepeatedVarint();
+  }
 
   /** Serializes a {@code repeated fixed64} field. */
   public void serializeRepeatedFixed64(ProtoFieldInfo field, List<Long> values) throws IOException {

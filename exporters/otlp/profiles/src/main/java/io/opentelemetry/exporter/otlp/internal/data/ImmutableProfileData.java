@@ -15,6 +15,9 @@ import io.opentelemetry.exporter.otlp.profiles.MappingData;
 import io.opentelemetry.exporter.otlp.profiles.ProfileData;
 import io.opentelemetry.exporter.otlp.profiles.SampleData;
 import io.opentelemetry.exporter.otlp.profiles.ValueTypeData;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.resources.Resource;
+import java.nio.ByteBuffer;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -37,43 +40,53 @@ public abstract class ImmutableProfileData implements ProfileData {
    */
   @SuppressWarnings("TooManyParameters")
   public static ProfileData create(
+      Resource resource,
+      InstrumentationScopeInfo instrumentationScopeInfo,
       List<ValueTypeData> sampleTypes,
       List<SampleData> samples,
-      List<MappingData> mappings,
-      List<LocationData> locations,
-      List<Long> locationIndices,
-      List<FunctionData> functions,
-      Attributes attributes,
+      List<MappingData> mappingTable,
+      List<LocationData> locationTable,
+      List<Integer> locationIndices,
+      List<FunctionData> functionTable,
+      Attributes attributeTable,
       List<AttributeUnitData> attributeUnits,
-      List<LinkData> links,
+      List<LinkData> linkTable,
       List<String> stringTable,
-      long dropFrames,
-      long keepFrames,
       long timeNanos,
       long durationNanos,
       ValueTypeData periodType,
       long period,
-      List<Long> comment,
-      long defaultSampleType) {
+      List<Integer> commentStrindices,
+      int defaultSampleTypeStrindex,
+      String profileId,
+      Attributes attributes,
+      int droppedAttributesCount,
+      String originalPayloadFormat,
+      ByteBuffer originalPayload) {
     return new AutoValue_ImmutableProfileData(
+        resource,
+        instrumentationScopeInfo,
         sampleTypes,
         samples,
-        mappings,
-        locations,
+        mappingTable,
+        locationTable,
         locationIndices,
-        functions,
-        attributes,
+        functionTable,
+        attributeTable,
         attributeUnits,
-        links,
+        linkTable,
         stringTable,
-        dropFrames,
-        keepFrames,
         timeNanos,
         durationNanos,
         periodType,
         period,
-        comment,
-        defaultSampleType);
+        commentStrindices,
+        defaultSampleTypeStrindex,
+        profileId,
+        attributes,
+        droppedAttributesCount,
+        originalPayloadFormat,
+        originalPayload);
   }
 
   ImmutableProfileData() {}

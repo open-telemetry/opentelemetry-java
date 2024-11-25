@@ -6,7 +6,6 @@
 package io.opentelemetry.exporter.otlp.internal.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.exporter.otlp.profiles.BuildIdKind;
 import io.opentelemetry.exporter.otlp.profiles.MappingData;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
@@ -32,10 +31,8 @@ public abstract class ImmutableMappingData implements MappingData {
       long memoryStart,
       long memoryLimit,
       long fileOffset,
-      long filenameIndex,
-      long buildIdIndex,
-      BuildIdKind buildIdKind,
-      List<Long> attributeIndices,
+      int filenameStrindex,
+      List<Integer> attributeIndices,
       boolean hasFunctions,
       boolean hasFilenames,
       boolean hasLineNumbers,
@@ -44,9 +41,7 @@ public abstract class ImmutableMappingData implements MappingData {
         memoryStart,
         memoryLimit,
         fileOffset,
-        filenameIndex,
-        buildIdIndex,
-        buildIdKind,
+        filenameStrindex,
         attributeIndices,
         hasFunctions,
         hasFilenames,
