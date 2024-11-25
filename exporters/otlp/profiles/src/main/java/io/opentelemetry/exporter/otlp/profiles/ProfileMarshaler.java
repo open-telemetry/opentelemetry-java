@@ -149,9 +149,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
     output.serializeRepeatedMessage(Profile.ATTRIBUTE_TABLE, attributeMarshalers);
     output.serializeRepeatedMessage(Profile.ATTRIBUTE_UNITS, attributeUnitMarshalers);
     output.serializeRepeatedMessage(Profile.LINK_TABLE, linkMarshalers);
-    for (byte[] i : stringTable) {
-      output.serializeString(Profile.STRING_TABLE, i);
-    }
+    output.serializeRepeatedString(Profile.STRING_TABLE, stringTable);
     output.serializeInt64(Profile.DROP_FRAMES, dropFrames);
     output.serializeInt64(Profile.KEEP_FRAMES, keepFrames);
     output.serializeInt64(Profile.TIME_NANOS, timeNanos);
@@ -192,9 +190,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeRepeatedMessage(Profile.ATTRIBUTE_TABLE, attributeMarshalers);
     size += MarshalerUtil.sizeRepeatedMessage(Profile.ATTRIBUTE_UNITS, attributeUnitMarshalers);
     size += MarshalerUtil.sizeRepeatedMessage(Profile.LINK_TABLE, linkMarshalers);
-    for (byte[] i : stringTable) {
-      size += MarshalerUtil.sizeBytes(Profile.STRING_TABLE, i);
-    }
+    size += MarshalerUtil.sizeRepeatedString(Profile.STRING_TABLE, stringTable);
     size += MarshalerUtil.sizeInt64(Profile.DROP_FRAMES, dropFrames);
     size += MarshalerUtil.sizeInt64(Profile.KEEP_FRAMES, keepFrames);
     size += MarshalerUtil.sizeInt64(Profile.TIME_NANOS, timeNanos);

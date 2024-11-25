@@ -110,6 +110,16 @@ public final class MarshalerUtil {
     return size;
   }
 
+  /** Returns the size of a repeated string field. */
+  @SuppressWarnings("AvoidObjectArrays")
+  public static int sizeRepeatedString(ProtoFieldInfo field, byte[][] utf8Bytes) {
+    int size = 0;
+    for (byte[] i : utf8Bytes) {
+      size += MarshalerUtil.sizeBytes(field, i);
+    }
+    return size;
+  }
+
   /**
    * Returns the size of a repeated uint64 field.
    *

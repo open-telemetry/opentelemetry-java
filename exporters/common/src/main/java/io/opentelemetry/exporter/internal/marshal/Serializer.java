@@ -221,6 +221,18 @@ public abstract class Serializer implements AutoCloseable {
   }
 
   /**
+   * Serializes a protobuf {@code repeated string} field. {@code utf8Bytes} is the UTF8 encoded
+   * bytes of the strings to serialize.
+   */
+  @SuppressWarnings("AvoidObjectArrays")
+  public void serializeRepeatedString(ProtoFieldInfo field, byte[][] utf8Bytes) throws IOException {
+    if (utf8Bytes.length == 0) {
+      return;
+    }
+    writeRepeatedString(field, utf8Bytes);
+  }
+
+  /**
    * Serializes a protobuf {@code string} field. {@code string} is the value to be serialized and
    * {@code utf8Length} is the length of the string after it is encoded in UTF8. This method reads
    * elements from context, use together with {@link
@@ -244,6 +256,11 @@ public abstract class Serializer implements AutoCloseable {
 
   public abstract void writeString(
       ProtoFieldInfo field, String string, int utf8Length, MarshalerContext context)
+      throws IOException;
+
+  /** Writes a protobuf {@code repeated string} field, even if it matches the default value. */
+  @SuppressWarnings("AvoidObjectArrays")
+  public abstract void writeRepeatedString(ProtoFieldInfo field, byte[][] utf8Bytes)
       throws IOException;
 
   /** Serializes a protobuf {@code bytes} field. */

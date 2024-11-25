@@ -123,6 +123,22 @@ final class JsonSerializer extends Serializer {
   }
 
   @Override
+  public void writeRepeatedString(ProtoFieldInfo field, byte[][] utf8Bytes) throws IOException {
+    generator.writeArrayFieldStart(field.getJsonName());
+    for (byte[] value : utf8Bytes) {
+      // Marshalers encoded String into UTF-8 bytes to optimize for binary serialization where
+      // we are able to avoid the encoding process happening twice, one for size computation and one
+      // for actual writing. JsonGenerator actually has a writeUTF8String that would be able to
+      // accept
+      // this, but it only works when writing to an OutputStream, but not to a String like we do for
+      // writing to logs. It's wasteful to take a String, convert it to bytes, and convert back to
+      // the same String but we can see if this can be improved in the future.
+      generator.writeString(new String(value, StandardCharsets.UTF_8));
+    }
+    generator.writeEndArray();
+  }
+
+  @Override
   public void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
     generator.writeBinaryField(field.getJsonName(), value);
   }
