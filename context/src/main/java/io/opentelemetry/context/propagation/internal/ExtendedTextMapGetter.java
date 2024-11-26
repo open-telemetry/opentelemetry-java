@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.context.internal.propagation;
+package io.opentelemetry.context.propagation.internal;
 
 import io.opentelemetry.context.propagation.TextMapGetter;
 import java.util.Collections;
