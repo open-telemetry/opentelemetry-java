@@ -231,26 +231,6 @@ public final class MarshalerUtil {
    * <p>Packed repeated fields contain the tag, an integer representing the incoming payload size,
    * and an actual payload of repeated varints.
    */
-  public static int sizeRepeatedInt32(ProtoFieldInfo field, int[] values) {
-    if (values.length == 0) {
-      return 0;
-    }
-
-    int payloadSize = 0;
-    for (int v : values) {
-      payloadSize += CodedOutputStream.computeInt32SizeNoTag(v);
-    }
-
-    // tag size + payload indicator size + actual payload size
-    return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(payloadSize) + payloadSize;
-  }
-
-  /**
-   * Returns the size of a repeated int32 field.
-   *
-   * <p>Packed repeated fields contain the tag, an integer representing the incoming payload size,
-   * and an actual payload of repeated varints.
-   */
   public static int sizeRepeatedInt32(ProtoFieldInfo field, List<Integer> values) {
     if (values.isEmpty()) {
       return 0;
