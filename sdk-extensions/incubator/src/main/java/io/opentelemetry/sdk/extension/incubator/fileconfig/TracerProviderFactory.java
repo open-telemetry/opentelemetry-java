@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ScopeM
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerConfigModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerConfiguratorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerMatcherAndConfigModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
@@ -21,6 +22,8 @@ import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.util.List;
+
+import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNonNull;
 
 final class TracerProviderFactory
     implements Factory<TracerProviderAndAttributeLimits, SdkTracerProviderBuilder> {
@@ -74,11 +77,11 @@ final class TracerProviderFactory
         configuratorBuilder.setDefault(
             TracerConfigFactory.INSTANCE.create(defaultConfigModel, spiHelper, closeables));
       }
-      List<ScopeMatcherAndConfigModel> scopeConfigs = tracerConfiguratorModel.getScopeConfigs();
-      if (scopeConfigs != null) {
-        for (ScopeMatcherAndConfigModel scopeMatcherAndConfigModel : scopeConfigs) {
-          String name = scopeMatcherAndConfigModel.getName();
-          TracerConfigModel config = scopeMatcherAndConfigModel.getConfig();
+      List<TracerMatcherAndConfigModel> tracerMatcherAndConfigs = tracerConfiguratorModel.getTracers();
+      if (tracerMatcherAndConfigs != null) {
+        for (TracerMatcherAndConfigModel tracerMatcherAndConfig : tracerMatcherAndConfigs) {
+          String name = requireNonNull(tracerMatcherAndConfig.getName(), "tracer matcher name");
+          TracerConfigModel config = tracerMatcherAndConfig.getConfig();
           if (name == null || config == null) {
             continue;
           }

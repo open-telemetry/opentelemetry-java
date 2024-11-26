@@ -60,7 +60,7 @@ dependencies {
 //  it was needed after 0.3.0 release because file_format in the examples weren't updated prior to the release tag
 // val configurationTag = "0.3.0"
 // val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
-val configurationRef = "348beb6e6dc68394b3862267de1d146d546a6661"
+val configurationRef = "4258a37a665d2509b8750d2f76570c8722faba02"
 val configurationRepoZip = "https://github.com/jack-berg/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 
