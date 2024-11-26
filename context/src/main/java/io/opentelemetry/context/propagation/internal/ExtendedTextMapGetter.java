@@ -35,6 +35,9 @@ public interface ExtendedTextMapGetter<C> extends TextMapGetter<C> {
    */
   default Iterator<String> getAll(@Nullable C carrier, String key) {
     String first = get(carrier, key);
+    if (first == null) {
+      return Collections.emptyIterator();
+    }
     return Collections.singleton(first).iterator();
   }
 }
