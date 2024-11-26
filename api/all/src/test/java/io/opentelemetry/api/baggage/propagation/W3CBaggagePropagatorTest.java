@@ -515,6 +515,34 @@ class W3CBaggagePropagatorTest {
   }
 
   @Test
+  void extract_multiple_headers_all_invalid() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(
+            Context.root(),
+            ImmutableMap.of("baggage", ImmutableList.of("!@#$%^", "key=va%lue")),
+            multiGetter);
+
+    Baggage expectedBaggage = Baggage.builder().build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_multiple_headers_some_invalid() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(
+            Context.root(),
+            ImmutableMap.of("baggage", ImmutableList.of("k1=v1", "key=va%lue", "k2=v2")),
+            multiGetter);
+
+    Baggage expectedBaggage = Baggage.builder().put("k1", "v1").put("k2", "v2").build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
   void inject_noBaggage() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
     Map<String, String> carrier = new HashMap<>();
