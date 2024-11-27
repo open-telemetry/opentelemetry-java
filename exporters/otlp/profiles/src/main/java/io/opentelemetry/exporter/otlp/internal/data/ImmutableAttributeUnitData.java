@@ -25,8 +25,8 @@ public abstract class ImmutableAttributeUnitData implements AttributeUnitData {
    *
    * @return a new AttributeUnitData mapping the given key to the given unit.
    */
-  public static AttributeUnitData create(int attributeKeyStrindex, int unitStrindex) {
-    return new AutoValue_ImmutableAttributeUnitData(attributeKeyStrindex, unitStrindex);
+  public static AttributeUnitData create(int attributeKeyStringIndex, int unitStringIndex) {
+    return new AutoValue_ImmutableAttributeUnitData(attributeKeyStringIndex, unitStringIndex);
   }
 
   ImmutableAttributeUnitData() {}

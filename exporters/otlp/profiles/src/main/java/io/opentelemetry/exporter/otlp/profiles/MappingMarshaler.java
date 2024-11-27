@@ -32,7 +32,7 @@ final class MappingMarshaler extends MarshalerWithSize {
         mappingData.getMemoryStart(),
         mappingData.getMemoryLimit(),
         mappingData.getFileOffset(),
-        mappingData.getFilenameStrindex(),
+        mappingData.getFilenameStringIndex(),
         mappingData.getAttributeIndices(),
         mappingData.hasFunctions(),
         mappingData.hasFilenames(),

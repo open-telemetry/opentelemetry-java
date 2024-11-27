@@ -82,7 +82,7 @@ public interface ProfileData {
   List<Integer> getCommentStrIndices();
 
   /** Type of the preferred sample. Index into the string table. */
-  int getDefaultSampleTypeStrindex();
+  int getDefaultSampleTypeStringIndex();
 
   /**
    * Returns a globally unique identifier for a profile, as 32 character lowercase hex String. An ID

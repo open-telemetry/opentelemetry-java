@@ -16,16 +16,16 @@ import javax.annotation.concurrent.Immutable;
 public interface FunctionData {
 
   /** Name of the function, in human-readable form if available. Index into string table. */
-  int getNameStrindex();
+  int getNameStringIndex();
 
   /**
    * Name of the function, as identified by the system. For instance, it can be a C++ mangled name.
    * Index into string table.
    */
-  int getSystemNameStrindex();
+  int getSystemNameStringIndex();
 
   /** Source file containing the function. Index into string table. */
-  int getFilenameStrindex();
+  int getFilenameStringIndex();
 
   /** Line number in source file. */
   long getStartLine();

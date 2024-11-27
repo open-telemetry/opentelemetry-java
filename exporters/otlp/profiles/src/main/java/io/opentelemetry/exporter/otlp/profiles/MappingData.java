@@ -29,7 +29,7 @@ public interface MappingData {
    * The object this entry is loaded from. This can be a filename on disk for the main binary and
    * shared libraries, or virtual abstraction like "[vdso]". Index into the string table.
    */
-  int getFilenameStrindex();
+  int getFilenameStringIndex();
 
   /** References to attributes in Profile.attribute_table. */
   List<Integer> getAttributeIndices();

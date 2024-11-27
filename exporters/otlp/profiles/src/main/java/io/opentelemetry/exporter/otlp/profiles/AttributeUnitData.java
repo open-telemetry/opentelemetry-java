@@ -16,8 +16,8 @@ import javax.annotation.concurrent.Immutable;
 public interface AttributeUnitData {
 
   /** Index into string table. */
-  int getAttributeKeyStrindex();
+  int getAttributeKeyStringIndex();
 
   /** Index into string table. */
-  int getUnitIndexStrindex();
+  int getUnitIndexStringIndex();
 }

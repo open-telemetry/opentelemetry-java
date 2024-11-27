@@ -19,8 +19,8 @@ final class ValueTypeMarshaler extends MarshalerWithSize {
 
   private static final ValueTypeMarshaler[] EMPTY_REPEATED = new ValueTypeMarshaler[0];
 
-  private final int typeStrindex;
-  private final int unitStrindex;
+  private final int typeStringIndex;
+  private final int unitStringIndex;
   private final ProtoEnumInfo aggregationTemporality;
 
   static ValueTypeMarshaler create(ValueTypeData valueTypeData) {
@@ -37,7 +37,9 @@ final class ValueTypeMarshaler extends MarshalerWithSize {
       }
     }
     return new ValueTypeMarshaler(
-        valueTypeData.getTypeStrindex(), valueTypeData.getUnitStrindex(), aggregationTemporality);
+        valueTypeData.getTypeStringIndex(),
+        valueTypeData.getUnitStringIndex(),
+        aggregationTemporality);
   }
 
   static ValueTypeMarshaler[] createRepeated(List<ValueTypeData> items) {
@@ -60,26 +62,26 @@ final class ValueTypeMarshaler extends MarshalerWithSize {
   }
 
   private ValueTypeMarshaler(
-      int typeStrindex, int unitStrindex, ProtoEnumInfo aggregationTemporality) {
-    super(calculateSize(typeStrindex, unitStrindex, aggregationTemporality));
-    this.typeStrindex = typeStrindex;
-    this.unitStrindex = unitStrindex;
+      int typeStringIndex, int unitStringIndex, ProtoEnumInfo aggregationTemporality) {
+    super(calculateSize(typeStringIndex, unitStringIndex, aggregationTemporality));
+    this.typeStringIndex = typeStringIndex;
+    this.unitStringIndex = unitStringIndex;
     this.aggregationTemporality = aggregationTemporality;
   }
 
   @Override
   protected void writeTo(Serializer output) throws IOException {
-    output.serializeInt64(ValueType.TYPE_STRINDEX, typeStrindex);
-    output.serializeInt64(ValueType.UNIT_STRINDEX, unitStrindex);
+    output.serializeInt64(ValueType.TYPE_STRINDEX, typeStringIndex);
+    output.serializeInt64(ValueType.UNIT_STRINDEX, unitStringIndex);
     output.serializeEnum(ValueType.AGGREGATION_TEMPORALITY, aggregationTemporality);
   }
 
   private static int calculateSize(
-      int typeStrindex, int unitStrindex, ProtoEnumInfo aggregationTemporality) {
+      int typeStringIndex, int unitStringIndex, ProtoEnumInfo aggregationTemporality) {
     int size;
     size = 0;
-    size += MarshalerUtil.sizeInt32(ValueType.TYPE_STRINDEX, typeStrindex);
-    size += MarshalerUtil.sizeInt32(ValueType.UNIT_STRINDEX, unitStrindex);
+    size += MarshalerUtil.sizeInt32(ValueType.TYPE_STRINDEX, typeStringIndex);
+    size += MarshalerUtil.sizeInt32(ValueType.UNIT_STRINDEX, unitStringIndex);
     size += MarshalerUtil.sizeEnum(ValueType.AGGREGATION_TEMPORALITY, aggregationTemporality);
     return size;
   }

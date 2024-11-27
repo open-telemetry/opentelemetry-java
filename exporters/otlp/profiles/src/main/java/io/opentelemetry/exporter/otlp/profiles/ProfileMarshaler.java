@@ -81,7 +81,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
         periodTypeMarshaler,
         profileData.getPeriod(),
         profileData.getCommentStrIndices(),
-        profileData.getDefaultSampleTypeStrindex(),
+        profileData.getDefaultSampleTypeStringIndex(),
         profileData.getProfileIdBytes(),
         KeyValueMarshaler.createForAttributes(profileData.getAttributes()),
         droppedAttributesCount,

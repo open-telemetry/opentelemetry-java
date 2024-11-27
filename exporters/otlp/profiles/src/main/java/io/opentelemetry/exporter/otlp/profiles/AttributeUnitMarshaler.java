@@ -17,12 +17,13 @@ final class AttributeUnitMarshaler extends MarshalerWithSize {
 
   private static final AttributeUnitMarshaler[] EMPTY_REPEATED = new AttributeUnitMarshaler[0];
 
-  private final int attributeKeyStrindex;
-  private final int unitStrindex;
+  private final int attributeKeyStringIndex;
+  private final int unitStringIndex;
 
   static AttributeUnitMarshaler create(AttributeUnitData attributeUnitData) {
     return new AttributeUnitMarshaler(
-        attributeUnitData.getAttributeKeyStrindex(), attributeUnitData.getUnitIndexStrindex());
+        attributeUnitData.getAttributeKeyStringIndex(),
+        attributeUnitData.getUnitIndexStringIndex());
   }
 
   static AttributeUnitMarshaler[] createRepeated(List<AttributeUnitData> items) {
@@ -44,23 +45,23 @@ final class AttributeUnitMarshaler extends MarshalerWithSize {
     return attributeUnitMarshalers;
   }
 
-  private AttributeUnitMarshaler(int attributeKeyStrindex, int unitStrindex) {
-    super(calculateSize(attributeKeyStrindex, unitStrindex));
-    this.attributeKeyStrindex = attributeKeyStrindex;
-    this.unitStrindex = unitStrindex;
+  private AttributeUnitMarshaler(int attributeKeyStringIndex, int unitStringIndex) {
+    super(calculateSize(attributeKeyStringIndex, unitStringIndex));
+    this.attributeKeyStringIndex = attributeKeyStringIndex;
+    this.unitStringIndex = unitStringIndex;
   }
 
   @Override
   protected void writeTo(Serializer output) throws IOException {
-    output.serializeInt32(AttributeUnit.ATTRIBUTE_KEY_STRINDEX, attributeKeyStrindex);
-    output.serializeInt32(AttributeUnit.UNIT_STRINDEX, unitStrindex);
+    output.serializeInt32(AttributeUnit.ATTRIBUTE_KEY_STRINDEX, attributeKeyStringIndex);
+    output.serializeInt32(AttributeUnit.UNIT_STRINDEX, unitStringIndex);
   }
 
-  private static int calculateSize(int attributeKeyStrindex, int unitStrindex) {
+  private static int calculateSize(int attributeKeyStringIndex, int unitStringIndex) {
     int size;
     size = 0;
-    size += MarshalerUtil.sizeInt32(AttributeUnit.ATTRIBUTE_KEY_STRINDEX, attributeKeyStrindex);
-    size += MarshalerUtil.sizeInt32(AttributeUnit.UNIT_STRINDEX, unitStrindex);
+    size += MarshalerUtil.sizeInt32(AttributeUnit.ATTRIBUTE_KEY_STRINDEX, attributeKeyStringIndex);
+    size += MarshalerUtil.sizeInt32(AttributeUnit.UNIT_STRINDEX, unitStringIndex);
     return size;
   }
 }

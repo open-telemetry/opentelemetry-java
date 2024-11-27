@@ -17,16 +17,16 @@ final class FunctionMarshaler extends MarshalerWithSize {
 
   private static final FunctionMarshaler[] EMPTY_REPEATED = new FunctionMarshaler[0];
 
-  private final int nameStrindex;
-  private final int systemNameStrindex;
-  private final int filenameStrindex;
+  private final int nameStringIndex;
+  private final int systemNameStringIndex;
+  private final int filenameStringIndex;
   private final long startLine;
 
   static FunctionMarshaler create(FunctionData functionData) {
     return new FunctionMarshaler(
-        functionData.getNameStrindex(),
-        functionData.getSystemNameStrindex(),
-        functionData.getFilenameStrindex(),
+        functionData.getNameStringIndex(),
+        functionData.getSystemNameStringIndex(),
+        functionData.getFilenameStringIndex(),
         functionData.getStartLine());
   }
 
@@ -50,28 +50,28 @@ final class FunctionMarshaler extends MarshalerWithSize {
   }
 
   private FunctionMarshaler(
-      int nameStrindex, int systemNameStrindex, int filenameStrindex, long startLine) {
-    super(calculateSize(nameStrindex, systemNameStrindex, filenameStrindex, startLine));
-    this.nameStrindex = nameStrindex;
-    this.systemNameStrindex = systemNameStrindex;
-    this.filenameStrindex = filenameStrindex;
+      int nameStringIndex, int systemNameStringIndex, int filenameStringIndex, long startLine) {
+    super(calculateSize(nameStringIndex, systemNameStringIndex, filenameStringIndex, startLine));
+    this.nameStringIndex = nameStringIndex;
+    this.systemNameStringIndex = systemNameStringIndex;
+    this.filenameStringIndex = filenameStringIndex;
     this.startLine = startLine;
   }
 
   @Override
   protected void writeTo(Serializer output) throws IOException {
-    output.serializeInt32(Function.NAME_STRINDEX, nameStrindex);
-    output.serializeInt32(Function.SYSTEM_NAME_STRINDEX, systemNameStrindex);
-    output.serializeInt32(Function.FILENAME_STRINDEX, filenameStrindex);
+    output.serializeInt32(Function.NAME_STRINDEX, nameStringIndex);
+    output.serializeInt32(Function.SYSTEM_NAME_STRINDEX, systemNameStringIndex);
+    output.serializeInt32(Function.FILENAME_STRINDEX, filenameStringIndex);
     output.serializeInt64(Function.START_LINE, startLine);
   }
 
   private static int calculateSize(
-      int nameStrindex, int systemNameStrindex, int filenameStrindex, long startLine) {
+      int nameStringIndex, int systemNameStringIndex, int filenameStringIndex, long startLine) {
     int size = 0;
-    size += MarshalerUtil.sizeInt32(Function.NAME_STRINDEX, nameStrindex);
-    size += MarshalerUtil.sizeInt32(Function.SYSTEM_NAME_STRINDEX, systemNameStrindex);
-    size += MarshalerUtil.sizeInt32(Function.FILENAME_STRINDEX, filenameStrindex);
+    size += MarshalerUtil.sizeInt32(Function.NAME_STRINDEX, nameStringIndex);
+    size += MarshalerUtil.sizeInt32(Function.SYSTEM_NAME_STRINDEX, systemNameStringIndex);
+    size += MarshalerUtil.sizeInt32(Function.FILENAME_STRINDEX, filenameStringIndex);
     size += MarshalerUtil.sizeInt64(Function.START_LINE, startLine);
     return size;
   }

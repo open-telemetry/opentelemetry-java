@@ -17,10 +17,10 @@ import javax.annotation.concurrent.Immutable;
 public interface ValueTypeData {
 
   /** Index into string table. */
-  int getTypeStrindex();
+  int getTypeStringIndex();
 
   /** Index into string table. */
-  int getUnitStrindex();
+  int getUnitStringIndex();
 
   @Nullable
   AggregationTemporality getAggregationTemporality();
