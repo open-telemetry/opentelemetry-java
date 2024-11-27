@@ -241,8 +241,7 @@ class ResourceTest {
     Resource resource1 =
         Resource.builder()
             .add(
-                Entity.builder()
-                    .setEntityType("a")
+                Entity.builder("a")
                     .setSchemaUrl("one")
                     .withIdentifying(
                         builder -> {
@@ -253,8 +252,7 @@ class ResourceTest {
     Resource resource2 =
         Resource.builder()
             .add(
-                Entity.builder()
-                    .setEntityType("b")
+                Entity.builder("b")
                     .setSchemaUrl("one")
                     .withIdentifying(
                         builder -> {
@@ -274,8 +272,7 @@ class ResourceTest {
     Resource resource1 =
         Resource.builder()
             .add(
-                Entity.builder()
-                    .setEntityType("a")
+                Entity.builder("a")
                     .setSchemaUrl("one")
                     .withIdentifying(
                         builder -> {
@@ -286,8 +283,7 @@ class ResourceTest {
     Resource resource2 =
         Resource.builder()
             .add(
-                Entity.builder()
-                    .setEntityType("b")
+                Entity.builder("b")
                     .setSchemaUrl("two")
                     .withIdentifying(
                         builder -> {
@@ -307,8 +303,7 @@ class ResourceTest {
     Resource resource1 =
         Resource.builder()
             .add(
-                Entity.builder()
-                    .setEntityType("a")
+                Entity.builder("a")
                     .setSchemaUrl("one")
                     .withIdentifying(
                         builder -> {
@@ -323,8 +318,7 @@ class ResourceTest {
     Resource resource2 =
         Resource.builder()
             .add(
-                Entity.builder()
-                    .setEntityType("a")
+                Entity.builder("a")
                     .setSchemaUrl("one")
                     .withIdentifying(
                         builder -> {
@@ -349,8 +343,7 @@ class ResourceTest {
     Resource resource1 =
         Resource.builder()
             .add(
-                Entity.builder()
-                    .setEntityType("a")
+                Entity.builder("a")
                     .setSchemaUrl("one")
                     .withIdentifying(
                         builder -> {
@@ -376,8 +369,7 @@ class ResourceTest {
     Resource resource1 =
         Resource.builder()
             .add(
-                Entity.builder()
-                    .setEntityType("a")
+                Entity.builder("a")
                     .setSchemaUrl("one")
                     .withIdentifying(
                         builder -> {
@@ -392,8 +384,7 @@ class ResourceTest {
     Resource resource2 =
         Resource.builder()
             .add(
-                Entity.builder()
-                    .setEntityType("a")
+                Entity.builder("a")
                     .setSchemaUrl("one")
                     .withIdentifying(
                         builder -> {
@@ -514,9 +505,8 @@ class ResourceTest {
     Resource resource =
         Resource.builder()
             .add(
-                Entity.builder()
+                Entity.builder("a")
                     .setSchemaUrl("http://example.com")
-                    .setEntityType("a")
                     .withIdentifying(id -> id.put("a", "b"))
                     .build())
             .build();

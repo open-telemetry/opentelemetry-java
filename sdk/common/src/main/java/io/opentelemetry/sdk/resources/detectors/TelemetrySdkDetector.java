@@ -26,8 +26,7 @@ public final class TelemetrySdkDetector implements EntityDetector {
 
   static {
     TELEMETRY_SDK =
-        Entity.builder()
-            .setEntityType(ENTITY_TYPE)
+        Entity.builder(ENTITY_TYPE)
             .setSchemaUrl(SCHEMA_URL)
             .withIdentifying(
                 attributes -> {

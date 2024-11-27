@@ -19,9 +19,8 @@ public class ResourceEntityTest {
     Resource resource =
         Resource.builder()
             .add(
-                Entity.builder()
+                Entity.builder("test")
                     .setSchemaUrl("http://example.com/1.0")
-                    .setEntityType("test")
                     .withIdentifying(attr -> attr.put("test.id", 1))
                     .withDescriptive(attr -> attr.put("test.name", "one"))
                     .build())

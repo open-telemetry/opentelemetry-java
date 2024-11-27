@@ -48,7 +48,8 @@ public abstract class Entity {
   public abstract Attributes getAttributes();
 
   /**
-   * Returns the URL of the OpenTelemetry schema used by this resource. May be null.
+   * Returns the URL of the OpenTelemetry schema used by this resource. May be null if this entity
+   * does not abide by schema conventions (i.e. is custom).
    *
    * @return An OpenTelemetry schema URL.
    * @since 1.4.0
@@ -68,7 +69,7 @@ public abstract class Entity {
     return new EntityBuilder(this);
   }
 
-  public static final EntityBuilder builder() {
-    return new EntityBuilder();
+  public static final EntityBuilder builder(String entityType) {
+    return new EntityBuilder(entityType);
   }
 }

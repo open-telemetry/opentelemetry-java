@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.resources;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import java.util.Objects;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
@@ -16,12 +15,13 @@ import javax.annotation.Nullable;
  * well as type and schema_url.
  */
 public class EntityBuilder {
-  @Nullable private String entityType;
+  private final String entityType;
   private final AttributesBuilder attributesBuilder;
   private final AttributesBuilder identifyingBuilder;
   @Nullable private String schemaUrl;
 
-  EntityBuilder() {
+  EntityBuilder(String entityType) {
+    this.entityType = entityType;
     this.attributesBuilder = Attributes.builder();
     this.identifyingBuilder = Attributes.builder();
   }
@@ -41,17 +41,6 @@ public class EntityBuilder {
    */
   public EntityBuilder setSchemaUrl(String schemaUrl) {
     this.schemaUrl = schemaUrl;
-    return this;
-  }
-
-  /**
-   * Assign an Entity type to the resulting Entity.
-   *
-   * @param entityType The type name of the entity.
-   * @return this
-   */
-  public EntityBuilder setEntityType(String entityType) {
-    this.entityType = entityType;
     return this;
   }
 
@@ -80,7 +69,6 @@ public class EntityBuilder {
   /** Create the {@link Entity} from this. */
   public Entity build() {
     // TODO - Better Checks.
-    Objects.requireNonNull(this.entityType);
     return Entity.create(
         entityType, identifyingBuilder.build(), attributesBuilder.build(), schemaUrl);
   }

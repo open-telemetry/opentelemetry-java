@@ -28,8 +28,7 @@ public final class ServiceInstanceDetector implements EntityDetector {
   @Override
   public List<Entity> detectEntities() {
     return Collections.singletonList(
-        Entity.builder()
-            .setEntityType(ENTITY_TYPE)
+        Entity.builder(ENTITY_TYPE)
             .setSchemaUrl(SCHEMA_URL)
             .withIdentifying(
                 builder -> {
