@@ -29,6 +29,7 @@ dependencies {
 
   testImplementation("com.fasterxml.jackson.core:jackson-databind")
   testImplementation("com.google.protobuf:protobuf-java-util")
+  testImplementation("com.google.guava:guava")
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
 
   jmhImplementation(project(":sdk:testing"))
