@@ -25,9 +25,9 @@ public abstract class ImmutableFunctionData implements FunctionData {
    * @return a new FunctionData describing the given function characteristics.
    */
   public static FunctionData create(
-      long nameIndex, long systemNameIndex, long filenameIndex, long startLine) {
+      int nameStringIndex, int systemNameStringIndex, int filenameStringIndex, long startLine) {
     return new AutoValue_ImmutableFunctionData(
-        nameIndex, systemNameIndex, filenameIndex, startLine);
+        nameStringIndex, systemNameStringIndex, filenameStringIndex, startLine);
   }
 
   ImmutableFunctionData() {}

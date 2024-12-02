@@ -10,22 +10,22 @@ import javax.annotation.concurrent.Immutable;
 /**
  * Describes a function.
  *
- * @see "pprofextended.proto::Function"
+ * @see "profiles.proto::Function"
  */
 @Immutable
 public interface FunctionData {
 
   /** Name of the function, in human-readable form if available. Index into string table. */
-  long getNameIndex();
+  int getNameStringIndex();
 
   /**
    * Name of the function, as identified by the system. For instance, it can be a C++ mangled name.
    * Index into string table.
    */
-  long getSystemNameIndex();
+  int getSystemNameStringIndex();
 
   /** Source file containing the function. Index into string table. */
-  long getFilenameIndex();
+  int getFilenameStringIndex();
 
   /** Line number in source file. */
   long getStartLine();

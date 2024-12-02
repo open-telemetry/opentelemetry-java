@@ -10,7 +10,7 @@ rootProject.extra["versions"] = dependencyVersions
 val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.18.2",
   "com.google.guava:guava-bom:33.3.1-jre",
-  "com.google.protobuf:protobuf-bom:3.25.5",
+  "com.google.protobuf:protobuf-bom:4.28.3",
   "com.linecorp.armeria:armeria-bom:1.31.1",
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
   "com.squareup.okio:okio-bom:3.9.1", // applies to transitive dependencies of okhttp
@@ -69,7 +69,7 @@ val DEPENDENCIES = listOf(
   "io.jaegertracing:jaeger-client:1.8.1",
   "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.39.0-alpha",
   "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.28.0-alpha",
-  "io.opentelemetry.proto:opentelemetry-proto:1.3.2-alpha",
+  "io.opentelemetry.proto:opentelemetry-proto:1.4.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
   "io.prometheus:prometheus-metrics-exporter-httpserver:1.3.3",

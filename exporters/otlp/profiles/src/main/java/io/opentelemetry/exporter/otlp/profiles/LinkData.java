@@ -10,7 +10,7 @@ import javax.annotation.concurrent.Immutable;
 /**
  * A connection from a profile Sample to a trace Span.
  *
- * @see "pprofextended.proto::Link"
+ * @see "profiles.proto::Link"
  */
 @Immutable
 public interface LinkData {
