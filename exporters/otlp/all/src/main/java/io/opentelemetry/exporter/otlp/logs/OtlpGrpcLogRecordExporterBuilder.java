@@ -92,7 +92,7 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    */
   public OtlpGrpcLogRecordExporterBuilder setTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
-    checkArgument(timeout >= 0, "timeout must be non-negative");
+    checkArgument(timeout > 0, "timeout must be positive");
     delegate.setTimeout(timeout, unit);
     return this;
   }
@@ -115,7 +115,7 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    */
   public OtlpGrpcLogRecordExporterBuilder setConnectTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
-    checkArgument(timeout >= 0, "timeout must be non-negative");
+    checkArgument(timeout > 0, "timeout must be positive");
     delegate.setConnectTimeout(timeout, unit);
     return this;
   }
