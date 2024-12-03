@@ -32,6 +32,7 @@ val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.16"
 val opencensusVersion = "0.31.1"
 val prometheusClientVersion = "0.16.0"
+val prometheusServerVersion = "1.3.4"
 
 val DEPENDENCIES = listOf(
   "com.google.auto.value:auto-value:${autoValueVersion}",
@@ -52,6 +53,8 @@ val DEPENDENCIES = listOf(
   "org.slf4j:slf4j-simple:${slf4jVersion}",
   "org.slf4j:jul-to-slf4j:${slf4jVersion}",
   "io.prometheus:prometheus-metrics-shaded-protobuf:1.3.1",
+  "io.prometheus:prometheus-metrics-exporter-httpserver:${prometheusServerVersion}",
+  "io.prometheus:prometheus-metrics-exposition-formats:${prometheusServerVersion}",
   "io.prometheus:simpleclient:${prometheusClientVersion}",
   "io.prometheus:simpleclient_common:${prometheusClientVersion}",
   "io.prometheus:simpleclient_httpserver:${prometheusClientVersion}",
@@ -72,7 +75,6 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.proto:opentelemetry-proto:1.4.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
-  "io.prometheus:prometheus-metrics-exporter-httpserver:1.3.3",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.17.3",
   "org.awaitility:awaitility:4.2.2",
