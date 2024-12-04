@@ -18,7 +18,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchL
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ClientModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorAttributesModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.GeneralInstrumentationModel;
@@ -139,7 +138,7 @@ class FileConfigurationParseTest {
             .withDetectors(
                 new DetectorsModel()
                     .withAttributes(
-                        new DetectorAttributesModel()
+                        new IncludeExcludeModel()
                             .withIncluded(Collections.singletonList("process.*"))
                             .withExcluded(Collections.singletonList("process.command_args"))))
             .withSchemaUrl("https://opentelemetry.io/schemas/1.16.0");
@@ -301,7 +300,7 @@ class FileConfigurationParseTest {
         new MetricReaderModel()
             .withPeriodic(
                 new PeriodicMetricReaderModel()
-                    .withInterval(5_000)
+                    .withInterval(60_000)
                     .withTimeout(30_000)
                     .withExporter(
                         new PushMetricExporterModel()
@@ -321,14 +320,14 @@ class FileConfigurationParseTest {
                                     .withCompression("gzip")
                                     .withTimeout(10_000)
                                     .withInsecure(false)
-                                    .withTemporalityPreference("delta")
+                                    .withTemporalityPreference(
+                                        OtlpMetricModel.TemporalityPreference.DELTA)
                                     .withDefaultHistogramAggregation(
                                         OtlpMetricModel.DefaultHistogramAggregation
                                             .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM))))
             .withProducers(
                 Collections.singletonList(
-                    new MetricProducerModel()
-                        .withAdditionalProperty("prometheus", Collections.emptyMap())));
+                    new MetricProducerModel().withAdditionalProperty("prometheus", null)));
     MetricReaderModel metricReader3 =
         new MetricReaderModel()
             .withPeriodic(
@@ -364,6 +363,7 @@ class FileConfigurationParseTest {
                             .withIncluded(Arrays.asList("key1", "key2"))
                             .withExcluded(Collections.singletonList("key3"))));
     meterProvider.withViews(Collections.singletonList(view));
+    meterProvider.withExemplarFilter(MeterProviderModel.ExemplarFilter.TRACE_BASED);
 
     expected.withMeterProvider(meterProvider);
     // end MeterProvider config

@@ -147,7 +147,7 @@ class MetricExporterFactoryTest {
                             .withCertificate(certificatePath)
                             .withClientKey(clientKeyPath)
                             .withClientCertificate(clientCertificatePath)
-                            .withTemporalityPreference("delta")
+                            .withTemporalityPreference(OtlpMetricModel.TemporalityPreference.DELTA)
                             .withDefaultHistogramAggregation(
                                 OtlpMetricModel.DefaultHistogramAggregation
                                     .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)),
