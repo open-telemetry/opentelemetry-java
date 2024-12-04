@@ -84,6 +84,11 @@ public interface Value<T> {
     return KeyValueList.createFromMap(value);
   }
 
+  /** Returns a new {@link ValueBuilder} instance for creating an arbitrary {@link Value}. */
+  static ValueBuilder builder() {
+    return new ValueBuilderImpl();
+  }
+
   /** Returns the type of this {@link Value}. Useful for building switch statements. */
   ValueType getType();
 
