@@ -8,12 +8,12 @@ package io.opentelemetry.api.common;
 import java.util.ArrayList;
 import java.util.List;
 
-class ValueBuilderImpl implements ValueBuilder {
+class ValueMapBuilderImpl implements ValueMapBuilder {
 
   private final List<KeyValue> keyValues = new ArrayList<>();
 
   @Override
-  public ValueBuilder put(String key, Value<?> value) {
+  public ValueMapBuilder put(String key, Value<?> value) {
     keyValues.add(KeyValue.of(key, value));
     return this;
   }
