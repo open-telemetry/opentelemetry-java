@@ -112,7 +112,7 @@ class FileConfigurationCreateTest {
             + "  processors:\n"
             + "    - batch:\n"
             + "        exporter:\n"
-            + "          otlp: {}\n"
+            + "          otlp_http: {}\n"
             + "    - batch:\n"
             + "        exporter:\n"
             + "          foo: {}\n";

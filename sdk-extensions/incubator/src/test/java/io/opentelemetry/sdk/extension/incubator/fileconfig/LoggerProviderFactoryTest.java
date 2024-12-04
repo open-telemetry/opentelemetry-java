@@ -16,7 +16,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRec
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LoggerProviderModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import java.io.Closeable;
@@ -74,7 +74,7 @@ class LoggerProviderFactoryTest {
                                     new BatchLogRecordProcessorModel()
                                         .withExporter(
                                             new LogRecordExporterModel()
-                                                .withOtlp(new OtlpModel())))))),
+                                                .withOtlpHttp(new OtlpHttpExporterModel())))))),
             SdkLoggerProvider.builder()
                 .setLogLimits(
                     () ->

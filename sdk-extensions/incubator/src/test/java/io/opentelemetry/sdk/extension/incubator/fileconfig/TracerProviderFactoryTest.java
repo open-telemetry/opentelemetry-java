@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
@@ -81,7 +81,8 @@ class TracerProviderFactoryTest {
                                 .withBatch(
                                     new BatchSpanProcessorModel()
                                         .withExporter(
-                                            new SpanExporterModel().withOtlp(new OtlpModel())))))),
+                                            new SpanExporterModel()
+                                                .withOtlpHttp(new OtlpHttpExporterModel())))))),
             SdkTracerProvider.builder()
                 .setSpanLimits(
                     SpanLimits.builder()

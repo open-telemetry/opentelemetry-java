@@ -11,7 +11,7 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PrometheusModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PrometheusMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
@@ -53,7 +53,7 @@ final class MetricReaderFactory implements Factory<MetricReaderModel, MetricRead
     if (pullModel != null) {
       PullMetricExporterModel exporterModel =
           requireNonNull(pullModel.getExporter(), "pull metric reader exporter");
-      PrometheusModel prometheusModel = exporterModel.getPrometheus();
+      PrometheusMetricExporterModel prometheusModel = exporterModel.getPrometheus();
       if (prometheusModel != null) {
         MetricReader metricReader =
             FileConfigUtil.loadComponent(

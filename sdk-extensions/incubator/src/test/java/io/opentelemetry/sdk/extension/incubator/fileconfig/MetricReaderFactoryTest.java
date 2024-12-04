@@ -18,9 +18,9 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PrometheusModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PrometheusMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
@@ -73,7 +73,8 @@ class MetricReaderFactoryTest {
                     .withPeriodic(
                         new PeriodicMetricReaderModel()
                             .withExporter(
-                                new PushMetricExporterModel().withOtlp(new OtlpMetricModel()))),
+                                new PushMetricExporterModel()
+                                    .withOtlpHttp(new OtlpHttpMetricExporterModel()))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(reader);
@@ -99,7 +100,8 @@ class MetricReaderFactoryTest {
                     .withPeriodic(
                         new PeriodicMetricReaderModel()
                             .withExporter(
-                                new PushMetricExporterModel().withOtlp(new OtlpMetricModel()))
+                                new PushMetricExporterModel()
+                                    .withOtlpHttp(new OtlpHttpMetricExporterModel()))
                             .withInterval(1)),
                 spiHelper,
                 closeables);
@@ -126,7 +128,8 @@ class MetricReaderFactoryTest {
                         new PullMetricReaderModel()
                             .withExporter(
                                 new PullMetricExporterModel()
-                                    .withPrometheus(new PrometheusModel().withPort(port)))),
+                                    .withPrometheus(
+                                        new PrometheusMetricExporterModel().withPort(port)))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(reader);
@@ -157,7 +160,7 @@ class MetricReaderFactoryTest {
                             .withExporter(
                                 new PullMetricExporterModel()
                                     .withPrometheus(
-                                        new PrometheusModel()
+                                        new PrometheusMetricExporterModel()
                                             .withHost("localhost")
                                             .withPort(port)))),
                 spiHelper,

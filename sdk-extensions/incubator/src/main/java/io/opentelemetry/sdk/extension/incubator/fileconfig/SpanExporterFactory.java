@@ -9,9 +9,10 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpGrpcExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ZipkinModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ZipkinSpanExporterModel;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.util.List;
@@ -30,16 +31,20 @@ final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExport
   @Override
   public SpanExporter create(
       SpanExporterModel model, SpiHelper spiHelper, List<Closeable> closeables) {
-    OtlpModel otlpModel = model.getOtlp();
-    if (otlpModel != null) {
-      model.getAdditionalProperties().put("otlp", otlpModel);
+    OtlpHttpExporterModel otlpHttpModel = model.getOtlpHttp();
+    if (otlpHttpModel != null) {
+      model.getAdditionalProperties().put("otlp_http", otlpHttpModel);
+    }
+    OtlpGrpcExporterModel otlpGrpcModel = model.getOtlpGrpc();
+    if (otlpGrpcModel != null) {
+      model.getAdditionalProperties().put("otlp_grpc", otlpGrpcModel);
     }
 
     if (model.getConsole() != null) {
       model.getAdditionalProperties().put("console", model.getConsole());
     }
 
-    ZipkinModel zipkinModel = model.getZipkin();
+    ZipkinSpanExporterModel zipkinModel = model.getZipkin();
     if (zipkinModel != null) {
       model.getAdditionalProperties().put("zipkin", model.getZipkin());
     }

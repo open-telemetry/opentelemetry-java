@@ -34,8 +34,8 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Logger
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterProviderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PropagatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
@@ -126,7 +126,8 @@ class OpenTelemetryConfigurationFactoryTest {
                                             new SimpleLogRecordProcessorModel()
                                                 .withExporter(
                                                     new LogRecordExporterModel()
-                                                        .withOtlp(new OtlpModel())))))),
+                                                        .withOtlpHttp(
+                                                            new OtlpHttpExporterModel())))))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(sdk);
@@ -242,7 +243,8 @@ class OpenTelemetryConfigurationFactoryTest {
                                             new BatchLogRecordProcessorModel()
                                                 .withExporter(
                                                     new LogRecordExporterModel()
-                                                        .withOtlp(new OtlpModel()))))))
+                                                        .withOtlpHttp(
+                                                            new OtlpHttpExporterModel()))))))
                     .withTracerProvider(
                         new TracerProviderModel()
                             .withLimits(
@@ -262,7 +264,8 @@ class OpenTelemetryConfigurationFactoryTest {
                                             new BatchSpanProcessorModel()
                                                 .withExporter(
                                                     new SpanExporterModel()
-                                                        .withOtlp(new OtlpModel()))))))
+                                                        .withOtlpHttp(
+                                                            new OtlpHttpExporterModel()))))))
                     .withMeterProvider(
                         new MeterProviderModel()
                             .withReaders(
@@ -272,7 +275,8 @@ class OpenTelemetryConfigurationFactoryTest {
                                             new PeriodicMetricReaderModel()
                                                 .withExporter(
                                                     new PushMetricExporterModel()
-                                                        .withOtlp(new OtlpMetricModel())))))
+                                                        .withOtlpHttp(
+                                                            new OtlpHttpMetricExporterModel())))))
                             .withViews(
                                 Collections.singletonList(
                                     new io.opentelemetry.sdk.extension.incubator.fileconfig.internal

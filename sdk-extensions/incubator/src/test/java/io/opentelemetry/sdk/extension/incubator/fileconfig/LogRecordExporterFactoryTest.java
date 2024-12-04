@@ -22,7 +22,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigPropertie
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordExporterComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.NameStringValuePairModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.io.Closeable;
 import java.io.IOException;
@@ -68,7 +68,7 @@ class LogRecordExporterFactoryTest {
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
                         .LogRecordExporterModel()
-                    .withOtlp(new OtlpModel()),
+                    .withOtlpHttp(new OtlpHttpExporterModel()),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(exporter);
@@ -81,9 +81,8 @@ class LogRecordExporterFactoryTest {
     ArgumentCaptor<StructuredConfigProperties> configCaptor =
         ArgumentCaptor.forClass(StructuredConfigProperties.class);
     verify(spiHelper)
-        .loadComponent(eq(LogRecordExporter.class), eq("otlp"), configCaptor.capture());
+        .loadComponent(eq(LogRecordExporter.class), eq("otlp_http"), configCaptor.capture());
     StructuredConfigProperties configProperties = configCaptor.getValue();
-    assertThat(configProperties.getString("protocol")).isNull();
     assertThat(configProperties.getString("endpoint")).isNull();
     assertThat(configProperties.getStructured("headers")).isNull();
     assertThat(configProperties.getString("compression")).isNull();
@@ -123,9 +122,8 @@ class LogRecordExporterFactoryTest {
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
                         .LogRecordExporterModel()
-                    .withOtlp(
-                        new OtlpModel()
-                            .withProtocol("http/protobuf")
+                    .withOtlpHttp(
+                        new OtlpHttpExporterModel()
                             .withEndpoint("http://example:4318/v1/logs")
                             .withHeaders(
                                 Arrays.asList(
@@ -150,9 +148,8 @@ class LogRecordExporterFactoryTest {
     ArgumentCaptor<StructuredConfigProperties> configCaptor =
         ArgumentCaptor.forClass(StructuredConfigProperties.class);
     verify(spiHelper)
-        .loadComponent(eq(LogRecordExporter.class), eq("otlp"), configCaptor.capture());
+        .loadComponent(eq(LogRecordExporter.class), eq("otlp_http"), configCaptor.capture());
     StructuredConfigProperties configProperties = configCaptor.getValue();
-    assertThat(configProperties.getString("protocol")).isEqualTo("http/protobuf");
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318/v1/logs");
     List<StructuredConfigProperties> headers = configProperties.getStructuredList("headers");
     assertThat(headers)
