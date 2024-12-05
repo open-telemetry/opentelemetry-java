@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import static io.opentelemetry.sdk.internal.GlobUtil.toGlobPatternPredicate;
-
 import io.opentelemetry.sdk.autoconfigure.ResourceConfiguration;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -17,6 +15,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigPropertie
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorAttributesModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorsModel;
+import io.opentelemetry.sdk.internal.IncludeExcludePredicate;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import java.io.Closeable;
@@ -147,47 +146,16 @@ final class ResourceFactory
 
   private static Predicate<String> detectorAttributeFilter(
       @Nullable DetectorsModel detectorsModel) {
-    if (detectorsModel == null) {
-      return ResourceFactory::matchAll;
+    if (detectorsModel != null) {
+      DetectorAttributesModel attributesModel = detectorsModel.getAttributes();
+      if (attributesModel != null) {
+        List<String> included = attributesModel.getIncluded();
+        List<String> excluded = attributesModel.getExcluded();
+        if (included != null || excluded != null) {
+          return IncludeExcludePredicate.createPatternMatching(included, excluded);
+        }
+      }
     }
-    DetectorAttributesModel detectorAttributesModel = detectorsModel.getAttributes();
-    if (detectorAttributesModel == null) {
-      return ResourceFactory::matchAll;
-    }
-    List<String> included = detectorAttributesModel.getIncluded();
-    List<String> excluded = detectorAttributesModel.getExcluded();
-    if (included == null && excluded == null) {
-      return ResourceFactory::matchAll;
-    }
-    if (included == null) {
-      return excludedPredicate(excluded);
-    }
-    if (excluded == null) {
-      return includedPredicate(included);
-    }
-    return includedPredicate(included).and(excludedPredicate(excluded));
-  }
-
-  /**
-   * Returns a predicate which matches strings matching any of the {@code included} glob patterns.
-   */
-  private static Predicate<String> includedPredicate(List<String> included) {
-    Predicate<String> result = attributeKey -> false;
-    for (String include : included) {
-      result = result.or(toGlobPatternPredicate(include));
-    }
-    return result;
-  }
-
-  /**
-   * Returns a predicate which matches strings NOT matching any of the {@code excluded} glob
-   * patterns.
-   */
-  private static Predicate<String> excludedPredicate(List<String> excluded) {
-    Predicate<String> result = attributeKey -> true;
-    for (String exclude : excluded) {
-      result = result.and(toGlobPatternPredicate(exclude).negate());
-    }
-    return result;
+    return ResourceFactory::matchAll;
   }
 }

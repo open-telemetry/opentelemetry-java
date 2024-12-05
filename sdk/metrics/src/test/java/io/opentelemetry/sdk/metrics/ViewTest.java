@@ -36,7 +36,7 @@ class ViewTest {
                 + "name=name, "
                 + "description=description, "
                 + "aggregation=SumAggregation, "
-                + "attributesProcessor=AttributeKeyFilteringProcessor{nameFilter=SetIncludesPredicate{set=[key1, key2]}}, "
+                + "attributesProcessor=AttributeKeyFilteringProcessor{nameFilter=IncludeExcludePredicate{globMatchingEnabled=false, included=[key1, key2]}}, "
                 + "cardinalityLimit=10"
                 + "}");
   }

@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Predicate;
 import javax.annotation.concurrent.Immutable;
 
@@ -96,30 +95,6 @@ public abstract class AttributesProcessor {
    */
   public static AttributesProcessor append(Attributes attributes) {
     return new AppendingAttributesProcessor(attributes);
-  }
-
-  /** Creates a {@link Predicate} which tests if the {@code set} includes the input. */
-  public static Predicate<String> setIncludes(Set<String> set) {
-    return new SetIncludesPredicate(set);
-  }
-
-  /** Predicate which tests if the {@code set} includes the input. */
-  private static class SetIncludesPredicate implements Predicate<String> {
-    private final Set<String> set;
-
-    private SetIncludesPredicate(Set<String> set) {
-      this.set = set;
-    }
-
-    @Override
-    public boolean test(String s) {
-      return set.contains(s);
-    }
-
-    @Override
-    public String toString() {
-      return "SetIncludesPredicate{set=" + set + "}";
-    }
   }
 
   /**
