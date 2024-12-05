@@ -31,7 +31,7 @@
 
 * OTLP: Update opentelementry-proto to 1.4
   ([#6906](https://github.com/open-telemetry/opentelemetry-java/pull/6906))
-* OTLP: Rename Marshaler#writeJsonToGenerator to allow jackson runtimeOnly dependency
+* OTLP: Rename internal Marshaler#writeJsonToGenerator method to allow jackson runtimeOnly dependency
   ([#6896](https://github.com/open-telemetry/opentelemetry-java/pull/6896))
 * OTLP: Fix repeated string serialization for JSON.
   ([#6888](https://github.com/open-telemetry/opentelemetry-java/pull/6888))
