@@ -5,8 +5,10 @@
 
 package io.opentelemetry.api.internal;
 
+import java.util.ConcurrentModificationException;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import javax.annotation.Nullable;
 
 /**
@@ -18,6 +20,17 @@ import javax.annotation.Nullable;
 public final class ConfigUtil {
 
   private ConfigUtil() {}
+
+  /**
+   * Returns a copy of system properties which is safe to iterate over.
+   *
+   * <p>In java 8 and android environments, iterating through system properties may trigger {@link
+   * ConcurrentModificationException}. This method ensures callers can iterate safely without risk
+   * of exception. See https://github.com/open-telemetry/opentelemetry-java/issues/6732 for details.
+   */
+  public static Properties safeSystemProperties() {
+    return (Properties) System.getProperties().clone();
+  }
 
   /**
    * Return the system property or environment variable for the {@code key}.
@@ -33,8 +46,9 @@ public final class ConfigUtil {
    */
   public static String getString(String key, String defaultValue) {
     String normalizedKey = normalizePropertyKey(key);
+
     String systemProperty =
-        System.getProperties().entrySet().stream()
+        safeSystemProperties().entrySet().stream()
             .filter(entry -> normalizedKey.equals(normalizePropertyKey(entry.getKey().toString())))
             .map(entry -> entry.getValue().toString())
             .findFirst()

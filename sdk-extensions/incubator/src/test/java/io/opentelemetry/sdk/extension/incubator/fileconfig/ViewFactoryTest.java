@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.StreamModel;
 import io.opentelemetry.sdk.metrics.View;
 import java.util.Arrays;
@@ -52,7 +53,8 @@ class ViewFactoryTest {
                 new StreamModel()
                     .withName("name")
                     .withDescription("description")
-                    .withAttributeKeys(Arrays.asList("foo", "bar"))
+                    .withAttributeKeys(
+                        new IncludeExcludeModel().withIncluded(Arrays.asList("foo", "bar")))
                     .withAggregation(
                         new AggregationModel()
                             .withExplicitBucketHistogram(

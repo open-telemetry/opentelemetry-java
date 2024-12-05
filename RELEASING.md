@@ -59,6 +59,9 @@ and deadlocks.
     in which case no pull request will be created).
   * The [website](https://github.com/open-telemetry/opentelemetry.io) contains automation to update
     to the newly released version. Review and approve the pull request when available.
+  * The [website](https://opentelemetry.io/docs/languages/java/configuration/#zero-code-sdk-autoconfigure)
+  contains documentation on autoconfiguration properties. If the release has updated or modified any
+  properties, open and merge a pull request to update the documentation.
 
 ## Update release versions in documentations
 

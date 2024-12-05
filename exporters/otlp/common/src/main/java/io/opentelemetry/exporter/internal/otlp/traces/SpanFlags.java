@@ -11,6 +11,9 @@ import io.opentelemetry.api.trace.TraceFlags;
  * Represents the 32 bit span flags <a
  * href="https://github.com/open-telemetry/opentelemetry-proto/blob/342e1d4c3a1fe43312823ffb53bd38327f263059/opentelemetry/proto/trace/v1/trace.proto#L133">as
  * specified in the proto definition</a>.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 public final class SpanFlags {
   // As defined at:

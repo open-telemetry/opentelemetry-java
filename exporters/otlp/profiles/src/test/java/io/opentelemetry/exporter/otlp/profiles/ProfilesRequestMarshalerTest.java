@@ -19,23 +19,21 @@ import io.opentelemetry.exporter.otlp.internal.data.ImmutableLineData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableLinkData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableLocationData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableMappingData;
-import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfileContainerData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfileData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableSampleData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableValueTypeData;
 import io.opentelemetry.proto.common.v1.InstrumentationScope;
-import io.opentelemetry.proto.profiles.v1experimental.AttributeUnit;
-import io.opentelemetry.proto.profiles.v1experimental.Function;
-import io.opentelemetry.proto.profiles.v1experimental.Line;
-import io.opentelemetry.proto.profiles.v1experimental.Link;
-import io.opentelemetry.proto.profiles.v1experimental.Location;
-import io.opentelemetry.proto.profiles.v1experimental.Mapping;
-import io.opentelemetry.proto.profiles.v1experimental.Profile;
-import io.opentelemetry.proto.profiles.v1experimental.ProfileContainer;
-import io.opentelemetry.proto.profiles.v1experimental.ResourceProfiles;
-import io.opentelemetry.proto.profiles.v1experimental.Sample;
-import io.opentelemetry.proto.profiles.v1experimental.ScopeProfiles;
-import io.opentelemetry.proto.profiles.v1experimental.ValueType;
+import io.opentelemetry.proto.profiles.v1development.AttributeUnit;
+import io.opentelemetry.proto.profiles.v1development.Function;
+import io.opentelemetry.proto.profiles.v1development.Line;
+import io.opentelemetry.proto.profiles.v1development.Link;
+import io.opentelemetry.proto.profiles.v1development.Location;
+import io.opentelemetry.proto.profiles.v1development.Mapping;
+import io.opentelemetry.proto.profiles.v1development.Profile;
+import io.opentelemetry.proto.profiles.v1development.ResourceProfiles;
+import io.opentelemetry.proto.profiles.v1development.Sample;
+import io.opentelemetry.proto.profiles.v1development.ScopeProfiles;
+import io.opentelemetry.proto.profiles.v1development.ValueType;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
@@ -50,11 +48,11 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 public class ProfilesRequestMarshalerTest {
-
   @Test
   void compareAttributeUnitMarshaling() {
     AttributeUnitData input = ImmutableAttributeUnitData.create(1, 2);
-    AttributeUnit builderResult = AttributeUnit.newBuilder().setAttributeKey(1).setUnit(2).build();
+    AttributeUnit builderResult =
+        AttributeUnit.newBuilder().setAttributeKeyStrindex(1).setUnitStrindex(2).build();
 
     AttributeUnit roundTripResult =
         parse(AttributeUnit.getDefaultInstance(), AttributeUnitMarshaler.create(input));
@@ -65,7 +63,12 @@ public class ProfilesRequestMarshalerTest {
   void compareFunctionMarshaling() {
     FunctionData input = ImmutableFunctionData.create(1, 2, 3, 4);
     Function builderResult =
-        Function.newBuilder().setName(1).setSystemName(2).setFilename(3).setStartLine(4).build();
+        Function.newBuilder()
+            .setNameStrindex(1)
+            .setSystemNameStrindex(2)
+            .setFilenameStrindex(3)
+            .setStartLine(4)
+            .build();
 
     Function roundTripResult =
         parse(Function.getDefaultInstance(), FunctionMarshaler.create(input));
@@ -99,14 +102,13 @@ public class ProfilesRequestMarshalerTest {
   @Test
   void compareLocationMarshaling() {
     LocationData input =
-        ImmutableLocationData.create(1, 2, Collections.emptyList(), true, 3, listOf(5L, 6L));
+        ImmutableLocationData.create(1, 2, Collections.emptyList(), true, listOf(4, 5));
     Location builderResult =
         Location.newBuilder()
             .setMappingIndex(1)
             .setAddress(2)
             .setIsFolded(true)
-            .setTypeIndex(3)
-            .addAllAttributes(listOf(5L, 6L))
+            .addAllAttributeIndices(listOf(4, 5))
             .build();
 
     Location roundTripResult =
@@ -117,18 +119,14 @@ public class ProfilesRequestMarshalerTest {
   @Test
   void compareMappingMarshaling() {
     MappingData input =
-        ImmutableMappingData.create(
-            1, 2, 3, 4, 5, BuildIdKind.LINKER, listOf(6L, 7L), true, true, true, true);
+        ImmutableMappingData.create(1, 2, 3, 4, listOf(5, 6), true, true, true, true);
     Mapping builderResult =
         Mapping.newBuilder()
             .setMemoryStart(1)
             .setMemoryLimit(2)
             .setFileOffset(3)
-            .setFilename(4)
-            .setBuildId(5)
-            .setBuildIdKind(
-                io.opentelemetry.proto.profiles.v1experimental.BuildIdKind.BUILD_ID_LINKER)
-            .addAllAttributes(listOf(6L, 7L))
+            .setFilenameStrindex(4)
+            .addAllAttributeIndices(listOf(5, 6))
             .setHasFunctions(true)
             .setHasFilenames(true)
             .setHasLineNumbers(true)
@@ -140,66 +138,57 @@ public class ProfilesRequestMarshalerTest {
   }
 
   @Test
-  void compareProfileContainerMarshaling() {
-    String profileId = "0123456789abcdef0123456789abcdef";
-    ProfileContainerData input =
-        ImmutableProfileContainerData.create(
-            Resource.getDefault(),
-            InstrumentationScopeInfo.empty(),
-            profileId,
-            1,
-            2,
-            Attributes.empty(),
-            3,
-            "format",
-            ByteBuffer.wrap(new byte[] {4, 5}),
-            sampleProfileData());
-
-    ProfileContainer builderResult =
-        ProfileContainer.newBuilder()
-            .setProfileId(ByteString.fromHex(profileId))
-            .setStartTimeUnixNano(1)
-            .setEndTimeUnixNano(2)
-            .setDroppedAttributesCount(3)
-            .setOriginalPayloadFormat("format")
-            .setOriginalPayload(ByteString.copyFrom(new byte[] {4, 5}))
-            .setProfile(sampleProfileBuilder().build())
-            .build();
-
-    ProfileContainer roundTripResult =
-        parse(ProfileContainer.getDefaultInstance(), ProfileContainerMarshaler.create(input));
-    assertThat(roundTripResult).isEqualTo(builderResult);
-  }
-
-  @Test
   void compareResourceProfilesMarshaling() {
 
     String profileId = "0123456789abcdef0123456789abcdef";
-    ProfileContainerData profileContainerData =
-        ImmutableProfileContainerData.create(
+    ProfileData profileContainerData =
+        ImmutableProfileData.create(
             Resource.create(Attributes.empty()),
             InstrumentationScopeInfo.create("testscope"),
+            Collections.emptyList(),
+            Collections.emptyList(),
+            Collections.emptyList(),
+            Collections.emptyList(),
+            listOf(1, 2),
+            Collections.emptyList(),
+            Attributes.empty(),
+            Collections.emptyList(),
+            Collections.emptyList(),
+            Collections.emptyList(),
+            5L,
+            6L,
+            ImmutableValueTypeData.create(1, 2, AggregationTemporality.CUMULATIVE),
+            7L,
+            listOf(8, 9),
+            0,
             profileId,
-            1,
-            2,
             Attributes.empty(),
             3,
             "format",
-            ByteBuffer.wrap(new byte[] {4, 5}),
-            sampleProfileData());
+            ByteBuffer.wrap(new byte[] {4, 5}));
 
-    Collection<ProfileContainerData> input = new ArrayList<>();
+    Collection<ProfileData> input = new ArrayList<>();
     input.add(profileContainerData);
 
-    ProfileContainer profileContainer =
-        ProfileContainer.newBuilder()
+    Profile profileContainer =
+        Profile.newBuilder()
             .setProfileId(ByteString.fromHex(profileId))
-            .setStartTimeUnixNano(1)
-            .setEndTimeUnixNano(2)
             .setDroppedAttributesCount(3)
             .setOriginalPayloadFormat("format")
             .setOriginalPayload(ByteString.copyFrom(new byte[] {4, 5}))
-            .setProfile(sampleProfileBuilder().build())
+            .addAllLocationIndices(listOf(1, 2))
+            .setTimeNanos(5)
+            .setDurationNanos(6)
+            .setPeriod(7)
+            .setPeriodType(
+                ValueType.newBuilder()
+                    .setTypeStrindex(1)
+                    .setUnitStrindex(2)
+                    .setAggregationTemporality(
+                        io.opentelemetry.proto.profiles.v1development.AggregationTemporality
+                            .AGGREGATION_TEMPORALITY_CUMULATIVE)
+                    .build())
+            .addAllCommentStrindices(listOf(8, 9))
             .build();
 
     ResourceProfiles builderResult =
@@ -216,30 +205,20 @@ public class ProfilesRequestMarshalerTest {
     assertThat(marshalers.length).isEqualTo(1);
     ResourceProfiles roundTripResult = parse(ResourceProfiles.getDefaultInstance(), marshalers[0]);
     assertThat(roundTripResult).isEqualTo(builderResult);
-    // TODO
-  }
-
-  @Test
-  void compareProfileMarshaling() {
-    ProfileData input = sampleProfileData();
-    Profile builderResult = sampleProfileBuilder().build();
-    Profile roundTripResult = parse(Profile.getDefaultInstance(), ProfileMarshaler.create(input));
-    assertThat(roundTripResult).isEqualTo(builderResult);
   }
 
   @Test
   void compareSampleMarshaling() {
     SampleData input =
-        ImmutableSampleData.create(1, 2, 3, listOf(4L, 5L), listOf(6L, 7L), 8L, listOf(9L, 10L));
+        ImmutableSampleData.create(1, 2, listOf(3L, 4L), listOf(5, 6), 7, listOf(8L, 9L));
     Sample builderResult =
         Sample.newBuilder()
             .setLocationsStartIndex(1)
             .setLocationsLength(2)
-            .setStacktraceIdIndex(3)
-            .addAllValue(listOf(4L, 5L))
-            .addAllAttributes(listOf(6L, 7L))
-            .setLink(8)
-            .addAllTimestampsUnixNano(listOf(9L, 10L))
+            .addAllValue(listOf(3L, 4L))
+            .addAllAttributeIndices(listOf(5, 6))
+            .setLinkIndex(7)
+            .addAllTimestampsUnixNano(listOf(8L, 9L))
             .build();
 
     Sample roundTripResult = parse(Sample.getDefaultInstance(), SampleMarshaler.create(input));
@@ -251,60 +230,16 @@ public class ProfilesRequestMarshalerTest {
     ValueTypeData input = ImmutableValueTypeData.create(1, 2, AggregationTemporality.CUMULATIVE);
     ValueType builderResult =
         ValueType.newBuilder()
-            .setType(1)
-            .setUnit(2)
+            .setTypeStrindex(1)
+            .setUnitStrindex(2)
             .setAggregationTemporality(
-                io.opentelemetry.proto.profiles.v1experimental.AggregationTemporality
+                io.opentelemetry.proto.profiles.v1development.AggregationTemporality
                     .AGGREGATION_TEMPORALITY_CUMULATIVE)
             .build();
 
     ValueType roundTripResult =
         parse(ValueType.getDefaultInstance(), ValueTypeMarshaler.create(input));
     assertThat(roundTripResult).isEqualTo(builderResult);
-  }
-
-  // twin of sampleProfileBuilder
-  private static ProfileData sampleProfileData() {
-    return ImmutableProfileData.create(
-        Collections.emptyList(),
-        Collections.emptyList(),
-        Collections.emptyList(),
-        Collections.emptyList(),
-        listOf(1L, 2L),
-        Collections.emptyList(),
-        Attributes.empty(),
-        Collections.emptyList(),
-        Collections.emptyList(),
-        Collections.emptyList(),
-        3,
-        4,
-        5,
-        6,
-        ImmutableValueTypeData.create(1, 2, AggregationTemporality.CUMULATIVE),
-        7,
-        listOf(8L, 9L),
-        10);
-  }
-
-  // twin of sampleProfileData
-  private static Profile.Builder sampleProfileBuilder() {
-    return Profile.newBuilder()
-        .addAllLocationIndices(listOf(1L, 2L))
-        .setDropFrames(3)
-        .setKeepFrames(4)
-        .setTimeNanos(5)
-        .setDurationNanos(6)
-        .setPeriod(7)
-        .setPeriodType(
-            ValueType.newBuilder()
-                .setType(1)
-                .setUnit(2)
-                .setAggregationTemporality(
-                    io.opentelemetry.proto.profiles.v1experimental.AggregationTemporality
-                        .AGGREGATION_TEMPORALITY_CUMULATIVE)
-                .build())
-        .addAllComment(listOf(8L, 9L))
-        .setDefaultSampleType(10);
   }
 
   private static <T> List<T> listOf(T a, T b) {

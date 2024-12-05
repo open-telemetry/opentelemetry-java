@@ -11,7 +11,7 @@ import javax.annotation.concurrent.Immutable;
 /**
  * Describes function and line table debug information.
  *
- * @see "pprofextended.proto::Location"
+ * @see "profiles.proto::Location"
  */
 @Immutable
 public interface LocationData {
@@ -20,7 +20,7 @@ public interface LocationData {
    * The index of the corresponding profile.Mapping for this location. It can be unset if the
    * mapping is unknown or not applicable for this profile type.
    */
-  long getMappingIndex();
+  Integer getMappingIndex();
 
   /** The instruction address for this location, if available. */
   long getAddress();
@@ -37,9 +37,6 @@ public interface LocationData {
    */
   boolean isFolded();
 
-  /** Type of frame (e.g. kernel, native, python, hotspot, php). Index into string table. */
-  int getTypeIndex();
-
   /** References to attributes in Profile.attribute_table. */
-  List<Long> getAttributes();
+  List<Integer> getAttributes();
 }

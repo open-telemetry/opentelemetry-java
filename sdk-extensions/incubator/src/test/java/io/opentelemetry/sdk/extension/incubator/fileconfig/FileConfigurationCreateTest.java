@@ -81,15 +81,16 @@ class FileConfigurationCreateTest {
       String rewrittenExampleContent =
           exampleContent
               .replaceAll(
-                  "certificate: .*\n", "certificate: " + certificatePath + System.lineSeparator())
+                  "certificate: .*\n",
+                  "certificate: " + certificatePath.replace("\\", "\\\\") + System.lineSeparator())
               .replaceAll(
-                  "client_key: .*\n", "client_key: " + clientKeyPath + System.lineSeparator())
+                  "client_key: .*\n",
+                  "client_key: " + clientKeyPath.replace("\\", "\\\\") + System.lineSeparator())
               .replaceAll(
                   "client_certificate: .*\n",
-                  "client_certificate: " + clientCertificatePath + System.lineSeparator())
-              // TODO: remove once ComponentProvider SPI implemented in
-              // https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-xray-propagator
-              .replaceAll("xray,", "");
+                  "client_certificate: "
+                      + clientCertificatePath.replace("\\", "\\\\")
+                      + System.lineSeparator());
       InputStream is =
           new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
 
@@ -106,7 +107,7 @@ class FileConfigurationCreateTest {
     // exporter with OTLP exporter, following by invalid batch exporter which references invalid
     // exporter "foo".
     String yaml =
-        "file_format: \"0.1\"\n"
+        "file_format: \"0.3\"\n"
             + "logger_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -126,7 +127,26 @@ class FileConfigurationCreateTest {
     logCapturer.assertContains(
         "Error encountered interpreting model. Closing partially configured components.");
     logCapturer.assertContains(
-        "Closing io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter");
+        "Closing io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter");
     logCapturer.assertContains("Closing io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor");
+  }
+
+  @Test
+  void parseAndCreate_EmptyComponentProviderConfig() {
+    String yaml =
+        "file_format: \"0.3\"\n"
+            + "logger_provider:\n"
+            + "  processors:\n"
+            + "    - test:\n"
+            + "tracer_provider:\n"
+            + "  processors:\n"
+            + "    - test:\n";
+
+    assertThatCode(
+            () ->
+                FileConfiguration.parseAndCreate(
+                    new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))))
+        .doesNotThrowAnyException();
+    ;
   }
 }

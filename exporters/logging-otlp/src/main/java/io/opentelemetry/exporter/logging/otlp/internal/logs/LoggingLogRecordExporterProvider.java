@@ -16,7 +16,8 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class LoggingLogRecordExporterProvider implements ConfigurableLogRecordExporterProvider {
+public final class LoggingLogRecordExporterProvider
+    implements ConfigurableLogRecordExporterProvider {
 
   @Override
   public LogRecordExporter createExporter(ConfigProperties config) {

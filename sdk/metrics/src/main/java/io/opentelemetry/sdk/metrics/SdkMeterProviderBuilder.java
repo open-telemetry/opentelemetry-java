@@ -9,13 +9,13 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
+import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.metrics.internal.debug.SourceInfo;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.internal.view.RegisteredView;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
@@ -137,15 +137,12 @@ public final class SdkMeterProviderBuilder {
   /**
    * Registers a {@link MetricReader} with a {@link CardinalityLimitSelector}.
    *
-   * <p>This method is experimental so not public. You may reflectively call it using {@link
-   * SdkMeterProviderUtil#registerMetricReaderWithCardinalitySelector(SdkMeterProviderBuilder,
-   * MetricReader, CardinalityLimitSelector)}
+   * <p>If {@link #registerMetricReader(MetricReader)} is used, the {@link
+   * CardinalityLimitSelector#defaultCardinalityLimitSelector()} is used.
    *
-   * <p>Note: not currently stable but available for experimental use via {@link
-   * SdkMeterProviderUtil#registerMetricReaderWithCardinalitySelector(SdkMeterProviderBuilder,
-   * MetricReader, CardinalityLimitSelector)}.
+   * @since 1.44.0
    */
-  SdkMeterProviderBuilder registerMetricReader(
+  public SdkMeterProviderBuilder registerMetricReader(
       MetricReader reader, CardinalityLimitSelector cardinalityLimitSelector) {
     metricReaders.put(reader, cardinalityLimitSelector);
     return this;

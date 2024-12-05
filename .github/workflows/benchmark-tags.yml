@@ -54,8 +54,6 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
       - name: Run jmh
         run: ./gradlew jmhJar
-        env:
-          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
 
       - name: Run Benchmark
         run: |

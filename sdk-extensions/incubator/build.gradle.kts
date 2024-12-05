@@ -49,14 +49,18 @@ dependencies {
 // The sequence of tasks is:
 // 1. downloadConfigurationSchema - download configuration schema from open-telemetry/opentelemetry-configuration
 // 2. unzipConfigurationSchema - unzip the configuration schema archive contents to $buildDir/configuration/
-// 3. generateJsonSchema2Pojo - generate java POJOs from the configuration schema
-// 4. jsonSchema2PojoPostProcessing - perform various post processing on the generated POJOs, e.g. replace javax.annotation.processing.Generated with javax.annotation.Generated, add @SuppressWarning("rawtypes") annotation
-// 5. overwriteJs2p - overwrite original generated classes with versions containing updated @Generated annotation
-// 6. deleteJs2pTmp - delete tmp directory
+// 3. deleteTypeDescriptions - delete type_descriptions.yaml $buildDir/configuration/schema, which is not part of core schema and causes problems resolving type refs
+// 4. generateJsonSchema2Pojo - generate java POJOs from the configuration schema
+// 5. jsonSchema2PojoPostProcessing - perform various post processing on the generated POJOs, e.g. replace javax.annotation.processing.Generated with javax.annotation.Generated, add @SuppressWarning("rawtypes") annotation
+// 6. overwriteJs2p - overwrite original generated classes with versions containing updated @Generated annotation
+// 7. deleteJs2pTmp - delete tmp directory
 // ... proceed with normal sourcesJar, compileJava, etc
 
-val configurationTag = "0.1.0"
-val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
+// TODO (trask) revert after the 0.4.0 release
+//  it was needed after 0.3.0 release because file_format in the examples weren't updated prior to the release tag
+// val configurationTag = "0.3.0"
+// val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
+val configurationRef = "cea3905ce0a542d573968c3c47d413143d473cf4"
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 
@@ -76,6 +80,11 @@ val unzipConfigurationSchema by tasks.registering(Copy::class) {
     path = pathParts.subList(1, pathParts.size).joinToString("/")
   })
   into("$buildDirectory/configuration/")
+}
+
+val deleteTypeDescriptions by tasks.registering(Delete::class) {
+  dependsOn(unzipConfigurationSchema)
+  delete("$buildDirectory/configuration/schema/type_descriptions.yaml")
 }
 
 jsonSchema2Pojo {
@@ -106,7 +115,7 @@ jsonSchema2Pojo {
 }
 
 val generateJsonSchema2Pojo = tasks.getByName("generateJsonSchema2Pojo")
-generateJsonSchema2Pojo.dependsOn(unzipConfigurationSchema)
+generateJsonSchema2Pojo.dependsOn(deleteTypeDescriptions)
 
 val jsonSchema2PojoPostProcessing by tasks.registering(Copy::class) {
   dependsOn(generateJsonSchema2Pojo)

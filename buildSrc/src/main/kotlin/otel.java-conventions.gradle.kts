@@ -42,7 +42,7 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "10.18.1"
+  toolVersion = "10.20.2"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
@@ -134,12 +134,6 @@ tasks {
       breakIterator(true)
 
       addBooleanOption("html5", true)
-
-      // TODO (trask) revisit to see if url is fixed
-      // currently broken because https://docs.oracle.com/javase/8/docs/api/element-list is missing
-      // and redirects
-      // links("https://docs.oracle.com/javase/8/docs/api/")
-
       addBooleanOption("Xdoclint:all,-missing", true)
     }
   }

@@ -13,6 +13,10 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
+ */
 @AutoValue
 @Immutable
 public abstract class Advice {
@@ -39,6 +43,10 @@ public abstract class Advice {
     return getAttributes() != null;
   }
 
+  /**
+   * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+   * any time.
+   */
   @AutoValue.Builder
   public abstract static class AdviceBuilder {
 

@@ -33,7 +33,7 @@ public class LoggerJsonWriter implements JsonWriter {
   public CompletableResultCode write(Marshaler exportRequest) {
     SegmentedStringWriter sw = new SegmentedStringWriter(JSON_FACTORY._getBufferRecycler());
     try (JsonGenerator gen = JsonUtil.create(sw)) {
-      exportRequest.writeJsonTo(gen);
+      exportRequest.writeJsonToGenerator(gen);
     } catch (IOException e) {
       logger.log(Level.WARNING, "Unable to write OTLP JSON " + type, e);
       return CompletableResultCode.ofFailure();

@@ -24,12 +24,13 @@ import java.util.StringJoiner;
 import javax.annotation.Nullable;
 
 /**
- * Implementation of {@link StructuredConfigProperties} which uses a file configuration model as a
- * source.
+ * Implementation of {@link StructuredConfigProperties} which uses a declarative configuration model
+ * as a source.
  *
  * @see #getStructured(String) Accessing nested maps
  * @see #getStructuredList(String) Accessing lists of maps
- * @see FileConfiguration#toConfigProperties(Object) Converting configuration model to properties
+ * @see FileConfiguration#toConfigProperties(Object, ComponentLoader) Converting configuration model
+ *     to properties
  */
 final class YamlStructuredConfigProperties implements StructuredConfigProperties {
 

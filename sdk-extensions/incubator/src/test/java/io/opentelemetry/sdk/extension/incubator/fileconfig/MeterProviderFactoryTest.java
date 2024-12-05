@@ -7,14 +7,14 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterProviderModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SelectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.StreamModel;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
@@ -57,7 +57,7 @@ class MeterProviderFactoryTest {
         SdkMeterProvider.builder()
             .registerMetricReader(
                 io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
-                        OtlpGrpcMetricExporter.getDefault())
+                        OtlpHttpMetricExporter.getDefault())
                     .build())
             .registerView(
                 InstrumentSelector.builder().setName("instrument-name").build(),
@@ -75,7 +75,7 @@ class MeterProviderFactoryTest {
                                 .withPeriodic(
                                     new PeriodicMetricReaderModel()
                                         .withExporter(
-                                            new MetricExporterModel()
+                                            new PushMetricExporterModel()
                                                 .withOtlp(new OtlpMetricModel())))))
                     .withViews(
                         Collections.singletonList(

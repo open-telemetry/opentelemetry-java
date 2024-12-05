@@ -16,8 +16,6 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
-import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.List;
 import java.util.function.Consumer;
@@ -29,15 +27,13 @@ final class SdkLongCounter extends AbstractInstrument implements ExtendedLongCou
   private static final Logger logger = Logger.getLogger(SdkLongCounter.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
-  private final MeterSharedState meterSharedState;
+  private final SdkMeter sdkMeter;
   private final WriteableMetricStorage storage;
 
   private SdkLongCounter(
-      InstrumentDescriptor descriptor,
-      MeterSharedState meterSharedState,
-      WriteableMetricStorage storage) {
+      InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     super(descriptor);
-    this.meterSharedState = meterSharedState;
+    this.sdkMeter = sdkMeter;
     this.storage = storage;
   }
 
@@ -66,24 +62,16 @@ final class SdkLongCounter extends AbstractInstrument implements ExtendedLongCou
 
   @Override
   public boolean isEnabled() {
-    return meterSharedState.isMeterEnabled() && storage.isEnabled();
+    return sdkMeter.isMeterEnabled() && storage.isEnabled();
   }
 
   static final class SdkLongCounterBuilder implements ExtendedLongCounterBuilder {
 
     private final InstrumentBuilder builder;
 
-    SdkLongCounterBuilder(
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        String name) {
+    SdkLongCounterBuilder(SdkMeter sdkMeter, String name) {
       this.builder =
-          new InstrumentBuilder(
-              name,
-              InstrumentType.COUNTER,
-              InstrumentValueType.LONG,
-              meterProviderSharedState,
-              meterSharedState);
+          new InstrumentBuilder(name, InstrumentType.COUNTER, InstrumentValueType.LONG, sdkMeter);
     }
 
     @Override

@@ -32,7 +32,9 @@ class LoggerJsonWriterTest {
   @Test
   void error() throws IOException {
     Marshaler marshaler = mock(Marshaler.class);
-    Mockito.doThrow(new IOException("test")).when(marshaler).writeJsonTo(any(JsonGenerator.class));
+    Mockito.doThrow(new IOException("test"))
+        .when(marshaler)
+        .writeJsonToGenerator(any(JsonGenerator.class));
 
     Logger logger = Logger.getLogger(LoggerJsonWriter.class.getName());
 

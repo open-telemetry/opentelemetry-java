@@ -5,20 +5,13 @@
 
 package io.opentelemetry.exporter.otlp.internal;
 
-import static io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram;
-
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.metrics.Aggregation;
-import io.opentelemetry.sdk.metrics.InstrumentType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
-import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregationUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -27,10 +20,12 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.Locale;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -38,6 +33,8 @@ import javax.annotation.Nullable;
  * any time.
  */
 public final class OtlpConfigUtil {
+
+  private static final Logger logger = Logger.getLogger(OtlpConfigUtil.class.getName());
 
   public static final String DATA_TYPE_TRACES = "traces";
   public static final String DATA_TYPE_METRICS = "metrics";
@@ -57,7 +54,14 @@ public final class OtlpConfigUtil {
 
   /** Determine the configured OTLP protocol for the {@code dataType}. */
   public static String getStructuredConfigOtlpProtocol(StructuredConfigProperties config) {
-    return config.getString("protocol", PROTOCOL_GRPC);
+    // NOTE: The default OTLP protocol is different for declarative config than for env var / system
+    // property based config. This is intentional. OpenTelemetry changed the default protocol
+    // recommendation from grpc to http/protobuf, but the autoconfigure's env var / system property
+    // based config did not update to reflect this before stabilizing, and changing is a breaking
+    // change requiring a major version bump. Declarative config is not yet stable and therefore can
+    // switch to the current default recommendation, which aligns also aligns with the behavior of
+    // the OpenTelemetry Java Agent 2.x+.
+    return config.getString("protocol", PROTOCOL_HTTP_PROTOBUF);
   }
 
   /** Invoke the setters with the OTLP configuration for the {@code dataType}. */
@@ -97,21 +101,7 @@ public final class OtlpConfigUtil {
       setEndpoint.accept(endpoint.toString());
     }
 
-    Map<String, String> headers = config.getMap("otel.exporter.otlp." + dataType + ".headers");
-    if (headers.isEmpty()) {
-      headers = config.getMap("otel.exporter.otlp.headers");
-    }
-    for (Map.Entry<String, String> entry : headers.entrySet()) {
-      String key = entry.getKey();
-      String value = entry.getValue();
-      try {
-        // headers are encoded as URL - see
-        // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md#specifying-headers-via-environment-variables
-        addHeader.accept(key, URLDecoder.decode(value, StandardCharsets.UTF_8.displayName()));
-      } catch (Exception e) {
-        throw new ConfigurationException("Cannot decode header value: " + value, e);
-      }
-    }
+    configureOtlpHeaders(config, dataType, addHeader);
 
     String compression = config.getString("otel.exporter.otlp." + dataType + ".compression");
     if (compression == null) {
@@ -190,29 +180,28 @@ public final class OtlpConfigUtil {
     String protocol = getStructuredConfigOtlpProtocol(config);
     boolean isHttpProtobuf = protocol.equals(PROTOCOL_HTTP_PROTOBUF);
     URL endpoint = validateEndpoint(config.getString("endpoint"), isHttpProtobuf);
-    if (endpoint != null && isHttpProtobuf) {
-      String path = endpoint.getPath();
-      if (!path.endsWith("/")) {
-        path += "/";
-      }
-      path += signalPath(dataType);
-      endpoint = createUrl(endpoint, path);
-    }
     if (endpoint != null) {
       setEndpoint.accept(endpoint.toString());
     }
 
-    StructuredConfigProperties headers = config.getStructured("headers");
+    String headerList = config.getString("headers_list");
+    if (headerList != null) {
+      ConfigProperties headersListConfig =
+          DefaultConfigProperties.createFromMap(
+              Collections.singletonMap("otel.exporter.otlp.headers", headerList));
+      configureOtlpHeaders(headersListConfig, dataType, addHeader);
+    }
+
+    List<StructuredConfigProperties> headers = config.getStructuredList("headers");
     if (headers != null) {
-      headers
-          .getPropertyKeys()
-          .forEach(
-              header -> {
-                String value = headers.getString(header);
-                if (value != null) {
-                  addHeader.accept(header, value);
-                }
-              });
+      headers.forEach(
+          header -> {
+            String name = header.getString("name");
+            String value = header.getString("value");
+            if (name != null && value != null) {
+              addHeader.accept(name, value);
+            }
+          });
     }
 
     String compression = config.getString("compression");
@@ -249,93 +238,22 @@ public final class OtlpConfigUtil {
     ExporterBuilderUtil.configureExporterMemoryMode(config, setMemoryMode);
   }
 
-  /**
-   * Invoke the {@code aggregationTemporalitySelectorConsumer} with the configured {@link
-   * AggregationTemporality}.
-   */
-  public static void configureOtlpAggregationTemporality(
-      ConfigProperties config,
-      Consumer<AggregationTemporalitySelector> aggregationTemporalitySelectorConsumer) {
-    String temporalityStr = config.getString("otel.exporter.otlp.metrics.temporality.preference");
-    if (temporalityStr == null) {
-      return;
+  private static void configureOtlpHeaders(
+      ConfigProperties config, String dataType, BiConsumer<String, String> addHeader) {
+    Map<String, String> headers = config.getMap("otel.exporter.otlp." + dataType + ".headers");
+    if (headers.isEmpty()) {
+      headers = config.getMap("otel.exporter.otlp.headers");
     }
-    AggregationTemporalitySelector temporalitySelector;
-    switch (temporalityStr.toLowerCase(Locale.ROOT)) {
-      case "cumulative":
-        temporalitySelector = AggregationTemporalitySelector.alwaysCumulative();
-        break;
-      case "delta":
-        temporalitySelector = AggregationTemporalitySelector.deltaPreferred();
-        break;
-      case "lowmemory":
-        temporalitySelector = AggregationTemporalitySelector.lowMemory();
-        break;
-      default:
-        throw new ConfigurationException("Unrecognized aggregation temporality: " + temporalityStr);
-    }
-    aggregationTemporalitySelectorConsumer.accept(temporalitySelector);
-  }
-
-  public static void configureOtlpAggregationTemporality(
-      StructuredConfigProperties config,
-      Consumer<AggregationTemporalitySelector> aggregationTemporalitySelectorConsumer) {
-    String temporalityStr = config.getString("temporality_preference");
-    if (temporalityStr == null) {
-      return;
-    }
-    AggregationTemporalitySelector temporalitySelector;
-    switch (temporalityStr.toLowerCase(Locale.ROOT)) {
-      case "cumulative":
-        temporalitySelector = AggregationTemporalitySelector.alwaysCumulative();
-        break;
-      case "delta":
-        temporalitySelector = AggregationTemporalitySelector.deltaPreferred();
-        break;
-      case "lowmemory":
-        temporalitySelector = AggregationTemporalitySelector.lowMemory();
-        break;
-      default:
-        throw new ConfigurationException("Unrecognized temporality_preference: " + temporalityStr);
-    }
-    aggregationTemporalitySelectorConsumer.accept(temporalitySelector);
-  }
-
-  /**
-   * Invoke the {@code defaultAggregationSelectorConsumer} with the configured {@link
-   * DefaultAggregationSelector}.
-   */
-  public static void configureOtlpHistogramDefaultAggregation(
-      ConfigProperties config,
-      Consumer<DefaultAggregationSelector> defaultAggregationSelectorConsumer) {
-    String defaultHistogramAggregation =
-        config.getString("otel.exporter.otlp.metrics.default.histogram.aggregation");
-    if (defaultHistogramAggregation != null) {
-      ExporterBuilderUtil.configureHistogramDefaultAggregation(
-          defaultHistogramAggregation, defaultAggregationSelectorConsumer);
-    }
-  }
-
-  /**
-   * Invoke the {@code defaultAggregationSelectorConsumer} with the configured {@link
-   * DefaultAggregationSelector}.
-   */
-  public static void configureOtlpHistogramDefaultAggregation(
-      StructuredConfigProperties config,
-      Consumer<DefaultAggregationSelector> defaultAggregationSelectorConsumer) {
-    String defaultHistogramAggregation = config.getString("default_histogram_aggregation");
-    if (defaultHistogramAggregation == null) {
-      return;
-    }
-    if (AggregationUtil.aggregationName(Aggregation.base2ExponentialBucketHistogram())
-        .equalsIgnoreCase(defaultHistogramAggregation)) {
-      defaultAggregationSelectorConsumer.accept(
-          DefaultAggregationSelector.getDefault()
-              .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()));
-    } else if (!AggregationUtil.aggregationName(explicitBucketHistogram())
-        .equalsIgnoreCase(defaultHistogramAggregation)) {
-      throw new ConfigurationException(
-          "Unrecognized default_histogram_aggregation: " + defaultHistogramAggregation);
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      String key = entry.getKey();
+      String value = entry.getValue();
+      try {
+        // headers are encoded as URL - see
+        // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md#specifying-headers-via-environment-variables
+        addHeader.accept(key, URLDecoder.decode(value, StandardCharsets.UTF_8.displayName()));
+      } catch (Exception e) {
+        throw new ConfigurationException("Cannot decode header value: " + value, e);
+      }
     }
   }
 
@@ -348,7 +266,7 @@ public final class OtlpConfigUtil {
   }
 
   @Nullable
-  private static URL validateEndpoint(@Nullable String endpoint, boolean allowPath) {
+  private static URL validateEndpoint(@Nullable String endpoint, boolean isHttpProtobuf) {
     if (endpoint == null) {
       return null;
     }
@@ -370,9 +288,27 @@ public final class OtlpConfigUtil {
       throw new ConfigurationException(
           "OTLP endpoint must not have a fragment: " + endpointUrl.getRef());
     }
-    if (!allowPath && (!endpointUrl.getPath().isEmpty() && !endpointUrl.getPath().equals("/"))) {
+    if (!isHttpProtobuf
+        && (!endpointUrl.getPath().isEmpty() && !endpointUrl.getPath().equals("/"))) {
       throw new ConfigurationException(
           "OTLP endpoint must not have a path: " + endpointUrl.getPath());
+    }
+    if ((endpointUrl.getPort() == 4317 && isHttpProtobuf)
+        || (endpointUrl.getPort() == 4318 && !isHttpProtobuf)) {
+      int expectedPort = isHttpProtobuf ? 4318 : 4317;
+      String protocol = isHttpProtobuf ? PROTOCOL_HTTP_PROTOBUF : PROTOCOL_GRPC;
+      logger.warning(
+          "OTLP exporter endpoint port is likely incorrect for protocol version \""
+              + protocol
+              + "\". The endpoint "
+              + endpointUrl
+              + " has port "
+              + endpointUrl.getPort()
+              + ". Typically, the \""
+              + protocol
+              + "\" version of OTLP uses port "
+              + expectedPort
+              + ".");
     }
     return endpointUrl;
   }
@@ -386,8 +322,7 @@ public final class OtlpConfigUtil {
     if (!file.exists()) {
       throw new ConfigurationException("Invalid OTLP certificate/key path: " + filePath);
     }
-    try {
-      RandomAccessFile raf = new RandomAccessFile(file, "r");
+    try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
       byte[] bytes = new byte[(int) raf.length()];
       raf.readFully(bytes);
       return bytes;

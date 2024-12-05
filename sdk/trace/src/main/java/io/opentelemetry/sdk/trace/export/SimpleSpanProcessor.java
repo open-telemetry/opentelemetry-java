@@ -41,6 +41,8 @@ public final class SimpleSpanProcessor implements SpanProcessor {
       Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
+  private final Object exporterLock = new Object();
+
   /**
    * Returns a new {@link SimpleSpanProcessor} which exports spans to the {@link SpanExporter}
    * synchronously.
@@ -86,7 +88,12 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     if (span != null && (exportUnsampledSpans || span.getSpanContext().isSampled())) {
       try {
         List<SpanData> spans = Collections.singletonList(span.toSpanData());
-        CompletableResultCode result = spanExporter.export(spans);
+        CompletableResultCode result;
+
+        synchronized (exporterLock) {
+          result = spanExporter.export(spans);
+        }
+
         pendingExports.add(result);
         result.whenComplete(
             () -> {

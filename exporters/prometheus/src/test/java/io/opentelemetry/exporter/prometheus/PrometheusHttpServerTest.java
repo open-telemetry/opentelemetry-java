@@ -42,9 +42,9 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import io.prometheus.metrics.exporter.httpserver.MetricsHandler;
-import io.prometheus.metrics.expositionformats.generated.com_google_protobuf_3_25_3.Metrics;
+import io.prometheus.metrics.expositionformats.generated.com_google_protobuf_4_28_3.Metrics;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
-import io.prometheus.metrics.shaded.com_google_protobuf_3_25_3.TextFormat;
+import io.prometheus.metrics.shaded.com_google_protobuf_4_28_3.TextFormat;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -427,6 +427,8 @@ class PrometheusHttpServerTest {
         PrometheusHttpServer.builder()
             .setHost("localhost")
             .setPort(port)
+            // Memory mode must be IMMUTABLE_DATA to set custom executor
+            .setMemoryMode(MemoryMode.IMMUTABLE_DATA)
             .setExecutor(scheduledExecutor)
             .build()) {
       assertThat(server)
@@ -520,7 +522,7 @@ class PrometheusHttpServerTest {
     builder.setAllowedResourceAttributesFilter(resourceAttributesFilter);
 
     ExecutorService executor = Executors.newSingleThreadExecutor();
-    builder.setExecutor(executor);
+    builder.setExecutor(executor).setMemoryMode(MemoryMode.IMMUTABLE_DATA);
 
     PrometheusRegistry prometheusRegistry = new PrometheusRegistry();
     builder.setPrometheusRegistry(prometheusRegistry);

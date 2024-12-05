@@ -10,9 +10,7 @@ import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.ViewBuilder;
-import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.internal.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
 import java.lang.reflect.InvocationTargetException;
@@ -23,8 +21,9 @@ import java.util.function.Predicate;
  * A collection of methods that allow use of experimental features prior to availability in public
  * APIs.
  *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
+ * <p>This class is internal and experimental. Its APIs are unstable and can change at any time. Its
+ * APIs (or a version of them) may be promoted to the public stable API in the future, but no
+ * guarantees are made.
  */
 public final class SdkMeterProviderUtil {
 
@@ -46,28 +45,6 @@ public final class SdkMeterProviderUtil {
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       throw new IllegalStateException(
           "Error calling setExemplarFilter on SdkMeterProviderBuilder", e);
-    }
-  }
-
-  /**
-   * Reflectively add a {@link MetricReader} with the {@link CardinalityLimitSelector} to the {@link
-   * SdkMeterProviderBuilder}.
-   *
-   * @param sdkMeterProviderBuilder the builder
-   */
-  public static void registerMetricReaderWithCardinalitySelector(
-      SdkMeterProviderBuilder sdkMeterProviderBuilder,
-      MetricReader metricReader,
-      CardinalityLimitSelector cardinalityLimitSelector) {
-    try {
-      Method method =
-          SdkMeterProviderBuilder.class.getDeclaredMethod(
-              "registerMetricReader", MetricReader.class, CardinalityLimitSelector.class);
-      method.setAccessible(true);
-      method.invoke(sdkMeterProviderBuilder, metricReader, cardinalityLimitSelector);
-    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      throw new IllegalStateException(
-          "Error calling addMetricReader on SdkMeterProviderBuilder", e);
     }
   }
 

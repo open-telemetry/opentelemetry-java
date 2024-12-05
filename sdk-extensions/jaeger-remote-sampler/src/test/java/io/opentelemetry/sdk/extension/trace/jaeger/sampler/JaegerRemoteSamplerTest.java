@@ -12,6 +12,7 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Named.named;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import com.linecorp.armeria.common.TlsKeyPair;
 import com.linecorp.armeria.common.grpc.protocol.ArmeriaStatusException;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
@@ -117,7 +118,7 @@ class JaegerRemoteSamplerTest {
               });
           sb.http(0);
           sb.https(0);
-          sb.tls(certificate.certificateFile(), certificate.privateKeyFile());
+          sb.tls(TlsKeyPair.of(certificate.privateKey(), certificate.certificate()));
           sb.tlsCustomizer(
               ssl -> {
                 ssl.clientAuth(ClientAuth.OPTIONAL);

@@ -70,7 +70,7 @@ public final class CallbackRegistration {
     return "CallbackRegistration{instrumentDescriptors=" + instrumentDescriptors + "}";
   }
 
-  void invokeCallback(RegisteredReader reader, long startEpochNanos, long epochNanos) {
+  public void invokeCallback(RegisteredReader reader, long startEpochNanos, long epochNanos) {
     // Return early if no storages are registered
     if (!hasStorages) {
       return;

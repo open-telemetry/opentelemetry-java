@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn;
 
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnModel;
@@ -95,7 +95,7 @@ class TracerProviderFactoryTest {
                 .setSampler(alwaysOn())
                 .addSpanProcessor(
                     io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(
-                            OtlpGrpcSpanExporter.getDefault())
+                            OtlpHttpSpanExporter.getDefault())
                         .build())
                 .build()));
   }

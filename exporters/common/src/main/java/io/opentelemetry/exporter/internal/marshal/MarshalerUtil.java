@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -106,6 +107,16 @@ public final class MarshalerUtil {
     int size = 0;
     size += field.getTagSize();
     size += CodedOutputStream.computeLengthDelimitedFieldSize(dataSize);
+    return size;
+  }
+
+  /** Returns the size of a repeated string field. */
+  @SuppressWarnings("AvoidObjectArrays")
+  public static int sizeRepeatedString(ProtoFieldInfo field, byte[][] utf8Bytes) {
+    int size = 0;
+    for (byte[] i : utf8Bytes) {
+      size += MarshalerUtil.sizeBytes(field, i);
+    }
     return size;
   }
 
@@ -214,6 +225,26 @@ public final class MarshalerUtil {
     return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(payloadSize) + payloadSize;
   }
 
+  /**
+   * Returns the size of a repeated int32 field.
+   *
+   * <p>Packed repeated fields contain the tag, an integer representing the incoming payload size,
+   * and an actual payload of repeated varints.
+   */
+  public static int sizeRepeatedInt32(ProtoFieldInfo field, List<Integer> values) {
+    if (values.isEmpty()) {
+      return 0;
+    }
+
+    int payloadSize = 0;
+    for (int v : values) {
+      payloadSize += CodedOutputStream.computeInt32SizeNoTag(v);
+    }
+
+    // tag size + payload indicator size + actual payload size
+    return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(payloadSize) + payloadSize;
+  }
+
   /** Returns the size of a repeated double field. */
   public static int sizeRepeatedDouble(ProtoFieldInfo field, List<Double> values) {
     // Same as fixed64.
@@ -299,6 +330,19 @@ public final class MarshalerUtil {
     return field.getTagSize() + CodedOutputStream.computeInt32SizeNoTag(message);
   }
 
+  /** Returns the size of an optional int32 field. */
+  public static int sizeInt32Optional(ProtoFieldInfo field, int message) {
+    return field.getTagSize() + CodedOutputStream.computeInt32SizeNoTag(message);
+  }
+
+  /** Returns the size of an optional int32 field. */
+  public static int sizeInt32Optional(ProtoFieldInfo field, @Nullable Integer message) {
+    if (message == null) {
+      return 0;
+    }
+    return sizeInt32Optional(field, (int) message);
+  }
+
   /** Returns the size of a double field. */
   public static int sizeDouble(ProtoFieldInfo field, double value) {
     if (value == 0D) {
@@ -344,6 +388,14 @@ public final class MarshalerUtil {
       return 0;
     }
     return field.getTagSize() + CodedOutputStream.computeByteArraySizeNoTag(message);
+  }
+
+  /** Returns the size of a bytes field based on the buffer's capacity. */
+  public static int sizeByteBuffer(ProtoFieldInfo field, ByteBuffer message) {
+    if (message.capacity() == 0) {
+      return 0;
+    }
+    return field.getTagSize() + CodedOutputStream.computeByteBufferSizeNoTag(message);
   }
 
   /** Returns the size of a enum field. */

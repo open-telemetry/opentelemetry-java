@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.internal.DynamicPrimitiveLongList;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -121,12 +122,25 @@ public abstract class Serializer implements AutoCloseable {
 
   protected abstract void writeSInt32(ProtoFieldInfo info, int value) throws IOException;
 
-  /** Serializes a protobuf {@code uint32} field. */
+  /** Serializes a protobuf {@code int32} field. */
   public void serializeInt32(ProtoFieldInfo field, int value) throws IOException {
     if (value == 0) {
       return;
     }
     writeint32(field, value);
+  }
+
+  /** Serializes a protobuf {@code int32} field. */
+  public void serializeInt32Optional(ProtoFieldInfo field, int value) throws IOException {
+    writeint32(field, value);
+  }
+
+  /** Serializes a protobuf {@code int32} field. */
+  public void serializeInt32Optional(ProtoFieldInfo field, @Nullable Integer value)
+      throws IOException {
+    if (value != null) {
+      serializeInt32Optional(field, (int) value);
+    }
   }
 
   protected abstract void writeint32(ProtoFieldInfo field, int value) throws IOException;
@@ -220,6 +234,18 @@ public abstract class Serializer implements AutoCloseable {
   }
 
   /**
+   * Serializes a protobuf {@code repeated string} field. {@code utf8Bytes} is the UTF8 encoded
+   * bytes of the strings to serialize.
+   */
+  @SuppressWarnings("AvoidObjectArrays")
+  public void serializeRepeatedString(ProtoFieldInfo field, byte[][] utf8Bytes) throws IOException {
+    if (utf8Bytes.length == 0) {
+      return;
+    }
+    writeRepeatedString(field, utf8Bytes);
+  }
+
+  /**
    * Serializes a protobuf {@code string} field. {@code string} is the value to be serialized and
    * {@code utf8Length} is the length of the string after it is encoded in UTF8. This method reads
    * elements from context, use together with {@link
@@ -245,6 +271,11 @@ public abstract class Serializer implements AutoCloseable {
       ProtoFieldInfo field, String string, int utf8Length, MarshalerContext context)
       throws IOException;
 
+  /** Writes a protobuf {@code repeated string} field, even if it matches the default value. */
+  @SuppressWarnings("AvoidObjectArrays")
+  public abstract void writeRepeatedString(ProtoFieldInfo field, byte[][] utf8Bytes)
+      throws IOException;
+
   /** Serializes a protobuf {@code bytes} field. */
   public void serializeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
     if (value.length == 0) {
@@ -253,7 +284,21 @@ public abstract class Serializer implements AutoCloseable {
     writeBytes(field, value);
   }
 
+  /**
+   * Serializes a protobuf {@code bytes} field. Writes all content of the ByteBuffer regardless of
+   * the current position and limit. Does not alter the position or limit of the provided
+   * ByteBuffer.
+   */
+  public void serializeByteBuffer(ProtoFieldInfo field, ByteBuffer value) throws IOException {
+    if (value.capacity() == 0) {
+      return;
+    }
+    writeByteBuffer(field, value);
+  }
+
   public abstract void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException;
+
+  public abstract void writeByteBuffer(ProtoFieldInfo field, ByteBuffer value) throws IOException;
 
   protected abstract void writeStartMessage(ProtoFieldInfo field, int protoMessageSize)
       throws IOException;
@@ -307,6 +352,25 @@ public abstract class Serializer implements AutoCloseable {
       throws IOException;
 
   protected abstract void writeEndRepeatedVarint() throws IOException;
+
+  /** Serializes a {@code repeated int32} field. */
+  public void serializeRepeatedInt32(ProtoFieldInfo field, List<Integer> values)
+      throws IOException {
+    if (values.isEmpty()) {
+      return;
+    }
+
+    int payloadSize = 0;
+    for (int v : values) {
+      payloadSize += CodedOutputStream.computeInt32SizeNoTag(v);
+    }
+
+    writeStartRepeatedVarint(field, payloadSize);
+    for (int value : values) {
+      writeUInt64Value(value);
+    }
+    writeEndRepeatedVarint();
+  }
 
   /** Serializes a {@code repeated fixed64} field. */
   public void serializeRepeatedFixed64(ProtoFieldInfo field, List<Long> values) throws IOException {
