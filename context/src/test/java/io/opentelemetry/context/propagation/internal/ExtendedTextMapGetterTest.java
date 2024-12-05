@@ -15,7 +15,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
-public class ExtendedTextMapGetterTest {
+class ExtendedTextMapGetterTest {
 
   final ExtendedTextMapGetter<Void> nullGet =
       new ExtendedTextMapGetter<Void>() {
