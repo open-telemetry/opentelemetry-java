@@ -32,12 +32,21 @@ final class SdkLogRecordBuilder implements ExtendedLogRecordBuilder {
   @Nullable private String severityText;
   @Nullable private Value<?> body;
   @Nullable private AttributesMap attributes;
+  @Nullable private final String eventName;
 
   SdkLogRecordBuilder(
       LoggerSharedState loggerSharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
+    this(loggerSharedState, instrumentationScopeInfo, null);
+  }
+
+  SdkLogRecordBuilder(
+      LoggerSharedState loggerSharedState,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      @Nullable String eventName) {
     this.loggerSharedState = loggerSharedState;
     this.logLimits = loggerSharedState.getLogLimits();
     this.instrumentationScopeInfo = instrumentationScopeInfo;
+    this.eventName = eventName;
   }
 
   @Override
@@ -133,6 +142,7 @@ final class SdkLogRecordBuilder implements ExtendedLogRecordBuilder {
                 severity,
                 severityText,
                 body,
-                attributes));
+                attributes,
+                eventName));
   }
 }

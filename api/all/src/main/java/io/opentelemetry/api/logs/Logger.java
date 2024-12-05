@@ -43,7 +43,7 @@ public interface Logger {
    *     href="https://opentelemetry.io/docs/specs/semconv/general/events/">event.name semantic
    *     conventions</a> for more details.
    */
-  default EventBuilder eventBuilder(String eventName) {
+  default LogRecordBuilder eventBuilder(String eventName) {
     return DefaultLogger.getInstance().eventBuilder(eventName);
   }
 }

@@ -20,6 +20,6 @@ class ValueListBuilderImpl implements ValueListBuilder {
 
   @Override
   public Value<?> build() {
-    return Value.of(values.toArray(new Value[0]));
+    return Value.of(values.toArray(new Value<?>[0]));
   }
 }

@@ -6,7 +6,6 @@
 package io.opentelemetry.api.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
@@ -16,7 +15,6 @@ class DefaultLogger implements Logger {
 
   private static final Logger INSTANCE = new DefaultLogger();
   private static final LogRecordBuilder NOOP_LOG_RECORD_BUILDER = new NoopLogRecordBuilder();
-  private static final EventBuilder NOOP_EVENT_BUILDER = new NoopEventBuilder();
 
   private DefaultLogger() {}
 
@@ -30,8 +28,8 @@ class DefaultLogger implements Logger {
   }
 
   @Override
-  public EventBuilder eventBuilder(String eventName) {
-    return NOOP_EVENT_BUILDER;
+  public LogRecordBuilder eventBuilder(String eventName) {
+    return NOOP_LOG_RECORD_BUILDER;
   }
 
   private static final class NoopLogRecordBuilder implements LogRecordBuilder {
@@ -85,42 +83,6 @@ class DefaultLogger implements Logger {
 
     @Override
     public <T> LogRecordBuilder setAttribute(AttributeKey<T> key, T value) {
-      return this;
-    }
-
-    @Override
-    public void emit() {}
-  }
-
-  private static class NoopEventBuilder implements EventBuilder {
-
-    @Override
-    public EventBuilder setBody(Value<?> body) {
-      return this;
-    }
-
-    @Override
-    public EventBuilder setTimestamp(long timestamp, TimeUnit unit) {
-      return this;
-    }
-
-    @Override
-    public EventBuilder setTimestamp(Instant instant) {
-      return this;
-    }
-
-    @Override
-    public EventBuilder setContext(Context context) {
-      return this;
-    }
-
-    @Override
-    public EventBuilder setSeverity(Severity severity) {
-      return this;
-    }
-
-    @Override
-    public EventBuilder setAttributes(Attributes attributes) {
       return this;
     }
 
