@@ -27,7 +27,7 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 public abstract class Entity {
   /**
-   * Returns the entity type string of this entity. May not be null.
+   * Returns the entity type string of this entity. Must not be null.
    *
    * @return the entity type.
    */
