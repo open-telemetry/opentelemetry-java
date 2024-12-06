@@ -1,0 +1,4 @@
+Comparing source compatibility of opentelemetry-api-1.45.0.jar against opentelemetry-api-1.44.0.jar
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.trace.SpanBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.trace.SpanBuilder setAttribute(io.opentelemetry.api.common.AttributeKey<java.lang.Long>, int)
