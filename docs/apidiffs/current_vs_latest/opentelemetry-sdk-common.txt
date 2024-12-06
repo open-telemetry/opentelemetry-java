@@ -1,2 +1,63 @@
 Comparing source compatibility of opentelemetry-sdk-common-1.45.0-SNAPSHOT.jar against opentelemetry-sdk-common-1.44.1.jar
-No changes.
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.resources.detectors.ServiceDetector  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.resources.EntityDetector
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.resources.EntityDetector INSTANCE
+	+++  NEW METHOD: PUBLIC(+) java.util.List<io.opentelemetry.sdk.resources.Entity> detectEntities()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.resources.detectors.ServiceInstanceDetector  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.resources.EntityDetector
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.resources.EntityDetector INSTANCE
+	+++  NEW METHOD: PUBLIC(+) java.util.List<io.opentelemetry.sdk.resources.Entity> detectEntities()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.resources.detectors.TelemetrySdkDetector  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.resources.EntityDetector
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.resources.detectors.TelemetrySdkDetector INSTANCE
+	+++  NEW METHOD: PUBLIC(+) java.util.List<io.opentelemetry.sdk.resources.Entity> detectEntities()
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.resources.Entity  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW CONSTRUCTOR: PUBLIC(+) Entity()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.resources.EntityBuilder builder(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.Attributes getAttributes()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.Attributes getIdentifyingAttributes()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getSchemaUrl()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getType()
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.resources.EntityBuilder toBuilder()
++++  NEW CLASS: PUBLIC(+) io.opentelemetry.sdk.resources.EntityBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.Entity build()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.EntityBuilder setSchemaUrl(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.EntityBuilder withDescriptive(java.util.function.Consumer<io.opentelemetry.api.common.AttributesBuilder>)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.EntityBuilder withIdentifying(java.util.function.Consumer<io.opentelemetry.api.common.AttributesBuilder>)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.resources.EntityDetector  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List<io.opentelemetry.sdk.resources.Entity> detectEntities()
+**** MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.resources.Resource  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.resources.Resource create(io.opentelemetry.api.common.Attributes, java.lang.String, java.util.Collection<io.opentelemetry.sdk.resources.Entity>)
+	***  MODIFIED METHOD: PUBLIC NON_ABSTRACT (<- ABSTRACT) io.opentelemetry.api.common.Attributes getAttributes()
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.Collection<io.opentelemetry.sdk.resources.Entity> getEntities()
+***  MODIFIED CLASS: PUBLIC io.opentelemetry.sdk.resources.ResourceBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder add(io.opentelemetry.sdk.resources.Entity)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder addAll(java.util.Collection<io.opentelemetry.sdk.resources.Entity>)
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.resources.ResourceProvider  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.resources.ResourceProviderBuilder builder()
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.resources.Resource getResource()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.resources.ResourceProviderBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW CONSTRUCTOR: PUBLIC(+) ResourceProviderBuilder()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceProviderBuilder addDetectedResource(io.opentelemetry.sdk.resources.Resource)
+		+++  NEW ANNOTATION: java.lang.Deprecated
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceProviderBuilder addEntityDetector(io.opentelemetry.sdk.resources.EntityDetector)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceProvider build()

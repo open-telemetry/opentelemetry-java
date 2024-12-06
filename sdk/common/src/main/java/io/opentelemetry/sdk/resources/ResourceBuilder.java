@@ -8,7 +8,12 @@ package io.opentelemetry.sdk.resources;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /**
@@ -20,6 +25,7 @@ import javax.annotation.Nullable;
 public class ResourceBuilder {
 
   private final AttributesBuilder attributesBuilder = Attributes.builder();
+  private final List<Entity> entities = new ArrayList<>();
   @Nullable private String schemaUrl;
 
   /**
@@ -166,17 +172,42 @@ public class ResourceBuilder {
     return this;
   }
 
-  /** Puts all attributes from {@link Resource} into this. */
+  /** Puts all attributes + entities from {@link Resource} into this. */
   public ResourceBuilder putAll(Resource resource) {
     if (resource != null) {
-      attributesBuilder.putAll(resource.getAttributes());
+      attributesBuilder.putAll(resource.getRawAttributes());
+      addAll(new ArrayList<Entity>(resource.getEntities()));
     }
     return this;
   }
 
   /** Remove all attributes that satisfy the given predicate from {@link Resource}. */
   public ResourceBuilder removeIf(Predicate<AttributeKey<?>> filter) {
+    // Remove all raw attributes.
     attributesBuilder.removeIf(filter);
+    // Handle entities.
+    if (entities.isEmpty()) {
+      ArrayList<Entity> toAdd = new ArrayList<>();
+      ArrayList<Entity> toRemove = new ArrayList<>();
+      // If the predicate matches an identifying attribute we need to drop the entitiy.
+      for (Entity e : entities) {
+        if (e.getIdentifyingAttributes().asMap().keySet().stream().anyMatch(filter)) {
+          // We must remove the entity.
+          // We move all attributes into the "raw" section.
+          toRemove.add(e);
+          attributesBuilder.putAll(
+              e.getIdentifyingAttributes().toBuilder().removeIf(filter).build());
+          attributesBuilder.putAll(e.getAttributes().toBuilder().removeIf(filter).build());
+        } else if (e.getAttributes().asMap().keySet().stream().anyMatch(filter)) {
+          // We need to update the entity to remove the descirptive attribute.
+          Entity newEntity = e.toBuilder().withDescriptive(d -> d.removeIf(filter)).build();
+          toRemove.add(e);
+          toAdd.add(newEntity);
+        }
+      }
+      entities.removeAll(toRemove);
+      entities.addAll(toAdd);
+    }
     return this;
   }
 
@@ -192,8 +223,36 @@ public class ResourceBuilder {
     return this;
   }
 
+  public ResourceBuilder add(Entity e) {
+    this.entities.add(e);
+    // When adding an entity, we remove any raw attributes it may conflict with.
+    this.attributesBuilder.removeIf(
+        key ->
+            entities.stream()
+                .anyMatch(
+                    entity ->
+                        entity.getAttributes().asMap().containsKey(key)
+                            || entity.getIdentifyingAttributes().asMap().containsKey(key)));
+    return this;
+  }
+
+  public ResourceBuilder addAll(Collection<Entity> entities) {
+    this.entities.addAll(entities);
+    return this;
+  }
+
   /** Create the {@link Resource} from this. */
   public Resource build() {
-    return Resource.create(attributesBuilder.build(), schemaUrl);
+    // Derive schemaUrl from entitiy, if able.
+    if (schemaUrl == null) {
+      Set<String> entitySchemas =
+          entities.stream().map(Entity::getSchemaUrl).collect(Collectors.toSet());
+      if (entitySchemas.size() == 1) {
+        // Updated Entities use same schema, we can preserve it.
+        schemaUrl = entitySchemas.iterator().next();
+      }
+    }
+
+    return Resource.create(attributesBuilder.build(), schemaUrl, entities);
   }
 }
