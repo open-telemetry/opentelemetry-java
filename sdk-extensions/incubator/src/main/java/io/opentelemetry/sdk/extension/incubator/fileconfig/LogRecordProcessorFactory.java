@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Simple
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import java.io.Closeable;
 import java.time.Duration;
@@ -42,7 +43,7 @@ final class LogRecordProcessorFactory
           FileConfigUtil.requireNonNull(
               batchModel.getExporter(), "batch log record processor exporter");
 
-      io.opentelemetry.sdk.logs.export.LogRecordExporter logRecordExporter =
+      LogRecordExporter logRecordExporter =
           LogRecordExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
       BatchLogRecordProcessorBuilder builder = BatchLogRecordProcessor.builder(logRecordExporter);
       if (batchModel.getExportTimeout() != null) {
@@ -65,7 +66,7 @@ final class LogRecordProcessorFactory
       LogRecordExporterModel exporterModel =
           FileConfigUtil.requireNonNull(
               simpleModel.getExporter(), "simple log record processor exporter");
-      io.opentelemetry.sdk.logs.export.LogRecordExporter logRecordExporter =
+      LogRecordExporter logRecordExporter =
           LogRecordExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
       return FileConfigUtil.addAndReturn(
           closeables, SimpleLogRecordProcessor.create(logRecordExporter));
