@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
  *
  * @since 1.27.0
  */
-public interface ReadWriteLogRecord {
+public interface ReadWriteLogRecord extends LogRecordData {
 
   /**
    * Sets an attribute on the log record. If the log record previously contained a mapping for the
@@ -63,48 +63,64 @@ public interface ReadWriteLogRecord {
   }
 
   /** Returns the resource of this log record. */
+  @Override
   default Resource getResource() {
     return toLogRecordData().getResource();
   }
 
   /** Returns the instrumentation scope that generated this log. */
+  @Override
   default InstrumentationScopeInfo getInstrumentationScopeInfo() {
     return toLogRecordData().getInstrumentationScopeInfo();
   }
 
   /** Returns the timestamp at which the log record occurred, in epoch nanos. */
+  @Override
   default long getTimestampEpochNanos() {
     return toLogRecordData().getTimestampEpochNanos();
   }
 
   /** Returns the timestamp at which the log record was observed, in epoch nanos. */
+  @Override
   default long getObservedTimestampEpochNanos() {
     return toLogRecordData().getTimestampEpochNanos();
   }
 
   /** Return the span context for this log, or {@link SpanContext#getInvalid()} if unset. */
+  @Override
   default SpanContext getSpanContext() {
     return toLogRecordData().getSpanContext();
   }
 
   /** Returns the severity for this log, or {@link Severity#UNDEFINED_SEVERITY_NUMBER} if unset. */
+  @Override
   default Severity getSeverity() {
     return toLogRecordData().getSeverity();
   }
 
   /** Returns the severity text for this log, or null if unset. */
   @Nullable
+  @Override
   default String getSeverityText() {
     return toLogRecordData().getSeverityText();
   }
 
+  @Deprecated
+  @Override
+  @SuppressWarnings("deprecation") // Implementation of deprecated method
+  default io.opentelemetry.sdk.logs.data.Body getBody() {
+    return toLogRecordData().getBody();
+  }
+
   /** Returns the {@link Value} representation of the log body, of null if unset. */
   @Nullable
+  @Override
   default Value<?> getBodyValue() {
     return toLogRecordData().getBodyValue();
   }
 
   /** Returns the attributes for this log, or {@link Attributes#empty()} if unset. */
+  @Override
   default Attributes getAttributes() {
     return toLogRecordData().getAttributes();
   }
@@ -116,6 +132,7 @@ public interface ReadWriteLogRecord {
    * the total number recorded was greater than the configured maximum value. See {@link
    * LogLimits#getMaxNumberOfAttributes()}.
    */
+  @Override
   default int getTotalAttributeCount() {
     return toLogRecordData().getTotalAttributeCount();
   }

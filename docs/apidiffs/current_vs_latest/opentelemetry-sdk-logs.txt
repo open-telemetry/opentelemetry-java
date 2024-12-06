@@ -1,10 +1,13 @@
 Comparing source compatibility of opentelemetry-sdk-logs-1.46.0-SNAPSHOT.jar against opentelemetry-sdk-logs-1.45.0.jar
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.logs.ReadWriteLogRecord  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW INTERFACE: io.opentelemetry.sdk.logs.data.LogRecordData
 	+++  NEW METHOD: PUBLIC(+) java.lang.Object getAttribute(io.opentelemetry.api.common.AttributeKey<T>)
 		+++  NEW ANNOTATION: javax.annotation.Nullable
 		GENERIC TEMPLATES: +++ T:java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.Attributes getAttributes()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.data.Body getBody()
+		+++  NEW ANNOTATION: java.lang.Deprecated
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.Value<?> getBodyValue()
 		+++  NEW ANNOTATION: javax.annotation.Nullable
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.InstrumentationScopeInfo getInstrumentationScopeInfo()
