@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.45.0 (2024-12-06)
+
 ### API
 
 * Add convenience method `setAttribute(Attribute<Long>, int)` to SpanBuilder (matching the existing
