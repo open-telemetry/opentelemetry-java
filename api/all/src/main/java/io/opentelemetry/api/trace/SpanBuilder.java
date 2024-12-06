@@ -245,6 +245,7 @@ public interface SpanBuilder {
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
+   * @since 1.45.0
    */
   default SpanBuilder setAttribute(AttributeKey<Long> key, int value) {
     return setAttribute(key, (long) value);
