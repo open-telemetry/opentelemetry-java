@@ -13,7 +13,6 @@
  * <p>Note that entries are independent of the tracing data that is propagated in the {@link
  * io.opentelemetry.context.Context}, such as trace ID.
  */
-// TODO: Add code examples.
 @ParametersAreNonnullByDefault
 package io.opentelemetry.api.baggage;
 
