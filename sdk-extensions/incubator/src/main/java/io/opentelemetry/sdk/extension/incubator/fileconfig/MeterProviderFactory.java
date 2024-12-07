@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Stream
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewModel;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.io.Closeable;
 import java.util.List;
 
@@ -37,7 +38,7 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
     if (readerModels != null) {
       readerModels.forEach(
           readerModel -> {
-            io.opentelemetry.sdk.metrics.export.MetricReader metricReader =
+            MetricReader metricReader =
                 MetricReaderFactory.getInstance().create(readerModel, spiHelper, closeables);
             if (metricReader != null) {
               builder.registerMetricReader(metricReader);

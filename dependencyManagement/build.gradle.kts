@@ -10,7 +10,7 @@ rootProject.extra["versions"] = dependencyVersions
 val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.18.2",
   "com.google.guava:guava-bom:33.3.1-jre",
-  "com.google.protobuf:protobuf-bom:4.29.0",
+  "com.google.protobuf:protobuf-bom:4.29.1",
   "com.linecorp.armeria:armeria-bom:1.31.2",
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
   "com.squareup.okio:okio-bom:3.9.1", // applies to transitive dependencies of okhttp
@@ -76,7 +76,7 @@ val DEPENDENCIES = listOf(
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
   "junit:junit:4.13.2",
-  "nl.jqno.equalsverifier:equalsverifier:3.17.3",
+  "nl.jqno.equalsverifier:equalsverifier:3.17.5",
   "org.awaitility:awaitility:4.2.2",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
   "org.codehaus.mojo:animal-sniffer-annotations:1.24",

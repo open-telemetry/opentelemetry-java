@@ -2,6 +2,56 @@
 
 ## Unreleased
 
+## Version 1.45.0 (2024-12-06)
+
+### API
+
+* Add convenience method `setAttribute(Attribute<Long>, int)` to SpanBuilder (matching the existing
+  convenience method in Span)
+  ([#6884](https://github.com/open-telemetry/opentelemetry-java/pull/6884))
+* Extends TextMapGetter with experimental GetAll() method, implement usage in W3CBaggagePropagator
+  ([#6852](https://github.com/open-telemetry/opentelemetry-java/pull/6852))
+
+### SDK
+
+#### Traces
+
+* Add synchronization to SimpleSpanProcessor to ensure thread-safe export of spans
+  ([#6885](https://github.com/open-telemetry/opentelemetry-java/pull/6885))
+
+#### Metrics
+
+* Lazily initialize ReservoirCells
+  ([#6851](https://github.com/open-telemetry/opentelemetry-java/pull/6851))
+
+#### Logs
+
+* Add synchronization to SimpleLogRecordProcessor to ensure thread-safe export of logs
+  ([#6885](https://github.com/open-telemetry/opentelemetry-java/pull/6885))
+
+#### Exporters
+
+* OTLP: Update opentelementry-proto to 1.4
+  ([#6906](https://github.com/open-telemetry/opentelemetry-java/pull/6906))
+* OTLP: Rename internal Marshaler#writeJsonToGenerator method to allow jackson runtimeOnly dependency
+  ([#6896](https://github.com/open-telemetry/opentelemetry-java/pull/6896))
+* OTLP: Fix repeated string serialization for JSON.
+  ([#6888](https://github.com/open-telemetry/opentelemetry-java/pull/6888))
+* OTLP: Fix missing unsafe available check
+  ([#6920](https://github.com/open-telemetry/opentelemetry-java/pull/6920))
+
+#### Extensions
+
+* Declarative config: Don't require empty objects when referencing custom components
+  ([#6891](https://github.com/open-telemetry/opentelemetry-java/pull/6891))
+
+### Tooling
+
+* Add javadoc boilerplate internal comment v2 for experimental classes
+  ([#6886](https://github.com/open-telemetry/opentelemetry-java/pull/6886))
+* Update develocity configuration
+  ([#6903](https://github.com/open-telemetry/opentelemetry-java/pull/6903))
+
 ## Version 1.44.1 (2024-11-10)
 
 ### SDK

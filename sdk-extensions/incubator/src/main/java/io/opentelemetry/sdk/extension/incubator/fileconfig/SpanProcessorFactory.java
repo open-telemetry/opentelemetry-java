@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.List;
@@ -39,7 +40,7 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
     if (batchModel != null) {
       SpanExporterModel exporterModel =
           FileConfigUtil.requireNonNull(batchModel.getExporter(), "batch span processor exporter");
-      io.opentelemetry.sdk.trace.export.SpanExporter spanExporter =
+      SpanExporter spanExporter =
           SpanExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
       BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(spanExporter);
       if (batchModel.getExportTimeout() != null) {
@@ -62,7 +63,7 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
       SpanExporterModel exporterModel =
           FileConfigUtil.requireNonNull(
               simpleModel.getExporter(), "simple span processor exporter");
-      io.opentelemetry.sdk.trace.export.SpanExporter spanExporter =
+      SpanExporter spanExporter =
           SpanExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
       return FileConfigUtil.addAndReturn(closeables, SimpleSpanProcessor.create(spanExporter));
     }
