@@ -237,7 +237,6 @@ testing {
       compileOnly("com.google.auto.value:auto-value-annotations")
       compileOnly("com.google.errorprone:error_prone_annotations")
       compileOnly("com.google.code.findbugs:jsr305")
-      compileOnly("com.google.code.findbugs:annotations")
 
       implementation("org.junit.jupiter:junit-jupiter-api")
       implementation("org.junit.jupiter:junit-jupiter-params")
