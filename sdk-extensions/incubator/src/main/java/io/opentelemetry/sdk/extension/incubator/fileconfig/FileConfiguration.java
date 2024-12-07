@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -183,8 +184,7 @@ public final class FileConfiguration {
    */
   // TODO(jack-berg): add create methods for all SDK extension components supported by
   // ComponentProvider
-  public static io.opentelemetry.sdk.trace.samplers.Sampler createSampler(
-      StructuredConfigProperties genericSamplerModel) {
+  public static Sampler createSampler(StructuredConfigProperties genericSamplerModel) {
     YamlStructuredConfigProperties yamlStructuredConfigProperties =
         requireYamlStructuredConfigProperties(genericSamplerModel);
     SamplerModel samplerModel = convertToModel(yamlStructuredConfigProperties, SamplerModel.class);
