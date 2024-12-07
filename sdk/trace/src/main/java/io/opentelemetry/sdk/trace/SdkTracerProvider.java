@@ -100,6 +100,16 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
     return sharedState.getSampler();
   }
 
+  // currently not public as experimental
+  void updateTracerConfigurations() {
+    this.tracerSdkComponentRegistry
+        .getComponents()
+        .forEach(
+            sdkTracer ->
+                sdkTracer.updateTracerConfig(
+                    getTracerConfig(sdkTracer.getInstrumentationScopeInfo())));
+  }
+
   /**
    * Attempts to stop all the activity for {@link Tracer}s created by this provider. Calls {@link
    * SpanProcessor#shutdown()} for all registered {@link SpanProcessor}s.
