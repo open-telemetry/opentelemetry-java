@@ -30,6 +30,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
   private final Severity severity;
   @Nullable private final String severityText;
   @Nullable private final Value<?> body;
+  @Nullable private final String eventName;
   private final Object lock = new Object();
 
   @GuardedBy("lock")
@@ -46,7 +47,8 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       Severity severity,
       @Nullable String severityText,
       @Nullable Value<?> body,
-      @Nullable AttributesMap attributes) {
+      @Nullable AttributesMap attributes,
+      @Nullable String eventName) {
     this.logLimits = logLimits;
     this.resource = resource;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
@@ -57,6 +59,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
     this.severityText = severityText;
     this.body = body;
     this.attributes = attributes;
+    this.eventName = eventName;
   }
 
   /** Create the log record with the given configuration. */
@@ -70,7 +73,8 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       Severity severity,
       @Nullable String severityText,
       @Nullable Value<?> body,
-      @Nullable AttributesMap attributes) {
+      @Nullable AttributesMap attributes,
+      @Nullable String eventName) {
     return new SdkReadWriteLogRecord(
         logLimits,
         resource,
@@ -81,7 +85,8 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
         severity,
         severityText,
         body,
-        attributes);
+        attributes,
+        eventName);
   }
 
   @Override
@@ -122,7 +127,8 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
           severityText,
           body,
           getImmutableAttributes(),
-          attributes == null ? 0 : attributes.getTotalAddedValues());
+          attributes == null ? 0 : attributes.getTotalAddedValues(),
+          eventName);
     }
   }
 }

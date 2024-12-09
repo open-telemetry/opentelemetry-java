@@ -30,6 +30,11 @@ class ExtendedDefaultLogger implements ExtendedLogger {
     return NOOP_LOG_RECORD_BUILDER;
   }
 
+  @Override
+  public LogRecordBuilder eventBuilder(String eventName) {
+    return NOOP_LOG_RECORD_BUILDER;
+  }
+
   private static final class NoopLogRecordBuilder implements ExtendedLogRecordBuilder {
 
     private NoopLogRecordBuilder() {}
