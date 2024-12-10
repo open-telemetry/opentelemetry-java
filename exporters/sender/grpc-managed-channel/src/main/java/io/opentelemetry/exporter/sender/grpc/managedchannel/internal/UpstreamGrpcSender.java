@@ -19,6 +19,7 @@ import io.opentelemetry.exporter.internal.grpc.GrpcSender;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -55,7 +56,7 @@ public final class UpstreamGrpcSender<T extends Marshaler> implements GrpcSender
   public void send(T request, Consumer<GrpcResponse> onResponse, Consumer<Throwable> onError) {
     MarshalerServiceStub<T, ?, ?> stub = this.stub;
     if (timeoutNanos > 0) {
-      stub = stub.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
+      stub = stub.withDeadlineAfter(Duration.ofNanos(timeoutNanos));
     }
     Map<String, List<String>> headers = headersSupplier.get();
     if (headers != null) {
