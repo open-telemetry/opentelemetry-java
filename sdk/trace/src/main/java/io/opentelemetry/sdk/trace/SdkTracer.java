@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.api.incubator.trace.ExtendedSpanBuilder;
 import io.opentelemetry.api.incubator.trace.ExtendedTracer;
-import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -34,16 +34,16 @@ final class SdkTracer implements ExtendedTracer {
   }
 
   @Override
-  public SpanBuilder spanBuilder(String spanName) {
+  public ExtendedSpanBuilder spanBuilder(String spanName) {
     if (!tracerEnabled) {
-      return NOOP_TRACER.spanBuilder(spanName);
+      return (ExtendedSpanBuilder) NOOP_TRACER.spanBuilder(spanName);
     }
     if (spanName == null || spanName.trim().isEmpty()) {
       spanName = FALLBACK_SPAN_NAME;
     }
     if (sharedState.hasBeenShutdown()) {
       Tracer tracer = TracerProvider.noop().get(instrumentationScopeInfo.getName());
-      return tracer.spanBuilder(spanName);
+      return (ExtendedSpanBuilder) tracer.spanBuilder(spanName);
     }
     return new SdkSpanBuilder(
         spanName, instrumentationScopeInfo, sharedState, sharedState.getSpanLimits());
