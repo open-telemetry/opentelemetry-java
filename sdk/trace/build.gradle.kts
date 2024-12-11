@@ -22,8 +22,7 @@ dependencies {
   api(project(":api:all"))
   api(project(":sdk:common"))
 
-  implementation(project(":api:incubator"))
-
+  compileOnly(project(":api:incubator"))
   compileOnly(project(":sdk:trace-shaded-deps"))
 
   annotationProcessor("com.google.auto.value:auto-value")
@@ -63,6 +62,23 @@ dependencies {
   jmh("io.grpc:grpc-api")
   jmh("io.grpc:grpc-netty-shaded")
   jmh("org.testcontainers:testcontainers") // testContainer for OTLP collector
+}
+
+testing {
+  suites {
+    register<JvmTestSuite>("testIncubating") {
+      dependencies {
+        implementation(project(":sdk:testing"))
+        implementation(project(":api:incubator"))
+      }
+    }
+  }
+}
+
+tasks {
+  check {
+    dependsOn(testing.suites)
+  }
 }
 
 tasks {

@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import java.util.stream.Stream;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -55,8 +56,8 @@ class TracerConfigTest {
       parent.setAttribute("a", "1");
       child = tracerB.spanBuilder("child").startSpan();
       // tracerB is disabled and should behave the same as noop tracer
-      assertThat(child.getSpanContext()).isEqualTo(parent.getSpanContext());
-      assertThat(child.isRecording()).isFalse();
+      Assertions.assertThat(child.getSpanContext()).isEqualTo(parent.getSpanContext());
+      Assertions.assertThat(child.isRecording()).isFalse();
       try (Scope childScope = child.makeCurrent()) {
         child.setAttribute("b", "1");
         grandchild = tracerC.spanBuilder("grandchild").startSpan();
@@ -75,7 +76,7 @@ class TracerConfigTest {
 
     // Only contain tracerA:parent and tracerC:child should be seen
     // tracerC:grandchild should list tracerA:parent as its parent
-    assertThat(exporter.getFinishedSpanItems())
+    Assertions.assertThat(exporter.getFinishedSpanItems())
         .satisfiesExactlyInAnyOrder(
             spanData ->
                 assertThat(spanData)
@@ -105,7 +106,7 @@ class TracerConfigTest {
       TracerConfig expectedTracerConfig) {
     TracerConfig tracerConfig = tracerConfigurator.apply(scope);
     tracerConfig = tracerConfig == null ? defaultConfig() : tracerConfig;
-    assertThat(tracerConfig).isEqualTo(expectedTracerConfig);
+    Assertions.assertThat(tracerConfig).isEqualTo(expectedTracerConfig);
   }
 
   private static final InstrumentationScopeInfo scopeCat = InstrumentationScopeInfo.create("cat");

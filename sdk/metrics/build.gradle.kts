@@ -23,7 +23,6 @@ dependencies {
 
   testAnnotationProcessor("com.google.auto.value:auto-value")
 
-  testImplementation(project(":api:incubator"))
   testImplementation(project(":sdk:testing"))
   testImplementation("com.google.guava:guava")
   testImplementation("com.google.guava:guava-testlib")
@@ -38,6 +37,13 @@ dependencyCheck {
 
 testing {
   suites {
+    register<JvmTestSuite>("testIncubating") {
+      dependencies {
+        implementation(project(":sdk:testing"))
+        implementation(project(":api:incubator"))
+        implementation("com.google.guava:guava")
+      }
+    }
     register<JvmTestSuite>("debugEnabledTest") {
       targets {
         all {

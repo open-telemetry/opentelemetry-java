@@ -56,7 +56,7 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
             instrumentationScopeInfo ->
-                new SdkTracer(
+                SdkTracer.create(
                     sharedState,
                     instrumentationScopeInfo,
                     getTracerConfig(instrumentationScopeInfo)));

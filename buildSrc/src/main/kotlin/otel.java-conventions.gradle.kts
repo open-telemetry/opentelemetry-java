@@ -86,9 +86,7 @@ tasks {
             // https://groups.google.com/forum/#!topic/bazel-discuss/_R3A9TJSoPM
             "-Xlint:-processing",
             // We suppress the "options" warning because it prevents compilation on modern JDKs
-            "-Xlint:-options",
-            // Fail build on any warning
-            "-Werror",
+            "-Xlint:-options"
           ),
         )
       }

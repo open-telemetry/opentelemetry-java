@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.autoconfigure;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -26,7 +25,6 @@ import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
-import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -592,8 +590,12 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       return;
     }
     GlobalOpenTelemetry.set(openTelemetrySdk);
-    GlobalEventLoggerProvider.set(
-        SdkEventLoggerProvider.create(openTelemetrySdk.getSdkLoggerProvider()));
+    try {
+      Class.forName("io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider");
+      IncubatingUtil.setGlobalEventLoggerProvider(openTelemetrySdk.getSdkLoggerProvider());
+    } catch (Exception e) {
+      // do nothing
+    }
     logger.log(
         Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetrySdk);
   }

@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.api.incubator.trace.ExtendedTracer;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
@@ -13,7 +12,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 
 /** {@link SdkTracer} is SDK implementation of {@link Tracer}. */
-final class SdkTracer implements ExtendedTracer {
+class SdkTracer implements Tracer {
   static final String FALLBACK_SPAN_NAME = "<unspecified span name>";
   private static final Tracer NOOP_TRACER = TracerProvider.noop().get("noop");
 
@@ -33,6 +32,19 @@ final class SdkTracer implements ExtendedTracer {
     this.tracerEnabled = tracerConfig.isEnabled();
   }
 
+  static SdkTracer create(
+      TracerSharedState sharedState,
+      InstrumentationScopeInfo instrumentationScopeInfo,
+      TracerConfig tracerConfig) {
+    try {
+      Class.forName("io.opentelemetry.api.incubator.trace.ExtendedTracer");
+      return IncubatingUtil.createIncubatingTracer(
+          sharedState, instrumentationScopeInfo, tracerConfig);
+    } catch (Exception e) {
+      return new SdkTracer(sharedState, instrumentationScopeInfo, tracerConfig);
+    }
+  }
+
   @Override
   public SpanBuilder spanBuilder(String spanName) {
     if (!tracerEnabled) {
@@ -45,17 +57,18 @@ final class SdkTracer implements ExtendedTracer {
       Tracer tracer = TracerProvider.noop().get(instrumentationScopeInfo.getName());
       return tracer.spanBuilder(spanName);
     }
-    return new SdkSpanBuilder(
-        spanName, instrumentationScopeInfo, sharedState, sharedState.getSpanLimits());
+    try {
+      Class.forName("io.opentelemetry.api.incubator.trace.ExtendedSpanBuilder");
+      return IncubatingUtil.createIncubatingSpanBuilder(
+          spanName, instrumentationScopeInfo, sharedState, sharedState.getSpanLimits());
+    } catch (Exception e) {
+      return new SdkSpanBuilder(
+          spanName, instrumentationScopeInfo, sharedState, sharedState.getSpanLimits());
+    }
   }
 
   // Visible for testing
   InstrumentationScopeInfo getInstrumentationScopeInfo() {
     return instrumentationScopeInfo;
-  }
-
-  @Override
-  public boolean isEnabled() {
-    return tracerEnabled;
   }
 }
