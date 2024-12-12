@@ -10,7 +10,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
+import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,16 +33,22 @@ class AuthenticatorTest {
 
   @Test
   void setAuthenticatorOnDelegate_Success() {
-    HttpExporterBuilder<?> builder =
+    // For HTTP exporter
+    HttpExporterBuilder<?> httpBuilder =
         new HttpExporterBuilder<>("otlp", "test", "http://localhost:4318/test");
-
-    assertThat(builder).extracting("authenticator").isNull();
-
+    assertThat(httpBuilder).extracting("authenticator").isNull();
     Authenticator authenticator = Collections::emptyMap;
+    Authenticator.setAuthenticatorOnDelegate(new WithDelegate(httpBuilder), authenticator);
+    assertThat(httpBuilder)
+        .extracting("authenticator", as(InstanceOfAssertFactories.type(Authenticator.class)))
+        .isSameAs(authenticator);
 
-    Authenticator.setAuthenticatorOnDelegate(new WithDelegate(builder), authenticator);
-
-    assertThat(builder)
+    // For GRPC exporter
+    GrpcExporterBuilder<?> grpcBuilder =
+        new GrpcExporterBuilder<>("otlp", "test", 60, URI.create("test"), null, "/test");
+    assertThat(grpcBuilder).extracting("authenticator").isNull();
+    Authenticator.setAuthenticatorOnDelegate(new WithDelegate(grpcBuilder), authenticator);
+    assertThat(grpcBuilder)
         .extracting("authenticator", as(InstanceOfAssertFactories.type(Authenticator.class)))
         .isSameAs(authenticator);
   }

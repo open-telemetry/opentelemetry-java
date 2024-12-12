@@ -5,11 +5,16 @@
 
 package io.opentelemetry.exporter.sender.grpc.managedchannel.internal;
 
+import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
+
+import io.grpc.CallCredentials;
 import io.grpc.Channel;
 import io.grpc.Codec;
 import io.grpc.CompressorRegistry;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Metadata;
+import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcSender;
 import io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider;
@@ -21,6 +26,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -47,7 +53,8 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
-      @Nullable X509TrustManager trustManager) {
+      @Nullable X509TrustManager trustManager,
+      @Nullable Authenticator authenticator) {
     boolean shutdownChannel = false;
     if (managedChannel == null) {
       // Shutdown the channel as part of the exporter shutdown sequence if
@@ -83,11 +90,29 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
       compression = compressor.getEncoding();
     }
 
+    CallCredentials cred =
+        new CallCredentials() {
+          @Override
+          public void applyRequestMetadata(
+              RequestInfo requestInfo, Executor executor, MetadataApplier metadataApplier) {
+            Metadata headers = new Metadata();
+            if (authenticator != null) {
+              // For each header provided in the authenticator, put it in the header of the
+              // Metadata.
+              for (Map.Entry<String, String> e : authenticator.getHeaders().entrySet()) {
+                headers.put(Metadata.Key.of(e.getKey(), ASCII_STRING_MARSHALLER), e.getValue());
+              }
+            }
+            metadataApplier.apply(headers);
+          }
+        };
+
     MarshalerServiceStub<T, ?, ?> stub =
         stubFactory
             .get()
             .apply((Channel) managedChannel, authorityOverride)
-            .withCompression(compression);
+            .withCompression(compression)
+            .withCallCredentials(cred);
 
     return new UpstreamGrpcSender<>(stub, shutdownChannel, timeoutNanos, headersSupplier);
   }

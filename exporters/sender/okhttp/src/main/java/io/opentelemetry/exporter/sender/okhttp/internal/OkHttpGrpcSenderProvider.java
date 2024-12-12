@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.grpc.Channel;
+import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcSender;
 import io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider;
@@ -41,7 +42,8 @@ public class OkHttpGrpcSenderProvider implements GrpcSenderProvider {
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
-      @Nullable X509TrustManager trustManager) {
+      @Nullable X509TrustManager trustManager,
+      @Nullable Authenticator authenticator) {
     return new OkHttpGrpcSender<>(
         endpoint.resolve(endpointPath).toString(),
         compressor,
@@ -50,6 +52,7 @@ public class OkHttpGrpcSenderProvider implements GrpcSenderProvider {
         headersSupplier,
         retryPolicy,
         sslContext,
-        trustManager);
+        trustManager,
+        authenticator);
   }
 }

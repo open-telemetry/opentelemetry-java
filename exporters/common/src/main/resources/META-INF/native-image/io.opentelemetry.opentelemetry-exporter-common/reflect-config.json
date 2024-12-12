@@ -10,5 +10,9 @@
   {
     "name":"io.opentelemetry.exporter.internal.compression.Compressor",
     "queryAllDeclaredMethods":true
+  },
+  {
+    "name":"io.opentelemetry.exporter.internal.auth.Authenticator",
+    "queryAllDeclaredMethods":true
   }
 ]
