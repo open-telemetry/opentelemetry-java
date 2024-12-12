@@ -99,8 +99,7 @@ final class SdkLongHistogram extends AbstractInstrument implements ExtendedLongH
     }
 
     @Override
-    public ExtendedLongHistogramBuilder setExplicitBucketBoundariesAdvice(
-        List<Long> bucketBoundaries) {
+    public LongHistogramBuilder setExplicitBucketBoundariesAdvice(List<Long> bucketBoundaries) {
       List<Double> boundaries;
       try {
         Objects.requireNonNull(bucketBoundaries, "bucketBoundaries must not be null");
