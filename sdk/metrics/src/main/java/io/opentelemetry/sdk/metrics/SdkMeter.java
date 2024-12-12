@@ -145,30 +145,54 @@ final class SdkMeter implements Meter {
 
   @Override
   public LongCounterBuilder counterBuilder(String name) {
-    return checkValidInstrumentName(name)
-        ? new SdkLongCounter.SdkLongCounterBuilder(this, name)
-        : NOOP_METER.counterBuilder(NOOP_INSTRUMENT_NAME);
+    if (!checkValidInstrumentName(name)) {
+      return NOOP_METER.counterBuilder(NOOP_INSTRUMENT_NAME);
+    }
+    try {
+      Class.forName("io.opentelemetry.api.incubator.metrics.ExtendedLongCounter");
+      return IncubatingUtil.createIncubatingLongCounterBuilder(this, name);
+    } catch (Exception e) {
+      return new SdkLongCounter.SdkLongCounterBuilder(this, name);
+    }
   }
 
   @Override
   public LongUpDownCounterBuilder upDownCounterBuilder(String name) {
-    return checkValidInstrumentName(name)
-        ? new SdkLongUpDownCounter.SdkLongUpDownCounterBuilder(this, name)
-        : NOOP_METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME);
+    if (!checkValidInstrumentName(name)) {
+      return NOOP_METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME);
+    }
+    try {
+      Class.forName("io.opentelemetry.api.incubator.metrics.ExtendedLongUpDownCounter");
+      return IncubatingUtil.createIncubatingLongUpDownCounterBuilder(this, name);
+    } catch (Exception e) {
+      return new SdkLongUpDownCounter.SdkLongUpDownCounterBuilder(this, name);
+    }
   }
 
   @Override
   public DoubleHistogramBuilder histogramBuilder(String name) {
-    return checkValidInstrumentName(name)
-        ? new SdkDoubleHistogram.SdkDoubleHistogramBuilder(this, name)
-        : NOOP_METER.histogramBuilder(NOOP_INSTRUMENT_NAME);
+    if (!checkValidInstrumentName(name)) {
+      return NOOP_METER.histogramBuilder(NOOP_INSTRUMENT_NAME);
+    }
+    try {
+      Class.forName("io.opentelemetry.api.incubator.metrics.ExtendedDoubleHistogram");
+      return IncubatingUtil.createIncubatingDoubleHistogramBuilder(this, name);
+    } catch (Exception e) {
+      return new SdkDoubleHistogram.SdkDoubleHistogramBuilder(this, name);
+    }
   }
 
   @Override
   public DoubleGaugeBuilder gaugeBuilder(String name) {
-    return checkValidInstrumentName(name)
-        ? new SdkDoubleGauge.SdkDoubleGaugeBuilder(this, name)
-        : NOOP_METER.gaugeBuilder(NOOP_INSTRUMENT_NAME);
+    if (!checkValidInstrumentName(name)) {
+      return NOOP_METER.gaugeBuilder(NOOP_INSTRUMENT_NAME);
+    }
+    try {
+      Class.forName("io.opentelemetry.api.incubator.metrics.ExtendedDoubleGauge");
+      return IncubatingUtil.createIncubatingDoubleGaugemBuilder(this, name);
+    } catch (Exception e) {
+      return new SdkDoubleGauge.SdkDoubleGaugeBuilder(this, name);
+    }
   }
 
   @Override

@@ -10,7 +10,6 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.common.ValueType;
-import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
@@ -32,7 +31,7 @@ class ValueBodyTest {
     Logger logger = provider.get(ValueBodyTest.class.getName());
 
     // Value can be a primitive type, like a string, long, double, boolean
-    extendedLogRecordBuilder(logger).setBody(Value.of(1)).emit();
+    logger.logRecordBuilder().setBody(Value.of(1)).emit();
     assertThat(exporter.getFinishedLogRecordItems())
         .hasSize(1)
         .satisfiesExactly(
@@ -48,7 +47,8 @@ class ValueBodyTest {
     exporter.reset();
 
     // ...or a byte array of raw data
-    extendedLogRecordBuilder(logger)
+    logger
+        .logRecordBuilder()
         .setBody(Value.of("hello world".getBytes(StandardCharsets.UTF_8)))
         .emit();
     assertThat(exporter.getFinishedLogRecordItems())
@@ -68,7 +68,8 @@ class ValueBodyTest {
     exporter.reset();
 
     // But most commonly it will be used to represent complex structured like a map
-    extendedLogRecordBuilder(logger)
+    logger
+        .logRecordBuilder()
         .setBody(
             // The protocol data structure uses a repeated KeyValue to represent a map:
             // https://github.com/open-telemetry/opentelemetry-proto/blob/ac3242b03157295e4ee9e616af53b81517b06559/opentelemetry/proto/common/v1/common.proto#L59
@@ -145,7 +146,8 @@ class ValueBodyTest {
     exporter.reset();
 
     // ..or an array (optionally with heterogeneous types)
-    extendedLogRecordBuilder(logger)
+    logger
+        .logRecordBuilder()
         .setBody(Value.of(Value.of("entry1"), Value.of("entry2"), Value.of(3)))
         .emit();
     assertThat(exporter.getFinishedLogRecordItems())
@@ -163,9 +165,5 @@ class ValueBodyTest {
                       });
             });
     exporter.reset();
-  }
-
-  ExtendedLogRecordBuilder extendedLogRecordBuilder(Logger logger) {
-    return (ExtendedLogRecordBuilder) logger.logRecordBuilder();
   }
 }
