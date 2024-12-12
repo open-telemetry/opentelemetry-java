@@ -96,8 +96,7 @@ final class SdkDoubleHistogram extends AbstractInstrument implements ExtendedDou
     }
 
     @Override
-    public ExtendedDoubleHistogramBuilder setExplicitBucketBoundariesAdvice(
-        List<Double> bucketBoundaries) {
+    public DoubleHistogramBuilder setExplicitBucketBoundariesAdvice(List<Double> bucketBoundaries) {
       try {
         Objects.requireNonNull(bucketBoundaries, "bucketBoundaries must not be null");
         ExplicitBucketHistogramUtils.validateBucketBoundaries(bucketBoundaries);

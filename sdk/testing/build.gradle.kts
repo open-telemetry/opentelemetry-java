@@ -8,7 +8,6 @@ otelJava.moduleName.set("io.opentelemetry.sdk.testing")
 
 dependencies {
   api(project(":api:all"))
-  api(project(":api:incubator"))
   api(project(":sdk:all"))
 
   compileOnly("org.assertj:assertj-core")
@@ -16,6 +15,8 @@ dependencies {
   compileOnly("org.junit.jupiter:junit-jupiter-api")
 
   annotationProcessor("com.google.auto.value:auto-value")
+
+  testImplementation(project(":api:incubator"))
 
   testImplementation("junit:junit")
   testImplementation("org.junit.vintage:junit-vintage-engine")
