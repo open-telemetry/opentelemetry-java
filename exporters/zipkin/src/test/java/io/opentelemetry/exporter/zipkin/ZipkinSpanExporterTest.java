@@ -137,9 +137,9 @@ class ZipkinSpanExporterTest {
   @SuppressWarnings({"PreferJavaTimeOverload", "deprecation"})
   // we have to use the deprecated setEncoder overload to test it
   void invalidConfig() {
-    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setReadTimeout(-1, TimeUnit.MILLISECONDS))
+    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setReadTimeout(0, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("timeout must be non-negative");
+        .hasMessage("timeout must be positive");
 
     assertThatThrownBy(() -> ZipkinSpanExporter.builder().setReadTimeout(1, null))
         .isInstanceOf(NullPointerException.class)
