@@ -65,4 +65,24 @@ public interface AttributeKey<T> {
   static AttributeKey<List<Double>> doubleArrayKey(String key) {
     return InternalAttributeKeyImpl.create(key, AttributeType.DOUBLE_ARRAY);
   }
+
+  /**
+   * Returns a new AttributeKey for map valued attributes.
+   *
+   * <p>IMPORTANT: map valued attributes are only supported by Logs. Spans and Metrics do not
+   * support map valued attributes.
+   */
+  static AttributeKey<Attributes> mapKey(String key) {
+    return InternalAttributeKeyImpl.create(key, AttributeType.MAP);
+  }
+
+  /**
+   * Returns a new AttributeKey for List&lt;Attributes&gt; valued attributes.
+   *
+   * <p>IMPORTANT: {@code List&lt;Attributes&gt;} valued attributes are only supported by Logs.
+   * Spans and Metrics do not support {@code List&lt;Attributes&gt;} valued attributes.
+   */
+  static AttributeKey<List<Attributes>> mapArrayKey(String key) {
+    return InternalAttributeKeyImpl.create(key, AttributeType.MAP_ARRAY);
+  }
 }
