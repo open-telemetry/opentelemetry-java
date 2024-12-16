@@ -123,7 +123,7 @@ public final class CompletableResultCode {
    * Completes this {@link CompletableResultCode} unsuccessfully if it is not already completed,
    * setting the {@link #getFailureThrowable() failure throwable} to {@code throwable}.
    *
-   * @param throwable the Throwable that caused the failure, or null
+   * @param throwable the {@code Throwable} that caused the failure, or {@code null}
    * @since 1.41.0
    */
   public CompletableResultCode failExceptionally(@Nullable Throwable throwable) {
