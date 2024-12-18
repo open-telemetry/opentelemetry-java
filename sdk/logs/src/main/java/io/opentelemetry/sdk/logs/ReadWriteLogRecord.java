@@ -14,7 +14,6 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 
 /**
