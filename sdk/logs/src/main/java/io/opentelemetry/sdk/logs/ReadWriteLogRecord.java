@@ -94,10 +94,11 @@ public interface ReadWriteLogRecord {
   }
 
   /**
-   * Returns the body for this log, or {@link Body#empty()} if unset.
+   * Returns the body for this log, or {@link io.opentelemetry.sdk.logs.data.Body#empty()} if unset.
    *
    * <p>If the body has been set to some {@link ValueType} other than {@link ValueType#STRING}, this
-   * will return a {@link Body} with a string representation of the {@link Value}.
+   * will return a {@link io.opentelemetry.sdk.logs.data.Body} with a string representation of the
+   * {@link Value}.
    *
    * @deprecated Use {@link #getBodyValue()} instead.
    */
