@@ -64,11 +64,6 @@ public interface ReadWriteLogRecord {
     return toLogRecordData().getAttributes().get(key);
   }
 
-  /** Returns the resource of this log record. */
-  default Resource getResource() {
-    return toLogRecordData().getResource();
-  }
-
   /** Returns the instrumentation scope that generated this log. */
   default InstrumentationScopeInfo getInstrumentationScopeInfo() {
     return toLogRecordData().getInstrumentationScopeInfo();
