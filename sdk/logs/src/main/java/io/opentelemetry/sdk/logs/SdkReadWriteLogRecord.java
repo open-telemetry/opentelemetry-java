@@ -127,11 +127,6 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
   }
 
   @Override
-  public Resource getResource() {
-    return resource;
-  }
-
-  @Override
   public InstrumentationScopeInfo getInstrumentationScopeInfo() {
     return instrumentationScopeInfo;
   }
