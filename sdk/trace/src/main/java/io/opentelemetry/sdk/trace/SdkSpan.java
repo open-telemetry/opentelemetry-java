@@ -428,17 +428,38 @@ final class SdkSpan implements ReadWriteSpan {
   @Override
   public ReadWriteSpan setStatus(StatusCode statusCode, @Nullable String description) {
     if (statusCode == null) {
-      return this;
+      return this; // No action if statusCode is null
     }
     synchronized (lock) {
       if (!isModifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return this;
-      } else if (this.status.getStatusCode() == StatusCode.OK) {
-        logger.log(Level.FINE, "Calling setStatus() on a Span that is already set to OK.");
-        return this;
       }
-      this.status = StatusData.create(statusCode, description);
+<<<<<<< HEAD
+      
+=======
+
+>>>>>>> d9e11e8e4aebfe44bc79436b8e7ee42344e4a5aa
+      StatusCode currentStatusCode = this.status.getStatusCode();
+
+      // Prevent setting a lower priority status.
+      if (currentStatusCode == StatusCode.OK) {
+        logger.log(Level.FINE, "Calling setStatus() on a Span that is already set to OK.");
+        return this; // Do not allow lower priority status to override OK
+      } if (currentStatusCode == StatusCode.ERROR && statusCode == StatusCode.UNSET) {
+        logger.log(Level.FINE, "Cannot set status to UNSET when current status is ERROR.");
+        return this; // Do not allow UNSET to override ERROR
+      }
+
+      // Set the status, ignoring description if status is not ERROR.
+      if (statusCode == StatusCode.ERROR) {
+        this.status = StatusData.create(statusCode, description);
+      } else {
+        if (currentStatusCode != statusCode) {
+          this.status =
+              StatusData.create(statusCode, null);
+        }
+      }
     }
     return this;
   }
