@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.logs;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.common.ValueType;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -93,21 +92,6 @@ public interface ReadWriteLogRecord {
     return toLogRecordData().getSeverityText();
   }
 
-  /**
-   * Returns the body for this log, or {@link io.opentelemetry.sdk.logs.data.Body#empty()} if unset.
-   *
-   * <p>If the body has been set to some {@link ValueType} other than {@link ValueType#STRING}, this
-   * will return a {@link io.opentelemetry.sdk.logs.data.Body} with a string representation of the
-   * {@link Value}.
-   *
-   * @deprecated Use {@link #getBodyValue()} instead.
-   */
-  @Deprecated
-  @SuppressWarnings("deprecation") // Implementation of deprecated method
-  default io.opentelemetry.sdk.logs.data.Body getBody() {
-    return toLogRecordData().getBody();
-  }
-
   /** Returns the {@link Value} representation of the log body, of null if unset. */
   @Nullable
   default Value<?> getBodyValue() {
@@ -117,16 +101,5 @@ public interface ReadWriteLogRecord {
   /** Returns the attributes for this log, or {@link Attributes#empty()} if unset. */
   default Attributes getAttributes() {
     return toLogRecordData().getAttributes();
-  }
-
-  /**
-   * Returns the total number of attributes that were recorded on this log.
-   *
-   * <p>This number may be larger than the number of attributes that are attached to this log, if
-   * the total number recorded was greater than the configured maximum value. See {@link
-   * LogLimits#getMaxNumberOfAttributes()}.
-   */
-  default int getTotalAttributeCount() {
-    return toLogRecordData().getTotalAttributeCount();
   }
 }

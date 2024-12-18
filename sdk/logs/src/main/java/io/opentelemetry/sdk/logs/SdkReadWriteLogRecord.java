@@ -178,14 +178,4 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       return attributes.get(key);
     }
   }
-
-  @Override
-  public int getTotalAttributeCount() {
-    synchronized (lock) {
-      if (attributes == null || attributes.isEmpty()) {
-        return 0;
-      }
-      return attributes.size();
-    }
-  }
 }

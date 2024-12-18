@@ -5,8 +5,6 @@ Comparing source compatibility of opentelemetry-sdk-logs-1.46.0-SNAPSHOT.jar aga
 		+++  NEW ANNOTATION: javax.annotation.Nullable
 		GENERIC TEMPLATES: +++ T:java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.Attributes getAttributes()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.data.Body getBody()
-		+++  NEW ANNOTATION: java.lang.Deprecated
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.Value<?> getBodyValue()
 		+++  NEW ANNOTATION: javax.annotation.Nullable
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.InstrumentationScopeInfo getInstrumentationScopeInfo()
@@ -16,4 +14,3 @@ Comparing source compatibility of opentelemetry-sdk-logs-1.46.0-SNAPSHOT.jar aga
 		+++  NEW ANNOTATION: javax.annotation.Nullable
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.trace.SpanContext getSpanContext()
 	+++  NEW METHOD: PUBLIC(+) long getTimestampEpochNanos()
-	+++  NEW METHOD: PUBLIC(+) int getTotalAttributeCount()
