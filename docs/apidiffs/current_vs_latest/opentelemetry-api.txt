@@ -1,6 +1,2 @@
 Comparing source compatibility of opentelemetry-api-1.46.0-SNAPSHOT.jar against opentelemetry-api-1.45.0.jar
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.ComplexAttributeKey  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	GENERIC TEMPLATES: +++ T:java.lang.Object
-	+++  NEW INTERFACE: io.opentelemetry.api.common.AttributeKey
-	+++  NEW SUPERCLASS: java.lang.Object
+No changes.
