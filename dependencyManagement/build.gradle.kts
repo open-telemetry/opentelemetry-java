@@ -32,7 +32,7 @@ val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.16"
 val opencensusVersion = "0.31.1"
 val prometheusClientVersion = "0.16.0"
-val prometheusServerVersion = "1.3.4"
+val prometheusServerVersion = "1.3.5"
 
 val DEPENDENCIES = listOf(
   "com.google.auto.value:auto-value:${autoValueVersion}",
