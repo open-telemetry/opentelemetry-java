@@ -16,6 +16,8 @@ import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
  */
 final class IncubatingUtil {
 
+  private IncubatingUtil() {}
+
   static void setGlobalEventLoggerProvider(SdkLoggerProvider sdkLoggerProvider) {
     GlobalEventLoggerProvider.set(SdkEventLoggerProvider.create(sdkLoggerProvider));
   }

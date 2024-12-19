@@ -17,7 +17,6 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
@@ -255,16 +254,5 @@ class SdkSpanBuilder implements SpanBuilder {
   // Visible for testing
   static boolean isSampled(SamplingDecision decision) {
     return SamplingDecision.RECORD_AND_SAMPLE.equals(decision);
-  }
-
-  /**
-   * Marks a span as error. This is the default exception handler.
-   *
-   * @param span the span
-   * @param exception the exception that caused the error
-   */
-  private static void setSpanError(Span span, Throwable exception) {
-    span.setStatus(StatusCode.ERROR);
-    span.recordException(exception);
   }
 }
