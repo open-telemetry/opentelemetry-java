@@ -15,6 +15,18 @@ import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 class SdkLogger implements Logger {
 
   private static final Logger NOOP_LOGGER = LoggerProvider.noop().get("noop");
+  private static final boolean INCUBATOR_AVAILABLE;
+
+  static {
+    boolean incubatorAvailable = false;
+    try {
+      Class.forName("io.opentelemetry.api.incubator.logs.ExtendedDefaultLoggerProvider");
+      incubatorAvailable = true;
+    } catch (ClassNotFoundException e) {
+      // Not available
+    }
+    INCUBATOR_AVAILABLE = incubatorAvailable;
+  }
 
   private final LoggerSharedState loggerSharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
@@ -33,25 +45,18 @@ class SdkLogger implements Logger {
       LoggerSharedState sharedState,
       InstrumentationScopeInfo instrumentationScopeInfo,
       LoggerConfig loggerConfig) {
-    try {
-      Class.forName("io.opentelemetry.api.incubator.logs.ExtendedLogger");
-      return IncubatingUtil.createIncubatingLogger(
-          sharedState, instrumentationScopeInfo, loggerConfig);
-    } catch (Exception e) {
-      return new SdkLogger(sharedState, instrumentationScopeInfo, loggerConfig);
-    }
+    return INCUBATOR_AVAILABLE
+        ? IncubatingUtil.createExtendedLogger(sharedState, instrumentationScopeInfo, loggerConfig)
+        : new SdkLogger(sharedState, instrumentationScopeInfo, loggerConfig);
   }
 
   @Override
   public LogRecordBuilder logRecordBuilder() {
     if (loggerEnabled) {
-      try {
-        Class.forName("io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder");
-        return IncubatingUtil.createIncubatingLogRecordBuilder(
-            loggerSharedState, instrumentationScopeInfo);
-      } catch (Exception e) {
-        return new SdkLogRecordBuilder(loggerSharedState, instrumentationScopeInfo);
-      }
+      return INCUBATOR_AVAILABLE
+          ? IncubatingUtil.createExtendedLogRecordBuilder(
+              loggerSharedState, instrumentationScopeInfo)
+          : new SdkLogRecordBuilder(loggerSharedState, instrumentationScopeInfo);
     }
     return NOOP_LOGGER.logRecordBuilder();
   }
