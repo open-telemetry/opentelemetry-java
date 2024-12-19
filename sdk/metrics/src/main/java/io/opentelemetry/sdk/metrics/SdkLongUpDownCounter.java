@@ -5,10 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.metrics.ExtendedLongUpDownCounter;
-import io.opentelemetry.api.incubator.metrics.ExtendedLongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
@@ -17,15 +14,14 @@ import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
-import java.util.List;
 import java.util.function.Consumer;
 
-final class SdkLongUpDownCounter extends AbstractInstrument implements ExtendedLongUpDownCounter {
+class SdkLongUpDownCounter extends AbstractInstrument implements LongUpDownCounter {
 
-  private final SdkMeter sdkMeter;
-  private final WriteableMetricStorage storage;
+  final SdkMeter sdkMeter;
+  final WriteableMetricStorage storage;
 
-  private SdkLongUpDownCounter(
+  SdkLongUpDownCounter(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     super(descriptor);
     this.sdkMeter = sdkMeter;
@@ -47,14 +43,9 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements ExtendedL
     add(increment, Attributes.empty());
   }
 
-  @Override
-  public boolean isEnabled() {
-    return sdkMeter.isMeterEnabled() && storage.isEnabled();
-  }
+  static class SdkLongUpDownCounterBuilder implements LongUpDownCounterBuilder {
 
-  static final class SdkLongUpDownCounterBuilder implements ExtendedLongUpDownCounterBuilder {
-
-    private final InstrumentBuilder builder;
+    final InstrumentBuilder builder;
 
     SdkLongUpDownCounterBuilder(SdkMeter sdkMeter, String name) {
       this.builder =
@@ -94,12 +85,6 @@ final class SdkLongUpDownCounter extends AbstractInstrument implements ExtendedL
     @Override
     public ObservableLongMeasurement buildObserver() {
       return builder.buildObservableMeasurement(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER);
-    }
-
-    @Override
-    public ExtendedLongUpDownCounterBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
-      builder.setAdviceAttributes(attributes);
-      return this;
     }
 
     @Override

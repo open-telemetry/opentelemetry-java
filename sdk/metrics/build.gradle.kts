@@ -15,7 +15,7 @@ otelJava.moduleName.set("io.opentelemetry.sdk.metrics")
 dependencies {
   api(project(":api:all"))
   api(project(":sdk:common"))
-  implementation(project(":api:incubator"))
+  compileOnly(project(":api:incubator"))
 
   compileOnly("org.codehaus.mojo:animal-sniffer-annotations")
 
@@ -37,6 +37,13 @@ dependencyCheck {
 
 testing {
   suites {
+    register<JvmTestSuite>("testIncubating") {
+      dependencies {
+        implementation(project(":sdk:testing"))
+        implementation(project(":api:incubator"))
+        implementation("com.google.guava:guava")
+      }
+    }
     register<JvmTestSuite>("debugEnabledTest") {
       targets {
         all {
