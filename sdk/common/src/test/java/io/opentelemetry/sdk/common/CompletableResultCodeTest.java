@@ -80,6 +80,15 @@ class CompletableResultCodeTest {
   }
 
   @Test
+  void failExceptionallyWithNull() {
+    CompletableResultCode resultCode = new CompletableResultCode();
+    CompletableResultCode result = resultCode.failExceptionally(null);
+    assertThat(result.isDone()).isTrue();
+    assertThat(result.isSuccess()).isFalse();
+    assertThat(result.getFailureThrowable()).isNull();
+  }
+
+  @Test
   void whenDoublyCompleteSuccessfully() throws InterruptedException {
     CompletableResultCode resultCode = new CompletableResultCode();
 
