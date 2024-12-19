@@ -123,9 +123,10 @@ public final class CompletableResultCode {
    * Completes this {@link CompletableResultCode} unsuccessfully if it is not already completed,
    * setting the {@link #getFailureThrowable() failure throwable} to {@code throwable}.
    *
+   * @param throwable the {@code Throwable} that caused the failure, or {@code null}
    * @since 1.41.0
    */
-  public CompletableResultCode failExceptionally(Throwable throwable) {
+  public CompletableResultCode failExceptionally(@Nullable Throwable throwable) {
     return failInternal(throwable);
   }
 
@@ -160,7 +161,8 @@ public final class CompletableResultCode {
    * via the {@link #whenComplete(Runnable)} method.
    *
    * @return the throwable if failed exceptionally, or null if: {@link #fail() failed without
-   *     exception}, {@link #succeed() succeeded}, or not complete.g
+   *     exception}, {@link #succeed() succeeded}, {@link #failExceptionally(Throwable)} with a null
+   *     {@code throwable}, or not complete.
    * @since 1.41.0
    */
   @Nullable
