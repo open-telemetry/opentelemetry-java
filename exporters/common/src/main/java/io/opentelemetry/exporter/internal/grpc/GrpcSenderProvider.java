@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.internal.grpc;
 
 import io.grpc.Channel;
+import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -40,5 +41,6 @@ public interface GrpcSenderProvider {
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
-      @Nullable X509TrustManager trustManager);
+      @Nullable X509TrustManager trustManager,
+      @Nullable Authenticator authenticator);
 }
