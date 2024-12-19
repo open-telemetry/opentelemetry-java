@@ -14,6 +14,7 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.api.common.AttributeKey.valueKey;
 
 import java.util.Arrays;
 import java.util.List;
@@ -84,6 +85,21 @@ public interface AttributesBuilder {
    */
   default AttributesBuilder put(String key, boolean value) {
     return put(booleanKey(key), value);
+  }
+
+  /**
+   * Puts a {@link Value} attribute into this.
+   *
+   * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
+   * your keys, if possible.
+   *
+   * <p>IMPORTANT: {@link Value} attributes are only supported by Logs. Spans and Metrics do not
+   * support {@link Value} attributes.
+   *
+   * @return this Builder
+   */
+  default AttributesBuilder put(String key, Value<?> value) {
+    return put(valueKey(key), value);
   }
 
   /**
