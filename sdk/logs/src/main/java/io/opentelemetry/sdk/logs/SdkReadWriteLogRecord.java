@@ -125,4 +125,57 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
           attributes == null ? 0 : attributes.getTotalAddedValues());
     }
   }
+
+  @Override
+  public InstrumentationScopeInfo getInstrumentationScopeInfo() {
+    return instrumentationScopeInfo;
+  }
+
+  @Override
+  public long getTimestampEpochNanos() {
+    return timestampEpochNanos;
+  }
+
+  @Override
+  public long getObservedTimestampEpochNanos() {
+    return observedTimestampEpochNanos;
+  }
+
+  @Override
+  public SpanContext getSpanContext() {
+    return spanContext;
+  }
+
+  @Override
+  public Severity getSeverity() {
+    return severity;
+  }
+
+  @Nullable
+  @Override
+  public String getSeverityText() {
+    return severityText;
+  }
+
+  @Nullable
+  @Override
+  public Value<?> getBodyValue() {
+    return body;
+  }
+
+  @Override
+  public Attributes getAttributes() {
+    return getImmutableAttributes();
+  }
+
+  @Nullable
+  @Override
+  public <T> T getAttribute(AttributeKey<T> key) {
+    synchronized (lock) {
+      if (attributes == null || attributes.isEmpty()) {
+        return null;
+      }
+      return attributes.get(key);
+    }
+  }
 }
