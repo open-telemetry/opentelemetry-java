@@ -11,6 +11,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static io.opentelemetry.sdk.trace.internal.TracerConfig.defaultConfig;
 import static io.opentelemetry.sdk.trace.internal.TracerConfig.disabled;
 import static io.opentelemetry.sdk.trace.internal.TracerConfig.enabled;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.trace.ExtendedTracer;
@@ -24,7 +25,6 @@ import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import java.util.stream.Stream;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -56,8 +56,8 @@ class TracerConfigTest {
       parent.setAttribute("a", "1");
       child = tracerB.spanBuilder("child").startSpan();
       // tracerB is disabled and should behave the same as noop tracer
-      Assertions.assertThat(child.getSpanContext()).isEqualTo(parent.getSpanContext());
-      Assertions.assertThat(child.isRecording()).isFalse();
+      assertThat(child.getSpanContext()).isEqualTo(parent.getSpanContext());
+      assertThat(child.isRecording()).isFalse();
       try (Scope childScope = child.makeCurrent()) {
         child.setAttribute("b", "1");
         grandchild = tracerC.spanBuilder("grandchild").startSpan();
@@ -76,7 +76,7 @@ class TracerConfigTest {
 
     // Only contain tracerA:parent and tracerC:child should be seen
     // tracerC:grandchild should list tracerA:parent as its parent
-    Assertions.assertThat(exporter.getFinishedSpanItems())
+    assertThat(exporter.getFinishedSpanItems())
         .satisfiesExactlyInAnyOrder(
             spanData ->
                 assertThat(spanData)
@@ -106,7 +106,7 @@ class TracerConfigTest {
       TracerConfig expectedTracerConfig) {
     TracerConfig tracerConfig = tracerConfigurator.apply(scope);
     tracerConfig = tracerConfig == null ? defaultConfig() : tracerConfig;
-    Assertions.assertThat(tracerConfig).isEqualTo(expectedTracerConfig);
+    assertThat(tracerConfig).isEqualTo(expectedTracerConfig);
   }
 
   private static final InstrumentationScopeInfo scopeCat = InstrumentationScopeInfo.create("cat");

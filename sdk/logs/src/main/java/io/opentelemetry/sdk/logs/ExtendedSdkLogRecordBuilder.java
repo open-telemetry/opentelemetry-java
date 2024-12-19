@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.logs;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
-import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -37,13 +36,13 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
   }
 
   @Override
-  public LogRecordBuilder setObservedTimestamp(long timestamp, TimeUnit unit) {
+  public ExtendedSdkLogRecordBuilder setObservedTimestamp(long timestamp, TimeUnit unit) {
     super.setObservedTimestamp(timestamp, unit);
     return this;
   }
 
   @Override
-  public LogRecordBuilder setObservedTimestamp(Instant instant) {
+  public ExtendedSdkLogRecordBuilder setObservedTimestamp(Instant instant) {
     super.setObservedTimestamp(instant);
     return this;
   }
