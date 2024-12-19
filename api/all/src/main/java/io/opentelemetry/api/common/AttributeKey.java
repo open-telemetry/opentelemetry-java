@@ -65,14 +65,4 @@ public interface AttributeKey<T> {
   static AttributeKey<List<Double>> doubleArrayKey(String key) {
     return InternalAttributeKeyImpl.create(key, AttributeType.DOUBLE_ARRAY);
   }
-
-  /**
-   * Returns a new AttributeKey for complex valued attributes.
-   *
-   * <p>IMPORTANT: complex valued attributes are only supported by Logs. Spans and Metrics do not
-   * support complex valued attributes.
-   */
-  static AttributeKey<ComplexAttribute> complexKey(String key) {
-    return InternalAttributeKeyImpl.create(key, AttributeType.COMPLEX);
-  }
 }

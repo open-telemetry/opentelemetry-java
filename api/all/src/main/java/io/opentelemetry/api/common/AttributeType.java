@@ -17,10 +17,5 @@ public enum AttributeType {
   STRING_ARRAY,
   BOOLEAN_ARRAY,
   LONG_ARRAY,
-  DOUBLE_ARRAY,
-  /**
-   * IMPORTANT: complex valued attributes are only supported by Logs. Spans and Metrics do not
-   * support complex valued attributes.
-   */
-  COMPLEX
+  DOUBLE_ARRAY
 }

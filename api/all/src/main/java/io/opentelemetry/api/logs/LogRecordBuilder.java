@@ -7,6 +7,7 @@ package io.opentelemetry.api.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ComplexAttribute;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
@@ -190,6 +191,21 @@ public interface LogRecordBuilder {
    */
   default LogRecordBuilder setAttribute(AttributeKey<Long> key, int value) {
     return setAttribute(key, (long) value);
+  }
+
+  /**
+   * Sets an attribute to the newly created {@code LogRecord}. If {@code LogRecordBuilder}
+   * previously contained a mapping for the key, the old value is replaced by the specified value.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @return this.
+   */
+  // TODO (trask) how to use pre-encoded key?
+  //  - is ComplexAttributeKey too broad (covers all nested attribute types)?
+  default LogRecordBuilder setAttribute(String key, ComplexAttribute value) {
+    // default implementation is no-op
+    return this;
   }
 
   /** Emit the log record. */
