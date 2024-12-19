@@ -23,8 +23,9 @@ class ArrayBackedComplexAttributeBuilder implements ComplexAttributeBuilder {
 
   @Override
   public ComplexAttribute build() {
-    // If only one key-value pair AND the entry hasn't been set to null (by #remove(AttributeKey<T>)
-    // or #removeIf(Predicate<AttributeKey<?>>)), then we can bypass sorting and filtering
+    // If only one key-value pair AND the entry hasn't been set to null (by
+    // #remove(ComplexAttributeKey<T>)
+    // or #removeIf(Predicate<ComplexAttributeKey<?>>)), then we can bypass sorting and filtering
     if (data.size() == 2 && data.get(0) != null) {
       return new ArrayBackedComplexAttribute(data.toArray());
     }
@@ -32,7 +33,7 @@ class ArrayBackedComplexAttributeBuilder implements ComplexAttributeBuilder {
   }
 
   @Override
-  public <T> ComplexAttributeBuilder put(AttributeKey<T> key, T value) {
+  public <T> ComplexAttributeBuilder put(ComplexAttributeKey<T> key, T value) {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
@@ -42,19 +43,7 @@ class ArrayBackedComplexAttributeBuilder implements ComplexAttributeBuilder {
   }
 
   @Override
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  public ComplexAttributeBuilder putAll(Attributes attributes) {
-    if (attributes == null) {
-      return this;
-    }
-    // Attributes must iterate over their entries with matching types for key / value, so this
-    // downcast to the raw type is safe.
-    attributes.forEach((key, value) -> put((AttributeKey) key, value));
-    return this;
-  }
-
-  @Override
-  public <T> ComplexAttributeBuilder remove(AttributeKey<T> key) {
+  public <T> ComplexAttributeBuilder remove(ComplexAttributeKey<T> key) {
     if (key == null || key.getKey().isEmpty()) {
       return this;
     }
@@ -64,13 +53,13 @@ class ArrayBackedComplexAttributeBuilder implements ComplexAttributeBuilder {
   }
 
   @Override
-  public ComplexAttributeBuilder removeIf(Predicate<AttributeKey<?>> predicate) {
+  public ComplexAttributeBuilder removeIf(Predicate<ComplexAttributeKey<?>> predicate) {
     if (predicate == null) {
       return this;
     }
     for (int i = 0; i < data.size() - 1; i += 2) {
       Object entry = data.get(i);
-      if (entry instanceof AttributeKey && predicate.test((AttributeKey<?>) entry)) {
+      if (entry instanceof ComplexAttributeKey && predicate.test((ComplexAttributeKey<?>) entry)) {
         // null items are filtered out in ArrayBackedAttributes
         data.set(i, null);
         data.set(i + 1, null);

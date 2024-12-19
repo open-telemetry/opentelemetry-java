@@ -7,7 +7,6 @@ package io.opentelemetry.api.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.ComplexAttribute;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
@@ -114,20 +113,6 @@ public interface LogRecordBuilder {
    * @return this.
    */
   <T> LogRecordBuilder setAttribute(AttributeKey<T> key, T value);
-
-  /**
-   * Sets an attribute to the newly created {@code LogRecord}. If {@code LogRecordBuilder}
-   * previously contained a mapping for the key, the old value is replaced by the specified value.
-   *
-   * <p>Note: the behavior of null values is undefined, and hence strongly discouraged.
-   *
-   * @param key the key for this attribute.
-   * @param value the value for this attribute.
-   * @return this.
-   */
-  default <T> LogRecordBuilder setComplexAttribute(AttributeKey<T> key, ComplexAttribute value) {
-    return this;
-  }
 
   /**
    * Sets an attribute to the newly created {@code LogRecord}. If {@code LogRecordBuilder}

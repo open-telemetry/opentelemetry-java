@@ -5,8 +5,8 @@
 
 package io.opentelemetry.api.internal;
 
-import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.ComplexAttributeKey;
+import io.opentelemetry.api.common.ComplexAttributeType;
 import java.nio.charset.StandardCharsets;
 import javax.annotation.Nullable;
 
@@ -18,13 +18,13 @@ import javax.annotation.Nullable;
  */
 public final class InternalComplexAttributeKeyImpl<T> implements ComplexAttributeKey<T> {
 
-  private final AttributeType type;
+  private final ComplexAttributeType type;
   private final String key;
   private final int hashCode;
 
   @Nullable private byte[] keyUtf8;
 
-  private InternalComplexAttributeKeyImpl(AttributeType type, String key) {
+  private InternalComplexAttributeKeyImpl(ComplexAttributeType type, String key) {
     if (type == null) {
       throw new NullPointerException("Null type");
     }
@@ -48,12 +48,12 @@ public final class InternalComplexAttributeKeyImpl<T> implements ComplexAttribut
   // the class loader automatically resolves its super classes (interfaces), which in this case is
   // Context, which would be the same class (interface) being instrumented at that time,
   // which would lead to the JVM throwing a LinkageError "attempted duplicate interface definition"
-  public static <T> ComplexAttributeKey<T> create(@Nullable String key, AttributeType type) {
+  public static <T> ComplexAttributeKey<T> create(@Nullable String key, ComplexAttributeType type) {
     return new InternalComplexAttributeKeyImpl<>(type, key != null ? key : "");
   }
 
   @Override
-  public AttributeType getType() {
+  public ComplexAttributeType getType() {
     return type;
   }
 
@@ -100,7 +100,7 @@ public final class InternalComplexAttributeKeyImpl<T> implements ComplexAttribut
     return buildHashCode(type, key);
   }
 
-  private static int buildHashCode(AttributeType type, String key) {
+  private static int buildHashCode(ComplexAttributeType type, String key) {
     int result = 1;
     result *= 1000003;
     result ^= type.hashCode();

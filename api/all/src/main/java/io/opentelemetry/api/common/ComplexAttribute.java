@@ -29,7 +29,6 @@ import javax.annotation.concurrent.Immutable;
  * <p>For this reason, it is strongly suggested that you use the implementation that is provided
  * here via the factory methods and the {@link ComplexAttributeBuilder}.
  */
-@SuppressWarnings("rawtypes")
 @Immutable
 public interface ComplexAttribute {
 
