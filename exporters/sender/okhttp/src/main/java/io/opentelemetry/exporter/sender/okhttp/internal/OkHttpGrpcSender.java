@@ -25,6 +25,7 @@ package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.exporter.internal.RetryUtil;
+import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcResponse;
@@ -42,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
@@ -80,7 +82,8 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
       Supplier<Map<String, List<String>>> headersSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
-      @Nullable X509TrustManager trustManager) {
+      @Nullable X509TrustManager trustManager,
+      @Nullable Authenticator authenticator) {
     OkHttpClient.Builder clientBuilder =
         new OkHttpClient.Builder()
             .dispatcher(OkHttpUtil.newDispatcher())
@@ -90,7 +93,6 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
       clientBuilder.addInterceptor(
           new RetryInterceptor(retryPolicy, OkHttpGrpcSender::isRetryable));
     }
-
     boolean isPlainHttp = endpoint.startsWith("http://");
     if (isPlainHttp) {
       clientBuilder.connectionSpecs(Collections.singletonList(ConnectionSpec.CLEARTEXT));
@@ -100,6 +102,20 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
       if (sslContext != null && trustManager != null) {
         clientBuilder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
       }
+    }
+
+    if (authenticator != null) {
+      Map<String, List<String>> headers = headersSupplier.get();
+      // Convert the auth header type of Map<String, String> to the expected type of
+      // OkHttpGrpcSender of Map<String, List<String>>
+      Map<String, List<String>> authHeaders =
+          authenticator.getHeaders().entrySet().stream()
+              .collect(
+                  Collectors.toMap(
+                      Map.Entry::getKey, e -> Collections.singletonList(e.getValue())));
+      // The authenticator headers will override the default headers if there are duplicate keys.
+      headers.putAll(authHeaders);
+      headersSupplier = () -> headers;
     }
 
     this.client = clientBuilder.build();

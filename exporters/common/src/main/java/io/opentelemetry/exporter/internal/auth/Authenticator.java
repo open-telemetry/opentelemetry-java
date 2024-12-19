@@ -41,7 +41,7 @@ public interface Authenticator {
       field.setAccessible(true);
       Object value = field.get(builder);
       if (value instanceof GrpcExporterBuilder) {
-        throw new IllegalArgumentException("GrpcExporterBuilder not supported yet.");
+        ((GrpcExporterBuilder<?>) value).setAuthenticator(authenticator);
       } else if (value instanceof HttpExporterBuilder) {
         ((HttpExporterBuilder<?>) value).setAuthenticator(authenticator);
       } else {
