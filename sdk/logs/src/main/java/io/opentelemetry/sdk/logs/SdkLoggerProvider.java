@@ -60,7 +60,7 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
     this.loggerComponentRegistry =
         new ComponentRegistry<>(
             instrumentationScopeInfo ->
-                new SdkLogger(
+                SdkLogger.create(
                     sharedState,
                     instrumentationScopeInfo,
                     getLoggerConfig(instrumentationScopeInfo)));

@@ -5,10 +5,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.metrics.ExtendedLongHistogram;
-import io.opentelemetry.api.incubator.metrics.ExtendedLongHistogramBuilder;
+import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
@@ -22,14 +20,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-final class SdkLongHistogram extends AbstractInstrument implements ExtendedLongHistogram {
+class SdkLongHistogram extends AbstractInstrument implements LongHistogram {
   private static final Logger logger = Logger.getLogger(SdkLongHistogram.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
-  private final SdkMeter sdkMeter;
-  private final WriteableMetricStorage storage;
+  final SdkMeter sdkMeter;
+  final WriteableMetricStorage storage;
 
-  private SdkLongHistogram(
+  SdkLongHistogram(
       InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     super(descriptor);
     this.sdkMeter = sdkMeter;
@@ -59,14 +57,9 @@ final class SdkLongHistogram extends AbstractInstrument implements ExtendedLongH
     record(value, Attributes.empty());
   }
 
-  @Override
-  public boolean isEnabled() {
-    return sdkMeter.isMeterEnabled() && storage.isEnabled();
-  }
+  static class SdkLongHistogramBuilder implements LongHistogramBuilder {
 
-  static final class SdkLongHistogramBuilder implements ExtendedLongHistogramBuilder {
-
-    private final InstrumentBuilder builder;
+    final InstrumentBuilder builder;
 
     SdkLongHistogramBuilder(
         SdkMeter sdkMeter,
@@ -110,12 +103,6 @@ final class SdkLongHistogram extends AbstractInstrument implements ExtendedLongH
         return this;
       }
       builder.setExplicitBucketBoundaries(boundaries);
-      return this;
-    }
-
-    @Override
-    public ExtendedLongHistogramBuilder setAttributesAdvice(List<AttributeKey<?>> attributes) {
-      builder.setAdviceAttributes(attributes);
       return this;
     }
 
