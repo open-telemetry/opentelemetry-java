@@ -38,6 +38,14 @@ final class SdkLogger implements ExtendedLogger {
     return NOOP_LOGGER.logRecordBuilder();
   }
 
+  @Override
+  public LogRecordBuilder eventBuilder(String eventName) {
+    if (loggerEnabled) {
+      return new SdkLogRecordBuilder(loggerSharedState, instrumentationScopeInfo, eventName);
+    }
+    return NOOP_LOGGER.eventBuilder(eventName);
+  }
+
   // VisibleForTesting
   InstrumentationScopeInfo getInstrumentationScopeInfo() {
     return instrumentationScopeInfo;
