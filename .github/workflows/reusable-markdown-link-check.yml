@@ -9,13 +9,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install markdown-link-check
-        # TODO(jack-berg): use latest when config file reading bug is fixed: https://github.com/tcort/markdown-link-check/issues/246
-        run: npm install -g markdown-link-check@3.10.3
-
-      - name: Run markdown-link-check
-        run: |
-          find . -type f \
-                 -name '*.md' \
-                 -not -path './CHANGELOG.md' \
-               | xargs .github/scripts/markdown-link-check-with-retry.sh
+      - uses: lycheeverse/lychee-action@v2
+        with:
+          # remove version after next release of lychee-action
+          lycheeVersion: latest
+          # excluding links to pull requests and issues is done for performance
+          args: >
+            --include-fragments
+            --exclude "^https://github.com/open-telemetry/opentelemetry-java/(issue|pull)/\\d+$"
+            --max-retries 6
+            .
