@@ -12,6 +12,8 @@ import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.mapArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.mapKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
@@ -87,6 +89,24 @@ public interface AttributesBuilder {
   }
 
   /**
+   * Puts a map into this. If {@code AttributesBuilder} previously contained a value for the key,
+   * the old value is replaced by the specified map.
+   *
+   * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
+   * your keys, if possible.
+   *
+   * <p>IMPORTANT: maps are only supported by Logs. Spans and Metrics do not support maps.
+   *
+   * @return this Builder
+   */
+  default AttributesBuilder put(String key, Attributes attributes) {
+    if (attributes == null) {
+      return this;
+    }
+    return put(mapKey(key), attributes);
+  }
+
+  /**
    * Puts a String array attribute into this.
    *
    * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
@@ -157,6 +177,25 @@ public interface AttributesBuilder {
       return this;
     }
     return put(booleanArrayKey(key), toList(value));
+  }
+
+  /**
+   * Puts an array of maps into this. If {@code AttributesBuilder} previously contained a value for
+   * the key, the old value is replaced by the specified array of maps.
+   *
+   * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
+   * your keys, if possible.
+   *
+   * <p>IMPORTANT: arrays of maps are only supported by Logs. Spans and Metrics do not support
+   * arrays of maps.
+   *
+   * @return this Builder
+   */
+  default AttributesBuilder put(String key, Attributes... value) {
+    if (value == null) {
+      return this;
+    }
+    return put(mapArrayKey(key), Arrays.asList(value));
   }
 
   /**
