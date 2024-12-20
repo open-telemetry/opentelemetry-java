@@ -115,4 +115,8 @@ public interface Value<T> {
    */
   // TODO(jack-berg): Should this be a JSON encoding?
   String asString();
+
+  static ValueBuilder builder() {
+    return new ValueBuilderImpl();
+  }
 }
