@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs.data;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ComplexAttribute;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.common.ValueType;
 import io.opentelemetry.api.logs.Severity;
@@ -13,6 +14,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Map;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -73,6 +75,11 @@ public interface LogRecordData {
 
   /** Returns the attributes for this log, or {@link Attributes#empty()} if unset. */
   Attributes getAttributes();
+
+  /** Returns the attributes for this log, or {@link Attributes#empty()} if unset. */
+  // TODO (trask)
+  //  - is ComplexAttributes too broad (covers all nested attribute types)?
+  Map<String, ComplexAttribute> getComplexAttributes();
 
   /**
    * Returns the total number of attributes that were recorded on this log.
