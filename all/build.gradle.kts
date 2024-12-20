@@ -1,9 +1,58 @@
+import java.util.stream.Collectors
+
 plugins {
   id("otel.java-conventions")
 }
 
 description = "OpenTelemetry All"
 otelJava.moduleName.set("io.opentelemetry.all")
+
+// Skip OWASP dependencyCheck task on test module
+dependencyCheck {
+  skip = true
+}
+
+val testTasks = mutableListOf<Task>()
+val jarTasks = mutableListOf<Jar>()
+
+dependencies {
+  rootProject.subprojects.forEach { subproject ->
+    // Generate aggregate coverage report for published modules that enable jacoco.
+    subproject.plugins.withId("jacoco") {
+      subproject.plugins.withId("maven-publish") {
+        implementation(project(subproject.path)) {
+          isTransitive = false
+        }
+        subproject.tasks.withType<Test>().configureEach {
+          testTasks.add(this)
+        }
+        subproject.tasks.withType<Jar> {
+          if (this.archiveClassifier.get().isEmpty()) {
+            System.out.println(this.archiveFile.get().toString())
+            jarTasks.add(this)
+          }
+        }
+      }
+    }
+  }
+
+  testImplementation("com.tngtech.archunit:archunit-junit5")
+}
+
+val artifactsAndJarsFile = layout.buildDirectory.file("artifacts_and_jars.txt").get().asFile
+
+var writeArtifactsAndJars = tasks.register("writeArtifactsAndJars") {
+  dependsOn(jarTasks)
+  artifactsAndJarsFile.createNewFile()
+  val content = jarTasks.stream()
+    .filter {
+      !it.archiveFile.get().toString().contains("jmh")
+    }
+    .map {
+    it.archiveBaseName.get() + ":" + it.archiveFile.get().toString()
+  }.collect(Collectors.joining("\n"))
+  artifactsAndJarsFile.writeText(content)
+}
 
 tasks {
   // We don't compile much here, just some API boundary tests. This project is mostly for
@@ -20,32 +69,12 @@ tasks {
     test {
       enabled = false
     }
-  }
-}
-
-// Skip OWASP dependencyCheck task on test module
-dependencyCheck {
-  skip = true
-}
-
-val testTasks = mutableListOf<Task>()
-
-dependencies {
-  rootProject.subprojects.forEach { subproject ->
-    // Generate aggregate coverage report for published modules that enable jacoco.
-    subproject.plugins.withId("jacoco") {
-      subproject.plugins.withId("maven-publish") {
-        implementation(project(subproject.path)) {
-          isTransitive = false
-        }
-        subproject.tasks.withType<Test>().configureEach {
-          testTasks.add(this)
-        }
-      }
+  } else {
+    test {
+      dependsOn(writeArtifactsAndJars)
+      environment("ARTIFACTS_AND_JARS", artifactsAndJarsFile.absolutePath)
     }
   }
-
-  testImplementation("com.tngtech.archunit:archunit-junit5")
 }
 
 // https://docs.gradle.org/current/samples/sample_jvm_multi_project_with_code_coverage.html
