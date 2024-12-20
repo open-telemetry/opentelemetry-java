@@ -27,6 +27,11 @@ class DefaultLogger implements Logger {
     return NOOP_LOG_RECORD_BUILDER;
   }
 
+  @Override
+  public LogRecordBuilder eventBuilder(String eventName) {
+    return NOOP_LOG_RECORD_BUILDER;
+  }
+
   private static final class NoopLogRecordBuilder implements LogRecordBuilder {
 
     private NoopLogRecordBuilder() {}
