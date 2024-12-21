@@ -28,7 +28,6 @@ dependencies {
         }
         subproject.tasks.withType<Jar> {
           if (this.archiveClassifier.get().isEmpty()) {
-            System.out.println(this.archiveFile.get().toString())
             jarTasks.add(this)
           }
         }
