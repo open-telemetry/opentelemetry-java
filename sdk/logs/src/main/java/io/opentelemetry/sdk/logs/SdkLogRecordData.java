@@ -33,7 +33,8 @@ abstract class SdkLogRecordData implements LogRecordData {
       @Nullable String severityText,
       @Nullable Value<?> body,
       Attributes attributes,
-      int totalAttributeCount) {
+      int totalAttributeCount,
+      @Nullable String eventName) {
     return new AutoValue_SdkLogRecordData(
         resource,
         instrumentationScopeInfo,
@@ -44,6 +45,7 @@ abstract class SdkLogRecordData implements LogRecordData {
         severityText,
         attributes,
         totalAttributeCount,
+        eventName,
         body);
   }
 
