@@ -6,6 +6,9 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.ExtendedAttributeKey;
+import io.opentelemetry.api.common.ExtendedAttributes;
+import io.opentelemetry.api.common.ExtendedAttributesBuilder;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.logs.LogRecordBuilder;
@@ -13,7 +16,6 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.AttributesMap;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -22,7 +24,8 @@ import javax.annotation.Nullable;
 final class SdkLogRecordBuilder implements ExtendedLogRecordBuilder {
 
   private final LoggerSharedState loggerSharedState;
-  private final LogLimits logLimits;
+  // TODO: restore
+  // private final LogLimits logLimits;
 
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private long timestampEpochNanos;
@@ -31,12 +34,12 @@ final class SdkLogRecordBuilder implements ExtendedLogRecordBuilder {
   private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
   @Nullable private String severityText;
   @Nullable private Value<?> body;
-  @Nullable private AttributesMap attributes;
+  // TODO: apply log limits
+  @Nullable private ExtendedAttributesBuilder attributesBuilder;
 
   SdkLogRecordBuilder(
       LoggerSharedState loggerSharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
     this.loggerSharedState = loggerSharedState;
-    this.logLimits = loggerSharedState.getLogLimits();
     this.instrumentationScopeInfo = instrumentationScopeInfo;
   }
 
@@ -100,12 +103,18 @@ final class SdkLogRecordBuilder implements ExtendedLogRecordBuilder {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
-    if (this.attributes == null) {
-      this.attributes =
-          AttributesMap.create(
-              logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
+    return setAttribute(key.asExtendedAttributeKey(), value);
+  }
+
+  @Override
+  public <T> SdkLogRecordBuilder setAttribute(ExtendedAttributeKey<T> key, T value) {
+    if (key == null || key.getKey().isEmpty() || value == null) {
+      return this;
     }
-    this.attributes.put(key, value);
+    if (attributesBuilder == null) {
+      attributesBuilder = ExtendedAttributes.builder();
+    }
+    attributesBuilder.put(key, value);
     return this;
   }
 
@@ -133,6 +142,6 @@ final class SdkLogRecordBuilder implements ExtendedLogRecordBuilder {
                 severity,
                 severityText,
                 body,
-                attributes));
+                attributesBuilder));
   }
 }

@@ -1,2 +1,92 @@
 Comparing source compatibility of opentelemetry-api-1.46.0-SNAPSHOT.jar against opentelemetry-api-1.45.0.jar
-No changes.
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.common.AttributeKey  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	GENERIC TEMPLATES: === T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributeKey<T> asExtendedAttributeKey()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.ExtendedAttributeKey  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.AttributeKey<T> asAttributeKey()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.ExtendedAttributeKey<java.util.List<java.lang.Boolean>> booleanArrayKey(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.ExtendedAttributeKey<java.lang.Boolean> booleanKey(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.ExtendedAttributeKey<java.util.List<java.lang.Double>> doubleArrayKey(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.ExtendedAttributeKey<java.lang.Double> doubleKey(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getKey()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.ExtendedAttributeType getType()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.ExtendedAttributeKey<java.util.List<java.lang.Long>> longArrayKey(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.ExtendedAttributeKey<java.lang.Long> longKey(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.ExtendedAttributeKey<java.util.List<io.opentelemetry.api.common.ExtendedAttributes>> mapArrayKey(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.ExtendedAttributeKey<io.opentelemetry.api.common.ExtendedAttributes> mapKey(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.ExtendedAttributeKey<java.util.List<java.lang.String>> stringArrayKey(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.ExtendedAttributeKey<java.lang.String> stringKey(java.lang.String)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.ExtendedAttributes  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.Attributes asAttributes()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.Map<io.opentelemetry.api.common.ExtendedAttributeKey<?>,java.lang.Object> asMap()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.ExtendedAttributesBuilder builder()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.ExtendedAttributes empty()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void forEach(java.util.function.BiConsumer<? super io.opentelemetry.api.common.ExtendedAttributeKey<? super ?>,? super java.lang.Object>)
+	+++  NEW METHOD: PUBLIC(+) java.lang.Object get(io.opentelemetry.api.common.AttributeKey<T>)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Object get(io.opentelemetry.api.common.ExtendedAttributeKey<T>)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) boolean isEmpty()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int size()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.ExtendedAttributesBuilder toBuilder()
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.ExtendedAttributesBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.ExtendedAttributes build()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributesBuilder put(io.opentelemetry.api.common.AttributeKey<T>, java.lang.Object)
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.ExtendedAttributesBuilder put(io.opentelemetry.api.common.ExtendedAttributeKey<T>, java.lang.Object)
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributesBuilder put(java.lang.String, java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributesBuilder put(java.lang.String, long)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributesBuilder put(java.lang.String, double)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributesBuilder put(java.lang.String, boolean)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributesBuilder put(java.lang.String, io.opentelemetry.api.common.ExtendedAttributes)
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributesBuilder put(java.lang.String, java.lang.String[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributesBuilder put(io.opentelemetry.api.common.AttributeKey<java.util.List<T>>, java.lang.Object[])
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributesBuilder put(java.lang.String, long[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributesBuilder put(java.lang.String, double[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributesBuilder put(java.lang.String, boolean[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributesBuilder put(java.lang.String, io.opentelemetry.api.common.ExtendedAttributes[])
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributesBuilder putAll(io.opentelemetry.api.common.Attributes)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributesBuilder putAll(io.opentelemetry.api.common.ExtendedAttributes)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributesBuilder remove(io.opentelemetry.api.common.AttributeKey<T>)
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributesBuilder remove(io.opentelemetry.api.common.ExtendedAttributeKey<T>)
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.ExtendedAttributesBuilder removeIf(java.util.function.Predicate<io.opentelemetry.api.common.ExtendedAttributeKey<?>>)
++++  NEW ENUM: PUBLIC(+) FINAL(+) io.opentelemetry.api.common.ExtendedAttributeType  (compatible)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: java.lang.constant.Constable
+	+++  NEW INTERFACE: java.lang.Comparable
+	+++  NEW INTERFACE: java.io.Serializable
+	+++  NEW SUPERCLASS: java.lang.Enum
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ExtendedAttributeType STRING_ARRAY
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ExtendedAttributeType DOUBLE_ARRAY
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ExtendedAttributeType BOOLEAN_ARRAY
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ExtendedAttributeType STRING
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ExtendedAttributeType DOUBLE
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ExtendedAttributeType MAP
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ExtendedAttributeType MAP_ARRAY
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ExtendedAttributeType BOOLEAN
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ExtendedAttributeType LONG_ARRAY
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.api.common.ExtendedAttributeType LONG
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.ExtendedAttributeType valueOf(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.common.ExtendedAttributeType[] values()
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.logs.LogRecordBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.LogRecordBuilder setAllAttributes(io.opentelemetry.api.common.ExtendedAttributes)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.LogRecordBuilder setAttribute(io.opentelemetry.api.common.ExtendedAttributeKey<T>, java.lang.Object)
+		GENERIC TEMPLATES: +++ T:java.lang.Object
