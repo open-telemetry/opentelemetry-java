@@ -119,11 +119,25 @@ class SdkSpanTest {
   @Test
   void nothingChangedAfterEnd() {
     SdkSpan span = createTestSpan(SpanKind.INTERNAL);
+
+    // Set an initial status before ending the span
+    span.setStatus(StatusCode.OK, "Initial status");
+    assertThat(span.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.OK);
+
+    // End the span
     span.end();
-    // Check that adding trace events or update fields after Span#end() does not throw any thrown
+
+    // Store the current status for verification
+    StatusData currentStatus = span.toSpanData().getStatus();
+
+    // Check that adding trace events or update fields after Span#end() does not throw any exception
     // and are ignored.
     spanDoWork(span, StatusCode.ERROR, "CANCELLED");
+
+    // Verify that the status has not changed after the span has ended
     SpanData spanData = span.toSpanData();
+    assertThat(spanData.getStatus()).isEqualTo(currentStatus);
+
     verifySpanData(
         spanData,
         Attributes.empty(),
@@ -1454,6 +1468,29 @@ class SdkSpanTest {
     assertThat(spanDataAttributes.size()).isEqualTo(attributes.size());
     spanDataAttributes.forEach((key, value) -> assertThat(attributes.get(key)).isEqualTo(value));
   }
+
+
+  @Test
+void setStatusCannotOverrideStatusError() {
+    SdkSpan testSpan = createTestRootSpan();
+    
+    // Set an initial status to ERROR
+    testSpan.setStatus(StatusCode.ERROR, "Initial error status");
+    assertThat(testSpan.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.ERROR);
+    
+    // Attempt to set status to OK (should not change)
+    testSpan.setStatus(StatusCode.OK);
+    assertThat(testSpan.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.ERROR);
+    
+    // Attempt to set status to UNSET (should not change)
+    testSpan.setStatus(StatusCode.UNSET);
+    assertThat(testSpan.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.ERROR);
+    
+    // Attempt to set status to ERROR again (should remain ERROR)
+    testSpan.setStatus(StatusCode.ERROR, "Another error status");
+    assertThat(testSpan.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.ERROR);
+}
+
 
   @Test
   void testAsSpanData() {
