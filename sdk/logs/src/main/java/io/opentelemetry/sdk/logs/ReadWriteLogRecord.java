@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ExtendedAttributeKey;
+import io.opentelemetry.api.common.ExtendedAttributes;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
@@ -29,6 +31,11 @@ public interface ReadWriteLogRecord {
    */
   <T> ReadWriteLogRecord setAttribute(AttributeKey<T> key, T value);
 
+  /** TODO. */
+  default <T> ReadWriteLogRecord setAttribute(ExtendedAttributeKey<T> key, T value) {
+    return this;
+  }
+
   // TODO: add additional setters
 
   /**
@@ -49,6 +56,18 @@ public interface ReadWriteLogRecord {
     return this;
   }
 
+  /** TODO. */
+  @SuppressWarnings("unchecked")
+  default ReadWriteLogRecord setAllAttributes(ExtendedAttributes extendedAttributes) {
+    if (extendedAttributes == null || extendedAttributes.isEmpty()) {
+      return this;
+    }
+    extendedAttributes.forEach(
+        (attributeKey, value) ->
+            this.setAttribute((ExtendedAttributeKey<Object>) attributeKey, value));
+    return this;
+  }
+
   /** Return an immutable {@link LogRecordData} instance representing this log record. */
   LogRecordData toLogRecordData();
 
@@ -58,7 +77,13 @@ public interface ReadWriteLogRecord {
    */
   @Nullable
   default <T> T getAttribute(AttributeKey<T> key) {
-    return toLogRecordData().getAttributes().get(key);
+    return toLogRecordData().getExtendedAttributes().get(key);
+  }
+
+  /** TODO. */
+  @Nullable
+  default <T> T getAttribute(ExtendedAttributeKey<T> key) {
+    return toLogRecordData().getExtendedAttributes().get(key);
   }
 
   /** Returns the instrumentation scope that generated this log. */
@@ -101,5 +126,10 @@ public interface ReadWriteLogRecord {
   /** Returns the attributes for this log, or {@link Attributes#empty()} if unset. */
   default Attributes getAttributes() {
     return toLogRecordData().getAttributes();
+  }
+
+  /** TODO. */
+  default ExtendedAttributes getExtendedAttributes() {
+    return toLogRecordData().getExtendedAttributes();
   }
 }

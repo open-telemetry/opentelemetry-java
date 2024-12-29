@@ -12,7 +12,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ExtendedAttributeKey;
+import io.opentelemetry.api.common.ExtendedAttributes;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
@@ -24,15 +27,21 @@ import org.junit.jupiter.api.Test;
 class SdkEventBuilderTest {
 
   @Test
+  @SuppressWarnings("unchecked")
   void emit() {
     String eventName = "banana";
 
     LogRecordBuilder logRecordBuilder = mock(LogRecordBuilder.class);
     when(logRecordBuilder.setTimestamp(anyLong(), any())).thenReturn(logRecordBuilder);
-    when(logRecordBuilder.setAttribute(any(), any())).thenReturn(logRecordBuilder);
+    when(logRecordBuilder.setAttribute(any(AttributeKey.class), any()))
+        .thenReturn(logRecordBuilder);
+    when(logRecordBuilder.setAttribute(any(ExtendedAttributeKey.class), any()))
+        .thenReturn(logRecordBuilder);
     when(logRecordBuilder.setContext(any())).thenReturn(logRecordBuilder);
     when(logRecordBuilder.setSeverity(any())).thenReturn(logRecordBuilder);
-    when(logRecordBuilder.setAllAttributes(any())).thenReturn(logRecordBuilder);
+    when(logRecordBuilder.setAllAttributes(any(Attributes.class))).thenReturn(logRecordBuilder);
+    when(logRecordBuilder.setAllAttributes(any(ExtendedAttributes.class)))
+        .thenReturn(logRecordBuilder);
 
     Instant instant = Instant.now();
     Context context = Context.root();
