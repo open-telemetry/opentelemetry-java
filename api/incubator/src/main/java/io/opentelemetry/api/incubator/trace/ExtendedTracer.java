@@ -20,4 +20,7 @@ public interface ExtendedTracer extends Tracer {
   default boolean isEnabled() {
     return true;
   }
+
+  @Override
+  ExtendedSpanBuilder spanBuilder(String spanName);
 }
