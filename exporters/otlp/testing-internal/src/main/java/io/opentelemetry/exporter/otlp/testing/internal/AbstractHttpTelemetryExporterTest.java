@@ -8,7 +8,6 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.junit.jupiter.api.Named.named;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -397,36 +396,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                 assertThat(req.headers().get("key1")).isEqualTo("value1");
                 assertThat(req.headers().get("key2")).isEqualTo("value" + count.get());
               });
-    } finally {
-      exporter.shutdown();
-    }
-  }
-
-  @Test
-  void withAuthenticator() {
-    assumeThat(hasAuthenticatorSupport()).isTrue();
-
-    TelemetryExporter<T> exporter =
-        exporterBuilder()
-            .setEndpoint(server.httpUri() + path)
-            .setAuthenticator(() -> Collections.singletonMap("key", "value"))
-            .build();
-
-    addHttpError(401);
-
-    try {
-      assertThat(
-              exporter
-                  .export(Collections.singletonList(generateFakeTelemetry()))
-                  .join(10, TimeUnit.SECONDS)
-                  .isSuccess())
-          .isTrue();
-      assertThat(httpRequests)
-          .element(0)
-          .satisfies(req -> assertThat(req.headers().get("key")).isNull());
-      assertThat(httpRequests)
-          .element(1)
-          .satisfies(req -> assertThat(req.headers().get("key")).isEqualTo("value"));
     } finally {
       exporter.shutdown();
     }
@@ -950,11 +919,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   protected abstract T generateFakeTelemetry();
 
   protected abstract Marshaler[] toMarshalers(List<T> telemetry);
-
-  // TODO: remove once JdkHttpSender supports authenticator
-  protected boolean hasAuthenticatorSupport() {
-    return true;
-  }
 
   private List<U> toProto(List<T> telemetry) {
     return Arrays.stream(toMarshalers(telemetry))

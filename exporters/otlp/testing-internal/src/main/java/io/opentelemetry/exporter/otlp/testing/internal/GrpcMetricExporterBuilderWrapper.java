@@ -6,7 +6,6 @@
 package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.grpc.ManagedChannel;
-import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -72,11 +71,6 @@ final class GrpcMetricExporterBuilderWrapper implements TelemetryExporterBuilder
   public TelemetryExporterBuilder<MetricData> setHeaders(
       Supplier<Map<String, String>> headerSupplier) {
     builder.setHeaders(headerSupplier);
-    return this;
-  }
-
-  @Override
-  public TelemetryExporterBuilder<MetricData> setAuthenticator(Authenticator authenticator) {
     return this;
   }
 
