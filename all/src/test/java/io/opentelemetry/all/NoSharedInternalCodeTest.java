@@ -71,14 +71,12 @@ class NoSharedInternalCodeTest {
     }
   }
 
-  @SuppressWarnings("SystemOut") // TODO: remove
   private static Stream<Arguments> artifactsAndJars() throws IOException {
     List<String> lines = Files.readAllLines(Path.of(System.getenv("ARTIFACTS_AND_JARS")));
     return lines.stream()
         .map(
             line -> {
-              System.out.println(line);
-              String[] parts = line.split(":");
+              String[] parts = line.split(":", 2);
               return Arguments.of(parts[0], parts[1]);
             });
   }
