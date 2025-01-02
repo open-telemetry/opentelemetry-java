@@ -74,7 +74,6 @@ jobs:
             -PtestJavaVersion=${{ matrix.test-java-version }}
             "-Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }}"
             "-Porg.gradle.java.installations.auto-download=false"
-            --stacktrace
         env:
           # JMH-based tests run only  if this environment variable is set to true
           RUN_JMH_BASED_TESTS: ${{ matrix.jmh-based-tests }}

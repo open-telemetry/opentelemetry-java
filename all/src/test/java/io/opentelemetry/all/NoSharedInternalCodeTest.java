@@ -50,28 +50,32 @@ class NoSharedInternalCodeTest {
             .resideInAnyPackage(artifactOtelPackages.toArray(new String[0]))
             .should()
             .dependOnClassesThat(
-                    new DescribedPredicate<>("are in internal modules of other opentelemetry artifacts") {
-                        @Override
-                        public boolean test(JavaClass javaClass) {
-                            String packageName = javaClass.getPackageName();
-                            return packageName.startsWith(OTEL_BASE_PACKAGE)
-                                    && packageName.contains(".internal")
-                                    && !artifactOtelPackages.contains(packageName);
-                        }
-                    });
+                new DescribedPredicate<>(
+                    "are in internal modules of other opentelemetry artifacts") {
+                  @Override
+                  public boolean test(JavaClass javaClass) {
+                    String packageName = javaClass.getPackageName();
+                    return packageName.startsWith(OTEL_BASE_PACKAGE)
+                        && packageName.contains(".internal")
+                        && !artifactOtelPackages.contains(packageName);
+                  }
+                });
 
     // TODO: when all shared internal code is removed, remove the catch block and fail when detected
     try {
       noSharedInternalCodeRule.check(artifactClasses);
     } catch (AssertionError e) {
-      logger.log(Level.WARNING, "Internal shared code detected for: " + artifactId + "\n" + e.getMessage() + "\n");
+      logger.log(
+          Level.WARNING,
+          "Internal shared code detected for: " + artifactId + "\n" + e.getMessage() + "\n");
     }
   }
 
   private static Stream<Arguments> artifactsAndJars() throws IOException {
-        List<String> lines = Files.readAllLines(Path.of(System.getenv("ARTIFACTS_AND_JARS")));
-        return lines.stream()
-            .map(line -> {
+    List<String> lines = Files.readAllLines(Path.of(System.getenv("ARTIFACTS_AND_JARS")));
+    return lines.stream()
+        .map(
+            line -> {
               String[] parts = line.split(":");
               return Arguments.of(parts[0], parts[1]);
             });

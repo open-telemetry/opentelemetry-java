@@ -42,14 +42,15 @@ val artifactsAndJarsFile = layout.buildDirectory.file("artifacts_and_jars.txt").
 
 var writeArtifactsAndJars = tasks.register("writeArtifactsAndJars") {
   dependsOn(jarTasks)
+  artifactsAndJarsFile.parentFile.mkdirs()
   artifactsAndJarsFile.createNewFile()
   val content = jarTasks.stream()
     .filter {
       !it.archiveFile.get().toString().contains("jmh")
     }
     .map {
-    it.archiveBaseName.get() + ":" + it.archiveFile.get().toString()
-  }.collect(Collectors.joining("\n"))
+      it.archiveBaseName.get() + ":" + it.archiveFile.get().toString()
+    }.collect(Collectors.joining("\n"))
   artifactsAndJarsFile.writeText(content)
 }
 
