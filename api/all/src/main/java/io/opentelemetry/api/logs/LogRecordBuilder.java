@@ -85,8 +85,12 @@ public interface LogRecordBuilder {
   }
 
   /**
-   * Sets attributes. If the {@link LogRecordBuilder} previously contained a mapping for any of the
-   * keys, the old values are replaced by the specified values.
+   * Sets attributes to the newly created {@code LogRecord}. If the {@link LogRecordBuilder}
+   * previously contained a mapping for any of the keys, the old values are replaced by the
+   * specified values.
+   *
+   * @param attributes the attributes
+   * @return this.
    */
   @SuppressWarnings("unchecked")
   default LogRecordBuilder setAllAttributes(Attributes attributes) {
@@ -98,8 +102,95 @@ public interface LogRecordBuilder {
     return this;
   }
 
-  /** Sets an attribute. */
+  /**
+   * Sets an attribute to the newly created {@code LogRecord}. If {@code LogRecordBuilder}
+   * previously contained a mapping for the key, the old value is replaced by the specified value.
+   *
+   * <p>Note: the behavior of null values is undefined, and hence strongly discouraged.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @return this.
+   */
   <T> LogRecordBuilder setAttribute(AttributeKey<T> key, T value);
+
+  /**
+   * Sets an attribute to the newly created {@code LogRecord}. If {@code LogRecordBuilder}
+   * previously contained a mapping for the key, the old value is replaced by the specified value.
+   *
+   * <p>If a null or empty String {@code value} is passed in, the behavior is undefined, and hence
+   * strongly discouraged.
+   *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @return this.
+   */
+  default LogRecordBuilder setAttribute(String key, String value) {
+    return setAttribute(AttributeKey.stringKey(key), value);
+  }
+
+  /**
+   * Sets an attribute to the newly created {@code LogRecord}. If {@code LogRecordBuilder}
+   * previously contained a mapping for the key, the old value is replaced by the specified value.
+   *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @return this.
+   */
+  default LogRecordBuilder setAttribute(String key, long value) {
+    return setAttribute(AttributeKey.longKey(key), value);
+  }
+
+  /**
+   * Sets an attribute to the newly created {@code LogRecord}. If {@code LogRecordBuilder}
+   * previously contained a mapping for the key, the old value is replaced by the specified value.
+   *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @return this.
+   */
+  default LogRecordBuilder setAttribute(String key, double value) {
+    return setAttribute(AttributeKey.doubleKey(key), value);
+  }
+
+  /**
+   * Sets an attribute to the newly created {@code LogRecord}. If {@code LogRecordBuilder}
+   * previously contained a mapping for the key, the old value is replaced by the specified value.
+   *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @return this.
+   */
+  default LogRecordBuilder setAttribute(String key, boolean value) {
+    return setAttribute(AttributeKey.booleanKey(key), value);
+  }
+
+  /**
+   * Sets an attribute to the newly created {@code LogRecord}. If {@code LogRecordBuilder}
+   * previously contained a mapping for the key, the old value is replaced by the specified value.
+   *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @return this.
+   */
+  default LogRecordBuilder setAttribute(AttributeKey<Long> key, int value) {
+    return setAttribute(key, (long) value);
+  }
 
   /** Emit the log record. */
   void emit();
