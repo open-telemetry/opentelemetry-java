@@ -15,8 +15,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
-import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.List;
 import java.util.Objects;
@@ -27,15 +25,13 @@ final class SdkDoubleHistogram extends AbstractInstrument implements ExtendedDou
   private static final Logger logger = Logger.getLogger(SdkDoubleHistogram.class.getName());
 
   private final ThrottlingLogger throttlingLogger = new ThrottlingLogger(logger);
-  private final MeterSharedState meterSharedState;
+  private final SdkMeter sdkMeter;
   private final WriteableMetricStorage storage;
 
   private SdkDoubleHistogram(
-      InstrumentDescriptor descriptor,
-      MeterSharedState meterSharedState,
-      WriteableMetricStorage storage) {
+      InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     super(descriptor);
-    this.meterSharedState = meterSharedState;
+    this.sdkMeter = sdkMeter;
     this.storage = storage;
   }
 
@@ -64,24 +60,17 @@ final class SdkDoubleHistogram extends AbstractInstrument implements ExtendedDou
 
   @Override
   public boolean isEnabled() {
-    return meterSharedState.isMeterEnabled() && storage.isEnabled();
+    return sdkMeter.isMeterEnabled() && storage.isEnabled();
   }
 
   static final class SdkDoubleHistogramBuilder implements ExtendedDoubleHistogramBuilder {
 
     private final InstrumentBuilder builder;
 
-    SdkDoubleHistogramBuilder(
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        String name) {
+    SdkDoubleHistogramBuilder(SdkMeter sdkMeter, String name) {
       builder =
           new InstrumentBuilder(
-              name,
-              InstrumentType.HISTOGRAM,
-              InstrumentValueType.DOUBLE,
-              meterProviderSharedState,
-              meterSharedState);
+              name, InstrumentType.HISTOGRAM, InstrumentValueType.DOUBLE, sdkMeter);
     }
 
     @Override
@@ -107,8 +96,7 @@ final class SdkDoubleHistogram extends AbstractInstrument implements ExtendedDou
     }
 
     @Override
-    public ExtendedDoubleHistogramBuilder setExplicitBucketBoundariesAdvice(
-        List<Double> bucketBoundaries) {
+    public DoubleHistogramBuilder setExplicitBucketBoundariesAdvice(List<Double> bucketBoundaries) {
       try {
         Objects.requireNonNull(bucketBoundaries, "bucketBoundaries must not be null");
         ExplicitBucketHistogramUtils.validateBucketBoundaries(bucketBoundaries);

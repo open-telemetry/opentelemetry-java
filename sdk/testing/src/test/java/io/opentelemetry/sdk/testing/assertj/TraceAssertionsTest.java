@@ -680,6 +680,16 @@ class TraceAssertionsTest {
             trace ->
                 trace.hasSpansSatisfyingExactly(
                     span -> span.hasSpanId(SPAN_ID1), span -> span.hasSpanId(SPAN_ID2)));
+    // wrong number of spans
+    assertThatThrownBy(
+            () ->
+                TracesAssert.assertThat(traces)
+                    .hasTracesSatisfyingExactly(
+                        trace -> trace.hasSpansSatisfyingExactly(span -> span.hasSpanId(SPAN_ID1))))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageStartingWith(
+            "[Trace 0] " + System.lineSeparator() + "Expected size: 1 but was: 2");
+
     // test asserting spans in wrong oder
     assertThatThrownBy(
             () ->
@@ -689,7 +699,9 @@ class TraceAssertionsTest {
                             trace.hasSpansSatisfyingExactly(
                                 span -> span.hasSpanId(SPAN_ID2),
                                 span -> span.hasSpanId(SPAN_ID1))))
-        .isInstanceOf(AssertionError.class);
+        .isInstanceOf(AssertionError.class)
+        .hasMessage(
+            "[Span 0] Expected span [span1] to have span ID <0000000000000004> but was <0000000000000003>");
 
     // test asserting spans in any order
     TracesAssert.assertThat(traces)

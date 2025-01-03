@@ -7,15 +7,14 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Selector;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SelectorModel;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import java.io.Closeable;
 import java.util.List;
-import javax.annotation.Nullable;
 
-final class InstrumentSelectorFactory implements Factory<Selector, InstrumentSelector> {
+final class InstrumentSelectorFactory implements Factory<SelectorModel, InstrumentSelector> {
 
   private static final InstrumentSelectorFactory INSTANCE = new InstrumentSelectorFactory();
 
@@ -27,11 +26,7 @@ final class InstrumentSelectorFactory implements Factory<Selector, InstrumentSel
 
   @Override
   public InstrumentSelector create(
-      @Nullable Selector model, SpiHelper spiHelper, List<Closeable> closeables) {
-    if (model == null) {
-      throw new ConfigurationException("selector must not be null");
-    }
-
+      SelectorModel model, SpiHelper spiHelper, List<Closeable> closeables) {
     InstrumentSelectorBuilder builder = InstrumentSelector.builder();
     if (model.getInstrumentName() != null) {
       builder.setName(model.getInstrumentName());

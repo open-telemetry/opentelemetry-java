@@ -20,10 +20,13 @@ import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.ExceptionEventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.sdk.trace.internal.data.ExceptionEventData;
+import io.opentelemetry.sdk.trace.internal.ExtendedSpanProcessor;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -95,9 +98,31 @@ final class SdkSpan implements ReadWriteSpan {
   @GuardedBy("lock")
   private long endEpochNanos;
 
-  // True if the span is ended.
+  private enum EndState {
+    NOT_ENDED,
+    ENDING,
+    ENDED
+  }
+
   @GuardedBy("lock")
-  private boolean hasEnded;
+  private EndState hasEnded;
+
+  /**
+   * The thread on which {@link #end()} is called and which will be invoking the {@link
+   * SpanProcessor}s. This field is used to ensure that only this thread may modify the span while
+   * it is in state {@link EndState#ENDING} to prevent concurrent updates outside of {@link
+   * ExtendedSpanProcessor#onEnding(ReadWriteSpan)}.
+   */
+  @GuardedBy("lock")
+  @Nullable
+  private Thread spanEndingThread;
+
+  private static final AttributeKey<String> EXCEPTION_TYPE =
+      AttributeKey.stringKey("exception.type");
+  private static final AttributeKey<String> EXCEPTION_MESSAGE =
+      AttributeKey.stringKey("exception.message");
+  private static final AttributeKey<String> EXCEPTION_STACKTRACE =
+      AttributeKey.stringKey("exception.stacktrace");
 
   private SdkSpan(
       SpanContext context,
@@ -122,7 +147,7 @@ final class SdkSpan implements ReadWriteSpan {
     this.kind = kind;
     this.spanProcessor = spanProcessor;
     this.resource = resource;
-    this.hasEnded = false;
+    this.hasEnded = EndState.NOT_ENDED;
     this.clock = clock;
     this.startEpochNanos = startEpochNanos;
     this.attributes = attributes;
@@ -220,7 +245,7 @@ final class SdkSpan implements ReadWriteSpan {
           status,
           name,
           endEpochNanos,
-          hasEnded);
+          hasEnded == EndState.ENDED);
     }
   }
 
@@ -242,7 +267,7 @@ final class SdkSpan implements ReadWriteSpan {
   @Override
   public boolean hasEnded() {
     synchronized (lock) {
-      return hasEnded;
+      return hasEnded == EndState.ENDED;
     }
   }
 
@@ -288,7 +313,7 @@ final class SdkSpan implements ReadWriteSpan {
   @Override
   public long getLatencyNanos() {
     synchronized (lock) {
-      return (hasEnded ? endEpochNanos : clock.now()) - startEpochNanos;
+      return (hasEnded == EndState.NOT_ENDED ? clock.now() : endEpochNanos) - startEpochNanos;
     }
   }
 
@@ -303,7 +328,7 @@ final class SdkSpan implements ReadWriteSpan {
       return this;
     }
     synchronized (lock) {
-      if (hasEnded) {
+      if (!isModifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
         return this;
       }
@@ -316,6 +341,12 @@ final class SdkSpan implements ReadWriteSpan {
       attributes.put(key, value);
     }
     return this;
+  }
+
+  @GuardedBy("lock")
+  private boolean isModifiableByCurrentThread() {
+    return hasEnded == EndState.NOT_ENDED
+        || (hasEnded == EndState.ENDING && Thread.currentThread() == spanEndingThread);
   }
 
   @Override
@@ -380,7 +411,7 @@ final class SdkSpan implements ReadWriteSpan {
 
   private void addTimedEvent(EventData timedEvent) {
     synchronized (lock) {
-      if (hasEnded) {
+      if (!isModifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
         return;
       }
@@ -400,7 +431,7 @@ final class SdkSpan implements ReadWriteSpan {
       return this;
     }
     synchronized (lock) {
-      if (hasEnded) {
+      if (!isModifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return this;
       } else if (this.status.getStatusCode() == StatusCode.OK) {
@@ -427,8 +458,32 @@ final class SdkSpan implements ReadWriteSpan {
       additionalAttributes = Attributes.empty();
     }
 
+    AttributesMap attributes =
+        AttributesMap.create(
+            spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
+    String exceptionName = exception.getClass().getCanonicalName();
+    String exceptionMessage = exception.getMessage();
+    StringWriter stringWriter = new StringWriter();
+    try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+      exception.printStackTrace(printWriter);
+    }
+    String stackTrace = stringWriter.toString();
+
+    if (exceptionName != null) {
+      attributes.put(EXCEPTION_TYPE, exceptionName);
+    }
+    if (exceptionMessage != null) {
+      attributes.put(EXCEPTION_MESSAGE, exceptionMessage);
+    }
+    if (stackTrace != null) {
+      attributes.put(EXCEPTION_STACKTRACE, stackTrace);
+    }
+
+    additionalAttributes.forEach(attributes::put);
+
     addTimedEvent(
-        ExceptionEventData.create(spanLimits, clock.now(), exception, additionalAttributes));
+        ExceptionEventData.create(
+            clock.now(), exception, attributes, attributes.getTotalAddedValues()));
     return this;
   }
 
@@ -438,7 +493,7 @@ final class SdkSpan implements ReadWriteSpan {
       return this;
     }
     synchronized (lock) {
-      if (hasEnded) {
+      if (!isModifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling updateName() on an ended Span.");
         return this;
       }
@@ -463,7 +518,7 @@ final class SdkSpan implements ReadWriteSpan {
                 spanLimits.getMaxNumberOfAttributesPerLink(),
                 spanLimits.getMaxAttributeValueLength()));
     synchronized (lock) {
-      if (hasEnded) {
+      if (!isModifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling addLink() on an ended Span.");
         return this;
       }
@@ -493,12 +548,22 @@ final class SdkSpan implements ReadWriteSpan {
 
   private void endInternal(long endEpochNanos) {
     synchronized (lock) {
-      if (hasEnded) {
-        logger.log(Level.FINE, "Calling end() on an ended Span.");
+      if (hasEnded != EndState.NOT_ENDED) {
+        logger.log(Level.FINE, "Calling end() on an ended or ending Span.");
         return;
       }
       this.endEpochNanos = endEpochNanos;
-      hasEnded = true;
+      spanEndingThread = Thread.currentThread();
+      hasEnded = EndState.ENDING;
+    }
+    if (spanProcessor instanceof ExtendedSpanProcessor) {
+      ExtendedSpanProcessor extendedSpanProcessor = (ExtendedSpanProcessor) spanProcessor;
+      if (extendedSpanProcessor.isOnEndingRequired()) {
+        extendedSpanProcessor.onEnding(this);
+      }
+    }
+    synchronized (lock) {
+      hasEnded = EndState.ENDED;
     }
     if (spanProcessor.isEndRequired()) {
       spanProcessor.onEnd(this);
@@ -508,7 +573,7 @@ final class SdkSpan implements ReadWriteSpan {
   @Override
   public boolean isRecording() {
     synchronized (lock) {
-      return !hasEnded;
+      return hasEnded != EndState.ENDED;
     }
   }
 
@@ -533,7 +598,7 @@ final class SdkSpan implements ReadWriteSpan {
 
     // if the span has ended, then the events are unmodifiable
     // so we can return them directly and save copying all the data.
-    if (hasEnded) {
+    if (hasEnded == EndState.ENDED) {
       return Collections.unmodifiableList(events);
     }
 
@@ -547,7 +612,7 @@ final class SdkSpan implements ReadWriteSpan {
     }
     // if the span has ended, then the attributes are unmodifiable,
     // so we can return them directly and save copying all the data.
-    if (hasEnded) {
+    if (hasEnded == EndState.ENDED) {
       return attributes;
     }
     // otherwise, make a copy of the data into an immutable container.

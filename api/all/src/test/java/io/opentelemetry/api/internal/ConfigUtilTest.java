@@ -6,7 +6,15 @@
 package io.opentelemetry.api.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.SetSystemProperty;
 
@@ -55,5 +63,46 @@ class ConfigUtilTest {
   void defaultIfnull() {
     assertThat(ConfigUtil.defaultIfNull("val1", "val2")).isEqualTo("val1");
     assertThat(ConfigUtil.defaultIfNull(null, "val2")).isEqualTo("val2");
+  }
+
+  @Test
+  @SuppressWarnings("ReturnValueIgnored")
+  void systemPropertiesConcurrentAccess() throws ExecutionException, InterruptedException {
+    int threads = 4;
+    ExecutorService executor = Executors.newFixedThreadPool(threads);
+    try {
+      int cycles = 1000;
+      CountDownLatch latch = new CountDownLatch(1);
+      List<Future<?>> futures = new ArrayList<>();
+      for (int i = 0; i < threads; i++) {
+        futures.add(
+            executor.submit(
+                () -> {
+                  try {
+                    latch.await();
+                  } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                  }
+
+                  for (int j = 0; j < cycles; j++) {
+                    String property = "prop " + j;
+                    System.setProperty(property, "a");
+                    System.getProperties().remove(property);
+                  }
+                }));
+      }
+
+      latch.countDown();
+      for (int i = 0; i < cycles; i++) {
+        assertThatCode(() -> ConfigUtil.getString("x", "y")).doesNotThrowAnyException();
+      }
+
+      for (Future<?> future : futures) {
+        future.get();
+      }
+
+    } finally {
+      executor.shutdownNow();
+    }
   }
 }

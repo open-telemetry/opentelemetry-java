@@ -7,12 +7,12 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
-import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
@@ -29,7 +29,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
   private final SpanContext spanContext;
   private final Severity severity;
   @Nullable private final String severityText;
-  private final Body body;
+  @Nullable private final Value<?> body;
   private final Object lock = new Object();
 
   @GuardedBy("lock")
@@ -45,7 +45,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       SpanContext spanContext,
       Severity severity,
       @Nullable String severityText,
-      Body body,
+      @Nullable Value<?> body,
       @Nullable AttributesMap attributes) {
     this.logLimits = logLimits;
     this.resource = resource;
@@ -69,7 +69,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       SpanContext spanContext,
       Severity severity,
       @Nullable String severityText,
-      Body body,
+      @Nullable Value<?> body,
       @Nullable AttributesMap attributes) {
     return new SdkReadWriteLogRecord(
         logLimits,
@@ -123,6 +123,59 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
           body,
           getImmutableAttributes(),
           attributes == null ? 0 : attributes.getTotalAddedValues());
+    }
+  }
+
+  @Override
+  public InstrumentationScopeInfo getInstrumentationScopeInfo() {
+    return instrumentationScopeInfo;
+  }
+
+  @Override
+  public long getTimestampEpochNanos() {
+    return timestampEpochNanos;
+  }
+
+  @Override
+  public long getObservedTimestampEpochNanos() {
+    return observedTimestampEpochNanos;
+  }
+
+  @Override
+  public SpanContext getSpanContext() {
+    return spanContext;
+  }
+
+  @Override
+  public Severity getSeverity() {
+    return severity;
+  }
+
+  @Nullable
+  @Override
+  public String getSeverityText() {
+    return severityText;
+  }
+
+  @Nullable
+  @Override
+  public Value<?> getBodyValue() {
+    return body;
+  }
+
+  @Override
+  public Attributes getAttributes() {
+    return getImmutableAttributes();
+  }
+
+  @Nullable
+  @Override
+  public <T> T getAttribute(AttributeKey<T> key) {
+    synchronized (lock) {
+      if (attributes == null || attributes.isEmpty()) {
+        return null;
+      }
+      return attributes.get(key);
     }
   }
 }

@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
 import java.util.HashSet;
 import java.util.List;
@@ -23,9 +22,7 @@ final class AdviceAttributesProcessor extends AttributesProcessor {
 
   @Override
   public Attributes process(Attributes incoming, Context context) {
-    AttributesBuilder builder = incoming.toBuilder();
-    builder.removeIf(key -> !attributeKeys.contains(key));
-    return builder.build();
+    return FilteredAttributes.create(incoming, attributeKeys);
   }
 
   @Override

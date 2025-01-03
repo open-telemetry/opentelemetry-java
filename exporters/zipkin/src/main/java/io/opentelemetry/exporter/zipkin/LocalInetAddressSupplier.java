@@ -30,7 +30,7 @@ class LocalInetAddressSupplier implements Supplier<InetAddress> {
     return inetAddress;
   }
 
-  /** Logic borrowed from brave.internal.Platform.produceLocalEndpoint */
+  /** Logic borrowed from brave.internal.Platform.produceLocalEndpoint. */
   @Nullable
   private static InetAddress findLocalIp() {
     try {

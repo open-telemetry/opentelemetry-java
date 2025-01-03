@@ -10,6 +10,9 @@ import static java.util.Objects.requireNonNull;
 
 import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,7 +24,7 @@ public final class PrometheusHttpServerBuilder {
 
   static final int DEFAULT_PORT = 9464;
   private static final String DEFAULT_HOST = "0.0.0.0";
-  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.IMMUTABLE_DATA;
+  private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
 
   private String host = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
@@ -31,6 +34,8 @@ public final class PrometheusHttpServerBuilder {
   @Nullable private ExecutorService executor;
   private MemoryMode memoryMode = DEFAULT_MEMORY_MODE;
   @Nullable private HttpHandler defaultHandler;
+  private DefaultAggregationSelector defaultAggregationSelector =
+      DefaultAggregationSelector.getDefault();
 
   PrometheusHttpServerBuilder() {}
 
@@ -41,6 +46,8 @@ public final class PrometheusHttpServerBuilder {
     this.otelScopeEnabled = builder.otelScopeEnabled;
     this.allowedResourceAttributesFilter = builder.allowedResourceAttributesFilter;
     this.executor = builder.executor;
+    this.memoryMode = builder.memoryMode;
+    this.defaultAggregationSelector = builder.defaultAggregationSelector;
   }
 
   /** Sets the host to bind to. If unset, defaults to {@value #DEFAULT_HOST}. */
@@ -127,10 +134,28 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /**
+   * Set the {@link DefaultAggregationSelector} used for {@link
+   * MetricExporter#getDefaultAggregation(InstrumentType)}.
+   *
+   * <p>If unset, defaults to {@link DefaultAggregationSelector#getDefault()}.
+   */
+  public PrometheusHttpServerBuilder setDefaultAggregationSelector(
+      DefaultAggregationSelector defaultAggregationSelector) {
+    requireNonNull(defaultAggregationSelector, "defaultAggregationSelector");
+    this.defaultAggregationSelector = defaultAggregationSelector;
+    return this;
+  }
+
+  /**
    * Returns a new {@link PrometheusHttpServer} with the configuration of this builder which can be
    * registered with a {@link io.opentelemetry.sdk.metrics.SdkMeterProvider}.
    */
   public PrometheusHttpServer build() {
+    if (memoryMode == MemoryMode.REUSABLE_DATA && executor != null) {
+      throw new IllegalArgumentException(
+          "MemoryMode REUSEABLE_DATA cannot be used with custom executor, "
+              + "since data may be corrupted if reading metrics concurrently");
+    }
     return new PrometheusHttpServer(
         new PrometheusHttpServerBuilder(this), // copy to prevent modification
         host,
@@ -140,6 +165,7 @@ public final class PrometheusHttpServerBuilder {
         otelScopeEnabled,
         allowedResourceAttributesFilter,
         memoryMode,
-        defaultHandler);
+        defaultHandler,
+        defaultAggregationSelector);
   }
 }

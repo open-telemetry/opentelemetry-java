@@ -8,7 +8,7 @@ package io.opentelemetry.exporter.otlp.profiles;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.proto.profiles.v1experimental.internal.Line;
+import io.opentelemetry.proto.profiles.v1development.internal.Line;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
@@ -17,7 +17,7 @@ final class LineMarshaler extends MarshalerWithSize {
 
   private static final LineMarshaler[] EMPTY_REPEATED = new LineMarshaler[0];
 
-  private final long functionIndex;
+  private final int functionIndex;
   private final long line;
   private final long column;
 
@@ -44,7 +44,7 @@ final class LineMarshaler extends MarshalerWithSize {
     return lineMarshalers;
   }
 
-  private LineMarshaler(long functionIndex, long line, long column) {
+  private LineMarshaler(int functionIndex, long line, long column) {
     super(calculateSize(functionIndex, line, column));
     this.functionIndex = functionIndex;
     this.line = line;
@@ -53,14 +53,14 @@ final class LineMarshaler extends MarshalerWithSize {
 
   @Override
   protected void writeTo(Serializer output) throws IOException {
-    output.serializeUInt64(Line.FUNCTION_INDEX, functionIndex);
+    output.serializeInt32(Line.FUNCTION_INDEX, functionIndex);
     output.serializeInt64(Line.LINE, line);
     output.serializeInt64(Line.COLUMN, column);
   }
 
-  private static int calculateSize(long functionIndex, long line, long column) {
+  private static int calculateSize(int functionIndex, long line, long column) {
     int size = 0;
-    size += MarshalerUtil.sizeUInt64(Line.FUNCTION_INDEX, functionIndex);
+    size += MarshalerUtil.sizeInt32(Line.FUNCTION_INDEX, functionIndex);
     size += MarshalerUtil.sizeInt64(Line.LINE, line);
     size += MarshalerUtil.sizeInt64(Line.COLUMN, column);
     return size;

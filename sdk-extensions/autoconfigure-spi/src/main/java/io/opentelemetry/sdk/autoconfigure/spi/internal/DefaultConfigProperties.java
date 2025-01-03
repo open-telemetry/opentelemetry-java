@@ -47,7 +47,8 @@ public final class DefaultConfigProperties implements ConfigProperties {
    * priority over environment variables.
    */
   public static DefaultConfigProperties create(Map<String, String> defaultProperties) {
-    return new DefaultConfigProperties(System.getProperties(), System.getenv(), defaultProperties);
+    return new DefaultConfigProperties(
+        ConfigUtil.safeSystemProperties(), System.getenv(), defaultProperties);
   }
 
   /**
@@ -159,7 +160,7 @@ public final class DefaultConfigProperties implements ConfigProperties {
     try {
       long rawNumber = Long.parseLong(numberString.trim());
       TimeUnit unit = getDurationUnit(unitString.trim());
-      return Duration.ofMillis(TimeUnit.MILLISECONDS.convert(rawNumber, unit));
+      return Duration.ofNanos(TimeUnit.NANOSECONDS.convert(rawNumber, unit));
     } catch (NumberFormatException ex) {
       throw new ConfigurationException(
           "Invalid duration property "
@@ -256,6 +257,10 @@ public final class DefaultConfigProperties implements ConfigProperties {
   /** Returns the TimeUnit associated with a unit string. Defaults to milliseconds. */
   private static TimeUnit getDurationUnit(String unitString) {
     switch (unitString) {
+      case "us":
+        return TimeUnit.MICROSECONDS;
+      case "ns":
+        return TimeUnit.NANOSECONDS;
       case "": // Fallthrough expected
       case "ms":
         return TimeUnit.MILLISECONDS;

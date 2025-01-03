@@ -16,6 +16,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.linecorp.armeria.common.HttpRequest;
+import com.linecorp.armeria.common.TlsKeyPair;
 import com.linecorp.armeria.common.grpc.protocol.ArmeriaStatusException;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
@@ -25,9 +26,11 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.grpc.ManagedChannel;
+import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.TlsUtil;
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
+import io.opentelemetry.exporter.internal.grpc.GrpcResponse;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.testing.internal.compressor.Base64Compressor;
@@ -66,6 +69,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.assertj.core.api.iterable.ThrowingExtractor;
 import org.junit.jupiter.api.AfterAll;
@@ -134,7 +138,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
           sb.http(0);
           sb.https(0);
-          sb.tls(certificate.certificateFile(), certificate.privateKeyFile());
+          sb.tls(TlsKeyPair.of(certificate.privateKey(), certificate.certificate()));
           sb.tlsCustomizer(ssl -> ssl.trustManager(clientCertificate.certificate()));
           sb.decorator(LoggingService.newDecorator());
         }
@@ -485,7 +489,19 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       long startTimeMillis = System.currentTimeMillis();
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
+
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+
+      assertThat(result.getFailureThrowable())
+          .asInstanceOf(
+              InstanceOfAssertFactories.throwable(FailedExportException.GrpcExportException.class))
+          .returns(false, Assertions.from(FailedExportException::failedWithResponse))
+          .satisfies(
+              ex -> {
+                assertThat(ex.getResponse()).isNull();
+                assertThat(ex.getCause()).isNotNull();
+              });
+
       // Assert that the export request fails well before the default connect timeout of 10s
       assertThat(System.currentTimeMillis() - startTimeMillis)
           .isLessThan(TimeUnit.SECONDS.toMillis(1));
@@ -540,7 +556,48 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressLogger(GrpcExporter.class)
   void error() {
-    addGrpcError(13, null);
+    int statusCode = 13;
+    addGrpcError(statusCode, null);
+
+    TelemetryExporter<T> exporter = nonRetryingExporter();
+
+    try {
+      CompletableResultCode result =
+          exporter
+              .export(Collections.singletonList(generateFakeTelemetry()))
+              .join(10, TimeUnit.SECONDS);
+
+      assertThat(result.isSuccess()).isFalse();
+
+      assertThat(result.getFailureThrowable())
+          .asInstanceOf(
+              InstanceOfAssertFactories.throwable(FailedExportException.GrpcExportException.class))
+          .returns(true, Assertions.from(FailedExportException::failedWithResponse))
+          .satisfies(
+              ex -> {
+                assertThat(ex.getResponse())
+                    .isNotNull()
+                    .extracting(GrpcResponse::grpcStatusValue)
+                    .isEqualTo(statusCode);
+
+                assertThat(ex.getCause()).isNull();
+              });
+
+      LoggingEvent log =
+          logs.assertContains(
+              "Failed to export "
+                  + type
+                  + "s. Server responded with gRPC status code 13. Error message:");
+      assertThat(log.getLevel()).isEqualTo(Level.WARN);
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
+  @SuppressLogger(GrpcExporter.class)
+  void errorWithUnknownError() {
+    addGrpcError(2, null);
 
     TelemetryExporter<T> exporter = nonRetryingExporter();
 
@@ -549,14 +606,16 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
               exporter
                   .export(Collections.singletonList(generateFakeTelemetry()))
                   .join(10, TimeUnit.SECONDS)
-                  .isSuccess())
-          .isFalse();
-      LoggingEvent log =
-          logs.assertContains(
-              "Failed to export "
-                  + type
-                  + "s. Server responded with gRPC status code 13. Error message:");
-      assertThat(log.getLevel()).isEqualTo(Level.WARN);
+                  .getFailureThrowable())
+          .asInstanceOf(
+              InstanceOfAssertFactories.throwable(FailedExportException.GrpcExportException.class))
+          .returns(true, Assertions.from(FailedExportException::failedWithResponse))
+          .satisfies(
+              ex -> {
+                assertThat(ex.getResponse()).isNotNull();
+
+                assertThat(ex.getCause()).isNull();
+              });
     } finally {
       exporter.shutdown();
     }

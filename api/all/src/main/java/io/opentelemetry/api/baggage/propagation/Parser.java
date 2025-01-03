@@ -12,11 +12,11 @@ import javax.annotation.Nullable;
 
 /**
  * Implements single-pass Baggage parsing in accordance with https://w3c.github.io/baggage/ Key /
- * value are restricted in accordance with https://www.ietf.org/rfc/rfc2616.txt
+ * value are restricted in accordance with https://www.ietf.org/rfc/rfc2616.txt.
  *
  * <p>Note: following aspects are not specified in RFC: - some invalid elements (key or value) -
  * parser will include valid ones, disregard invalid - empty "value" is regarded as invalid - meta -
- * anything besides element terminator (comma)
+ * anything besides element terminator (comma).
  */
 class Parser {
 
@@ -37,7 +37,7 @@ class Parser {
 
   private boolean skipToNext;
 
-  public Parser(String baggageHeader) {
+  Parser(String baggageHeader) {
     this.baggageHeader = baggageHeader;
     reset(0);
   }

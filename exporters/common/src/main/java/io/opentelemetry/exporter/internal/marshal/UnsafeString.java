@@ -10,7 +10,8 @@ import java.lang.reflect.Field;
 class UnsafeString {
   private static final long valueOffset = getStringFieldOffset("value", byte[].class);
   private static final long coderOffset = getStringFieldOffset("coder", byte.class);
-  private static final int byteArrayBaseOffset = UnsafeAccess.arrayBaseOffset(byte[].class);
+  private static final int byteArrayBaseOffset =
+      UnsafeAccess.isAvailable() ? UnsafeAccess.arrayBaseOffset(byte[].class) : -1;
   private static final boolean available = valueOffset != -1 && coderOffset != -1;
 
   static boolean isAvailable() {

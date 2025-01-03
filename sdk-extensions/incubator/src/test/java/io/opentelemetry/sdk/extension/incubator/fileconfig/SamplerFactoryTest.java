@@ -13,12 +13,13 @@ import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOff;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOn;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.JaegerRemote;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBased;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sampler;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceIdRatioBased;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.component.SamplerComponentProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOffModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.JaegerRemoteModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBasedModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceIdRatioBasedModel;
 import io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSampler;
 import java.io.Closeable;
 import java.time.Duration;
@@ -44,7 +45,7 @@ class SamplerFactoryTest {
   @ParameterizedTest
   @MethodSource("createArguments")
   void create(
-      @Nullable Sampler model, io.opentelemetry.sdk.trace.samplers.Sampler expectedSampler) {
+      @Nullable SamplerModel model, io.opentelemetry.sdk.trace.samplers.Sampler expectedSampler) {
     // Some samplers like JaegerRemoteSampler are Closeable - ensure these get cleaned up
     if (expectedSampler instanceof Closeable) {
       cleanup.addCloseable((Closeable) expectedSampler);
@@ -61,44 +62,45 @@ class SamplerFactoryTest {
   private static Stream<Arguments> createArguments() {
     return Stream.of(
         Arguments.of(
-            null,
-            io.opentelemetry.sdk.trace.samplers.Sampler.parentBased(
-                io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn())),
-        Arguments.of(
-            new Sampler().withAlwaysOn(new AlwaysOn()),
+            new SamplerModel().withAlwaysOn(new AlwaysOnModel()),
             io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn()),
         Arguments.of(
-            new Sampler().withAlwaysOff(new AlwaysOff()),
+            new SamplerModel().withAlwaysOff(new AlwaysOffModel()),
             io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOff()),
         Arguments.of(
-            new Sampler().withTraceIdRatioBased(new TraceIdRatioBased()),
+            new SamplerModel().withTraceIdRatioBased(new TraceIdRatioBasedModel()),
             io.opentelemetry.sdk.trace.samplers.Sampler.traceIdRatioBased(1.0d)),
         Arguments.of(
-            new Sampler().withTraceIdRatioBased(new TraceIdRatioBased().withRatio(0.5d)),
+            new SamplerModel().withTraceIdRatioBased(new TraceIdRatioBasedModel().withRatio(0.5d)),
             io.opentelemetry.sdk.trace.samplers.Sampler.traceIdRatioBased(0.5)),
         Arguments.of(
-            new Sampler().withParentBased(new ParentBased()),
+            new SamplerModel().withParentBased(new ParentBasedModel()),
             io.opentelemetry.sdk.trace.samplers.Sampler.parentBased(
                 io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn())),
         Arguments.of(
-            new Sampler()
+            new SamplerModel()
                 .withParentBased(
-                    new ParentBased()
+                    new ParentBasedModel()
                         .withRoot(
-                            new Sampler()
-                                .withTraceIdRatioBased(new TraceIdRatioBased().withRatio(0.1d)))
+                            new SamplerModel()
+                                .withTraceIdRatioBased(
+                                    new TraceIdRatioBasedModel().withRatio(0.1d)))
                         .withRemoteParentSampled(
-                            new Sampler()
-                                .withTraceIdRatioBased(new TraceIdRatioBased().withRatio(0.2d)))
+                            new SamplerModel()
+                                .withTraceIdRatioBased(
+                                    new TraceIdRatioBasedModel().withRatio(0.2d)))
                         .withRemoteParentNotSampled(
-                            new Sampler()
-                                .withTraceIdRatioBased(new TraceIdRatioBased().withRatio(0.3d)))
+                            new SamplerModel()
+                                .withTraceIdRatioBased(
+                                    new TraceIdRatioBasedModel().withRatio(0.3d)))
                         .withLocalParentSampled(
-                            new Sampler()
-                                .withTraceIdRatioBased(new TraceIdRatioBased().withRatio(0.4d)))
+                            new SamplerModel()
+                                .withTraceIdRatioBased(
+                                    new TraceIdRatioBasedModel().withRatio(0.4d)))
                         .withLocalParentNotSampled(
-                            new Sampler()
-                                .withTraceIdRatioBased(new TraceIdRatioBased().withRatio(0.5d)))),
+                            new SamplerModel()
+                                .withTraceIdRatioBased(
+                                    new TraceIdRatioBasedModel().withRatio(0.5d)))),
             io.opentelemetry.sdk.trace.samplers.Sampler.parentBasedBuilder(
                     io.opentelemetry.sdk.trace.samplers.Sampler.traceIdRatioBased(0.1d))
                 .setRemoteParentSampled(
@@ -111,32 +113,50 @@ class SamplerFactoryTest {
                     io.opentelemetry.sdk.trace.samplers.Sampler.traceIdRatioBased(0.5d))
                 .build()),
         Arguments.of(
-            new Sampler()
+            new SamplerModel()
                 .withJaegerRemote(
-                    new JaegerRemote()
+                    new JaegerRemoteModel()
                         .withEndpoint("http://jaeger-remote-endpoint")
                         .withInterval(10_000)
-                        .withInitialSampler(new Sampler().withAlwaysOff(new AlwaysOff()))),
+                        .withInitialSampler(
+                            new SamplerModel().withAlwaysOff(new AlwaysOffModel()))),
             JaegerRemoteSampler.builder()
                 .setEndpoint("http://jaeger-remote-endpoint")
                 .setPollingInterval(Duration.ofSeconds(10))
+                .setInitialSampler(io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOff())
                 .build()));
   }
 
   @Test
-  void create_SpiExporter() {
+  void create_SpiExporter_Unknown() {
     List<Closeable> closeables = new ArrayList<>();
 
     assertThatThrownBy(
             () ->
                 SamplerFactory.getInstance()
                     .create(
-                        new Sampler()
-                            .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
+                        new SamplerModel()
+                            .withAdditionalProperty(
+                                "unknown_key", ImmutableMap.of("key1", "value1")),
                         spiHelper,
                         new ArrayList<>()))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unrecognized sampler(s): [test]");
+        .hasMessage(
+            "No component provider detected for io.opentelemetry.sdk.trace.samplers.Sampler with name \"unknown_key\".");
     cleanup.addCloseables(closeables);
+  }
+
+  @Test
+  void create_SpiExporter_Valid() {
+    io.opentelemetry.sdk.trace.samplers.Sampler sampler =
+        SamplerFactory.getInstance()
+            .create(
+                new SamplerModel()
+                    .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
+                spiHelper,
+                new ArrayList<>());
+    assertThat(sampler).isInstanceOf(SamplerComponentProvider.TestSampler.class);
+    assertThat(((SamplerComponentProvider.TestSampler) sampler).config.getString("key1"))
+        .isEqualTo("value1");
   }
 }

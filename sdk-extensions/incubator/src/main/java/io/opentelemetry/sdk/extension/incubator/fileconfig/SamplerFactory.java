@@ -7,27 +7,19 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static java.util.stream.Collectors.joining;
 
-import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.JaegerRemote;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBased;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceIdRatioBased;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.JaegerRemoteModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBasedModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceIdRatioBasedModel;
 import io.opentelemetry.sdk.trace.samplers.ParentBasedSamplerBuilder;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 
-final class SamplerFactory
-    implements Factory<
-        io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sampler, Sampler> {
+final class SamplerFactory implements Factory<SamplerModel, Sampler> {
 
   private static final SamplerFactory INSTANCE = new SamplerFactory();
 
@@ -38,21 +30,14 @@ final class SamplerFactory
   }
 
   @Override
-  public Sampler create(
-      @Nullable io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Sampler model,
-      SpiHelper spiHelper,
-      List<Closeable> closeables) {
-    if (model == null) {
-      return Sampler.parentBased(Sampler.alwaysOn());
-    }
-
+  public Sampler create(SamplerModel model, SpiHelper spiHelper, List<Closeable> closeables) {
     if (model.getAlwaysOn() != null) {
       return Sampler.alwaysOn();
     }
     if (model.getAlwaysOff() != null) {
       return Sampler.alwaysOff();
     }
-    TraceIdRatioBased traceIdRatioBasedModel = model.getTraceIdRatioBased();
+    TraceIdRatioBasedModel traceIdRatioBasedModel = model.getTraceIdRatioBased();
     if (traceIdRatioBasedModel != null) {
       Double ratio = traceIdRatioBasedModel.getRatio();
       if (ratio == null) {
@@ -60,7 +45,7 @@ final class SamplerFactory
       }
       return Sampler.traceIdRatioBased(ratio);
     }
-    ParentBased parentBasedModel = model.getParentBased();
+    ParentBasedModel parentBasedModel = model.getParentBased();
     if (parentBasedModel != null) {
       Sampler root =
           parentBasedModel.getRoot() == null
@@ -68,70 +53,49 @@ final class SamplerFactory
               : create(parentBasedModel.getRoot(), spiHelper, closeables);
       ParentBasedSamplerBuilder builder = Sampler.parentBasedBuilder(root);
       if (parentBasedModel.getRemoteParentSampled() != null) {
-        builder.setRemoteParentSampled(
-            create(parentBasedModel.getRemoteParentSampled(), spiHelper, closeables));
+        Sampler sampler = create(parentBasedModel.getRemoteParentSampled(), spiHelper, closeables);
+        builder.setRemoteParentSampled(sampler);
       }
       if (parentBasedModel.getRemoteParentNotSampled() != null) {
-        builder.setRemoteParentNotSampled(
-            create(parentBasedModel.getRemoteParentNotSampled(), spiHelper, closeables));
+        Sampler sampler =
+            create(parentBasedModel.getRemoteParentNotSampled(), spiHelper, closeables);
+        builder.setRemoteParentNotSampled(sampler);
       }
       if (parentBasedModel.getLocalParentSampled() != null) {
-        builder.setLocalParentSampled(
-            create(parentBasedModel.getLocalParentSampled(), spiHelper, closeables));
+        Sampler sampler = create(parentBasedModel.getLocalParentSampled(), spiHelper, closeables);
+        builder.setLocalParentSampled(sampler);
       }
       if (parentBasedModel.getLocalParentNotSampled() != null) {
-        builder.setLocalParentNotSampled(
-            create(parentBasedModel.getLocalParentNotSampled(), spiHelper, closeables));
+        Sampler sampler =
+            create(parentBasedModel.getLocalParentNotSampled(), spiHelper, closeables);
+        builder.setLocalParentNotSampled(sampler);
       }
       return builder.build();
     }
 
-    JaegerRemote jaegerRemoteModel = model.getJaegerRemote();
+    JaegerRemoteModel jaegerRemoteModel = model.getJaegerRemote();
     if (jaegerRemoteModel != null) {
-      // Translate from file configuration scheme to environment variable scheme. This is ultimately
-      // interpreted by JaegerRemoteSamplerProvider, but we want to avoid the dependency on
-      // opentelemetry-sdk-extension-jaeger-remote-sampler
-      Map<String, String> properties = new HashMap<>();
-      if (jaegerRemoteModel.getEndpoint() != null) {
-        properties.put("endpoint", jaegerRemoteModel.getEndpoint());
-      }
-      if (jaegerRemoteModel.getInterval() != null) {
-        properties.put("pollingInterval", String.valueOf(jaegerRemoteModel.getInterval()));
-      }
-      // TODO(jack-berg): determine how to support initial sampler. This is first case where a
-      // component configured via SPI has property that isn't available in the environment variable
-      // scheme.
-      String otelTraceSamplerArg =
-          properties.entrySet().stream()
-              .map(entry -> entry.getKey() + "=" + entry.getValue())
-              .collect(joining(","));
-
-      ConfigProperties configProperties =
-          DefaultConfigProperties.createFromMap(
-              Collections.singletonMap("otel.traces.sampler.arg", otelTraceSamplerArg));
-      return FileConfigUtil.addAndReturn(
-          closeables,
-          FileConfigUtil.assertNotNull(
-              samplerSpiManager(configProperties, spiHelper).getByName("jaeger_remote"),
-              "jaeger remote sampler"));
+      model.getAdditionalProperties().put("jaeger_remote", jaegerRemoteModel);
     }
 
-    // TODO(jack-berg): add support for generic SPI samplers
     if (!model.getAdditionalProperties().isEmpty()) {
-      throw new ConfigurationException(
-          "Unrecognized sampler(s): "
-              + model.getAdditionalProperties().keySet().stream().collect(joining(",", "[", "]")));
+      Map<String, Object> additionalProperties = model.getAdditionalProperties();
+      if (additionalProperties.size() > 1) {
+        throw new ConfigurationException(
+            "Invalid configuration - multiple samplers exporters set: "
+                + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
+      }
+      Map.Entry<String, Object> exporterKeyValue =
+          additionalProperties.entrySet().stream()
+              .findFirst()
+              .orElseThrow(
+                  () -> new IllegalStateException("Missing sampler. This is a programming error."));
+      Sampler sampler =
+          FileConfigUtil.loadComponent(
+              spiHelper, Sampler.class, exporterKeyValue.getKey(), exporterKeyValue.getValue());
+      return FileConfigUtil.addAndReturn(closeables, sampler);
+    } else {
+      throw new ConfigurationException("sampler must be set");
     }
-
-    return Sampler.parentBased(Sampler.alwaysOn());
-  }
-
-  private static NamedSpiManager<Sampler> samplerSpiManager(
-      ConfigProperties config, SpiHelper spiHelper) {
-    return spiHelper.loadConfigurable(
-        ConfigurableSamplerProvider.class,
-        ConfigurableSamplerProvider::getName,
-        ConfigurableSamplerProvider::createSampler,
-        config);
   }
 }

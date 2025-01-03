@@ -14,9 +14,11 @@ import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
@@ -24,7 +26,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -41,6 +44,7 @@ public final class PrometheusHttpServer implements MetricReader {
   private final PrometheusRegistry prometheusRegistry;
   private final String host;
   private final MemoryMode memoryMode;
+  private final DefaultAggregationSelector defaultAggregationSelector;
 
   /**
    * Returns a new {@link PrometheusHttpServer} which can be registered to an {@link
@@ -65,7 +69,8 @@ public final class PrometheusHttpServer implements MetricReader {
       boolean otelScopeEnabled,
       @Nullable Predicate<String> allowedResourceAttributesFilter,
       MemoryMode memoryMode,
-      @Nullable HttpHandler defaultHandler) {
+      @Nullable HttpHandler defaultHandler,
+      DefaultAggregationSelector defaultAggregationSelector) {
     this.builder = builder;
     this.prometheusMetricReader =
         new PrometheusMetricReader(otelScopeEnabled, allowedResourceAttributesFilter);
@@ -78,7 +83,13 @@ public final class PrometheusHttpServer implements MetricReader {
     // sequentially.
     if (memoryMode == MemoryMode.REUSABLE_DATA) {
       executor =
-          Executors.newSingleThreadExecutor(new DaemonThreadFactory("prometheus-http-server"));
+          new ThreadPoolExecutor(
+              1,
+              1,
+              0L,
+              TimeUnit.MILLISECONDS,
+              new LinkedBlockingQueue<>(),
+              new DaemonThreadFactory("prometheus-http-server"));
     }
     try {
       this.httpServer =
@@ -92,11 +103,17 @@ public final class PrometheusHttpServer implements MetricReader {
     } catch (IOException e) {
       throw new UncheckedIOException("Could not create Prometheus HTTP server", e);
     }
+    this.defaultAggregationSelector = defaultAggregationSelector;
   }
 
   @Override
   public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
     return prometheusMetricReader.getAggregationTemporality(instrumentType);
+  }
+
+  @Override
+  public Aggregation getDefaultAggregation(InstrumentType instrumentType) {
+    return defaultAggregationSelector.getDefaultAggregation(instrumentType);
   }
 
   @Override

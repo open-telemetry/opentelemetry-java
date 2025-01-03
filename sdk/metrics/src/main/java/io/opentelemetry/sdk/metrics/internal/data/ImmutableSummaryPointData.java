@@ -17,7 +17,7 @@ import javax.annotation.concurrent.Immutable;
  * A single data point that summarizes the values in a time series of numeric values.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time
+ * at any time.
  */
 @Immutable
 @AutoValue

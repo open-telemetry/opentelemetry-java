@@ -6,15 +6,14 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessor;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.util.List;
-import javax.annotation.Nullable;
 
 final class TracerProviderFactory
     implements Factory<TracerProviderAndAttributeLimits, SdkTracerProviderBuilder> {
@@ -29,14 +28,9 @@ final class TracerProviderFactory
 
   @Override
   public SdkTracerProviderBuilder create(
-      @Nullable TracerProviderAndAttributeLimits model,
-      SpiHelper spiHelper,
-      List<Closeable> closeables) {
+      TracerProviderAndAttributeLimits model, SpiHelper spiHelper, List<Closeable> closeables) {
     SdkTracerProviderBuilder builder = SdkTracerProvider.builder();
-    if (model == null) {
-      return builder;
-    }
-    TracerProvider tracerProviderModel = model.getTracerProvider();
+    TracerProviderModel tracerProviderModel = model.getTracerProvider();
     if (tracerProviderModel == null) {
       return builder;
     }
@@ -50,12 +44,14 @@ final class TracerProviderFactory
                 closeables);
     builder.setSpanLimits(spanLimits);
 
-    Sampler sampler =
-        SamplerFactory.getInstance()
-            .create(tracerProviderModel.getSampler(), spiHelper, closeables);
-    builder.setSampler(sampler);
+    if (tracerProviderModel.getSampler() != null) {
+      Sampler sampler =
+          SamplerFactory.getInstance()
+              .create(tracerProviderModel.getSampler(), spiHelper, closeables);
+      builder.setSampler(sampler);
+    }
 
-    List<SpanProcessor> processors = tracerProviderModel.getProcessors();
+    List<SpanProcessorModel> processors = tracerProviderModel.getProcessors();
     if (processors != null) {
       processors.forEach(
           processor ->

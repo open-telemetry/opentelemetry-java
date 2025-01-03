@@ -23,7 +23,7 @@ receivers:
           cert_file: ${MTLS_SERVER_CERTIFICATE}
           key_file: ${MTLS_SERVER_KEY}
 exporters:
-  logging:
+  debug:
     verbosity: ${LOGGING_EXPORTER_VERBOSITY_LEVEL}
   otlp:
     endpoint: ${OTLP_EXPORTER_ENDPOINT}
@@ -35,10 +35,10 @@ service:
   pipelines:
     metrics:
       receivers: [otlp, otlp/mtls]
-      exporters: [logging, otlp]
+      exporters: [debug, otlp]
     traces:
       receivers: [otlp, otlp/mtls]
-      exporters: [logging, otlp]
+      exporters: [debug, otlp]
     logs:
       receivers: [otlp, otlp/mtls]
-      exporters: [logging, otlp]
+      exporters: [debug, otlp]

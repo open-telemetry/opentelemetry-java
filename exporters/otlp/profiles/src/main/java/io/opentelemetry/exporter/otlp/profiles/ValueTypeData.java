@@ -11,17 +11,17 @@ import javax.annotation.concurrent.Immutable;
 /**
  * ValueType describes the type and units of a value, with an optional aggregation temporality.
  *
- * @see "pprofextended.proto::ValueType"
+ * @see "profiles.proto::ValueType"
  */
 @Immutable
 public interface ValueTypeData {
 
   /** Index into string table. */
-  long type();
+  int getTypeStringIndex();
 
   /** Index into string table. */
-  long unit();
+  int getUnitStringIndex();
 
   @Nullable
-  AggregationTemporality aggregationTemporality();
+  AggregationTemporality getAggregationTemporality();
 }

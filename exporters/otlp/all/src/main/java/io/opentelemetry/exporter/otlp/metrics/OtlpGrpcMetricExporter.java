@@ -8,8 +8,7 @@ package io.opentelemetry.exporter.otlp.metrics;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.internal.otlp.metrics.LowAllocationMetricsRequestMarshaler;
-import io.opentelemetry.exporter.internal.otlp.metrics.MetricsRequestMarshaler;
+import io.opentelemetry.exporter.internal.otlp.metrics.MetricReusableDataMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
@@ -19,9 +18,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import java.util.ArrayDeque;
 import java.util.Collection;
-import java.util.Deque;
 import java.util.StringJoiner;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -33,12 +30,11 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpGrpcMetricExporter implements MetricExporter {
 
-  private final Deque<LowAllocationMetricsRequestMarshaler> marshalerPool = new ArrayDeque<>();
   private final GrpcExporterBuilder<Marshaler> builder;
   private final GrpcExporter<Marshaler> delegate;
   private final AggregationTemporalitySelector aggregationTemporalitySelector;
   private final DefaultAggregationSelector defaultAggregationSelector;
-  private final MemoryMode memoryMode;
+  private final MetricReusableDataMarshaler marshaler;
 
   /**
    * Returns a new {@link OtlpGrpcMetricExporter} using the default values.
@@ -71,7 +67,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
     this.delegate = delegate;
     this.aggregationTemporalitySelector = aggregationTemporalitySelector;
     this.defaultAggregationSelector = defaultAggregationSelector;
-    this.memoryMode = memoryMode;
+    this.marshaler = new MetricReusableDataMarshaler(memoryMode, delegate::export);
   }
 
   /**
@@ -82,7 +78,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    * @since 1.29.0
    */
   public OtlpGrpcMetricExporterBuilder toBuilder() {
-    return new OtlpGrpcMetricExporterBuilder(builder.copy(), memoryMode);
+    return new OtlpGrpcMetricExporterBuilder(builder.copy(), marshaler.getMemoryMode());
   }
 
   @Override
@@ -97,7 +93,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
   @Override
   public MemoryMode getMemoryMode() {
-    return memoryMode;
+    return marshaler.getMemoryMode();
   }
 
   /**
@@ -108,24 +104,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    */
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
-    if (memoryMode == MemoryMode.REUSABLE_DATA) {
-      LowAllocationMetricsRequestMarshaler marshaler = marshalerPool.poll();
-      if (marshaler == null) {
-        marshaler = new LowAllocationMetricsRequestMarshaler();
-      }
-      LowAllocationMetricsRequestMarshaler exportMarshaler = marshaler;
-      exportMarshaler.initialize(metrics);
-      return delegate
-          .export(exportMarshaler, metrics.size())
-          .whenComplete(
-              () -> {
-                exportMarshaler.reset();
-                marshalerPool.add(exportMarshaler);
-              });
-    }
-    // MemoryMode == MemoryMode.IMMUTABLE_DATA
-    MetricsRequestMarshaler request = MetricsRequestMarshaler.create(metrics);
-    return delegate.export(request, metrics.size());
+    return marshaler.export(metrics);
   }
 
   /**
@@ -157,7 +136,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
     joiner.add(
         "defaultAggregationSelector="
             + DefaultAggregationSelector.asString(defaultAggregationSelector));
-    joiner.add("memoryMode=" + memoryMode);
+    joiner.add("memoryMode=" + marshaler.getMemoryMode());
     return joiner.toString();
   }
 }

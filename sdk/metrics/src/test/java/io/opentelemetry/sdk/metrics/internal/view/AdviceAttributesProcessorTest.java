@@ -25,6 +25,19 @@ class AdviceAttributesProcessorTest {
   }
 
   @Test
+  void noExtraAttributes() {
+    AttributesProcessor processor =
+        new AdviceAttributesProcessor(asList(stringKey("abc"), stringKey("def")));
+
+    Attributes result =
+        processor.process(
+            Attributes.builder().put(stringKey("abc"), "abc").put(stringKey("def"), "def").build(),
+            Context.root());
+
+    assertThat(result).containsOnly(entry(stringKey("abc"), "abc"), entry(stringKey("def"), "def"));
+  }
+
+  @Test
   void removeUnwantedAttributes() {
     AttributesProcessor processor =
         new AdviceAttributesProcessor(asList(stringKey("abc"), stringKey("def"), stringKey("ghi")));

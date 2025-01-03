@@ -7,16 +7,16 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
+import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimits;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessor;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporter;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimits;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessor;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LoggerProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimitsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LoggerProviderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import java.io.Closeable;
@@ -52,28 +52,29 @@ class LoggerProviderFactoryTest {
 
   private static Stream<Arguments> createArguments() {
     return Stream.of(
-        Arguments.of(null, SdkLoggerProvider.builder().build()),
         Arguments.of(
             LoggerProviderAndAttributeLimits.create(null, null),
             SdkLoggerProvider.builder().build()),
         Arguments.of(
-            LoggerProviderAndAttributeLimits.create(new AttributeLimits(), new LoggerProvider()),
+            LoggerProviderAndAttributeLimits.create(
+                new AttributeLimitsModel(), new LoggerProviderModel()),
             SdkLoggerProvider.builder().build()),
         Arguments.of(
             LoggerProviderAndAttributeLimits.create(
-                new AttributeLimits(),
-                new LoggerProvider()
+                new AttributeLimitsModel(),
+                new LoggerProviderModel()
                     .withLimits(
-                        new LogRecordLimits()
+                        new LogRecordLimitsModel()
                             .withAttributeCountLimit(1)
                             .withAttributeValueLengthLimit(2))
                     .withProcessors(
                         Collections.singletonList(
-                            new LogRecordProcessor()
+                            new LogRecordProcessorModel()
                                 .withBatch(
-                                    new BatchLogRecordProcessor()
+                                    new BatchLogRecordProcessorModel()
                                         .withExporter(
-                                            new LogRecordExporter().withOtlp(new Otlp())))))),
+                                            new LogRecordExporterModel()
+                                                .withOtlp(new OtlpModel())))))),
             SdkLoggerProvider.builder()
                 .setLogLimits(
                     () ->
@@ -83,7 +84,7 @@ class LoggerProviderFactoryTest {
                             .build())
                 .addLogRecordProcessor(
                     io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor.builder(
-                            OtlpGrpcLogRecordExporter.getDefault())
+                            OtlpHttpLogRecordExporter.getDefault())
                         .build())
                 .build()));
   }

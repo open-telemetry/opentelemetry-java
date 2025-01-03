@@ -1,0 +1,26 @@
+Comparing source compatibility of opentelemetry-sdk-testing-1.42.0.jar against opentelemetry-sdk-testing-1.41.0.jar
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasBody(io.opentelemetry.api.common.Value<?>)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasBodyField(java.lang.String, java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasBodyField(java.lang.String, long)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasBodyField(java.lang.String, double)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasBodyField(java.lang.String, boolean)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasBodyField(java.lang.String, java.lang.String[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasBodyField(java.lang.String, long[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasBodyField(java.lang.String, double[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasBodyField(java.lang.String, boolean[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasBodyField(java.lang.String, io.opentelemetry.api.common.Value<?>)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasBodyField(io.opentelemetry.api.common.AttributeKey<T>, java.lang.Object)
+		GENERIC TEMPLATES: +++ T:java.lang.Object
+**** MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.testing.logs.TestLogRecordData  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.data.Body getBody()
+		+++  NEW ANNOTATION: java.lang.Deprecated
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.Value<?> getBodyValue()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+**** MODIFIED CLASS: PUBLIC ABSTRACT STATIC io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	***  MODIFIED METHOD: PUBLIC (<- PACKAGE_PROTECTED) NON_ABSTRACT (<- ABSTRACT) io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder setBody(io.opentelemetry.sdk.logs.data.Body)
+		+++  NEW ANNOTATION: java.lang.Deprecated
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder setBodyValue(io.opentelemetry.api.common.Value<?>)

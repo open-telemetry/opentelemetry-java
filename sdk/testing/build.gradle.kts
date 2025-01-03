@@ -16,6 +16,8 @@ dependencies {
 
   annotationProcessor("com.google.auto.value:auto-value")
 
+  testImplementation(project(":api:incubator"))
+
   testImplementation("junit:junit")
   testImplementation("org.junit.vintage:junit-vintage-engine")
 }

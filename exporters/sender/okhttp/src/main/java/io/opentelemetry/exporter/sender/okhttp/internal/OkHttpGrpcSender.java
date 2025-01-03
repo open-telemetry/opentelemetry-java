@@ -40,7 +40,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
@@ -109,7 +109,7 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
   }
 
   @Override
-  public void send(T request, Runnable onSuccess, BiConsumer<GrpcResponse, Throwable> onError) {
+  public void send(T request, Consumer<GrpcResponse> onResponse, Consumer<Throwable> onError) {
     Request.Builder requestBuilder = new Request.Builder().url(url);
 
     Map<String, List<String>> headers = headersSupplier.get();
@@ -132,11 +132,7 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
                     new Callback() {
                       @Override
                       public void onFailure(Call call, IOException e) {
-                        String description = e.getMessage();
-                        if (description == null) {
-                          description = "";
-                        }
-                        onError.accept(GrpcResponse.create(2 /* UNKNOWN */, description), e);
+                        onError.accept(e);
                       }
 
                       @Override
@@ -146,29 +142,20 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
                           response.body().bytes();
                         } catch (IOException e) {
                           onError.accept(
-                              GrpcResponse.create(
-                                  GrpcExporterUtil.GRPC_STATUS_UNKNOWN,
-                                  "Could not consume server response."),
-                              e);
+                              new RuntimeException("Could not consume server response", e));
                           return;
                         }
 
                         String status = grpcStatus(response);
-                        if ("0".equals(status)) {
-                          onSuccess.run();
-                          return;
-                        }
 
-                        String errorMessage = grpcMessage(response);
+                        String description = grpcMessage(response);
                         int statusCode;
                         try {
                           statusCode = Integer.parseInt(status);
                         } catch (NumberFormatException ex) {
                           statusCode = GrpcExporterUtil.GRPC_STATUS_UNKNOWN;
                         }
-                        onError.accept(
-                            GrpcResponse.create(statusCode, errorMessage),
-                            new IllegalStateException(errorMessage));
+                        onResponse.accept(GrpcResponse.create(statusCode, description));
                       }
                     }));
   }
@@ -214,14 +201,12 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
 
   /** Whether response is retriable or not. */
   public static boolean isRetryable(Response response) {
-    // Only retry on gRPC codes which will always come with an HTTP success
-    if (!response.isSuccessful()) {
-      return false;
-    }
-
     // We don't check trailers for retry since retryable error codes always come with response
     // headers, not trailers, in practice.
     String grpcStatus = response.header(GRPC_STATUS);
+    if (grpcStatus == null) {
+      return false;
+    }
     return RetryUtil.retryableGrpcStatusCodes().contains(grpcStatus);
   }
 

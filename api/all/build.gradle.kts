@@ -15,6 +15,8 @@ dependencies {
 
   annotationProcessor("com.google.auto.value:auto-value")
 
+  testImplementation(project(":api:testing-internal"))
+
   testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
   testImplementation("com.google.guava:guava-testlib")
 }

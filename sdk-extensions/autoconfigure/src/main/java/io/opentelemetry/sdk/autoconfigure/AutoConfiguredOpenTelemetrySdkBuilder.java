@@ -107,8 +107,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   private Function<ConfigProperties, ConfigProperties> configPropertiesCustomizer =
       Function.identity();
 
-  private SpiHelper spiHelper =
-      SpiHelper.create(AutoConfiguredOpenTelemetrySdk.class.getClassLoader());
+  private ComponentLoader componentLoader =
+      SpiHelper.serviceComponentLoader(AutoConfiguredOpenTelemetrySdk.class.getClassLoader());
 
   private boolean registerShutdownHook = true;
 
@@ -401,14 +401,14 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   public AutoConfiguredOpenTelemetrySdkBuilder setServiceClassLoader(
       ClassLoader serviceClassLoader) {
     requireNonNull(serviceClassLoader, "serviceClassLoader");
-    this.spiHelper = SpiHelper.create(serviceClassLoader);
+    this.componentLoader = SpiHelper.serviceComponentLoader(serviceClassLoader);
     return this;
   }
 
   /** Sets the {@link ComponentLoader} to be used to load SPI implementations. */
   AutoConfiguredOpenTelemetrySdkBuilder setComponentLoader(ComponentLoader componentLoader) {
     requireNonNull(componentLoader, "componentLoader");
-    this.spiHelper = SpiHelper.create(componentLoader);
+    this.componentLoader = componentLoader;
     return this;
   }
 
@@ -417,6 +417,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
    * the settings of this {@link AutoConfiguredOpenTelemetrySdkBuilder}.
    */
   public AutoConfiguredOpenTelemetrySdk build() {
+    SpiHelper spiHelper = SpiHelper.create(componentLoader);
     if (!customized) {
       customized = true;
       mergeSdkTracerProviderConfigurer();
@@ -428,7 +429,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
     ConfigProperties config = getConfig();
 
-    AutoConfiguredOpenTelemetrySdk fromFileConfiguration = maybeConfigureFromFile(config);
+    AutoConfiguredOpenTelemetrySdk fromFileConfiguration =
+        maybeConfigureFromFile(config, componentLoader);
     if (fromFileConfiguration != null) {
       maybeRegisterShutdownHook(fromFileConfiguration.getOpenTelemetrySdk());
       maybeSetAsGlobal(fromFileConfiguration.getOpenTelemetrySdk());
@@ -527,7 +529,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   @Nullable
-  private static AutoConfiguredOpenTelemetrySdk maybeConfigureFromFile(ConfigProperties config) {
+  private static AutoConfiguredOpenTelemetrySdk maybeConfigureFromFile(
+      ConfigProperties config, ComponentLoader componentLoader) {
     String otelConfigFile = config.getString("otel.config.file");
     if (otelConfigFile != null && !otelConfigFile.isEmpty()) {
       logger.warning(
@@ -538,30 +541,28 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       return null;
     }
     logger.fine("Autoconfiguring from configuration file: " + configurationFile);
-    FileInputStream fis;
-    try {
-      fis = new FileInputStream(configurationFile);
-    } catch (FileNotFoundException e) {
-      throw new ConfigurationException("Configuration file not found", e);
-    }
-    try {
+    try (FileInputStream fis = new FileInputStream(configurationFile)) {
       Class<?> configurationFactory =
           Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfiguration");
       Method parse = configurationFactory.getMethod("parse", InputStream.class);
       Object model = parse.invoke(null, fis);
       Class<?> openTelemetryConfiguration =
           Class.forName(
-              "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration");
-      Method create = configurationFactory.getMethod("create", openTelemetryConfiguration);
-      OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model);
+              "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel");
+      Method create =
+          configurationFactory.getMethod(
+              "create", openTelemetryConfiguration, ComponentLoader.class);
+      OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model, componentLoader);
       Method toConfigProperties =
           configurationFactory.getMethod("toConfigProperties", openTelemetryConfiguration);
       StructuredConfigProperties structuredConfigProperties =
           (StructuredConfigProperties) toConfigProperties.invoke(null, model);
-      // Note: can't access file configuration resource without reflection so setting a dummy
+      // Note: can't access declarative configuration resource without reflection so setting a dummy
       // resource
       return AutoConfiguredOpenTelemetrySdk.create(
           sdk, Resource.getDefault(), null, structuredConfigProperties);
+    } catch (FileNotFoundException e) {
+      throw new ConfigurationException("Configuration file not found", e);
     } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
       throw new ConfigurationException(
           "Error configuring from file. Is opentelemetry-sdk-extension-incubator on the classpath?",
@@ -572,6 +573,10 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         throw (ConfigurationException) cause;
       }
       throw new ConfigurationException("Unexpected error configuring from file", e);
+    } catch (IOException e) {
+      // IOException (other than FileNotFoundException which is caught above) is only thrown
+      // above by FileInputStream.close()
+      throw new ConfigurationException("Error closing file", e);
     }
   }
 
@@ -608,7 +613,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   @SuppressWarnings("deprecation") // Support deprecated SdkTracerProviderConfigurer
   private void mergeSdkTracerProviderConfigurer() {
     for (io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer configurer :
-        spiHelper.load(
+        componentLoader.load(
             io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer.class)) {
       addTracerProviderCustomizer(
           (builder, config) -> {

@@ -11,10 +11,15 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_T
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
+import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.metrics.Aggregation;
@@ -23,12 +28,23 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
 import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.event.LoggingEvent;
 
 class OtlpConfigUtilTest {
+
+  @RegisterExtension
+  final LogCapturer logs = LogCapturer.create().captureForType(OtlpConfigUtil.class);
 
   private static final String GENERIC_ENDPOINT_KEY = "otel.exporter.otlp.endpoint";
   private static final String TRACES_ENDPOINT_KEY = "otel.exporter.otlp.traces.endpoint";
@@ -118,6 +134,42 @@ class OtlpConfigUtilTest {
                     "grpc")))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("OTLP endpoint must not have a path:");
+  }
+
+  @SuppressLogger(OtlpConfigUtil.class)
+  @ParameterizedTest
+  @MethodSource("misalignedOtlpPortArgs")
+  void configureOtlpExporterBuilder_MisalignedOtlpPort(
+      String protocol, String endpoint, @Nullable String expectedLog) {
+    configureEndpoint(
+        DATA_TYPE_TRACES,
+        ImmutableMap.of(GENERIC_ENDPOINT_KEY, endpoint, "otel.exporter.otlp.protocol", protocol));
+
+    List<String> logMessages =
+        logs.getEvents().stream().map(LoggingEvent::getMessage).collect(toList());
+    if (expectedLog == null) {
+      assertThat(logMessages).isEmpty();
+    } else {
+      assertThat(logMessages).contains(expectedLog);
+    }
+  }
+
+  private static Stream<Arguments> misalignedOtlpPortArgs() {
+    return Stream.of(
+        Arguments.of("http/protobuf", "http://localhost:4318/path", null),
+        Arguments.of("http/protobuf", "http://localhost:8080/path", null),
+        Arguments.of("http/protobuf", "http://localhost/path", null),
+        Arguments.of(
+            "http/protobuf",
+            "http://localhost:4317/path",
+            "OTLP exporter endpoint port is likely incorrect for protocol version \"http/protobuf\". The endpoint http://localhost:4317/path has port 4317. Typically, the \"http/protobuf\" version of OTLP uses port 4318."),
+        Arguments.of("grpc", "http://localhost:4317/", null),
+        Arguments.of("grpc", "http://localhost:8080/", null),
+        Arguments.of("grpc", "http://localhost/", null),
+        Arguments.of(
+            "grpc",
+            "http://localhost:4318/",
+            "OTLP exporter endpoint port is likely incorrect for protocol version \"grpc\". The endpoint http://localhost:4318/ has port 4318. Typically, the \"grpc\" version of OTLP uses port 4317."));
   }
 
   private static ThrowingCallable configureEndpointCallable(Map<String, String> properties) {
@@ -362,8 +414,8 @@ class OtlpConfigUtilTest {
   private static AggregationTemporality configureAggregationTemporality(
       Map<String, String> properties) {
     AtomicReference<AggregationTemporalitySelector> temporalityRef = new AtomicReference<>();
-    OtlpConfigUtil.configureOtlpAggregationTemporality(
-        DefaultConfigProperties.createFromMap(properties), temporalityRef::set);
+    ConfigProperties config = DefaultConfigProperties.createFromMap(properties);
+    ExporterBuilderUtil.configureOtlpAggregationTemporality(config, temporalityRef::set);
     // We apply the temporality selector to a HISTOGRAM instrument to simplify assertions
     return temporalityRef.get().getAggregationTemporality(InstrumentType.HISTOGRAM);
   }
@@ -409,8 +461,8 @@ class OtlpConfigUtilTest {
   private static DefaultAggregationSelector configureHistogramDefaultAggregation(
       Map<String, String> properties) {
     AtomicReference<DefaultAggregationSelector> aggregationRef = new AtomicReference<>();
-    OtlpConfigUtil.configureOtlpHistogramDefaultAggregation(
-        DefaultConfigProperties.createFromMap(properties), aggregationRef::set);
+    ConfigProperties config = DefaultConfigProperties.createFromMap(properties);
+    ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(config, aggregationRef::set);
     // We apply the temporality selector to a HISTOGRAM instrument to simplify assertions
     return aggregationRef.get();
   }

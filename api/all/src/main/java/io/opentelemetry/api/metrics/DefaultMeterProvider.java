@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.metrics;
 
+import io.opentelemetry.api.internal.IncubatingUtil;
+
 /** A {@link MeterProvider} that does nothing. */
 class DefaultMeterProvider implements MeterProvider {
   @Override
@@ -12,7 +14,10 @@ class DefaultMeterProvider implements MeterProvider {
     return BUILDER_INSTANCE;
   }
 
-  private static final DefaultMeterProvider INSTANCE = new DefaultMeterProvider();
+  private static final MeterProvider INSTANCE =
+      IncubatingUtil.incubatingApiIfAvailable(
+          new DefaultMeterProvider(),
+          "io.opentelemetry.api.incubator.metrics.ExtendedDefaultMeterProvider");
   private static final MeterBuilder BUILDER_INSTANCE = new NoopMeterBuilder();
 
   static MeterProvider getInstance() {

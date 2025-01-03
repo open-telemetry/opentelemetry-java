@@ -7,14 +7,15 @@ package io.opentelemetry.sdk.testing.logs;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -24,6 +25,9 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
+@AutoValue.CopyAnnotations
+// Carry suppression for Body to AutoValue implementation via @AutoValue.CopyAnnotations
+@SuppressWarnings("deprecation")
 public abstract class TestLogRecordData implements LogRecordData {
 
   /** Creates a new Builder for creating an {@link LogRecordData} instance. */
@@ -35,10 +39,26 @@ public abstract class TestLogRecordData implements LogRecordData {
         .setObservedTimestamp(0, TimeUnit.NANOSECONDS)
         .setSpanContext(SpanContext.getInvalid())
         .setSeverity(Severity.UNDEFINED_SEVERITY_NUMBER)
-        .setBody("")
         .setAttributes(Attributes.empty())
         .setTotalAttributeCount(0);
   }
+
+  @Deprecated
+  public io.opentelemetry.sdk.logs.data.Body getBody() {
+    Value<?> valueBody = getBodyValue();
+    return valueBody == null
+        ? io.opentelemetry.sdk.logs.data.Body.empty()
+        : io.opentelemetry.sdk.logs.data.Body.string(valueBody.asString());
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @since 1.42.0
+   */
+  @Override
+  @Nullable
+  public abstract Value<?> getBodyValue();
 
   TestLogRecordData() {}
 
@@ -123,11 +143,30 @@ public abstract class TestLogRecordData implements LogRecordData {
 
     /** Set the body string. */
     public Builder setBody(String body) {
-      return setBody(Body.string(body));
+      return setBodyValue(Value.of(body));
     }
 
-    /** Set the body. */
-    abstract Builder setBody(Body body);
+    /**
+     * Set the body.
+     *
+     * @deprecated Use {@link #setBodyValue(Value)}.
+     */
+    @Deprecated
+    public Builder setBody(io.opentelemetry.sdk.logs.data.Body body) {
+      if (body.getType() == io.opentelemetry.sdk.logs.data.Body.Type.STRING) {
+        setBodyValue(Value.of(body.asString()));
+      } else if (body.getType() == io.opentelemetry.sdk.logs.data.Body.Type.EMPTY) {
+        setBodyValue(null);
+      }
+      return this;
+    }
+
+    /**
+     * Set the body.
+     *
+     * @since 1.42.0
+     */
+    public abstract Builder setBodyValue(@Nullable Value<?> body);
 
     /** Set the attributes. */
     public abstract Builder setAttributes(Attributes attributes);

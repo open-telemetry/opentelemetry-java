@@ -9,20 +9,22 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporter;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleLogRecordProcessorModel;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.List;
-import javax.annotation.Nullable;
+import java.util.Map;
 
 final class LogRecordProcessorFactory
-    implements Factory<
-        io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessor,
-        LogRecordProcessor> {
+    implements Factory<LogRecordProcessorModel, LogRecordProcessor> {
 
   private static final LogRecordProcessorFactory INSTANCE = new LogRecordProcessorFactory();
 
@@ -34,24 +36,15 @@ final class LogRecordProcessorFactory
 
   @Override
   public LogRecordProcessor create(
-      @Nullable
-          io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessor
-              model,
-      SpiHelper spiHelper,
-      List<Closeable> closeables) {
-    if (model == null) {
-      return LogRecordProcessor.composite();
-    }
-
-    io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessor
-        batchModel = model.getBatch();
+      LogRecordProcessorModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+    BatchLogRecordProcessorModel batchModel = model.getBatch();
     if (batchModel != null) {
-      LogRecordExporter exporterModel = batchModel.getExporter();
-      io.opentelemetry.sdk.logs.export.LogRecordExporter logRecordExporter =
+      LogRecordExporterModel exporterModel =
+          FileConfigUtil.requireNonNull(
+              batchModel.getExporter(), "batch log record processor exporter");
+
+      LogRecordExporter logRecordExporter =
           LogRecordExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
-      if (logRecordExporter == null) {
-        throw new ConfigurationException("exporter required for batch log record processor");
-      }
       BatchLogRecordProcessorBuilder builder = BatchLogRecordProcessor.builder(logRecordExporter);
       if (batchModel.getExportTimeout() != null) {
         builder.setExporterTimeout(Duration.ofMillis(batchModel.getExportTimeout()));
@@ -68,26 +61,39 @@ final class LogRecordProcessorFactory
       return FileConfigUtil.addAndReturn(closeables, builder.build());
     }
 
-    io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleLogRecordProcessor
-        simpleModel = model.getSimple();
+    SimpleLogRecordProcessorModel simpleModel = model.getSimple();
     if (simpleModel != null) {
-      LogRecordExporter exporterModel = simpleModel.getExporter();
-      io.opentelemetry.sdk.logs.export.LogRecordExporter logRecordExporter =
+      LogRecordExporterModel exporterModel =
+          FileConfigUtil.requireNonNull(
+              simpleModel.getExporter(), "simple log record processor exporter");
+      LogRecordExporter logRecordExporter =
           LogRecordExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
-      if (logRecordExporter == null) {
-        throw new ConfigurationException("exporter required for simple log record processor");
-      }
       return FileConfigUtil.addAndReturn(
           closeables, SimpleLogRecordProcessor.create(logRecordExporter));
     }
 
-    // TODO: add support for generic log record processors
     if (!model.getAdditionalProperties().isEmpty()) {
-      throw new ConfigurationException(
-          "Unrecognized log record processor(s): "
-              + model.getAdditionalProperties().keySet().stream().collect(joining(",", "[", "]")));
+      Map<String, Object> additionalProperties = model.getAdditionalProperties();
+      if (additionalProperties.size() > 1) {
+        throw new ConfigurationException(
+            "Invalid configuration - multiple log record processors set: "
+                + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
+      }
+      Map.Entry<String, Object> processorKeyValue =
+          additionalProperties.entrySet().stream()
+              .findFirst()
+              .orElseThrow(
+                  () ->
+                      new IllegalStateException("Missing processor. This is a programming error."));
+      LogRecordProcessor logRecordProcessor =
+          FileConfigUtil.loadComponent(
+              spiHelper,
+              LogRecordProcessor.class,
+              processorKeyValue.getKey(),
+              processorKeyValue.getValue());
+      return FileConfigUtil.addAndReturn(closeables, logRecordProcessor);
+    } else {
+      throw new ConfigurationException("log processor must be set");
     }
-
-    return LogRecordProcessor.composite();
   }
 }

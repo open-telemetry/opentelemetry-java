@@ -41,12 +41,22 @@ public final class SpiHelper {
 
   /** Create a {@link SpiHelper} which loads SPIs using the {@code classLoader}. */
   public static SpiHelper create(ClassLoader classLoader) {
-    return new SpiHelper(new ServiceLoaderComponentLoader(classLoader));
+    return new SpiHelper(serviceComponentLoader(classLoader));
   }
 
   /** Create a {@link SpiHelper} which loads SPIs using the {@code componentLoader}. */
   public static SpiHelper create(ComponentLoader componentLoader) {
     return new SpiHelper(componentLoader);
+  }
+
+  /** Create a {@link ComponentLoader} which loads using the {@code classLoader}. */
+  public static ComponentLoader serviceComponentLoader(ClassLoader classLoader) {
+    return new ServiceLoaderComponentLoader(classLoader);
+  }
+
+  /** Return the backing underlying {@link ComponentLoader}. */
+  public ComponentLoader getComponentLoader() {
+    return componentLoader;
   }
 
   /**
@@ -81,9 +91,9 @@ public final class SpiHelper {
   }
 
   /**
-   * Find a registered {@link ComponentProvider} which {@link ComponentProvider#getType()} matching
+   * Find a registered {@link ComponentProvider} with {@link ComponentProvider#getType()} matching
    * {@code type}, {@link ComponentProvider#getName()} matching {@code name}, and call {@link
-   * ComponentProvider#create(StructuredConfigProperties)} with the given {@code model}.
+   * ComponentProvider#create(StructuredConfigProperties)} with the given {@code config}.
    *
    * @throws ConfigurationException if no matching providers are found, or if multiple are found
    *     (i.e. conflict), or if {@link ComponentProvider#create(StructuredConfigProperties)} throws

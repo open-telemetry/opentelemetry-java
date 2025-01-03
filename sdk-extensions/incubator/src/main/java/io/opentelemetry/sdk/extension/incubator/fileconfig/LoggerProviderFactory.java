@@ -6,14 +6,13 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessor;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LoggerProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LoggerProviderModel;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import java.io.Closeable;
 import java.util.List;
-import javax.annotation.Nullable;
 
 final class LoggerProviderFactory
     implements Factory<LoggerProviderAndAttributeLimits, SdkLoggerProviderBuilder> {
@@ -28,14 +27,10 @@ final class LoggerProviderFactory
 
   @Override
   public SdkLoggerProviderBuilder create(
-      @Nullable LoggerProviderAndAttributeLimits model,
-      SpiHelper spiHelper,
-      List<Closeable> closeables) {
+      LoggerProviderAndAttributeLimits model, SpiHelper spiHelper, List<Closeable> closeables) {
     SdkLoggerProviderBuilder builder = SdkLoggerProvider.builder();
-    if (model == null) {
-      return builder;
-    }
-    LoggerProvider loggerProviderModel = model.getLoggerProvider();
+
+    LoggerProviderModel loggerProviderModel = model.getLoggerProvider();
     if (loggerProviderModel == null) {
       return builder;
     }
@@ -49,7 +44,7 @@ final class LoggerProviderFactory
                 closeables);
     builder.setLogLimits(() -> logLimits);
 
-    List<LogRecordProcessor> processors = loggerProviderModel.getProcessors();
+    List<LogRecordProcessorModel> processors = loggerProviderModel.getProcessors();
     if (processors != null) {
       processors.forEach(
           processor ->

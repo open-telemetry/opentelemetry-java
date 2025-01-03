@@ -15,7 +15,7 @@ import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Propagator;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PropagatorModel;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Stream;
@@ -30,7 +30,7 @@ class PropagatorFactoryTest {
 
   @ParameterizedTest
   @MethodSource("createArguments")
-  void create(Propagator model, ContextPropagators expectedPropagators) {
+  void create(PropagatorModel model, ContextPropagators expectedPropagators) {
     ContextPropagators propagators =
         PropagatorFactory.getInstance().create(model, spiHelper, Collections.emptyList());
 
@@ -40,12 +40,7 @@ class PropagatorFactoryTest {
   private static Stream<Arguments> createArguments() {
     return Stream.of(
         Arguments.of(
-            null,
-            ContextPropagators.create(
-                TextMapPropagator.composite(
-                    W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance()))),
-        Arguments.of(
-            new Propagator()
+            new PropagatorModel()
                 .withComposite(
                     Arrays.asList("tracecontext", "baggage", "ottrace", "b3multi", "b3", "jaeger")),
             ContextPropagators.create(

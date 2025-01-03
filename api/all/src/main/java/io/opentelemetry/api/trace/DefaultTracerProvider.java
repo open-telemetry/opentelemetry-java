@@ -5,12 +5,16 @@
 
 package io.opentelemetry.api.trace;
 
+import io.opentelemetry.api.internal.IncubatingUtil;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
 class DefaultTracerProvider implements TracerProvider {
 
-  private static final TracerProvider INSTANCE = new DefaultTracerProvider();
+  private static final TracerProvider INSTANCE =
+      IncubatingUtil.incubatingApiIfAvailable(
+          new DefaultTracerProvider(),
+          "io.opentelemetry.api.incubator.trace.ExtendedDefaultTracerProvider");
 
   static TracerProvider getInstance() {
     return INSTANCE;

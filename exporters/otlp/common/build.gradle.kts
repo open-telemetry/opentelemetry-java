@@ -16,7 +16,6 @@ dependencies {
   protoSource("io.opentelemetry.proto:opentelemetry-proto:${versions["io.opentelemetry.proto"]}")
 
   api(project(":exporters:common"))
-  implementation(project(":api:incubator"))
 
   compileOnly(project(":sdk:metrics"))
   compileOnly(project(":sdk:trace"))
@@ -29,8 +28,10 @@ dependencies {
 
   testImplementation("com.fasterxml.jackson.core:jackson-databind")
   testImplementation("com.google.protobuf:protobuf-java-util")
+  testImplementation("com.google.guava:guava")
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
 
+  jmhImplementation(project(":api:incubator"))
   jmhImplementation(project(":sdk:testing"))
   jmhImplementation("com.fasterxml.jackson.core:jackson-core")
   jmhImplementation("io.opentelemetry.proto:opentelemetry-proto")
@@ -42,7 +43,7 @@ wire {
     "opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest",
     "opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest",
     "opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest",
-    "opentelemetry.proto.collector.profiles.v1experimental.ExportProfilesServiceRequest"
+    "opentelemetry.proto.collector.profiles.v1development.ExportProfilesServiceRequest"
   )
 
   custom {

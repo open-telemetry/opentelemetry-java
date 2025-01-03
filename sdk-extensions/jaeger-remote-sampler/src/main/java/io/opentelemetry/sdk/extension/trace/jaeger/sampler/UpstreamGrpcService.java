@@ -11,7 +11,7 @@ import io.grpc.Status;
 import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,7 +48,7 @@ final class UpstreamGrpcService implements GrpcService {
             SamplingStrategyParametersMarshaler, SamplingStrategyResponseUnMarshaler, ?>
         stub = this.stub;
     if (timeoutNanos > 0) {
-      stub = stub.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
+      stub = stub.withDeadlineAfter(Duration.ofNanos(timeoutNanos));
     }
 
     try {

@@ -9,18 +9,15 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Otlp;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Zipkin;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ZipkinModel;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 
-final class SpanExporterFactory
-    implements Factory<
-        io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporter,
-        SpanExporter> {
+final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExporter> {
 
   private static final SpanExporterFactory INSTANCE = new SpanExporterFactory();
 
@@ -30,19 +27,10 @@ final class SpanExporterFactory
     return INSTANCE;
   }
 
-  @SuppressWarnings("NullAway") // Override superclass non-null response
   @Override
-  @Nullable
   public SpanExporter create(
-      @Nullable
-          io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporter model,
-      SpiHelper spiHelper,
-      List<Closeable> closeables) {
-    if (model == null) {
-      return null;
-    }
-
-    Otlp otlpModel = model.getOtlp();
+      SpanExporterModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+    OtlpModel otlpModel = model.getOtlp();
     if (otlpModel != null) {
       model.getAdditionalProperties().put("otlp", otlpModel);
     }
@@ -51,7 +39,7 @@ final class SpanExporterFactory
       model.getAdditionalProperties().put("console", model.getConsole());
     }
 
-    Zipkin zipkinModel = model.getZipkin();
+    ZipkinModel zipkinModel = model.getZipkin();
     if (zipkinModel != null) {
       model.getAdditionalProperties().put("zipkin", model.getZipkin());
     }
@@ -76,8 +64,8 @@ final class SpanExporterFactory
               exporterKeyValue.getKey(),
               exporterKeyValue.getValue());
       return FileConfigUtil.addAndReturn(closeables, spanExporter);
+    } else {
+      throw new ConfigurationException("span exporter must be set");
     }
-
-    return null;
   }
 }

@@ -9,15 +9,14 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 
 final class OpenTelemetryConfigurationFactory
-    implements Factory<OpenTelemetryConfiguration, OpenTelemetrySdk> {
+    implements Factory<OpenTelemetryConfigurationModel, OpenTelemetrySdk> {
 
   private static final OpenTelemetryConfigurationFactory INSTANCE =
       new OpenTelemetryConfigurationFactory();
@@ -30,25 +29,25 @@ final class OpenTelemetryConfigurationFactory
 
   @Override
   public OpenTelemetrySdk create(
-      @Nullable OpenTelemetryConfiguration model, SpiHelper spiHelper, List<Closeable> closeables) {
+      OpenTelemetryConfigurationModel model, SpiHelper spiHelper, List<Closeable> closeables) {
     OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
-    if (model == null) {
-      return FileConfigUtil.addAndReturn(closeables, builder.build());
-    }
-
-    if (!"0.1".equals(model.getFileFormat())) {
-      throw new ConfigurationException("Unsupported file format. Supported formats include: 0.1");
+    if (!"0.3".equals(model.getFileFormat())) {
+      throw new ConfigurationException("Unsupported file format. Supported formats include: 0.3");
     }
 
     if (Objects.equals(Boolean.TRUE, model.getDisabled())) {
       return builder.build();
     }
 
-    builder.setPropagators(
-        PropagatorFactory.getInstance().create(model.getPropagator(), spiHelper, closeables));
+    if (model.getPropagator() != null) {
+      builder.setPropagators(
+          PropagatorFactory.getInstance().create(model.getPropagator(), spiHelper, closeables));
+    }
 
-    Resource resource =
-        ResourceFactory.getInstance().create(model.getResource(), spiHelper, closeables);
+    Resource resource = Resource.getDefault();
+    if (model.getResource() != null) {
+      resource = ResourceFactory.getInstance().create(model.getResource(), spiHelper, closeables);
+    }
 
     if (model.getLoggerProvider() != null) {
       builder.setLoggerProvider(

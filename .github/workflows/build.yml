@@ -23,11 +23,13 @@ jobs:
           - macos-latest
           - macos-13
           - ubuntu-latest
+          - windows-latest
         test-java-version:
           - 8
           - 11
           - 17
           - 21
+          - 23
         # Collect coverage on latest LTS
         include:
           - os: ubuntu-20.04
@@ -44,6 +46,8 @@ jobs:
             test-java-version: 17
           - os: macos-13
             test-java-version: 21
+          - os: macos-13
+            test-java-version: 23
     steps:
       - uses: actions/checkout@v4
 
@@ -61,21 +65,24 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/actions/setup-gradle@v3
-        with:
-          arguments: |
-            build
+      - name: Set up gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Build
+        run: >
+            ./gradlew build
             ${{ matrix.coverage && 'jacocoTestReport' || '' }}
             -PtestJavaVersion=${{ matrix.test-java-version }}
-            -Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }},${{ steps.setup-java.outputs.path }}
+            "-Porg.gradle.java.installations.paths=${{ steps.setup-java-test.outputs.path }}"
+            "-Porg.gradle.java.installations.auto-download=false"
         env:
-          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
           # JMH-based tests run only  if this environment variable is set to true
           RUN_JMH_BASED_TESTS: ${{ matrix.jmh-based-tests }}
 
       - name: Check for diff
         # The jApiCmp diff compares current to latest, which isn't appropriate for release branches, or for bot-generated PRs
-        if: ${{ !startsWith(github.ref_name, 'release/') && !startsWith(github.base_ref, 'release/') && (github.actor != 'opentelemetrybot') }}
+        # this fails on windows because of the bash-specific if/then/else syntax, but that's ok
+        # because we only need to run this validation once (on any platform)
+        if: ${{ matrix.os != 'windows-latest' && !startsWith(github.ref_name, 'release/') && !startsWith(github.base_ref, 'release/') && (github.actor != 'opentelemetrybot') }}
         run: |
           # need to "git add" in case any generated files did not already exist
           git add docs/apidiffs
@@ -89,7 +96,7 @@ jobs:
             exit 1
           fi
 
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         if: ${{ matrix.coverage }}
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -123,7 +130,7 @@ jobs:
     name: publish-snapshots${{ (github.ref_name != 'main' || github.repository != 'open-telemetry/opentelemetry-java') && ' (skipped)' || '' }}
     # intentionally not blocking snapshot publishing on markdown-link-check or misspell-check
     needs: build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -134,12 +141,16 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/actions/setup-gradle@v3
+      - name: Set up gradle
+        uses: gradle/actions/setup-gradle@v4
         # skipping release branches because the versions in those branches are not snapshots
         # (also this skips pull requests)
         if: ${{ github.ref_name == 'main' && github.repository == 'open-telemetry/opentelemetry-java' }}
-        with:
-          arguments: assemble publishToSonatype
+      - name: Publish to Sonatype
+        run: ./gradlew assemble publishToSonatype
+        # skipping release branches because the versions in those branches are not snapshots
+        # (also this skips pull requests)
+        if: ${{ github.ref_name == 'main' && github.repository == 'open-telemetry/opentelemetry-java' }}
         env:
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}

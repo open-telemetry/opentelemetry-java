@@ -32,6 +32,13 @@ final class FileConfigUtil {
     return object;
   }
 
+  static <T> T requireNonNull(@Nullable T object, String description) {
+    if (object == null) {
+      throw new ConfigurationException(description + " is required but is null");
+    }
+    return object;
+  }
+
   /**
    * Find a registered {@link ComponentProvider} which {@link ComponentProvider#getType()} matching
    * {@code type}, {@link ComponentProvider#getName()} matching {@code name}, and call {@link
@@ -42,7 +49,8 @@ final class FileConfigUtil {
    */
   static <T> T loadComponent(SpiHelper spiHelper, Class<T> type, String name, Object model) {
     // Map model to generic structured config properties
-    StructuredConfigProperties config = FileConfiguration.toConfigProperties(model);
+    StructuredConfigProperties config =
+        FileConfiguration.toConfigProperties(model, spiHelper.getComponentLoader());
     return spiHelper.loadComponent(type, name, config);
   }
 }

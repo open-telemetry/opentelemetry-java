@@ -21,12 +21,32 @@ class CompletableResultCodeTest {
 
   @Test
   void ofSuccess() {
-    assertThat(CompletableResultCode.ofSuccess().isSuccess()).isTrue();
+    assertThat(CompletableResultCode.ofSuccess())
+        .satisfies(
+            code -> {
+              assertThat(code.isSuccess()).isTrue();
+              assertThat(code.getFailureThrowable()).isNull();
+            });
   }
 
   @Test
   void ofFailure() {
-    assertThat(CompletableResultCode.ofFailure().isSuccess()).isFalse();
+    assertThat(CompletableResultCode.ofFailure())
+        .satisfies(
+            code -> {
+              assertThat(code.isSuccess()).isFalse();
+              assertThat(code.getFailureThrowable()).isNull();
+            });
+  }
+
+  @Test
+  void ofExceptionalFailure() {
+    assertThat(CompletableResultCode.ofExceptionalFailure(new Exception("error")))
+        .satisfies(
+            code -> {
+              assertThat(code.isSuccess()).isFalse();
+              assertThat(code.getFailureThrowable()).hasMessage("error");
+            });
   }
 
   @Test
@@ -57,6 +77,15 @@ class CompletableResultCodeTest {
     completions.await(3, TimeUnit.SECONDS);
 
     assertThat(resultCode.isSuccess()).isFalse();
+  }
+
+  @Test
+  void failExceptionallyWithNull() {
+    CompletableResultCode resultCode = new CompletableResultCode();
+    CompletableResultCode result = resultCode.failExceptionally(null);
+    assertThat(result.isDone()).isTrue();
+    assertThat(result.isSuccess()).isFalse();
+    assertThat(result.getFailureThrowable()).isNull();
   }
 
   @Test
@@ -147,6 +176,24 @@ class CompletableResultCodeTest {
                         CompletableResultCode.ofSuccess()))
                 .isSuccess())
         .isFalse();
+  }
+
+  @Test
+  void ofAllWithExceptionalFailure() {
+    assertThat(
+            CompletableResultCode.ofAll(
+                Arrays.asList(
+                    CompletableResultCode.ofSuccess(),
+                    CompletableResultCode.ofFailure(),
+                    CompletableResultCode.ofExceptionalFailure(new Exception("error1")),
+                    CompletableResultCode.ofExceptionalFailure(new Exception("error2")),
+                    CompletableResultCode.ofSuccess())))
+        .satisfies(
+            code -> {
+              assertThat(code.isSuccess()).isFalse();
+              // failure throwable is set to first throwable seen in the collection
+              assertThat(code.getFailureThrowable()).hasMessage("error1");
+            });
   }
 
   @Test

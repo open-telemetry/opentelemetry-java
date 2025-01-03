@@ -88,7 +88,7 @@ public class MetricStorageRegistry {
   }
 
   /** Reset the storage registry, clearing all storages. */
-  void resetForTest() {
+  public void resetForTest() {
     synchronized (lock) {
       registry.clear();
     }

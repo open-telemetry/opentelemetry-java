@@ -15,7 +15,7 @@ class OkHttpGrpcSuppressionTest
 
   @Override
   void send(OkHttpGrpcSender<DummyMarshaler> sender, Runnable onSuccess, Runnable onFailure) {
-    sender.send(new DummyMarshaler(), onSuccess, (grpcResponse, throwable) -> onFailure.run());
+    sender.send(new DummyMarshaler(), grpcResponse -> {}, throwable -> onFailure.run());
   }
 
   @Override

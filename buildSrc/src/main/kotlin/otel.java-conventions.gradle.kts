@@ -42,7 +42,7 @@ java {
 
 checkstyle {
   configDirectory.set(file("$rootDir/buildscripts/"))
-  toolVersion = "10.17.0"
+  toolVersion = "10.21.1"
   isIgnoreFailures = false
   configProperties["rootDir"] = rootDir
 }
@@ -87,7 +87,6 @@ tasks {
             "-Xlint:-processing",
             // We suppress the "options" warning because it prevents compilation on modern JDKs
             "-Xlint:-options",
-
             // Fail build on any warning
             "-Werror",
           ),
@@ -135,12 +134,6 @@ tasks {
       breakIterator(true)
 
       addBooleanOption("html5", true)
-
-      // TODO (trask) revisit to see if url is fixed
-      // currently broken because https://docs.oracle.com/javase/8/docs/api/element-list is missing
-      // and redirects
-      // links("https://docs.oracle.com/javase/8/docs/api/")
-
       addBooleanOption("Xdoclint:all,-missing", true)
     }
   }

@@ -23,6 +23,8 @@ import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.ServerSocket;
 import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -155,6 +157,34 @@ class RetryInterceptorTest {
     verify(isRetryableException, times(5)).apply(any());
     // Should retry maxAttempts, and sleep maxAttempts - 1 times
     verify(sleeper, times(4)).sleep(anyLong());
+  }
+
+  @Test
+  void connectException() throws Exception {
+    client = connectTimeoutClient();
+    when(random.get(anyLong())).thenReturn(1L);
+    doNothing().when(sleeper).sleep(anyLong());
+
+    // Connecting to localhost on an unused port address to trigger java.net.ConnectException
+    int openPort = freePort();
+    assertThatThrownBy(
+            () ->
+                client
+                    .newCall(new Request.Builder().url("http://localhost:" + openPort).build())
+                    .execute())
+        .isInstanceOfAny(ConnectException.class, SocketTimeoutException.class);
+
+    verify(isRetryableException, times(5)).apply(any());
+    // Should retry maxAttempts, and sleep maxAttempts - 1 times
+    verify(sleeper, times(4)).sleep(anyLong());
+  }
+
+  private static int freePort() {
+    try (ServerSocket socket = new ServerSocket(0)) {
+      return socket.getLocalPort();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Test

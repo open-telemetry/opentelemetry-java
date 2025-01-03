@@ -10,14 +10,19 @@ import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfiguration;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -46,7 +51,9 @@ public final class FileConfiguration {
 
   private static final Logger logger = Logger.getLogger(FileConfiguration.class.getName());
   private static final Pattern ENV_VARIABLE_REFERENCE =
-      Pattern.compile("\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)}");
+      Pattern.compile("\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)(:-([^\n}]*))?}");
+  private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
+      SpiHelper.serviceComponentLoader(FileConfiguration.class.getClassLoader());
 
   private static final ObjectMapper MAPPER;
 
@@ -66,12 +73,12 @@ public final class FileConfiguration {
   private FileConfiguration() {}
 
   /**
-   * Combines {@link #parse(InputStream)} and {@link #create(OpenTelemetryConfiguration)}.
+   * Combines {@link #parse(InputStream)} and {@link #create(OpenTelemetryConfigurationModel)}.
    *
    * @throws ConfigurationException if unable to parse or interpret
    */
   public static OpenTelemetrySdk parseAndCreate(InputStream inputStream) {
-    OpenTelemetryConfiguration configurationModel = parse(inputStream);
+    OpenTelemetryConfigurationModel configurationModel = parse(inputStream);
     return create(configurationModel);
   }
 
@@ -83,17 +90,130 @@ public final class FileConfiguration {
    * @return the {@link OpenTelemetrySdk}
    * @throws ConfigurationException if unable to interpret
    */
-  public static OpenTelemetrySdk create(OpenTelemetryConfiguration configurationModel) {
+  public static OpenTelemetrySdk create(OpenTelemetryConfigurationModel configurationModel) {
+    return create(configurationModel, DEFAULT_COMPONENT_LOADER);
+  }
+
+  /**
+   * Interpret the {@code configurationModel} to create {@link OpenTelemetrySdk} instance
+   * corresponding to the configuration.
+   *
+   * @param configurationModel the configuration model
+   * @param componentLoader the component loader used to load {@link ComponentProvider}
+   *     implementations
+   * @return the {@link OpenTelemetrySdk}
+   * @throws ConfigurationException if unable to interpret
+   */
+  public static OpenTelemetrySdk create(
+      OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
+    return createAndMaybeCleanup(
+        OpenTelemetryConfigurationFactory.getInstance(),
+        SpiHelper.create(componentLoader),
+        configurationModel);
+  }
+
+  /**
+   * Parse the {@code configuration} YAML and return the {@link OpenTelemetryConfigurationModel}.
+   *
+   * <p>Before parsing, environment variable substitution is performed as described in {@link
+   * EnvSubstitutionConstructor}.
+   *
+   * @throws ConfigurationException if unable to parse
+   */
+  public static OpenTelemetryConfigurationModel parse(InputStream configuration) {
+    try {
+      return parse(configuration, System.getenv());
+    } catch (RuntimeException e) {
+      throw new ConfigurationException("Unable to parse configuration input stream", e);
+    }
+  }
+
+  // Visible for testing
+  static OpenTelemetryConfigurationModel parse(
+      InputStream configuration, Map<String, String> environmentVariables) {
+    Object yamlObj = loadYaml(configuration, environmentVariables);
+    return MAPPER.convertValue(yamlObj, OpenTelemetryConfigurationModel.class);
+  }
+
+  // Visible for testing
+  static Object loadYaml(InputStream inputStream, Map<String, String> environmentVariables) {
+    LoadSettings settings = LoadSettings.builder().setSchema(new CoreSchema()).build();
+    Load yaml = new Load(settings, new EnvSubstitutionConstructor(settings, environmentVariables));
+    return yaml.loadFromInputStream(inputStream);
+  }
+
+  /**
+   * Convert the {@code model} to a generic {@link StructuredConfigProperties}.
+   *
+   * @param model the configuration model
+   * @return a generic {@link StructuredConfigProperties} representation of the model
+   */
+  public static StructuredConfigProperties toConfigProperties(
+      OpenTelemetryConfigurationModel model) {
+    return toConfigProperties(model, DEFAULT_COMPONENT_LOADER);
+  }
+
+  /**
+   * Convert the {@code configuration} YAML to a generic {@link StructuredConfigProperties}.
+   *
+   * @param configuration configuration YAML
+   * @return a generic {@link StructuredConfigProperties} representation of the model
+   */
+  public static StructuredConfigProperties toConfigProperties(InputStream configuration) {
+    Object yamlObj = loadYaml(configuration, System.getenv());
+    return toConfigProperties(yamlObj, DEFAULT_COMPONENT_LOADER);
+  }
+
+  static StructuredConfigProperties toConfigProperties(
+      Object model, ComponentLoader componentLoader) {
+    Map<String, Object> configurationMap =
+        MAPPER.convertValue(model, new TypeReference<Map<String, Object>>() {});
+    if (configurationMap == null) {
+      configurationMap = Collections.emptyMap();
+    }
+    return YamlStructuredConfigProperties.create(configurationMap, componentLoader);
+  }
+
+  /**
+   * Create a {@link SamplerModel} from the {@code samplerModel} representing the sampler config.
+   *
+   * <p>This is used when samplers are composed, with one sampler accepting one or more additional
+   * samplers as config properties. The {@link ComponentProvider} implementation can call this to
+   * configure a delegate {@link SamplerModel} from the {@link StructuredConfigProperties}
+   * corresponding to a particular config property.
+   */
+  // TODO(jack-berg): add create methods for all SDK extension components supported by
+  // ComponentProvider
+  public static Sampler createSampler(StructuredConfigProperties genericSamplerModel) {
+    YamlStructuredConfigProperties yamlStructuredConfigProperties =
+        requireYamlStructuredConfigProperties(genericSamplerModel);
+    SamplerModel samplerModel = convertToModel(yamlStructuredConfigProperties, SamplerModel.class);
+    return createAndMaybeCleanup(
+        SamplerFactory.getInstance(),
+        SpiHelper.create(yamlStructuredConfigProperties.getComponentLoader()),
+        samplerModel);
+  }
+
+  private static YamlStructuredConfigProperties requireYamlStructuredConfigProperties(
+      StructuredConfigProperties structuredConfigProperties) {
+    if (!(structuredConfigProperties instanceof YamlStructuredConfigProperties)) {
+      throw new ConfigurationException(
+          "Only YamlStructuredConfigProperties can be converted to model");
+    }
+    return (YamlStructuredConfigProperties) structuredConfigProperties;
+  }
+
+  static <T> T convertToModel(
+      YamlStructuredConfigProperties structuredConfigProperties, Class<T> modelType) {
+    return MAPPER.convertValue(structuredConfigProperties.toMap(), modelType);
+  }
+
+  static <M, R> R createAndMaybeCleanup(Factory<M, R> factory, SpiHelper spiHelper, M model) {
     List<Closeable> closeables = new ArrayList<>();
     try {
-      return OpenTelemetryConfigurationFactory.getInstance()
-          .create(
-              configurationModel,
-              SpiHelper.create(FileConfiguration.class.getClassLoader()),
-              closeables);
+      return factory.create(model, spiHelper, closeables);
     } catch (RuntimeException e) {
-      logger.info(
-          "Error encountered interpreting configuration model. Closing partially configured components.");
+      logger.info("Error encountered interpreting model. Closing partially configured components.");
       for (Closeable closeable : closeables) {
         try {
           logger.fine("Closing " + closeable.getClass().getName());
@@ -108,53 +228,6 @@ public final class FileConfiguration {
       }
       throw new ConfigurationException("Unexpected configuration error", e);
     }
-  }
-
-  /**
-   * Parse the {@code configuration} YAML and return the {@link OpenTelemetryConfiguration}.
-   *
-   * <p>Before parsing, environment variable substitution is performed as described in {@link
-   * EnvSubstitutionConstructor}.
-   *
-   * @throws ConfigurationException if unable to parse
-   */
-  public static OpenTelemetryConfiguration parse(InputStream configuration) {
-    try {
-      return parse(configuration, System.getenv());
-    } catch (RuntimeException e) {
-      throw new ConfigurationException("Unable to parse configuration input stream", e);
-    }
-  }
-
-  // Visible for testing
-  static OpenTelemetryConfiguration parse(
-      InputStream configuration, Map<String, String> environmentVariables) {
-    Object yamlObj = loadYaml(configuration, environmentVariables);
-    return MAPPER.convertValue(yamlObj, OpenTelemetryConfiguration.class);
-  }
-
-  // Visible for testing
-  static Object loadYaml(InputStream inputStream, Map<String, String> environmentVariables) {
-    LoadSettings settings = LoadSettings.builder().setSchema(new CoreSchema()).build();
-    Load yaml = new Load(settings, new EnvSubstitutionConstructor(settings, environmentVariables));
-    return yaml.loadFromInputStream(inputStream);
-  }
-
-  /**
-   * Convert the {@code model} to a generic {@link StructuredConfigProperties}, which can be used to
-   * read configuration not part of the model.
-   *
-   * @param model the configuration model
-   * @return a generic {@link StructuredConfigProperties} representation of the model
-   */
-  public static StructuredConfigProperties toConfigProperties(OpenTelemetryConfiguration model) {
-    return toConfigProperties((Object) model);
-  }
-
-  static StructuredConfigProperties toConfigProperties(Object model) {
-    Map<String, Object> configurationMap =
-        MAPPER.convertValue(model, new TypeReference<Map<String, Object>>() {});
-    return YamlStructuredConfigProperties.create(configurationMap);
   }
 
   /**
@@ -244,7 +317,12 @@ public final class FileConfiguration {
       ScalarStyle scalarStyle = ((ScalarNode) node).getScalarStyle();
       do {
         MatchResult matchResult = matcher.toMatchResult();
-        String replacement = environmentVariables.getOrDefault(matcher.group(1), "");
+        String envVarKey = matcher.group(1);
+        String defaultValue = matcher.group(3);
+        if (defaultValue == null) {
+          defaultValue = "";
+        }
+        String replacement = environmentVariables.getOrDefault(envVarKey, defaultValue);
         newVal.append(val, offset, matchResult.start()).append(replacement);
         offset = matchResult.end();
       } while (matcher.find());

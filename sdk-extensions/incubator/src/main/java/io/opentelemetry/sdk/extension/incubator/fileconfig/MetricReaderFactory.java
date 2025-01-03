@@ -5,23 +5,25 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNonNull;
+
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricExporter;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReader;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Prometheus;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReader;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PrometheusModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReaderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.List;
-import javax.annotation.Nullable;
 
-final class MetricReaderFactory
-    implements Factory<
-        io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReader,
-        MetricReader> {
+final class MetricReaderFactory implements Factory<MetricReaderModel, MetricReader> {
 
   private static final MetricReaderFactory INSTANCE = new MetricReaderFactory();
 
@@ -31,42 +33,28 @@ final class MetricReaderFactory
     return INSTANCE;
   }
 
-  @SuppressWarnings("NullAway") // Override superclass non-null response
   @Override
-  @Nullable
   public MetricReader create(
-      @Nullable
-          io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReader model,
-      SpiHelper spiHelper,
-      List<Closeable> closeables) {
-    if (model == null) {
-      return null;
-    }
-
-    PeriodicMetricReader periodicModel = model.getPeriodic();
+      MetricReaderModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+    PeriodicMetricReaderModel periodicModel = model.getPeriodic();
     if (periodicModel != null) {
-      MetricExporter exporterModel = periodicModel.getExporter();
-      io.opentelemetry.sdk.metrics.export.MetricExporter metricExporter =
+      PushMetricExporterModel exporterModel =
+          requireNonNull(periodicModel.getExporter(), "periodic metric reader exporter");
+      MetricExporter metricExporter =
           MetricExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
-      if (metricExporter == null) {
-        throw new ConfigurationException("exporter required for periodic reader");
-      }
       PeriodicMetricReaderBuilder builder =
-          io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
-              FileConfigUtil.addAndReturn(closeables, metricExporter));
+          PeriodicMetricReader.builder(FileConfigUtil.addAndReturn(closeables, metricExporter));
       if (periodicModel.getInterval() != null) {
         builder.setInterval(Duration.ofMillis(periodicModel.getInterval()));
       }
       return FileConfigUtil.addAndReturn(closeables, builder.build());
     }
 
-    PullMetricReader pullModel = model.getPull();
+    PullMetricReaderModel pullModel = model.getPull();
     if (pullModel != null) {
-      MetricExporter exporterModel = pullModel.getExporter();
-      if (exporterModel == null) {
-        throw new ConfigurationException("exporter required for pull reader");
-      }
-      Prometheus prometheusModel = exporterModel.getPrometheus();
+      PullMetricExporterModel exporterModel =
+          requireNonNull(pullModel.getExporter(), "pull metric reader exporter");
+      PrometheusModel prometheusModel = exporterModel.getPrometheus();
       if (prometheusModel != null) {
         MetricReader metricReader =
             FileConfigUtil.loadComponent(
@@ -77,6 +65,6 @@ final class MetricReaderFactory
       throw new ConfigurationException("prometheus is the only currently supported pull reader");
     }
 
-    return null;
+    throw new ConfigurationException("reader must be set");
   }
 }

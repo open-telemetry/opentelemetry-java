@@ -5,7 +5,7 @@
 
 package io.opentelemetry.integrationtest;
 
-import static io.opentelemetry.api.incubator.logs.AnyValue.of;
+import static io.opentelemetry.api.common.Value.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -21,9 +21,9 @@ import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.incubator.events.EventLogger;
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
-import io.opentelemetry.api.incubator.logs.KeyAnyValue;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -50,7 +50,6 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.ArrayValue;
-import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.common.v1.KeyValueList;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.proto.logs.v1.ScopeLogs;
@@ -329,7 +328,7 @@ abstract class OtlpExporterIntegrationTest {
     ResourceSpans resourceSpans = request.getResourceSpans(0);
     assertThat(resourceSpans.getResource().getAttributesList())
         .contains(
-            KeyValue.newBuilder()
+            io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                 .setKey(SERVICE_NAME.getKey())
                 .setValue(AnyValue.newBuilder().setStringValue("integration test").build())
                 .build());
@@ -348,7 +347,7 @@ abstract class OtlpExporterIntegrationTest {
     assertThat(protoSpan.getAttributesList())
         .isEqualTo(
             Collections.singletonList(
-                KeyValue.newBuilder()
+                io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                     .setKey("key")
                     .setValue(AnyValue.newBuilder().setStringValue("value").build())
                     .build()));
@@ -494,7 +493,7 @@ abstract class OtlpExporterIntegrationTest {
     ResourceMetrics resourceMetrics = request.getResourceMetrics(0);
     assertThat(resourceMetrics.getResource().getAttributesList())
         .contains(
-            KeyValue.newBuilder()
+            io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                 .setKey(SERVICE_NAME.getKey())
                 .setValue(AnyValue.newBuilder().setStringValue("integration test").build())
                 .build());
@@ -519,7 +518,7 @@ abstract class OtlpExporterIntegrationTest {
     assertThat(dataPoint.getAttributesList())
         .isEqualTo(
             Collections.singletonList(
-                KeyValue.newBuilder()
+                io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                     .setKey("key")
                     .setValue(AnyValue.newBuilder().setStringValue("value").build())
                     .build()));
@@ -653,19 +652,19 @@ abstract class OtlpExporterIntegrationTest {
       ((ExtendedLogRecordBuilder) logger.logRecordBuilder())
           .setBody(
               of(
-                  KeyAnyValue.of("str_key", of("value")),
-                  KeyAnyValue.of("bool_key", of(true)),
-                  KeyAnyValue.of("int_key", of(1L)),
-                  KeyAnyValue.of("double_key", of(1.1)),
-                  KeyAnyValue.of("bytes_key", of("value".getBytes(StandardCharsets.UTF_8))),
-                  KeyAnyValue.of("arr_key", of(of("value"), of(1L))),
-                  KeyAnyValue.of(
+                  KeyValue.of("str_key", of("value")),
+                  KeyValue.of("bool_key", of(true)),
+                  KeyValue.of("int_key", of(1L)),
+                  KeyValue.of("double_key", of(1.1)),
+                  KeyValue.of("bytes_key", of("value".getBytes(StandardCharsets.UTF_8))),
+                  KeyValue.of("arr_key", of(of("value"), of(1L))),
+                  KeyValue.of(
                       "kv_list",
                       of(
-                          KeyAnyValue.of("child_str_key", of("value")),
-                          KeyAnyValue.of(
+                          KeyValue.of("child_str_key", of("value")),
+                          KeyValue.of(
                               "child_kv_list",
-                              of(KeyAnyValue.of("grandchild_str_key", of("value"))))))))
+                              of(KeyValue.of("grandchild_str_key", of("value"))))))))
           .setTimestamp(100, TimeUnit.NANOSECONDS)
           .setAllAttributes(Attributes.builder().put("key", "value").build())
           .setSeverity(Severity.DEBUG)
@@ -688,7 +687,7 @@ abstract class OtlpExporterIntegrationTest {
     ResourceLogs resourceLogs = request.getResourceLogs(0);
     assertThat(resourceLogs.getResource().getAttributesList())
         .contains(
-            KeyValue.newBuilder()
+            io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                 .setKey(SERVICE_NAME.getKey())
                 .setValue(AnyValue.newBuilder().setStringValue("integration test").build())
                 .build());
@@ -706,27 +705,27 @@ abstract class OtlpExporterIntegrationTest {
                 .setKvlistValue(
                     KeyValueList.newBuilder()
                         .addValues(
-                            KeyValue.newBuilder()
+                            io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                                 .setKey("str_key")
                                 .setValue(AnyValue.newBuilder().setStringValue("value").build())
                                 .build())
                         .addValues(
-                            KeyValue.newBuilder()
+                            io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                                 .setKey("bool_key")
                                 .setValue(AnyValue.newBuilder().setBoolValue(true).build())
                                 .build())
                         .addValues(
-                            KeyValue.newBuilder()
+                            io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                                 .setKey("int_key")
                                 .setValue(AnyValue.newBuilder().setIntValue(1).build())
                                 .build())
                         .addValues(
-                            KeyValue.newBuilder()
+                            io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                                 .setKey("double_key")
                                 .setValue(AnyValue.newBuilder().setDoubleValue(1.1).build())
                                 .build())
                         .addValues(
-                            KeyValue.newBuilder()
+                            io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                                 .setKey("bytes_key")
                                 .setValue(
                                     AnyValue.newBuilder()
@@ -736,7 +735,7 @@ abstract class OtlpExporterIntegrationTest {
                                         .build())
                                 .build())
                         .addValues(
-                            KeyValue.newBuilder()
+                            io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                                 .setKey("arr_key")
                                 .setValue(
                                     AnyValue.newBuilder()
@@ -752,14 +751,15 @@ abstract class OtlpExporterIntegrationTest {
                                         .build())
                                 .build())
                         .addValues(
-                            KeyValue.newBuilder()
+                            io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                                 .setKey("kv_list")
                                 .setValue(
                                     AnyValue.newBuilder()
                                         .setKvlistValue(
                                             KeyValueList.newBuilder()
                                                 .addValues(
-                                                    KeyValue.newBuilder()
+                                                    io.opentelemetry.proto.common.v1.KeyValue
+                                                        .newBuilder()
                                                         .setKey("child_str_key")
                                                         .setValue(
                                                             AnyValue.newBuilder()
@@ -767,14 +767,17 @@ abstract class OtlpExporterIntegrationTest {
                                                                 .build())
                                                         .build())
                                                 .addValues(
-                                                    KeyValue.newBuilder()
+                                                    io.opentelemetry.proto.common.v1.KeyValue
+                                                        .newBuilder()
                                                         .setKey("child_kv_list")
                                                         .setValue(
                                                             AnyValue.newBuilder()
                                                                 .setKvlistValue(
                                                                     KeyValueList.newBuilder()
                                                                         .addValues(
-                                                                            KeyValue.newBuilder()
+                                                                            io.opentelemetry.proto
+                                                                                .common.v1.KeyValue
+                                                                                .newBuilder()
                                                                                 .setKey(
                                                                                     "grandchild_str_key")
                                                                                 .setValue(
@@ -795,7 +798,7 @@ abstract class OtlpExporterIntegrationTest {
     assertThat(protoLog1.getAttributesList())
         .isEqualTo(
             Collections.singletonList(
-                KeyValue.newBuilder()
+                io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                     .setKey("key")
                     .setValue(AnyValue.newBuilder().setStringValue("value").build())
                     .build()));
@@ -814,13 +817,13 @@ abstract class OtlpExporterIntegrationTest {
     io.opentelemetry.proto.logs.v1.LogRecord protoLog2 = ilLogs.getLogRecords(1);
     assertThat(protoLog2.getBody().getKvlistValue().getValuesList())
         .containsExactlyInAnyOrder(
-            KeyValue.newBuilder()
+            io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                 .setKey("key")
                 .setValue(AnyValue.newBuilder().setStringValue("value").build())
                 .build());
     assertThat(protoLog2.getAttributesList())
         .containsExactlyInAnyOrder(
-            KeyValue.newBuilder()
+            io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                 .setKey("event.name")
                 .setValue(AnyValue.newBuilder().setStringValue("namespace.event-name").build())
                 .build());

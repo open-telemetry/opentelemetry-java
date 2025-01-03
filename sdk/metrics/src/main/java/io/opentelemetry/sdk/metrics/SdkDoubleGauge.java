@@ -15,23 +15,19 @@ import io.opentelemetry.api.metrics.ObservableDoubleGauge;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
-import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.List;
 import java.util.function.Consumer;
 
 final class SdkDoubleGauge extends AbstractInstrument implements ExtendedDoubleGauge {
 
-  private final MeterSharedState meterSharedState;
+  private final SdkMeter sdkMeter;
   private final WriteableMetricStorage storage;
 
   private SdkDoubleGauge(
-      InstrumentDescriptor descriptor,
-      MeterSharedState meterSharedState,
-      WriteableMetricStorage storage) {
+      InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     super(descriptor);
-    this.meterSharedState = meterSharedState;
+    this.sdkMeter = sdkMeter;
     this.storage = storage;
   }
 
@@ -52,24 +48,16 @@ final class SdkDoubleGauge extends AbstractInstrument implements ExtendedDoubleG
 
   @Override
   public boolean isEnabled() {
-    return meterSharedState.isMeterEnabled() && storage.isEnabled();
+    return sdkMeter.isMeterEnabled() && storage.isEnabled();
   }
 
   static final class SdkDoubleGaugeBuilder implements ExtendedDoubleGaugeBuilder {
     private final InstrumentBuilder builder;
 
-    SdkDoubleGaugeBuilder(
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        String name) {
+    SdkDoubleGaugeBuilder(SdkMeter sdkMeter, String name) {
 
       builder =
-          new InstrumentBuilder(
-              name,
-              InstrumentType.GAUGE,
-              InstrumentValueType.DOUBLE,
-              meterProviderSharedState,
-              meterSharedState);
+          new InstrumentBuilder(name, InstrumentType.GAUGE, InstrumentValueType.DOUBLE, sdkMeter);
     }
 
     @Override

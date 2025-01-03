@@ -143,6 +143,8 @@ public final class OkHttpHttpSender implements HttpSender {
                         try (ResponseBody body = response.body()) {
                           onResponse.accept(
                               new Response() {
+                                @Nullable private byte[] bodyBytes;
+
                                 @Override
                                 public int statusCode() {
                                   return response.code();
@@ -155,7 +157,10 @@ public final class OkHttpHttpSender implements HttpSender {
 
                                 @Override
                                 public byte[] responseBody() throws IOException {
-                                  return body.bytes();
+                                  if (bodyBytes == null) {
+                                    bodyBytes = body.bytes();
+                                  }
+                                  return bodyBytes;
                                 }
                               });
                         }
