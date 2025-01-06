@@ -103,9 +103,11 @@ public abstract class RetryPolicy {
     public abstract RetryPolicyBuilder setBackoffMultiplier(double backoffMultiplier);
 
     /**
-     * Set the predicate to determine if retry should happen based on exception. No retry by default.
+     * Set the predicate to determine if retry should happen based on exception. No retry by
+     * default.
      */
-    public abstract RetryPolicyBuilder setRetryExceptionPredicate(Predicate<IOException> retryExceptionPredicate);
+    public abstract RetryPolicyBuilder setRetryExceptionPredicate(
+        Predicate<IOException> retryExceptionPredicate);
 
     abstract RetryPolicy autoBuild();
 

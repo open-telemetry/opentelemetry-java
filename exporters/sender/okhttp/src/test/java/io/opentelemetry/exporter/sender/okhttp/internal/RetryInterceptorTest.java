@@ -63,7 +63,8 @@ class RetryInterceptorTest {
               @Override
               public Boolean apply(IOException exception) {
                 return RetryInterceptor.isRetryableException(exception)
-                    || (exception instanceof HttpRetryException && exception.getMessage().contains("timeout retry"));
+                    || (exception instanceof HttpRetryException
+                        && exception.getMessage().contains("timeout retry"));
               }
             });
     retrier =
@@ -224,14 +225,14 @@ class RetryInterceptorTest {
     assertThat(retrier.shouldRetryOnException(new SocketTimeoutException("Read timed out")))
         .isFalse();
     // Shouldn't retry on write timeouts, where error message is "timeout", or other IOException
-    assertThat(retrier.shouldRetryOnException(new SocketTimeoutException("timeout")))
-        .isFalse();
+    assertThat(retrier.shouldRetryOnException(new SocketTimeoutException("timeout"))).isFalse();
     assertThat(retrier.shouldRetryOnException(new SocketTimeoutException())).isTrue();
     assertThat(retrier.shouldRetryOnException(new IOException("error"))).isFalse();
 
     // Testing configured predicate
     assertThat(retrier.shouldRetryOnException(new HttpRetryException("error", 400))).isFalse();
-    assertThat(retrier.shouldRetryOnException(new HttpRetryException("timeout retry", 400))).isTrue();
+    assertThat(retrier.shouldRetryOnException(new HttpRetryException("timeout retry", 400)))
+        .isTrue();
   }
 
   private Response sendRequest() throws IOException {
