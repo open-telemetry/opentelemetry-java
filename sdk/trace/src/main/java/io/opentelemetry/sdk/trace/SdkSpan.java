@@ -434,10 +434,26 @@ final class SdkSpan implements ReadWriteSpan {
       if (!isModifiableByCurrentThread()) {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return this;
-      } else if (this.status.getStatusCode() == StatusCode.OK) {
+      }
+
+      // If current status is OK, ignore further attempts to change it
+      if (this.status.getStatusCode() == StatusCode.OK) {
         logger.log(Level.FINE, "Calling setStatus() on a Span that is already set to OK.");
         return this;
       }
+
+      // Ignore attempts ot set status to UNSET
+      if (statusCode == StatusCode.UNSET) {
+        logger.log(Level.FINE, "Ignoring call to setStatus() with status UNSET.");
+        return this;
+      }
+
+      // Ignore description when status is not ERROR
+      if (description != null && statusCode != StatusCode.ERROR) {
+        logger.log(Level.FINE, "Ignoring setStatus() description since status is not ERROR.");
+        description = null;
+      }
+
       this.status = StatusData.create(statusCode, description);
     }
     return this;
