@@ -234,6 +234,26 @@ class RetryInterceptorTest {
     assertThat(retrier.shouldRetryOnException(new HttpRetryException("timeout retry", 400)))
         .isTrue();
   }
+  @Test
+  void isRetryableExceptionDefaultBehaviour() {
+    RetryInterceptor retryInterceptor = new RetryInterceptor(RetryPolicy.getDefault(),
+        OkHttpHttpSender::isRetryable);
+    assertThat(retryInterceptor
+        .shouldRetryOnException(new SocketTimeoutException("Connect timed out"))).isTrue();
+    assertThat(retryInterceptor.shouldRetryOnException(new IOException("Connect timed out")))
+        .isFalse();
+  }
+  @Test
+  void isRetryableExceptionCustomRetryPredicate() {
+    RetryInterceptor retryInterceptor = new RetryInterceptor(RetryPolicy.builder()
+        .setRetryExceptionPredicate((IOException e) -> e.getMessage().equals("retry")).build(),
+        OkHttpHttpSender::isRetryable);
+
+    assertThat(retryInterceptor.shouldRetryOnException(new IOException("some message"))).isFalse();
+    assertThat(retryInterceptor.shouldRetryOnException(new IOException("retry"))).isTrue();
+    assertThat(retryInterceptor
+        .shouldRetryOnException(new SocketTimeoutException("Connect timed out"))).isTrue();
+  }
 
   private Response sendRequest() throws IOException {
     return client.newCall(new Request.Builder().url(server.httpUri().toString()).build()).execute();
