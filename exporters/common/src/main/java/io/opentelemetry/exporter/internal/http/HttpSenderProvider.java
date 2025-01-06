@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.internal.http;
 
-import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -36,7 +35,6 @@ public interface HttpSenderProvider {
       long connectTimeout,
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable ProxyOptions proxyOptions,
-      @Nullable Authenticator authenticator,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager);

@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal;
 
-import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
@@ -51,8 +50,6 @@ public interface TelemetryExporterBuilder<T> {
   TelemetryExporterBuilder<T> addHeader(String key, String value);
 
   TelemetryExporterBuilder<T> setHeaders(Supplier<Map<String, String>> headerSupplier);
-
-  TelemetryExporterBuilder<T> setAuthenticator(Authenticator authenticator);
 
   TelemetryExporterBuilder<T> setTrustedCertificates(byte[] certificates);
 
