@@ -442,7 +442,7 @@ final class SdkSpan implements ReadWriteSpan {
         return this;
       }
 
-      // Ignore attempts ot set status to UNSET
+      // Ignore attempts to set status to UNSET
       if (statusCode == StatusCode.UNSET) {
         logger.log(Level.FINE, "Ignoring call to setStatus() with status UNSET.");
         return this;
