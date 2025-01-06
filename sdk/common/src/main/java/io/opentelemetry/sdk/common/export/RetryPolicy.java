@@ -8,7 +8,9 @@ package io.opentelemetry.sdk.common.export;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 
 import com.google.auto.value.AutoValue;
+import java.io.IOException;
 import java.time.Duration;
+import java.util.function.Predicate;
 
 /**
  * Configuration for exporter exponential retry policy.
@@ -43,7 +45,8 @@ public abstract class RetryPolicy {
         .setMaxAttempts(DEFAULT_MAX_ATTEMPTS)
         .setInitialBackoff(Duration.ofSeconds(DEFAULT_INITIAL_BACKOFF_SECONDS))
         .setMaxBackoff(Duration.ofSeconds(DEFAULT_MAX_BACKOFF_SECONDS))
-        .setBackoffMultiplier(DEFAULT_BACKOFF_MULTIPLIER);
+        .setBackoffMultiplier(DEFAULT_BACKOFF_MULTIPLIER)
+        .setRetryExceptionPredicate((e) -> false);
   }
 
   /**
@@ -65,6 +68,9 @@ public abstract class RetryPolicy {
 
   /** Returns the backoff multiplier. */
   public abstract double getBackoffMultiplier();
+
+  /** Returns the predicate if exception is retryable. */
+  public abstract Predicate<IOException> getRetryExceptionPredicate();
 
   /** Builder for {@link RetryPolicy}. */
   @AutoValue.Builder
@@ -95,6 +101,11 @@ public abstract class RetryPolicy {
      * DEFAULT_BACKOFF_MULTIPLIER}.
      */
     public abstract RetryPolicyBuilder setBackoffMultiplier(double backoffMultiplier);
+
+    /**
+     * Set the predicate to determine if retry should happen based on exception. No retry by default.
+     */
+    public abstract RetryPolicyBuilder setRetryExceptionPredicate(Predicate<IOException> retryExceptionPredicate);
 
     abstract RetryPolicy autoBuild();
 

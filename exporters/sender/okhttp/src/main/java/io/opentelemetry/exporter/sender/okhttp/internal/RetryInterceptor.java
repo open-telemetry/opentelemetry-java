@@ -42,7 +42,7 @@ public final class RetryInterceptor implements Interceptor {
     this(
         retryPolicy,
         isRetryable,
-        RetryInterceptor::isRetryableException,
+        e -> retryPolicy.getRetryExceptionPredicate().test(e) || RetryInterceptor.isRetryableException(e),
         TimeUnit.NANOSECONDS::sleep,
         bound -> ThreadLocalRandom.current().nextLong(bound));
   }
@@ -142,6 +142,11 @@ public final class RetryInterceptor implements Interceptor {
                 .map(entry -> entry.getKey() + "=" + String.join(",", entry.getValue()))
                 .collect(joining(",", "[", "]")));
     return joiner.toString();
+  }
+
+  // Visible for testing
+  boolean shouldRetryOnException(IOException e) {
+    return isRetryableException.apply(e);
   }
 
   // Visible for testing

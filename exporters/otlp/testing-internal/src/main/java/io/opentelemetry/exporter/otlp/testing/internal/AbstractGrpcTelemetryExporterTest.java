@@ -1000,7 +1000,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + ", "
                   + "compressorEncoding=gzip, "
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
-                  + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3\\}"
+                  + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3, retryExceptionPredicate=io.opentelemetry.sdk.common.export.RetryPolicy.*\\}"
                   + ".*" // Maybe additional grpcChannel field, signal specific fields
                   + "\\}");
     } finally {
