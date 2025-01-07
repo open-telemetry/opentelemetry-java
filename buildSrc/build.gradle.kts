@@ -2,7 +2,7 @@ plugins {
   `kotlin-dsl`
 
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "7.0.0"
+  id("com.diffplug.spotless") version "7.0.1"
 }
 
 if (!hasLauncherForJavaVersion(17)) {
@@ -53,7 +53,7 @@ dependencies {
   implementation(enforcedPlatform("com.squareup.wire:wire-bom:5.2.1"))
   implementation("com.google.auto.value:auto-value-annotations:1.11.0")
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:7.0.0")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:7.0.1")
   // Needed for japicmp but not automatically brought in for some reason.
   implementation("com.google.guava:guava:33.4.0-jre")
   implementation("com.squareup:javapoet:1.13.0")
