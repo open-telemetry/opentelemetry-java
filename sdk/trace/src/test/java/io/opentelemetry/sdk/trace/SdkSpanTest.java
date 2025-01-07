@@ -63,11 +63,16 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -1336,15 +1341,61 @@ class SdkSpanTest {
     verify(spanProcessor, never()).onEnd(any());
   }
 
-  @Test
-  void setStatusCannotOverrideStatusOK() {
+  @ParameterizedTest
+  @MethodSource("setStatusArgs")
+  void setStatus(Consumer<Span> spanConsumer, StatusData expectedSpanData) {
     SdkSpan testSpan = createTestRootSpan();
-    testSpan.setStatus(StatusCode.OK);
-    assertThat(testSpan.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.OK);
-    testSpan.setStatus(StatusCode.ERROR);
-    assertThat(testSpan.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.OK);
-    testSpan.setStatus(StatusCode.UNSET);
-    assertThat(testSpan.toSpanData().getStatus().getStatusCode()).isEqualTo(StatusCode.OK);
+    spanConsumer.accept(testSpan);
+    assertThat(testSpan.toSpanData().getStatus()).isEqualTo(expectedSpanData);
+  }
+
+  private static Stream<Arguments> setStatusArgs() {
+    return Stream.of(
+        // Default status is UNSET
+        Arguments.of(spanConsumer(span -> {}), StatusData.unset()),
+        // Simple cases
+        Arguments.of(spanConsumer(span -> span.setStatus(StatusCode.OK)), StatusData.ok()),
+        Arguments.of(spanConsumer(span -> span.setStatus(StatusCode.ERROR)), StatusData.error()),
+        // UNSET is ignored
+        Arguments.of(
+            spanConsumer(span -> span.setStatus(StatusCode.OK).setStatus(StatusCode.UNSET)),
+            StatusData.ok()),
+        Arguments.of(
+            spanConsumer(span -> span.setStatus(StatusCode.ERROR).setStatus(StatusCode.UNSET)),
+            StatusData.error()),
+        // Description is ignored unless status is ERROR
+        Arguments.of(
+            spanConsumer(span -> span.setStatus(StatusCode.UNSET, "description")),
+            StatusData.unset()),
+        Arguments.of(
+            spanConsumer(span -> span.setStatus(StatusCode.OK, "description")), StatusData.ok()),
+        Arguments.of(
+            spanConsumer(span -> span.setStatus(StatusCode.ERROR, "description")),
+            StatusData.create(StatusCode.ERROR, "description")),
+        // ERROR is ignored if status is OK
+        Arguments.of(
+            spanConsumer(
+                span -> span.setStatus(StatusCode.OK).setStatus(StatusCode.ERROR, "description")),
+            StatusData.ok()),
+        // setStatus ignored after span is ended
+        Arguments.of(
+            spanConsumer(
+                span -> {
+                  span.end();
+                  span.setStatus(StatusCode.OK);
+                }),
+            StatusData.unset()),
+        Arguments.of(
+            spanConsumer(
+                span -> {
+                  span.end();
+                  span.setStatus(StatusCode.ERROR);
+                }),
+            StatusData.unset()));
+  }
+
+  private static Consumer<Span> spanConsumer(Consumer<Span> spanConsumer) {
+    return spanConsumer;
   }
 
   private SdkSpan createTestSpanWithAttributes(Map<AttributeKey, Object> attributes) {
