@@ -99,13 +99,13 @@ public interface ProfileData {
   }
 
   /**
-   * Returns profile-wide attributes. Attribute keys MUST be unique (it is not allowed to have more
-   * than one attribute with the same key).
+   * Returns indexes of profile-wide attributes, referencing to Profile.attribute_table. Attribute
+   * keys MUST be unique (it is not allowed to have more than one attribute with the same key).
    *
    * @see
    *     "https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/common/README.md#attribute"
    */
-  Attributes getAttributes();
+  List<Integer> getAttributeIndices();
 
   /**
    * Returns the total number of attributes that were recorded on this profile.

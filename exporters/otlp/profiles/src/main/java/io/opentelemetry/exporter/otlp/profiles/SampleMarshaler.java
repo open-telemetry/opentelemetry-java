@@ -21,7 +21,7 @@ final class SampleMarshaler extends MarshalerWithSize {
   private final int locationsStartIndex;
   private final int locationsLength;
   private final List<Long> values;
-  private final List<Integer> attributesIndices;
+  private final List<Integer> attributeIndices;
   @Nullable private final Integer linkIndex;
   private final List<Long> timestamps;
 
@@ -59,21 +59,16 @@ final class SampleMarshaler extends MarshalerWithSize {
       int locationsStartIndex,
       int locationsLength,
       List<Long> values,
-      List<Integer> attributesIndices,
+      List<Integer> attributeIndices,
       @Nullable Integer linkIndex,
       List<Long> timestamps) {
     super(
         calculateSize(
-            locationsStartIndex,
-            locationsLength,
-            values,
-            attributesIndices,
-            linkIndex,
-            timestamps));
+            locationsStartIndex, locationsLength, values, attributeIndices, linkIndex, timestamps));
     this.locationsStartIndex = locationsStartIndex;
     this.locationsLength = locationsLength;
     this.values = values;
-    this.attributesIndices = attributesIndices;
+    this.attributeIndices = attributeIndices;
     this.linkIndex = linkIndex;
     this.timestamps = timestamps;
   }
@@ -83,7 +78,7 @@ final class SampleMarshaler extends MarshalerWithSize {
     output.serializeInt32(Sample.LOCATIONS_START_INDEX, locationsStartIndex);
     output.serializeInt32(Sample.LOCATIONS_LENGTH, locationsLength);
     output.serializeRepeatedInt64(Sample.VALUE, values);
-    output.serializeRepeatedInt32(Sample.ATTRIBUTE_INDICES, attributesIndices);
+    output.serializeRepeatedInt32(Sample.ATTRIBUTE_INDICES, attributeIndices);
     output.serializeInt32Optional(Sample.LINK_INDEX, linkIndex);
     output.serializeRepeatedUInt64(Sample.TIMESTAMPS_UNIX_NANO, timestamps);
   }
@@ -92,7 +87,7 @@ final class SampleMarshaler extends MarshalerWithSize {
       int locationsStartIndex,
       int locationsLength,
       List<Long> values,
-      List<Integer> attributesIndices,
+      List<Integer> attributeIndices,
       @Nullable Integer linkIndex,
       List<Long> timestamps) {
     int size;
@@ -100,7 +95,7 @@ final class SampleMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeInt32(Sample.LOCATIONS_START_INDEX, locationsStartIndex);
     size += MarshalerUtil.sizeInt32(Sample.LOCATIONS_LENGTH, locationsLength);
     size += MarshalerUtil.sizeRepeatedInt64(Sample.VALUE, values);
-    size += MarshalerUtil.sizeRepeatedInt32(Sample.ATTRIBUTE_INDICES, attributesIndices);
+    size += MarshalerUtil.sizeRepeatedInt32(Sample.ATTRIBUTE_INDICES, attributeIndices);
     size += MarshalerUtil.sizeInt32Optional(Sample.LINK_INDEX, linkIndex);
     size += MarshalerUtil.sizeRepeatedUInt64(Sample.TIMESTAMPS_UNIX_NANO, timestamps);
     return size;
