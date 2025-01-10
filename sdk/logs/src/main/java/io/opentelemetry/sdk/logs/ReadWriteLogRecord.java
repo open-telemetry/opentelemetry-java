@@ -53,8 +53,8 @@ public interface ReadWriteLogRecord {
   LogRecordData toLogRecordData();
 
   /**
-   * Returns the value of a given attribute if it exists. This is the equivalent of calling
-   * {@code getAttributes().get(key)}.
+   * Returns the value of a given attribute if it exists. This is the equivalent of calling {@code
+   * getAttributes().get(key)}.
    *
    * @since 1.46.0
    */
