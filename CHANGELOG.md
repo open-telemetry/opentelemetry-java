@@ -2,6 +2,35 @@
 
 ## Unreleased
 
+### SDK
+
+* Remove unused dependencies, cleanup code after stabilizing Value
+  ([#6948](https://github.com/open-telemetry/opentelemetry-java/pull/6948))
+* Explicitly allow null into CompletableResultCode.failExceptionally()
+  ([#6963](https://github.com/open-telemetry/opentelemetry-java/pull/6963))
+
+#### Traces
+
+* Fix span setStatus
+  ([#6990](https://github.com/open-telemetry/opentelemetry-java/pull/6990))
+
+#### Logs
+
+* Add getters/accessors for readable fields in ReadWriteLogRecord.
+  ([#6924](https://github.com/open-telemetry/opentelemetry-java/pull/6924))
+
+#### Exporters
+
+* OTLP: Ensure Serializer runtime exceptions are rethrown as IOException
+  ([#6969](https://github.com/open-telemetry/opentelemetry-java/pull/6969))
+* BREAKING - OTLP: Delete OTLP authenticator concept
+  ([#6984](https://github.com/open-telemetry/opentelemetry-java/pull/6984))
+
+#### Extensions
+
+* BREAKING - Autoconfigure: Remove support for deprecated otel.experimental.resource.disabled.keys
+  ([#6931](https://github.com/open-telemetry/opentelemetry-java/pull/6931))
+
 ## Version 1.45.0 (2024-12-06)
 
 ### API
