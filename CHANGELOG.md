@@ -21,7 +21,9 @@
 
 #### Exporters
 
-* OTLP: Ensure Serializer runtime exceptions are rethrown as IOException
+* OTLP: Update to opentelemetry-proto 1.5
+  ([#6999](https://github.com/open-telemetry/opentelemetry-java/pull/6999))
+* Bugfix - OTLP: Ensure Serializer runtime exceptions are rethrown as IOException
   ([#6969](https://github.com/open-telemetry/opentelemetry-java/pull/6969))
 * BREAKING - OTLP: Delete OTLP authenticator concept
   ([#6984](https://github.com/open-telemetry/opentelemetry-java/pull/6984))
