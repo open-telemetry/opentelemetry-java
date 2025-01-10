@@ -25,7 +25,9 @@
   ([#6999](https://github.com/open-telemetry/opentelemetry-java/pull/6999))
 * Bugfix - OTLP: Ensure Serializer runtime exceptions are rethrown as IOException
   ([#6969](https://github.com/open-telemetry/opentelemetry-java/pull/6969))
-* BREAKING - OTLP: Delete OTLP authenticator concept
+* BREAKING - OTLP: Delete experimental OTLP authenticator concept.
+  See [OTLP authentication docs](https://opentelemetry.io/docs/languages/java/sdk/#authentication)
+  for supported solutions.
   ([#6984](https://github.com/open-telemetry/opentelemetry-java/pull/6984))
 
 #### Extensions
