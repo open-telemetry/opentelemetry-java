@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.46.0 (2025-01-10)
+
 ### SDK
 
 * Remove unused dependencies, cleanup code after stabilizing Value
