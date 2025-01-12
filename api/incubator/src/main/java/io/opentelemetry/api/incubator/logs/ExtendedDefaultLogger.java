@@ -17,7 +17,8 @@ import java.util.concurrent.TimeUnit;
 class ExtendedDefaultLogger implements ExtendedLogger {
 
   private static final Logger INSTANCE = new ExtendedDefaultLogger();
-  private static final LogRecordBuilder NOOP_LOG_RECORD_BUILDER = new NoopLogRecordBuilder();
+  private static final ExtendedLogRecordBuilder NOOP_LOG_RECORD_BUILDER =
+      new NoopExtendedLogRecordBuilder();
 
   private ExtendedDefaultLogger() {}
 
@@ -26,13 +27,18 @@ class ExtendedDefaultLogger implements ExtendedLogger {
   }
 
   @Override
-  public LogRecordBuilder logRecordBuilder() {
+  public ExtendedLogRecordBuilder logRecordBuilder() {
     return NOOP_LOG_RECORD_BUILDER;
   }
 
-  private static final class NoopLogRecordBuilder implements ExtendedLogRecordBuilder {
+  private static final class NoopExtendedLogRecordBuilder implements ExtendedLogRecordBuilder {
 
-    private NoopLogRecordBuilder() {}
+    private NoopExtendedLogRecordBuilder() {}
+
+    @Override
+    public ExtendedLogRecordBuilder setEventName(String eventName) {
+      return this;
+    }
 
     @Override
     public LogRecordBuilder setTimestamp(long timestamp, TimeUnit unit) {

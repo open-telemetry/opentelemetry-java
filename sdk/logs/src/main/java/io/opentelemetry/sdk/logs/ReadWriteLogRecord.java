@@ -52,6 +52,8 @@ public interface ReadWriteLogRecord {
   /** Return an immutable {@link LogRecordData} instance representing this log record. */
   LogRecordData toLogRecordData();
 
+  // TODO (trask) once event name stabilizes, add getEventName()
+
   /**
    * Returns the value of a given attribute if it exists. This is the equivalent of calling {@code
    * getAttributes().get(key)}.

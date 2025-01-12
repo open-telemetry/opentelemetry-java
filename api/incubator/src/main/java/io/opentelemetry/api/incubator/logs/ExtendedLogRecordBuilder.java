@@ -10,6 +10,7 @@ import io.opentelemetry.api.logs.LogRecordBuilder;
 /** Extended {@link LogRecordBuilder} with experimental APIs. */
 public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
 
-  // Nothing at the moment, but experimental methods may be added in the future.
+  // keep this class even if it is empty, since experimental methods may be added in the future.
 
+  ExtendedLogRecordBuilder setEventName(String eventName);
 }

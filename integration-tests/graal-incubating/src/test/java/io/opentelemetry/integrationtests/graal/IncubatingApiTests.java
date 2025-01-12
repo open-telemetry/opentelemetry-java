@@ -7,7 +7,6 @@ package io.opentelemetry.integrationtests.graal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.incubator.logs.ExtendedLogger;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleCounter;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleGauge;
@@ -53,7 +52,7 @@ class IncubatingApiTests {
 
     ExtendedLogger logger = (ExtendedLogger) loggerProvider.get("logger");
     logger.isEnabled();
-    ((ExtendedLogRecordBuilder) logger.logRecordBuilder()).setBody("message").emit();
+    logger.logRecordBuilder().setBody("message").emit();
   }
 
   @Test
