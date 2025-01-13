@@ -114,7 +114,7 @@ class LongRandomFixedSizeExemplarReservoirTest {
           @Override
           public int nextInt(int max) {
             switch (max) {
-                // Force one sample in bucket 1 and two in bucket 0.
+              // Force one sample in bucket 1 and two in bucket 0.
               case 2:
                 return 1;
               default:

@@ -16,7 +16,6 @@ dependencies {
   protoSource("io.opentelemetry.proto:opentelemetry-proto:${versions["io.opentelemetry.proto"]}")
 
   api(project(":exporters:common"))
-  implementation(project(":api:incubator"))
 
   compileOnly(project(":sdk:metrics"))
   compileOnly(project(":sdk:trace"))
@@ -32,6 +31,7 @@ dependencies {
   testImplementation("com.google.guava:guava")
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
 
+  jmhImplementation(project(":api:incubator"))
   jmhImplementation(project(":sdk:testing"))
   jmhImplementation("com.fasterxml.jackson.core:jackson-core")
   jmhImplementation("io.opentelemetry.proto:opentelemetry-proto")
