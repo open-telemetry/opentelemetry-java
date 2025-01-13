@@ -7,7 +7,6 @@ package io.opentelemetry.integrationtests.graal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.incubator.logs.ExtendedLogger;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleCounter;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleGauge;
@@ -18,7 +17,6 @@ import io.opentelemetry.api.incubator.metrics.ExtendedLongCounterBuilder;
 import io.opentelemetry.api.incubator.metrics.ExtendedLongGauge;
 import io.opentelemetry.api.incubator.metrics.ExtendedLongHistogram;
 import io.opentelemetry.api.incubator.metrics.ExtendedLongUpDownCounter;
-import io.opentelemetry.api.incubator.trace.ExtendedSpanBuilder;
 import io.opentelemetry.api.incubator.trace.ExtendedTracer;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.Meter;
@@ -53,7 +51,7 @@ class IncubatingApiTests {
 
     ExtendedLogger logger = (ExtendedLogger) loggerProvider.get("logger");
     logger.isEnabled();
-    ((ExtendedLogRecordBuilder) logger.logRecordBuilder()).setBody("message").emit();
+    logger.logRecordBuilder().setBody("message").emit();
   }
 
   @Test
@@ -64,7 +62,7 @@ class IncubatingApiTests {
 
     ExtendedTracer tracer = (ExtendedTracer) tracerProvider.get("tracer");
     tracer.isEnabled();
-    ((ExtendedSpanBuilder) tracer.spanBuilder("span")).startAndRun(() -> {});
+    tracer.spanBuilder("span").startAndRun(() -> {});
   }
 
   @Test
