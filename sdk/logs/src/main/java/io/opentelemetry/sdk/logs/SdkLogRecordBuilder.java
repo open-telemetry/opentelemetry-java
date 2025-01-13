@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
@@ -19,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 /** SDK implementation of {@link LogRecordBuilder}. */
-final class SdkLogRecordBuilder implements ExtendedLogRecordBuilder {
+class SdkLogRecordBuilder implements LogRecordBuilder {
 
   private final LoggerSharedState loggerSharedState;
   private final LogLimits logLimits;
