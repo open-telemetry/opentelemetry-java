@@ -2,6 +2,41 @@
 
 ## Unreleased
 
+## Version 1.46.0 (2025-01-10)
+
+### SDK
+
+* Remove unused dependencies, cleanup code after stabilizing Value
+  ([#6948](https://github.com/open-telemetry/opentelemetry-java/pull/6948))
+* Explicitly allow null into CompletableResultCode.failExceptionally()
+  ([#6963](https://github.com/open-telemetry/opentelemetry-java/pull/6963))
+
+#### Traces
+
+* Fix span setStatus
+  ([#6990](https://github.com/open-telemetry/opentelemetry-java/pull/6990))
+
+#### Logs
+
+* Add getters/accessors for readable fields in ReadWriteLogRecord.
+  ([#6924](https://github.com/open-telemetry/opentelemetry-java/pull/6924))
+
+#### Exporters
+
+* OTLP: Update to opentelemetry-proto 1.5
+  ([#6999](https://github.com/open-telemetry/opentelemetry-java/pull/6999))
+* Bugfix - OTLP: Ensure Serializer runtime exceptions are rethrown as IOException
+  ([#6969](https://github.com/open-telemetry/opentelemetry-java/pull/6969))
+* BREAKING - OTLP: Delete experimental OTLP authenticator concept.
+  See [OTLP authentication docs](https://opentelemetry.io/docs/languages/java/sdk/#authentication)
+  for supported solutions.
+  ([#6984](https://github.com/open-telemetry/opentelemetry-java/pull/6984))
+
+#### Extensions
+
+* BREAKING - Autoconfigure: Remove support for deprecated otel.experimental.resource.disabled.keys
+  ([#6931](https://github.com/open-telemetry/opentelemetry-java/pull/6931))
+
 ## Version 1.45.0 (2024-12-06)
 
 ### API
@@ -521,7 +556,7 @@
 have stopped being published. Jaeger
 has [native support for OTLP](https://opentelemetry.io/blog/2022/jaeger-native-otlp/), and users
 should export to jaeger
-using [OTLP](https://opentelemetry.io/docs/instrumentation/java/exporters/#otlp-dependencies)
+using OTLP
 instead.
 
 ### API
@@ -605,7 +640,7 @@ instead.
 and `opentelemetry-exporter-jaeger-thift`. Jaeger
 has [native support for OTLP](https://opentelemetry.io/blog/2022/jaeger-native-otlp/), and users
 should export to jaeger
-using [OTLP](https://opentelemetry.io/docs/instrumentation/java/exporters/#otlp-dependencies)
+using OTLP
 instead.
 
 ### API
@@ -1042,7 +1077,7 @@ The log bridge API / SDK are now stable! Some important notes:
   of `otel.logs.exporter` from `none` to `otlp`.
 
 NOTE: reminder that
-the [Logs Bridge API](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/bridge-api.md)
+the [Logs Bridge API](https://github.com/open-telemetry/opentelemetry-specification/blob/v1.21.0/specification/logs/bridge-api.md)
 is _not_ meant for end users. Log appenders use the API to bridge logs from existing log
 frameworks (e.g. JUL, Log4j, SLf4J, Logback) into OpenTelemetry. Users configure the Log SDK to
 dictate how logs are processed and exported.
@@ -1110,7 +1145,7 @@ merged into `opentelemetry-exporter-otlp`, `opentelemetry-sdk-logs-testing` will
 into `opentelemetry-sdk-testing`, `opentelemetry-sdk-extension-autoconfigure` will enable `otlp`
 log exporter by default (i.e. `otel.logs.exporter=otlp`). For more details, see tracking
 issue [#5340](https://github.com/open-telemetry/opentelemetry-java/issues/5340). NOTE: reminder that
-the [Logs Bridge API](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/bridge-api.md)
+the [Logs Bridge API](https://github.com/open-telemetry/opentelemetry-specification/blob/v1.21.0/specification/logs/bridge-api.md)
 is _not_ meant for end users. Log appenders use the API to bridge logs from existing log
 frameworks (e.g. JUL, Log4j, SLf4J, Logback) into OpenTelemetry. Users configure the Log SDK to
 dictate how logs are processed and exported.
@@ -1672,8 +1707,8 @@ log API component has been added for emitting events and for writing log appende
 API is not a substitute for traditional log frameworks like Log4j, JUL, SLF4J, or Logback. While the
 event portion of the API is intended for instrumentation authors and end users, the API for emitting
 LogRecords is not.
-See [LoggerProvider](./api/logs/src/main/java/io/opentelemetry/api/logs/LoggerProvider.java)
-and [Logger](./api/logs/src/main/java/io/opentelemetry/api/logs/Logger.java) javadoc for more
+See [LoggerProvider](./api/all/src/main/java/io/opentelemetry/api/logs/LoggerProvider.java)
+and [Logger](./api/all/src/main/java/io/opentelemetry/api/logs/Logger.java) javadoc for more
 details.
 
 ### General
@@ -1959,7 +1994,7 @@ details.
   stable `opentelemetry-sdk-extension-autoconfigure-spi`.
 * Autoconfigure now supports multiple values for `otel.metrics.exporter`.
 * Autoconfigure now
-  supports [general attribute limits](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/sdk-environment-variables.md#attribute-limits),
+  supports [general attribute limits](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/sdk-environment-variables.md#attribute-limits),
   applicable to span attributes, span event attributes, span link attributes, and log attributes.
 * Autoconfigure now supports an experimental option to disable the SDK.
   If `otel.experimental.sdk.enabled=true`, `AutoConfiguredOpenTelemetrySdk#getOpenTelemetrySdk()`
@@ -3519,7 +3554,7 @@ See the `opentelemetry-extension-kotlin` module for details.
 
 #### Breaking changes
 
-- There have been many updates to the semantic conventions constants. The constants are now auto-generated from the YAML specification files, so the names will now be consistent across languages. For more information, see the [YAML Model for Semantic Conventions](https://github.com/open-telemetry/opentelemetry-specification/tree/master/semantic_conventions).
+- There have been many updates to the semantic conventions constants. The constants are now auto-generated from the YAML specification files, so the names will now be consistent across languages. For more information, see the [YAML Model for Semantic Conventions](https://github.com/open-telemetry/semantic-conventions/tree/main/model#yaml-model-for-semantic-conventions).
 - All API classes have been moved into the `io.opentelemetry.api.` prefix to support JPMS users.
 - The API no longer uses the `grpc-context` as the context implementation. It now uses `io.opentelemetry.context.Context`. This is published in the `opentelemetry-context` artifact. Interactions with the context were mostly moved to static methods in the `Span` and `Baggage` interfaces.
 - The Baggage API has been reworked to more closely match the specification. This includes the removal of the `BaggageManager`. Baggage is fully functional within the API, without needing to install an SDK.
@@ -3550,7 +3585,7 @@ See the `opentelemetry-extension-kotlin` module for details.
 
 #### Breaking changes
 
-- `TraceConfig` configuration option names (environment variables and system properties) were renamed to match the OpenTelemetery Specification. For more information, see [TraceConfig](./QUICKSTART.md#TraceConfig).
+- `TraceConfig` configuration option names (environment variables and system properties) were renamed to match the OpenTelemetery Specification.
 - The Jaeger gRPC exporter was updated to match the OpenTelemetry Specification. The `message` log entry attribute has been renamed to `event` and a new `dropped attributes count` attribute was added. For more information, see the [Overview](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/overview.md).
 - The `SpanData.getHasRemoteParent()` and `SpanData.getHasEnded()` methods were renamed to `hasRemoteParent()` and `hasEnded()`, respectively.
 - The `IdsGenerator` interface has been renamed to `IdGenerator`, and all implementations and relevant factory methods were similarly renamed.

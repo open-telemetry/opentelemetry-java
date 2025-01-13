@@ -34,7 +34,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
   private final List<Integer> comment;
   private final int defaultSampleType;
   private final byte[] profileId;
-  private final KeyValueMarshaler[] attributeMarshalers;
+  private final List<Integer> attributeIndices;
   private final int droppedAttributesCount;
   private final byte[] originalPayloadFormatUtf8;
   private final ByteBuffer originalPayload;
@@ -50,8 +50,8 @@ final class ProfileMarshaler extends MarshalerWithSize {
         LocationMarshaler.createRepeated(profileData.getLocationTable());
     FunctionMarshaler[] functionMarshalers =
         FunctionMarshaler.createRepeated(profileData.getFunctionTable());
-    KeyValueMarshaler[] attributeMarshalers =
-        KeyValueMarshaler.createForAttributes(profileData.getAttributes());
+    KeyValueMarshaler[] attributeTableMarshalers =
+        KeyValueMarshaler.createForAttributes(profileData.getAttributeTable());
     AttributeUnitMarshaler[] attributeUnitsMarshalers =
         AttributeUnitMarshaler.createRepeated(profileData.getAttributeUnits());
     LinkMarshaler[] linkMarshalers = LinkMarshaler.createRepeated(profileData.getLinkTable());
@@ -63,7 +63,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
     }
 
     int droppedAttributesCount =
-        profileData.getTotalAttributeCount() - profileData.getAttributes().size();
+        profileData.getTotalAttributeCount() - profileData.getAttributeIndices().size();
 
     return new ProfileMarshaler(
         sampleTypeMarshalers,
@@ -72,7 +72,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
         locationMarshalers,
         profileData.getLocationIndices(),
         functionMarshalers,
-        attributeMarshalers,
+        attributeTableMarshalers,
         attributeUnitsMarshalers,
         linkMarshalers,
         convertedStrings,
@@ -83,7 +83,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
         profileData.getCommentStrIndices(),
         profileData.getDefaultSampleTypeStringIndex(),
         profileData.getProfileIdBytes(),
-        KeyValueMarshaler.createForAttributes(profileData.getAttributes()),
+        profileData.getAttributeIndices(),
         droppedAttributesCount,
         MarshalerUtil.toBytes(profileData.getOriginalPayloadFormat()),
         profileData.getOriginalPayload());
@@ -107,7 +107,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
       List<Integer> comment,
       int defaultSampleType,
       byte[] profileId,
-      KeyValueMarshaler[] attributeMarshalers,
+      List<Integer> attributeIndices,
       int droppedAttributesCount,
       byte[] originalPayloadFormat,
       ByteBuffer originalPayload) {
@@ -130,7 +130,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
             comment,
             defaultSampleType,
             profileId,
-            attributeMarshalers,
+            attributeIndices,
             droppedAttributesCount,
             originalPayloadFormat,
             originalPayload));
@@ -151,7 +151,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
     this.comment = comment;
     this.defaultSampleType = defaultSampleType;
     this.profileId = profileId;
-    this.attributeMarshalers = attributeMarshalers;
+    this.attributeIndices = attributeIndices;
     this.droppedAttributesCount = droppedAttributesCount;
     this.originalPayloadFormatUtf8 = originalPayloadFormat;
     this.originalPayload = originalPayload;
@@ -177,7 +177,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
     output.serializeInt32(Profile.DEFAULT_SAMPLE_TYPE_STRINDEX, defaultSampleType);
 
     output.serializeBytes(Profile.PROFILE_ID, profileId);
-    output.serializeRepeatedMessage(Profile.ATTRIBUTES, attributeMarshalers);
+    output.serializeRepeatedInt32(Profile.ATTRIBUTE_INDICES, attributeIndices);
     output.serializeUInt32(Profile.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
     output.serializeString(Profile.ORIGINAL_PAYLOAD_FORMAT, originalPayloadFormatUtf8);
     output.serializeByteBuffer(Profile.ORIGINAL_PAYLOAD, originalPayload);
@@ -201,7 +201,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
       List<Integer> comment,
       int defaultSampleType,
       byte[] profileId,
-      KeyValueMarshaler[] attributeMarshalers,
+      List<Integer> attributeIndices,
       int droppedAttributesCount,
       byte[] originalPayloadFormat,
       ByteBuffer originalPayload) {
@@ -225,7 +225,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeInt64(Profile.DEFAULT_SAMPLE_TYPE_STRINDEX, defaultSampleType);
 
     size += MarshalerUtil.sizeBytes(Profile.PROFILE_ID, profileId);
-    size += MarshalerUtil.sizeRepeatedMessage(Profile.ATTRIBUTES, attributeMarshalers);
+    size += MarshalerUtil.sizeRepeatedInt32(Profile.ATTRIBUTE_INDICES, attributeIndices);
     size += MarshalerUtil.sizeInt32(Profile.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
     size += MarshalerUtil.sizeBytes(Profile.ORIGINAL_PAYLOAD_FORMAT, originalPayloadFormat);
     size += MarshalerUtil.sizeByteBuffer(Profile.ORIGINAL_PAYLOAD, originalPayload);

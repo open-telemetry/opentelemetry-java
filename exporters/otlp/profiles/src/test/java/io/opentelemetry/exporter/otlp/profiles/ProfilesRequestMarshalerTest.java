@@ -162,7 +162,7 @@ public class ProfilesRequestMarshalerTest {
             listOf(8, 9),
             0,
             profileId,
-            Attributes.empty(),
+            Collections.emptyList(),
             3,
             "format",
             ByteBuffer.wrap(new byte[] {4, 5}));
