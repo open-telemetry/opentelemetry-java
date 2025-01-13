@@ -11,7 +11,6 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static io.opentelemetry.sdk.trace.internal.TracerConfig.defaultConfig;
 import static io.opentelemetry.sdk.trace.internal.TracerConfig.disabled;
 import static io.opentelemetry.sdk.trace.internal.TracerConfig.enabled;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.trace.ExtendedTracer;
