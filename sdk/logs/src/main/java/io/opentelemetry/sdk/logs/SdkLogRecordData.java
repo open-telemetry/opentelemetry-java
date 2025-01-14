@@ -20,7 +20,7 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @AutoValue.CopyAnnotations
 @Immutable
-abstract class SdkLogRecordData implements LogRecordData, ExtendedLogRecordData {
+abstract class SdkLogRecordData implements ExtendedLogRecordData {
 
   SdkLogRecordData() {}
 
