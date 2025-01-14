@@ -53,6 +53,10 @@ class SdkTracer implements Tracer {
         : new SdkTracer(sharedState, instrumentationScopeInfo, tracerConfig);
   }
 
+  /**
+   * Note that {@link ExtendedSdkTracer#spanBuilder(String)} calls this and depends on it returning
+   * {@link ExtendedSdkTracer} in all cases when the incubator is present.
+   */
   @Override
   public SpanBuilder spanBuilder(String spanName) {
     if (!tracerEnabled) {
@@ -62,8 +66,7 @@ class SdkTracer implements Tracer {
       spanName = FALLBACK_SPAN_NAME;
     }
     if (sharedState.hasBeenShutdown()) {
-      Tracer tracer = TracerProvider.noop().get(instrumentationScopeInfo.getName());
-      return tracer.spanBuilder(spanName);
+      return NOOP_TRACER.spanBuilder(spanName);
     }
     return INCUBATOR_AVAILABLE
         ? IncubatingUtil.createExtendedSpanBuilder(
