@@ -15,8 +15,6 @@ import javax.annotation.Nullable;
  */
 public interface ExtendedLogRecordData extends LogRecordData {
 
-  // keep this class even if it is empty, since experimental methods may be added in the future.
-
   @Nullable
   String getEventName();
 }
