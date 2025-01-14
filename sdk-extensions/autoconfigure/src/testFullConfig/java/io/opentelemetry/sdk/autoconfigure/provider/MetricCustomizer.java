@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+/** Behavior asserted in {@link io.opentelemetry.sdk.autoconfigure.FullConfigTest}. */
 public class MetricCustomizer implements AutoConfigurationCustomizerProvider {
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
