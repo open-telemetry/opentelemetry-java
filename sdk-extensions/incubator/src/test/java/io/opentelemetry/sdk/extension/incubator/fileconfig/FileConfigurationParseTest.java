@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AggregationModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOffModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOffSamplerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
@@ -19,9 +19,9 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchS
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ClientModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorsModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramAggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.GeneralInstrumentationModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.HttpModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.HttpInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.InstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LanguageSpecificInstrumentationModel;
@@ -33,12 +33,12 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterP
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricProducerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.NameStringValuePairModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenCensusMetricProducerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpencensusModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpMetricExporterModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBasedModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBasedSamplerModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeerInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PrometheusMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PropagatorModel;
@@ -56,7 +56,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanEx
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.StreamModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceIdRatioBasedModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceIdRatioBasedSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ZipkinSpanExporterModel;
@@ -107,35 +107,35 @@ class FileConfigurationParseTest {
                     new AttributeNameValueModel()
                         .withName("string_key")
                         .withValue("value")
-                        .withType(AttributeNameValueModel.Type.STRING),
+                        .withType(AttributeNameValueModel.AttributeType.STRING),
                     new AttributeNameValueModel()
                         .withName("bool_key")
                         .withValue(true)
-                        .withType(AttributeNameValueModel.Type.BOOL),
+                        .withType(AttributeNameValueModel.AttributeType.BOOL),
                     new AttributeNameValueModel()
                         .withName("int_key")
                         .withValue(1)
-                        .withType(AttributeNameValueModel.Type.INT),
+                        .withType(AttributeNameValueModel.AttributeType.INT),
                     new AttributeNameValueModel()
                         .withName("double_key")
                         .withValue(1.1)
-                        .withType(AttributeNameValueModel.Type.DOUBLE),
+                        .withType(AttributeNameValueModel.AttributeType.DOUBLE),
                     new AttributeNameValueModel()
                         .withName("string_array_key")
                         .withValue(Arrays.asList("value1", "value2"))
-                        .withType(AttributeNameValueModel.Type.STRING_ARRAY),
+                        .withType(AttributeNameValueModel.AttributeType.STRING_ARRAY),
                     new AttributeNameValueModel()
                         .withName("bool_array_key")
                         .withValue(Arrays.asList(true, false))
-                        .withType(AttributeNameValueModel.Type.BOOL_ARRAY),
+                        .withType(AttributeNameValueModel.AttributeType.BOOL_ARRAY),
                     new AttributeNameValueModel()
                         .withName("int_array_key")
                         .withValue(Arrays.asList(1, 2))
-                        .withType(AttributeNameValueModel.Type.INT_ARRAY),
+                        .withType(AttributeNameValueModel.AttributeType.INT_ARRAY),
                     new AttributeNameValueModel()
                         .withName("double_array_key")
                         .withValue(Arrays.asList(1.1, 2.2))
-                        .withType(AttributeNameValueModel.Type.DOUBLE_ARRAY)))
+                        .withType(AttributeNameValueModel.AttributeType.DOUBLE_ARRAY)))
             .withAttributesList("service.namespace=my-namespace,service.version=1.0.0")
             .withDetectors(
                 new DetectorsModel()
@@ -173,16 +173,19 @@ class FileConfigurationParseTest {
     SamplerModel sampler =
         new SamplerModel()
             .withParentBased(
-                new ParentBasedModel()
+                new ParentBasedSamplerModel()
                     .withRoot(
                         new SamplerModel()
-                            .withTraceIdRatioBased(new TraceIdRatioBasedModel().withRatio(0.0001)))
-                    .withRemoteParentSampled(new SamplerModel().withAlwaysOn(new AlwaysOnModel()))
+                            .withTraceIdRatioBased(
+                                new TraceIdRatioBasedSamplerModel().withRatio(0.0001)))
+                    .withRemoteParentSampled(
+                        new SamplerModel().withAlwaysOn(new AlwaysOnSamplerModel()))
                     .withRemoteParentNotSampled(
-                        new SamplerModel().withAlwaysOff(new AlwaysOffModel()))
-                    .withLocalParentSampled(new SamplerModel().withAlwaysOn(new AlwaysOnModel()))
+                        new SamplerModel().withAlwaysOff(new AlwaysOffSamplerModel()))
+                    .withLocalParentSampled(
+                        new SamplerModel().withAlwaysOn(new AlwaysOnSamplerModel()))
                     .withLocalParentNotSampled(
-                        new SamplerModel().withAlwaysOff(new AlwaysOffModel())));
+                        new SamplerModel().withAlwaysOff(new AlwaysOffSamplerModel())));
     tracerProvider.withSampler(sampler);
 
     SpanProcessorModel spanProcessor1 =
@@ -294,7 +297,8 @@ class FileConfigurationParseTest {
                                                 Collections.singletonList("service.attr1")))))
                     .withProducers(
                         Collections.singletonList(
-                            new MetricProducerModel().withOpencensus(new OpencensusModel()))));
+                            new MetricProducerModel()
+                                .withOpencensus(new OpenCensusMetricProducerModel()))));
     MetricReaderModel metricReader2 =
         new MetricReaderModel()
             .withPeriodic(
@@ -352,7 +356,7 @@ class FileConfigurationParseTest {
                     .withAggregation(
                         new AggregationModel()
                             .withExplicitBucketHistogram(
-                                new ExplicitBucketHistogramModel()
+                                new ExplicitBucketHistogramAggregationModel()
                                     .withBoundaries(
                                         Arrays.asList(
                                             0.0, 5.0, 10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0,
@@ -374,7 +378,7 @@ class FileConfigurationParseTest {
             .withGeneral(
                 new GeneralInstrumentationModel()
                     .withPeer(
-                        new PeerModel()
+                        new PeerInstrumentationModel()
                             .withServiceMapping(
                                 Arrays.asList(
                                     new ServiceMappingModel()
@@ -384,7 +388,7 @@ class FileConfigurationParseTest {
                                         .withPeer("2.3.4.5")
                                         .withService("BarService"))))
                     .withHttp(
-                        new HttpModel()
+                        new HttpInstrumentationModel()
                             .withClient(
                                 new ClientModel()
                                     .withRequestCapturedHeaders(
@@ -566,7 +570,7 @@ class FileConfigurationParseTest {
                     new TracerProviderModel()
                         .withSampler(
                             new SamplerModel()
-                                .withTraceIdRatioBased(new TraceIdRatioBasedModel()))));
+                                .withTraceIdRatioBased(new TraceIdRatioBasedSamplerModel()))));
   }
 
   @ParameterizedTest

@@ -23,7 +23,7 @@ import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
@@ -256,7 +256,8 @@ class OpenTelemetryConfigurationFactoryTest {
                                     .withLinkCountLimit(4)
                                     .withEventAttributeCountLimit(5)
                                     .withLinkAttributeCountLimit(6))
-                            .withSampler(new SamplerModel().withAlwaysOn(new AlwaysOnModel()))
+                            .withSampler(
+                                new SamplerModel().withAlwaysOn(new AlwaysOnSamplerModel()))
                             .withProcessors(
                                 Collections.singletonList(
                                     new SpanProcessorModel()
