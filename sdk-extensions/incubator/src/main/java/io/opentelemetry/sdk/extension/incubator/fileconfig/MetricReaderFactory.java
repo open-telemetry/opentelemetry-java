@@ -15,7 +15,9 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Promet
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
 import java.io.Closeable;
 import java.time.Duration;
@@ -38,11 +40,10 @@ final class MetricReaderFactory implements Factory<MetricReaderModel, MetricRead
     if (periodicModel != null) {
       PushMetricExporterModel exporterModel =
           requireNonNull(periodicModel.getExporter(), "periodic metric reader exporter");
-      io.opentelemetry.sdk.metrics.export.MetricExporter metricExporter =
+      MetricExporter metricExporter =
           MetricExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
       PeriodicMetricReaderBuilder builder =
-          io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
-              FileConfigUtil.addAndReturn(closeables, metricExporter));
+          PeriodicMetricReader.builder(FileConfigUtil.addAndReturn(closeables, metricExporter));
       if (periodicModel.getInterval() != null) {
         builder.setInterval(Duration.ofMillis(periodicModel.getInterval()));
       }

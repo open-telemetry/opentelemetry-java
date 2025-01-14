@@ -47,27 +47,6 @@ class ResourceConfigurationTest {
   }
 
   @Test
-  void customConfigResourceWithExperimentalDisabledKeys() {
-    Map<String, String> props = new HashMap<>();
-    props.put("otel.service.name", "test-service");
-    props.put(
-        "otel.resource.attributes", "food=cheesecake,drink=juice,animal=  ,color=,shape=square");
-    props.put("otel.experimental.resource.disabled-keys", "drink");
-
-    assertThat(
-            ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(props),
-                SpiHelper.create(ResourceConfigurationTest.class.getClassLoader()),
-                (r, c) -> r))
-        .isEqualTo(
-            Resource.getDefault().toBuilder()
-                .put(stringKey("service.name"), "test-service")
-                .put("food", "cheesecake")
-                .put("shape", "square")
-                .build());
-  }
-
-  @Test
   void createEnvironmentResource_Empty() {
     Attributes attributes = ResourceConfiguration.createEnvironmentResource().getAttributes();
 

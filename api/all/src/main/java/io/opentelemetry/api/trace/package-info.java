@@ -18,7 +18,6 @@
  * io.opentelemetry.context.Context} and between process using one of the wire propagation formats
  * supported in the {@code opentelemetry.trace.propagation} package.
  */
-// TODO: Add code examples.
 @ParametersAreNonnullByDefault
 package io.opentelemetry.api.trace;
 

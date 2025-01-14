@@ -13,7 +13,6 @@ import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
 import io.netty.handler.ssl.SslContext;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
-import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -106,12 +105,6 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   @Override
   public TelemetryExporterBuilder<T> setHeaders(Supplier<Map<String, String>> headerSupplier) {
     delegate.setHeaders(headerSupplier);
-    return this;
-  }
-
-  @Override
-  public TelemetryExporterBuilder<T> setAuthenticator(Authenticator authenticator) {
-    delegate.setAuthenticator(authenticator);
     return this;
   }
 

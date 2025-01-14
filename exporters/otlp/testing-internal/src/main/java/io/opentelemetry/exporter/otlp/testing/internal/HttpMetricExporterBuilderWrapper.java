@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal;
 
-import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -72,12 +71,6 @@ public class HttpMetricExporterBuilderWrapper implements TelemetryExporterBuilde
   public TelemetryExporterBuilder<MetricData> setHeaders(
       Supplier<Map<String, String>> headerSupplier) {
     builder.setHeaders(headerSupplier);
-    return this;
-  }
-
-  @Override
-  public TelemetryExporterBuilder<MetricData> setAuthenticator(Authenticator authenticator) {
-    Authenticator.setAuthenticatorOnDelegate(builder, authenticator);
     return this;
   }
 

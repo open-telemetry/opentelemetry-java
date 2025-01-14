@@ -18,7 +18,7 @@ changes are:
   reordering parameters, adding a method to an interface or abstract class without adding a default
   implementation.
 
-- ABI changes that could require code using the artifact to be recompiled, but not changed, e.g.,
+- [ABI](https://wikipedia.org/wiki/Application_binary_interface) changes that could require code using the artifact to be recompiled, but not changed, e.g.,
   changing the return type of a method from `void` to non-`void`, changing a `class` to an `interface`.
   The [JLS](https://docs.oracle.com/javase/specs/jls/se7/html/jls-13.html) has more information on
   what constitutes compatible changes.
