@@ -291,10 +291,10 @@ class FileConfigurationParseTest {
                                         new IncludeExcludeModel()
                                             .withIncluded(Collections.singletonList("service*"))
                                             .withExcluded(
-                                                Collections.singletonList("service.attr1"))))))
-            .withProducers(
-                Collections.singletonList(
-                    new MetricProducerModel().withOpencensus(new OpencensusModel())));
+                                                Collections.singletonList("service.attr1")))))
+                    .withProducers(
+                        Collections.singletonList(
+                            new MetricProducerModel().withOpencensus(new OpencensusModel()))));
     MetricReaderModel metricReader2 =
         new MetricReaderModel()
             .withPeriodic(
@@ -323,10 +323,10 @@ class FileConfigurationParseTest {
                                     .withDefaultHistogramAggregation(
                                         OtlpHttpMetricExporterModel
                                             .ExporterDefaultHistogramAggregation
-                                            .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM))))
-            .withProducers(
-                Collections.singletonList(
-                    new MetricProducerModel().withAdditionalProperty("prometheus", null)));
+                                            .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)))
+                    .withProducers(
+                        Collections.singletonList(
+                            new MetricProducerModel().withAdditionalProperty("prometheus", null))));
     MetricReaderModel metricReader3 =
         new MetricReaderModel()
             .withPeriodic(
