@@ -31,7 +31,7 @@ public final class ZipkinSpanExporterBuilder {
   // compression is enabled by default, because this is the default of OkHttpSender,
   // which is created when no custom sender is set (see OkHttpSender.Builder)
   private boolean compressionEnabled = true;
-  private long readTimeoutMillis = TimeUnit.SECONDS.toMillis(10);
+  private int readTimeoutMillis = (int) TimeUnit.SECONDS.toMillis(10);
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
 
   /**
@@ -156,7 +156,8 @@ public final class ZipkinSpanExporterBuilder {
   public ZipkinSpanExporterBuilder setReadTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
-    this.readTimeoutMillis = unit.toMillis(timeout);
+    long timeoutMillis = timeout == 0 ? Long.MAX_VALUE : unit.toMillis(timeout);
+    this.readTimeoutMillis = (int) Math.min(timeoutMillis, Integer.MAX_VALUE);
     return this;
   }
 
@@ -212,7 +213,7 @@ public final class ZipkinSpanExporterBuilder {
           OkHttpSender.newBuilder()
               .endpoint(endpoint)
               .compressionEnabled(compressionEnabled)
-              .readTimeout((int) readTimeoutMillis)
+              .readTimeout(readTimeoutMillis)
               .build();
     }
     OtelToZipkinSpanTransformer transformer =

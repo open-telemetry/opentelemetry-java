@@ -815,13 +815,28 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressWarnings("PreferJavaTimeOverload")
   void validConfig() {
-    assertThatCode(() -> exporterBuilder().setTimeout(0, TimeUnit.MILLISECONDS))
+    // We must build exporters to test timeout settings, which intersect with underlying client
+    // implementations and may convert between Duration, int, and long, which may be susceptible to
+    // overflow exceptions.
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setTimeout(0, TimeUnit.MILLISECONDS)))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setTimeout(Duration.ofMillis(0)))
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setTimeout(Duration.ofMillis(0))))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setTimeout(10, TimeUnit.MILLISECONDS))
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setTimeout(10, TimeUnit.MILLISECONDS)))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setTimeout(Duration.ofMillis(10)))
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setTimeout(Duration.ofMillis(10))))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setConnectTimeout(0, TimeUnit.MILLISECONDS)))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setConnectTimeout(Duration.ofMillis(0))))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setConnectTimeout(10, TimeUnit.MILLISECONDS)))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setConnectTimeout(Duration.ofMillis(10))))
         .doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().setEndpoint("http://localhost:4317"))
@@ -844,6 +859,11 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThatCode(
             () -> exporterBuilder().setTrustedCertificates(certificate.certificate().getEncoded()))
         .doesNotThrowAnyException();
+  }
+
+  private void buildAndShutdown(TelemetryExporterBuilder<T> builder) {
+    TelemetryExporter<T> build = builder.build();
+    build.shutdown().join(10, TimeUnit.MILLISECONDS);
   }
 
   @Test

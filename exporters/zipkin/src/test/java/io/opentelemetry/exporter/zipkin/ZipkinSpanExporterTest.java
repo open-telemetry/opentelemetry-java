@@ -232,6 +232,21 @@ class ZipkinSpanExporterTest {
   }
 
   @Test
+  @SuppressWarnings("PreferJavaTimeOverload")
+  void readTimeout_Zero() {
+    ZipkinSpanExporter exporter =
+        ZipkinSpanExporter.builder().setReadTimeout(0, TimeUnit.SECONDS).build();
+
+    try {
+      assertThat(exporter)
+          .extracting("sender.delegate.client.readTimeoutMillis")
+          .isEqualTo(Integer.MAX_VALUE);
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
+  @Test
   void stringRepresentation() {
     try (ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().build()) {
       assertThat(exporter.toString())
