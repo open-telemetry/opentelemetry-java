@@ -188,8 +188,8 @@ class SdkTracerProviderTest {
 
   @Test
   void propagatesEnablementToTracer() {
-    final SdkTracer tracer = (SdkTracer) tracerFactory.get("test");
-    final boolean isEnabled = tracer.isEnabled();
+    SdkTracer tracer = (SdkTracer) tracerFactory.get("test");
+    boolean isEnabled = tracer.isEnabled();
     ScopeConfigurator<TracerConfig> flipConfigurator = new ScopeConfigurator<TracerConfig>() {
       @Override
       public TracerConfig apply(InstrumentationScopeInfo scopeInfo) {
