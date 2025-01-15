@@ -185,6 +185,21 @@ class SdkTracerProviderTest {
   }
 
   @Test
+  void propagatesEnablementToTracer() {
+    final SdkTracer tracer = tracerFactory.get("test");
+    final boolean isEnabled = tracer.isEnabled();
+    ScopeConfigurator<TracerConfig> flipConfigurator = new ScopeConfigurator<TracerConfig>() {
+      @Override
+      public TracerConfig apply(InstrumentationScopeInfo scopeInfo) {
+        return isEnabled ? TracerConfig.disabled() : TracerConfig.enabled();
+      }
+    }
+    //all in the same thread, so should see enablement change immediately
+    tracerFactory.setScopeConfigurator(flipConfigurator);
+    assertThat(tracer.isEnabled()).isEqualTo(!isEnabled);
+  }
+
+  @Test
   void build_SpanLimits() {
     SpanLimits initialSpanLimits = SpanLimits.builder().build();
     SdkTracerProvider sdkTracerProvider =

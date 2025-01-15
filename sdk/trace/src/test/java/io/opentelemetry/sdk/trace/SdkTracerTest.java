@@ -51,6 +51,14 @@ class SdkTracerTest {
   }
 
   @Test
+  void updateEnabled() {
+    tracer.updateTracerConfig(TracerConfig.disabled());
+    assertThat(tracer.isEnabled()).isFalse();
+    tracer.updateTracerConfig(TracerConfig.enabled());
+    assertThat(tracer.isEnabled()).isTrue();
+  }
+
+  @Test
   void propagatesInstrumentationScopeInfoToSpan() {
     ReadableSpan readableSpan = (ReadableSpan) tracer.spanBuilder("spanName").startSpan();
     assertThat(readableSpan.getInstrumentationScopeInfo()).isEqualTo(instrumentationScopeInfo);

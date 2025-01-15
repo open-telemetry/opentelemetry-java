@@ -30,7 +30,9 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   static final String DEFAULT_TRACER_NAME = "";
   private final TracerSharedState sharedState;
   private final ComponentRegistry<SdkTracer> tracerSdkComponentRegistry;
-  private final ScopeConfigurator<TracerConfig> tracerConfigurator;
+  // deliberately not volatile because of performance concerns
+  // - which means its eventually consistent
+  private ScopeConfigurator<TracerConfig> tracerConfigurator;
 
   /**
    * Returns a new {@link SdkTracerProviderBuilder} for {@link SdkTracerProvider}.
@@ -98,6 +100,17 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   /** Returns the configured {@link Sampler}. */
   public Sampler getSampler() {
     return sharedState.getSampler();
+  }
+
+  // currently not public as experimental
+  void setScopeConfigurator(ScopeConfigurator<TracerConfig> scopeConfigurator) {
+    this.tracerConfigurator = scopeConfigurator;
+    this.tracerSdkComponentRegistry
+        .getComponents()
+        .forEach(
+            sdkTracer ->
+                sdkTracer.updateTracerConfig(
+                    getTracerConfig(sdkTracer.getInstrumentationScopeInfo())));
   }
 
   /**

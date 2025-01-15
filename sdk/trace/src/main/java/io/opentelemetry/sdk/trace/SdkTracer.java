@@ -30,9 +30,8 @@ class SdkTracer implements Tracer {
 
   private final TracerSharedState sharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
-
-  // TODO: add dedicated API for updating scope config.
-  @SuppressWarnings("FieldCanBeFinal") // For now, allow updating reflectively.
+  // deliberately not volatile because of performance concerns
+  // - which means its eventually consistent
   private boolean tracerEnabled;
 
   SdkTracer(
@@ -79,4 +78,15 @@ class SdkTracer implements Tracer {
   InstrumentationScopeInfo getInstrumentationScopeInfo() {
     return instrumentationScopeInfo;
   }
+
+  // Visible for testing
+  boolean isEnabled() {
+    return tracerEnabled;
+  }
+
+  // currently not public as experimental
+  void updateTracerConfig(TracerConfig tracerConfig) {
+    this.tracerEnabled = tracerConfig.isEnabled();
+  }
+
 }
