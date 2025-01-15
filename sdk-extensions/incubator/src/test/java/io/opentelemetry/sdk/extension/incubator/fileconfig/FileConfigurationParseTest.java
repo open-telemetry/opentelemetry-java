@@ -47,7 +47,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMe
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SelectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ServerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ServiceMappingModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleLogRecordProcessorModel;
@@ -55,10 +54,11 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Simple
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.StreamModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceIdRatioBasedSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewSelectorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ZipkinSpanExporterModel;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
@@ -342,15 +342,15 @@ class FileConfigurationParseTest {
     ViewModel view =
         new ViewModel()
             .withSelector(
-                new SelectorModel()
+                new ViewSelectorModel()
                     .withInstrumentName("my-instrument")
-                    .withInstrumentType(SelectorModel.InstrumentType.HISTOGRAM)
+                    .withInstrumentType(ViewSelectorModel.InstrumentType.HISTOGRAM)
                     .withUnit("ms")
                     .withMeterName("my-meter")
                     .withMeterVersion("1.0.0")
                     .withMeterSchemaUrl("https://opentelemetry.io/schemas/1.16.0"))
             .withStream(
-                new StreamModel()
+                new ViewStreamModel()
                     .withName("new_instrument_name")
                     .withDescription("new_description")
                     .withAggregation(

@@ -9,6 +9,7 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpFileExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpGrpcExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
@@ -38,6 +39,10 @@ final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExport
     OtlpGrpcExporterModel otlpGrpcModel = model.getOtlpGrpc();
     if (otlpGrpcModel != null) {
       model.getAdditionalProperties().put("otlp_grpc", otlpGrpcModel);
+    }
+    OtlpFileExporterModel otlpFileExporterModel = model.getOtlpFile();
+    if (model.getOtlpFile() != null) {
+      model.getAdditionalProperties().put("otlp_file", otlpFileExporterModel);
     }
 
     if (model.getConsole() != null) {

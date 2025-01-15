@@ -15,8 +15,8 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Metric
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SelectorModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.StreamModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewSelectorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.View;
@@ -82,9 +82,9 @@ class MeterProviderFactoryTest {
                             new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
                                     .ViewModel()
                                 .withSelector(
-                                    new SelectorModel().withInstrumentName("instrument-name"))
+                                    new ViewSelectorModel().withInstrumentName("instrument-name"))
                                 .withStream(
-                                    new StreamModel()
+                                    new ViewStreamModel()
                                         .withName("stream-name")
                                         .withAttributeKeys(null)))),
                 spiHelper,

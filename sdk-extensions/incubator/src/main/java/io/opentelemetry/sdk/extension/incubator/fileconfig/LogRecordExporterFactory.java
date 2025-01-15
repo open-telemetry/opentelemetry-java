@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpFileExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpGrpcExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
@@ -35,10 +36,13 @@ final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, 
     if (otlpHttpModel != null) {
       model.getAdditionalProperties().put("otlp_http", otlpHttpModel);
     }
-
     OtlpGrpcExporterModel otlpGrpcModel = model.getOtlpGrpc();
     if (otlpGrpcModel != null) {
       model.getAdditionalProperties().put("otlp_grpc", otlpGrpcModel);
+    }
+    OtlpFileExporterModel otlpFileExporterModel = model.getOtlpFile();
+    if (model.getOtlpFile() != null) {
+      model.getAdditionalProperties().put("otlp_file", otlpFileExporterModel);
     }
 
     ConsoleExporterModel consoleModel = model.getConsole();
@@ -67,7 +71,7 @@ final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, 
               exporterKeyValue.getValue());
       return FileConfigUtil.addAndReturn(closeables, logRecordExporter);
     } else {
-      throw new ConfigurationException("log exporter must be set");
+      throw new ConfigurationException("log record exporter must be set");
     }
   }
 }
