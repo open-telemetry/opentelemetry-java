@@ -14,10 +14,12 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.function.Supplier;
@@ -186,14 +188,14 @@ class SdkTracerProviderTest {
 
   @Test
   void propagatesEnablementToTracer() {
-    final SdkTracer tracer = tracerFactory.get("test");
+    final SdkTracer tracer = (SdkTracer) tracerFactory.get("test");
     final boolean isEnabled = tracer.isEnabled();
     ScopeConfigurator<TracerConfig> flipConfigurator = new ScopeConfigurator<TracerConfig>() {
       @Override
       public TracerConfig apply(InstrumentationScopeInfo scopeInfo) {
         return isEnabled ? TracerConfig.disabled() : TracerConfig.enabled();
       }
-    }
+    };
     //all in the same thread, so should see enablement change immediately
     tracerFactory.setScopeConfigurator(flipConfigurator);
     assertThat(tracer.isEnabled()).isEqualTo(!isEnabled);
