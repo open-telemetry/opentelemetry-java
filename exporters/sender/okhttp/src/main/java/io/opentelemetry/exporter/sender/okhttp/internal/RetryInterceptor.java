@@ -42,9 +42,7 @@ public final class RetryInterceptor implements Interceptor {
     this(
         retryPolicy,
         isRetryable,
-        e ->
-            retryPolicy.getRetryExceptionPredicate().test(e)
-                || RetryInterceptor.isRetryableException(e),
+        e -> retryPolicy.getRetryExceptionPredicate().test(e),
         TimeUnit.NANOSECONDS::sleep,
         bound -> ThreadLocalRandom.current().nextLong(bound));
   }

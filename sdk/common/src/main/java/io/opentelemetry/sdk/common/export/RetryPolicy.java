@@ -30,6 +30,9 @@ public abstract class RetryPolicy {
 
   private static final double DEFAULT_BACKOFF_MULTIPLIER = 1.5;
 
+  private static final Predicate<IOException> DEFAULT_RETRY_PREDICATE =
+      new DefaultRetryExceptionPredicate();
+
   private static final RetryPolicy DEFAULT = RetryPolicy.builder().build();
 
   RetryPolicy() {}
@@ -46,7 +49,7 @@ public abstract class RetryPolicy {
         .setInitialBackoff(Duration.ofSeconds(DEFAULT_INITIAL_BACKOFF_SECONDS))
         .setMaxBackoff(Duration.ofSeconds(DEFAULT_MAX_BACKOFF_SECONDS))
         .setBackoffMultiplier(DEFAULT_BACKOFF_MULTIPLIER)
-        .setRetryExceptionPredicate((e) -> false);
+        .setRetryExceptionPredicate(DEFAULT_RETRY_PREDICATE);
   }
 
   /**
