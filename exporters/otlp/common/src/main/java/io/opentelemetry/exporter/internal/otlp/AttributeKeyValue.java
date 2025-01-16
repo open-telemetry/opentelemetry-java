@@ -17,6 +17,10 @@ import java.util.List;
  * <p>Conceptually if {@link Attributes} is a Map, then this is a Map.Entry. Note that whilst {@link
  * KeyValue} is similar, this class holds type information on the Key rather than the value.
  *
+ * <p>NOTE: This class is only used in the profiling signal, and exists in this module and package
+ * because its a common dependency of the modules that use it. Long term, it probably makes more
+ * sense to live in {@code opentelemetry-sdk-profiles} once such a module exists.
+ *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
