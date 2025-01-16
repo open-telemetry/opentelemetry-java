@@ -6,7 +6,6 @@
 package io.opentelemetry.exporter.internal.otlp;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.AttributeKeyValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.internal.InternalAttributeKeyImpl;

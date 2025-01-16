@@ -3,8 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.common;
+package io.opentelemetry.exporter.internal.otlp;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.KeyValue;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +16,9 @@ import java.util.List;
  *
  * <p>Conceptually if {@link Attributes} is a Map, then this is a Map.Entry. Note that whilst {@link
  * KeyValue} is similar, this class holds type information on the Key rather than the value.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 public interface AttributeKeyValue<T> {
 

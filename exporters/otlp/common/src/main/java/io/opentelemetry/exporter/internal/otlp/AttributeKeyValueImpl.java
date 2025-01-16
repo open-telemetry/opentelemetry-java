@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.common;
+package io.opentelemetry.exporter.internal.otlp;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.api.common.AttributeKey;
 
 @AutoValue
 abstract class AttributeKeyValueImpl<T> implements AttributeKeyValue<T> {
