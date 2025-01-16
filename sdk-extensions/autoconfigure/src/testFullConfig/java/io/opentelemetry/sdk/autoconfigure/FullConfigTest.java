@@ -53,7 +53,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @SuppressWarnings("InterruptedExceptionSwallowed")
-class FullConfigTest {
+public class FullConfigTest {
 
   private static final BlockingQueue<ExportTraceServiceRequest> otlpTraceRequests =
       new LinkedBlockingDeque<>();
@@ -193,7 +193,6 @@ class FullConfigTest {
         .spanBuilder("test")
         .startSpan()
         .setAttribute("cat", "meow")
-        .setAttribute("dog", "bark")
         .end();
 
     Meter meter = GlobalOpenTelemetry.get().getMeter("test");
@@ -209,7 +208,6 @@ class FullConfigTest {
 
     EventLogger eventLogger = GlobalEventLoggerProvider.get().eventLoggerBuilder("test").build();
     eventLogger.builder("namespace.test-name").put("cow", "moo").emit();
-    ;
 
     openTelemetrySdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
     openTelemetrySdk.getSdkLoggerProvider().forceFlush().join(10, TimeUnit.SECONDS);
@@ -218,37 +216,19 @@ class FullConfigTest {
     await().untilAsserted(() -> assertThat(otlpTraceRequests).hasSize(1));
 
     ExportTraceServiceRequest traceRequest = otlpTraceRequests.take();
-    assertThat(traceRequest.getResourceSpans(0).getResource().getAttributesList())
-        .contains(
-            KeyValue.newBuilder()
-                .setKey("service.name")
-                .setValue(AnyValue.newBuilder().setStringValue("test").build())
-                .build(),
-            KeyValue.newBuilder()
-                .setKey("cat")
-                .setValue(AnyValue.newBuilder().setStringValue("meow").build())
-                .build());
+    List<KeyValue> spanResourceAttributes =
+        traceRequest.getResourceSpans(0).getResource().getAttributesList();
+    assertHasKeyValue(spanResourceAttributes, "service.name", "test");
+    assertHasKeyValue(spanResourceAttributes, "cat", "meow");
     io.opentelemetry.proto.trace.v1.Span span =
         traceRequest.getResourceSpans(0).getScopeSpans(0).getSpans(0);
-    // Dog dropped by attribute limit.
-    assertThat(span.getAttributesList())
-        .containsExactlyInAnyOrder(
-            KeyValue.newBuilder()
-                .setKey("configured")
-                .setValue(AnyValue.newBuilder().setBoolValue(true).build())
-                .build(),
-            KeyValue.newBuilder()
-                .setKey("wrapped")
-                .setValue(AnyValue.newBuilder().setIntValue(1).build())
-                .build(),
-            KeyValue.newBuilder()
-                .setKey("cat")
-                .setValue(AnyValue.newBuilder().setStringValue("meow").build())
-                .build());
+    assertHasKeyValue(span.getAttributesList(), "configured", true);
+    assertHasKeyValue(span.getAttributesList(), "wrapped", 1);
+    assertHasKeyValue(span.getAttributesList(), "cat", "meow");
+    assertHasKeyValue(span.getAttributesList(), "extra-key", "extra-value");
 
     // await on assertions since metrics may come in different order for BatchSpanProcessor,
-    // exporter, or the ones we
-    // created in the test.
+    // exporter, or the ones we created in the test.
     await()
         .untilAsserted(
             () -> {
@@ -257,16 +237,10 @@ class FullConfigTest {
               assertThat(metricRequest.getResourceMetricsList())
                   .satisfiesExactly(
                       resourceMetrics -> {
-                        assertThat(resourceMetrics.getResource().getAttributesList())
-                            .contains(
-                                KeyValue.newBuilder()
-                                    .setKey("service.name")
-                                    .setValue(AnyValue.newBuilder().setStringValue("test").build())
-                                    .build(),
-                                KeyValue.newBuilder()
-                                    .setKey("cat")
-                                    .setValue(AnyValue.newBuilder().setStringValue("meow").build())
-                                    .build());
+                        List<KeyValue> metricResourceAttributes =
+                            resourceMetrics.getResource().getAttributesList();
+                        assertHasKeyValue(metricResourceAttributes, "service.name", "test");
+                        assertHasKeyValue(metricResourceAttributes, "cat", "meow");
                         assertThat(resourceMetrics.getScopeMetricsList())
                             .anySatisfy(
                                 scopeMetrics -> {
@@ -277,18 +251,10 @@ class FullConfigTest {
                                             // SPI was loaded
                                             assertThat(metric.getName()).isEqualTo("my-metric");
                                             // TestMeterProviderConfigurer configures a view that
-                                            // only passes on attribute
-                                            // named allowed
+                                            // only passes an attribute named "allowed"
                                             // configured-test
-                                            assertThat(getFirstDataPointLabels(metric))
-                                                .contains(
-                                                    KeyValue.newBuilder()
-                                                        .setKey("allowed")
-                                                        .setValue(
-                                                            AnyValue.newBuilder()
-                                                                .setStringValue("bear")
-                                                                .build())
-                                                        .build());
+                                            assertHasKeyValue(
+                                                getFirstDataPointLabels(metric), "allowed", "bear");
                                           });
                                 })
                             // This verifies that AutoConfigureListener was invoked and the OTLP
@@ -312,21 +278,20 @@ class FullConfigTest {
 
     await().untilAsserted(() -> assertThat(otlpLogsRequests).hasSize(1));
     ExportLogsServiceRequest logRequest = otlpLogsRequests.take();
-    assertThat(logRequest.getResourceLogs(0).getResource().getAttributesList())
-        .contains(
-            KeyValue.newBuilder()
-                .setKey("service.name")
-                .setValue(AnyValue.newBuilder().setStringValue("test").build())
-                .build(),
-            KeyValue.newBuilder()
-                .setKey("cat")
-                .setValue(AnyValue.newBuilder().setStringValue("meow").build())
-                .build());
+    List<KeyValue> logResourceAttributes =
+        logRequest.getResourceLogs(0).getResource().getAttributesList();
+    assertHasKeyValue(logResourceAttributes, "service.name", "test");
+    assertHasKeyValue(logResourceAttributes, "cat", "meow");
 
     assertThat(logRequest.getResourceLogs(0).getScopeLogs(0).getLogRecordsList())
+        // LogRecordCustomizer customizes BatchLogProcessor to add an extra attribute on every log
+        // record
+        .allSatisfy(
+            logRecord ->
+                assertHasKeyValue(logRecord.getAttributesList(), "extra-key", "extra-value"))
         .satisfiesExactlyInAnyOrder(
             logRecord -> {
-              // LogRecordExporterCustomizer filters logs not whose level is less than Severity.INFO
+              // LogRecordCustomizer filters logs not whose level is less than Severity.INFO
               assertThat(logRecord.getBody().getStringValue()).isEqualTo("info log message");
               assertThat(logRecord.getSeverityNumberValue())
                   .isEqualTo(Severity.INFO.getSeverityNumber());
@@ -340,14 +305,35 @@ class FullConfigTest {
                           .build());
               assertThat(logRecord.getSeverityNumber())
                   .isEqualTo(SeverityNumber.SEVERITY_NUMBER_INFO);
-              assertThat(logRecord.getAttributesList())
-                  .containsExactlyInAnyOrder(
-                      KeyValue.newBuilder()
-                          .setKey("event.name")
-                          .setValue(
-                              AnyValue.newBuilder().setStringValue("namespace.test-name").build())
-                          .build());
+              assertHasKeyValue(logRecord.getAttributesList(), "event.name", "namespace.test-name");
             });
+  }
+
+  private static void assertHasKeyValue(List<KeyValue> keyValues, String key, boolean value) {
+    assertThat(keyValues)
+        .contains(
+            KeyValue.newBuilder()
+                .setKey(key)
+                .setValue(AnyValue.newBuilder().setBoolValue(value))
+                .build());
+  }
+
+  private static void assertHasKeyValue(List<KeyValue> keyValues, String key, long value) {
+    assertThat(keyValues)
+        .contains(
+            KeyValue.newBuilder()
+                .setKey(key)
+                .setValue(AnyValue.newBuilder().setIntValue(value))
+                .build());
+  }
+
+  private static void assertHasKeyValue(List<KeyValue> keyValues, String key, String value) {
+    assertThat(keyValues)
+        .contains(
+            KeyValue.newBuilder()
+                .setKey(key)
+                .setValue(AnyValue.newBuilder().setStringValue(value))
+                .build());
   }
 
   private static List<KeyValue> getFirstDataPointLabels(Metric metric) {

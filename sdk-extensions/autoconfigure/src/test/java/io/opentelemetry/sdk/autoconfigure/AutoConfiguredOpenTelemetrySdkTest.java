@@ -11,7 +11,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -19,7 +18,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -54,14 +52,10 @@ import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.IdGenerator;
-import io.opentelemetry.sdk.trace.ReadWriteSpan;
-import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
-import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -98,8 +92,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
   @Mock private TextMapGetter<Map<String, String>> getter;
   @Mock private Sampler sampler1;
   @Mock private Sampler sampler2;
-  @Mock private SpanExporter spanExporter1;
-  @Mock private SpanExporter spanExporter2;
   @Mock private MetricReader metricReader;
   @Mock private LogRecordProcessor logRecordProcessor;
 
@@ -248,76 +240,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   @Test
-  void builder_addSpanExporterCustomizer() {
-    Mockito.lenient().when(spanExporter2.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-
-    SdkTracerProvider sdkTracerProvider =
-        builder
-            .addSpanExporterCustomizer(
-                (previous, config) -> {
-                  assertThat(previous).isSameAs(SpanExporter.composite());
-                  return spanExporter1;
-                })
-            .addSpanExporterCustomizer(
-                (previous, config) -> {
-                  assertThat(previous).isSameAs(spanExporter1);
-                  return spanExporter2;
-                })
-            .build()
-            .getOpenTelemetrySdk()
-            .getSdkTracerProvider();
-
-    assertThat(sdkTracerProvider)
-        .extracting("sharedState")
-        .extracting("activeSpanProcessor")
-        .extracting("worker")
-        .extracting("spanExporter")
-        .isEqualTo(spanExporter2);
-  }
-
-  @Test
-  void builder_addSpanProcessorCustomizer() {
-    SpanProcessor mockProcessor1 = Mockito.mock(SpanProcessor.class);
-    SpanProcessor mockProcessor2 = Mockito.mock(SpanProcessor.class);
-    when(mockProcessor2.isStartRequired()).thenReturn(true);
-    when(mockProcessor2.isEndRequired()).thenReturn(true);
-    Mockito.lenient().doReturn(CompletableResultCode.ofSuccess()).when(mockProcessor2).shutdown();
-    Mockito.lenient().when(spanExporter1.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-
-    SdkTracerProvider sdkTracerProvider =
-        builder
-            .addSpanExporterCustomizer((prev, config) -> spanExporter1)
-            .addSpanProcessorCustomizer(
-                (previous, config) -> {
-                  assertThat(previous).isNotSameAs(mockProcessor2);
-                  return mockProcessor1;
-                })
-            .addSpanProcessorCustomizer(
-                (previous, config) -> {
-                  assertThat(previous).isSameAs(mockProcessor1);
-                  return mockProcessor2;
-                })
-            .build()
-            .getOpenTelemetrySdk()
-            .getSdkTracerProvider();
-
-    assertThat(sdkTracerProvider)
-        .extracting("sharedState")
-        .extracting("activeSpanProcessor")
-        .isSameAs(mockProcessor2);
-
-    Span span = sdkTracerProvider.get("dummy-scope").spanBuilder("dummy-span").startSpan();
-
-    verify(mockProcessor2).onStart(any(), same((ReadWriteSpan) span));
-
-    span.end();
-    verify(mockProcessor2).onEnd(same((ReadableSpan) span));
-
-    verifyNoInteractions(mockProcessor1);
-    verifyNoInteractions(spanExporter1);
-  }
-
-  @Test
   void builder_addAutoConfigurationCustomizerProviderUsingComponentLoader() {
     AutoConfigurationCustomizerProvider customizerProvider =
         mock(AutoConfigurationCustomizerProvider.class);
@@ -420,8 +342,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
     verify(metricReader).forceFlush();
   }
 
-  // TODO: add test for addMetricExporterCustomizer once OTLP export is enabled by default
-
   @Test
   void builder_addLoggerProviderCustomizer() {
     Mockito.lenient()
@@ -441,10 +361,6 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
     verify(logRecordProcessor).forceFlush();
   }
-
-  // TODO: add test for addLogRecordExporterCustomizer once OTLP export is enabled by default
-
-  // TODO: add test for addLogRecordProcessorCustomizer once OTLP export is enabled by default
 
   @Test
   void builder_setResultAsGlobalFalse() {
