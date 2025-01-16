@@ -24,6 +24,7 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
   private final LogLimits logLimits;
 
   private final InstrumentationScopeInfo instrumentationScopeInfo;
+  @Nullable private String eventName;
   private long timestampEpochNanos;
   private long observedTimestampEpochNanos;
   @Nullable private Context context;
@@ -37,6 +38,12 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
     this.loggerSharedState = loggerSharedState;
     this.logLimits = loggerSharedState.getLogLimits();
     this.instrumentationScopeInfo = instrumentationScopeInfo;
+  }
+
+  // accessible via ExtendedSdkLogRecordBuilder
+  SdkLogRecordBuilder setEventName(String eventName) {
+    this.eventName = eventName;
+    return this;
   }
 
   @Override
@@ -126,6 +133,7 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
                 loggerSharedState.getLogLimits(),
                 loggerSharedState.getResource(),
                 instrumentationScopeInfo,
+                eventName,
                 timestampEpochNanos,
                 observedTimestampEpochNanos,
                 Span.fromContext(context).getSpanContext(),

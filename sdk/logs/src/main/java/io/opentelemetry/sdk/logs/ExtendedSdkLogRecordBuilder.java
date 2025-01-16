@@ -24,6 +24,12 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
   }
 
   @Override
+  public ExtendedSdkLogRecordBuilder setEventName(String eventName) {
+    super.setEventName(eventName);
+    return this;
+  }
+
+  @Override
   public ExtendedSdkLogRecordBuilder setTimestamp(long timestamp, TimeUnit unit) {
     super.setTimestamp(timestamp, unit);
     return this;

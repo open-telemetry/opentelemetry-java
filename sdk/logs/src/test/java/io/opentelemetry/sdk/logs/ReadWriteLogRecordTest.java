@@ -62,6 +62,7 @@ class ReadWriteLogRecordTest {
         limits,
         resource,
         scope,
+        "event name",
         0L,
         0L,
         spanContext,

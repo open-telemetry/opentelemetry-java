@@ -648,8 +648,9 @@ abstract class OtlpExporterIntegrationTest {
             TraceFlags.getDefault(),
             TraceState.getDefault());
 
-    try (Scope unused = Span.wrap(spanContext).makeCurrent()) {
+    try (Scope ignored = Span.wrap(spanContext).makeCurrent()) {
       ((ExtendedLogRecordBuilder) logger.logRecordBuilder())
+          .setEventName("event name")
           .setBody(
               of(
                   KeyValue.of("str_key", of("value")),
@@ -699,6 +700,7 @@ abstract class OtlpExporterIntegrationTest {
 
     // LogRecord via Logger.logRecordBuilder()...emit()
     io.opentelemetry.proto.logs.v1.LogRecord protoLog1 = ilLogs.getLogRecords(0);
+    assertThat(protoLog1.getEventName()).isEqualTo("event name");
     assertThat(protoLog1.getBody())
         .isEqualTo(
             AnyValue.newBuilder()
