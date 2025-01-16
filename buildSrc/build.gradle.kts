@@ -2,7 +2,7 @@ plugins {
   `kotlin-dsl`
 
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "6.25.0"
+  id("com.diffplug.spotless") version "7.0.1"
 }
 
 if (!hasLauncherForJavaVersion(17)) {
@@ -50,10 +50,10 @@ repositories {
 }
 
 dependencies {
-  implementation(enforcedPlatform("com.squareup.wire:wire-bom:5.2.0"))
+  implementation(enforcedPlatform("com.squareup.wire:wire-bom:5.2.1"))
   implementation("com.google.auto.value:auto-value-annotations:1.11.0")
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.25.0")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:7.0.1")
   // Needed for japicmp but not automatically brought in for some reason.
   implementation("com.google.guava:guava:33.4.0-jre")
   implementation("com.squareup:javapoet:1.13.0")
@@ -64,9 +64,9 @@ dependencies {
   implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.5")
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.2")
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.1.0")
-  implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.1.0")
+  implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.2.0")
   implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0")
-  implementation("org.owasp:dependency-check-gradle:11.1.1")
+  implementation("org.owasp:dependency-check-gradle:12.0.0")
   implementation("ru.vyarus:gradle-animalsniffer-plugin:1.7.2")
 }
 
