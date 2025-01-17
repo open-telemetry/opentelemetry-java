@@ -5,8 +5,8 @@
 
 package io.opentelemetry.exporter.otlp.profiles;
 
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.exporter.internal.otlp.AttributeKeyValue;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.nio.ByteBuffer;
@@ -51,7 +51,7 @@ public interface ProfileData {
   List<FunctionData> getFunctionTable();
 
   /** Lookup table for attributes. */
-  Attributes getAttributeTable();
+  List<AttributeKeyValue<?>> getAttributeTable();
 
   /** Represents a mapping between Attribute Keys and Units. */
   List<AttributeUnitData> getAttributeUnits();
