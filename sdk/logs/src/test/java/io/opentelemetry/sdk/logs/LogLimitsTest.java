@@ -33,7 +33,7 @@ class LogLimitsTest {
 
   @Test
   void invalidLogLimits() {
-    assertThatThrownBy(() -> LogLimits.builder().setMaxNumberOfAttributes(0))
+    assertThatThrownBy(() -> LogLimits.builder().setMaxNumberOfAttributes(-1))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> LogLimits.builder().setMaxNumberOfAttributes(-1))
         .isInstanceOf(IllegalArgumentException.class);

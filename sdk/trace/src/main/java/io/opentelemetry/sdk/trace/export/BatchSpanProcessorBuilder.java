@@ -106,9 +106,11 @@ public final class BatchSpanProcessorBuilder {
    * @param maxQueueSize the maximum number of Spans that are kept in the queue before start
    *     dropping.
    * @return this.
+   * @throws IllegalArgumentException if {@code maxQueueSize} is not positive.
    * @see BatchSpanProcessorBuilder#DEFAULT_MAX_QUEUE_SIZE
    */
   public BatchSpanProcessorBuilder setMaxQueueSize(int maxQueueSize) {
+    checkArgument(maxQueueSize > 0, "maxQueueSize must be positive.");
     this.maxQueueSize = maxQueueSize;
     return this;
   }
@@ -154,8 +156,10 @@ public final class BatchSpanProcessorBuilder {
    * forwards them to the given {@code spanExporter}.
    *
    * @return a new {@link BatchSpanProcessor}.
+   * @throws IllegalArgumentException if {@code maxExportBatchSize} is greater than {@code maxQueueSize}.
    */
   public BatchSpanProcessor build() {
+    checkArgument(maxExportBatchSize <= maxQueueSize, "maxExportBatchSize must be smaller or equal to maxQueueSize.");
     return new BatchSpanProcessor(
         spanExporter,
         exportUnsampledSpans,

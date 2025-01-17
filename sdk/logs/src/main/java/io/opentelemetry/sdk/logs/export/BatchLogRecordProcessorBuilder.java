@@ -98,9 +98,11 @@ public final class BatchLogRecordProcessorBuilder {
    * @param maxQueueSize the maximum number of Logs that are kept in the queue before start
    *     dropping.
    * @return this.
+   * @throws IllegalArgumentException if {@code maxQueueSize} is not positive.
    * @see BatchLogRecordProcessorBuilder#DEFAULT_MAX_QUEUE_SIZE
    */
   public BatchLogRecordProcessorBuilder setMaxQueueSize(int maxQueueSize) {
+    checkArgument(maxQueueSize > 0, "maxQueueSize must be positive.");
     this.maxQueueSize = maxQueueSize;
     return this;
   }
@@ -146,8 +148,10 @@ public final class BatchLogRecordProcessorBuilder {
    * {@code logRecordExporter}.
    *
    * @return a new {@link BatchLogRecordProcessor}.
+   * @throws IllegalArgumentException if {@code maxExportBatchSize} is greater than {@code maxQueueSize}.
    */
   public BatchLogRecordProcessor build() {
+    checkArgument(maxExportBatchSize <= maxQueueSize, "maxExportBatchSize must be smaller or equal to maxQueueSize.");
     return new BatchLogRecordProcessor(
         logRecordExporter,
         meterProvider,

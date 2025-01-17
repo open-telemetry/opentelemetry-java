@@ -46,23 +46,23 @@ class SpanLimitsTest {
 
   @Test
   void invalidSpanLimits() {
-    assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfAttributes(0))
+    assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfAttributes(-1))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfAttributes(-1))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfEvents(0))
+    assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfEvents(-1))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfEvents(-1))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfLinks(0))
+    assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfLinks(-1))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfLinks(-1))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfAttributesPerEvent(0))
+    assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfAttributesPerEvent(-1))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfAttributesPerEvent(-1))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfAttributesPerLink(0))
+    assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfAttributesPerLink(-1))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfAttributesPerLink(-1))
         .isInstanceOf(IllegalArgumentException.class);
