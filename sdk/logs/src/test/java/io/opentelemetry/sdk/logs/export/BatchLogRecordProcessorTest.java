@@ -111,11 +111,16 @@ class BatchLogRecordProcessorTest {
             () -> BatchLogRecordProcessor.builder(mockLogRecordExporter).setExporterTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
-    assertThatThrownBy(() -> BatchLogRecordProcessor.builder(mockLogRecordExporter).setMaxQueueSize(0))
+    assertThatThrownBy(
+            () -> BatchLogRecordProcessor.builder(mockLogRecordExporter).setMaxQueueSize(0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxQueueSize must be positive.");
     assertThatThrownBy(
-            () -> BatchLogRecordProcessor.builder(mockLogRecordExporter).setMaxQueueSize(1).setMaxExportBatchSize(2).build())
+            () ->
+                BatchLogRecordProcessor.builder(mockLogRecordExporter)
+                    .setMaxQueueSize(1)
+                    .setMaxExportBatchSize(2)
+                    .build())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxExportBatchSize must be smaller or equal to maxQueueSize.");
   }

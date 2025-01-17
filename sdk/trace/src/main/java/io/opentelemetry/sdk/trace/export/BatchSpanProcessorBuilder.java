@@ -156,10 +156,13 @@ public final class BatchSpanProcessorBuilder {
    * forwards them to the given {@code spanExporter}.
    *
    * @return a new {@link BatchSpanProcessor}.
-   * @throws IllegalArgumentException if {@code maxExportBatchSize} is greater than {@code maxQueueSize}.
+   * @throws IllegalArgumentException if {@code maxExportBatchSize} is greater than {@code
+   *     maxQueueSize}.
    */
   public BatchSpanProcessor build() {
-    checkArgument(maxExportBatchSize <= maxQueueSize, "maxExportBatchSize must be smaller or equal to maxQueueSize.");
+    checkArgument(
+        maxExportBatchSize <= maxQueueSize,
+        "maxExportBatchSize must be smaller or equal to maxQueueSize.");
     return new BatchSpanProcessor(
         spanExporter,
         exportUnsampledSpans,
