@@ -51,7 +51,7 @@ public final class FileConfiguration {
 
   private static final Logger logger = Logger.getLogger(FileConfiguration.class.getName());
   private static final Pattern ENV_VARIABLE_REFERENCE =
-      Pattern.compile("\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)(:-([^\n}]*))?}");
+      Pattern.compile("\\${1,2}\\{([a-zA-Z_][a-zA-Z0-9_]*)(:-([^\n}]*))?}");
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
       SpiHelper.serviceComponentLoader(FileConfiguration.class.getClassLoader());
 
@@ -317,13 +317,22 @@ public final class FileConfiguration {
       ScalarStyle scalarStyle = ((ScalarNode) node).getScalarStyle();
       do {
         MatchResult matchResult = matcher.toMatchResult();
-        String envVarKey = matcher.group(1);
-        String defaultValue = matcher.group(3);
-        if (defaultValue == null) {
-          defaultValue = "";
+        newVal.append(val, offset, matchResult.start());
+
+        String ref = val.substring(matchResult.start(), matchResult.end());
+        // $$ indicates that env var reference is escaped. Strip the leading $.
+        if (ref.startsWith("$$")) {
+          newVal.append(ref.substring(1));
+        } else {
+          String envVarKey = matcher.group(1);
+          String defaultValue = matcher.group(3);
+          if (defaultValue == null) {
+            defaultValue = "";
+          }
+          String replacement = environmentVariables.getOrDefault(envVarKey, defaultValue);
+          newVal.append(replacement);
         }
-        String replacement = environmentVariables.getOrDefault(envVarKey, defaultValue);
-        newVal.append(val, offset, matchResult.start()).append(replacement);
+
         offset = matchResult.end();
       } while (matcher.find());
       if (offset != val.length()) {

@@ -656,7 +656,13 @@ class FileConfigurationParseTest {
         Arguments.of("key1: \"${EMPTY_STR}\"\n", mapOf(entry("key1", ""))),
         Arguments.of("key1: \"${BOOL}\"\n", mapOf(entry("key1", "true"))),
         Arguments.of("key1: \"${INT}\"\n", mapOf(entry("key1", "1"))),
-        Arguments.of("key1: \"${FLOAT}\"\n", mapOf(entry("key1", "1.1"))));
+        Arguments.of("key1: \"${FLOAT}\"\n", mapOf(entry("key1", "1.1"))),
+        // Escaped
+        Arguments.of("key1: $${STR_1}\n", mapOf(entry("key1", "${STR_1}"))),
+        Arguments.of("key1: \"$${STR_1}\"\n", mapOf(entry("key1", "${STR_1}"))),
+        Arguments.of("key1: $${STR_1} ${STR_2}\n", mapOf(entry("key1", "${STR_1} value2"))),
+        Arguments.of("key1: $${STR_1} $${STR_2}\n", mapOf(entry("key1", "${STR_1} ${STR_2}"))),
+        Arguments.of("key1: $${NOT_SET:-value1}\n", mapOf(entry("key1", "${NOT_SET:-value1}"))));
   }
 
   private static <K, V> Map.Entry<K, V> entry(K key, @Nullable V value) {
