@@ -46,7 +46,8 @@ public abstract class RetryPolicy {
         .setMaxAttempts(DEFAULT_MAX_ATTEMPTS)
         .setInitialBackoff(Duration.ofSeconds(DEFAULT_INITIAL_BACKOFF_SECONDS))
         .setMaxBackoff(Duration.ofSeconds(DEFAULT_MAX_BACKOFF_SECONDS))
-        .setBackoffMultiplier(DEFAULT_BACKOFF_MULTIPLIER);
+        .setBackoffMultiplier(DEFAULT_BACKOFF_MULTIPLIER)
+        .setRetryExceptionPredicate(null);
   }
 
   /**
