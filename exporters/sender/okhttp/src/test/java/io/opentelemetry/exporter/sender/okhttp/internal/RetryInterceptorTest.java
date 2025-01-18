@@ -30,6 +30,8 @@ import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -56,6 +58,8 @@ class RetryInterceptorTest {
 
   @BeforeEach
   void setUp() {
+    Logger logger = java.util.logging.Logger.getLogger(RetryInterceptor.class.getName());
+    logger.setLevel(Level.FINER);
     retryExceptionPredicate =
         spy(
             new Predicate<IOException>() {
