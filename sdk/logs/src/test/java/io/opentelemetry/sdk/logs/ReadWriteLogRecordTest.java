@@ -21,6 +21,7 @@ class ReadWriteLogRecordTest {
 
   private static final Severity severity = Severity.DEBUG;
   private static final String severityText = "buggin";
+  private static final String eventName = "event";
   private static final InstrumentationScopeInfo scope = InstrumentationScopeInfo.create("test");
   private static final SpanContext spanContext = SpanContext.getInvalid();
   private static final Value<?> body = Value.of("bod");
@@ -80,7 +81,17 @@ class ReadWriteLogRecordTest {
 
     SdkReadWriteLogRecord record =
         SdkReadWriteLogRecord.create(
-            limits, resource, scope, 0L, 0L, spanContext, severity, severityText, body, null);
+            limits,
+            resource,
+            scope,
+            eventName,
+            0L,
+            0L,
+            spanContext,
+            severity,
+            severityText,
+            body,
+            null);
     record.setAttribute(AttributeKey.stringKey("foo"), "aaiosjfjioasdiojfjioasojifja");
     record.setAttribute(AttributeKey.stringKey("untouched"), "yes");
     record.setAttribute(AttributeKey.stringKey(""), "yes");
