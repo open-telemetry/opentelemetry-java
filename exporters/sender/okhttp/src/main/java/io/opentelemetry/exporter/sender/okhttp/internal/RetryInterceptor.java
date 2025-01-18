@@ -112,7 +112,7 @@ public final class RetryInterceptor implements Interceptor {
         }
       }
       if (exception != null) {
-        boolean retryable = Boolean.TRUE.equals(retryExceptionPredicate.test(exception));
+        boolean retryable = retryExceptionPredicate.test(exception);
         if (logger.isLoggable(Level.FINER)) {
           logger.log(
               Level.FINER,

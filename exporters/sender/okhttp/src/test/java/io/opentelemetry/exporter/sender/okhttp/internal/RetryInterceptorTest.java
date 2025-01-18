@@ -78,11 +78,7 @@ class RetryInterceptorTest {
 
     retrier =
         new RetryInterceptor(
-            retryPolicy,
-            r -> !r.isSuccessful(),
-            e -> retryPolicy.getRetryExceptionPredicate().test(e),
-            sleeper,
-            random);
+            retryPolicy, r -> !r.isSuccessful(), retryExceptionPredicate, sleeper, random);
     client = new OkHttpClient.Builder().addInterceptor(retrier).build();
   }
 
