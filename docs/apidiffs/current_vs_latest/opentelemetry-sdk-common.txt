@@ -1,13 +1,8 @@
 Comparing source compatibility of opentelemetry-sdk-common-1.47.0-SNAPSHOT.jar against opentelemetry-sdk-common-1.46.0.jar
-+++  NEW CLASS: PUBLIC(+) io.opentelemetry.sdk.common.export.DefaultRetryExceptionPredicate  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW INTERFACE: java.util.function.Predicate
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW CONSTRUCTOR: PUBLIC(+) DefaultRetryExceptionPredicate()
-	+++  NEW METHOD: PUBLIC(+) boolean test(java.io.IOException)
 **** MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.common.export.RetryPolicy  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.function.Predicate<java.io.IOException> getRetryExceptionPredicate()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
 **** MODIFIED CLASS: PUBLIC ABSTRACT STATIC io.opentelemetry.sdk.common.export.RetryPolicy$RetryPolicyBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.common.export.RetryPolicy$RetryPolicyBuilder setRetryExceptionPredicate(java.util.function.Predicate<java.io.IOException>)

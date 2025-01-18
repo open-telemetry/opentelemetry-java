@@ -21,7 +21,6 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
-import io.opentelemetry.sdk.common.export.DefaultRetryExceptionPredicate;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
 import java.net.ConnectException;
@@ -50,21 +49,19 @@ class RetryInterceptorTest {
 
   @Mock private RetryInterceptor.Sleeper sleeper;
   @Mock private RetryInterceptor.BoundedLongGenerator random;
-  private Predicate<IOException> retryPredicate;
+  private Predicate<IOException> retryExceptionPredicate;
 
   private RetryInterceptor retrier;
   private OkHttpClient client;
 
   @BeforeEach
   void setUp() {
-    DefaultRetryExceptionPredicate defaultRetryExceptionPredicate =
-        new DefaultRetryExceptionPredicate();
-    retryPredicate =
+    retryExceptionPredicate =
         spy(
             new Predicate<IOException>() {
               @Override
               public boolean test(IOException e) {
-                return defaultRetryExceptionPredicate.test(e)
+                return RetryInterceptor.isRetryableException(e)
                     || (e instanceof HttpRetryException
                         && e.getMessage().contains("timeout retry"));
               }
@@ -76,7 +73,7 @@ class RetryInterceptorTest {
             .setInitialBackoff(Duration.ofSeconds(1))
             .setMaxBackoff(Duration.ofSeconds(2))
             .setMaxAttempts(5)
-            .setRetryExceptionPredicate(retryPredicate)
+            .setRetryExceptionPredicate(retryExceptionPredicate)
             .build();
 
     retrier =
@@ -164,7 +161,7 @@ class RetryInterceptorTest {
                 client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
         .isInstanceOf(SocketTimeoutException.class);
 
-    verify(retryPredicate, times(5)).test(any());
+    verify(retryExceptionPredicate, times(5)).test(any());
     // Should retry maxAttempts, and sleep maxAttempts - 1 times
     verify(sleeper, times(4)).sleep(anyLong());
   }
@@ -184,7 +181,7 @@ class RetryInterceptorTest {
                     .execute())
         .isInstanceOfAny(ConnectException.class, SocketTimeoutException.class);
 
-    verify(retryPredicate, times(5)).test(any());
+    verify(retryExceptionPredicate, times(5)).test(any());
     // Should retry maxAttempts, and sleep maxAttempts - 1 times
     verify(sleeper, times(4)).sleep(anyLong());
   }
@@ -201,7 +198,7 @@ class RetryInterceptorTest {
   void nonRetryableException() throws InterruptedException {
     client = connectTimeoutClient();
     // Override retryPredicate so that no exception is retryable
-    when(retryPredicate.test(any())).thenReturn(false);
+    when(retryExceptionPredicate.test(any())).thenReturn(false);
 
     // Connecting to a non-routable IP address to trigger connection timeout
     assertThatThrownBy(
@@ -209,7 +206,7 @@ class RetryInterceptorTest {
                 client.newCall(new Request.Builder().url("http://10.255.255.1").build()).execute())
         .isInstanceOf(SocketTimeoutException.class);
 
-    verify(retryPredicate, times(1)).test(any());
+    verify(retryExceptionPredicate, times(1)).test(any());
     verify(sleeper, never()).sleep(anyLong());
   }
 
@@ -232,7 +229,7 @@ class RetryInterceptorTest {
     assertThat(retrier.shouldRetryOnException(new SocketTimeoutException("Read timed out")))
         .isFalse();
     // Shouldn't retry on write timeouts or other IOException
-    assertThat(retrier.shouldRetryOnException(new SocketTimeoutException("timeout"))).isTrue();
+    assertThat(retrier.shouldRetryOnException(new SocketTimeoutException("timeout"))).isFalse();
     assertThat(retrier.shouldRetryOnException(new SocketTimeoutException())).isTrue();
     assertThat(retrier.shouldRetryOnException(new IOException("error"))).isFalse();
 

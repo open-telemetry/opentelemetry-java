@@ -11,6 +11,7 @@ import com.google.auto.value.AutoValue;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 
 /**
  * Configuration for exporter exponential retry policy.
@@ -30,9 +31,6 @@ public abstract class RetryPolicy {
 
   private static final double DEFAULT_BACKOFF_MULTIPLIER = 1.5;
 
-  private static final Predicate<IOException> DEFAULT_RETRY_PREDICATE =
-      new DefaultRetryExceptionPredicate();
-
   private static final RetryPolicy DEFAULT = RetryPolicy.builder().build();
 
   RetryPolicy() {}
@@ -48,8 +46,7 @@ public abstract class RetryPolicy {
         .setMaxAttempts(DEFAULT_MAX_ATTEMPTS)
         .setInitialBackoff(Duration.ofSeconds(DEFAULT_INITIAL_BACKOFF_SECONDS))
         .setMaxBackoff(Duration.ofSeconds(DEFAULT_MAX_BACKOFF_SECONDS))
-        .setBackoffMultiplier(DEFAULT_BACKOFF_MULTIPLIER)
-        .setRetryExceptionPredicate(DEFAULT_RETRY_PREDICATE);
+        .setBackoffMultiplier(DEFAULT_BACKOFF_MULTIPLIER);
   }
 
   /**
@@ -72,7 +69,11 @@ public abstract class RetryPolicy {
   /** Returns the backoff multiplier. */
   public abstract double getBackoffMultiplier();
 
-  /** Returns the predicate if exception is retryable. */
+  /**
+   * Returns the predicate used to determine if thrown exception is retryableor {@code null} if no
+   * predicate was set.
+   */
+  @Nullable
   public abstract Predicate<IOException> getRetryExceptionPredicate();
 
   /** Builder for {@link RetryPolicy}. */
@@ -105,10 +106,7 @@ public abstract class RetryPolicy {
      */
     public abstract RetryPolicyBuilder setBackoffMultiplier(double backoffMultiplier);
 
-    /**
-     * Set the predicate to determine if retry should happen based on exception. No retry by
-     * default.
-     */
+    /** Set the predicate to determine if retry should happen based on exception. */
     public abstract RetryPolicyBuilder setRetryExceptionPredicate(
         Predicate<IOException> retryExceptionPredicate);
 
