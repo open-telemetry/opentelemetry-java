@@ -71,7 +71,7 @@ public final class BatchLogRecordProcessorBuilder {
   public BatchLogRecordProcessorBuilder setExporterTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
-    exporterTimeoutNanos = unit.toNanos(timeout);
+    exporterTimeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
     return this;
   }
 

@@ -698,22 +698,39 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressWarnings("PreferJavaTimeOverload")
   void validConfig() {
-    assertThatCode(() -> exporterBuilder().setTimeout(0, TimeUnit.MILLISECONDS))
+    // We must build exporters to test timeout settings, which intersect with underlying client
+    // implementations and may convert between Duration, int, and long, which may be susceptible to
+    // overflow exceptions.
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setTimeout(0, TimeUnit.MILLISECONDS)))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setTimeout(Duration.ofMillis(0)))
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setTimeout(Duration.ofMillis(0))))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setTimeout(10, TimeUnit.MILLISECONDS))
+    assertThatCode(
+            () ->
+                buildAndShutdown(
+                    exporterBuilder().setTimeout(Long.MAX_VALUE, TimeUnit.NANOSECONDS)))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setTimeout(Duration.ofMillis(10)))
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setTimeout(Duration.ofNanos(Long.MAX_VALUE))))
         .doesNotThrowAnyException();
-
-    assertThatCode(() -> exporterBuilder().setConnectTimeout(0, TimeUnit.MILLISECONDS))
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setTimeout(Long.MAX_VALUE, TimeUnit.SECONDS)))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setConnectTimeout(Duration.ofMillis(0)))
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setTimeout(10, TimeUnit.MILLISECONDS)))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setConnectTimeout(10, TimeUnit.MILLISECONDS))
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setTimeout(Duration.ofMillis(10))))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setConnectTimeout(Duration.ofMillis(10)))
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setConnectTimeout(0, TimeUnit.MILLISECONDS)))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setConnectTimeout(Duration.ofMillis(0))))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setConnectTimeout(10, TimeUnit.MILLISECONDS)))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setConnectTimeout(Duration.ofMillis(10))))
         .doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().setEndpoint("http://localhost:4318"))
@@ -738,6 +755,11 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         .doesNotThrowAnyException();
   }
 
+  private void buildAndShutdown(TelemetryExporterBuilder<T> builder) {
+    TelemetryExporter<T> build = builder.build();
+    build.shutdown().join(10, TimeUnit.MILLISECONDS);
+  }
+
   @Test
   @SuppressWarnings({"PreferJavaTimeOverload", "NullAway"})
   void invalidConfig() {
@@ -750,6 +772,10 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThatThrownBy(() -> exporterBuilder().setTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
+    assertThatThrownBy(
+            () ->
+                buildAndShutdown(exporterBuilder().setTimeout(Duration.ofSeconds(Long.MAX_VALUE))))
+        .isInstanceOf(ArithmeticException.class);
 
     assertThatThrownBy(() -> exporterBuilder().setConnectTimeout(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
@@ -760,6 +786,11 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThatThrownBy(() -> exporterBuilder().setConnectTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
+    assertThatThrownBy(
+            () ->
+                buildAndShutdown(
+                    exporterBuilder().setConnectTimeout(Duration.ofSeconds(Long.MAX_VALUE))))
+        .isInstanceOf(ArithmeticException.class);
 
     assertThatThrownBy(() -> exporterBuilder().setEndpoint(null))
         .isInstanceOf(NullPointerException.class)

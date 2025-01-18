@@ -33,7 +33,7 @@ import io.opentelemetry.proto.logs.v1.ScopeLogs;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
+import io.opentelemetry.sdk.testing.logs.internal.TestExtendedLogRecordData;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -52,6 +52,7 @@ class LogsRequestMarshalerTest {
   private static final String TRACE_ID = TraceId.fromBytes(TRACE_ID_BYTES);
   private static final byte[] SPAN_ID_BYTES = new byte[] {0, 0, 0, 0, 4, 3, 2, 1};
   private static final String SPAN_ID = SpanId.fromBytes(SPAN_ID_BYTES);
+  private static final String EVENT_NAME = "hello";
   private static final String BODY = "Hello world from this log...";
 
   @Test
@@ -59,7 +60,7 @@ class LogsRequestMarshalerTest {
     ResourceLogsMarshaler[] resourceLogsMarshalers =
         ResourceLogsMarshaler.create(
             Collections.singleton(
-                TestLogRecordData.builder()
+                TestExtendedLogRecordData.builder()
                     .setResource(
                         Resource.builder().put("one", 1).setSchemaUrl("http://url").build())
                     .setInstrumentationScopeInfo(
@@ -68,6 +69,7 @@ class LogsRequestMarshalerTest {
                             .setSchemaUrl("http://url")
                             .setAttributes(Attributes.builder().put("key", "value").build())
                             .build())
+                    .setEventName(EVENT_NAME)
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
@@ -108,11 +110,12 @@ class LogsRequestMarshalerTest {
         parse(
             LogRecord.getDefaultInstance(),
             marshalerSource.create(
-                TestLogRecordData.builder()
+                TestExtendedLogRecordData.builder()
                     .setResource(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()))
                     .setInstrumentationScopeInfo(
                         InstrumentationScopeInfo.builder("instrumentation").setVersion("1").build())
+                    .setEventName(EVENT_NAME)
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
@@ -128,6 +131,7 @@ class LogsRequestMarshalerTest {
     assertThat(logRecord.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(logRecord.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
     assertThat(logRecord.getSeverityText()).isEqualTo("INFO");
+    assertThat(logRecord.getEventName()).isEqualTo(EVENT_NAME);
     assertThat(logRecord.getBody()).isEqualTo(AnyValue.newBuilder().setStringValue(BODY).build());
     assertThat(logRecord.getAttributesList())
         .containsExactly(
@@ -147,7 +151,7 @@ class LogsRequestMarshalerTest {
         parse(
             LogRecord.getDefaultInstance(),
             marshalerSource.create(
-                TestLogRecordData.builder()
+                TestExtendedLogRecordData.builder()
                     .setResource(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()))
                     .setInstrumentationScopeInfo(

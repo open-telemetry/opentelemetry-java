@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.logs;
 
+import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.incubator.logs.ExtendedLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.internal.LoggerConfig;
@@ -25,5 +26,10 @@ final class ExtendedSdkLogger extends SdkLogger implements ExtendedLogger {
   @Override
   public boolean isEnabled() {
     return loggerEnabled;
+  }
+
+  @Override
+  public ExtendedLogRecordBuilder logRecordBuilder() {
+    return (ExtendedLogRecordBuilder) super.logRecordBuilder();
   }
 }

@@ -246,6 +246,8 @@ class SdkLoggerProviderTest {
     sdkLoggerProvider
         .get("test")
         .logRecordBuilder()
+        // TODO (trask) once event name stabilizes
+        // .setEventName("event name")
         .setTimestamp(100, TimeUnit.NANOSECONDS)
         .setContext(Span.wrap(spanContext).storeInContext(Context.root()))
         .setSeverity(Severity.DEBUG)
@@ -258,6 +260,8 @@ class SdkLoggerProviderTest {
     assertThat(logRecordData.get())
         .hasResource(resource)
         .hasInstrumentationScope(InstrumentationScopeInfo.create("test"))
+        // TODO (trask) once event name stabilizes
+        // .hasEventName("event name")
         .hasTimestamp(100)
         .hasSpanContext(spanContext)
         .hasSeverity(Severity.DEBUG)

@@ -24,6 +24,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
   private final LogLimits logLimits;
   private final Resource resource;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
+  @Nullable private final String eventName;
   private final long timestampEpochNanos;
   private final long observedTimestampEpochNanos;
   private final SpanContext spanContext;
@@ -40,6 +41,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       LogLimits logLimits,
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
+      @Nullable String eventName,
       long timestampEpochNanos,
       long observedTimestampEpochNanos,
       SpanContext spanContext,
@@ -50,6 +52,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
     this.logLimits = logLimits;
     this.resource = resource;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
+    this.eventName = eventName;
     this.timestampEpochNanos = timestampEpochNanos;
     this.observedTimestampEpochNanos = observedTimestampEpochNanos;
     this.spanContext = spanContext;
@@ -64,6 +67,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       LogLimits logLimits,
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
+      @Nullable String eventName,
       long timestampEpochNanos,
       long observedTimestampEpochNanos,
       SpanContext spanContext,
@@ -75,6 +79,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
         logLimits,
         resource,
         instrumentationScopeInfo,
+        eventName,
         timestampEpochNanos,
         observedTimestampEpochNanos,
         spanContext,
@@ -115,6 +120,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       return SdkLogRecordData.create(
           resource,
           instrumentationScopeInfo,
+          eventName,
           timestampEpochNanos,
           observedTimestampEpochNanos,
           spanContext,

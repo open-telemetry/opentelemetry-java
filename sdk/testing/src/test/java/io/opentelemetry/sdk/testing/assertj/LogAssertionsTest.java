@@ -34,7 +34,7 @@ import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
-import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
+import io.opentelemetry.sdk.testing.logs.internal.TestExtendedLogRecordData;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -62,9 +62,10 @@ public class LogAssertionsTest {
           .build();
 
   private static final LogRecordData LOG_DATA =
-      TestLogRecordData.builder()
+      TestExtendedLogRecordData.builder()
           .setResource(RESOURCE)
           .setInstrumentationScopeInfo(INSTRUMENTATION_SCOPE_INFO)
+          .setEventName("event name")
           .setTimestamp(100, TimeUnit.NANOSECONDS)
           .setObservedTimestamp(200, TimeUnit.NANOSECONDS)
           .setSpanContext(
@@ -112,6 +113,8 @@ public class LogAssertionsTest {
                     satisfies(DOG, val -> val.startsWith("bar")),
                     satisfies(AttributeKey.booleanKey("dog is cute"), val -> val.isTrue())))
         .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
+        // TODO (trask) once event name stabilizes
+        //  .hasEventName("event name")
         .hasTimestamp(100)
         .hasObservedTimestamp(200)
         .hasSpanContext(

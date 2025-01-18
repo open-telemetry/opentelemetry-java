@@ -27,6 +27,7 @@
           },
           "logRecords": [
             {
+              "eventName": "event name",
               "timeUnixNano": "100",
               "observedTimeUnixNano": "200",
               "severityNumber": 9,

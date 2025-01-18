@@ -64,11 +64,15 @@ public final class OkHttpHttpSender implements HttpSender {
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager) {
+    int callTimeoutMillis =
+        (int) Math.min(Duration.ofNanos(timeoutNanos).toMillis(), Integer.MAX_VALUE);
+    int connectTimeoutMillis =
+        (int) Math.min(Duration.ofNanos(connectionTimeoutNanos).toMillis(), Integer.MAX_VALUE);
     OkHttpClient.Builder builder =
         new OkHttpClient.Builder()
             .dispatcher(OkHttpUtil.newDispatcher())
-            .connectTimeout(Duration.ofNanos(connectionTimeoutNanos))
-            .callTimeout(Duration.ofNanos(timeoutNanos));
+            .connectTimeout(Duration.ofMillis(connectTimeoutMillis))
+            .callTimeout(Duration.ofMillis(callTimeoutMillis));
 
     if (proxyOptions != null) {
       builder.proxySelector(proxyOptions.getProxySelector());
