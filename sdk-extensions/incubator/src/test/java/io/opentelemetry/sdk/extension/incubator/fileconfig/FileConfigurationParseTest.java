@@ -659,6 +659,7 @@ class FileConfigurationParseTest {
         Arguments.of("key1: \"${FLOAT}\"\n", mapOf(entry("key1", "1.1"))),
         // Escaped
         Arguments.of("key1: $${STR_1}\n", mapOf(entry("key1", "${STR_1}"))),
+        Arguments.of("key1: $$${STR_1}\n", mapOf(entry("key1", "$${STR_1}"))),
         Arguments.of("key1: \"$${STR_1}\"\n", mapOf(entry("key1", "${STR_1}"))),
         Arguments.of("key1: $${STR_1} ${STR_2}\n", mapOf(entry("key1", "${STR_1} value2"))),
         Arguments.of("key1: $${STR_1} $${STR_2}\n", mapOf(entry("key1", "${STR_1} ${STR_2}"))),
