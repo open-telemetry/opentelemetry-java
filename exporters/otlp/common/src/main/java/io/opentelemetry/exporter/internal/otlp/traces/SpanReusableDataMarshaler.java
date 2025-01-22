@@ -9,9 +9,9 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import java.util.ArrayDeque;
 import java.util.Collection;
-import java.util.Queue;
+import java.util.Deque;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.BiFunction;
 
 /**
@@ -20,8 +20,8 @@ import java.util.function.BiFunction;
  */
 public class SpanReusableDataMarshaler {
 
-  private final SynchronizedQueue<LowAllocationTraceRequestMarshaler> marshalerPool =
-      new SynchronizedQueue<>(new ArrayDeque<>());
+  private final Deque<LowAllocationTraceRequestMarshaler> marshalerPool =
+      new ConcurrentLinkedDeque<>();
 
   private final MemoryMode memoryMode;
   private final BiFunction<Marshaler, Integer, CompletableResultCode> doExport;
@@ -55,22 +55,5 @@ public class SpanReusableDataMarshaler {
     // MemoryMode == MemoryMode.IMMUTABLE_DATA
     TraceRequestMarshaler request = TraceRequestMarshaler.create(spans);
     return doExport.apply(request, spans.size());
-  }
-
-  private static class SynchronizedQueue<T> {
-    private final Queue<T> queue;
-
-    private SynchronizedQueue(Queue<T> queue) {
-      this.queue = queue;
-    }
-
-    @SuppressWarnings("UnusedReturnValue")
-    public synchronized boolean add(T t) {
-      return queue.add(t);
-    }
-
-    public synchronized T poll() {
-      return queue.poll();
-    }
   }
 }
