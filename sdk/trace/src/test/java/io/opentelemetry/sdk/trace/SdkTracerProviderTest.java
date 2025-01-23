@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.function.Supplier;
@@ -187,7 +188,16 @@ class SdkTracerProviderTest {
   }
 
   @Test
-  void propagatesEnablementToTracer() {
+  void propagatesEnablementToTracerDirectly() {
+    propagatesEnablementToTracer(true);
+  }
+
+  @Test
+  void propagatesEnablementToTracerByUtil() {
+    propagatesEnablementToTracer(false);
+  }
+
+  void propagatesEnablementToTracer(boolean directly) {
     SdkTracer tracer = (SdkTracer) tracerFactory.get("test");
     boolean isEnabled = tracer.isEnabled();
     ScopeConfigurator<TracerConfig> flipConfigurator =
@@ -198,7 +208,11 @@ class SdkTracerProviderTest {
           }
         };
     // all in the same thread, so should see enablement change immediately
-    tracerFactory.setScopeConfigurator(flipConfigurator);
+    if (directly) {
+      tracerFactory.setScopeConfigurator(flipConfigurator);
+    } else {
+      SdkTracerProviderUtil.setScopeConfigurator(tracerFactory, flipConfigurator);
+    }
     assertThat(tracer.isEnabled()).isEqualTo(!isEnabled);
   }
 

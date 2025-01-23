@@ -27,7 +27,7 @@ public final class SdkTracerProviderUtil {
 
   /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkTracerProvider}. */
   public static void setScopeConfigurator(
-      SdkTracerProviderBuilder sdkTracerProvider,
+      SdkTracerProvider sdkTracerProvider,
       ScopeConfigurator<TracerConfig> scopeConfigurator) {
     try {
       Method method =
