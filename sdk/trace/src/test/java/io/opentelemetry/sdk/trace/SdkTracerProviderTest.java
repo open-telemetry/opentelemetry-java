@@ -209,9 +209,9 @@ class SdkTracerProviderTest {
         };
     // all in the same thread, so should see enablement change immediately
     if (directly) {
-      tracerFactory.setScopeConfigurator(flipConfigurator);
+      tracerFactory.setTracerConfigurator(flipConfigurator);
     } else {
-      SdkTracerProviderUtil.setScopeConfigurator(tracerFactory, flipConfigurator);
+      SdkTracerProviderUtil.setTracerConfigurator(tracerFactory, flipConfigurator);
     }
     assertThat(tracer.isEnabled()).isEqualTo(!isEnabled);
   }

@@ -191,7 +191,7 @@ class TracerConfigTest {
     exporter.reset();
 
     // 2. Update config to disable all tracers
-    tracerProvider.setScopeConfigurator(
+    tracerProvider.setTracerConfigurator(
         ScopeConfigurator.<TracerConfig>builder().setDefault(TracerConfig.disabled()).build());
 
     // verify isEnabled()
@@ -206,7 +206,7 @@ class TracerConfigTest {
     assertThat(exporter.getFinishedSpanItems()).isEmpty();
 
     // 3. Update config to restore original
-    tracerProvider.setScopeConfigurator(
+    tracerProvider.setTracerConfigurator(
         ScopeConfigurator.<TracerConfig>builder()
             .addCondition(nameEquals("tracerB"), disabled())
             .build());

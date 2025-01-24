@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
@@ -102,9 +103,17 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
     return sharedState.getSampler();
   }
 
-  // currently not public as experimental
-  void setScopeConfigurator(ScopeConfigurator<TracerConfig> scopeConfigurator) {
-    this.tracerConfigurator = scopeConfigurator;
+  /**
+   * Updates the tracer configurator, which computes {@link TracerConfig} for each {@link
+   * InstrumentationScopeInfo}.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkTracerProviderUtil#setTracerConfigurator(SdkTracerProvider, ScopeConfigurator)}.
+   *
+   * @see TracerConfig#configuratorBuilder()
+   */
+  void setTracerConfigurator(ScopeConfigurator<TracerConfig> tracerConfigurator) {
+    this.tracerConfigurator = tracerConfigurator;
     this.tracerSdkComponentRegistry
         .getComponents()
         .forEach(
