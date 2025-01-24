@@ -84,7 +84,6 @@ class SdkTracer implements Tracer {
     return tracerEnabled;
   }
 
-  // currently not public as experimental
   void updateTracerConfig(TracerConfig tracerConfig) {
     this.tracerEnabled = tracerConfig.isEnabled();
   }
