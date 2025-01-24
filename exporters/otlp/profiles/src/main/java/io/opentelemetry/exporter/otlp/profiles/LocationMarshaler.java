@@ -30,7 +30,7 @@ final class LocationMarshaler extends MarshalerWithSize {
         locationData.getAddress(),
         LineMarshaler.createRepeated(locationData.getLines()),
         locationData.isFolded(),
-        locationData.getAttributes());
+        locationData.getAttributeIndices());
   }
 
   static LocationMarshaler[] createRepeated(List<LocationData> items) {

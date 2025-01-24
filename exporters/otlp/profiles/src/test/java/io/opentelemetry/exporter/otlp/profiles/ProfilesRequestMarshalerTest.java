@@ -151,7 +151,7 @@ public class ProfilesRequestMarshalerTest {
             Collections.emptyList(),
             listOf(1, 2),
             Collections.emptyList(),
-            Attributes.empty(),
+            Collections.emptyList(),
             Collections.emptyList(),
             Collections.emptyList(),
             Collections.emptyList(),
