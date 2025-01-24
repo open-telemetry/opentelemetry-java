@@ -27,7 +27,8 @@ val latestReleasedVersion: String by lazy {
 
 class AllowNewAbstractMethodOnAutovalueClasses : AbstractRecordingSeenMembers() {
   override fun maybeAddViolation(member: JApiCompatibility): Violation? {
-    val allowableAutovalueChanges = setOf(JApiCompatibilityChangeType.METHOD_ABSTRACT_ADDED_TO_CLASS, JApiCompatibilityChangeType.METHOD_ADDED_TO_PUBLIC_CLASS)
+    val allowableAutovalueChanges = setOf(JApiCompatibilityChangeType.METHOD_ABSTRACT_ADDED_TO_CLASS,
+      JApiCompatibilityChangeType.METHOD_ADDED_TO_PUBLIC_CLASS, JApiCompatibilityChangeType.ANNOTATION_ADDED)
     if (member.compatibilityChanges.filter { !allowableAutovalueChanges.contains(it.type) }.isEmpty() &&
       member is JApiMethod && isAutoValueClass(member.getjApiClass()))
     {

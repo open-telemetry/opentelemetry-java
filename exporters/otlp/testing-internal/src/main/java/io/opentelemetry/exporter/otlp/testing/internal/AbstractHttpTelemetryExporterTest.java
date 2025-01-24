@@ -935,7 +935,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + ", "
                   + "exportAsJson=false, "
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
-                  + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3\\}"
+                  + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3, retryExceptionPredicate=null\\}"
                   + ".*" // Maybe additional signal specific fields
                   + "\\}");
     } finally {

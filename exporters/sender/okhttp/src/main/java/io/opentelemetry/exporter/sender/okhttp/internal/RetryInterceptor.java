@@ -16,6 +16,7 @@ import java.util.StringJoiner;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import okhttp3.Interceptor;
@@ -33,7 +34,7 @@ public final class RetryInterceptor implements Interceptor {
 
   private final RetryPolicy retryPolicy;
   private final Function<Response, Boolean> isRetryable;
-  private final Function<IOException, Boolean> isRetryableException;
+  private final Predicate<IOException> retryExceptionPredicate;
   private final Sleeper sleeper;
   private final BoundedLongGenerator randomLong;
 
@@ -42,7 +43,9 @@ public final class RetryInterceptor implements Interceptor {
     this(
         retryPolicy,
         isRetryable,
-        RetryInterceptor::isRetryableException,
+        retryPolicy.getRetryExceptionPredicate() == null
+            ? RetryInterceptor::isRetryableException
+            : retryPolicy.getRetryExceptionPredicate(),
         TimeUnit.NANOSECONDS::sleep,
         bound -> ThreadLocalRandom.current().nextLong(bound));
   }
@@ -51,12 +54,12 @@ public final class RetryInterceptor implements Interceptor {
   RetryInterceptor(
       RetryPolicy retryPolicy,
       Function<Response, Boolean> isRetryable,
-      Function<IOException, Boolean> isRetryableException,
+      Predicate<IOException> retryExceptionPredicate,
       Sleeper sleeper,
       BoundedLongGenerator randomLong) {
     this.retryPolicy = retryPolicy;
     this.isRetryable = isRetryable;
-    this.isRetryableException = isRetryableException;
+    this.retryExceptionPredicate = retryExceptionPredicate;
     this.sleeper = sleeper;
     this.randomLong = randomLong;
   }
@@ -109,7 +112,7 @@ public final class RetryInterceptor implements Interceptor {
         }
       }
       if (exception != null) {
-        boolean retryable = Boolean.TRUE.equals(isRetryableException.apply(exception));
+        boolean retryable = retryExceptionPredicate.test(exception);
         if (logger.isLoggable(Level.FINER)) {
           logger.log(
               Level.FINER,
@@ -142,6 +145,11 @@ public final class RetryInterceptor implements Interceptor {
                 .map(entry -> entry.getKey() + "=" + String.join(",", entry.getValue()))
                 .collect(joining(",", "[", "]")));
     return joiner.toString();
+  }
+
+  // Visible for testing
+  boolean shouldRetryOnException(IOException e) {
+    return retryExceptionPredicate.test(e);
   }
 
   // Visible for testing
