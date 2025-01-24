@@ -16,7 +16,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.trace.ExtendedTracer;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
@@ -42,9 +41,13 @@ class TracerConfigTest {
             .addSpanProcessor(SimpleSpanProcessor.create(exporter))
             .build();
 
-    Tracer tracerA = tracerProvider.get("tracerA");
-    Tracer tracerB = tracerProvider.get("tracerB");
-    Tracer tracerC = tracerProvider.get("tracerC");
+    ExtendedSdkTracer tracerA = (ExtendedSdkTracer) tracerProvider.get("tracerA");
+    ExtendedSdkTracer tracerB = (ExtendedSdkTracer) tracerProvider.get("tracerB");
+    ExtendedSdkTracer tracerC = (ExtendedSdkTracer) tracerProvider.get("tracerC");
+
+    assertThat(tracerA.isEnabled()).isTrue();
+    assertThat(tracerB.isEnabled()).isFalse();
+    assertThat(tracerC.isEnabled()).isTrue();
 
     Span parent;
     Span child;
@@ -157,5 +160,68 @@ class TracerConfigTest {
         Arguments.of(enableStartsWithD, scopeCat, disabled()),
         Arguments.of(enableStartsWithD, scopeDog, enabled()),
         Arguments.of(enableStartsWithD, scopeDuck, enabled()));
+  }
+
+  @Test
+  void setScopeConfigurator() {
+    // 1. Initially, configure all tracers to be enabled except tracerB
+    InMemorySpanExporter exporter = InMemorySpanExporter.create();
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .addTracerConfiguratorCondition(nameEquals("tracerB"), disabled())
+            .addSpanProcessor(SimpleSpanProcessor.create(exporter))
+            .build();
+
+    ExtendedSdkTracer tracerA = (ExtendedSdkTracer) tracerProvider.get("tracerA");
+    ExtendedSdkTracer tracerB = (ExtendedSdkTracer) tracerProvider.get("tracerB");
+    ExtendedSdkTracer tracerC = (ExtendedSdkTracer) tracerProvider.get("tracerC");
+
+    // verify isEnabled()
+    assertThat(tracerA.isEnabled()).isTrue();
+    assertThat(tracerB.isEnabled()).isFalse();
+    assertThat(tracerC.isEnabled()).isTrue();
+
+    // verify spans are emitted as expected
+    tracerA.spanBuilder("spanA").startSpan().end();
+    tracerB.spanBuilder("spanB").startSpan().end();
+    tracerC.spanBuilder("spanC").startSpan().end();
+    assertThat(exporter.getFinishedSpanItems())
+        .satisfiesExactlyInAnyOrder(
+            span -> assertThat(span).hasName("spanA"), span -> assertThat(span).hasName("spanC"));
+    exporter.reset();
+
+    // 2. Update config to disable all tracers
+    tracerProvider.setScopeConfigurator(
+        ScopeConfigurator.<TracerConfig>builder().setDefault(TracerConfig.disabled()).build());
+
+    // verify isEnabled()
+    assertThat(tracerA.isEnabled()).isFalse();
+    assertThat(tracerB.isEnabled()).isFalse();
+    assertThat(tracerC.isEnabled()).isFalse();
+
+    // verify spans are emitted as expected
+    tracerA.spanBuilder("spanA").startSpan().end();
+    tracerB.spanBuilder("spanB").startSpan().end();
+    tracerC.spanBuilder("spanC").startSpan().end();
+    assertThat(exporter.getFinishedSpanItems()).isEmpty();
+
+    // 3. Update config to restore original
+    tracerProvider.setScopeConfigurator(
+        ScopeConfigurator.<TracerConfig>builder()
+            .addCondition(nameEquals("tracerB"), disabled())
+            .build());
+
+    // verify isEnabled()
+    assertThat(tracerA.isEnabled()).isTrue();
+    assertThat(tracerB.isEnabled()).isFalse();
+    assertThat(tracerC.isEnabled()).isTrue();
+
+    // verify spans are emitted as expected
+    tracerA.spanBuilder("spanA").startSpan().end();
+    tracerB.spanBuilder("spanB").startSpan().end();
+    tracerC.spanBuilder("spanC").startSpan().end();
+    assertThat(exporter.getFinishedSpanItems())
+        .satisfiesExactly(
+            span -> assertThat(span).hasName("spanA"), span -> assertThat(span).hasName("spanC"));
   }
 }
