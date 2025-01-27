@@ -31,7 +31,7 @@ public final class SdkTracerProviderUtil {
     try {
       Method method =
           SdkTracerProvider.class.getDeclaredMethod(
-              "setScopeConfigurator", ScopeConfigurator.class);
+              "setTracerConfigurator", ScopeConfigurator.class);
       method.setAccessible(true);
       method.invoke(sdkTracerProvider, scopeConfigurator);
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
