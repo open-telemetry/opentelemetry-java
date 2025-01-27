@@ -13,7 +13,6 @@ import static io.opentelemetry.sdk.trace.internal.TracerConfig.disabled;
 import static io.opentelemetry.sdk.trace.internal.TracerConfig.enabled;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.trace.ExtendedTracer;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.context.Scope;
@@ -44,10 +43,6 @@ class TracerConfigTest {
     ExtendedSdkTracer tracerA = (ExtendedSdkTracer) tracerProvider.get("tracerA");
     ExtendedSdkTracer tracerB = (ExtendedSdkTracer) tracerProvider.get("tracerB");
     ExtendedSdkTracer tracerC = (ExtendedSdkTracer) tracerProvider.get("tracerC");
-
-    assertThat(tracerA.isEnabled()).isTrue();
-    assertThat(tracerB.isEnabled()).isFalse();
-    assertThat(tracerC.isEnabled()).isTrue();
 
     Span parent;
     Span child;
@@ -95,9 +90,9 @@ class TracerConfigTest {
                     .hasParentSpanId(parent.getSpanContext().getSpanId())
                     .hasAttributes(Attributes.builder().put("c", "1").build()));
     // tracerA and tracerC are enabled, tracerB is disabled.
-    assertThat(((ExtendedTracer) tracerA).isEnabled()).isTrue();
-    assertThat(((ExtendedTracer) tracerB).isEnabled()).isFalse();
-    assertThat(((ExtendedTracer) tracerA).isEnabled()).isTrue();
+    assertThat(tracerA.isEnabled()).isTrue();
+    assertThat(tracerB.isEnabled()).isFalse();
+    assertThat(tracerC.isEnabled()).isTrue();
   }
 
   @ParameterizedTest
