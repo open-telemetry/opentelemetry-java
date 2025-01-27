@@ -11,7 +11,7 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
-import java.util.Locale;
+import java.net.UnknownHostException;
 import java.util.StringJoiner;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -154,14 +154,15 @@ public final class RetryInterceptor implements Interceptor {
 
   // Visible for testing
   static boolean isRetryableException(IOException e) {
+    // Known retryable SocketTimeoutException messages: null, "connect timed out", "timeout"
+    // Known retryable ConnectTimeout messages: "Failed to connect to
+    // localhost/[0:0:0:0:0:0:0:1]:62611"
+    // Known retryable UnknownHostException messages: "xxxxxx.com"
     if (e instanceof SocketTimeoutException) {
-      String message = e.getMessage();
-      // Connect timeouts can produce SocketTimeoutExceptions with no message, or with "connect
-      // timed out"
-      return message == null || message.toLowerCase(Locale.ROOT).contains("connect timed out");
+      return true;
     } else if (e instanceof ConnectException) {
-      // Exceptions resemble: java.net.ConnectException: Failed to connect to
-      // localhost/[0:0:0:0:0:0:0:1]:62611
+      return true;
+    } else if (e instanceof UnknownHostException) {
       return true;
     }
     return false;
