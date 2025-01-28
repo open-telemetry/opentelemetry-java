@@ -106,9 +106,11 @@ public final class BatchSpanProcessorBuilder {
    * @param maxQueueSize the maximum number of Spans that are kept in the queue before start
    *     dropping.
    * @return this.
+   * @throws IllegalArgumentException if {@code maxQueueSize} is not positive.
    * @see BatchSpanProcessorBuilder#DEFAULT_MAX_QUEUE_SIZE
    */
   public BatchSpanProcessorBuilder setMaxQueueSize(int maxQueueSize) {
+    checkArgument(maxQueueSize > 0, "maxQueueSize must be positive.");
     this.maxQueueSize = maxQueueSize;
     return this;
   }

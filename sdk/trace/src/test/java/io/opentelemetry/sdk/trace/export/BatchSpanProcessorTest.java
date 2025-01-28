@@ -121,6 +121,9 @@ class BatchSpanProcessorTest {
     assertThatThrownBy(() -> BatchSpanProcessor.builder(mockSpanExporter).setExporterTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
+    assertThatThrownBy(() -> BatchSpanProcessor.builder(mockSpanExporter).setMaxQueueSize(0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("maxQueueSize must be positive.");
   }
 
   @Test
@@ -419,6 +422,7 @@ class BatchSpanProcessorTest {
             .setExporterTimeout(exporterTimeoutMillis, TimeUnit.MILLISECONDS)
             .setScheduleDelay(1, TimeUnit.MILLISECONDS)
             .setMaxQueueSize(1)
+            .setMaxExportBatchSize(1)
             .build();
     sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(bsp).build();
 
