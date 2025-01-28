@@ -71,7 +71,7 @@ val DEPENDENCIES = listOf(
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
   "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.39.0-alpha",
-  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.29.0-alpha",
+  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.30.0-alpha-rc.1",
   "io.opentelemetry.proto:opentelemetry-proto:1.5.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
