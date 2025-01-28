@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
@@ -35,9 +36,15 @@ class LogLimitsTest {
   void invalidLogLimits() {
     assertThatThrownBy(() -> LogLimits.builder().setMaxNumberOfAttributes(-1))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> LogLimits.builder().setMaxNumberOfAttributes(-1))
-        .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> LogLimits.builder().setMaxAttributeValueLength(-1))
         .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void validLogLimits() {
+    assertThatCode(() -> LogLimits.builder().setMaxNumberOfAttributes(0))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> LogLimits.builder().setMaxAttributeValueLength(0))
+        .doesNotThrowAnyException();
   }
 }

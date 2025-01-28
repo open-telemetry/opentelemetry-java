@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.trace.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.sdk.trace.SpanLimits;
@@ -48,25 +49,29 @@ class SpanLimitsTest {
   void invalidSpanLimits() {
     assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfAttributes(-1))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfAttributes(-1))
-        .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfEvents(-1))
-        .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfEvents(-1))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfLinks(-1))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfLinks(-1))
-        .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfAttributesPerEvent(-1))
-        .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfAttributesPerEvent(-1))
-        .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfAttributesPerLink(-1))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> SpanLimits.builder().setMaxNumberOfAttributesPerLink(-1))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> SpanLimits.builder().setMaxAttributeValueLength(-1))
         .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void validSpanLimits() {
+    assertThatCode(() -> SpanLimits.builder().setMaxNumberOfAttributes(0))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> SpanLimits.builder().setMaxNumberOfEvents(0)).doesNotThrowAnyException();
+    assertThatCode(() -> SpanLimits.builder().setMaxNumberOfLinks(0)).doesNotThrowAnyException();
+    assertThatCode(() -> SpanLimits.builder().setMaxNumberOfAttributesPerEvent(0))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> SpanLimits.builder().setMaxNumberOfAttributesPerLink(0))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> SpanLimits.builder().setMaxAttributeValueLength(0))
+        .doesNotThrowAnyException();
   }
 }

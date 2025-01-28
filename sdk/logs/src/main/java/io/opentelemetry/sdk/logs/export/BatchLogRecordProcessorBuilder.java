@@ -148,13 +148,8 @@ public final class BatchLogRecordProcessorBuilder {
    * {@code logRecordExporter}.
    *
    * @return a new {@link BatchLogRecordProcessor}.
-   * @throws IllegalArgumentException if {@code maxExportBatchSize} is greater than {@code
-   *     maxQueueSize}.
    */
   public BatchLogRecordProcessor build() {
-    checkArgument(
-        maxExportBatchSize <= maxQueueSize,
-        "maxExportBatchSize must be smaller or equal to maxQueueSize.");
     return new BatchLogRecordProcessor(
         logRecordExporter,
         meterProvider,

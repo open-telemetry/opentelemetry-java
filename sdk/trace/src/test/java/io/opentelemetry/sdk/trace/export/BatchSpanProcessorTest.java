@@ -124,14 +124,6 @@ class BatchSpanProcessorTest {
     assertThatThrownBy(() -> BatchSpanProcessor.builder(mockSpanExporter).setMaxQueueSize(0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("maxQueueSize must be positive.");
-    assertThatThrownBy(
-            () ->
-                BatchSpanProcessor.builder(mockSpanExporter)
-                    .setMaxQueueSize(1)
-                    .setMaxExportBatchSize(2)
-                    .build())
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("maxExportBatchSize must be smaller or equal to maxQueueSize.");
   }
 
   @Test
