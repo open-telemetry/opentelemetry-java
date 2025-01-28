@@ -27,11 +27,13 @@ import java.net.ConnectException;
 import java.net.HttpRetryException;
 import java.net.ServerSocket;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -40,6 +42,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -217,26 +221,30 @@ class RetryInterceptorTest {
         .build();
   }
 
-  @Test
-  void isRetryableException() {
-    // Should retry on connection timeouts, where error message is "Connect timed out" or "connect
-    // timed out"
-    assertThat(retrier.shouldRetryOnException(new SocketTimeoutException("Connect timed out")))
-        .isTrue();
-    assertThat(retrier.shouldRetryOnException(new SocketTimeoutException("connect timed out")))
-        .isTrue();
-    // Shouldn't retry on read timeouts, where error message is "Read timed out"
-    assertThat(retrier.shouldRetryOnException(new SocketTimeoutException("Read timed out")))
-        .isFalse();
-    // Shouldn't retry on write timeouts or other IOException
-    assertThat(retrier.shouldRetryOnException(new SocketTimeoutException("timeout"))).isFalse();
-    assertThat(retrier.shouldRetryOnException(new SocketTimeoutException())).isTrue();
-    assertThat(retrier.shouldRetryOnException(new IOException("error"))).isFalse();
+  @ParameterizedTest
+  @MethodSource("isRetryableExceptionArgs")
+  void isRetryableException(IOException exception, boolean expectedRetryResult) {
+    assertThat(retrier.shouldRetryOnException(exception)).isEqualTo(expectedRetryResult);
+  }
 
-    // Testing configured predicate
-    assertThat(retrier.shouldRetryOnException(new HttpRetryException("error", 400))).isFalse();
-    assertThat(retrier.shouldRetryOnException(new HttpRetryException("timeout retry", 400)))
-        .isTrue();
+  private static Stream<Arguments> isRetryableExceptionArgs() {
+    return Stream.of(
+        // Should retry on SocketTimeoutExceptions
+        Arguments.of(new SocketTimeoutException("Connect timed out"), true),
+        Arguments.of(new SocketTimeoutException("connect timed out"), true),
+        Arguments.of(new SocketTimeoutException("timeout"), true),
+        Arguments.of(new SocketTimeoutException("Read timed out"), true),
+        Arguments.of(new SocketTimeoutException(), true),
+        // Should retry on UnknownHostExceptions
+        Arguments.of(new UnknownHostException("host"), true),
+        // Should retry on ConnectException
+        Arguments.of(
+            new ConnectException("Failed to connect to localhost/[0:0:0:0:0:0:0:1]:62611"), true),
+        // Shouldn't retry other IOException
+        Arguments.of(new IOException("error"), false),
+        // Testing configured predicate
+        Arguments.of(new HttpRetryException("error", 400), false),
+        Arguments.of(new HttpRetryException("timeout retry", 400), true));
   }
 
   @Test

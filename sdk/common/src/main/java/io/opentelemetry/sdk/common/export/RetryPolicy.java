@@ -70,8 +70,8 @@ public abstract class RetryPolicy {
   public abstract double getBackoffMultiplier();
 
   /**
-   * Returns the predicate used to determine if thrown exception is retryableor {@code null} if no
-   * predicate was set.
+   * Returns the predicate used to determine if an attempt which failed exceptionally should be
+   * retried, or {@code null} if the exporter specific default predicate should be used.
    */
   @Nullable
   public abstract Predicate<IOException> getRetryExceptionPredicate();
@@ -106,7 +106,10 @@ public abstract class RetryPolicy {
      */
     public abstract RetryPolicyBuilder setBackoffMultiplier(double backoffMultiplier);
 
-    /** Set the predicate to determine if retry should happen based on exception. */
+    /**
+     * Set the predicate used to determine if an attempt which failed exceptionally should be
+     * retried. By default, an exporter specific default predicate should be used.
+     */
     public abstract RetryPolicyBuilder setRetryExceptionPredicate(
         Predicate<IOException> retryExceptionPredicate);
 
