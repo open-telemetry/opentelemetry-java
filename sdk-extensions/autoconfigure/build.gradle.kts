@@ -23,11 +23,6 @@ dependencies {
 
 testing {
   suites {
-    register<JvmTestSuite>("testIncubating") {
-      dependencies {
-        implementation(project(":api:incubator"))
-      }
-    }
     register<JvmTestSuite>("testAutoConfigureOrder") {
       targets {
         all {

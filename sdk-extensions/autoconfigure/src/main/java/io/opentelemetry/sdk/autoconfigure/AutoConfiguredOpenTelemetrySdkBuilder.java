@@ -63,19 +63,6 @@ import javax.annotation.Nullable;
  */
 public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigurationCustomizer {
 
-  private static final boolean INCUBATOR_AVAILABLE;
-
-  static {
-    boolean incubatorAvailable = false;
-    try {
-      Class.forName("io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider");
-      incubatorAvailable = true;
-    } catch (ClassNotFoundException e) {
-      // Not available
-    }
-    INCUBATOR_AVAILABLE = incubatorAvailable;
-  }
-
   private static final Logger logger =
       Logger.getLogger(AutoConfiguredOpenTelemetrySdkBuilder.class.getName());
 
@@ -603,9 +590,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       return;
     }
     GlobalOpenTelemetry.set(openTelemetrySdk);
-    if (INCUBATOR_AVAILABLE) {
-      IncubatingUtil.setGlobalEventLoggerProvider(openTelemetrySdk.getSdkLoggerProvider());
-    }
     logger.log(
         Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetrySdk);
   }

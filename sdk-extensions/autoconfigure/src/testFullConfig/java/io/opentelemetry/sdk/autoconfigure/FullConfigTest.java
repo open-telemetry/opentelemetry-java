@@ -18,8 +18,8 @@ import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.events.EventLogger;
-import io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider;
+import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.incubator.logs.ExtendedLogger;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.Meter;
@@ -160,7 +160,6 @@ public class FullConfigTest {
 
     // Initialize here so we can shutdown when done
     GlobalOpenTelemetry.resetForTest();
-    GlobalEventLoggerProvider.resetForTest();
     openTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
   }
 
@@ -168,7 +167,6 @@ public class FullConfigTest {
   void afterEach() {
     openTelemetrySdk.close();
     GlobalOpenTelemetry.resetForTest();
-    GlobalEventLoggerProvider.resetForTest();
   }
 
   @Test
@@ -206,8 +204,12 @@ public class FullConfigTest {
     logger.logRecordBuilder().setBody("debug log message").setSeverity(Severity.DEBUG).emit();
     logger.logRecordBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
 
-    EventLogger eventLogger = GlobalEventLoggerProvider.get().eventLoggerBuilder("test").build();
-    eventLogger.builder("namespace.test-name").put("cow", "moo").emit();
+    ((ExtendedLogger) logger)
+        .logRecordBuilder()
+        .setEventName("namespace.test-name")
+        .setSeverity(Severity.INFO)
+        .setBody(Value.of(io.opentelemetry.api.common.KeyValue.of("cow", Value.of("moo"))))
+        .emit();
 
     openTelemetrySdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
     openTelemetrySdk.getSdkLoggerProvider().forceFlush().join(10, TimeUnit.SECONDS);
@@ -305,7 +307,7 @@ public class FullConfigTest {
                           .build());
               assertThat(logRecord.getSeverityNumber())
                   .isEqualTo(SeverityNumber.SEVERITY_NUMBER_INFO);
-              assertHasKeyValue(logRecord.getAttributesList(), "event.name", "namespace.test-name");
+              assertThat(logRecord.getEventName()).isEqualTo("namespace.test-name");
             });
   }
 
