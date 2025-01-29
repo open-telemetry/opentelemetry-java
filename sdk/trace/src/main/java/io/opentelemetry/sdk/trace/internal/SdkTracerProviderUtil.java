@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace.internal;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -23,6 +24,21 @@ import java.util.function.Predicate;
 public final class SdkTracerProviderUtil {
 
   private SdkTracerProviderUtil() {}
+
+  /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkTracerProvider}. */
+  public static void setTracerConfigurator(
+      SdkTracerProvider sdkTracerProvider, ScopeConfigurator<TracerConfig> scopeConfigurator) {
+    try {
+      Method method =
+          SdkTracerProvider.class.getDeclaredMethod(
+              "setTracerConfigurator", ScopeConfigurator.class);
+      method.setAccessible(true);
+      method.invoke(sdkTracerProvider, scopeConfigurator);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setTracerConfigurator on SdkTracerProvider", e);
+    }
+  }
 
   /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkTracerProviderBuilder}. */
   public static void setTracerConfigurator(
