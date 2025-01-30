@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.HttpRetryException;
 import java.net.ServerSocket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.time.Duration;
@@ -237,6 +238,8 @@ class RetryInterceptorTest {
         Arguments.of(new SocketTimeoutException(), true),
         // Should retry on UnknownHostExceptions
         Arguments.of(new UnknownHostException("host"), true),
+        // Should retry on SocketException
+        Arguments.of(new SocketException("closed"), true),
         // Should retry on ConnectException
         Arguments.of(
             new ConnectException("Failed to connect to localhost/[0:0:0:0:0:0:0:1]:62611"), true),
