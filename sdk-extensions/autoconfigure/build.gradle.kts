@@ -10,8 +10,6 @@ dependencies {
   api(project(":sdk:all"))
   api(project(":sdk-extensions:autoconfigure-spi"))
 
-  compileOnly(project(":api:incubator"))
-
   annotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":sdk:trace-shaded-deps"))
@@ -23,11 +21,6 @@ dependencies {
 
 testing {
   suites {
-    register<JvmTestSuite>("testIncubating") {
-      dependencies {
-        implementation(project(":api:incubator"))
-      }
-    }
     register<JvmTestSuite>("testAutoConfigureOrder") {
       targets {
         all {
