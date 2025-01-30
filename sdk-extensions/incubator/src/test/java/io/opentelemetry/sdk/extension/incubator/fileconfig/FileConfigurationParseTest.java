@@ -595,6 +595,7 @@ class FileConfigurationParseTest {
     environmentVariables.put("FOO", "BAR");
     environmentVariables.put("STR_1", "value1");
     environmentVariables.put("STR_2", "value2");
+    environmentVariables.put("VALUE_WITH_ESCAPE", "value$$");
     environmentVariables.put("EMPTY_STR", "");
     environmentVariables.put("BOOL", "true");
     environmentVariables.put("INT", "1");
@@ -674,7 +675,13 @@ class FileConfigurationParseTest {
         Arguments.of("key1: \"$${STR_1}\"\n", mapOf(entry("key1", "${STR_1}"))),
         Arguments.of("key1: $${STR_1} ${STR_2}\n", mapOf(entry("key1", "${STR_1} value2"))),
         Arguments.of("key1: $${STR_1} $${STR_2}\n", mapOf(entry("key1", "${STR_1} ${STR_2}"))),
-        Arguments.of("key1: $${NOT_SET:-value1}\n", mapOf(entry("key1", "${NOT_SET:-value1}"))));
+        Arguments.of("key1: $${NOT_SET:-value1}\n", mapOf(entry("key1", "${NOT_SET:-value1}"))),
+        Arguments.of("key1: $${STR_1:-fallback}\n", mapOf(entry("key1", "${STR_1:-fallback}"))),
+        Arguments.of("key1: $${STR_1:-${STR_1}}\n", mapOf(entry("key1", "${STR_1:-value1}"))),
+        Arguments.of("key1: ${NOT_SET:-${FALLBACK}}\n", mapOf(entry("key1", "${FALLBACK}"))),
+        Arguments.of(
+            "key1: ${NOT_SET:-$${FALLBACK}}\n", mapOf(entry("key1", "${NOT_SET:-${FALLBACK}}"))),
+        Arguments.of("key1: ${VALUE_WITH_ESCAPE}\n", mapOf(entry("key1", "value$$"))));
   }
 
   private static <K, V> Map.Entry<K, V> entry(K key, @Nullable V value) {
