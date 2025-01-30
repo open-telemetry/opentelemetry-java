@@ -109,7 +109,7 @@ public final class ResourceConfiguration {
               + ENABLED_RESOURCE_PROVIDERS
               + ". Please update to "
               + NEW_ENVIRONMENT_DETECT_FQCN
-              + ". Support for the old FQCN will be removed after 1.49.0.");
+              + ". Support for the old provider name will be removed after 1.49.0.");
       enabledProviders.add(NEW_ENVIRONMENT_DETECT_FQCN);
     }
 
@@ -123,7 +123,7 @@ public final class ResourceConfiguration {
               + DISABLED_RESOURCE_PROVIDERS
               + ". Please update to "
               + NEW_ENVIRONMENT_DETECT_FQCN
-              + ". Support for the old FQCN will be removed after 1.49.0.");
+              + ". Support for the old provider name will be removed after 1.49.0.");
       disabledProviders.add(NEW_ENVIRONMENT_DETECT_FQCN);
     }
 
