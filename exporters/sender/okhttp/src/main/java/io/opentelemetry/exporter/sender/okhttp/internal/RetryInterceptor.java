@@ -10,6 +10,7 @@ import static java.util.stream.Collectors.joining;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.StringJoiner;
@@ -158,11 +159,14 @@ public final class RetryInterceptor implements Interceptor {
     // Known retryable ConnectTimeout messages: "Failed to connect to
     // localhost/[0:0:0:0:0:0:0:1]:62611"
     // Known retryable UnknownHostException messages: "xxxxxx.com"
+    // Known retryable SocketException: Socket closed
     if (e instanceof SocketTimeoutException) {
       return true;
     } else if (e instanceof ConnectException) {
       return true;
     } else if (e instanceof UnknownHostException) {
+      return true;
+    } else if (e instanceof SocketException) {
       return true;
     }
     return false;
