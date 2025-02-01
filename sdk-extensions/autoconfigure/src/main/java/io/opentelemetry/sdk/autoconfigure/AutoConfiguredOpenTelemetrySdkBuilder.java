@@ -443,65 +443,19 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     List<Closeable> closeables = new ArrayList<>();
 
     try {
-      OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder().build();
+      OpenTelemetrySdkBuilder sdkBuilder = OpenTelemetrySdk.builder();
+
+      // The propagation system is part of the API and functions in the absence of an SDK.
+      ContextPropagators propagators =
+          PropagatorConfiguration.configurePropagators(config, spiHelper, propagatorCustomizer);
+      sdkBuilder.setPropagators(propagators);
+
       boolean sdkEnabled = !config.getBoolean("otel.sdk.disabled", false);
-
       if (sdkEnabled) {
-        SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
-        meterProviderBuilder.setResource(resource);
-        MeterProviderConfiguration.configureMeterProvider(
-            meterProviderBuilder,
-            config,
-            spiHelper,
-            metricReaderCustomizer,
-            metricExporterCustomizer,
-            closeables);
-        meterProviderBuilder = meterProviderCustomizer.apply(meterProviderBuilder, config);
-        SdkMeterProvider meterProvider = meterProviderBuilder.build();
-        closeables.add(meterProvider);
-
-        SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
-        tracerProviderBuilder.setResource(resource);
-        TracerProviderConfiguration.configureTracerProvider(
-            tracerProviderBuilder,
-            config,
-            spiHelper,
-            meterProvider,
-            spanExporterCustomizer,
-            spanProcessorCustomizer,
-            samplerCustomizer,
-            closeables);
-        tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
-        SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
-        closeables.add(tracerProvider);
-
-        SdkLoggerProviderBuilder loggerProviderBuilder = SdkLoggerProvider.builder();
-        loggerProviderBuilder.setResource(resource);
-        LoggerProviderConfiguration.configureLoggerProvider(
-            loggerProviderBuilder,
-            config,
-            spiHelper,
-            meterProvider,
-            logRecordExporterCustomizer,
-            logRecordProcessorCustomizer,
-            closeables);
-        loggerProviderBuilder = loggerProviderCustomizer.apply(loggerProviderBuilder, config);
-        SdkLoggerProvider loggerProvider = loggerProviderBuilder.build();
-        closeables.add(loggerProvider);
-
-        ContextPropagators propagators =
-            PropagatorConfiguration.configurePropagators(config, spiHelper, propagatorCustomizer);
-
-        OpenTelemetrySdkBuilder sdkBuilder =
-            OpenTelemetrySdk.builder()
-                .setTracerProvider(tracerProvider)
-                .setLoggerProvider(loggerProvider)
-                .setMeterProvider(meterProvider)
-                .setPropagators(propagators);
-
-        openTelemetrySdk = sdkBuilder.build();
+        configureSdk(sdkBuilder, config, resource, spiHelper, closeables);
       }
 
+      OpenTelemetrySdk openTelemetrySdk = sdkBuilder.build();
       maybeRegisterShutdownHook(openTelemetrySdk);
       maybeSetAsGlobal(openTelemetrySdk);
       callAutoConfigureListeners(spiHelper, openTelemetrySdk);
@@ -524,6 +478,62 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       }
       throw new ConfigurationException("Unexpected configuration error", e);
     }
+  }
+
+  // Visible for testing
+  void configureSdk(
+      OpenTelemetrySdkBuilder sdkBuilder,
+      ConfigProperties config,
+      Resource resource,
+      SpiHelper spiHelper,
+      List<Closeable> closeables) {
+    SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
+    meterProviderBuilder.setResource(resource);
+
+    MeterProviderConfiguration.configureMeterProvider(
+        meterProviderBuilder,
+        config,
+        spiHelper,
+        metricReaderCustomizer,
+        metricExporterCustomizer,
+        closeables);
+    meterProviderBuilder = meterProviderCustomizer.apply(meterProviderBuilder, config);
+    SdkMeterProvider meterProvider = meterProviderBuilder.build();
+    closeables.add(meterProvider);
+
+    SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
+    tracerProviderBuilder.setResource(resource);
+    TracerProviderConfiguration.configureTracerProvider(
+        tracerProviderBuilder,
+        config,
+        spiHelper,
+        meterProvider,
+        spanExporterCustomizer,
+        spanProcessorCustomizer,
+        samplerCustomizer,
+        closeables);
+    tracerProviderBuilder = tracerProviderCustomizer.apply(tracerProviderBuilder, config);
+    SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
+    closeables.add(tracerProvider);
+
+    SdkLoggerProviderBuilder loggerProviderBuilder = SdkLoggerProvider.builder();
+    loggerProviderBuilder.setResource(resource);
+    LoggerProviderConfiguration.configureLoggerProvider(
+        loggerProviderBuilder,
+        config,
+        spiHelper,
+        meterProvider,
+        logRecordExporterCustomizer,
+        logRecordProcessorCustomizer,
+        closeables);
+    loggerProviderBuilder = loggerProviderCustomizer.apply(loggerProviderBuilder, config);
+    SdkLoggerProvider loggerProvider = loggerProviderBuilder.build();
+    closeables.add(loggerProvider);
+
+    sdkBuilder
+        .setTracerProvider(tracerProvider)
+        .setLoggerProvider(loggerProvider)
+        .setMeterProvider(meterProvider);
   }
 
   @Nullable
@@ -607,7 +617,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   @SuppressWarnings("deprecation") // Support deprecated SdkTracerProviderConfigurer
-  private void mergeSdkTracerProviderConfigurer() {
+  void mergeSdkTracerProviderConfigurer() {
     for (io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer configurer :
         componentLoader.load(
             io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer.class)) {
