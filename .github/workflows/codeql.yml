@@ -7,12 +7,14 @@ on:
       - release/*
       - v0.*
       - v1.*
+      - benchmarks
   push:
     branches:
       - main
       - release/*
       - v0.*
       - v1.*
+      - benchmarks
   schedule:
     - cron: "29 13 * * 2"  # weekly at 13:29 UTC on Tuesday
 
