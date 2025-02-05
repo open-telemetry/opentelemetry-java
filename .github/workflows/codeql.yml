@@ -52,7 +52,7 @@ jobs:
         # --no-build-cache is required for codeql to analyze all modules
         # --no-daemon is required for codeql to observe the compilation
         # (see https://docs.github.com/en/code-security/codeql-cli/getting-started-with-the-codeql-cli/preparing-your-code-for-codeql-analysis#specifying-build-commands)
-        run: ./gradlew assemble --no-build-cache
+        run: ./gradlew assemble --no-build-cache --no-daemon
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v3
