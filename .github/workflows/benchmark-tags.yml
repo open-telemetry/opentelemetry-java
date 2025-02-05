@@ -3,8 +3,13 @@ name: Benchmark Tags
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   sdk-benchmark:
+    permissions:
+      contents: write # for git push to benchmarks branch
     name: Benchmark SDK
     runs-on: self-hosted
     timeout-minutes: 10

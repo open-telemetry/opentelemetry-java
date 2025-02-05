@@ -6,8 +6,13 @@ on:
         description: "The pull request # to backport"
         required: true
 
+permissions:
+  contents: read
+
 jobs:
   backport:
+    permissions:
+      contents: write  # for git push to PR branch
     runs-on: ubuntu-latest
     steps:
       - run: |
