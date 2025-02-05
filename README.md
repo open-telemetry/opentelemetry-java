@@ -5,6 +5,7 @@
 [![Maven Central][maven-image]][maven-url]
 [![Reproducible Builds](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jvm-repo-rebuild/reproducible-central/master/content/io/opentelemetry/java/badge.json)](https://github.com/jvm-repo-rebuild/reproducible-central/blob/master/content/io/opentelemetry/java/README.md)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/open-telemetry/opentelemetry-java/badge)](https://scorecard.dev/viewer/?uri=github.com/open-telemetry/opentelemetry-java)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/9991/badge)](https://www.bestpractices.dev/projects/9991)
 
 `opentelemetry-java` is the home of the Java implementation of the OpenTelemetry API for recording
 telemetry, and SDK for managing telemetry recorded by the API.
