@@ -27,7 +27,7 @@ jobs:
       contents: read
       actions: read  # for github/codeql-action/init to get workflow details
       security-events: write  # for github/codeql-action/analyze to upload SARIF results
-
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
