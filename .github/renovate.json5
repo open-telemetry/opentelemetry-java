@@ -7,6 +7,12 @@
   ],
   "packageRules": [
     {
+      // this is to reduce the number of renovate PRs by consolidating them into a weekly batch
+      "matchManagers": ["github-actions"],
+      "extends": ["schedule:weekly"],
+      "groupName": "github actions",
+    },
+    {
       "matchPackageNames": [
         "io.opentelemetry.proto:opentelemetry-proto",
         "io.opentelemetry.semconv:opentelemetry-semconv-incubating"
