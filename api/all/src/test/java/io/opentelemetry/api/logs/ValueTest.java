@@ -220,13 +220,13 @@ class ValueTest {
   @MethodSource("convertArgs")
   void convert(Object object, Value<?> expected) {
     Value<?> converted = Value.convert(object);
-      if (Objects.requireNonNull(expected.getType()) == ValueType.DOUBLE) {
-          assertThat(converted.getType()).isEqualTo(ValueType.DOUBLE);
-          assertThat((Double) converted.getValue())
-                  .isEqualTo((Double) expected.getValue(), Offset.offset(.001));
-      } else {
-          assertThat(converted).isEqualTo(expected);
-      }
+    if (Objects.requireNonNull(expected.getType()) == ValueType.DOUBLE) {
+      assertThat(converted.getType()).isEqualTo(ValueType.DOUBLE);
+      assertThat((Double) converted.getValue())
+          .isEqualTo((Double) expected.getValue(), Offset.offset(.001));
+    } else {
+      assertThat(converted).isEqualTo(expected);
+    }
   }
 
   @SuppressWarnings("cast")
