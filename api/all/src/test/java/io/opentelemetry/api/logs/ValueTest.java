@@ -13,6 +13,8 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.common.ValueType;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ReadOnlyBufferException;
 import java.nio.charset.StandardCharsets;
@@ -270,5 +272,20 @@ class ValueTest {
                     .put("key2", Value.of(true))
                     .put("key3", Value.of(Collections.singletonMap("key4", Value.of("value"))))
                     .build())));
+  }
+
+  @ParameterizedTest
+  @MethodSource("convertUnsupportedArgs")
+  void convertUnsupported(Object object) {
+    assertThatThrownBy(() -> Value.convert(object)).isInstanceOf(IllegalArgumentException.class);
+  }
+
+  private static Stream<Arguments> convertUnsupportedArgs() {
+    return Stream.of(
+        Arguments.of(new Object()),
+        Arguments.of(new BigInteger("1")),
+        Arguments.of(new BigDecimal("1.1")),
+        Arguments.of(Collections.singletonList(new Object())),
+        Arguments.of(Collections.singletonMap(new Object(), "value")));
   }
 }
