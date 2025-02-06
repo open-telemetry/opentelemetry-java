@@ -42,7 +42,7 @@
 * OTLP: Add ability to customize retry exception predicate
   ([#6991](https://github.com/open-telemetry/opentelemetry-java/pull/6991))
 * OTLP: Expand default OkHttp sender retry exception predicate
-  ([#7047](https://github.com/open-telemetry/opentelemetry-java/pull/7047), 
+  ([#7047](https://github.com/open-telemetry/opentelemetry-java/pull/7047),
   [#7057](https://github.com/open-telemetry/opentelemetry-java/pull/7057))
 
 #### Extensions
