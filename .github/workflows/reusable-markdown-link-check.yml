@@ -3,6 +3,9 @@ name: Reusable - Markdown link check
 on:
   workflow_call:
 
+permissions:
+  contents: read
+
 jobs:
   markdown-link-check:
     runs-on: ubuntu-latest

@@ -3,6 +3,9 @@ name: Reusable - Misspell check
 on:
   workflow_call:
 
+permissions:
+  contents: read
+
 jobs:
   misspell-check:
     runs-on: ubuntu-latest

@@ -2,6 +2,65 @@
 
 ## Unreleased
 
+## Version 1.47.0 (2025-02-07)
+
+### API
+
+#### Incubator
+
+* Make `ExtendedTracer` easier to use
+  ([#6943](https://github.com/open-telemetry/opentelemetry-java/pull/6943))
+* Add `ExtendedLogRecordBuilder#setEventName` and corresponding SDK and OTLP serialization
+  ([#7012](https://github.com/open-telemetry/opentelemetry-java/pull/7012))
+* BREAKING: Drop event API / SDK
+  ([#7053](https://github.com/open-telemetry/opentelemetry-java/pull/7053))
+
+### SDK
+
+* Remove -alpha artifacts from runtime classpath of stable components
+  ([#6944](https://github.com/open-telemetry/opentelemetry-java/pull/6944))
+
+#### Traces
+
+* Bugfix: Follow spec on span limits, batch processors
+  ([#7030](https://github.com/open-telemetry/opentelemetry-java/pull/7030))
+* Add experimental `SdkTracerProvider.setScopeConfigurator(ScopeConfigurator)` for
+  updating `TracerConfig` at runtime
+  ([#7021](https://github.com/open-telemetry/opentelemetry-java/pull/7021))
+
+#### Profiles
+
+* Add AttributeKeyValue abstraction to common otlp exporters
+  ([#7026](https://github.com/open-telemetry/opentelemetry-java/pull/7026))
+* Improve profiles attribute table handling
+  ([#7031](https://github.com/open-telemetry/opentelemetry-java/pull/7031))
+
+#### Exporters
+
+* Interpret timeout zero value as no limit
+  ([#7023](https://github.com/open-telemetry/opentelemetry-java/pull/7023))
+* Bugfix - OTLP: Fix concurrent span reusable data marshaler
+  ([#7041](https://github.com/open-telemetry/opentelemetry-java/pull/7041))
+* OTLP: Add ability to customize retry exception predicate
+  ([#6991](https://github.com/open-telemetry/opentelemetry-java/pull/6991))
+* OTLP: Expand default OkHttp sender retry exception predicate
+  ([#7047](https://github.com/open-telemetry/opentelemetry-java/pull/7047),
+  [#7057](https://github.com/open-telemetry/opentelemetry-java/pull/7057))
+
+#### Extensions
+
+* Autoconfigure: Consistent application of exporter customizers when otel.{signal}.exporter=none
+  ([#7017](https://github.com/open-telemetry/opentelemetry-java/pull/7017))
+* Autoconfigure: Promote EnvironmentResourceProvider to public API
+  ([#7052](https://github.com/open-telemetry/opentelemetry-java/pull/7052))
+* Autoconfigure: Ensure `OTEL_PROPAGATORS` still works when `OTEL_SDK_DISABLED=true`.
+  ([#7062](https://github.com/open-telemetry/opentelemetry-java/pull/7062))%
+
+#### Testing
+
+* Add W3CBaggagePropagator to `OpenTelemetryRule`, `OpenTelemetryExtension`.
+  ([#7056](https://github.com/open-telemetry/opentelemetry-java/pull/7056))
+
 ## Version 1.46.0 (2025-01-10)
 
 ### SDK
