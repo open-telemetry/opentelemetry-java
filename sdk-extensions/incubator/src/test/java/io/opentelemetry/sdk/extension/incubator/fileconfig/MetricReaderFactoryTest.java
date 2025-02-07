@@ -25,8 +25,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMe
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import java.io.Closeable;
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -110,11 +108,10 @@ class MetricReaderFactoryTest {
   }
 
   @Test
-  void create_PullPrometheusDefault() throws IOException {
-    int port = randomAvailablePort();
+  void create_PullPrometheusDefault() {
     spiHelper = spy(spiHelper);
     List<Closeable> closeables = new ArrayList<>();
-    PrometheusHttpServer expectedReader = PrometheusHttpServer.builder().setPort(port).build();
+    PrometheusHttpServer expectedReader = PrometheusHttpServer.builder().setPort(0).build();
     // Close the reader to avoid port conflict with the new instance created by MetricReaderFactory
     expectedReader.close();
 
@@ -126,7 +123,9 @@ class MetricReaderFactoryTest {
                         new PullMetricReaderModel()
                             .withExporter(
                                 new PullMetricExporterModel()
-                                    .withPrometheus(new PrometheusModel().withPort(port)))),
+                                    .withPrometheus(
+                                        new PrometheusModel()
+                                            .withPort(expectedReader.getAddress().getPort())))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(reader);
@@ -138,13 +137,11 @@ class MetricReaderFactoryTest {
   }
 
   @Test
-  void create_PullPrometheusConfigured() throws IOException {
-    int port = randomAvailablePort();
-
+  void create_PullPrometheusConfigured() {
     spiHelper = spy(spiHelper);
     List<Closeable> closeables = new ArrayList<>();
     PrometheusHttpServer expectedReader =
-        PrometheusHttpServer.builder().setHost("localhost").setPort(port).build();
+        PrometheusHttpServer.builder().setHost("localhost").setPort(0).build();
     // Close the reader to avoid port conflict with the new instance created by MetricReaderFactory
     expectedReader.close();
 
@@ -159,7 +156,7 @@ class MetricReaderFactoryTest {
                                     .withPrometheus(
                                         new PrometheusModel()
                                             .withHost("localhost")
-                                            .withPort(port)))),
+                                            .withPort(expectedReader.getAddress().getPort())))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(reader);
@@ -194,16 +191,5 @@ class MetricReaderFactoryTest {
                         Collections.emptyList()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("prometheus is the only currently supported pull reader");
-  }
-
-  /**
-   * Find a random unused port. There's a small race if another process takes it before we
-   * initialize. Consider adding retries to this test if it flakes, presumably it never will on CI
-   * since there's no prometheus there blocking the well-known port.
-   */
-  private static int randomAvailablePort() throws IOException {
-    try (ServerSocket socket2 = new ServerSocket(0)) {
-      return socket2.getLocalPort();
-    }
   }
 }

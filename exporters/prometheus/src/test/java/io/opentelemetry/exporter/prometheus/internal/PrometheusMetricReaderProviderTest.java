@@ -8,12 +8,9 @@ package io.opentelemetry.exporter.prometheus.internal;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -28,7 +25,6 @@ import java.util.Map;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -40,8 +36,6 @@ class PrometheusMetricReaderProviderTest {
   private static final PrometheusMetricReaderProvider provider =
       new PrometheusMetricReaderProvider();
 
-  @Mock private ConfigProperties configProperties;
-
   @Test
   void getName() {
     assertThat(provider.getName()).isEqualTo("prometheus");
@@ -49,10 +43,14 @@ class PrometheusMetricReaderProviderTest {
 
   @Test
   void createMetricReader_Default() throws IOException {
-    when(configProperties.getInt(any())).thenReturn(null);
-    when(configProperties.getString(any())).thenReturn(null);
+    Map<String, String> config = new HashMap<>();
+    // Although this test aims to test the defaults, the default port of 9464 may produce a port
+    // conflict error. Therefore, we set the port to 0, allowing an available port to be
+    // automatically assigned.
+    config.put("otel.exporter.prometheus.port", "0");
 
-    try (MetricReader metricReader = provider.createMetricReader(configProperties)) {
+    try (MetricReader metricReader =
+        provider.createMetricReader(DefaultConfigProperties.createFromMap(config))) {
       assertThat(metricReader)
           .isInstanceOf(PrometheusHttpServer.class)
           .extracting("httpServer", as(InstanceOfAssertFactories.type(HTTPServer.class)))
@@ -60,7 +58,7 @@ class PrometheusMetricReaderProviderTest {
           .satisfies(
               server -> {
                 assertThat(server.getAddress().getHostName()).isEqualTo("0:0:0:0:0:0:0:0");
-                assertThat(server.getAddress().getPort()).isEqualTo(9464);
+                assertThat(server.getAddress().getPort()).isPositive();
               });
       assertThat(metricReader.getMemoryMode()).isEqualTo(MemoryMode.REUSABLE_DATA);
       assertThat(metricReader.getDefaultAggregation(InstrumentType.HISTOGRAM))
@@ -85,9 +83,6 @@ class PrometheusMetricReaderProviderTest {
     config.put(
         "otel.java.experimental.exporter.prometheus.metrics.default.histogram.aggregation",
         "BASE2_EXPONENTIAL_BUCKET_HISTOGRAM");
-
-    when(configProperties.getInt(any())).thenReturn(null);
-    when(configProperties.getString(any())).thenReturn(null);
 
     try (MetricReader metricReader =
         provider.createMetricReader(DefaultConfigProperties.createFromMap(config))) {

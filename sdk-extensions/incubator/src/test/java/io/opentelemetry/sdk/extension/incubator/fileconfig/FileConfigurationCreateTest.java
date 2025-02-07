@@ -75,11 +75,11 @@ class FileConfigurationCreateTest {
         continue;
       }
 
-      // Rewrite references to cert files in examples
       String exampleContent =
           new String(Files.readAllBytes(example.toPath()), StandardCharsets.UTF_8);
       String rewrittenExampleContent =
           exampleContent
+              // Rewrite references to cert files in examples
               .replaceAll(
                   "certificate: .*\n",
                   "certificate: " + certificatePath.replace("\\", "\\\\") + System.lineSeparator())
@@ -90,7 +90,9 @@ class FileConfigurationCreateTest {
                   "client_certificate: .*\n",
                   "client_certificate: "
                       + clientCertificatePath.replace("\\", "\\\\")
-                      + System.lineSeparator());
+                      + System.lineSeparator())
+              // Rewrite references to prometheus port to assign random available port
+              .replaceAll("port: 9464", "port: 0");
       InputStream is =
           new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
 

@@ -167,8 +167,12 @@ public final class PrometheusHttpServer implements MetricReader {
     return new PrometheusHttpServerBuilder(builder);
   }
 
-  // Visible for testing.
-  InetSocketAddress getAddress() {
+  /**
+   * Return the address (including port via {@link InetSocketAddress#getPort()}) the server is
+   * listening on. Useful if setting {@link PrometheusHttpServerBuilder#setPort(int)} to {@code 0}
+   * so that an available port is automatically assigned.
+   */
+  public InetSocketAddress getAddress() {
     return new InetSocketAddress(host, httpServer.getPort());
   }
 }
