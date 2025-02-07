@@ -49,8 +49,15 @@
 
 * Autoconfigure: Consistent application of exporter customizers when otel.{signal}.exporter=none
   ([#7017](https://github.com/open-telemetry/opentelemetry-java/pull/7017))
-* Promote EnvironmentResourceProvider to public API
+* Autoconfigure: Promote EnvironmentResourceProvider to public API
   ([#7052](https://github.com/open-telemetry/opentelemetry-java/pull/7052))
+* Autoconfigure: Ensure `OTEL_PROPAGATORS` still works when `OTEL_SDK_DISABLED=true`.
+  ([#7062](https://github.com/open-telemetry/opentelemetry-java/pull/7062))%
+
+#### Testing
+
+* Add W3CBaggagePropagator to `OpenTelemetryRule`, `OpenTelemetryExtension`.
+  ([#7056](https://github.com/open-telemetry/opentelemetry-java/pull/7056))
 
 ## Version 1.46.0 (2025-01-10)
 
