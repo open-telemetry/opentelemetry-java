@@ -12,6 +12,8 @@ import io.opentelemetry.sdk.resources.Resource;
 /**
  * {@link ResourceProvider} for automatically configuring {@link
  * ResourceConfiguration#createEnvironmentResource(ConfigProperties)}.
+ *
+ * @since 1.47.0
  */
 public final class EnvironmentResourceProvider implements ResourceProvider {
   @Override
