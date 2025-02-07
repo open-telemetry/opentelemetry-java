@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.47.0 (2025-02-07)
+
 ### API
 
 #### Incubator
