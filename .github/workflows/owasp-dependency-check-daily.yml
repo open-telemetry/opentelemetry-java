@@ -4,13 +4,15 @@ name: OWASP dependency check (daily)
 
 on:
   schedule:
-    - cron: '30 1 * * *'
+    - cron: "30 1 * * *" # daily at 1:30 UTC
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   analyze:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
@@ -21,6 +23,7 @@ jobs:
 
       - name: Set up gradle
         uses: gradle/actions/setup-gradle@v4
+
       - name: Check dependencies
         run: ./gradlew dependencyCheckAnalyze
 

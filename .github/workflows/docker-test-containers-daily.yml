@@ -5,8 +5,14 @@ on:
     - cron: "23 3 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   copy-images:
+    permissions:
+      contents: read
+      packages: write
     strategy:
       matrix:
         include:
