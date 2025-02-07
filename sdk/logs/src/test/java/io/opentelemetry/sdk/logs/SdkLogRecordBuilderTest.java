@@ -85,7 +85,7 @@ class SdkLogRecordBuilderTest {
     builder.setTimestamp(timestamp);
     builder.setObservedTimestamp(456, TimeUnit.SECONDS);
     builder.setObservedTimestamp(observedTimestamp);
-    builder.setAttribute((String)null, (String)null);
+    builder.setAttribute((String) null, (String) null);
     builder.setAttribute(AttributeKey.stringKey("k1"), "v1");
     builder.setAllAttributes(Attributes.builder().put("k2", "v2").put("k3", "v3").build());
     builder.setContext(Span.wrap(spanContext).storeInContext(Context.root()));
@@ -126,9 +126,10 @@ class SdkLogRecordBuilderTest {
   }
 
   @Test
-  void testConvenienceAttributeMethods(){
+  void testConvenienceAttributeMethods() {
     List<String> valueList = Arrays.asList("foo", "bar", "baz");
-    builder.setAttribute("foo", "bar")
+    builder
+        .setAttribute("foo", "bar")
         .setAttribute("lk", 12L)
         .setAttribute("dk", 12.123)
         .setAttribute("bk", true)
@@ -142,7 +143,6 @@ class SdkLogRecordBuilderTest {
             equalTo(doubleKey("dk"), 12.123),
             equalTo(booleanKey("bk"), true),
             equalTo(longKey("ik"), 13L),
-            equalTo(stringArrayKey("list"), valueList)
-        );
+            equalTo(stringArrayKey("list"), valueList));
   }
 }

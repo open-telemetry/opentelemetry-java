@@ -5,6 +5,12 @@
 
 package io.opentelemetry.api.logs;
 
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
@@ -12,12 +18,6 @@ import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import static io.opentelemetry.api.common.AttributeKey.booleanKey;
-import static io.opentelemetry.api.common.AttributeKey.doubleKey;
-import static io.opentelemetry.api.common.AttributeKey.longKey;
-import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 /**
  * Used to construct and emit log records from a {@link Logger}.
@@ -109,32 +109,32 @@ public interface LogRecordBuilder {
   <T> LogRecordBuilder setAttribute(AttributeKey<T> key, T value);
 
   /** Sets a string attribute. */
-  default LogRecordBuilder setAttribute(String key, String value){
+  default LogRecordBuilder setAttribute(String key, String value) {
     return setAttribute(stringKey(key), value);
   }
 
   /** Sets a Long attribute. */
-  default LogRecordBuilder setAttribute(String key, Long value){
+  default LogRecordBuilder setAttribute(String key, Long value) {
     return setAttribute(longKey(key), value);
   }
 
   /** Sets a Double attribute. */
-  default LogRecordBuilder setAttribute(String key, Double value){
+  default LogRecordBuilder setAttribute(String key, Double value) {
     return setAttribute(doubleKey(key), value);
   }
 
   /** Sets a Boolean attribute. */
-  default LogRecordBuilder setAttribute(String key, Boolean value){
+  default LogRecordBuilder setAttribute(String key, Boolean value) {
     return setAttribute(booleanKey(key), value);
   }
 
   /** Sets an Integer attribute. */
-  default LogRecordBuilder setAttribute(String key, Integer value){
+  default LogRecordBuilder setAttribute(String key, Integer value) {
     return setAttribute(key, value.longValue());
   }
 
   /** Sets a string array attribute. */
-  default LogRecordBuilder setAttribute(String key, List<String> value){
+  default LogRecordBuilder setAttribute(String key, List<String> value) {
     return setAttribute(stringArrayKey(key), value);
   }
 
