@@ -72,6 +72,8 @@ public abstract class RetryPolicy {
   /**
    * Returns the predicate used to determine if an attempt which failed exceptionally should be
    * retried, or {@code null} if the exporter specific default predicate should be used.
+   *
+   * @since 1.47.0
    */
   @Nullable
   public abstract Predicate<IOException> getRetryExceptionPredicate();
@@ -109,6 +111,8 @@ public abstract class RetryPolicy {
     /**
      * Set the predicate used to determine if an attempt which failed exceptionally should be
      * retried. By default, an exporter specific default predicate should be used.
+     *
+     * @since 1.47.0
      */
     public abstract RetryPolicyBuilder setRetryExceptionPredicate(
         Predicate<IOException> retryExceptionPredicate);

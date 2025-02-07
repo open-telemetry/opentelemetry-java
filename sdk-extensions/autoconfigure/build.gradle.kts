@@ -10,8 +10,6 @@ dependencies {
   api(project(":sdk:all"))
   api(project(":sdk-extensions:autoconfigure-spi"))
 
-  compileOnly(project(":api:incubator"))
-
   annotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":sdk:trace-shaded-deps"))
@@ -23,11 +21,6 @@ dependencies {
 
 testing {
   suites {
-    register<JvmTestSuite>("testIncubating") {
-      dependencies {
-        implementation(project(":api:incubator"))
-      }
-    }
     register<JvmTestSuite>("testAutoConfigureOrder") {
       targets {
         all {
@@ -74,7 +67,8 @@ testing {
       targets {
         all {
           testTask {
-            environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
+            environment("OTEL_SERVICE_NAME", "test")
+            environment("OTEL_RESOURCE_ATTRIBUTES", "cat=meow")
             environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottrace,test")
             environment("OTEL_EXPORTER_OTLP_HEADERS", "cat=meow,dog=bark")
             environment("OTEL_EXPORTER_OTLP_TIMEOUT", "5000")
