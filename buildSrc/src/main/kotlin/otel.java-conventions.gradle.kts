@@ -232,6 +232,8 @@ testing {
     dependencies {
       implementation(project(project.path))
 
+      implementation(enforcedPlatform("org.junit:junit-bom:5.11.4"))
+
       implementation(project(":testing-internal"))
 
       compileOnly("com.google.auto.value:auto-value-annotations")
