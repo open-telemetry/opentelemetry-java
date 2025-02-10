@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-  implementation("com.google.errorprone:error_prone_core")
+  compileOnly("com.google.errorprone:error_prone_core")
 
   testImplementation("com.google.errorprone:error_prone_test_helpers")
 }
