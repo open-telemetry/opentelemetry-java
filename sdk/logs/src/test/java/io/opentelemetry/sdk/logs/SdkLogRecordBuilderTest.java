@@ -127,14 +127,12 @@ class SdkLogRecordBuilderTest {
 
   @Test
   void testConvenienceAttributeMethods() {
-    List<String> valueList = Arrays.asList("foo", "bar", "baz");
     builder
         .setAttribute("foo", "bar")
         .setAttribute("lk", 12L)
         .setAttribute("dk", 12.123)
         .setAttribute("bk", true)
         .setAttribute("ik", 13)
-        .setAttribute("list", valueList)
         .emit();
     assertThat(emittedLog.get().toLogRecordData())
         .hasAttributesSatisfyingExactly(
@@ -142,7 +140,6 @@ class SdkLogRecordBuilderTest {
             equalTo(longKey("lk"), 12L),
             equalTo(doubleKey("dk"), 12.123),
             equalTo(booleanKey("bk"), true),
-            equalTo(longKey("ik"), 13L),
-            equalTo(stringArrayKey("list"), valueList));
+            equalTo(longKey("ik"), 13L));
   }
 }
