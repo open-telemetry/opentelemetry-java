@@ -84,6 +84,8 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
     return this;
   }
 
+  // TODO (trask) once event name stabilizes, add hasEventName(String)
+
   /** Asserts the log has the given epoch {@code timestamp}. */
   public LogRecordDataAssert hasTimestamp(long timestampEpochNanos) {
     isNotNull();

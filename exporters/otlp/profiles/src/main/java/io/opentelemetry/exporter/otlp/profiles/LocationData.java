@@ -38,5 +38,5 @@ public interface LocationData {
   boolean isFolded();
 
   /** References to attributes in Profile.attribute_table. */
-  List<Integer> getAttributes();
+  List<Integer> getAttributeIndices();
 }

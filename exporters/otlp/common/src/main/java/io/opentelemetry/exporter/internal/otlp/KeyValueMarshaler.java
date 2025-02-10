@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * A Marshaler of key value pairs.
@@ -63,6 +64,28 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
           }
         });
     return marshalers;
+  }
+
+  @SuppressWarnings("AvoidObjectArrays")
+  public static KeyValueMarshaler[] createRepeated(List<AttributeKeyValue<?>> items) {
+    if (items.isEmpty()) {
+      return EMPTY_REPEATED;
+    }
+
+    KeyValueMarshaler[] keyValueMarshalers = new KeyValueMarshaler[items.size()];
+    items.forEach(
+        item ->
+            new Consumer<AttributeKeyValue<?>>() {
+              int index = 0;
+
+              @Override
+              public void accept(AttributeKeyValue<?> attributeKeyValue) {
+                keyValueMarshalers[index++] =
+                    KeyValueMarshaler.create(
+                        attributeKeyValue.getAttributeKey(), attributeKeyValue.getValue());
+              }
+            });
+    return keyValueMarshalers;
   }
 
   @SuppressWarnings("unchecked")

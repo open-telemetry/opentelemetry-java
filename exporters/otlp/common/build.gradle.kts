@@ -15,6 +15,8 @@ val versions: Map<String, String> by project
 dependencies {
   protoSource("io.opentelemetry.proto:opentelemetry-proto:${versions["io.opentelemetry.proto"]}")
 
+  annotationProcessor("com.google.auto.value:auto-value")
+
   api(project(":exporters:common"))
 
   compileOnly(project(":sdk:metrics"))

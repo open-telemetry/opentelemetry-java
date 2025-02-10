@@ -7,8 +7,9 @@ package io.opentelemetry.exporter.internal.otlp;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.KeyValue;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.incubator.events.EventLogger;
+import io.opentelemetry.api.incubator.logs.ExtendedLogger;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.exporter.internal.otlp.logs.LogsRequestMarshaler;
@@ -16,7 +17,6 @@ import io.opentelemetry.exporter.internal.otlp.logs.LowAllocationLogsRequestMars
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
-import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import java.io.IOException;
@@ -84,22 +84,21 @@ public class LogsRequestMarshalerBenchmark {
         .setSeverityText("INFO")
         .emit();
 
-    SdkEventLoggerProvider eventLoggerProvider = SdkEventLoggerProvider.create(loggerProvider);
-    EventLogger eventLogger = eventLoggerProvider.get("event-logger");
-    eventLogger
-        .builder("namespace.my-event-name")
-        // Helper methods to set primitive types
-        .put("stringKey", "value")
-        .put("longKey", 1L)
-        .put("doubleKey", 1.0)
-        .put("boolKey", true)
-        // Helper methods to set primitive array types
-        .put("stringArrKey", "value1", "value2")
-        .put("longArrKey", 1L, 2L)
-        .put("doubleArrKey", 1.0, 2.0)
-        .put("boolArrKey", true, false)
-        // Set complex data
-        .put("key", Value.of(Collections.singletonMap("childKey1", Value.of("value"))))
+    ((ExtendedLogger) logger1)
+        .logRecordBuilder()
+        .setEventName("namespace.my-event-name")
+        .setBody(
+            Value.of(
+                KeyValue.of("stringKey", Value.of("value")),
+                KeyValue.of("longKey", Value.of(1)),
+                KeyValue.of("doubleKey", Value.of(1.0)),
+                KeyValue.of("boolKey", Value.of(true)),
+                KeyValue.of("stringArrKey", Value.of(Value.of("value1"), Value.of("value2"))),
+                KeyValue.of("longArrKey", Value.of(Value.of(1), Value.of(2))),
+                KeyValue.of("doubleArrKey", Value.of(Value.of(1.0), Value.of(2.0))),
+                KeyValue.of("boolArrKey", Value.of(Value.of(true), Value.of(false))),
+                KeyValue.of(
+                    "key", Value.of(Collections.singletonMap("childKey1", Value.of("value"))))))
         .emit();
 
     LOGS = logRecordExporter.getFinishedLogRecordItems();

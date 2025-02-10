@@ -18,7 +18,10 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
+import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -182,6 +185,35 @@ class SdkTracerProviderTest {
             .setSchemaUrl(expected.getSchemaUrl())
             .build();
     assertThat(((SdkTracer) tracer).getInstrumentationScopeInfo()).isEqualTo(expected);
+  }
+
+  @Test
+  void propagatesEnablementToTracerDirectly() {
+    propagatesEnablementToTracer(true);
+  }
+
+  @Test
+  void propagatesEnablementToTracerByUtil() {
+    propagatesEnablementToTracer(false);
+  }
+
+  void propagatesEnablementToTracer(boolean directly) {
+    SdkTracer tracer = (SdkTracer) tracerFactory.get("test");
+    boolean isEnabled = tracer.isEnabled();
+    ScopeConfigurator<TracerConfig> flipConfigurator =
+        new ScopeConfigurator<TracerConfig>() {
+          @Override
+          public TracerConfig apply(InstrumentationScopeInfo scopeInfo) {
+            return isEnabled ? TracerConfig.disabled() : TracerConfig.enabled();
+          }
+        };
+    // all in the same thread, so should see enablement change immediately
+    if (directly) {
+      tracerFactory.setTracerConfigurator(flipConfigurator);
+    } else {
+      SdkTracerProviderUtil.setTracerConfigurator(tracerFactory, flipConfigurator);
+    }
+    assertThat(tracer.isEnabled()).isEqualTo(!isEnabled);
   }
 
   @Test

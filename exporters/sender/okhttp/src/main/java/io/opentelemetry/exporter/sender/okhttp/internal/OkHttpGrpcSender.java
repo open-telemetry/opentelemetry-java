@@ -81,11 +81,15 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager) {
+    int callTimeoutMillis =
+        (int) Math.min(Duration.ofNanos(timeoutNanos).toMillis(), Integer.MAX_VALUE);
+    int connectTimeoutMillis =
+        (int) Math.min(Duration.ofNanos(connectTimeoutNanos).toMillis(), Integer.MAX_VALUE);
     OkHttpClient.Builder clientBuilder =
         new OkHttpClient.Builder()
             .dispatcher(OkHttpUtil.newDispatcher())
-            .callTimeout(Duration.ofNanos(timeoutNanos))
-            .connectTimeout(Duration.ofNanos(connectTimeoutNanos));
+            .callTimeout(Duration.ofMillis(callTimeoutMillis))
+            .connectTimeout(Duration.ofMillis(connectTimeoutMillis));
     if (retryPolicy != null) {
       clientBuilder.addInterceptor(
           new RetryInterceptor(retryPolicy, OkHttpGrpcSender::isRetryable));
