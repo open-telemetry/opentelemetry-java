@@ -9,8 +9,9 @@ rootProject.extra["versions"] = dependencyVersions
 
 val DEPENDENCY_BOMS = listOf(
   // for some reason boms show up as runtime dependencies in license and vulnerability scans
-  // even if they are only used by test dependencies, so not using junit or armeria boms
-  // since they are LGPL and EPL licensed respectively
+  // even if they are only used by test dependencies, so not using junit bom here
+  // (which is EPL licensed) or armeria bom (which is Apache licensed but is getting flagged
+  // by FOSSA for containing EPL-licensed)
 
   "com.fasterxml.jackson:jackson-bom:2.18.2",
   "com.google.guava:guava-bom:33.4.0-jre",
