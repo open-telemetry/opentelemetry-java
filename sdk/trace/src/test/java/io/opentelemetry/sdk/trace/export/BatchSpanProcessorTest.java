@@ -127,6 +127,24 @@ class BatchSpanProcessorTest {
   }
 
   @Test
+  void builderAdjustMaxBatchSize() {
+    SpanExporter dummyExporter = new CompletableSpanExporter();
+
+    BatchSpanProcessorBuilder smallQueueBuilder =
+        BatchSpanProcessor.builder(dummyExporter).setMaxQueueSize(1).setMaxExportBatchSize(1000);
+    smallQueueBuilder.build();
+
+    assertThat(smallQueueBuilder.getMaxExportBatchSize()).isEqualTo(1);
+
+    BatchSpanProcessorBuilder largeBatchBuilder =
+        BatchSpanProcessor.builder(dummyExporter).setMaxQueueSize(513).setMaxExportBatchSize(1000);
+    largeBatchBuilder.build();
+
+    assertThat(largeBatchBuilder.getMaxExportBatchSize())
+        .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_MAX_EXPORT_BATCH_SIZE);
+  }
+
+  @Test
   void startEndRequirements() {
     BatchSpanProcessor spansProcessor =
         BatchSpanProcessor.builder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()))

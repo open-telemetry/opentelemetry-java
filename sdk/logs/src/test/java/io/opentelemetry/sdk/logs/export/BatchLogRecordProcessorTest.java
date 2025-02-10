@@ -118,6 +118,28 @@ class BatchLogRecordProcessorTest {
   }
 
   @Test
+  void builderAdjustMaxBatchSize() {
+    LogRecordExporter dummyExporter = new CompletableLogRecordExporter();
+
+    BatchLogRecordProcessorBuilder smallQueueBuilder =
+        BatchLogRecordProcessor.builder(dummyExporter)
+            .setMaxQueueSize(1)
+            .setMaxExportBatchSize(1000);
+    smallQueueBuilder.build();
+
+    assertThat(smallQueueBuilder.getMaxExportBatchSize()).isEqualTo(1);
+
+    BatchLogRecordProcessorBuilder largeBatchBuilder =
+        BatchLogRecordProcessor.builder(dummyExporter)
+            .setMaxQueueSize(513)
+            .setMaxExportBatchSize(1000);
+    largeBatchBuilder.build();
+
+    assertThat(largeBatchBuilder.getMaxExportBatchSize())
+        .isEqualTo(BatchLogRecordProcessorBuilder.DEFAULT_MAX_EXPORT_BATCH_SIZE);
+  }
+
+  @Test
   void emitMultipleLogs() {
     WaitingLogRecordExporter waitingLogRecordExporter =
         new WaitingLogRecordExporter(2, CompletableResultCode.ofSuccess());

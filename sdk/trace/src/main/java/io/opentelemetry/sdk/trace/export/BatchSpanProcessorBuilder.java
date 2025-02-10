@@ -12,6 +12,7 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.metrics.MeterProvider;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** Builder class for {@link BatchSpanProcessor}. */
@@ -169,6 +170,10 @@ public final class BatchSpanProcessorBuilder {
    * @return a new {@link BatchSpanProcessor}.
    */
   public BatchSpanProcessor build() {
+    if (maxExportBatchSize > maxQueueSize) {
+      maxExportBatchSize = Math.min(DEFAULT_MAX_EXPORT_BATCH_SIZE, maxQueueSize);
+      logger.log(Level.FINE, "Using maxExportBatchSize: {0}", maxExportBatchSize);
+    }
     return new BatchSpanProcessor(
         spanExporter,
         exportUnsampledSpans,
