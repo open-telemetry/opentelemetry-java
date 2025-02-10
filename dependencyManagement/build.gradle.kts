@@ -37,10 +37,12 @@ val opencensusVersion = "0.31.1"
 val prometheusClientVersion = "0.16.0"
 val prometheusServerVersion = "1.3.5"
 val armeriaVersion = "1.31.3"
-
+val junitVersion = "5.11.4"
 
 val DEPENDENCIES = listOf(
-  "org.junit.jupiter:junit-jupiter-api:5.11.4",
+  "org.junit.jupiter:junit-jupiter-api:${junitVersion}",
+  "org.junit.jupiter:junit-jupiter-params:${junitVersion}",
+  "org.junit.jupiter:junit-jupiter-pioneer:${junitVersion}",
   "com.linecorp.armeria:armeria:${armeriaVersion}",
   "com.linecorp.armeria:armeria-grpc:${armeriaVersion}",
   "com.linecorp.armeria:armeria-grpc-protocol:${armeriaVersion}",
