@@ -201,9 +201,9 @@ class FileConfigurationParseTest {
                             .withOtlpHttp(
                                 new OtlpHttpExporterModel()
                                     .withEndpoint("http://localhost:4318/v1/traces")
-                                    .withCertificate("/app/cert.pem")
-                                    .withClientKey("/app/cert.pem")
-                                    .withClientCertificate("/app/cert.pem")
+                                    .withCertificateFile("/app/cert.pem")
+                                    .withClientKeyFile("/app/cert.pem")
+                                    .withClientCertificateFile("/app/cert.pem")
                                     .withHeaders(
                                         Collections.singletonList(
                                             new NameStringValuePairModel()
@@ -252,9 +252,9 @@ class FileConfigurationParseTest {
                             .withOtlpHttp(
                                 new OtlpHttpExporterModel()
                                     .withEndpoint("http://localhost:4318/v1/logs")
-                                    .withCertificate("/app/cert.pem")
-                                    .withClientKey("/app/cert.pem")
-                                    .withClientCertificate("/app/cert.pem")
+                                    .withCertificateFile("/app/cert.pem")
+                                    .withClientKeyFile("/app/cert.pem")
+                                    .withClientCertificateFile("/app/cert.pem")
                                     .withHeaders(
                                         Collections.singletonList(
                                             new NameStringValuePairModel()
@@ -310,9 +310,9 @@ class FileConfigurationParseTest {
                             .withOtlpHttp(
                                 new OtlpHttpMetricExporterModel()
                                     .withEndpoint("http://localhost:4318/v1/metrics")
-                                    .withCertificate("/app/cert.pem")
-                                    .withClientKey("/app/cert.pem")
-                                    .withClientCertificate("/app/cert.pem")
+                                    .withCertificateFile("/app/cert.pem")
+                                    .withClientKeyFile("/app/cert.pem")
+                                    .withClientCertificateFile("/app/cert.pem")
                                     .withHeaders(
                                         Collections.singletonList(
                                             new NameStringValuePairModel()

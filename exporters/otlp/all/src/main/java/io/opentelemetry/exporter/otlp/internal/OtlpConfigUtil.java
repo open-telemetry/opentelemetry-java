@@ -201,16 +201,16 @@ public final class OtlpConfigUtil {
       setTimeout.accept(Duration.ofMillis(timeoutMs));
     }
 
-    String certificatePath = config.getString("certificate");
-    String clientKeyPath = config.getString("client_key");
-    String clientKeyChainPath = config.getString("client_certificate");
+    String certificatePath = config.getString("certificate_file");
+    String clientKeyPath = config.getString("client_key_file");
+    String clientKeyChainPath = config.getString("client_certificate_file");
 
     if (clientKeyPath != null && clientKeyChainPath == null) {
       throw new ConfigurationException(
-          "client_key provided without client_certificate - both client_key and client_certificate must be set");
+          "client_key provided without client_certificate - both client_key_file and client_certificate_file must be set");
     } else if (clientKeyPath == null && clientKeyChainPath != null) {
       throw new ConfigurationException(
-          "client_certificate provided without client_key - both client_key and client_certificate must be set");
+          "client_certificate provided without client_key - both client_key_file and client_certificate_file must be set");
     }
     byte[] certificateBytes = readFileBytes(certificatePath);
     if (certificateBytes != null) {
