@@ -35,7 +35,7 @@ jobs:
           - 23
         # Collect coverage on latest LTS
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-latest
             test-java-version: 21
             coverage: true
             jmh-based-tests: true
