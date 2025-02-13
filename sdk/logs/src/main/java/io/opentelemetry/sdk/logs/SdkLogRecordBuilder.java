@@ -6,13 +6,15 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.ExtendedAttributeKey;
+import io.opentelemetry.api.common.ExtendedAttributes;
+import io.opentelemetry.api.common.ExtendedAttributesBuilder;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.AttributesMap;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -21,7 +23,8 @@ import javax.annotation.Nullable;
 class SdkLogRecordBuilder implements LogRecordBuilder {
 
   private final LoggerSharedState loggerSharedState;
-  private final LogLimits logLimits;
+  // TODO: restore
+  // private final LogLimits logLimits;
 
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   @Nullable private String eventName;
@@ -31,12 +34,12 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
   private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
   @Nullable private String severityText;
   @Nullable private Value<?> body;
-  @Nullable private AttributesMap attributes;
+  // TODO: apply log limits
+  @Nullable private ExtendedAttributesBuilder attributesBuilder;
 
   SdkLogRecordBuilder(
       LoggerSharedState loggerSharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
     this.loggerSharedState = loggerSharedState;
-    this.logLimits = loggerSharedState.getLogLimits();
     this.instrumentationScopeInfo = instrumentationScopeInfo;
   }
 
@@ -106,12 +109,18 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
-    if (this.attributes == null) {
-      this.attributes =
-          AttributesMap.create(
-              logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
+    return setAttribute(key.asExtendedAttributeKey(), value);
+  }
+
+  @Override
+  public <T> SdkLogRecordBuilder setAttribute(ExtendedAttributeKey<T> key, T value) {
+    if (key == null || key.getKey().isEmpty() || value == null) {
+      return this;
     }
-    this.attributes.put(key, value);
+    if (attributesBuilder == null) {
+      attributesBuilder = ExtendedAttributes.builder();
+    }
+    attributesBuilder.put(key, value);
     return this;
   }
 
@@ -140,6 +149,6 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
                 severity,
                 severityText,
                 body,
-                attributes));
+                attributesBuilder));
   }
 }

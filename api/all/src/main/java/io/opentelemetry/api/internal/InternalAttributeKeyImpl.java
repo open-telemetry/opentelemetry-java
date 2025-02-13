@@ -7,6 +7,8 @@ package io.opentelemetry.api.internal;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
+import io.opentelemetry.api.common.ExtendedAttributeKey;
+import io.opentelemetry.api.common.ExtendedAttributeType;
 import java.nio.charset.StandardCharsets;
 import javax.annotation.Nullable;
 
@@ -23,6 +25,7 @@ public final class InternalAttributeKeyImpl<T> implements AttributeKey<T> {
   private final int hashCode;
 
   @Nullable private byte[] keyUtf8;
+  @Nullable private ExtendedAttributeKey<T> extendedAttributeKey;
 
   private InternalAttributeKeyImpl(AttributeType type, String key) {
     if (type == null) {
@@ -60,6 +63,14 @@ public final class InternalAttributeKeyImpl<T> implements AttributeKey<T> {
   @Override
   public String getKey() {
     return key;
+  }
+
+  @Override
+  public ExtendedAttributeKey<T> asExtendedAttributeKey() {
+    if (extendedAttributeKey == null) {
+      extendedAttributeKey = InternalAttributeKeyImpl.toExtendedAttributeKey(this);
+    }
+    return extendedAttributeKey;
   }
 
   /** Returns the key, encoded as UTF-8 bytes. */
@@ -107,5 +118,36 @@ public final class InternalAttributeKeyImpl<T> implements AttributeKey<T> {
     result *= 1000003;
     result ^= key.hashCode();
     return result;
+  }
+
+  /** TODO. */
+  public static <T> ExtendedAttributeKey<T> toExtendedAttributeKey(AttributeKey<T> attributeKey) {
+    switch (attributeKey.getType()) {
+      case STRING:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.STRING);
+      case BOOLEAN:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.BOOLEAN);
+      case LONG:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.LONG);
+      case DOUBLE:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.DOUBLE);
+      case STRING_ARRAY:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.STRING_ARRAY);
+      case BOOLEAN_ARRAY:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.BOOLEAN_ARRAY);
+      case LONG_ARRAY:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.LONG_ARRAY);
+      case DOUBLE_ARRAY:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.DOUBLE_ARRAY);
+    }
+    throw new IllegalArgumentException("Unrecognized attributeKey type: " + attributeKey.getType());
   }
 }

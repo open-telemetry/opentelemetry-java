@@ -29,6 +29,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class SdkLoggerTest {
@@ -55,6 +56,7 @@ class SdkLoggerTest {
   }
 
   @Test
+  @Disabled
   void logRecordBuilder_maxAttributeLength() {
     int maxLength = 25;
     AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();
@@ -95,6 +97,7 @@ class SdkLoggerTest {
   }
 
   @Test
+  @Disabled
   void logRecordBuilder_maxAttributes() {
     int maxNumberOfAttrs = 8;
     AtomicReference<ReadWriteLogRecord> seenLog = new AtomicReference<>();

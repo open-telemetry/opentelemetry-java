@@ -77,7 +77,7 @@ class SdkLogRecordBuilderTest {
     builder.setTimestamp(timestamp);
     builder.setObservedTimestamp(456, TimeUnit.SECONDS);
     builder.setObservedTimestamp(observedTimestamp);
-    builder.setAttribute(null, null);
+    builder.setAttribute((AttributeKey<?>) null, null);
     builder.setAttribute(AttributeKey.stringKey("k1"), "v1");
     builder.setAllAttributes(Attributes.builder().put("k2", "v2").put("k3", "v3").build());
     builder.setContext(Span.wrap(spanContext).storeInContext(Context.root()));

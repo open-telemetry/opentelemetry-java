@@ -7,12 +7,14 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.ExtendedAttributeKey;
+import io.opentelemetry.api.common.ExtendedAttributes;
+import io.opentelemetry.api.common.ExtendedAttributesBuilder;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
@@ -21,7 +23,8 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 class SdkReadWriteLogRecord implements ReadWriteLogRecord {
 
-  private final LogLimits logLimits;
+  // TODO: restore
+  // private final LogLimits logLimits;
   private final Resource resource;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   @Nullable private final String eventName;
@@ -35,8 +38,9 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
 
   @GuardedBy("lock")
   @Nullable
-  private AttributesMap attributes;
+  private ExtendedAttributesBuilder attributesBuilder;
 
+  @SuppressWarnings("unused")
   private SdkReadWriteLogRecord(
       LogLimits logLimits,
       Resource resource,
@@ -48,8 +52,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       Severity severity,
       @Nullable String severityText,
       @Nullable Value<?> body,
-      @Nullable AttributesMap attributes) {
-    this.logLimits = logLimits;
+      @Nullable ExtendedAttributesBuilder attributesBuilder) {
     this.resource = resource;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.eventName = eventName;
@@ -59,7 +62,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
     this.severity = severity;
     this.severityText = severityText;
     this.body = body;
-    this.attributes = attributes;
+    this.attributesBuilder = attributesBuilder;
   }
 
   /** Create the log record with the given configuration. */
@@ -74,7 +77,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       Severity severity,
       @Nullable String severityText,
       @Nullable Value<?> body,
-      @Nullable AttributesMap attributes) {
+      @Nullable ExtendedAttributesBuilder attributesBuilder) {
     return new SdkReadWriteLogRecord(
         logLimits,
         resource,
@@ -86,7 +89,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
         severity,
         severityText,
         body,
-        attributes);
+        attributesBuilder);
   }
 
   @Override
@@ -94,29 +97,36 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
+    return setAttribute(key.asExtendedAttributeKey(), value);
+  }
+
+  @Override
+  public <T> ReadWriteLogRecord setAttribute(ExtendedAttributeKey<T> key, T value) {
+    if (key == null || key.getKey().isEmpty() || value == null) {
+      return this;
+    }
     synchronized (lock) {
-      if (attributes == null) {
-        attributes =
-            AttributesMap.create(
-                logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
+      if (attributesBuilder == null) {
+        attributesBuilder = ExtendedAttributes.builder();
       }
-      attributes.put(key, value);
+      attributesBuilder.put(key, value);
     }
     return this;
   }
 
-  private Attributes getImmutableAttributes() {
+  private ExtendedAttributes getImmutableAttributes() {
     synchronized (lock) {
-      if (attributes == null || attributes.isEmpty()) {
-        return Attributes.empty();
+      if (attributesBuilder == null) {
+        return ExtendedAttributes.empty();
       }
-      return attributes.immutableCopy();
+      return attributesBuilder.build();
     }
   }
 
   @Override
   public LogRecordData toLogRecordData() {
     synchronized (lock) {
+      ExtendedAttributes attributes = getImmutableAttributes();
       return SdkLogRecordData.create(
           resource,
           instrumentationScopeInfo,
@@ -127,8 +137,8 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
           severity,
           severityText,
           body,
-          getImmutableAttributes(),
-          attributes == null ? 0 : attributes.getTotalAddedValues());
+          attributes,
+          attributes.size());
     }
   }
 
@@ -171,17 +181,18 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
 
   @Override
   public Attributes getAttributes() {
-    return getImmutableAttributes();
+    return getImmutableAttributes().asAttributes();
   }
 
   @Nullable
   @Override
   public <T> T getAttribute(AttributeKey<T> key) {
-    synchronized (lock) {
-      if (attributes == null || attributes.isEmpty()) {
-        return null;
-      }
-      return attributes.get(key);
-    }
+    return getImmutableAttributes().get(key);
+  }
+
+  @Nullable
+  @Override
+  public <T> T getAttribute(ExtendedAttributeKey<T> key) {
+    return getImmutableAttributes().get(key);
   }
 }
