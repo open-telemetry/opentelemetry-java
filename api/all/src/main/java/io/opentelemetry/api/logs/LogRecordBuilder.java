@@ -154,7 +154,7 @@ public interface LogRecordBuilder {
    * @param value the value for this attribute.
    * @return this.
    */
-  default LogRecordBuilder setAttribute(String key, Double value) {
+  default LogRecordBuilder setAttribute(String key, double value) {
     return setAttribute(doubleKey(key), value);
   }
 
