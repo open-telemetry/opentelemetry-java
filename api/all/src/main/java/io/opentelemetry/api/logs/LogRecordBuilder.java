@@ -169,7 +169,7 @@ public interface LogRecordBuilder {
    * @param value the value for this attribute.
    * @return this.
    */
-  default LogRecordBuilder setAttribute(String key, Boolean value) {
+  default LogRecordBuilder setAttribute(String key, boolean value) {
     return setAttribute(booleanKey(key), value);
   }
 
