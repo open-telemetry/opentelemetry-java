@@ -1,3 +1,5 @@
 exemptions:
   - check: artifacthub_badge
     reason: "Artifact Hub doesn't support Java packages"
+  - check: signed_releases
+    reason: "Maven central releases are signed and there are no GitHub release artifacts"

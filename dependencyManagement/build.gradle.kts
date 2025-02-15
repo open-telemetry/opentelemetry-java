@@ -19,7 +19,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
   "com.squareup.okio:okio-bom:3.10.2", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.70.0",
-  "io.netty:netty-bom:4.1.117.Final",
+  "io.netty:netty-bom:4.1.118.Final",
   "io.zipkin.brave:brave-bom:6.0.3",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.4.3",
   "org.assertj:assertj-bom:3.27.3",
@@ -73,11 +73,11 @@ val DEPENDENCIES = listOf(
   "io.prometheus:simpleclient_httpserver:${prometheusClientVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.51.0",
+  "com.google.api.grpc:proto-google-common-protos:2.52.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
-  "com.tngtech.archunit:archunit-junit5:1.3.0",
+  "com.tngtech.archunit:archunit-junit5:1.4.0",
   "com.uber.nullaway:nullaway:0.12.3",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7", // jqf-fuzz version 1.8+ requires Java 11+
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
