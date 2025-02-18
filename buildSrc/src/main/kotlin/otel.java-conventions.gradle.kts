@@ -113,6 +113,14 @@ tasks {
       )
     }
 
+    val defaultMaxRetries = if (System.getenv().containsKey("CI")) 2 else 0
+    val maxTestRetries = gradle.startParameter.projectProperties["maxTestRetries"]?.toInt() ?: defaultMaxRetries
+
+    develocity.testRetry {
+      // You can see tests that were retried by this mechanism in the collected test reports and build scans.
+      maxRetries.set(maxTestRetries);
+    }
+
     testLogging {
       exceptionFormat = TestExceptionFormat.FULL
       showExceptions = true
