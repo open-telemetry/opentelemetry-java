@@ -9,14 +9,12 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.ExtendedAttributes;
-import io.opentelemetry.api.common.ExtendedAttributesBuilder;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.resources.Resource;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class ReadWriteLogRecordTest {
@@ -35,16 +33,14 @@ class ReadWriteLogRecordTest {
   }
 
   @Test
-  @Disabled
   void addAllHandlesNull() {
     SdkReadWriteLogRecord logRecord = buildLogRecord();
     Attributes originalAttributes = logRecord.getAttributes();
-    ReadWriteLogRecord result = logRecord.setAllAttributes((Attributes) null);
+    ReadWriteLogRecord result = logRecord.setAllAttributes(null);
     assertThat(result.getAttributes()).isEqualTo(originalAttributes);
   }
 
   @Test
-  @Disabled
   void allHandlesEmpty() {
     SdkReadWriteLogRecord logRecord = buildLogRecord();
     Attributes originalAttributes = logRecord.getAttributes();
@@ -54,7 +50,7 @@ class ReadWriteLogRecordTest {
 
   SdkReadWriteLogRecord buildLogRecord() {
     Value<?> body = Value.of("bod");
-    ExtendedAttributesBuilder initialAttributes = ExtendedAttributes.builder();
+    AttributesMap initialAttributes = AttributesMap.create(100, 200);
     initialAttributes.put(stringKey("foo"), "aaiosjfjioasdiojfjioasojifja");
     initialAttributes.put(stringKey("untouched"), "yes");
     LogLimits limits = LogLimits.getDefault();
@@ -66,7 +62,6 @@ class ReadWriteLogRecordTest {
         limits,
         resource,
         scope,
-        "event name",
         0L,
         0L,
         spanContext,

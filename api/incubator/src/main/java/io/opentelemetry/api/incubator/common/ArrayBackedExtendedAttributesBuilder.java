@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.common;
+package io.opentelemetry.api.incubator.common;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -55,5 +56,29 @@ class ArrayBackedExtendedAttributesBuilder implements ExtendedAttributesBuilder 
       }
     }
     return this;
+  }
+
+  static List<Double> toList(double... values) {
+    Double[] boxed = new Double[values.length];
+    for (int i = 0; i < values.length; i++) {
+      boxed[i] = values[i];
+    }
+    return Arrays.asList(boxed);
+  }
+
+  static List<Long> toList(long... values) {
+    Long[] boxed = new Long[values.length];
+    for (int i = 0; i < values.length; i++) {
+      boxed[i] = values[i];
+    }
+    return Arrays.asList(boxed);
+  }
+
+  static List<Boolean> toList(boolean... values) {
+    Boolean[] boxed = new Boolean[values.length];
+    for (int i = 0; i < values.length; i++) {
+      boxed[i] = values[i];
+    }
+    return Arrays.asList(boxed);
   }
 }

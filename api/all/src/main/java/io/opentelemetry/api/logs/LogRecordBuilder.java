@@ -7,8 +7,6 @@ package io.opentelemetry.api.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.ExtendedAttributeKey;
-import io.opentelemetry.api.common.ExtendedAttributes;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
@@ -100,24 +98,8 @@ public interface LogRecordBuilder {
     return this;
   }
 
-  /** TODO. */
-  @SuppressWarnings("unchecked")
-  default LogRecordBuilder setAllAttributes(ExtendedAttributes attributes) {
-    if (attributes == null || attributes.isEmpty()) {
-      return this;
-    }
-    attributes.forEach(
-        (attributeKey, value) -> setAttribute((ExtendedAttributeKey<Object>) attributeKey, value));
-    return this;
-  }
-
   /** Sets an attribute. */
   <T> LogRecordBuilder setAttribute(AttributeKey<T> key, T value);
-
-  /** TODO. */
-  default <T> LogRecordBuilder setAttribute(ExtendedAttributeKey<T> key, T value) {
-    return this;
-  }
 
   /** Emit the log record. */
   void emit();

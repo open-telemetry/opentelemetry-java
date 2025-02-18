@@ -19,6 +19,7 @@ dependencies {
   implementation("com.fasterxml.jackson.core:jackson-core")
 
   testImplementation(project(":sdk:testing"))
+  testImplementation(project(":api:incubator"))
 
   testImplementation("com.google.guava:guava")
   testImplementation("org.skyscreamer:jsonassert")

@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.common;
+package io.opentelemetry.api.incubator.common;
 
-import io.opentelemetry.api.internal.InternalExtendedAttributeKeyImpl;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.incubator.internal.InternalExtendedAttributeKeyImpl;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -24,44 +25,48 @@ public interface ExtendedAttributeKey<T> {
     return InternalExtendedAttributeKeyImpl.toAttributeKey(this);
   }
 
+  static <T> ExtendedAttributeKey<T> fromAttributeKey(AttributeKey<T> attributeKey) {
+    return InternalExtendedAttributeKeyImpl.fromAttributeKey(attributeKey);
+  }
+
   /** Returns a new ExtendedAttributeKey for String valued attributes. */
   static ExtendedAttributeKey<String> stringKey(String key) {
-    return AttributeKey.stringKey(key).asExtendedAttributeKey();
+    return fromAttributeKey(AttributeKey.stringKey(key));
   }
 
   /** Returns a new ExtendedAttributeKey for Boolean valued attributes. */
   static ExtendedAttributeKey<Boolean> booleanKey(String key) {
-    return AttributeKey.booleanKey(key).asExtendedAttributeKey();
+    return fromAttributeKey(AttributeKey.booleanKey(key));
   }
 
   /** Returns a new ExtendedAttributeKey for Long valued attributes. */
   static ExtendedAttributeKey<Long> longKey(String key) {
-    return AttributeKey.longKey(key).asExtendedAttributeKey();
+    return fromAttributeKey(AttributeKey.longKey(key));
   }
 
   /** Returns a new ExtendedAttributeKey for Double valued attributes. */
   static ExtendedAttributeKey<Double> doubleKey(String key) {
-    return AttributeKey.doubleKey(key).asExtendedAttributeKey();
+    return fromAttributeKey(AttributeKey.doubleKey(key));
   }
 
   /** Returns a new ExtendedAttributeKey for List&lt;String&gt; valued attributes. */
   static ExtendedAttributeKey<List<String>> stringArrayKey(String key) {
-    return AttributeKey.stringArrayKey(key).asExtendedAttributeKey();
+    return fromAttributeKey(AttributeKey.stringArrayKey(key));
   }
 
   /** Returns a new ExtendedAttributeKey for List&lt;Boolean&gt; valued attributes. */
   static ExtendedAttributeKey<List<Boolean>> booleanArrayKey(String key) {
-    return AttributeKey.booleanArrayKey(key).asExtendedAttributeKey();
+    return fromAttributeKey(AttributeKey.booleanArrayKey(key));
   }
 
   /** Returns a new ExtendedAttributeKey for List&lt;Long&gt; valued attributes. */
   static ExtendedAttributeKey<List<Long>> longArrayKey(String key) {
-    return AttributeKey.longArrayKey(key).asExtendedAttributeKey();
+    return fromAttributeKey(AttributeKey.longArrayKey(key));
   }
 
   /** Returns a new ExtendedAttributeKey for List&lt;Double&gt; valued attributes. */
   static ExtendedAttributeKey<List<Double>> doubleArrayKey(String key) {
-    return AttributeKey.doubleArrayKey(key).asExtendedAttributeKey();
+    return fromAttributeKey(AttributeKey.doubleArrayKey(key));
   }
 
   /** Returns a new ExtendedAttributeKey for Map valued attributes. */

@@ -16,7 +16,7 @@ class AttributeKeyTest {
   @Test
   void equalsVerifier() {
     EqualsVerifier.forClass(InternalAttributeKeyImpl.class)
-        .withIgnoredFields("keyUtf8", "extendedAttributeKey")
+        .withIgnoredFields("keyUtf8")
         .withCachedHashCode(
             "hashCode",
             "buildHashCode",

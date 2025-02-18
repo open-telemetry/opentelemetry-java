@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.common;
+package io.opentelemetry.api.incubator.common;
 
 /** TODO. */
 public enum ExtendedAttributeType {

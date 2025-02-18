@@ -3,18 +3,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.common;
+package io.opentelemetry.api.incubator.common;
 
-import static io.opentelemetry.api.common.ArrayBackedAttributesBuilder.toList;
-import static io.opentelemetry.api.common.ExtendedAttributeKey.booleanArrayKey;
-import static io.opentelemetry.api.common.ExtendedAttributeKey.booleanKey;
-import static io.opentelemetry.api.common.ExtendedAttributeKey.doubleArrayKey;
-import static io.opentelemetry.api.common.ExtendedAttributeKey.doubleKey;
-import static io.opentelemetry.api.common.ExtendedAttributeKey.longArrayKey;
-import static io.opentelemetry.api.common.ExtendedAttributeKey.longKey;
-import static io.opentelemetry.api.common.ExtendedAttributeKey.stringArrayKey;
-import static io.opentelemetry.api.common.ExtendedAttributeKey.stringKey;
+import static io.opentelemetry.api.incubator.common.ArrayBackedExtendedAttributesBuilder.toList;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.booleanArrayKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.booleanKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.doubleArrayKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.doubleKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.longArrayKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.longKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.stringArrayKey;
+import static io.opentelemetry.api.incubator.common.ExtendedAttributeKey.stringKey;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
@@ -29,7 +31,7 @@ public interface ExtendedAttributesBuilder {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
-    return put(key.asExtendedAttributeKey(), value);
+    return put(ExtendedAttributeKey.fromAttributeKey(key), value);
   }
 
   /** TODO. */
@@ -200,7 +202,7 @@ public interface ExtendedAttributesBuilder {
    * @return this Builder
    */
   default <T> ExtendedAttributesBuilder remove(AttributeKey<T> key) {
-    return remove(key.asExtendedAttributeKey());
+    return remove(ExtendedAttributeKey.fromAttributeKey(key));
   }
 
   /** TODO. */

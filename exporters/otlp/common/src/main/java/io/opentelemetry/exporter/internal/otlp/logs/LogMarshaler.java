@@ -61,6 +61,7 @@ final class LogMarshaler extends MarshalerWithSize {
         spanContext.getTraceFlags(),
         spanContext.getTraceId().equals(INVALID_TRACE_ID) ? null : spanContext.getTraceId(),
         spanContext.getSpanId().equals(INVALID_SPAN_ID) ? null : spanContext.getSpanId(),
+        // TODO: protect against incubator not being present
         logRecordData instanceof ExtendedLogRecordData
             ? MarshalerUtil.toBytes(((ExtendedLogRecordData) logRecordData).getEventName())
             : EMPTY_BYTES);

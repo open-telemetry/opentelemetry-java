@@ -1,13 +1,13 @@
 Comparing source compatibility of opentelemetry-sdk-logs-1.48.0-SNAPSHOT.jar against opentelemetry-sdk-logs-1.47.0.jar
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.logs.data.LogRecordData  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributes getExtendedAttributes()
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.logs.ReadWriteLogRecord  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) java.lang.Object getAttribute(io.opentelemetry.api.common.ExtendedAttributeKey<T>)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.logs.ExtendedReadWriteLogRecord  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.logs.ReadWriteLogRecord
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Object getAttribute(io.opentelemetry.api.incubator.common.ExtendedAttributeKey<T>)
 		+++  NEW ANNOTATION: javax.annotation.Nullable
 		GENERIC TEMPLATES: +++ T:java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.ExtendedAttributes getExtendedAttributes()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.ReadWriteLogRecord setAllAttributes(io.opentelemetry.api.common.ExtendedAttributes)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.ReadWriteLogRecord setAttribute(io.opentelemetry.api.common.ExtendedAttributeKey<T>, java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.incubator.common.ExtendedAttributes getExtendedAttributes()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.ExtendedReadWriteLogRecord setAllAttributes(io.opentelemetry.api.incubator.common.ExtendedAttributes)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.logs.ExtendedReadWriteLogRecord setAttribute(io.opentelemetry.api.incubator.common.ExtendedAttributeKey<T>, java.lang.Object)
 		GENERIC TEMPLATES: +++ T:java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData toLogRecordData()

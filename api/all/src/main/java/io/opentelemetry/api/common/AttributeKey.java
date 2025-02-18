@@ -26,9 +26,10 @@ public interface AttributeKey<T> {
   /** Returns the type of attribute for this key. Useful for building switch statements. */
   AttributeType getType();
 
-  default ExtendedAttributeKey<T> asExtendedAttributeKey() {
-    return InternalAttributeKeyImpl.toExtendedAttributeKey(this);
-  }
+  // TODO (jack-berg): uncomment when extended attributes are promoted from incubator to API
+  // default ExtendedAttributeKey<T> asExtendedAttributeKey() {
+  //  return InternalAttributeKeyImpl.toExtendedAttributeKey(this);
+  // }
 
   /** Returns a new AttributeKey for String valued attributes. */
   static AttributeKey<String> stringKey(String key) {

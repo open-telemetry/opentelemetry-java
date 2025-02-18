@@ -3,14 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.common;
+package io.opentelemetry.api.incubator.common;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-@SuppressWarnings("rawtypes")
 @Immutable
 public interface ExtendedAttributes {
 
@@ -20,7 +21,7 @@ public interface ExtendedAttributes {
     if (key == null) {
       return null;
     }
-    return get(key.asExtendedAttributeKey());
+    return get(ExtendedAttributeKey.fromAttributeKey(key));
   }
 
   /** Returns the value for the given {@link ExtendedAttributeKey}, or {@code null} if not found. */

@@ -6,15 +6,13 @@
 package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.ExtendedAttributeKey;
-import io.opentelemetry.api.common.ExtendedAttributes;
-import io.opentelemetry.api.common.ExtendedAttributesBuilder;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.AttributesMap;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -22,31 +20,23 @@ import javax.annotation.Nullable;
 /** SDK implementation of {@link LogRecordBuilder}. */
 class SdkLogRecordBuilder implements LogRecordBuilder {
 
-  private final LoggerSharedState loggerSharedState;
-  // TODO: restore
-  // private final LogLimits logLimits;
+  protected final LoggerSharedState loggerSharedState;
+  protected final LogLimits logLimits;
 
-  private final InstrumentationScopeInfo instrumentationScopeInfo;
-  @Nullable private String eventName;
-  private long timestampEpochNanos;
-  private long observedTimestampEpochNanos;
-  @Nullable private Context context;
-  private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
-  @Nullable private String severityText;
-  @Nullable private Value<?> body;
-  // TODO: apply log limits
-  @Nullable private ExtendedAttributesBuilder attributesBuilder;
+  protected final InstrumentationScopeInfo instrumentationScopeInfo;
+  protected long timestampEpochNanos;
+  protected long observedTimestampEpochNanos;
+  @Nullable protected Context context;
+  protected Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
+  @Nullable protected String severityText;
+  @Nullable protected Value<?> body;
+  @Nullable private AttributesMap attributes;
 
   SdkLogRecordBuilder(
       LoggerSharedState loggerSharedState, InstrumentationScopeInfo instrumentationScopeInfo) {
     this.loggerSharedState = loggerSharedState;
+    this.logLimits = loggerSharedState.getLogLimits();
     this.instrumentationScopeInfo = instrumentationScopeInfo;
-  }
-
-  // accessible via ExtendedSdkLogRecordBuilder
-  SdkLogRecordBuilder setEventName(String eventName) {
-    this.eventName = eventName;
-    return this;
   }
 
   @Override
@@ -109,18 +99,12 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
-    return setAttribute(key.asExtendedAttributeKey(), value);
-  }
-
-  @Override
-  public <T> SdkLogRecordBuilder setAttribute(ExtendedAttributeKey<T> key, T value) {
-    if (key == null || key.getKey().isEmpty() || value == null) {
-      return this;
+    if (this.attributes == null) {
+      this.attributes =
+          AttributesMap.create(
+              logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
     }
-    if (attributesBuilder == null) {
-      attributesBuilder = ExtendedAttributes.builder();
-    }
-    attributesBuilder.put(key, value);
+    this.attributes.put(key, value);
     return this;
   }
 
@@ -142,13 +126,12 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
                 loggerSharedState.getLogLimits(),
                 loggerSharedState.getResource(),
                 instrumentationScopeInfo,
-                eventName,
                 timestampEpochNanos,
                 observedTimestampEpochNanos,
                 Span.fromContext(context).getSpanContext(),
                 severity,
                 severityText,
                 body,
-                attributesBuilder));
+                attributes));
   }
 }

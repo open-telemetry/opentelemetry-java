@@ -3,12 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.common;
+package io.opentelemetry.api.incubator.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import java.util.Arrays;
@@ -121,8 +125,7 @@ class ExtendedAttributesTest {
     Logger logger = loggerProvider.get("logger");
 
     // Can set either standard or extended attributes on
-    logger
-        .logRecordBuilder()
+    ((ExtendedLogRecordBuilder) logger.logRecordBuilder())
         .setBody("message")
         .setAttribute(strKey, "value")
         .setAttribute(longKey, 1L)
@@ -147,9 +150,12 @@ class ExtendedAttributesTest {
     assertThat(exporter.getFinishedLogRecordItems())
         .satisfiesExactly(
             logRecordData -> {
+              assertThat(logRecordData).isInstanceOf(ExtendedLogRecordData.class);
+              ExtendedLogRecordData extendedLogRecordData = (ExtendedLogRecordData) logRecordData;
+
               // Optionally access standard attributes, which filters out any extended attribute
               // types
-              assertThat(logRecordData.getAttributes())
+              assertThat(extendedLogRecordData.getAttributes())
                   .isEqualTo(
                       Attributes.builder()
                           .put(strKey, "value")
@@ -165,7 +171,7 @@ class ExtendedAttributesTest {
                           .build());
 
               // But preferably access and serialize full extended attributes
-              assertThat(logRecordData.getExtendedAttributes())
+              assertThat(extendedLogRecordData.getExtendedAttributes())
                   .isEqualTo(
                       ExtendedAttributes.builder()
                           .put(strKey, "value")

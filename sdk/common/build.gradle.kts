@@ -14,6 +14,7 @@ val mrJarVersions = listOf(9)
 
 dependencies {
   api(project(":api:all"))
+  compileOnly(project(":api:incubator"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 

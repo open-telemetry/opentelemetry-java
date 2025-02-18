@@ -7,14 +7,12 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.ExtendedAttributeKey;
-import io.opentelemetry.api.common.ExtendedAttributes;
-import io.opentelemetry.api.common.ExtendedAttributesBuilder;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
@@ -23,46 +21,42 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 class SdkReadWriteLogRecord implements ReadWriteLogRecord {
 
-  // TODO: restore
-  // private final LogLimits logLimits;
-  private final Resource resource;
-  private final InstrumentationScopeInfo instrumentationScopeInfo;
-  @Nullable private final String eventName;
-  private final long timestampEpochNanos;
-  private final long observedTimestampEpochNanos;
-  private final SpanContext spanContext;
-  private final Severity severity;
-  @Nullable private final String severityText;
-  @Nullable private final Value<?> body;
-  private final Object lock = new Object();
+  protected final LogLimits logLimits;
+  protected final Resource resource;
+  protected final InstrumentationScopeInfo instrumentationScopeInfo;
+  protected final long timestampEpochNanos;
+  protected final long observedTimestampEpochNanos;
+  protected final SpanContext spanContext;
+  protected final Severity severity;
+  @Nullable protected final String severityText;
+  @Nullable protected final Value<?> body;
+  protected final Object lock = new Object();
 
   @GuardedBy("lock")
   @Nullable
-  private ExtendedAttributesBuilder attributesBuilder;
+  private AttributesMap attributes;
 
-  @SuppressWarnings("unused")
-  private SdkReadWriteLogRecord(
+  protected SdkReadWriteLogRecord(
       LogLimits logLimits,
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
-      @Nullable String eventName,
       long timestampEpochNanos,
       long observedTimestampEpochNanos,
       SpanContext spanContext,
       Severity severity,
       @Nullable String severityText,
       @Nullable Value<?> body,
-      @Nullable ExtendedAttributesBuilder attributesBuilder) {
+      @Nullable AttributesMap attributes) {
+    this.logLimits = logLimits;
     this.resource = resource;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
-    this.eventName = eventName;
     this.timestampEpochNanos = timestampEpochNanos;
     this.observedTimestampEpochNanos = observedTimestampEpochNanos;
     this.spanContext = spanContext;
     this.severity = severity;
     this.severityText = severityText;
     this.body = body;
-    this.attributesBuilder = attributesBuilder;
+    this.attributes = attributes;
   }
 
   /** Create the log record with the given configuration. */
@@ -70,26 +64,24 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       LogLimits logLimits,
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
-      @Nullable String eventName,
       long timestampEpochNanos,
       long observedTimestampEpochNanos,
       SpanContext spanContext,
       Severity severity,
       @Nullable String severityText,
       @Nullable Value<?> body,
-      @Nullable ExtendedAttributesBuilder attributesBuilder) {
+      @Nullable AttributesMap attributes) {
     return new SdkReadWriteLogRecord(
         logLimits,
         resource,
         instrumentationScopeInfo,
-        eventName,
         timestampEpochNanos,
         observedTimestampEpochNanos,
         spanContext,
         severity,
         severityText,
         body,
-        attributesBuilder);
+        attributes);
   }
 
   @Override
@@ -97,48 +89,40 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
-    return setAttribute(key.asExtendedAttributeKey(), value);
-  }
-
-  @Override
-  public <T> ReadWriteLogRecord setAttribute(ExtendedAttributeKey<T> key, T value) {
-    if (key == null || key.getKey().isEmpty() || value == null) {
-      return this;
-    }
     synchronized (lock) {
-      if (attributesBuilder == null) {
-        attributesBuilder = ExtendedAttributes.builder();
+      if (attributes == null) {
+        attributes =
+            AttributesMap.create(
+                logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
       }
-      attributesBuilder.put(key, value);
+      attributes.put(key, value);
     }
     return this;
   }
 
-  private ExtendedAttributes getImmutableAttributes() {
+  private Attributes getImmutableAttributes() {
     synchronized (lock) {
-      if (attributesBuilder == null) {
-        return ExtendedAttributes.empty();
+      if (attributes == null || attributes.isEmpty()) {
+        return Attributes.empty();
       }
-      return attributesBuilder.build();
+      return attributes.immutableCopy();
     }
   }
 
   @Override
   public LogRecordData toLogRecordData() {
     synchronized (lock) {
-      ExtendedAttributes attributes = getImmutableAttributes();
       return SdkLogRecordData.create(
           resource,
           instrumentationScopeInfo,
-          eventName,
           timestampEpochNanos,
           observedTimestampEpochNanos,
           spanContext,
           severity,
           severityText,
           body,
-          attributes,
-          attributes.size());
+          getImmutableAttributes(),
+          attributes == null ? 0 : attributes.getTotalAddedValues());
     }
   }
 
@@ -181,18 +165,17 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
 
   @Override
   public Attributes getAttributes() {
-    return getImmutableAttributes().asAttributes();
+    return getImmutableAttributes();
   }
 
   @Nullable
   @Override
   public <T> T getAttribute(AttributeKey<T> key) {
-    return getImmutableAttributes().get(key);
-  }
-
-  @Nullable
-  @Override
-  public <T> T getAttribute(ExtendedAttributeKey<T> key) {
-    return getImmutableAttributes().get(key);
+    synchronized (lock) {
+      if (attributes == null || attributes.isEmpty()) {
+        return null;
+      }
+      return attributes.get(key);
+    }
   }
 }

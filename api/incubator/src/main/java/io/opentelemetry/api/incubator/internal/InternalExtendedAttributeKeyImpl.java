@@ -3,13 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.internal;
+package io.opentelemetry.api.incubator.internal;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
-import io.opentelemetry.api.common.ExtendedAttributeKey;
-import io.opentelemetry.api.common.ExtendedAttributeType;
+import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
+import io.opentelemetry.api.incubator.common.ExtendedAttributeType;
+import io.opentelemetry.api.internal.InternalAttributeKeyImpl;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 
 /**
@@ -17,6 +19,9 @@ import javax.annotation.Nullable;
  * any time.
  */
 public final class InternalExtendedAttributeKeyImpl<T> implements ExtendedAttributeKey<T> {
+
+  private static final ConcurrentHashMap<AttributeKey<?>, ExtendedAttributeKey<?>>
+      ATTRIBUTE_KEY_CACHE = new ConcurrentHashMap<>();
 
   private final ExtendedAttributeType type;
   private final String key;
@@ -40,6 +45,13 @@ public final class InternalExtendedAttributeKeyImpl<T> implements ExtendedAttrib
   public static <T> ExtendedAttributeKey<T> create(
       @Nullable String key, ExtendedAttributeType type) {
     return new InternalExtendedAttributeKeyImpl<>(type, key != null ? key : "");
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T> ExtendedAttributeKey<T> fromAttributeKey(AttributeKey<T> attributeKey) {
+    return (ExtendedAttributeKey<T>)
+        ATTRIBUTE_KEY_CACHE.computeIfAbsent(
+            attributeKey, InternalExtendedAttributeKeyImpl::toExtendedAttributeKey);
   }
 
   @Override
@@ -139,5 +151,36 @@ public final class InternalExtendedAttributeKeyImpl<T> implements ExtendedAttrib
     }
     throw new IllegalArgumentException(
         "Unrecognized extendedAttributeKey type: " + extendedAttributeKey.getType());
+  }
+
+  /** TODO. */
+  public static <T> ExtendedAttributeKey<T> toExtendedAttributeKey(AttributeKey<T> attributeKey) {
+    switch (attributeKey.getType()) {
+      case STRING:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.STRING);
+      case BOOLEAN:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.BOOLEAN);
+      case LONG:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.LONG);
+      case DOUBLE:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.DOUBLE);
+      case STRING_ARRAY:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.STRING_ARRAY);
+      case BOOLEAN_ARRAY:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.BOOLEAN_ARRAY);
+      case LONG_ARRAY:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.LONG_ARRAY);
+      case DOUBLE_ARRAY:
+        return InternalExtendedAttributeKeyImpl.create(
+            attributeKey.getKey(), ExtendedAttributeType.DOUBLE_ARRAY);
+    }
+    throw new IllegalArgumentException("Unrecognized attributeKey type: " + attributeKey.getType());
   }
 }

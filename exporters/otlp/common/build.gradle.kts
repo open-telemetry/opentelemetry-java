@@ -27,6 +27,7 @@ dependencies {
   testImplementation(project(":sdk:trace"))
   testImplementation(project(":sdk:logs"))
   testImplementation(project(":sdk:testing"))
+  testImplementation(project(":api:incubator"))
 
   testImplementation("com.fasterxml.jackson.core:jackson-databind")
   testImplementation("com.google.protobuf:protobuf-java-util")

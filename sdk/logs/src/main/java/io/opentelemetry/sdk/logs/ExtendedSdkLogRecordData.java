@@ -8,10 +8,11 @@ package io.opentelemetry.sdk.logs;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -19,22 +20,23 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @AutoValue.CopyAnnotations
 @Immutable
-abstract class SdkLogRecordData implements LogRecordData {
+abstract class ExtendedSdkLogRecordData implements ExtendedLogRecordData {
 
-  SdkLogRecordData() {}
+  ExtendedSdkLogRecordData() {}
 
-  static SdkLogRecordData create(
+  static ExtendedSdkLogRecordData create(
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
+      @Nullable String eventName,
       long epochNanos,
       long observedEpochNanos,
       SpanContext spanContext,
       Severity severity,
       @Nullable String severityText,
       @Nullable Value<?> body,
-      Attributes attributes,
+      ExtendedAttributes attributes,
       int totalAttributeCount) {
-    return new AutoValue_SdkLogRecordData(
+    return new AutoValue_ExtendedSdkLogRecordData(
         resource,
         instrumentationScopeInfo,
         epochNanos,
@@ -42,8 +44,9 @@ abstract class SdkLogRecordData implements LogRecordData {
         spanContext,
         severity,
         severityText,
-        attributes,
         totalAttributeCount,
+        eventName,
+        attributes,
         body);
   }
 
@@ -58,5 +61,10 @@ abstract class SdkLogRecordData implements LogRecordData {
     return valueBody == null
         ? io.opentelemetry.sdk.logs.data.Body.empty()
         : io.opentelemetry.sdk.logs.data.Body.string(valueBody.asString());
+  }
+
+  @Override
+  public Attributes getAttributes() {
+    return getExtendedAttributes().asAttributes();
   }
 }

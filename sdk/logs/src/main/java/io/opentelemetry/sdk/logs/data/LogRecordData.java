@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.logs.data;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.ExtendedAttributes;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.common.ValueType;
 import io.opentelemetry.api.logs.Severity;
@@ -74,12 +73,6 @@ public interface LogRecordData {
 
   /** Returns the attributes for this log, or {@link Attributes#empty()} if unset. */
   Attributes getAttributes();
-
-  /** TODO. */
-  default ExtendedAttributes getExtendedAttributes() {
-    // TODO:
-    return ExtendedAttributes.builder().build();
-  }
 
   /**
    * Returns the total number of attributes that were recorded on this log.
