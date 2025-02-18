@@ -14,6 +14,10 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +26,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.CertificateEncodingException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
@@ -150,5 +162,68 @@ class DeclarativeConfigurationCreateTest {
                 DeclarativeConfiguration.parseAndCreate(
                     new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))))
         .doesNotThrowAnyException();
+  }
+
+  @Test
+  void create_ModelCustomizer() {
+    OpenTelemetryConfigurationModel model = new OpenTelemetryConfigurationModel();
+    model.withFileFormat("0.3");
+    model.withTracerProvider(
+        new TracerProviderModel()
+            .withProcessors(
+                Collections.singletonList(
+                    new SpanProcessorModel().withAdditionalProperty("test", null))));
+    ComponentLoader componentLoader =
+        SpiHelper.serviceComponentLoader(FileConfiguration.class.getClassLoader());
+    OpenTelemetrySdk sdk =
+        FileConfiguration.create(
+            model,
+            new ComponentLoader() {
+              @SuppressWarnings("unchecked")
+              @Override
+              public <T> Iterable<T> load(Class<T> spiClass) {
+                if (OpenTelemetryConfigurationModelCustomizerProvider.class.equals(spiClass)) {
+                  return (Iterable<T>) Collections.singletonList(getCustomizerProvider());
+                }
+                return componentLoader.load(spiClass);
+              }
+            });
+    assertThat(sdk.toString())
+        .contains(
+            "resource=Resource{schemaUrl=null, attributes={"
+                + "color=\"blue\", "
+                + "foo=\"bar\", "
+                + "order=\"second\", "
+                + "service.name=\"unknown_service:java\", "
+                + "shape=\"square\", "
+                + "telemetry.sdk.language=\"java\", "
+                + "telemetry.sdk.name=\"opentelemetry\", "
+                + "telemetry.sdk.version=\"1.48.0-SNAPSHOT\"}}");
+  }
+
+  private static OpenTelemetryConfigurationModelCustomizerProvider getCustomizerProvider() {
+    return model -> {
+      ResourceModel resource = model.getResource();
+      if (resource == null) {
+        resource = new ResourceModel();
+        model.withResource(resource);
+      }
+      List<AttributeNameValueModel> attributes = resource.getAttributes();
+      if (attributes == null) {
+        attributes = new ArrayList<>();
+        resource.withAttributes(attributes);
+      }
+      attributes.add(
+          new AttributeNameValueModel()
+              .withName("foo")
+              .withType(AttributeNameValueModel.Type.STRING)
+              .withValue("bar"));
+      attributes.add(
+          new AttributeNameValueModel()
+              .withName("color")
+              .withType(AttributeNameValueModel.Type.STRING)
+              .withValue("blue"));
+      return model;
+    };
   }
 }
