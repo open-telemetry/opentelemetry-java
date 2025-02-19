@@ -56,7 +56,7 @@ dependencies {
   implementation("com.diffplug.spotless:spotless-plugin-gradle:7.0.2")
   // Needed for japicmp but not automatically brought in for some reason.
   implementation("com.google.guava:guava:33.4.0-jre")
-  implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:3.19.1")
+  implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:3.19.2")
   implementation("com.squareup:javapoet:1.13.0")
   implementation("com.squareup.wire:wire-compiler")
   implementation("com.squareup.wire:wire-gradle-plugin")
