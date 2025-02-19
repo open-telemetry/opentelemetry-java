@@ -228,7 +228,7 @@ class SdkLoggerProviderTest {
             .setResource(resource)
             .addLogRecordProcessor(
                 (unused, logRecord) -> {
-                  logRecord.setAttribute((AttributeKey<?>) null, null);
+                  logRecord.setAttribute(null, null);
                   // Overwrite k1
                   logRecord.setAttribute(AttributeKey.stringKey("k1"), "new-v1");
                   // Add new attribute k3

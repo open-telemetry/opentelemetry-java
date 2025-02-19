@@ -6,9 +6,7 @@
 package io.opentelemetry.api.logs;
 
 import io.opentelemetry.api.testing.internal.AbstractDefaultLoggerTest;
-import org.junit.jupiter.api.Disabled;
 
-@Disabled
 class DefaultLoggerTest extends AbstractDefaultLoggerTest {
 
   @Override

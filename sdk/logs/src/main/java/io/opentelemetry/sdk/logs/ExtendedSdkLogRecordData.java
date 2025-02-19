@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.logs;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.logs.Severity;
@@ -61,10 +60,5 @@ abstract class ExtendedSdkLogRecordData implements ExtendedLogRecordData {
     return valueBody == null
         ? io.opentelemetry.sdk.logs.data.Body.empty()
         : io.opentelemetry.sdk.logs.data.Body.string(valueBody.asString());
-  }
-
-  @Override
-  public Attributes getAttributes() {
-    return getExtendedAttributes().asAttributes();
   }
 }

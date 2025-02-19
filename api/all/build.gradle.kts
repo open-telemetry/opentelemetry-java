@@ -19,8 +19,6 @@ dependencies {
 
   testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
   testImplementation("com.google.guava:guava-testlib")
-  testImplementation(project(":sdk:all"))
-  testImplementation(project(":sdk:testing"))
 }
 
 tasks.test {

@@ -47,6 +47,10 @@ public final class InternalExtendedAttributeKeyImpl<T> implements ExtendedAttrib
     return new InternalExtendedAttributeKeyImpl<>(type, key != null ? key : "");
   }
 
+  /**
+   * Return an {@link ExtendedAttributeKey} equivalent to the {@code attributeKey}, caching entries
+   * in {@link #ATTRIBUTE_KEY_CACHE}.
+   */
   @SuppressWarnings("unchecked")
   public static <T> ExtendedAttributeKey<T> fromAttributeKey(AttributeKey<T> attributeKey) {
     return (ExtendedAttributeKey<T>)
@@ -120,7 +124,11 @@ public final class InternalExtendedAttributeKeyImpl<T> implements ExtendedAttrib
     return result;
   }
 
-  /** TODO. */
+  /**
+   * Return the equivalent {@link AttributeKey} for the {@link ExtendedAttributeKey}, or {@code
+   * null} if the {@link #getType()} has no equivalent {@link
+   * io.opentelemetry.api.common.AttributeType}.
+   */
   @Nullable
   public static <T> AttributeKey<T> toAttributeKey(ExtendedAttributeKey<T> extendedAttributeKey) {
     switch (extendedAttributeKey.getType()) {
@@ -145,15 +153,14 @@ public final class InternalExtendedAttributeKeyImpl<T> implements ExtendedAttrib
       case DOUBLE_ARRAY:
         return InternalAttributeKeyImpl.create(
             extendedAttributeKey.getKey(), AttributeType.DOUBLE_ARRAY);
-      case MAP:
-      case MAP_ARRAY:
+      case EXTENDED_ATTRIBUTES:
         return null;
     }
     throw new IllegalArgumentException(
         "Unrecognized extendedAttributeKey type: " + extendedAttributeKey.getType());
   }
 
-  /** TODO. */
+  /** Return the equivalent {@link ExtendedAttributeKey} for the {@link AttributeKey}. */
   public static <T> ExtendedAttributeKey<T> toExtendedAttributeKey(AttributeKey<T> attributeKey) {
     switch (attributeKey.getType()) {
       case STRING:

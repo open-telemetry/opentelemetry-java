@@ -20,11 +20,16 @@ public interface ExtendedLogRecordData extends LogRecordData {
   @Nullable
   String getEventName();
 
-  /** TODO. */
+  /** Returns the attributes for this log, or {@link ExtendedAttributes#empty()} if unset. */
   ExtendedAttributes getExtendedAttributes();
 
-  /** TODO. */
+  /**
+   * Returns the attributes for this log, or {@link Attributes#empty()} if unset.
+   *
+   * @deprecated Use {@link #getExtendedAttributes()}.
+   */
   @Override
+  @Deprecated
   default Attributes getAttributes() {
     return getExtendedAttributes().asAttributes();
   }

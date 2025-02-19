@@ -16,6 +16,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ExtendedAttributesMap;
 import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
+import io.opentelemetry.sdk.logs.internal.ExtendedReadWriteLogRecord;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -25,6 +26,7 @@ class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
     implements ExtendedReadWriteLogRecord {
 
   @Nullable private final String eventName;
+  private final Object lock = new Object();
 
   @GuardedBy("lock")
   @Nullable

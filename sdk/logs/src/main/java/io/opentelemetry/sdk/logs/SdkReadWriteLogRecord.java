@@ -30,7 +30,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
   protected final Severity severity;
   @Nullable protected final String severityText;
   @Nullable protected final Value<?> body;
-  protected final Object lock = new Object();
+  private final Object lock = new Object();
 
   @GuardedBy("lock")
   @Nullable

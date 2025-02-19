@@ -7,11 +7,47 @@ package io.opentelemetry.api.incubator.common;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * An immutable container for extended attributes.
+ *
+ * <p>"extended" refers an extended set of allowed value types compared to standard {@link
+ * Attributes}. Notably, {@link ExtendedAttributes} values can be of type {@link
+ * ExtendedAttributeType#EXTENDED_ATTRIBUTES}, allowing nested {@link ExtendedAttributes} of
+ * arbitrary depth.
+ *
+ * <p>Where standard {@link Attributes} are accepted everyone that OpenTelemetry represents key /
+ * value pairs, {@link ExtendedAttributes} are only accepted in select places, such as log records
+ * (e.g. {@link ExtendedLogRecordBuilder#setAttribute(ExtendedAttributeKey, Object)}).
+ *
+ * <p>The keys are {@link ExtendedAttributeKey}s and the values are Object instances that match the
+ * type of the provided key.
+ *
+ * <p>Null keys will be silently dropped.
+ *
+ * <p>Note: The behavior of null-valued attributes is undefined, and hence strongly discouraged.
+ *
+ * <p>Implementations of this interface *must* be immutable and have well-defined value-based
+ * equals/hashCode implementations. If an implementation does not strictly conform to these
+ * requirements, behavior of the OpenTelemetry APIs and default SDK cannot be guaranteed.
+ *
+ * <p>For this reason, it is strongly suggested that you use the implementation that is provided
+ * here via the factory methods and the {@link ExtendedAttributesBuilder}.
+ *
+ * <p>Convenience methods are provided for translating to / from {@link Attributes}:
+ *
+ * <ul>
+ *   <li>{@link #asAttributes()} converts from {@link ExtendedAttributes} to {@link Attributes}
+ *   <li>{@link ExtendedAttributesBuilder#putAll(Attributes)} converts from {@link Attributes} to
+ *       {@link ExtendedAttributes}
+ *   <li>{@link #get(AttributeKey)} supports reading values using standard {@link AttributeKey}
+ * </ul>
+ */
 @Immutable
 public interface ExtendedAttributes {
 

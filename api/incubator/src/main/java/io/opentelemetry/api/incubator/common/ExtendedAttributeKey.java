@@ -11,7 +11,25 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/** TODO. */
+/**
+ * This interface provides a handle for setting the values of {@link ExtendedAttributes}. The type
+ * of value that can be set with an implementation of this key is denoted by the type parameter.
+ *
+ * <p>Implementations MUST be immutable, as these are used as the keys to Maps.
+ *
+ * <p>The allowed {@link #getType()}s is a superset of those allowed in {@link AttributeKey}.
+ *
+ * <p>Convenience methods are provided for translating to / from {@link AttributeKey}:
+ *
+ * <ul>
+ *   <li>{@link #asAttributeKey()} converts from {@link ExtendedAttributeKey} to {@link
+ *       AttributeKey}
+ *   <li>{@link #fromAttributeKey(AttributeKey)} converts from {@link AttributeKey} to {@link
+ *       ExtendedAttributeKey}
+ * </ul>
+ *
+ * @param <T> The type of value that can be set with the key.
+ */
 @Immutable
 public interface ExtendedAttributeKey<T> {
   /** Returns the underlying String representation of the key. */
@@ -20,11 +38,17 @@ public interface ExtendedAttributeKey<T> {
   /** Returns the type of attribute for this key. Useful for building switch statements. */
   ExtendedAttributeType getType();
 
+  /**
+   * Return the equivalent {@link AttributeKey}, or {@code null} if the {@link #getType()} has no
+   * equivalent {@link io.opentelemetry.api.common.AttributeType}.
+   */
   @Nullable
   default AttributeKey<T> asAttributeKey() {
     return InternalExtendedAttributeKeyImpl.toAttributeKey(this);
   }
 
+  /** Return an ExtendedAttributeKey equivalent to the {@code attributeKey}. */
+  // TODO (jack-berg): remove once AttributeKey.asExtendedAttributeKey is available
   static <T> ExtendedAttributeKey<T> fromAttributeKey(AttributeKey<T> attributeKey) {
     return InternalExtendedAttributeKeyImpl.fromAttributeKey(attributeKey);
   }
@@ -70,12 +94,7 @@ public interface ExtendedAttributeKey<T> {
   }
 
   /** Returns a new ExtendedAttributeKey for Map valued attributes. */
-  static ExtendedAttributeKey<ExtendedAttributes> mapKey(String key) {
-    return InternalExtendedAttributeKeyImpl.create(key, ExtendedAttributeType.MAP);
-  }
-
-  /** Returns a new ExtendedAttributeKey for Map array valued attributes. */
-  static ExtendedAttributeKey<List<ExtendedAttributes>> mapArrayKey(String key) {
-    return InternalExtendedAttributeKeyImpl.create(key, ExtendedAttributeType.MAP_ARRAY);
+  static ExtendedAttributeKey<ExtendedAttributes> extendedAttributesKey(String key) {
+    return InternalExtendedAttributeKeyImpl.create(key, ExtendedAttributeType.EXTENDED_ATTRIBUTES);
   }
 }

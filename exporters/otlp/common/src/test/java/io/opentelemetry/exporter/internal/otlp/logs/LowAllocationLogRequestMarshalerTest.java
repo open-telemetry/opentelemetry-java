@@ -16,7 +16,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.testing.logs.internal.TestExtendedLogRecordData;
+import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -39,7 +39,6 @@ class LowAllocationLogRequestMarshalerTest {
       AttributeKey.doubleArrayKey("key_double_array");
   private static final AttributeKey<List<Boolean>> KEY_BOOLEAN_ARRAY =
       AttributeKey.booleanArrayKey("key_boolean_array");
-  private static final String EVENT_NAME = "hello";
   private static final String BODY = "Hello world from this log...";
 
   private static final Resource RESOURCE =
@@ -73,10 +72,9 @@ class LowAllocationLogRequestMarshalerTest {
   }
 
   private static LogRecordData createLogRecordData() {
-    return TestExtendedLogRecordData.builder()
+    return TestLogRecordData.builder()
         .setResource(RESOURCE)
         .setInstrumentationScopeInfo(INSTRUMENTATION_SCOPE_INFO)
-        .setEventName(EVENT_NAME)
         .setBody(BODY)
         .setSeverity(Severity.INFO)
         .setSeverityText("INFO")

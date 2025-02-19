@@ -61,14 +61,14 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
   }
 
   /**
-   * Sets the event name, which identifies the class / type of the Event.
+   * {@inheritDoc}
    *
-   * <p>This name should uniquely identify the event structure (both attributes and body). A log
-   * record with a non-empty event name is an Event.
+   * <p>NOTE: all standard {@link AttributeKey}-value pairs can also be represented as {@link
+   * ExtendedAttributeKey}-value pairs, but not all {@link ExtendedAttributeKey}-value pairs can be
+   * represented as standard {@link AttributeKey}-value pairs. From the standpoint of the emitted
+   * log record, there is no difference between adding attributes using the standard or extended
+   * attribute APIs.
    */
-  ExtendedLogRecordBuilder setEventName(String eventName);
-
-  /** {@inheritDoc} */
   @SuppressWarnings("unchecked")
   @Override
   default ExtendedLogRecordBuilder setAllAttributes(Attributes attributes) {
@@ -80,7 +80,16 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
     return this;
   }
 
-  /** TODO. */
+  /**
+   * Sets attributes. If the {@link LogRecordBuilder} previously contained a mapping for any of the
+   * keys, the old values are replaced by the specified values.
+   *
+   * <p>NOTE: all standard {@link AttributeKey}-value pairs can also be represented as {@link
+   * ExtendedAttributeKey}-value pairs, but not all {@link ExtendedAttributeKey}-value pairs can be
+   * represented as standard {@link AttributeKey}-value pairs. From the standpoint of the emitted
+   * log record, there is no difference between adding attributes using the standard or extended
+   * attribute APIs.
+   */
   @SuppressWarnings("unchecked")
   default ExtendedLogRecordBuilder setAllAttributes(ExtendedAttributes attributes) {
     if (attributes == null || attributes.isEmpty()) {
@@ -91,10 +100,34 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
     return this;
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   *
+   * <p>NOTE: all standard {@link AttributeKey}-value pairs can also be represented as {@link
+   * ExtendedAttributeKey}-value pairs, but not all {@link ExtendedAttributeKey}-value pairs can be
+   * represented as standard {@link AttributeKey}-value pairs. From the standpoint of the emitted
+   * log record, there is no difference between adding attributes using the standard or extended
+   * attribute APIs.
+   */
   @Override
   <T> ExtendedLogRecordBuilder setAttribute(AttributeKey<T> key, T value);
 
-  /** TODO. */
+  /**
+   * Set an attribute.
+   *
+   * <p>NOTE: all standard {@link AttributeKey}-value pairs can also be represented as {@link
+   * ExtendedAttributeKey}-value pairs, but not all {@link ExtendedAttributeKey}-value pairs can be
+   * represented as standard {@link AttributeKey}-value pairs. From the standpoint of the emitted
+   * log record, there is no difference between adding attributes using the standard or extended
+   * attribute APIs.
+   */
   <T> ExtendedLogRecordBuilder setAttribute(ExtendedAttributeKey<T> key, T value);
+
+  /**
+   * Sets the event name, which identifies the class / type of the Event.
+   *
+   * <p>This name should uniquely identify the event structure (both attributes and body). A log
+   * record with a non-empty event name is an Event.
+   */
+  ExtendedLogRecordBuilder setEventName(String eventName);
 }

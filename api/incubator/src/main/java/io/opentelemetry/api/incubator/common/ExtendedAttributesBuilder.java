@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
-/** A builder of {@link Attributes} supporting an arbitrary number of key-value pairs. */
+/** A builder of {@link ExtendedAttributes} supporting an arbitrary number of key-value pairs. */
 public interface ExtendedAttributesBuilder {
   /** Create the {@link ExtendedAttributes} from this. */
   ExtendedAttributes build();
@@ -34,14 +34,14 @@ public interface ExtendedAttributesBuilder {
     return put(ExtendedAttributeKey.fromAttributeKey(key), value);
   }
 
-  /** TODO. */
+  /** Puts a {@link ExtendedAttributeKey} with associated value into this. */
   <T> ExtendedAttributesBuilder put(ExtendedAttributeKey<T> key, T value);
 
   /**
    * Puts a String attribute into this.
    *
-   * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
-   * your keys, if possible.
+   * <p>Note: It is strongly recommended to use {@link #put(ExtendedAttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
    *
    * @return this Builder
    */
@@ -52,8 +52,8 @@ public interface ExtendedAttributesBuilder {
   /**
    * Puts a long attribute into this.
    *
-   * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
-   * your keys, if possible.
+   * <p>Note: It is strongly recommended to use {@link #put(ExtendedAttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
    *
    * @return this Builder
    */
@@ -64,8 +64,8 @@ public interface ExtendedAttributesBuilder {
   /**
    * Puts a double attribute into this.
    *
-   * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
-   * your keys, if possible.
+   * <p>Note: It is strongly recommended to use {@link #put(ExtendedAttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
    *
    * @return this Builder
    */
@@ -76,8 +76,8 @@ public interface ExtendedAttributesBuilder {
   /**
    * Puts a boolean attribute into this.
    *
-   * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
-   * your keys, if possible.
+   * <p>Note: It is strongly recommended to use {@link #put(ExtendedAttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
    *
    * @return this Builder
    */
@@ -85,16 +85,23 @@ public interface ExtendedAttributesBuilder {
     return put(booleanKey(key), value);
   }
 
-  /** TODO. */
+  /**
+   * Puts a {@link ExtendedAttributes} attribute into this.
+   *
+   * <p>Note: It is strongly recommended to use {@link #put(ExtendedAttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
+   *
+   * @return this Builder
+   */
   default <T> ExtendedAttributesBuilder put(String key, ExtendedAttributes value) {
-    return put(ExtendedAttributeKey.mapKey(key), value);
+    return put(ExtendedAttributeKey.extendedAttributesKey(key), value);
   }
 
   /**
    * Puts a String array attribute into this.
    *
-   * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
-   * your keys, if possible.
+   * <p>Note: It is strongly recommended to use {@link #put(ExtendedAttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
    *
    * @return this Builder
    */
@@ -121,8 +128,8 @@ public interface ExtendedAttributesBuilder {
   /**
    * Puts a Long array attribute into this.
    *
-   * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
-   * your keys, if possible.
+   * <p>Note: It is strongly recommended to use {@link #put(ExtendedAttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
    *
    * @return this Builder
    */
@@ -136,8 +143,8 @@ public interface ExtendedAttributesBuilder {
   /**
    * Puts a Double array attribute into this.
    *
-   * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
-   * your keys, if possible.
+   * <p>Note: It is strongly recommended to use {@link #put(ExtendedAttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
    *
    * @return this Builder
    */
@@ -151,8 +158,8 @@ public interface ExtendedAttributesBuilder {
   /**
    * Puts a Boolean array attribute into this.
    *
-   * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
-   * your keys, if possible.
+   * <p>Note: It is strongly recommended to use {@link #put(ExtendedAttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
    *
    * @return this Builder
    */
@@ -161,14 +168,6 @@ public interface ExtendedAttributesBuilder {
       return this;
     }
     return put(booleanArrayKey(key), toList(value));
-  }
-
-  /** TODO. */
-  default <T> ExtendedAttributesBuilder put(String key, ExtendedAttributes... value) {
-    if (value == null) {
-      return this;
-    }
-    return put(ExtendedAttributeKey.mapArrayKey(key), Arrays.asList(value));
   }
 
   /**
@@ -185,7 +184,11 @@ public interface ExtendedAttributesBuilder {
     return this;
   }
 
-  /** TODO. */
+  /**
+   * Puts all the provided attributes into this Builder.
+   *
+   * @return this Builder
+   */
   @SuppressWarnings({"unchecked"})
   default ExtendedAttributesBuilder putAll(ExtendedAttributes attributes) {
     if (attributes == null) {
@@ -205,17 +208,26 @@ public interface ExtendedAttributesBuilder {
     return remove(ExtendedAttributeKey.fromAttributeKey(key));
   }
 
-  /** TODO. */
+  /**
+   * Remove all attributes where {@link ExtendedAttributeKey#getKey()} and {@link
+   * ExtendedAttributeKey#getType()} match the {@code key}.
+   *
+   * @return this Builder
+   */
   default <T> ExtendedAttributesBuilder remove(ExtendedAttributeKey<T> key) {
     if (key == null || key.getKey().isEmpty()) {
       return this;
     }
-    // TODO:
     return removeIf(
         entryKey ->
             key.getKey().equals(entryKey.getKey()) && key.getType().equals(entryKey.getType()));
   }
 
-  /** TODO. */
+  /**
+   * Remove all attributes that satisfy the given predicate. Errors or runtime exceptions thrown by
+   * the predicate are relayed to the caller.
+   *
+   * @return this Builder
+   */
   ExtendedAttributesBuilder removeIf(Predicate<ExtendedAttributeKey<?>> filter);
 }
