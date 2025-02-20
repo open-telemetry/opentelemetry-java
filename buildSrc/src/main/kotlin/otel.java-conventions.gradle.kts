@@ -66,6 +66,7 @@ dependencyCheck {
     "jmhRuntimeOnly")
   failBuildOnCVSS = 7.0f // fail on high or critical CVE
   analyzers.assemblyEnabled = false // not sure why its trying to analyze .NET assemblies
+  nvd.apiKey = System.getenv("NVD_API_KEY")
 }
 
 val testJavaVersion = gradle.startParameter.projectProperties.get("testJavaVersion")?.let(JavaVersion::toVersion)
