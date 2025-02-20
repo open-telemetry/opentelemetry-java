@@ -21,7 +21,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 
 /**
  * Utilities for exporter builders.
@@ -30,8 +29,6 @@ import java.util.logging.Logger;
  * at any time.
  */
 public final class ExporterBuilderUtil {
-
-  private static final Logger logger = Logger.getLogger(ExporterBuilderUtil.class.getName());
 
   /** Validate OTLP endpoint. */
   public static URI validateEndpoint(String endpoint) {
@@ -54,13 +51,6 @@ public final class ExporterBuilderUtil {
   public static void configureExporterMemoryMode(
       ConfigProperties config, Consumer<MemoryMode> memoryModeConsumer) {
     String memoryModeStr = config.getString("otel.java.exporter.memory_mode");
-    if (memoryModeStr == null) {
-      memoryModeStr = config.getString("otel.java.experimental.exporter.memory_mode");
-      if (memoryModeStr != null) {
-        logger.warning(
-            "otel.java.experimental.exporter.memory_mode was set but has been replaced with otel.java.exporter.memory_mode and will be removed in a future release");
-      }
-    }
     if (memoryModeStr == null) {
       return;
     }
