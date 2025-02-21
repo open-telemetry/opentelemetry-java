@@ -479,11 +479,14 @@ final class SdkSpan implements ReadWriteSpan {
             spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
     String exceptionName = exception.getClass().getCanonicalName();
     String exceptionMessage = exception.getMessage();
-    StringWriter stringWriter = new StringWriter();
-    try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
-      exception.printStackTrace(printWriter);
+    String stackTrace = null;
+    if (!spanLimits.isExcludeExceptionStackTrace()) {
+      StringWriter stringWriter = new StringWriter();
+      try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+        exception.printStackTrace(printWriter);
+      }
+      stackTrace = stringWriter.toString();
     }
-    String stackTrace = stringWriter.toString();
 
     if (exceptionName != null) {
       attributes.put(EXCEPTION_TYPE, exceptionName);

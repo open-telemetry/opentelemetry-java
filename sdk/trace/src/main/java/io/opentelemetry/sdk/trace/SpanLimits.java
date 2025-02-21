@@ -39,14 +39,16 @@ public abstract class SpanLimits {
       int maxNumLinks,
       int maxNumAttributesPerEvent,
       int maxNumAttributesPerLink,
-      int maxAttributeLength) {
+      int maxAttributeLength,
+      boolean excludeExceptionStackTrace) {
     return new AutoValue_SpanLimits_SpanLimitsValue(
         maxNumAttributes,
         maxNumEvents,
         maxNumLinks,
         maxNumAttributesPerEvent,
         maxNumAttributesPerLink,
-        maxAttributeLength);
+        maxAttributeLength,
+        excludeExceptionStackTrace);
   }
 
   /**
@@ -103,6 +105,15 @@ public abstract class SpanLimits {
   }
 
   /**
+   * Returns whether exception stack trace should be excluded from exception event attributes.
+   *
+   * @return whether exception stack trace should be excluded from exception event attributes.
+   */
+  public boolean isExcludeExceptionStackTrace() {
+    return false;
+  }
+
+  /**
    * Returns a {@link SpanLimitsBuilder} initialized to the same property values as the current
    * instance.
    *
@@ -116,7 +127,8 @@ public abstract class SpanLimits {
         .setMaxNumberOfLinks(getMaxNumberOfLinks())
         .setMaxNumberOfAttributesPerEvent(getMaxNumberOfAttributesPerEvent())
         .setMaxNumberOfAttributesPerLink(getMaxNumberOfAttributesPerLink())
-        .setMaxAttributeValueLength(getMaxAttributeValueLength());
+        .setMaxAttributeValueLength(getMaxAttributeValueLength())
+        .setExcludeExceptionStackTrace(isExcludeExceptionStackTrace());
   }
 
   @AutoValue
@@ -129,5 +141,12 @@ public abstract class SpanLimits {
      */
     @Override
     public abstract int getMaxAttributeValueLength();
+
+    /**
+     * Override {@link SpanLimits#isExcludeExceptionStackTrace()} to be abstract so autovalue can
+     * implement it.
+     */
+    @Override
+    public abstract boolean isExcludeExceptionStackTrace();
   }
 }
