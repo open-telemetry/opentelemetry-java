@@ -21,6 +21,7 @@ class SpanLimitsTest {
     assertThat(SpanLimits.getDefault().getMaxNumberOfLinks()).isEqualTo(128);
     assertThat(SpanLimits.getDefault().getMaxNumberOfAttributesPerEvent()).isEqualTo(128);
     assertThat(SpanLimits.getDefault().getMaxNumberOfAttributesPerLink()).isEqualTo(128);
+    assertThat(SpanLimits.getDefault().isExcludeExceptionStackTrace()).isEqualTo(false);
   }
 
   @Test
@@ -32,12 +33,14 @@ class SpanLimitsTest {
             .setMaxNumberOfLinks(11)
             .setMaxNumberOfAttributesPerEvent(1)
             .setMaxNumberOfAttributesPerLink(2)
+            .setExcludeExceptionStackTrace(true)
             .build();
     assertThat(spanLimits.getMaxNumberOfAttributes()).isEqualTo(8);
     assertThat(spanLimits.getMaxNumberOfEvents()).isEqualTo(10);
     assertThat(spanLimits.getMaxNumberOfLinks()).isEqualTo(11);
     assertThat(spanLimits.getMaxNumberOfAttributesPerEvent()).isEqualTo(1);
     assertThat(spanLimits.getMaxNumberOfAttributesPerLink()).isEqualTo(2);
+    assertThat(spanLimits.isExcludeExceptionStackTrace()).isEqualTo(true);
 
     // Preserves values
     SpanLimits spanLimitsDupe = spanLimits.toBuilder().build();

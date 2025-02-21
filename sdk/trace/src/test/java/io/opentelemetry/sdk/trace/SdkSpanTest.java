@@ -1278,6 +1278,38 @@ class SdkSpanTest {
   }
 
   @Test
+  void recordException_excludeStackTrace() {
+    IllegalStateException exception = new IllegalStateException("there was an exception");
+    SdkSpan span = createTestSpan(SpanLimits.builder().setExcludeExceptionStackTrace(true).build());
+
+    testClock.advance(Duration.ofNanos(1000));
+    long timestamp = testClock.now();
+
+    // make sure that span attributes don't leak down to the exception event
+    span.setAttribute("spankey", "val");
+
+    span.recordException(exception);
+
+    List<EventData> events = span.toSpanData().getEvents();
+    assertThat(events).hasSize(1);
+    EventData event = events.get(0);
+    assertThat(event.getName()).isEqualTo("exception");
+    assertThat(event.getEpochNanos()).isEqualTo(timestamp);
+    assertThat(event.getAttributes().get(stringKey("exception.message")))
+        .isEqualTo("there was an exception");
+    assertThat(event.getAttributes().get(stringKey("exception.type")))
+        .isEqualTo(exception.getClass().getName());
+    assertThat(event.getAttributes().get(stringKey("exception.stacktrace"))).isNull();
+    assertThat(event.getAttributes().size()).isEqualTo(2);
+    assertThat(event)
+        .isInstanceOfSatisfying(
+            ExceptionEventData.class,
+            exceptionEvent -> {
+              assertThat(exceptionEvent.getException()).isSameAs(exception);
+            });
+  }
+
+  @Test
   void badArgsIgnored() {
     SdkSpan span = createTestRootSpan();
 
