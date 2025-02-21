@@ -90,7 +90,7 @@ val DEPENDENCIES = listOf(
   "io.opentracing:opentracing-noop:0.33.0",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.19.1",
-  "org.awaitility:awaitility:4.2.2",
+  "org.awaitility:awaitility:4.3.0",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
   "org.codehaus.mojo:animal-sniffer-annotations:1.24",
   "org.jctools:jctools-core:4.0.5",
