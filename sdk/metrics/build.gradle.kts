@@ -12,10 +12,27 @@ plugins {
 description = "OpenTelemetry SDK Metrics"
 otelJava.moduleName.set("io.opentelemetry.sdk.metrics")
 
+sourceSets {
+  create("incubating")
+}
+
+java {
+  registerFeature("incubating") {
+    usingSourceSet(sourceSets["incubating"])
+  }
+}
+
+val incubatingImplementation by configurations.existing
+
+val compileOnly by configurations.existing {
+  extendsFrom(incubatingImplementation.get())
+}
+
 dependencies {
   api(project(":api:all"))
   api(project(":sdk:common"))
-  compileOnly(project(":api:incubator"))
+
+  incubatingImplementation(project(":api:incubator"))
 
   compileOnly("org.codehaus.mojo:animal-sniffer-annotations")
 
