@@ -21,10 +21,9 @@ import javax.annotation.Nullable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements Attributes {
+public final class AttributesMap implements Attributes {
 
-  private static final long serialVersionUID = -5072696312123632376L;
-
+  private final HashMap<AttributeKey<?>, Object> delegate = new HashMap<>();
   private final long capacity;
   private final int lengthLimit;
   private int totalAddedValues = 0;
@@ -47,10 +46,10 @@ public final class AttributesMap extends HashMap<AttributeKey<?>, Object> implem
   /** Add the attribute key value pair, applying capacity and length limits. */
   public <T> void put(AttributeKey<T> key, T value) {
     totalAddedValues++;
-    if (size() >= capacity && !containsKey(key)) {
+    if (size() >= capacity && !delegate.containsKey(key)) {
       return;
     }
-    super.put(key, AttributeUtil.applyAttributeLengthLimit(value, lengthLimit));
+    delegate.put(key, AttributeUtil.applyAttributeLengthLimit(value, lengthLimit));
   }
 
   /** Get the total number of attributes added, including those dropped for capcity limits. */
@@ -62,7 +61,7 @@ public final class AttributesMap extends HashMap<AttributeKey<?>, Object> implem
   @Override
   @Nullable
   public <T> T get(AttributeKey<T> key) {
-    return (T) super.get(key);
+    return (T) delegate.get(key);
   }
 
   @Override
@@ -72,7 +71,7 @@ public final class AttributesMap extends HashMap<AttributeKey<?>, Object> implem
     // anyways. We implement the immutable Attributes for this class to support the
     // Attributes.builder().putAll usage - it is tricky but an implementation detail of this private
     // class.
-    return Collections.unmodifiableMap(this);
+    return Collections.unmodifiableMap(delegate);
   }
 
   @Override
@@ -85,14 +84,24 @@ public final class AttributesMap extends HashMap<AttributeKey<?>, Object> implem
     // https://github.com/open-telemetry/opentelemetry-java/issues/4161
     // Help out android desugaring by having an explicit call to HashMap.forEach, when forEach is
     // just called through Attributes.forEach desugaring is unable to correctly handle it.
-    super.forEach(action);
+    delegate.forEach(action);
+  }
+
+  @Override
+  public int size() {
+    return delegate.size();
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return delegate.isEmpty();
   }
 
   @Override
   public String toString() {
     return "AttributesMap{"
         + "data="
-        + super.toString()
+        + delegate
         + ", capacity="
         + capacity
         + ", totalAddedValues="

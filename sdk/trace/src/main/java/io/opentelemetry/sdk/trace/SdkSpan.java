@@ -466,6 +466,7 @@ final class SdkSpan implements ReadWriteSpan {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public ReadWriteSpan recordException(Throwable exception, Attributes additionalAttributes) {
     if (exception == null) {
       return this;
@@ -495,7 +496,10 @@ final class SdkSpan implements ReadWriteSpan {
       attributes.put(EXCEPTION_STACKTRACE, stackTrace);
     }
 
-    additionalAttributes.forEach(attributes::put);
+    additionalAttributes.forEach(
+        (attributeKey, object) -> {
+          attributes.put((AttributeKey<Object>) attributeKey, object);
+        });
 
     addTimedEvent(
         ExceptionEventData.create(
