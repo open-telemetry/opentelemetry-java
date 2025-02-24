@@ -173,6 +173,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private long nextExportTime;
 
     private final Queue<ReadableSpan> queue;
+    private final AtomicInteger queueSize = new AtomicInteger();
     // When waiting on the spans queue, exporter thread sets this atomic to the number of more
     // spans it needs before doing an export. Writer threads would then wait for the queue to reach
     // spansNeeded size before notifying the exporter thread about new entries.
@@ -237,7 +238,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       if (!queue.offer(span)) {
         processedSpansCounter.add(1, droppedAttrs);
       } else {
-        if (queue.size() >= spansNeeded.get()) {
+        if (queueSize.incrementAndGet() >= spansNeeded.get()) {
           signal.offer(true);
         }
       }
@@ -251,8 +252,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
         if (flushRequested.get() != null) {
           flush();
         }
-        JcTools.drain(
-            queue, maxExportBatchSize - batch.size(), span -> batch.add(span.toSpanData()));
+        drain(maxExportBatchSize - batch.size());
 
         if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime) {
           exportCurrentBatch();
@@ -274,13 +274,24 @@ public final class BatchSpanProcessor implements SpanProcessor {
       }
     }
 
+    private int drain(int limit) {
+      int drained = JcTools.drain(queue, limit, span -> batch.add(span.toSpanData()));
+      if (drained > 0) {
+        int prev;
+        int next;
+        do {
+          prev = queueSize.get();
+          next = prev - drained;
+        } while (!queueSize.compareAndSet(prev, next));
+      }
+      return drained;
+    }
+
     private void flush() {
-      int spansToFlush = queue.size();
+      int spansToFlush = queueSize.get();
       while (spansToFlush > 0) {
-        ReadableSpan span = queue.poll();
-        assert span != null;
-        batch.add(span.toSpanData());
-        spansToFlush--;
+        int drained = drain(maxExportBatchSize - batch.size());
+        spansToFlush -= drained;
         if (batch.size() >= maxExportBatchSize) {
           exportCurrentBatch();
         }
