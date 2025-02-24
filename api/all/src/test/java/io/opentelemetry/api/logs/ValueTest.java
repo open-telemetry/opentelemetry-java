@@ -236,7 +236,6 @@ class ValueTest {
     return Stream.of(
         Arguments.of((int) 1, Value.of(1)),
         Arguments.of(1L, Value.of(1L)),
-        Arguments.of(1L, Value.of(1L)),
         Arguments.of(Long.valueOf(1L), Value.of(1L)),
         Arguments.of((float) 1.1, Value.of(1.1)),
         Arguments.of(1.1D, Value.of(1.1)),

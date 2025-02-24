@@ -108,7 +108,7 @@ public interface Value<T> {
    * @return the equivalent {@link Value}
    * @throws IllegalArgumentException if not able to convert the object to {@link Value}
    */
-  static Value<?> convert(Object object) {
+  static Value<?> convert(Object object) throws IllegalArgumentException {
     if (object instanceof Integer) {
       return Value.of((Integer) object);
     }
