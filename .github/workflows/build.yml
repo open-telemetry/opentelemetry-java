@@ -104,7 +104,7 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+      - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         if: ${{ matrix.coverage }}
         with:
           name: coverage-report
@@ -164,7 +164,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: graalvm/setup-graalvm@aafbedb8d382ed0ca6167d3a051415f20c859274 # v1.2.8
+      - uses: graalvm/setup-graalvm@b0cb26a8da53cb3e97cdc0c827d8e3071240e730 # v1.3.1
         with:
           # TODO(jack-berg): Which versions do we need to test? Should we use a matrix scheme?
           java-version: '21'
