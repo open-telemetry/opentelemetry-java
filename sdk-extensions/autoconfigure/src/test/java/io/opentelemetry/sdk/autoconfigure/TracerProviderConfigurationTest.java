@@ -126,7 +126,7 @@ class TracerProviderConfigurationTest {
     Map<String, String> properties = new HashMap<>();
     properties.put("otel.bsp.schedule.delay", "100000");
     properties.put("otel.bsp.max.queue.size", "2");
-    properties.put("otel.bsp.max.export.batch.size", "3");
+    properties.put("otel.bsp.max.export.batch.size", "2");
     properties.put("otel.bsp.export.timeout", "4");
 
     try (BatchSpanProcessor processor =
@@ -144,7 +144,7 @@ class TracerProviderConfigurationTest {
                 assertThat(worker)
                     .extracting("exporterTimeoutNanos")
                     .isEqualTo(TimeUnit.MILLISECONDS.toNanos(4));
-                assertThat(worker).extracting("maxExportBatchSize").isEqualTo(3);
+                assertThat(worker).extracting("maxExportBatchSize").isEqualTo(2);
                 assertThat(worker)
                     .extracting("queue")
                     .isInstanceOfSatisfying(

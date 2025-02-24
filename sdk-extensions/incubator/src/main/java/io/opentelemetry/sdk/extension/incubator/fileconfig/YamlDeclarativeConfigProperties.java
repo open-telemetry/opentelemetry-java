@@ -33,6 +33,8 @@ import javax.annotation.Nullable;
  *
  * @see #getStructured(String) Accessing nested maps
  * @see #getStructuredList(String) Accessing lists of maps
+ * @see DeclarativeConfiguration#toConfigProperties(Object, ComponentLoader) Converting
+ *     configuration model to properties
  */
 public final class YamlDeclarativeConfigProperties implements DeclarativeConfigProperties {
 

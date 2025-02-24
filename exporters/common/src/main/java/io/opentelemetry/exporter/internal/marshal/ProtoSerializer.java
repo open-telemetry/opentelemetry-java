@@ -10,6 +10,7 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -163,9 +164,22 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   }
 
   @Override
+  public void writeRepeatedString(ProtoFieldInfo field, byte[][] utf8Bytes) throws IOException {
+    for (byte[] value : utf8Bytes) {
+      writeString(field, value);
+    }
+  }
+
+  @Override
   public void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
     output.writeUInt32NoTag(field.getTag());
     output.writeByteArrayNoTag(value);
+  }
+
+  @Override
+  public void writeByteBuffer(ProtoFieldInfo field, ByteBuffer value) throws IOException {
+    output.writeUInt32NoTag(field.getTag());
+    output.writeByteBufferNoTag(value);
   }
 
   @Override

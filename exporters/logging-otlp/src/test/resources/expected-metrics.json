@@ -1,0 +1,89 @@
+{
+  "resource": {
+    "attributes": [
+      {
+        "key": "key",
+        "value": {
+          "stringValue": "value"
+        }
+      }
+    ]
+  },
+  "scopeMetrics": [
+    {
+      "scope": {
+        "name": "instrumentation",
+        "version": "1",
+        "attributes": [
+          {
+            "key": "key",
+            "value": {
+              "stringValue": "value"
+            }
+          }
+        ]
+      },
+      "metrics": [
+        {
+          "name": "metric1",
+          "description": "metric1 description",
+          "unit": "m",
+          "sum": {
+            "dataPoints": [
+              {
+                "startTimeUnixNano": "1",
+                "timeUnixNano": "2",
+                "asDouble": 4.0,
+                "exemplars": [],
+                "attributes": [
+                  {
+                    "key": "cat",
+                    "value": {
+                      "stringValue": "meow"
+                    }
+                  }
+                ]
+              }
+            ],
+            "aggregationTemporality": 2,
+            "isMonotonic": true
+          }
+        }
+      ]
+    },
+    {
+      "scope": {
+        "name": "instrumentation2",
+        "version": "2",
+        "attributes": []
+      },
+      "metrics": [
+        {
+          "name": "metric2",
+          "description": "metric2 description",
+          "unit": "s",
+          "sum": {
+            "dataPoints": [
+              {
+                "startTimeUnixNano": "1",
+                "timeUnixNano": "2",
+                "asDouble": 4.0,
+                "exemplars": [],
+                "attributes": [
+                  {
+                    "key": "cat",
+                    "value": {
+                      "stringValue": "meow"
+                    }
+                  }
+                ]
+              }
+            ],
+            "aggregationTemporality": 2,
+            "isMonotonic": true
+          }
+        }
+      ]
+    }
+  ]
+}

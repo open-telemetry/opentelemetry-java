@@ -10,7 +10,6 @@ import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
-import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
@@ -61,7 +60,6 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
-  @Nullable private Authenticator authenticator;
 
   public HttpExporterBuilder(String exporterName, String type, String defaultEndpoint) {
     this.exporterName = exporterName;
@@ -71,12 +69,12 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   }
 
   public HttpExporterBuilder<T> setTimeout(long timeout, TimeUnit unit) {
-    timeoutNanos = unit.toNanos(timeout);
+    timeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
     return this;
   }
 
   public HttpExporterBuilder<T> setConnectTimeout(long timeout, TimeUnit unit) {
-    connectTimeoutNanos = unit.toNanos(timeout);
+    connectTimeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
     return this;
   }
 
@@ -98,11 +96,6 @@ public final class HttpExporterBuilder<T extends Marshaler> {
 
   public HttpExporterBuilder<T> setHeadersSupplier(Supplier<Map<String, String>> headerSupplier) {
     this.headerSupplier = headerSupplier;
-    return this;
-  }
-
-  public HttpExporterBuilder<T> setAuthenticator(Authenticator authenticator) {
-    this.authenticator = authenticator;
     return this;
   }
 
@@ -158,7 +151,6 @@ public final class HttpExporterBuilder<T extends Marshaler> {
       copy.retryPolicy = retryPolicy.toBuilder().build();
     }
     copy.meterProviderSupplier = meterProviderSupplier;
-    copy.authenticator = authenticator;
     copy.proxyOptions = proxyOptions;
     return copy;
   }
@@ -197,7 +189,6 @@ public final class HttpExporterBuilder<T extends Marshaler> {
             connectTimeoutNanos,
             headerSupplier,
             proxyOptions,
-            authenticator,
             retryPolicy,
             isPlainHttp ? null : tlsConfigHelper.getSslContext(),
             isPlainHttp ? null : tlsConfigHelper.getTrustManager());
@@ -233,7 +224,6 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     }
     // Note: omit tlsConfigHelper because we can't log the configuration in any readable way
     // Note: omit meterProviderSupplier because we can't log the configuration in any readable way
-    // Note: omit authenticator because we can't log the configuration in any readable way
     return joiner.toString();
   }
 

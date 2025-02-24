@@ -68,6 +68,9 @@ testing {
       }
     }
   }
+  suites {
+    register<JvmTestSuite>("testWithoutUnsafe") {}
+  }
 }
 
 tasks {

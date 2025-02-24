@@ -9,8 +9,8 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.ProtoEnumInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
-import io.opentelemetry.proto.profiles.v1experimental.internal.AggregationTemporality;
-import io.opentelemetry.proto.profiles.v1experimental.internal.ValueType;
+import io.opentelemetry.proto.profiles.v1development.internal.AggregationTemporality;
+import io.opentelemetry.proto.profiles.v1development.internal.ValueType;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
@@ -19,15 +19,15 @@ final class ValueTypeMarshaler extends MarshalerWithSize {
 
   private static final ValueTypeMarshaler[] EMPTY_REPEATED = new ValueTypeMarshaler[0];
 
-  private final long type;
-  private final long unit;
+  private final int typeStringIndex;
+  private final int unitStringIndex;
   private final ProtoEnumInfo aggregationTemporality;
 
   static ValueTypeMarshaler create(ValueTypeData valueTypeData) {
     ProtoEnumInfo aggregationTemporality =
         AggregationTemporality.AGGREGATION_TEMPORALITY_UNSPECIFIED;
-    if (valueTypeData.aggregationTemporality() != null) {
-      switch (valueTypeData.aggregationTemporality()) {
+    if (valueTypeData.getAggregationTemporality() != null) {
+      switch (valueTypeData.getAggregationTemporality()) {
         case DELTA:
           aggregationTemporality = AggregationTemporality.AGGREGATION_TEMPORALITY_DELTA;
           break;
@@ -37,7 +37,9 @@ final class ValueTypeMarshaler extends MarshalerWithSize {
       }
     }
     return new ValueTypeMarshaler(
-        valueTypeData.type(), valueTypeData.unit(), aggregationTemporality);
+        valueTypeData.getTypeStringIndex(),
+        valueTypeData.getUnitStringIndex(),
+        aggregationTemporality);
   }
 
   static ValueTypeMarshaler[] createRepeated(List<ValueTypeData> items) {
@@ -59,25 +61,27 @@ final class ValueTypeMarshaler extends MarshalerWithSize {
     return valueTypeMarshalers;
   }
 
-  private ValueTypeMarshaler(long type, long unit, ProtoEnumInfo aggregationTemporality) {
-    super(calculateSize(type, unit, aggregationTemporality));
-    this.type = type;
-    this.unit = unit;
+  private ValueTypeMarshaler(
+      int typeStringIndex, int unitStringIndex, ProtoEnumInfo aggregationTemporality) {
+    super(calculateSize(typeStringIndex, unitStringIndex, aggregationTemporality));
+    this.typeStringIndex = typeStringIndex;
+    this.unitStringIndex = unitStringIndex;
     this.aggregationTemporality = aggregationTemporality;
   }
 
   @Override
   protected void writeTo(Serializer output) throws IOException {
-    output.serializeInt64(ValueType.TYPE, type);
-    output.serializeInt64(ValueType.UNIT, unit);
+    output.serializeInt64(ValueType.TYPE_STRINDEX, typeStringIndex);
+    output.serializeInt64(ValueType.UNIT_STRINDEX, unitStringIndex);
     output.serializeEnum(ValueType.AGGREGATION_TEMPORALITY, aggregationTemporality);
   }
 
-  private static int calculateSize(long type, long unit, ProtoEnumInfo aggregationTemporality) {
+  private static int calculateSize(
+      int typeStringIndex, int unitStringIndex, ProtoEnumInfo aggregationTemporality) {
     int size;
     size = 0;
-    size += MarshalerUtil.sizeInt64(ValueType.TYPE, type);
-    size += MarshalerUtil.sizeInt64(ValueType.UNIT, unit);
+    size += MarshalerUtil.sizeInt32(ValueType.TYPE_STRINDEX, typeStringIndex);
+    size += MarshalerUtil.sizeInt32(ValueType.UNIT_STRINDEX, unitStringIndex);
     size += MarshalerUtil.sizeEnum(ValueType.AGGREGATION_TEMPORALITY, aggregationTemporality);
     return size;
   }

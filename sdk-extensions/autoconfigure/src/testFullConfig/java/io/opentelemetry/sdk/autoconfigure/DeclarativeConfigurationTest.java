@@ -21,7 +21,6 @@ import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.GlobalConfigProvider;
 import io.opentelemetry.api.incubator.config.InstrumentationConfigUtil;
-import io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -29,7 +28,6 @@ import io.opentelemetry.sdk.autoconfigure.internal.AutoConfigureUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -60,7 +58,7 @@ class DeclarativeConfigurationTest {
   @BeforeEach
   void setup() throws IOException {
     String yaml =
-        "file_format: \"0.1\"\n"
+        "file_format: \"0.3\"\n"
             + "resource:\n"
             + "  attributes:\n"
             + "    - name: service.name\n"
@@ -83,7 +81,6 @@ class DeclarativeConfigurationTest {
     configFilePath = tempDir.resolve("otel-config.yaml");
     Files.write(configFilePath, yaml.getBytes(StandardCharsets.UTF_8));
     GlobalOpenTelemetry.resetForTest();
-    GlobalEventLoggerProvider.resetForTest();
     GlobalConfigProvider.resetForTest();
   }
 
@@ -147,8 +144,6 @@ class DeclarativeConfigurationTest {
     cleanup.addCloseable(openTelemetrySdk);
 
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isNotSameAs(openTelemetrySdk);
-    assertThat(GlobalEventLoggerProvider.get())
-        .isNotSameAs(openTelemetrySdk.getSdkLoggerProvider());
     assertThat(GlobalConfigProvider.get())
         .isNotSameAs(autoConfiguredOpenTelemetrySdk.getConfigProvider());
   }
@@ -165,10 +160,6 @@ class DeclarativeConfigurationTest {
     cleanup.addCloseable(openTelemetrySdk);
 
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(openTelemetrySdk);
-    assertThat(GlobalEventLoggerProvider.get())
-        .isInstanceOf(SdkEventLoggerProvider.class)
-        .extracting("delegateLoggerProvider")
-        .isSameAs(openTelemetrySdk.getSdkLoggerProvider());
     assertThat(GlobalConfigProvider.get())
         .isSameAs(autoConfiguredOpenTelemetrySdk.getConfigProvider());
   }
@@ -176,7 +167,7 @@ class DeclarativeConfigurationTest {
   @Test
   void configFile_Error(@TempDir Path tempDir) throws IOException {
     String yaml =
-        "file_format: \"0.1\"\n"
+        "file_format: \"0.3\"\n"
             + "resource:\n"
             + "  attributes:\n"
             + "    - name: service.name\n"

@@ -31,9 +31,9 @@ final class OpenTelemetryConfigurationFactory
   public OpenTelemetrySdk create(
       OpenTelemetryConfigurationModel model, SpiHelper spiHelper, List<Closeable> closeables) {
     OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
-    if (!"0.1".equals(model.getFileFormat())) {
+    if (!"0.3".equals(model.getFileFormat())) {
       throw new DeclarativeConfigException(
-          "Unsupported file format. Supported formats include: 0.1");
+          "Unsupported file format. Supported formats include: 0.3");
     }
 
     if (Objects.equals(Boolean.TRUE, model.getDisabled())) {

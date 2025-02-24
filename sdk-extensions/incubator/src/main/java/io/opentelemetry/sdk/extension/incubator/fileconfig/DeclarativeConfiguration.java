@@ -17,10 +17,12 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -51,7 +53,7 @@ public final class DeclarativeConfiguration {
 
   private static final Logger logger = Logger.getLogger(DeclarativeConfiguration.class.getName());
   private static final Pattern ENV_VARIABLE_REFERENCE =
-      Pattern.compile("\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)(:-([^\n]*))?\\}");
+      Pattern.compile("\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)(:-([^\n}]*))?}");
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
       SpiHelper.serviceComponentLoader(DeclarativeConfiguration.class.getClassLoader());
 
@@ -168,6 +170,9 @@ public final class DeclarativeConfiguration {
       Object model, ComponentLoader componentLoader) {
     Map<String, Object> configurationMap =
         MAPPER.convertValue(model, new TypeReference<Map<String, Object>>() {});
+    if (configurationMap == null) {
+      configurationMap = Collections.emptyMap();
+    }
     return YamlDeclarativeConfigProperties.create(configurationMap, componentLoader);
   }
 
@@ -181,8 +186,7 @@ public final class DeclarativeConfiguration {
    */
   // TODO(jack-berg): add create methods for all SDK extension components supported by
   // ComponentProvider
-  public static io.opentelemetry.sdk.trace.samplers.Sampler createSampler(
-      DeclarativeConfigProperties genericSamplerModel) {
+  public static Sampler createSampler(DeclarativeConfigProperties genericSamplerModel) {
     YamlDeclarativeConfigProperties yamlDeclarativeConfigProperties =
         requireYamlDeclarativeConfigProperties(genericSamplerModel);
     SamplerModel samplerModel = convertToModel(yamlDeclarativeConfigProperties, SamplerModel.class);

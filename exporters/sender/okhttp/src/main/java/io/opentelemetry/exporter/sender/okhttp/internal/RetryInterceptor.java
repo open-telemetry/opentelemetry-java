@@ -10,12 +10,14 @@ import static java.util.stream.Collectors.joining;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.Locale;
+import java.net.UnknownHostException;
 import java.util.StringJoiner;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import okhttp3.Interceptor;
@@ -33,7 +35,7 @@ public final class RetryInterceptor implements Interceptor {
 
   private final RetryPolicy retryPolicy;
   private final Function<Response, Boolean> isRetryable;
-  private final Function<IOException, Boolean> isRetryableException;
+  private final Predicate<IOException> retryExceptionPredicate;
   private final Sleeper sleeper;
   private final BoundedLongGenerator randomLong;
 
@@ -42,7 +44,9 @@ public final class RetryInterceptor implements Interceptor {
     this(
         retryPolicy,
         isRetryable,
-        RetryInterceptor::isRetryableException,
+        retryPolicy.getRetryExceptionPredicate() == null
+            ? RetryInterceptor::isRetryableException
+            : retryPolicy.getRetryExceptionPredicate(),
         TimeUnit.NANOSECONDS::sleep,
         bound -> ThreadLocalRandom.current().nextLong(bound));
   }
@@ -51,12 +55,12 @@ public final class RetryInterceptor implements Interceptor {
   RetryInterceptor(
       RetryPolicy retryPolicy,
       Function<Response, Boolean> isRetryable,
-      Function<IOException, Boolean> isRetryableException,
+      Predicate<IOException> retryExceptionPredicate,
       Sleeper sleeper,
       BoundedLongGenerator randomLong) {
     this.retryPolicy = retryPolicy;
     this.isRetryable = isRetryable;
-    this.isRetryableException = isRetryableException;
+    this.retryExceptionPredicate = retryExceptionPredicate;
     this.sleeper = sleeper;
     this.randomLong = randomLong;
   }
@@ -109,7 +113,7 @@ public final class RetryInterceptor implements Interceptor {
         }
       }
       if (exception != null) {
-        boolean retryable = Boolean.TRUE.equals(isRetryableException.apply(exception));
+        boolean retryable = retryExceptionPredicate.test(exception);
         if (logger.isLoggable(Level.FINER)) {
           logger.log(
               Level.FINER,
@@ -145,15 +149,24 @@ public final class RetryInterceptor implements Interceptor {
   }
 
   // Visible for testing
+  boolean shouldRetryOnException(IOException e) {
+    return retryExceptionPredicate.test(e);
+  }
+
+  // Visible for testing
   static boolean isRetryableException(IOException e) {
+    // Known retryable SocketTimeoutException messages: null, "connect timed out", "timeout"
+    // Known retryable ConnectTimeout messages: "Failed to connect to
+    // localhost/[0:0:0:0:0:0:0:1]:62611"
+    // Known retryable UnknownHostException messages: "xxxxxx.com"
+    // Known retryable SocketException: Socket closed
     if (e instanceof SocketTimeoutException) {
-      String message = e.getMessage();
-      // Connect timeouts can produce SocketTimeoutExceptions with no message, or with "connect
-      // timed out"
-      return message == null || message.toLowerCase(Locale.ROOT).contains("connect timed out");
+      return true;
     } else if (e instanceof ConnectException) {
-      // Exceptions resemble: java.net.ConnectException: Failed to connect to
-      // localhost/[0:0:0:0:0:0:0:1]:62611
+      return true;
+    } else if (e instanceof UnknownHostException) {
+      return true;
+    } else if (e instanceof SocketException) {
       return true;
     }
     return false;

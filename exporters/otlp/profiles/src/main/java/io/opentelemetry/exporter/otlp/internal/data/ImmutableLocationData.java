@@ -28,14 +28,13 @@ public abstract class ImmutableLocationData implements LocationData {
    * @return a new LocationData describing the given function and line table information.
    */
   public static LocationData create(
-      long mappingIndex,
+      Integer mappingIndex,
       long address,
       List<LineData> lines,
       boolean folded,
-      int typeIndex,
-      List<Long> attributes) {
+      List<Integer> attributeIndices) {
     return new AutoValue_ImmutableLocationData(
-        mappingIndex, address, lines, folded, typeIndex, attributes);
+        mappingIndex, address, lines, folded, attributeIndices);
   }
 
   ImmutableLocationData() {}

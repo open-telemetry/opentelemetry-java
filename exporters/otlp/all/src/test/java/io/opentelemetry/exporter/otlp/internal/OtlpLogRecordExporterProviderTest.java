@@ -30,6 +30,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.assertj.core.api.AbstractObjectAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -128,9 +129,13 @@ class OtlpLogRecordExporterProviderTest {
       verify(grpcBuilder, never()).setTrustedCertificates(any());
       verify(grpcBuilder, never()).setClientTls(any(), any());
       assertThat(grpcBuilder).extracting("delegate").extracting("retryPolicy").isNotNull();
-      assertThat(exporter).extracting("memoryMode").isEqualTo(MemoryMode.IMMUTABLE_DATA);
+      getMemoryMode(exporter).isEqualTo(MemoryMode.REUSABLE_DATA);
     }
     Mockito.verifyNoInteractions(httpBuilder);
+  }
+
+  private static AbstractObjectAssert<?, ?> getMemoryMode(LogRecordExporter exporter) {
+    return assertThat(exporter).extracting("marshaler").extracting("memoryMode");
   }
 
   @Test
@@ -178,7 +183,7 @@ class OtlpLogRecordExporterProviderTest {
     config.put("otel.exporter.otlp.logs.compression", "gzip");
     config.put("otel.exporter.otlp.timeout", "1s");
     config.put("otel.exporter.otlp.logs.timeout", "15s");
-    config.put("otel.java.experimental.exporter.memory_mode", "reusable_data");
+    config.put("otel.java.exporter.memory_mode", "immutable_data");
 
     try (LogRecordExporter exporter =
         provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
@@ -191,7 +196,7 @@ class OtlpLogRecordExporterProviderTest {
       verify(grpcBuilder).setTrustedCertificates(serverTls.certificate().getEncoded());
       verify(grpcBuilder)
           .setClientTls(clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded());
-      assertThat(exporter).extracting("memoryMode").isEqualTo(MemoryMode.REUSABLE_DATA);
+      getMemoryMode(exporter).isEqualTo(MemoryMode.IMMUTABLE_DATA);
     }
     Mockito.verifyNoInteractions(httpBuilder);
   }
@@ -211,7 +216,7 @@ class OtlpLogRecordExporterProviderTest {
       verify(httpBuilder, never()).setTrustedCertificates(any());
       verify(httpBuilder, never()).setClientTls(any(), any());
       assertThat(httpBuilder).extracting("delegate").extracting("retryPolicy").isNotNull();
-      assertThat(exporter).extracting("memoryMode").isEqualTo(MemoryMode.IMMUTABLE_DATA);
+      getMemoryMode(exporter).isEqualTo(MemoryMode.REUSABLE_DATA);
     }
     Mockito.verifyNoInteractions(grpcBuilder);
   }
@@ -264,7 +269,7 @@ class OtlpLogRecordExporterProviderTest {
     config.put("otel.exporter.otlp.logs.compression", "gzip");
     config.put("otel.exporter.otlp.timeout", "1s");
     config.put("otel.exporter.otlp.logs.timeout", "15s");
-    config.put("otel.java.experimental.exporter.memory_mode", "reusable_data");
+    config.put("otel.java.exporter.memory_mode", "immutable_data");
 
     try (LogRecordExporter exporter =
         provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
@@ -277,7 +282,7 @@ class OtlpLogRecordExporterProviderTest {
       verify(httpBuilder).setTrustedCertificates(serverTls.certificate().getEncoded());
       verify(httpBuilder)
           .setClientTls(clientTls.privateKey().getEncoded(), clientTls.certificate().getEncoded());
-      assertThat(exporter).extracting("memoryMode").isEqualTo(MemoryMode.REUSABLE_DATA);
+      getMemoryMode(exporter).isEqualTo(MemoryMode.IMMUTABLE_DATA);
     }
     Mockito.verifyNoInteractions(grpcBuilder);
   }

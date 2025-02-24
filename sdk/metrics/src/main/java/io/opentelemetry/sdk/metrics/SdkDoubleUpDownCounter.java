@@ -5,10 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.metrics.ExtendedDoubleUpDownCounter;
-import io.opentelemetry.api.incubator.metrics.ExtendedDoubleUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
@@ -16,24 +13,18 @@ import io.opentelemetry.api.metrics.ObservableDoubleUpDownCounter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.internal.descriptor.Advice;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
-import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
-import java.util.List;
 import java.util.function.Consumer;
 
-final class SdkDoubleUpDownCounter extends AbstractInstrument
-    implements ExtendedDoubleUpDownCounter {
+class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleUpDownCounter {
 
-  private final MeterSharedState meterSharedState;
-  private final WriteableMetricStorage storage;
+  final SdkMeter sdkMeter;
+  final WriteableMetricStorage storage;
 
-  private SdkDoubleUpDownCounter(
-      InstrumentDescriptor descriptor,
-      MeterSharedState meterSharedState,
-      WriteableMetricStorage storage) {
+  SdkDoubleUpDownCounter(
+      InstrumentDescriptor descriptor, SdkMeter sdkMeter, WriteableMetricStorage storage) {
     super(descriptor);
-    this.meterSharedState = meterSharedState;
+    this.sdkMeter = sdkMeter;
     this.storage = storage;
   }
 
@@ -52,29 +43,19 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument
     add(increment, Attributes.empty());
   }
 
-  @Override
-  public boolean isEnabled() {
-    return meterSharedState.isMeterEnabled() && storage.isEnabled();
-  }
+  static class SdkDoubleUpDownCounterBuilder implements DoubleUpDownCounterBuilder {
 
-  static final class SdkDoubleUpDownCounterBuilder implements ExtendedDoubleUpDownCounterBuilder {
-
-    private final InstrumentBuilder builder;
+    final InstrumentBuilder builder;
 
     SdkDoubleUpDownCounterBuilder(
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState sharedState,
+        SdkMeter sdkMeter,
         String name,
         String description,
         String unit,
         Advice.AdviceBuilder adviceBuilder) {
       this.builder =
           new InstrumentBuilder(
-                  name,
-                  InstrumentType.UP_DOWN_COUNTER,
-                  InstrumentValueType.DOUBLE,
-                  meterProviderSharedState,
-                  sharedState)
+                  name, InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.DOUBLE, sdkMeter)
               .setDescription(description)
               .setUnit(unit)
               .setAdviceBuilder(adviceBuilder);
@@ -107,13 +88,6 @@ final class SdkDoubleUpDownCounter extends AbstractInstrument
     @Override
     public ObservableDoubleMeasurement buildObserver() {
       return builder.buildObservableMeasurement(InstrumentType.OBSERVABLE_UP_DOWN_COUNTER);
-    }
-
-    @Override
-    public ExtendedDoubleUpDownCounterBuilder setAttributesAdvice(
-        List<AttributeKey<?>> attributes) {
-      builder.setAdviceAttributes(attributes);
-      return this;
     }
 
     @Override

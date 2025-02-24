@@ -41,5 +41,5 @@ public abstract class MeterProviderSharedState {
   public abstract long getStartEpochNanos();
 
   /** Returns the {@link ExemplarFilter} for remembering synchronous measurements. */
-  abstract ExemplarFilter getExemplarFilter();
+  public abstract ExemplarFilter getExemplarFilter();
 }

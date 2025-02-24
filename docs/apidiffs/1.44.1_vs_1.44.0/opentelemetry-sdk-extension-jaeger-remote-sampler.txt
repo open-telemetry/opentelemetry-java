@@ -1,0 +1,2 @@
+Comparing source compatibility of opentelemetry-sdk-extension-jaeger-remote-sampler-1.44.1.jar against opentelemetry-sdk-extension-jaeger-remote-sampler-1.44.0.jar
+No changes.

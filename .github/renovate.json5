@@ -1,9 +1,20 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:recommended",
+    "docker:pinDigests",
+    "helpers:pinGitHubActionDigests"
   ],
   "packageRules": [
+    {
+      // this is to reduce the number of renovate PRs
+      "matchManagers": [
+        "github-actions",
+        "dockerfile"
+      ],
+      "extends": ["schedule:weekly"],
+      "groupName": "weekly update"
+    },
     {
       "matchPackageNames": [
         "io.opentelemetry.proto:opentelemetry-proto",

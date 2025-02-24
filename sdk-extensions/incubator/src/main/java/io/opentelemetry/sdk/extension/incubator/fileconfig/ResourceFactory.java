@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorAttributesModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import java.io.Closeable;
@@ -28,10 +29,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
-final class ResourceFactory
-    implements Factory<
-        io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel,
-        Resource> {
+final class ResourceFactory implements Factory<ResourceModel, Resource> {
 
   private static final ResourceFactory INSTANCE = new ResourceFactory();
 
@@ -42,10 +40,7 @@ final class ResourceFactory
   }
 
   @Override
-  public Resource create(
-      io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel model,
-      SpiHelper spiHelper,
-      List<Closeable> closeables) {
+  public Resource create(ResourceModel model, SpiHelper spiHelper, List<Closeable> closeables) {
     ResourceBuilder builder = Resource.getDefault().toBuilder();
 
     ResourceBuilder detectedResourceBuilder = Resource.builder();
@@ -84,7 +79,7 @@ final class ResourceFactory
   /**
    * Load resources from resource detectors, in order of lowest priority to highest priority.
    *
-   * <p>In file configuration, a resource detector is a {@link ComponentProvider} with {@link
+   * <p>In declarative configuration, a resource detector is a {@link ComponentProvider} with {@link
    * ComponentProvider#getType()} set to {@link Resource}. Unlike other {@link ComponentProvider}s,
    * the resource detector version does not use {@link ComponentProvider#getName()} (except for
    * debug messages), and {@link ComponentProvider#create(DeclarativeConfigProperties)} is called

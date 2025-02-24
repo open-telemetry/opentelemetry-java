@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
+import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordProcessorComponentProvider;
@@ -53,7 +53,7 @@ class LogRecordProcessorFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor expectedProcessor =
         io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor.builder(
-                OtlpGrpcLogRecordExporter.getDefault())
+                OtlpHttpLogRecordExporter.getDefault())
             .build();
     cleanup.addCloseable(expectedProcessor);
 
@@ -77,7 +77,7 @@ class LogRecordProcessorFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor expectedProcessor =
         io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor.builder(
-                OtlpGrpcLogRecordExporter.getDefault())
+                OtlpHttpLogRecordExporter.getDefault())
             .setScheduleDelay(Duration.ofMillis(1))
             .setMaxExportBatchSize(2)
             .setExporterTimeout(Duration.ofMillis(3))
@@ -121,7 +121,7 @@ class LogRecordProcessorFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     io.opentelemetry.sdk.logs.LogRecordProcessor expectedProcessor =
         io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor.create(
-            OtlpGrpcLogRecordExporter.getDefault());
+            OtlpHttpLogRecordExporter.getDefault());
     cleanup.addCloseable(expectedProcessor);
 
     io.opentelemetry.sdk.logs.LogRecordProcessor processor =

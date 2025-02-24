@@ -32,9 +32,20 @@ public abstract class Marshaler {
   }
 
   /** Marshals into the {@link JsonGenerator} in proto JSON format. */
-  public final void writeJsonTo(JsonGenerator output) throws IOException {
+  // Intentionally not overloading writeJsonTo(OutputStream) in order to avoid compilation
+  // dependency on jackson when using writeJsonTo(OutputStream). See:
+  // https://github.com/open-telemetry/opentelemetry-java-contrib/pull/1551#discussion_r1849064365
+  public final void writeJsonToGenerator(JsonGenerator output) throws IOException {
     try (JsonSerializer serializer = new JsonSerializer(output)) {
       serializer.writeMessageValue(this);
+    }
+  }
+
+  /** Marshals into the {@link JsonGenerator} in proto JSON format and adds a newline. */
+  public final void writeJsonWithNewline(JsonGenerator output) throws IOException {
+    try (JsonSerializer serializer = new JsonSerializer(output)) {
+      serializer.writeMessageValue(this);
+      output.writeRaw('\n');
     }
   }
 

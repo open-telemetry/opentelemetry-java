@@ -19,7 +19,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 
 /**
- * File configuration SPI implementation for {@link OtlpHttpLogRecordExporter} and {@link
+ * Declarative configuration SPI implementation for {@link OtlpHttpLogRecordExporter} and {@link
  * OtlpGrpcLogRecordExporter}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change

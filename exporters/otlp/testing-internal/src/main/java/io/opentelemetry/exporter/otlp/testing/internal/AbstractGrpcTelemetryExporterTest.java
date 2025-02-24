@@ -16,6 +16,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.linecorp.armeria.common.HttpRequest;
+import com.linecorp.armeria.common.TlsKeyPair;
 import com.linecorp.armeria.common.grpc.protocol.ArmeriaStatusException;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
@@ -137,7 +138,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
           sb.http(0);
           sb.https(0);
-          sb.tls(certificate.certificateFile(), certificate.privateKeyFile());
+          sb.tls(TlsKeyPair.of(certificate.privateKey(), certificate.certificate()));
           sb.tlsCustomizer(ssl -> ssl.trustManager(clientCertificate.certificate()));
           sb.decorator(LoggingService.newDecorator());
         }
@@ -814,13 +815,39 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   @SuppressWarnings("PreferJavaTimeOverload")
   void validConfig() {
-    assertThatCode(() -> exporterBuilder().setTimeout(0, TimeUnit.MILLISECONDS))
+    // We must build exporters to test timeout settings, which intersect with underlying client
+    // implementations and may convert between Duration, int, and long, which may be susceptible to
+    // overflow exceptions.
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setTimeout(0, TimeUnit.MILLISECONDS)))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setTimeout(Duration.ofMillis(0)))
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setTimeout(Duration.ofMillis(0))))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setTimeout(10, TimeUnit.MILLISECONDS))
+    assertThatCode(
+            () ->
+                buildAndShutdown(
+                    exporterBuilder().setTimeout(Long.MAX_VALUE, TimeUnit.NANOSECONDS)))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setTimeout(Duration.ofMillis(10)))
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setTimeout(Duration.ofNanos(Long.MAX_VALUE))))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setTimeout(Long.MAX_VALUE, TimeUnit.SECONDS)))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setTimeout(10, TimeUnit.MILLISECONDS)))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setTimeout(Duration.ofMillis(10))))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setConnectTimeout(0, TimeUnit.MILLISECONDS)))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setConnectTimeout(Duration.ofMillis(0))))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setConnectTimeout(10, TimeUnit.MILLISECONDS)))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setConnectTimeout(Duration.ofMillis(10))))
         .doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().setEndpoint("http://localhost:4317"))
@@ -845,6 +872,11 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         .doesNotThrowAnyException();
   }
 
+  private void buildAndShutdown(TelemetryExporterBuilder<T> builder) {
+    TelemetryExporter<T> build = builder.build();
+    build.shutdown().join(10, TimeUnit.MILLISECONDS);
+  }
+
   @Test
   @SuppressWarnings({"PreferJavaTimeOverload", "NullAway"})
   void invalidConfig() {
@@ -857,6 +889,25 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThatThrownBy(() -> exporterBuilder().setTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
+    assertThatThrownBy(
+            () ->
+                buildAndShutdown(exporterBuilder().setTimeout(Duration.ofSeconds(Long.MAX_VALUE))))
+        .isInstanceOf(ArithmeticException.class);
+
+    assertThatThrownBy(() -> exporterBuilder().setConnectTimeout(-1, TimeUnit.MILLISECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("timeout must be non-negative");
+    assertThatThrownBy(() -> exporterBuilder().setConnectTimeout(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
+    assertThatThrownBy(() -> exporterBuilder().setConnectTimeout(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("timeout");
+    assertThatThrownBy(
+            () ->
+                buildAndShutdown(
+                    exporterBuilder().setConnectTimeout(Duration.ofSeconds(Long.MAX_VALUE))))
+        .isInstanceOf(ArithmeticException.class);
 
     assertThatThrownBy(() -> exporterBuilder().setEndpoint(null))
         .isInstanceOf(NullPointerException.class)
@@ -999,7 +1050,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + ", "
                   + "compressorEncoding=gzip, "
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
-                  + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3\\}"
+                  + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3, retryExceptionPredicate=null\\}"
                   + ".*" // Maybe additional grpcChannel field, signal specific fields
                   + "\\}");
     } finally {

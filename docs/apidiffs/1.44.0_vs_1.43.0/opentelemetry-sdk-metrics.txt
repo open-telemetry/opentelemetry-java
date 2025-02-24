@@ -1,0 +1,16 @@
+Comparing source compatibility of opentelemetry-sdk-metrics-1.44.0.jar against opentelemetry-sdk-metrics-1.43.0.jar
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector defaultCardinalityLimitSelector()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int getCardinalityLimit(io.opentelemetry.sdk.metrics.InstrumentType)
+	+++  NEW ANNOTATION: java.lang.FunctionalInterface
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder registerMetricReader(io.opentelemetry.sdk.metrics.export.MetricReader, io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector)
+***  MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.View  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	***  MODIFIED METHOD: PUBLIC (<- PACKAGE_PROTECTED) ABSTRACT int getCardinalityLimit()
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.metrics.ViewBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	***  MODIFIED METHOD: PUBLIC (<- PACKAGE_PROTECTED) io.opentelemetry.sdk.metrics.ViewBuilder setCardinalityLimit(int)

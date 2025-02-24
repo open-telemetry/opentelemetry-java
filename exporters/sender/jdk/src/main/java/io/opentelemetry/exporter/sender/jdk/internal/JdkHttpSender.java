@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
@@ -35,6 +36,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,6 +70,7 @@ public final class JdkHttpSender implements HttpSender {
   private final long timeoutNanos;
   private final Supplier<Map<String, List<String>>> headerSupplier;
   @Nullable private final RetryPolicy retryPolicy;
+  private final Predicate<IOException> retryExceptionPredicate;
 
   // Visible for testing
   JdkHttpSender(
@@ -91,6 +94,10 @@ public final class JdkHttpSender implements HttpSender {
     this.timeoutNanos = timeoutNanos;
     this.headerSupplier = headerSupplier;
     this.retryPolicy = retryPolicy;
+    this.retryExceptionPredicate =
+        Optional.ofNullable(retryPolicy)
+            .map(RetryPolicy::getRetryExceptionPredicate)
+            .orElse(JdkHttpSender::isRetryableException);
   }
 
   JdkHttpSender(
@@ -235,7 +242,7 @@ public final class JdkHttpSender implements HttpSender {
         }
       }
       if (exception != null) {
-        boolean retryable = isRetryableException(exception);
+        boolean retryable = retryExceptionPredicate.test(exception);
         if (logger.isLoggable(Level.FINER)) {
           logger.log(
               Level.FINER,

@@ -11,7 +11,7 @@ import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -19,13 +19,14 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @AutoValue.CopyAnnotations
 @Immutable
-abstract class SdkLogRecordData implements LogRecordData {
+abstract class SdkLogRecordData implements ExtendedLogRecordData {
 
   SdkLogRecordData() {}
 
   static SdkLogRecordData create(
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
+      @Nullable String eventName,
       long epochNanos,
       long observedEpochNanos,
       SpanContext spanContext,
@@ -44,12 +45,17 @@ abstract class SdkLogRecordData implements LogRecordData {
         severityText,
         attributes,
         totalAttributeCount,
-        body);
+        body,
+        eventName);
   }
 
   @Override
   @Nullable
   public abstract Value<?> getBodyValue();
+
+  @Override
+  @Nullable
+  public abstract String getEventName();
 
   @Override
   @SuppressWarnings("deprecation") // Implementation of deprecated method

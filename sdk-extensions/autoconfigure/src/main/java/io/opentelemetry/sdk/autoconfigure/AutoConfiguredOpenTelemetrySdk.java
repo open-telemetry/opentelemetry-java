@@ -75,8 +75,7 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
   abstract ConfigProperties getConfig();
 
   /**
-   * Returns the {@link ConfigProvider} representing the config used for auto-configuration, or
-   * {@code null} if declarative configuration was not used.
+   * Returns the {@link ConfigProvider}, or {@code null} if declarative configuration was not used.
    *
    * @see #getConfig()
    */

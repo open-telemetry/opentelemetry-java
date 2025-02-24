@@ -27,6 +27,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -135,7 +136,35 @@ public interface Context {
    * @since 1.1.0
    */
   static ExecutorService taskWrapping(ExecutorService executorService) {
+    if (executorService instanceof CurrentContextExecutorService) {
+      return executorService;
+    }
     return new CurrentContextExecutorService(executorService);
+  }
+
+  /**
+   * Returns an {@link ScheduledExecutorService} which delegates to the provided {@code
+   * executorService}, wrapping all invocations of {@link ExecutorService} methods such as {@link
+   * ExecutorService#execute(Runnable)} or {@link ExecutorService#submit(Runnable)} with the
+   * {@linkplain Context#current() current context} at the time of invocation.
+   *
+   * <p>This is generally used to create an {@link ScheduledExecutorService} which will forward the
+   * {@link Context} during an invocation to another thread. For example, you may use something like
+   * {@code ScheduledExecutorService dbExecutor = Context.wrapTasks(threadPool)} to ensure calls
+   * like {@code dbExecutor.execute(() -> database.query())} have {@link Context} available on the
+   * thread executing database queries.
+   *
+   * <p>Note: The context will not be propagated for {@link
+   * ScheduledExecutorService#scheduleAtFixedRate(Runnable, long, long, TimeUnit)} and {@link
+   * ScheduledExecutorService#scheduleWithFixedDelay(Runnable, long, long, TimeUnit)} calls.
+   *
+   * @since 1.43.0
+   */
+  static ScheduledExecutorService taskWrapping(ScheduledExecutorService executorService) {
+    if (executorService instanceof CurrentContextScheduledExecutorService) {
+      return executorService;
+    }
+    return new CurrentContextScheduledExecutorService(executorService);
   }
 
   /**

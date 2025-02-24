@@ -109,11 +109,6 @@ class OtlpHttpMetricExporterJdkSenderTest
   }
 
   @Override
-  protected boolean hasAuthenticatorSupport() {
-    return false;
-  }
-
-  @Override
   protected TelemetryExporterBuilder<MetricData> exporterBuilder() {
     return new HttpMetricExporterBuilderWrapper(OtlpHttpMetricExporter.builder());
   }

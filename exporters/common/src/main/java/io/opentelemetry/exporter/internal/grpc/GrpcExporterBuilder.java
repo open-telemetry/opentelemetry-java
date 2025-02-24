@@ -87,7 +87,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   }
 
   public GrpcExporterBuilder<T> setTimeout(long timeout, TimeUnit unit) {
-    timeoutNanos = unit.toNanos(timeout);
+    timeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
     return this;
   }
 
@@ -96,7 +96,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   }
 
   public GrpcExporterBuilder<T> setConnectTimeout(long timeout, TimeUnit unit) {
-    connectTimeoutNanos = unit.toNanos(timeout);
+    connectTimeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
     return this;
   }
 

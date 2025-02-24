@@ -71,7 +71,7 @@ public final class BatchLogRecordProcessorBuilder {
   public BatchLogRecordProcessorBuilder setExporterTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
-    exporterTimeoutNanos = unit.toNanos(timeout);
+    exporterTimeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
     return this;
   }
 
@@ -98,9 +98,11 @@ public final class BatchLogRecordProcessorBuilder {
    * @param maxQueueSize the maximum number of Logs that are kept in the queue before start
    *     dropping.
    * @return this.
+   * @throws IllegalArgumentException if {@code maxQueueSize} is not positive.
    * @see BatchLogRecordProcessorBuilder#DEFAULT_MAX_QUEUE_SIZE
    */
   public BatchLogRecordProcessorBuilder setMaxQueueSize(int maxQueueSize) {
+    checkArgument(maxQueueSize > 0, "maxQueueSize must be positive.");
     this.maxQueueSize = maxQueueSize;
     return this;
   }

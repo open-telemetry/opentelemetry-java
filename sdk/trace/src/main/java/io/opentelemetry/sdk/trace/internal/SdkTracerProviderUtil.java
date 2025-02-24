@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace.internal;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -16,12 +17,28 @@ import java.util.function.Predicate;
  * A collection of methods that allow use of experimental features prior to availability in public
  * APIs.
  *
- * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
+ * <p>This class is internal and experimental. Its APIs are unstable and can change at any time. Its
+ * APIs (or a version of them) may be promoted to the public stable API in the future, but no
+ * guarantees are made.
  */
 public final class SdkTracerProviderUtil {
 
   private SdkTracerProviderUtil() {}
+
+  /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkTracerProvider}. */
+  public static void setTracerConfigurator(
+      SdkTracerProvider sdkTracerProvider, ScopeConfigurator<TracerConfig> scopeConfigurator) {
+    try {
+      Method method =
+          SdkTracerProvider.class.getDeclaredMethod(
+              "setTracerConfigurator", ScopeConfigurator.class);
+      method.setAccessible(true);
+      method.invoke(sdkTracerProvider, scopeConfigurator);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setTracerConfigurator on SdkTracerProvider", e);
+    }
+  }
 
   /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkTracerProviderBuilder}. */
   public static void setTracerConfigurator(

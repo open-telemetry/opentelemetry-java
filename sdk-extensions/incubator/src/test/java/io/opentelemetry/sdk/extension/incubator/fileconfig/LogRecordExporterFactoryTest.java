@@ -17,7 +17,6 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordExporterComponentProvider;
@@ -61,7 +60,7 @@ class LogRecordExporterFactoryTest {
   void create_OtlpDefaults() {
     spiHelper = spy(spiHelper);
     List<Closeable> closeables = new ArrayList<>();
-    OtlpGrpcLogRecordExporter expectedExporter = OtlpGrpcLogRecordExporter.getDefault();
+    OtlpHttpLogRecordExporter expectedExporter = OtlpHttpLogRecordExporter.getDefault();
     cleanup.addCloseable(expectedExporter);
 
     LogRecordExporter exporter =

@@ -20,4 +20,7 @@ public interface ExtendedLogger extends Logger {
   default boolean isEnabled() {
     return true;
   }
+
+  @Override
+  ExtendedLogRecordBuilder logRecordBuilder();
 }

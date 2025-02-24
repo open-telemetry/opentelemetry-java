@@ -10,6 +10,7 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_GR
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
@@ -19,7 +20,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 
 /**
- * File configuration SPI implementation for {@link OtlpHttpMetricExporter} and {@link
+ * Declarative configuration SPI implementation for {@link OtlpHttpMetricExporter} and {@link
  * OtlpGrpcMetricExporter}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
@@ -55,9 +56,9 @@ public class OtlpMetricExporterComponentProvider implements ComponentProvider<Me
           builder::setClientTls,
           builder::setRetryPolicy,
           builder::setMemoryMode);
-      OtlpConfigUtil.configureOtlpAggregationTemporality(
+      ExporterBuilderUtil.configureOtlpAggregationTemporality(
           config, builder::setAggregationTemporalitySelector);
-      OtlpConfigUtil.configureOtlpHistogramDefaultAggregation(
+      ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
           config, builder::setDefaultAggregationSelector);
 
       return builder.build();
@@ -75,9 +76,9 @@ public class OtlpMetricExporterComponentProvider implements ComponentProvider<Me
           builder::setClientTls,
           builder::setRetryPolicy,
           builder::setMemoryMode);
-      OtlpConfigUtil.configureOtlpAggregationTemporality(
+      ExporterBuilderUtil.configureOtlpAggregationTemporality(
           config, builder::setAggregationTemporalitySelector);
-      OtlpConfigUtil.configureOtlpHistogramDefaultAggregation(
+      ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
           config, builder::setDefaultAggregationSelector);
 
       return builder.build();

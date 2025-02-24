@@ -12,7 +12,7 @@ import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 
 /**
- * File configuration SPI implementation for {@link B3Propagator}.
+ * Declarative configuration SPI implementation for {@link B3Propagator}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.

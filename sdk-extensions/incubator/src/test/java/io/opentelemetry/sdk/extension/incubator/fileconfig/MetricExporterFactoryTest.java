@@ -18,7 +18,6 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.MetricExporterComponentProvider;
@@ -65,7 +64,7 @@ class MetricExporterFactoryTest {
   void create_OtlpDefaults() {
     spiHelper = spy(spiHelper);
     List<Closeable> closeables = new ArrayList<>();
-    OtlpGrpcMetricExporter expectedExporter = OtlpGrpcMetricExporter.getDefault();
+    OtlpHttpMetricExporter expectedExporter = OtlpHttpMetricExporter.getDefault();
     cleanup.addCloseable(expectedExporter);
 
     MetricExporter exporter =

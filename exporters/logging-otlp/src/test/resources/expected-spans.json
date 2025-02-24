@@ -1,0 +1,95 @@
+{
+  "resource": {
+    "attributes": [
+      {
+        "key": "key",
+        "value": {
+          "stringValue": "value"
+        }
+      }
+    ]
+  },
+  "scopeSpans": [
+    {
+      "scope": {
+        "name": "instrumentation",
+        "version": "1",
+        "attributes": [
+          {
+            "key": "key",
+            "value": {
+              "stringValue": "value"
+            }
+          }
+        ]
+      },
+      "spans": [
+        {
+          "traceId": "12345678876543211234567887654321",
+          "spanId": "8765432112345678",
+          "name": "testSpan1",
+          "kind": 1,
+          "startTimeUnixNano": "100",
+          "endTimeUnixNano": "1100",
+          "attributes": [
+            {
+              "key": "animal",
+              "value": {
+                "stringValue": "cat"
+              }
+            },
+            {
+              "key": "lives",
+              "value": {
+                "intValue": "9"
+              }
+            }
+          ],
+          "events": [
+            {
+              "timeUnixNano": "600",
+              "name": "somethingHappenedHere",
+              "attributes": [
+                {
+                  "key": "important",
+                  "value": {
+                    "boolValue": true
+                  }
+                }
+              ]
+            }
+          ],
+          "links": [],
+          "status": {
+            "code": 1
+          },
+          "flags": 257
+        }
+      ]
+    },
+    {
+      "scope": {
+        "name": "instrumentation2",
+        "version": "2",
+        "attributes": []
+      },
+      "spans": [
+        {
+          "traceId": "12340000000043211234000000004321",
+          "spanId": "8765000000005678",
+          "name": "testSpan2",
+          "kind": 3,
+          "startTimeUnixNano": "500",
+          "endTimeUnixNano": "1501",
+          "attributes": [],
+          "events": [],
+          "links": [],
+          "status": {
+            "code": 2
+          },
+          "flags": 257
+        }
+      ]
+    }
+  ]
+}

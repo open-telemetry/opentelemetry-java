@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.sender.okhttp.internal;
 
 import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.exporter.internal.RetryUtil;
-import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.http.HttpSender;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
@@ -62,29 +61,21 @@ public final class OkHttpHttpSender implements HttpSender {
       long connectionTimeoutNanos,
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable ProxyOptions proxyOptions,
-      @Nullable Authenticator authenticator,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
       @Nullable X509TrustManager trustManager) {
+    int callTimeoutMillis =
+        (int) Math.min(Duration.ofNanos(timeoutNanos).toMillis(), Integer.MAX_VALUE);
+    int connectTimeoutMillis =
+        (int) Math.min(Duration.ofNanos(connectionTimeoutNanos).toMillis(), Integer.MAX_VALUE);
     OkHttpClient.Builder builder =
         new OkHttpClient.Builder()
             .dispatcher(OkHttpUtil.newDispatcher())
-            .connectTimeout(Duration.ofNanos(connectionTimeoutNanos))
-            .callTimeout(Duration.ofNanos(timeoutNanos));
+            .connectTimeout(Duration.ofMillis(connectTimeoutMillis))
+            .callTimeout(Duration.ofMillis(callTimeoutMillis));
 
     if (proxyOptions != null) {
       builder.proxySelector(proxyOptions.getProxySelector());
-    }
-
-    if (authenticator != null) {
-      Authenticator finalAuthenticator = authenticator;
-      // Generate and attach OkHttp Authenticator implementation
-      builder.authenticator(
-          (route, response) -> {
-            Request.Builder requestBuilder = response.request().newBuilder();
-            finalAuthenticator.getHeaders().forEach(requestBuilder::header);
-            return requestBuilder.build();
-          });
     }
 
     if (retryPolicy != null) {

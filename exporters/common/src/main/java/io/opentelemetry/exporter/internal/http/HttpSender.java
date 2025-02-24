@@ -41,7 +41,12 @@ public interface HttpSender {
   /** Shutdown the sender. */
   CompletableResultCode shutdown();
 
-  /** The HTTP response. */
+  /**
+   * The HTTP response.
+   *
+   * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+   * at any time.
+   */
   interface Response {
 
     /** The HTTP status code. */
