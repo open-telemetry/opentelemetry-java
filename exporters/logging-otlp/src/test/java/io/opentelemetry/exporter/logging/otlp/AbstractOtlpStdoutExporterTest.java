@@ -293,13 +293,13 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
     assertThat(
             exporterFromProvider(
                 DefaultConfigProperties.createFromMap(
-                    singletonMap("otel.java.experimental.exporter.memory_mode", "immutable_data"))))
+                    singletonMap("otel.java.exporter.memory_mode", "immutable_data"))))
         .extracting("memoryMode")
         .isEqualTo(MemoryMode.IMMUTABLE_DATA);
     assertThat(
             exporterFromProvider(
                 DefaultConfigProperties.createFromMap(
-                    singletonMap("otel.java.experimental.exporter.memory_mode", "reusable_data"))))
+                    singletonMap("otel.java.exporter.memory_mode", "reusable_data"))))
         .extracting("memoryMode")
         .isEqualTo(MemoryMode.REUSABLE_DATA);
   }

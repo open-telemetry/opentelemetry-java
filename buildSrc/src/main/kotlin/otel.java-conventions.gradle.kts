@@ -66,6 +66,7 @@ dependencyCheck {
     "jmhRuntimeOnly")
   failBuildOnCVSS = 7.0f // fail on high or critical CVE
   analyzers.assemblyEnabled = false // not sure why its trying to analyze .NET assemblies
+  nvd.apiKey = System.getenv("NVD_API_KEY")
 }
 
 val testJavaVersion = gradle.startParameter.projectProperties.get("testJavaVersion")?.let(JavaVersion::toVersion)
@@ -111,6 +112,14 @@ tasks {
           languageVersion.set(JavaLanguageVersion.of(testJavaVersion.majorVersion))
         },
       )
+    }
+
+    val defaultMaxRetries = if (System.getenv().containsKey("CI")) 2 else 0
+    val maxTestRetries = gradle.startParameter.projectProperties["maxTestRetries"]?.toInt() ?: defaultMaxRetries
+
+    develocity.testRetry {
+      // You can see tests that were retried by this mechanism in the collected test reports and build scans.
+      maxRetries.set(maxTestRetries);
     }
 
     testLogging {
