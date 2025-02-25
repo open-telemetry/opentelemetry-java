@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.logs.export;
 
 import static io.opentelemetry.api.internal.Utils.checkArgument;
-import static io.opentelemetry.api.internal.Utils.warnOnArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -108,10 +107,9 @@ public final class BatchLogRecordProcessorBuilder {
    */
   public BatchLogRecordProcessorBuilder setMaxQueueSize(int maxQueueSize) {
     checkArgument(maxQueueSize > 0, "maxQueueSize must be positive.");
-    warnOnArgument(
-        logger,
-        maxExportBatchSize <= maxQueueSize,
-        "maxExportBatchSize should not exceed maxQueueSize.");
+    if (maxExportBatchSize > maxQueueSize) {
+      logger.log(Level.WARNING, "maxExportBatchSize should not exceed maxQueueSize.");
+    }
     this.maxQueueSize = maxQueueSize;
     return this;
   }
@@ -133,10 +131,9 @@ public final class BatchLogRecordProcessorBuilder {
    */
   public BatchLogRecordProcessorBuilder setMaxExportBatchSize(int maxExportBatchSize) {
     checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive.");
-    warnOnArgument(
-        logger,
-        maxExportBatchSize <= maxQueueSize,
-        "maxExportBatchSize should not exceed maxQueueSize.");
+    if (maxExportBatchSize > maxQueueSize) {
+      logger.log(Level.WARNING, "maxExportBatchSize should not exceed maxQueueSize.");
+    }
     this.maxExportBatchSize = maxExportBatchSize;
     return this;
   }
@@ -164,7 +161,7 @@ public final class BatchLogRecordProcessorBuilder {
    */
   public BatchLogRecordProcessor build() {
     if (maxExportBatchSize > maxQueueSize) {
-      maxExportBatchSize = Math.min(DEFAULT_MAX_EXPORT_BATCH_SIZE, maxQueueSize);
+      maxExportBatchSize = maxQueueSize;
       logger.log(Level.FINE, "Using maxExportBatchSize: {0}", maxExportBatchSize);
     }
     return new BatchLogRecordProcessor(

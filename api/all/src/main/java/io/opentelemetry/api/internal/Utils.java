@@ -5,8 +5,6 @@
 
 package io.opentelemetry.api.internal;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -30,19 +28,6 @@ public final class Utils {
   public static void checkArgument(boolean isValid, String errorMessage) {
     if (!isValid) {
       throw new IllegalArgumentException(errorMessage);
-    }
-  }
-
-  /**
-   * Logs a warning message if the argument is false.
-   *
-   * @param logger the logger instance that writes message.
-   * @param isValid whether the argument check passed.
-   * @param warnMessage the message to use for the warning log.
-   */
-  public static void warnOnArgument(Logger logger, boolean isValid, String warnMessage) {
-    if (!isValid) {
-      logger.log(Level.WARNING, warnMessage);
     }
   }
 }

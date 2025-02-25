@@ -125,22 +125,14 @@ class BatchLogRecordProcessorTest {
   void builderAdjustMaxBatchSize() {
     LogRecordExporter dummyExporter = new CompletableLogRecordExporter();
 
-    BatchLogRecordProcessorBuilder smallQueueBuilder =
-        BatchLogRecordProcessor.builder(dummyExporter)
-            .setMaxQueueSize(1)
-            .setMaxExportBatchSize(1000);
-    smallQueueBuilder.build();
-
-    assertThat(smallQueueBuilder.getMaxExportBatchSize()).isEqualTo(1);
-
-    BatchLogRecordProcessorBuilder largeBatchBuilder =
+    BatchLogRecordProcessorBuilder builder =
         BatchLogRecordProcessor.builder(dummyExporter)
             .setMaxQueueSize(513)
             .setMaxExportBatchSize(1000);
-    largeBatchBuilder.build();
+    builder.build();
 
-    assertThat(largeBatchBuilder.getMaxExportBatchSize())
-        .isEqualTo(BatchLogRecordProcessorBuilder.DEFAULT_MAX_EXPORT_BATCH_SIZE);
+    assertThat(builder.getMaxExportBatchSize()).isEqualTo(513);
+    assertThat(builder.getMaxQueueSize()).isEqualTo(513);
   }
 
   @Test
