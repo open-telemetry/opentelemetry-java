@@ -14,6 +14,8 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.internal.GuardedBy;
@@ -26,6 +28,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -142,6 +145,32 @@ class BatchSpanProcessorTest {
 
     assertThat(largeBatchBuilder.getMaxExportBatchSize())
         .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_MAX_EXPORT_BATCH_SIZE);
+  }
+
+  @Test
+  void maxExportBatchSizeExceedsQueueSize() throws InterruptedException {
+    // Given a processor configured with a maxExportBatchSize > maxQueueSize, ensure that after n =
+    // maxQueueSize spans are ended, export is triggered and that the queue is fully drained and
+    // exported.
+    int maxQueueSize = 2048;
+    when(mockSpanExporter.export(any())).thenReturn(CompletableResultCode.ofSuccess());
+    sdkTracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(
+                BatchSpanProcessor.builder(mockSpanExporter)
+                    .setScheduleDelay(Duration.ofSeconds(Integer.MAX_VALUE))
+                    .setMaxExportBatchSize(2049)
+                    .setMaxQueueSize(maxQueueSize)
+                    .build())
+            .build();
+
+    for (int i = 0; i < maxQueueSize; i++) {
+      createEndedSpan("span " + i);
+    }
+
+    Thread.sleep(10);
+
+    verify(mockSpanExporter, times(1)).export(any());
   }
 
   @Test
