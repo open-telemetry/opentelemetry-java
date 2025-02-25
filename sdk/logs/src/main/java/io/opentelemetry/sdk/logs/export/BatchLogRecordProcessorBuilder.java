@@ -11,6 +11,8 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.metrics.MeterProvider;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Builder class for {@link BatchLogRecordProcessor}.
@@ -18,6 +20,8 @@ import java.util.concurrent.TimeUnit;
  * @since 1.27.0
  */
 public final class BatchLogRecordProcessorBuilder {
+  private static final Logger logger =
+      Logger.getLogger(BatchLogRecordProcessorBuilder.class.getName());
 
   // Visible for testing
   static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 1000;
@@ -103,6 +107,9 @@ public final class BatchLogRecordProcessorBuilder {
    */
   public BatchLogRecordProcessorBuilder setMaxQueueSize(int maxQueueSize) {
     checkArgument(maxQueueSize > 0, "maxQueueSize must be positive.");
+    if (maxExportBatchSize > maxQueueSize) {
+      logger.log(Level.WARNING, "maxExportBatchSize should not exceed maxQueueSize.");
+    }
     this.maxQueueSize = maxQueueSize;
     return this;
   }
@@ -124,6 +131,9 @@ public final class BatchLogRecordProcessorBuilder {
    */
   public BatchLogRecordProcessorBuilder setMaxExportBatchSize(int maxExportBatchSize) {
     checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive.");
+    if (maxExportBatchSize > maxQueueSize) {
+      logger.log(Level.WARNING, "maxExportBatchSize should not exceed maxQueueSize.");
+    }
     this.maxExportBatchSize = maxExportBatchSize;
     return this;
   }
@@ -150,6 +160,10 @@ public final class BatchLogRecordProcessorBuilder {
    * @return a new {@link BatchLogRecordProcessor}.
    */
   public BatchLogRecordProcessor build() {
+    if (maxExportBatchSize > maxQueueSize) {
+      maxExportBatchSize = maxQueueSize;
+      logger.log(Level.FINE, "Using maxExportBatchSize: {0}", maxExportBatchSize);
+    }
     return new BatchLogRecordProcessor(
         logRecordExporter,
         meterProvider,
