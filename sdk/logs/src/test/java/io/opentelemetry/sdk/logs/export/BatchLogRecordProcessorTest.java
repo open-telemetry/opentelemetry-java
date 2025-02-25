@@ -156,9 +156,7 @@ class BatchLogRecordProcessorTest {
       emitLog(sdkLoggerProvider, "log " + i);
     }
 
-    Thread.sleep(10);
-
-    verify(mockLogRecordExporter, times(1)).export(any());
+    await().untilAsserted(() -> verify(mockLogRecordExporter, times(1)).export(any()));
   }
 
   @Test

@@ -164,7 +164,7 @@ class BatchSpanProcessorTest {
 
     Thread.sleep(10);
 
-    verify(mockSpanExporter, times(1)).export(any());
+    await().untilAsserted(() -> verify(mockSpanExporter, times(1)).export(any()));
   }
 
   @Test
