@@ -23,6 +23,7 @@ public final class SpanLimitsBuilder {
   private int maxNumAttributesPerEvent = DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT;
   private int maxNumAttributesPerLink = DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK;
   private int maxAttributeValueLength = SpanLimits.DEFAULT_SPAN_MAX_ATTRIBUTE_LENGTH;
+  private boolean excludeExceptionStackTrace = false;
 
   SpanLimitsBuilder() {}
 
@@ -109,6 +110,18 @@ public final class SpanLimitsBuilder {
     return this;
   }
 
+  /**
+   * Sets whether exception stacktraces should be excluded from exception event attributes.
+   *
+   * @param excludeExceptionStackTrace whether exception stacktraces should be excluded from
+   *     exception event attributes.
+   * @return this.
+   */
+  public SpanLimitsBuilder setExcludeExceptionStackTrace(boolean excludeExceptionStackTrace) {
+    this.excludeExceptionStackTrace = excludeExceptionStackTrace;
+    return this;
+  }
+
   /** Builds and returns a {@link SpanLimits} with the values of this builder. */
   public SpanLimits build() {
     return SpanLimits.create(
@@ -117,6 +130,7 @@ public final class SpanLimitsBuilder {
         maxNumLinks,
         maxNumAttributesPerEvent,
         maxNumAttributesPerLink,
-        maxAttributeValueLength);
+        maxAttributeValueLength,
+        excludeExceptionStackTrace);
   }
 }

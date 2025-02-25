@@ -1,2 +1,7 @@
 Comparing source compatibility of opentelemetry-sdk-trace-1.48.0-SNAPSHOT.jar against opentelemetry-sdk-trace-1.47.0.jar
-No changes.
+***  MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.trace.SpanLimits  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) boolean isExcludeExceptionStackTrace()
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.trace.SpanLimitsBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.SpanLimitsBuilder setExcludeExceptionStackTrace(boolean)
