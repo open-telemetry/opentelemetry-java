@@ -107,9 +107,6 @@ public final class BatchLogRecordProcessorBuilder {
    */
   public BatchLogRecordProcessorBuilder setMaxQueueSize(int maxQueueSize) {
     checkArgument(maxQueueSize > 0, "maxQueueSize must be positive.");
-    if (maxExportBatchSize > maxQueueSize) {
-      logger.log(Level.WARNING, "maxExportBatchSize should not exceed maxQueueSize.");
-    }
     this.maxQueueSize = maxQueueSize;
     return this;
   }
@@ -131,9 +128,6 @@ public final class BatchLogRecordProcessorBuilder {
    */
   public BatchLogRecordProcessorBuilder setMaxExportBatchSize(int maxExportBatchSize) {
     checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive.");
-    if (maxExportBatchSize > maxQueueSize) {
-      logger.log(Level.WARNING, "maxExportBatchSize should not exceed maxQueueSize.");
-    }
     this.maxExportBatchSize = maxExportBatchSize;
     return this;
   }
@@ -162,7 +156,10 @@ public final class BatchLogRecordProcessorBuilder {
   public BatchLogRecordProcessor build() {
     if (maxExportBatchSize > maxQueueSize) {
       maxExportBatchSize = maxQueueSize;
-      logger.log(Level.FINE, "Using maxExportBatchSize: {0}", maxExportBatchSize);
+      logger.log(
+          Level.WARNING,
+          "maxExportBatchSize should not exceed maxQueueSize. Both are set to {0}.",
+          maxQueueSize);
     }
     return new BatchLogRecordProcessor(
         logRecordExporter,
