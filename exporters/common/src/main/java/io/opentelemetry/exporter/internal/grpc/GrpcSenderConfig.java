@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -40,7 +41,8 @@ public abstract class GrpcSenderConfig<T extends Marshaler> {
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
-      @Nullable X509TrustManager trustManager) {
+      @Nullable X509TrustManager trustManager,
+      @Nullable ExecutorService executorService) {
     return new AutoValue_GrpcSenderConfig<>(
         endpoint,
         endpointPath,
@@ -52,7 +54,8 @@ public abstract class GrpcSenderConfig<T extends Marshaler> {
         stubFactory,
         retryPolicy,
         sslContext,
-        trustManager);
+        trustManager,
+        executorService);
   }
 
   public abstract URI getEndpoint();
@@ -82,4 +85,7 @@ public abstract class GrpcSenderConfig<T extends Marshaler> {
 
   @Nullable
   public abstract X509TrustManager getTrustManager();
+
+  @Nullable
+  public abstract ExecutorService getExecutorService();
 }

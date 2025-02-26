@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.StringJoiner;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -60,6 +61,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
+  @Nullable private ExecutorService executorService;
 
   public HttpExporterBuilder(String exporterName, String type, String defaultEndpoint) {
     this.exporterName = exporterName;
@@ -131,6 +133,11 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  public HttpExporterBuilder<T> setExecutorService(ExecutorService executorService) {
+    this.executorService = executorService;
+    return this;
+  }
+
   public HttpExporterBuilder<T> exportAsJson() {
     this.exportAsJson = true;
     return this;
@@ -192,7 +199,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
                 proxyOptions,
                 retryPolicy,
                 isPlainHttp ? null : tlsConfigHelper.getSslContext(),
-                isPlainHttp ? null : tlsConfigHelper.getTrustManager()));
+                isPlainHttp ? null : tlsConfigHelper.getTrustManager(),
+                executorService));
     LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
 
     return new HttpExporter<>(exporterName, type, httpSender, meterProviderSupplier, exportAsJson);
@@ -222,6 +230,9 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     joiner.add("headers=" + headersJoiner);
     if (retryPolicy != null) {
       joiner.add("retryPolicy=" + retryPolicy);
+    }
+    if (executorService != null) {
+      joiner.add("executorService=" + executorService);
     }
     // Note: omit tlsConfigHelper because we can't log the configuration in any readable way
     // Note: omit meterProviderSupplier because we can't log the configuration in any readable way
