@@ -345,6 +345,7 @@ class PrometheusHttpServerTest {
 
   @Test
   @SuppressLogger(PrometheusHttpServer.class)
+  @SuppressLogger(Otel2PrometheusConverter.class)
   void fetch_DuplicateMetrics() {
     Resource resource = Resource.create(Attributes.of(stringKey("kr"), "vr"));
     metricData.set(
