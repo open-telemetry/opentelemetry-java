@@ -496,10 +496,7 @@ final class SdkSpan implements ReadWriteSpan {
       attributes.put(EXCEPTION_STACKTRACE, stackTrace);
     }
 
-    additionalAttributes.forEach(
-        (attributeKey, object) -> {
-          attributes.put((AttributeKey<Object>) attributeKey, object);
-        });
+    additionalAttributes.forEach(attributes::put);
 
     addTimedEvent(
         ExceptionEventData.create(

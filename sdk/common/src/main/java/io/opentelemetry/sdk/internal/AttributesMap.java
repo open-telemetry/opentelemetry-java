@@ -18,12 +18,21 @@ import javax.annotation.Nullable;
  * A map with a fixed capacity that drops attributes when the map gets full, and which truncates
  * string and array string attribute values to the {@link #lengthLimit}.
  *
+ * <p>WARNING: In order to reduce memory allocation, this class extends {@link HashMap} when it
+ * would be more appropriate to delegate. The problem with extending is that we don't enforce that
+ * all {@link HashMap} methods for reading / writing data conform to the configured attribute
+ * limits. Therefore, it's easy to accidentally call something like {@link Map#putAll(Map)} or
+ * {@link Map#put(Object, Object)} and bypass the restrictions (see <a
+ * href="https://github.com/open-telemetry/opentelemetry-java/issues/7135">#7135</a>). Callers MUST
+ * take care to only call methods from {@link AttributesMap}, and not {@link HashMap}.
+ *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class AttributesMap implements Attributes {
+public final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements Attributes {
 
-  private final HashMap<AttributeKey<?>, Object> delegate = new HashMap<>();
+  private static final long serialVersionUID = -5072696312123632376L;
+
   private final long capacity;
   private final int lengthLimit;
   private int totalAddedValues = 0;
@@ -43,13 +52,18 @@ public final class AttributesMap implements Attributes {
     return new AttributesMap(capacity, lengthLimit);
   }
 
-  /** Add the attribute key value pair, applying capacity and length limits. */
-  public <T> void put(AttributeKey<T> key, T value) {
+  /**
+   * Add the attribute key value pair, applying capacity and length limits. Callers MUST ensure the
+   * {@code value} type matches the type required by {@code key}.
+   */
+  @Override
+  @Nullable
+  public Object put(AttributeKey<?> key, Object value) {
     totalAddedValues++;
-    if (size() >= capacity && !delegate.containsKey(key)) {
-      return;
+    if (size() >= capacity && !containsKey(key)) {
+      return null;
     }
-    delegate.put(key, AttributeUtil.applyAttributeLengthLimit(value, lengthLimit));
+    return super.put(key, AttributeUtil.applyAttributeLengthLimit(value, lengthLimit));
   }
 
   /** Get the total number of attributes added, including those dropped for capcity limits. */
@@ -61,7 +75,7 @@ public final class AttributesMap implements Attributes {
   @Override
   @Nullable
   public <T> T get(AttributeKey<T> key) {
-    return (T) delegate.get(key);
+    return (T) super.get(key);
   }
 
   @Override
@@ -71,7 +85,7 @@ public final class AttributesMap implements Attributes {
     // anyways. We implement the immutable Attributes for this class to support the
     // Attributes.builder().putAll usage - it is tricky but an implementation detail of this private
     // class.
-    return Collections.unmodifiableMap(delegate);
+    return Collections.unmodifiableMap(this);
   }
 
   @Override
@@ -84,24 +98,14 @@ public final class AttributesMap implements Attributes {
     // https://github.com/open-telemetry/opentelemetry-java/issues/4161
     // Help out android desugaring by having an explicit call to HashMap.forEach, when forEach is
     // just called through Attributes.forEach desugaring is unable to correctly handle it.
-    delegate.forEach(action);
-  }
-
-  @Override
-  public int size() {
-    return delegate.size();
-  }
-
-  @Override
-  public boolean isEmpty() {
-    return delegate.isEmpty();
+    super.forEach(action);
   }
 
   @Override
   public String toString() {
     return "AttributesMap{"
         + "data="
-        + delegate
+        + super.toString()
         + ", capacity="
         + capacity
         + ", totalAddedValues="
