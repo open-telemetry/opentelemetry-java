@@ -32,6 +32,7 @@ dependencies {
   implementation("io.github.netmikey.logunit:logunit-jul")
   implementation("org.assertj:assertj-core")
   implementation("org.mock-server:mockserver-netty")
+  implementation("org.mockito:mockito-core")
 }
 
 // Skip OWASP dependencyCheck task on test module

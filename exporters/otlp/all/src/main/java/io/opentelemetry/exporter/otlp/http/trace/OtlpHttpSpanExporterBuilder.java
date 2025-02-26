@@ -226,6 +226,13 @@ public final class OtlpHttpSpanExporterBuilder {
     return this;
   }
 
+  /** Set the {@link ClassLoader} used to load the sender API. */
+  public OtlpHttpSpanExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
+    requireNonNull(serviceClassLoader, "serviceClassLoader");
+    delegate.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
   /**
    * Constructs a new instance of the exporter based on the builder's values.
    *
