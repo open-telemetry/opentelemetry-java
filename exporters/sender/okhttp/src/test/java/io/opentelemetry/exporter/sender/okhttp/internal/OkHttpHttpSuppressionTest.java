@@ -46,6 +46,7 @@ class OkHttpHttpSuppressionTest extends AbstractOkHttpSuppressionTest<OkHttpHttp
         null,
         null,
         null,
+        null,
         null);
   }
 }

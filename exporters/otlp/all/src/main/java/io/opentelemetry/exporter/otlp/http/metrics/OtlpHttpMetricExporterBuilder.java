@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -257,6 +258,13 @@ public final class OtlpHttpMetricExporterBuilder {
   public OtlpHttpMetricExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
     requireNonNull(serviceClassLoader, "serviceClassLoader");
     delegate.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  /** Set the {@link ExecutorService} used to execute requests. */
+  public OtlpHttpMetricExporterBuilder setExecutorService(ExecutorService executorService) {
+    requireNonNull(executorService, "executorService");
+    delegate.setExecutorService(executorService);
     return this;
   }
 

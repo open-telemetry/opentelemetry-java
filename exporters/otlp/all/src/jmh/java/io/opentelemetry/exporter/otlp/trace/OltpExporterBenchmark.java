@@ -88,7 +88,8 @@ public class OltpExporterBenchmark {
                 MarshalerTraceServiceGrpc.newFutureStub(defaultGrpcChannel, null),
                 /* shutdownChannel= */ false,
                 10,
-                Collections::emptyMap),
+                Collections::emptyMap,
+                null),
             MeterProvider::noop);
 
     okhttpGrpcSender =
@@ -103,6 +104,7 @@ public class OltpExporterBenchmark {
                 10,
                 10,
                 Collections::emptyMap,
+                null,
                 null,
                 null,
                 null),

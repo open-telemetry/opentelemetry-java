@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -116,6 +117,13 @@ public class HttpLogRecordExporterBuilderWrapper
   public TelemetryExporterBuilder<LogRecordData> setServiceClassLoader(
       ClassLoader serviceClassLoader) {
     builder.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<LogRecordData> setExecutorService(
+      ExecutorService executorService) {
+    builder.setExecutorService(executorService);
     return this;
   }
 
