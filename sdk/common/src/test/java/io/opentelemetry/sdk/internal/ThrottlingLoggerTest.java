@@ -144,4 +144,41 @@ class ThrottlingLoggerTest {
     assertThat(logs.getEvents()).hasSize(9);
     assertThat(logs.getEvents().get(8).getMessage()).isEqualTo("oh no!");
   }
+
+  @Test
+  void allowOnlyOneLogPerMinuteAfterSuppression() {
+    TestClock clock = TestClock.create();
+    ThrottlingLogger logger = new ThrottlingLogger(realLogger, clock);
+
+    logger.log(Level.WARNING, "oh no!");
+    logger.log(Level.WARNING, "oh no!");
+    logger.log(Level.WARNING, "oh no!");
+    logger.log(Level.WARNING, "oh no!");
+    logger.log(Level.WARNING, "oh no!");
+
+    logger.log(Level.WARNING, "oh no I should trigger suppression!");
+    logger.log(Level.WARNING, "oh no I should be suppressed!");
+
+    assertThat(logs.getEvents()).hasSize(7);
+
+    clock.advance(Duration.ofMillis(12_001));
+    logger.log(Level.WARNING, "suppression 1");
+    clock.advance(Duration.ofMillis(12_001));
+    logger.log(Level.WARNING, "suppression 2");
+    clock.advance(Duration.ofMillis(12_001));
+    logger.log(Level.WARNING, "suppression 3");
+    clock.advance(Duration.ofMillis(12_001));
+    logger.log(Level.WARNING, "suppression 4");
+    clock.advance(Duration.ofMillis(12_001));
+    logger.log(Level.WARNING, "allowed 1");
+
+    logs.assertDoesNotContain("suppression 1");
+    logs.assertDoesNotContain("suppression 2");
+    logs.assertDoesNotContain("suppression 3");
+    logs.assertDoesNotContain("suppression 4");
+    logs.assertContains("allowed 1");
+
+    assertThat(logs.getEvents()).hasSize(8);
+    assertThat(logs.getEvents().get(7).getMessage()).isEqualTo("allowed 1");
+  }
 }
