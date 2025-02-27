@@ -9,15 +9,12 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import java.util.function.BiFunction;
 
-/** A builder for customizing OpenTelemetry declarative configuration. */
+/** A builder for customizing OpenTelemetry file configuration. */
 public interface DeclarativeConfigurationCustomizer {
 
   /**
    * Adds a {@link BiFunction} to invoke with the declaratively configured {@link TextMapPropagator}
-   * to allow customization. The return value of the {@link BiFunction} will replace the passed-in
-   * argument.
-   *
-   * <p>Multiple calls will execute the customizers in order.
+   * to allow customization.
    */
   DeclarativeConfigurationCustomizer addPropagatorCustomizer(
       BiFunction<? super TextMapPropagator, StructuredConfigProperties, ? extends TextMapPropagator>
