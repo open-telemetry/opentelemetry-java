@@ -20,6 +20,12 @@ publishing {
       }
       plugins.withId("java-library") {
         from(components["java"])
+
+        val javaComponent = components.findByName("java") as AdhocComponentWithVariants
+        javaComponent.addVariantsFromConfiguration(configurations["optionalCompileOnly"]) {
+          mapToMavenScope("runtime")
+          mapToOptional()
+        }
       }
 
       versionMapping {

@@ -208,6 +208,30 @@ val dependencyManagement by configurations.creating {
   isVisible = false
 }
 
+// An optionalCompileOnly dependency is the same as a compileOnly dependency, except that it appears
+// in published pom.xml like the following, where compileOnly dependencies don't appear in pom.xml at all:
+// <dependency>
+//   <groupId>io.opentelemetry</groupId>
+//   <artifactId>opentelemetry-api-incubator</artifactId>
+//   <version>1.48.0-alpha-SNAPSHOT</version>
+//   <scope>runtime</scope>
+//   <optional>true</optional>
+// </dependency>
+val optionalCompileOnly by configurations.creating {
+  isCanBeConsumed = false
+  isCanBeResolved = false
+  // In otel.publish-conventions.gradle.kts we indicate that optionalCompileOnly dependencies should
+  // be added to the publication with scope=runtime, optional=true. For some reason, this fails if
+  // the configuration doesn't have at least 1 attribute associated with it. It's not clear from the
+  // docs (https://docs.gradle.org/current/userguide/variant_attributes.html) what the attribute is used for.
+  attributes {
+    attribute(Attribute.of("unused", String::class.java), "unused")
+  }
+}
+configurations.named("compileOnly") {
+  extendsFrom(optionalCompileOnly)
+}
+
 dependencies {
   dependencyManagement(platform(project(":dependencyManagement")))
   afterEvaluate {
