@@ -16,6 +16,8 @@ import io.opentelemetry.sdk.resources.Resource;
  * {@link io.opentelemetry.sdk.metrics.export.MetricExporter} which wraps {@link MetricData} with a
  * custom implementation.
  *
+ * <p>Example usage:
+ *
  * <pre>{@code
  * // class MetricDataWithCustomDescription extends DelegatingMetricData {
  * //
@@ -33,7 +35,7 @@ import io.opentelemetry.sdk.resources.Resource;
  * // }
  * }</pre>
  *
- * * @since 1.28.0
+ * @since 1.28.0
  */
 public abstract class DelegatingMetricData implements MetricData {
 
