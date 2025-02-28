@@ -56,9 +56,14 @@ class DelegatingMetricDataTest {
 
   @Test
   void equals_differentResource() {
-    MetricData metricData1 = createBasicMetricBuilder().setResource(Resource.create(
-        Attributes.builder().put("key", "value1").build())).build();
-    MetricData metricData2 = createBasicMetricBuilder().setResource(Resource.create(Attributes.builder().put("key", "value2").build())).build();
+    MetricData metricData1 =
+        createBasicMetricBuilder()
+            .setResource(Resource.create(Attributes.builder().put("key", "value1").build()))
+            .build();
+    MetricData metricData2 =
+        createBasicMetricBuilder()
+            .setResource(Resource.create(Attributes.builder().put("key", "value2").build()))
+            .build();
     MetricData noOpWrapper1 = new NoOpDelegatingMetricData(metricData1);
     MetricData noOpWrapper2 = new NoOpDelegatingMetricData(metricData2);
 
@@ -67,8 +72,14 @@ class DelegatingMetricDataTest {
 
   @Test
   void equals_differentInstrumentationScopeInfo() {
-    MetricData metricData1 = createBasicMetricBuilder().setInstrumentationScopeInfo(InstrumentationScopeInfo.create("scope1")).build();
-    MetricData metricData2 = createBasicMetricBuilder().setInstrumentationScopeInfo(InstrumentationScopeInfo.create("scope2")).build();
+    MetricData metricData1 =
+        createBasicMetricBuilder()
+            .setInstrumentationScopeInfo(InstrumentationScopeInfo.create("scope1"))
+            .build();
+    MetricData metricData2 =
+        createBasicMetricBuilder()
+            .setInstrumentationScopeInfo(InstrumentationScopeInfo.create("scope2"))
+            .build();
     MetricData noOpWrapper1 = new NoOpDelegatingMetricData(metricData1);
     MetricData noOpWrapper2 = new NoOpDelegatingMetricData(metricData2);
 
@@ -107,8 +118,10 @@ class DelegatingMetricDataTest {
 
   @Test
   void equals_differentData() {
-    MetricData metricData1 = createBasicMetricBuilder().setData(ImmutableSummaryData.empty()).build();
-    MetricData metricData2 = createBasicMetricBuilder().setData(ImmutableSummaryData.empty()).build();
+    MetricData metricData1 =
+        createBasicMetricBuilder().setData(ImmutableSummaryData.empty()).build();
+    MetricData metricData2 =
+        createBasicMetricBuilder().setData(ImmutableSummaryData.empty()).build();
     MetricData noOpWrapper1 = new NoOpDelegatingMetricData(metricData1);
     MetricData noOpWrapper2 = new NoOpDelegatingMetricData(metricData2);
 
