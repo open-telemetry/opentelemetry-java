@@ -121,8 +121,16 @@ public class InstrumentationConfigUtil {
     return getOrNull(configProvider, config -> config.getStructured(instrumentationName), "java");
   }
 
+  /**
+   * Walk down the {@code segments} of {@link ConfigProvider#getInstrumentationConfig()} and call
+   * {@code accessor} on the terminal node. Returns null if {@link
+   * ConfigProvider#getInstrumentationConfig()} is null, or if null is encountered walking the
+   * {@code segments}, or if {@code accessor} returns null.
+   *
+   * <p>See other methods in {@link InstrumentationConfigUtil} for usage examples.
+   */
   @Nullable
-  private static <T> T getOrNull(
+  public static <T> T getOrNull(
       ConfigProvider configProvider,
       Function<DeclarativeConfigProperties, T> accessor,
       String... segments) {
