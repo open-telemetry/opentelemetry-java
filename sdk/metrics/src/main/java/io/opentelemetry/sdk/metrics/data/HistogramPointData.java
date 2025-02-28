@@ -5,12 +5,11 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
-
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
 
 /**
  * Point data for {@link HistogramData}.
