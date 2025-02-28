@@ -58,15 +58,23 @@ class DelegatingMetricDataTest {
     MetricData metricData = createBasicMetricBuilder().build();
     MetricData noOpWrapper = new NoOpDelegatingMetricData(metricData);
 
-    String expectedString = "DelegatingMetricData{"
-        + "resource=" + metricData.getResource()
-        + ", instrumentationScopeInfo=" + metricData.getInstrumentationScopeInfo()
-        + ", name=" + metricData.getName()
-        + ", description=" + metricData.getDescription()
-        + ", unit=" + metricData.getUnit()
-        + ", type=" + metricData.getType()
-        + ", data=" + metricData.getData()
-        + "}";
+    String expectedString =
+        "DelegatingMetricData{"
+            + "resource="
+            + metricData.getResource()
+            + ", instrumentationScopeInfo="
+            + metricData.getInstrumentationScopeInfo()
+            + ", name="
+            + metricData.getName()
+            + ", description="
+            + metricData.getDescription()
+            + ", unit="
+            + metricData.getUnit()
+            + ", type="
+            + metricData.getType()
+            + ", data="
+            + metricData.getData()
+            + "}";
 
     assertThat(noOpWrapper.toString()).isEqualTo(expectedString);
   }
@@ -82,7 +90,6 @@ class DelegatingMetricDataTest {
     assertThat(noOpWrapper2.hashCode()).isEqualTo(metricData2.hashCode());
     assertThat(noOpWrapper1.hashCode()).isEqualTo(noOpWrapper2.hashCode());
   }
-
 
   private static TestMetricData.Builder createBasicMetricBuilder() {
     return TestMetricData.builder()

@@ -17,20 +17,18 @@ import io.opentelemetry.sdk.resources.Resource;
  * custom implementation.
  *
  * <pre>{@code
- * // class MetricDataWithCustomAttributes extends DelegatingMetricData {
+ * // class MetricDataWithCustomDescription extends DelegatingMetricData {
  * //
- * //   private final Attributes attributes;
+ * //   private final String description;
  * //
- * //   MetricDataWithCustomAttributes(MetricData delegate) {
+ * //   MetricDataWithCustomDescription(MetricData delegate) {
  * //     super(delegate);
- * //     Attributes.Builder newAttributes = Attributes.builder(delegate.getAttributes());
- * //     newAttributes.put("custom_key", "custom_value");
- * //     attributes = newAttributes.build();
+ * //     this.description = delegate.getDescription() + " (custom)";
  * //   }
  * //
  * //   @Override
- * //   public Attributes getAttributes() {
- * //     return attributes;
+ * //   public String getDescription() {
+ * //     return description;
  * //   }
  * // }
  * }</pre>
