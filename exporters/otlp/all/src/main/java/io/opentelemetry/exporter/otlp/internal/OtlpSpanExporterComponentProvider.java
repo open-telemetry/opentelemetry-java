@@ -39,12 +39,12 @@ public class OtlpSpanExporterComponentProvider implements ComponentProvider<Span
 
   @Override
   public SpanExporter create(DeclarativeConfigProperties config) {
-    String protocol = OtlpConfigUtil.getStructuredConfigOtlpProtocol(config);
+    String protocol = OtlpDeclarativeConfigUtil.getStructuredConfigOtlpProtocol(config);
 
     if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
       OtlpHttpSpanExporterBuilder builder = httpBuilder();
 
-      OtlpConfigUtil.configureOtlpExporterBuilder(
+      OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_TRACES,
           config,
           builder::setEndpoint,
@@ -60,7 +60,7 @@ public class OtlpSpanExporterComponentProvider implements ComponentProvider<Span
     } else if (protocol.equals(PROTOCOL_GRPC)) {
       OtlpGrpcSpanExporterBuilder builder = grpcBuilder();
 
-      OtlpConfigUtil.configureOtlpExporterBuilder(
+      OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_TRACES,
           config,
           builder::setEndpoint,

@@ -40,12 +40,12 @@ public class OtlpLogRecordExporterComponentProvider
 
   @Override
   public LogRecordExporter create(DeclarativeConfigProperties config) {
-    String protocol = OtlpConfigUtil.getStructuredConfigOtlpProtocol(config);
+    String protocol = OtlpDeclarativeConfigUtil.getStructuredConfigOtlpProtocol(config);
 
     if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
       OtlpHttpLogRecordExporterBuilder builder = httpBuilder();
 
-      OtlpConfigUtil.configureOtlpExporterBuilder(
+      OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_LOGS,
           config,
           builder::setEndpoint,
@@ -61,7 +61,7 @@ public class OtlpLogRecordExporterComponentProvider
     } else if (protocol.equals(PROTOCOL_GRPC)) {
       OtlpGrpcLogRecordExporterBuilder builder = grpcBuilder();
 
-      OtlpConfigUtil.configureOtlpExporterBuilder(
+      OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_LOGS,
           config,
           builder::setEndpoint,

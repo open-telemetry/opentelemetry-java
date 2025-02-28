@@ -19,8 +19,8 @@ dependencies {
   implementation(project(":exporters:otlp:common"))
   implementation(project(":exporters:sender:okhttp"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
-  // TODO(jack-berg): must be compileOnly
-  implementation(project(":api:incubator"))
+
+  compileOnly(project(":api:incubator"))
 
   compileOnly("io.grpc:grpc-stub")
 

@@ -6,7 +6,7 @@
 package io.opentelemetry.exporter.logging.otlp.internal.logs;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
-import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
+import io.opentelemetry.exporter.internal.IncuatingExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 
@@ -32,7 +32,7 @@ public final class OtlpStdoutLogRecordExporterComponentProvider
   @Override
   public LogRecordExporter create(DeclarativeConfigProperties config) {
     OtlpStdoutLogRecordExporterBuilder builder = OtlpStdoutLogRecordExporter.builder();
-    ExporterBuilderUtil.configureExporterMemoryMode(config, builder::setMemoryMode);
+    IncuatingExporterBuilderUtil.configureExporterMemoryMode(config, builder::setMemoryMode);
     return builder.build();
   }
 }
