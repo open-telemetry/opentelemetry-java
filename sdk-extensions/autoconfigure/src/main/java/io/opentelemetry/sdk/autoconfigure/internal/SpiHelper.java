@@ -5,12 +5,9 @@
 
 package io.opentelemetry.sdk.autoconfigure.internal;
 
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -23,7 +20,6 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
@@ -88,53 +84,6 @@ public final class SpiHelper {
           });
     }
     return NamedSpiManager.create(nameToProvider);
-  }
-
-  /**
-   * Find a registered {@link ComponentProvider} with {@link ComponentProvider#getType()} matching
-   * {@code type}, {@link ComponentProvider#getName()} matching {@code name}, and call {@link
-   * ComponentProvider#create(DeclarativeConfigProperties)} with the given {@code config}.
-   *
-   * @throws DeclarativeConfigException if no matching providers are found, or if multiple are found
-   *     (i.e. conflict), or if {@link ComponentProvider#create(DeclarativeConfigProperties)} throws
-   */
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  public <T> T loadComponent(Class<T> type, String name, DeclarativeConfigProperties config) {
-    // TODO(jack-berg): cache loaded component providers
-    List<ComponentProvider> componentProviders = load(ComponentProvider.class);
-    List<ComponentProvider<?>> matchedProviders =
-        componentProviders.stream()
-            .map(
-                (Function<ComponentProvider, ComponentProvider<?>>)
-                    componentProvider -> componentProvider)
-            .filter(
-                componentProvider ->
-                    componentProvider.getType() == type && name.equals(componentProvider.getName()))
-            .collect(Collectors.toList());
-    if (matchedProviders.isEmpty()) {
-      throw new DeclarativeConfigException(
-          "No component provider detected for " + type.getName() + " with name \"" + name + "\".");
-    }
-    if (matchedProviders.size() > 1) {
-      throw new DeclarativeConfigException(
-          "Component provider conflict. Multiple providers detected for "
-              + type.getName()
-              + " with name \""
-              + name
-              + "\": "
-              + componentProviders.stream()
-                  .map(provider -> provider.getClass().getName())
-                  .collect(Collectors.joining(",", "[", "]")));
-    }
-    // Exactly one matching component provider
-    ComponentProvider<T> provider = (ComponentProvider<T>) matchedProviders.get(0);
-
-    try {
-      return provider.create(config);
-    } catch (Throwable throwable) {
-      throw new DeclarativeConfigException(
-          "Error configuring " + type.getName() + " with name \"" + name + "\"", throwable);
-    }
   }
 
   /**

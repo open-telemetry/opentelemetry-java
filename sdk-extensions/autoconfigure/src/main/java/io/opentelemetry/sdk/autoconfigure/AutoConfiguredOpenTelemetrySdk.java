@@ -10,6 +10,7 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.internal.AutoConfigureUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
@@ -48,7 +49,7 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
       OpenTelemetrySdk sdk,
       Resource resource,
       @Nullable ConfigProperties config,
-      @Nullable ConfigProvider configProvider) {
+      @Nullable Object configProvider) {
     return new AutoValue_AutoConfiguredOpenTelemetrySdk(sdk, resource, config, configProvider);
   }
 
@@ -69,6 +70,9 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
    * Returns the {@link ConfigProperties} used for auto-configuration, or {@code null} if
    * declarative configuration was used.
    *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * AutoConfigureUtil#getConfig(AutoConfiguredOpenTelemetrySdk)}.
+   *
    * @see #getConfigProvider()
    */
   @Nullable
@@ -77,10 +81,13 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
   /**
    * Returns the {@link ConfigProvider}, or {@code null} if declarative configuration was not used.
    *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * AutoConfigureUtil#getConfigProvider(AutoConfiguredOpenTelemetrySdk)}.
+   *
    * @see #getConfig()
    */
   @Nullable
-  abstract ConfigProvider getConfigProvider();
+  abstract Object getConfigProvider();
 
   AutoConfiguredOpenTelemetrySdk() {}
 }

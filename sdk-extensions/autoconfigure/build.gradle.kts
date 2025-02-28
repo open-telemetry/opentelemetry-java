@@ -9,8 +9,8 @@ otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure")
 dependencies {
   api(project(":sdk:all"))
   api(project(":sdk-extensions:autoconfigure-spi"))
-  // TODO(jack-berg): should be compileOnly
-  implementation(project(":api:incubator"))
+
+  compileOnly(project(":api:incubator"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 
@@ -47,7 +47,6 @@ testing {
     }
     register<JvmTestSuite>("testFullConfig") {
       dependencies {
-        implementation(project(":api:incubator"))
         implementation(project(":extensions:trace-propagators"))
         implementation(project(":exporters:logging"))
         implementation(project(":exporters:logging-otlp"))
@@ -78,6 +77,13 @@ testing {
             environment("OTEL_TEST_WRAPPED", "1")
           }
         }
+      }
+    }
+    register<JvmTestSuite>("testIncubating") {
+      dependencies {
+        implementation(project(":sdk-extensions:incubator"))
+        implementation(project(":exporters:logging"))
+        implementation(project(":sdk:testing"))
       }
     }
   }
