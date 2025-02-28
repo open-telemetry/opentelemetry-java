@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -51,6 +52,78 @@ class DelegatingMetricDataTest {
     MetricData noOpWrapper = new NoOpDelegatingMetricData(metricData);
 
     assertThat(noOpWrapper.equals(noOpWrapper)).isTrue();
+  }
+
+  @Test
+  void equals_differentResource() {
+    MetricData metricData1 = createBasicMetricBuilder().setResource(Resource.create(
+        Attributes.builder().put("key", "value1").build())).build();
+    MetricData metricData2 = createBasicMetricBuilder().setResource(Resource.create(Attributes.builder().put("key", "value2").build())).build();
+    MetricData noOpWrapper1 = new NoOpDelegatingMetricData(metricData1);
+    MetricData noOpWrapper2 = new NoOpDelegatingMetricData(metricData2);
+
+    assertThat(noOpWrapper1).isNotEqualTo(noOpWrapper2);
+  }
+
+  @Test
+  void equals_differentInstrumentationScopeInfo() {
+    MetricData metricData1 = createBasicMetricBuilder().setInstrumentationScopeInfo(InstrumentationScopeInfo.create("scope1")).build();
+    MetricData metricData2 = createBasicMetricBuilder().setInstrumentationScopeInfo(InstrumentationScopeInfo.create("scope2")).build();
+    MetricData noOpWrapper1 = new NoOpDelegatingMetricData(metricData1);
+    MetricData noOpWrapper2 = new NoOpDelegatingMetricData(metricData2);
+
+    assertThat(noOpWrapper1).isNotEqualTo(noOpWrapper2);
+  }
+
+  @Test
+  void equals_differentName() {
+    MetricData metricData1 = createBasicMetricBuilder().setName("name1").build();
+    MetricData metricData2 = createBasicMetricBuilder().setName("name2").build();
+    MetricData noOpWrapper1 = new NoOpDelegatingMetricData(metricData1);
+    MetricData noOpWrapper2 = new NoOpDelegatingMetricData(metricData2);
+
+    assertThat(noOpWrapper1).isNotEqualTo(noOpWrapper2);
+  }
+
+  @Test
+  void equals_differentUnit() {
+    MetricData metricData1 = createBasicMetricBuilder().setUnit("unit1").build();
+    MetricData metricData2 = createBasicMetricBuilder().setUnit("unit2").build();
+    MetricData noOpWrapper1 = new NoOpDelegatingMetricData(metricData1);
+    MetricData noOpWrapper2 = new NoOpDelegatingMetricData(metricData2);
+
+    assertThat(noOpWrapper1).isNotEqualTo(noOpWrapper2);
+  }
+
+  @Test
+  void equals_differentType() {
+    MetricData metricData1 = createBasicMetricBuilder().setType(MetricDataType.SUMMARY).build();
+    MetricData metricData2 = createBasicMetricBuilder().setType(MetricDataType.LONG_SUM).build();
+    MetricData noOpWrapper1 = new NoOpDelegatingMetricData(metricData1);
+    MetricData noOpWrapper2 = new NoOpDelegatingMetricData(metricData2);
+
+    assertThat(noOpWrapper1).isNotEqualTo(noOpWrapper2);
+  }
+
+  @Test
+  void equals_differentData() {
+    MetricData metricData1 = createBasicMetricBuilder().setData(ImmutableSummaryData.empty()).build();
+    MetricData metricData2 = createBasicMetricBuilder().setData(ImmutableSummaryData.empty()).build();
+    MetricData noOpWrapper1 = new NoOpDelegatingMetricData(metricData1);
+    MetricData noOpWrapper2 = new NoOpDelegatingMetricData(metricData2);
+
+    assertThat(noOpWrapper1).isEqualTo(noOpWrapper2);
+  }
+
+  @Test
+  void equals_nonMetricDataObject_returnsFalse() {
+    MetricData metricData = createBasicMetricBuilder().build();
+    MetricData noOpWrapper = new NoOpDelegatingMetricData(metricData);
+
+    // Compare with a String object (non-MetricData)
+    Object nonMetricData = "not a metric data";
+
+    assertThat(noOpWrapper.equals(nonMetricData)).isFalse();
   }
 
   @Test
