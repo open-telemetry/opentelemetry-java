@@ -7,6 +7,7 @@ Experimental APIs, including Event API, extended Log Bridge APIs, extended Metri
 Features:
 
 * Check if logger is enabled before emitting logs to avoid unnecessary computation
+* Add extended attributes to log records to encode complex data structures
 
 See [ExtendedLogsBridgeApiUsageTest](./src/test/java/io/opentelemetry/api/incubator/logs/ExtendedLogsBridgeApiUsageTest.java).
 
