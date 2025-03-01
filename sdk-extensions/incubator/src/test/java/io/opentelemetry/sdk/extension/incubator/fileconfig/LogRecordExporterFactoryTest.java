@@ -22,7 +22,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigPropertie
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordExporterComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.NameStringValuePairModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.io.Closeable;
 import java.io.IOException;
@@ -68,7 +68,7 @@ class LogRecordExporterFactoryTest {
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
                         .LogRecordExporterModel()
-                    .withOtlp(new OtlpModel()),
+                    .withOtlpHttp(new OtlpHttpExporterModel()),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(exporter);
@@ -81,16 +81,15 @@ class LogRecordExporterFactoryTest {
     ArgumentCaptor<StructuredConfigProperties> configCaptor =
         ArgumentCaptor.forClass(StructuredConfigProperties.class);
     verify(spiHelper)
-        .loadComponent(eq(LogRecordExporter.class), eq("otlp"), configCaptor.capture());
+        .loadComponent(eq(LogRecordExporter.class), eq("otlp_http"), configCaptor.capture());
     StructuredConfigProperties configProperties = configCaptor.getValue();
-    assertThat(configProperties.getString("protocol")).isNull();
     assertThat(configProperties.getString("endpoint")).isNull();
     assertThat(configProperties.getStructured("headers")).isNull();
     assertThat(configProperties.getString("compression")).isNull();
     assertThat(configProperties.getInt("timeout")).isNull();
-    assertThat(configProperties.getString("certificate")).isNull();
-    assertThat(configProperties.getString("client_key")).isNull();
-    assertThat(configProperties.getString("client_certificate")).isNull();
+    assertThat(configProperties.getString("certificate_file")).isNull();
+    assertThat(configProperties.getString("client_key_file")).isNull();
+    assertThat(configProperties.getString("client_certificate_file")).isNull();
   }
 
   @Test
@@ -123,9 +122,8 @@ class LogRecordExporterFactoryTest {
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
                         .LogRecordExporterModel()
-                    .withOtlp(
-                        new OtlpModel()
-                            .withProtocol("http/protobuf")
+                    .withOtlpHttp(
+                        new OtlpHttpExporterModel()
                             .withEndpoint("http://example:4318/v1/logs")
                             .withHeaders(
                                 Arrays.asList(
@@ -137,9 +135,9 @@ class LogRecordExporterFactoryTest {
                                         .withValue("value2")))
                             .withCompression("gzip")
                             .withTimeout(15_000)
-                            .withCertificate(certificatePath)
-                            .withClientKey(clientKeyPath)
-                            .withClientCertificate(clientCertificatePath)),
+                            .withCertificateFile(certificatePath)
+                            .withClientKeyFile(clientKeyPath)
+                            .withClientCertificateFile(clientCertificatePath)),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(exporter);
@@ -150,9 +148,8 @@ class LogRecordExporterFactoryTest {
     ArgumentCaptor<StructuredConfigProperties> configCaptor =
         ArgumentCaptor.forClass(StructuredConfigProperties.class);
     verify(spiHelper)
-        .loadComponent(eq(LogRecordExporter.class), eq("otlp"), configCaptor.capture());
+        .loadComponent(eq(LogRecordExporter.class), eq("otlp_http"), configCaptor.capture());
     StructuredConfigProperties configProperties = configCaptor.getValue();
-    assertThat(configProperties.getString("protocol")).isEqualTo("http/protobuf");
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318/v1/logs");
     List<StructuredConfigProperties> headers = configProperties.getStructuredList("headers");
     assertThat(headers)
@@ -168,9 +165,10 @@ class LogRecordExporterFactoryTest {
             });
     assertThat(configProperties.getString("compression")).isEqualTo("gzip");
     assertThat(configProperties.getInt("timeout")).isEqualTo(Duration.ofSeconds(15).toMillis());
-    assertThat(configProperties.getString("certificate")).isEqualTo(certificatePath);
-    assertThat(configProperties.getString("client_key")).isEqualTo(clientKeyPath);
-    assertThat(configProperties.getString("client_certificate")).isEqualTo(clientCertificatePath);
+    assertThat(configProperties.getString("certificate_file")).isEqualTo(certificatePath);
+    assertThat(configProperties.getString("client_key_file")).isEqualTo(clientKeyPath);
+    assertThat(configProperties.getString("client_certificate_file"))
+        .isEqualTo(clientCertificatePath);
   }
 
   @Test

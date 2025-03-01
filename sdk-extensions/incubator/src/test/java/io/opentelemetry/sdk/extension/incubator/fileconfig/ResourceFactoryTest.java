@@ -10,8 +10,8 @@ import static org.mockito.Mockito.spy;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorAttributesModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -68,9 +68,7 @@ class ResourceFactoryTest {
             .withDetectors(
                 new DetectorsModel()
                     .withAttributes(
-                        new DetectorAttributesModel()
-                            .withIncluded(included)
-                            .withExcluded(excluded)));
+                        new IncludeExcludeModel().withIncluded(included).withExcluded(excluded)));
     Resource resource =
         ResourceFactory.getInstance().create(resourceModel, spiHelper, Collections.emptyList());
     assertThat(resource).isEqualTo(expectedResource);

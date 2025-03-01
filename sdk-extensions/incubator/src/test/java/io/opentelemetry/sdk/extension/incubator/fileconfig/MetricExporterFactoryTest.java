@@ -21,9 +21,9 @@ import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.MetricExporterComponentProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.NameStringValuePairModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpMetricExporterModel;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -72,7 +72,7 @@ class MetricExporterFactoryTest {
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
                         .PushMetricExporterModel()
-                    .withOtlp(new OtlpMetricModel()),
+                    .withOtlpHttp(new OtlpHttpMetricExporterModel()),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(exporter);
@@ -82,16 +82,16 @@ class MetricExporterFactoryTest {
 
     ArgumentCaptor<StructuredConfigProperties> configCaptor =
         ArgumentCaptor.forClass(StructuredConfigProperties.class);
-    verify(spiHelper).loadComponent(eq(MetricExporter.class), eq("otlp"), configCaptor.capture());
+    verify(spiHelper)
+        .loadComponent(eq(MetricExporter.class), eq("otlp_http"), configCaptor.capture());
     StructuredConfigProperties configProperties = configCaptor.getValue();
-    assertThat(configProperties.getString("protocol")).isNull();
     assertThat(configProperties.getString("endpoint")).isNull();
     assertThat(configProperties.getStructured("headers")).isNull();
     assertThat(configProperties.getString("compression")).isNull();
     assertThat(configProperties.getInt("timeout")).isNull();
-    assertThat(configProperties.getString("certificate")).isNull();
-    assertThat(configProperties.getString("client_key")).isNull();
-    assertThat(configProperties.getString("client_certificate")).isNull();
+    assertThat(configProperties.getString("certificate_file")).isNull();
+    assertThat(configProperties.getString("client_key_file")).isNull();
+    assertThat(configProperties.getString("client_certificate_file")).isNull();
     assertThat(configProperties.getString("temporality_preference")).isNull();
     assertThat(configProperties.getString("default_histogram_aggregation")).isNull();
   }
@@ -130,9 +130,8 @@ class MetricExporterFactoryTest {
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
                         .PushMetricExporterModel()
-                    .withOtlp(
-                        new OtlpMetricModel()
-                            .withProtocol("http/protobuf")
+                    .withOtlpHttp(
+                        new OtlpHttpMetricExporterModel()
                             .withEndpoint("http://example:4318/v1/metrics")
                             .withHeaders(
                                 Arrays.asList(
@@ -144,12 +143,13 @@ class MetricExporterFactoryTest {
                                         .withValue("value2")))
                             .withCompression("gzip")
                             .withTimeout(15_000)
-                            .withCertificate(certificatePath)
-                            .withClientKey(clientKeyPath)
-                            .withClientCertificate(clientCertificatePath)
-                            .withTemporalityPreference("delta")
+                            .withCertificateFile(certificatePath)
+                            .withClientKeyFile(clientKeyPath)
+                            .withClientCertificateFile(clientCertificatePath)
+                            .withTemporalityPreference(
+                                OtlpHttpMetricExporterModel.ExporterTemporalityPreference.DELTA)
                             .withDefaultHistogramAggregation(
-                                OtlpMetricModel.DefaultHistogramAggregation
+                                OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
                                     .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)),
                 spiHelper,
                 closeables);
@@ -160,9 +160,9 @@ class MetricExporterFactoryTest {
 
     ArgumentCaptor<StructuredConfigProperties> configCaptor =
         ArgumentCaptor.forClass(StructuredConfigProperties.class);
-    verify(spiHelper).loadComponent(eq(MetricExporter.class), eq("otlp"), configCaptor.capture());
+    verify(spiHelper)
+        .loadComponent(eq(MetricExporter.class), eq("otlp_http"), configCaptor.capture());
     StructuredConfigProperties configProperties = configCaptor.getValue();
-    assertThat(configProperties.getString("protocol")).isEqualTo("http/protobuf");
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318/v1/metrics");
     List<StructuredConfigProperties> headers = configProperties.getStructuredList("headers");
     assertThat(headers)
@@ -178,9 +178,10 @@ class MetricExporterFactoryTest {
             });
     assertThat(configProperties.getString("compression")).isEqualTo("gzip");
     assertThat(configProperties.getInt("timeout")).isEqualTo(Duration.ofSeconds(15).toMillis());
-    assertThat(configProperties.getString("certificate")).isEqualTo(certificatePath);
-    assertThat(configProperties.getString("client_key")).isEqualTo(clientKeyPath);
-    assertThat(configProperties.getString("client_certificate")).isEqualTo(clientCertificatePath);
+    assertThat(configProperties.getString("certificate_file")).isEqualTo(certificatePath);
+    assertThat(configProperties.getString("client_key_file")).isEqualTo(clientKeyPath);
+    assertThat(configProperties.getString("client_certificate_file"))
+        .isEqualTo(clientCertificatePath);
     assertThat(configProperties.getString("temporality_preference")).isEqualTo("delta");
     assertThat(configProperties.getString("default_histogram_aggregation"))
         .isEqualTo("base2_exponential_bucket_histogram");
@@ -198,7 +199,7 @@ class MetricExporterFactoryTest {
             .create(
                 new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
                         .PushMetricExporterModel()
-                    .withConsole(new ConsoleModel()),
+                    .withConsole(new ConsoleExporterModel()),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(exporter);

@@ -9,7 +9,9 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpFileMetricExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpGrpcMetricExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.Closeable;
@@ -29,9 +31,17 @@ final class MetricExporterFactory implements Factory<PushMetricExporterModel, Me
   @Override
   public MetricExporter create(
       PushMetricExporterModel model, SpiHelper spiHelper, List<Closeable> closeables) {
-    OtlpMetricModel otlpModel = model.getOtlp();
-    if (otlpModel != null) {
-      model.getAdditionalProperties().put("otlp", otlpModel);
+    OtlpHttpMetricExporterModel otlpHttpModel = model.getOtlpHttp();
+    if (otlpHttpModel != null) {
+      model.getAdditionalProperties().put("otlp_http", otlpHttpModel);
+    }
+    OtlpGrpcMetricExporterModel otlpGrpcModel = model.getOtlpGrpc();
+    if (otlpGrpcModel != null) {
+      model.getAdditionalProperties().put("otlp_grpc", otlpGrpcModel);
+    }
+    OtlpFileMetricExporterModel otlpFileExporterModel = model.getOtlpFile();
+    if (model.getOtlpFile() != null) {
+      model.getAdditionalProperties().put("otlp_file", otlpFileExporterModel);
     }
 
     if (model.getConsole() != null) {
