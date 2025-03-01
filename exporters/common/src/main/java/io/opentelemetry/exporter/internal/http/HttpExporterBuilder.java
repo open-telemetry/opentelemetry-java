@@ -181,17 +181,18 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     HttpSenderProvider httpSenderProvider = resolveHttpSenderProvider();
     HttpSender httpSender =
         httpSenderProvider.createSender(
-            endpoint,
-            compressor,
-            exportAsJson,
-            exportAsJson ? "application/json" : "application/x-protobuf",
-            timeoutNanos,
-            connectTimeoutNanos,
-            headerSupplier,
-            proxyOptions,
-            retryPolicy,
-            isPlainHttp ? null : tlsConfigHelper.getSslContext(),
-            isPlainHttp ? null : tlsConfigHelper.getTrustManager());
+            HttpSenderConfig.create(
+                endpoint,
+                compressor,
+                exportAsJson,
+                exportAsJson ? "application/json" : "application/x-protobuf",
+                timeoutNanos,
+                connectTimeoutNanos,
+                headerSupplier,
+                proxyOptions,
+                retryPolicy,
+                isPlainHttp ? null : tlsConfigHelper.getSslContext(),
+                isPlainHttp ? null : tlsConfigHelper.getTrustManager()));
     LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
 
     return new HttpExporter<>(exporterName, type, httpSender, meterProviderSupplier, exportAsJson);
