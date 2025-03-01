@@ -27,7 +27,7 @@ public interface LongExemplarData extends ExemplarData {
    * @param spanContext The associated span context.
    * @param value The value recorded.
    */
-  public static LongExemplarData create(
+  static LongExemplarData create(
       Attributes filteredAttributes, long recordTimeNanos, SpanContext spanContext, long value) {
     return ImmutableLongExemplarData.create(
         filteredAttributes, recordTimeNanos, spanContext, value);

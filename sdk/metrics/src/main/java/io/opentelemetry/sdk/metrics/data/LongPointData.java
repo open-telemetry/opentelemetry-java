@@ -27,7 +27,7 @@ public interface LongPointData extends PointData {
    * @param attributes The set of attributes associated with this point.
    * @param value The value that was sampled.
    */
-  public static LongPointData create(
+  static LongPointData create(
       long startEpochNanos, long epochNanos, Attributes attributes, long value) {
     return ImmutableLongPointData.create(
         startEpochNanos, epochNanos, attributes, value, Collections.emptyList());

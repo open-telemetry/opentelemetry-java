@@ -29,7 +29,7 @@ public interface SummaryPointData extends PointData {
    * @param sum The sum of measuremnts being sumarized.
    * @param percentileValues Calculations of percentile values from measurements.
    */
-  static ImmutableSummaryPointData create(
+  static SummaryPointData create(
       long startEpochNanos,
       long epochNanos,
       Attributes attributes,
