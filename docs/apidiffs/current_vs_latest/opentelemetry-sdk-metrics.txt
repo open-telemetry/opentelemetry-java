@@ -31,7 +31,7 @@ Comparing source compatibility of opentelemetry-sdk-metrics-1.48.0-SNAPSHOT.jar 
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.data.GaugeData  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	GENERIC TEMPLATES: === T:io.opentelemetry.sdk.metrics.data.PointData
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData<T> create(java.util.Collection<T>)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.GaugeData<T> create(java.util.Collection<T>)
 		GENERIC TEMPLATES: +++ T:io.opentelemetry.sdk.metrics.data.PointData
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.data.HistogramData  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
@@ -55,7 +55,7 @@ Comparing source compatibility of opentelemetry-sdk-metrics-1.48.0-SNAPSHOT.jar 
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.SummaryData create(java.util.Collection<io.opentelemetry.sdk.metrics.data.SummaryPointData>)
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.data.SummaryPointData  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData create(long, long, io.opentelemetry.api.common.Attributes, long, double, java.util.List<io.opentelemetry.sdk.metrics.data.ValueAtQuantile>)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.SummaryPointData create(long, long, io.opentelemetry.api.common.Attributes, long, double, java.util.List<io.opentelemetry.sdk.metrics.data.ValueAtQuantile>)
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.data.ValueAtQuantile  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.ValueAtQuantile create(double, double)
