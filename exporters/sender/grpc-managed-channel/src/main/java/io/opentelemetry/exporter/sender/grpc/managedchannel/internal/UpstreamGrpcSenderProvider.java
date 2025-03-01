@@ -12,20 +12,15 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.grpc.GrpcSender;
+import io.opentelemetry.exporter.internal.grpc.GrpcSenderConfig;
 import io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.Supplier;
-import javax.annotation.Nullable;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
 
 /**
  * {@link GrpcSender} SPI implementation for {@link UpstreamGrpcSender}.
@@ -36,27 +31,17 @@ import javax.net.ssl.X509TrustManager;
 public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
 
   @Override
-  public <T extends Marshaler> GrpcSender<T> createSender(
-      URI endpoint,
-      String endpointPath,
-      @Nullable Compressor compressor,
-      long timeoutNanos,
-      long connectTimeoutNanos,
-      Supplier<Map<String, List<String>>> headersSupplier,
-      @Nullable Object managedChannel,
-      Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> stubFactory,
-      @Nullable RetryPolicy retryPolicy,
-      @Nullable SSLContext sslContext,
-      @Nullable X509TrustManager trustManager) {
+  public <T extends Marshaler> GrpcSender<T> createSender(GrpcSenderConfig<T> grpcSenderConfig) {
     boolean shutdownChannel = false;
+    Object managedChannel = grpcSenderConfig.getManagedChannel();
     if (managedChannel == null) {
       // Shutdown the channel as part of the exporter shutdown sequence if
       shutdownChannel = true;
-      managedChannel = minimalFallbackManagedChannel(endpoint);
+      managedChannel = minimalFallbackManagedChannel(grpcSenderConfig.getEndpoint());
     }
 
     String authorityOverride = null;
-    Map<String, List<String>> headers = headersSupplier.get();
+    Map<String, List<String>> headers = grpcSenderConfig.getHeadersSupplier().get();
     if (headers != null) {
       for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
         if (entry.getKey().equals("host") && !entry.getValue().isEmpty()) {
@@ -66,6 +51,7 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
     }
 
     String compression = Codec.Identity.NONE.getMessageEncoding();
+    Compressor compressor = grpcSenderConfig.getCompressor();
     if (compressor != null) {
       CompressorRegistry.getDefaultInstance()
           .register(
@@ -84,12 +70,18 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
     }
 
     MarshalerServiceStub<T, ?, ?> stub =
-        stubFactory
+        grpcSenderConfig
+            .getStubFactory()
             .get()
             .apply((Channel) managedChannel, authorityOverride)
             .withCompression(compression);
 
-    return new UpstreamGrpcSender<>(stub, shutdownChannel, timeoutNanos, headersSupplier);
+    return new UpstreamGrpcSender<>(
+        stub,
+        shutdownChannel,
+        grpcSenderConfig.getTimeoutNanos(),
+        grpcSenderConfig.getHeadersSupplier(),
+        grpcSenderConfig.getExecutorService());
   }
 
   /**

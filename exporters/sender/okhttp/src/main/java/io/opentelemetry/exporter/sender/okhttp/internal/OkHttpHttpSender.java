@@ -18,6 +18,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -26,6 +27,7 @@ import javax.net.ssl.X509TrustManager;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.ConnectionSpec;
+import okhttp3.Dispatcher;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -63,14 +65,19 @@ public final class OkHttpHttpSender implements HttpSender {
       @Nullable ProxyOptions proxyOptions,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
-      @Nullable X509TrustManager trustManager) {
+      @Nullable X509TrustManager trustManager,
+      @Nullable ExecutorService executorService) {
     int callTimeoutMillis =
         (int) Math.min(Duration.ofNanos(timeoutNanos).toMillis(), Integer.MAX_VALUE);
     int connectTimeoutMillis =
         (int) Math.min(Duration.ofNanos(connectionTimeoutNanos).toMillis(), Integer.MAX_VALUE);
+
+    Dispatcher dispatcher =
+        executorService == null ? OkHttpUtil.newDispatcher() : new Dispatcher(executorService);
+
     OkHttpClient.Builder builder =
         new OkHttpClient.Builder()
-            .dispatcher(OkHttpUtil.newDispatcher())
+            .dispatcher(dispatcher)
             .connectTimeout(Duration.ofMillis(connectTimeoutMillis))
             .callTimeout(Duration.ofMillis(callTimeoutMillis));
 

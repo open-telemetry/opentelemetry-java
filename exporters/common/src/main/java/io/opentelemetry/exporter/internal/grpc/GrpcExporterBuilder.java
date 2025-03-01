@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.StringJoiner;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -62,6 +63,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
+  @Nullable private ExecutorService executorService;
 
   // Use Object type since gRPC may not be on the classpath.
   @Nullable private Object grpcChannel;
@@ -147,6 +149,11 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  public GrpcExporterBuilder<T> setExecutorService(ExecutorService executorService) {
+    this.executorService = executorService;
+    return this;
+  }
+
   @SuppressWarnings("BuilderReturnThis")
   public GrpcExporterBuilder<T> copy() {
     GrpcExporterBuilder<T> copy =
@@ -199,17 +206,19 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     GrpcSenderProvider grpcSenderProvider = resolveGrpcSenderProvider();
     GrpcSender<T> grpcSender =
         grpcSenderProvider.createSender(
-            endpoint,
-            grpcEndpointPath,
-            compressor,
-            timeoutNanos,
-            connectTimeoutNanos,
-            headerSupplier,
-            grpcChannel,
-            grpcStubFactory,
-            retryPolicy,
-            isPlainHttp ? null : tlsConfigHelper.getSslContext(),
-            isPlainHttp ? null : tlsConfigHelper.getTrustManager());
+            GrpcSenderConfig.create(
+                endpoint,
+                grpcEndpointPath,
+                compressor,
+                timeoutNanos,
+                connectTimeoutNanos,
+                headerSupplier,
+                grpcChannel,
+                grpcStubFactory,
+                retryPolicy,
+                isPlainHttp ? null : tlsConfigHelper.getSslContext(),
+                isPlainHttp ? null : tlsConfigHelper.getTrustManager(),
+                executorService));
     LOGGER.log(Level.FINE, "Using GrpcSender: " + grpcSender.getClass().getName());
 
     return new GrpcExporter<>(exporterName, type, grpcSender, meterProviderSupplier);
@@ -241,6 +250,9 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     }
     if (grpcChannel != null) {
       joiner.add("grpcChannel=" + grpcChannel);
+    }
+    if (executorService != null) {
+      joiner.add("executorService=" + executorService);
     }
     // Note: omit tlsConfigHelper because we can't log the configuration in any readable way
     // Note: omit meterProviderSupplier because we can't log the configuration in any readable way

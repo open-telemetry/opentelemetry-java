@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -222,6 +223,13 @@ public final class OtlpHttpLogRecordExporterBuilder {
   public OtlpHttpLogRecordExporterBuilder setMemoryMode(MemoryMode memoryMode) {
     requireNonNull(memoryMode, "memoryMode");
     this.memoryMode = memoryMode;
+    return this;
+  }
+
+  /** Set the {@link ExecutorService} used to execute requests. */
+  public OtlpHttpLogRecordExporterBuilder setExecutorService(ExecutorService executorService) {
+    requireNonNull(executorService, "executorService");
+    delegate.setExecutorService(executorService);
     return this;
   }
 
