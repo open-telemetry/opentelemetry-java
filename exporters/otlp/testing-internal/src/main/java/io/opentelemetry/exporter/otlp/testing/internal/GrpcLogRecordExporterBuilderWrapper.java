@@ -113,6 +113,13 @@ final class GrpcLogRecordExporterBuilderWrapper implements TelemetryExporterBuil
   }
 
   @Override
+  public TelemetryExporterBuilder<LogRecordData> setServiceClassLoader(
+      ClassLoader serviceClassLoader) {
+    builder.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  @Override
   public TelemetryExporter<LogRecordData> build() {
     return TelemetryExporter.wrap(builder.build());
   }

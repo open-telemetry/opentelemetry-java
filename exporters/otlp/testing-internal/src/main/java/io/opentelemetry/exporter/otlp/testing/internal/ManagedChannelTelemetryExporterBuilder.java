@@ -160,6 +160,12 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   }
 
   @Override
+  public TelemetryExporterBuilder<T> setServiceClassLoader(ClassLoader serviceClassLoader) {
+    delegate.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  @Override
   public TelemetryExporter<T> build() {
     Runnable shutdownCallback;
     if (channelBuilder != null) {

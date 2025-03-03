@@ -60,6 +60,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
+  private ClassLoader serviceClassLoader = HttpExporterBuilder.class.getClassLoader();
 
   public HttpExporterBuilder(String exporterName, String type, String defaultEndpoint) {
     this.exporterName = exporterName;
@@ -128,6 +129,11 @@ public final class HttpExporterBuilder<T extends Marshaler> {
 
   public HttpExporterBuilder<T> setProxyOptions(ProxyOptions proxyOptions) {
     this.proxyOptions = proxyOptions;
+    return this;
+  }
+
+  public HttpExporterBuilder<T> setServiceClassLoader(ClassLoader servieClassLoader) {
+    this.serviceClassLoader = servieClassLoader;
     return this;
   }
 
@@ -222,6 +228,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     if (retryPolicy != null) {
       joiner.add("retryPolicy=" + retryPolicy);
     }
+    joiner.add("serviceClassLoader=" + serviceClassLoader);
     // Note: omit tlsConfigHelper because we can't log the configuration in any readable way
     // Note: omit meterProviderSupplier because we can't log the configuration in any readable way
     return joiner.toString();
@@ -248,10 +255,10 @@ public final class HttpExporterBuilder<T extends Marshaler> {
    *       matching provider. If none match, throw {@link IllegalStateException}.
    * </ul>
    */
-  private static HttpSenderProvider resolveHttpSenderProvider() {
+  private HttpSenderProvider resolveHttpSenderProvider() {
     Map<String, HttpSenderProvider> httpSenderProviders = new HashMap<>();
     for (HttpSenderProvider spi :
-        ServiceLoader.load(HttpSenderProvider.class, HttpExporterBuilder.class.getClassLoader())) {
+        ServiceLoader.load(HttpSenderProvider.class, serviceClassLoader)) {
       httpSenderProviders.put(spi.getClass().getName(), spi);
     }
 
