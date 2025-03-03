@@ -41,7 +41,8 @@ public class ThrottlingLogger {
     this.fastRateLimiter =
         new RateLimiter(RATE_LIMIT / rateTimeUnit.toSeconds(1), RATE_LIMIT, clock);
     this.throttledRateLimiter =
-        new RateLimiter(RATE_LIMIT / rateTimeUnit.toSeconds(1), THROTTLED_RATE_LIMIT, clock);
+        new RateLimiter(
+            THROTTLED_RATE_LIMIT / rateTimeUnit.toSeconds(1), THROTTLED_RATE_LIMIT, clock);
   }
 
   /** Log a message at the given level. */
