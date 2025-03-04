@@ -24,7 +24,7 @@ import java.util.function.Consumer;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class IncuatingExporterBuilderUtil {
+public final class IncubatingExporterBuilderUtil {
 
   /** Invoke the {@code memoryModeConsumer} with the configured {@link MemoryMode}. */
   public static void configureExporterMemoryMode(
@@ -89,5 +89,5 @@ public final class IncuatingExporterBuilderUtil {
     }
   }
 
-  private IncuatingExporterBuilderUtil() {}
+  private IncubatingExporterBuilderUtil() {}
 }

@@ -109,7 +109,6 @@ class DeclarativeConfigurationTest {
                     .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
                     .build())
         .doesNotThrowAnyException();
-    ;
   }
 
   @Test

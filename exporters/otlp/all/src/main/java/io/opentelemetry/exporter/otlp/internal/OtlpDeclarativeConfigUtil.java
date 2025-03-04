@@ -11,7 +11,7 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.readFileByt
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.validateEndpoint;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
-import io.opentelemetry.exporter.internal.IncuatingExporterBuilderUtil;
+import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -113,7 +113,7 @@ public final class OtlpDeclarativeConfigUtil {
       setClientTls.accept(clientKeyBytes, clientKeyChainBytes);
     }
 
-    IncuatingExporterBuilderUtil.configureExporterMemoryMode(config, setMemoryMode);
+    IncubatingExporterBuilderUtil.configureExporterMemoryMode(config, setMemoryMode);
   }
 
   private OtlpDeclarativeConfigUtil() {}

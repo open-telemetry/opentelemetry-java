@@ -150,6 +150,5 @@ class DeclarativeConfigurationCreateTest {
                 DeclarativeConfiguration.parseAndCreate(
                     new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))))
         .doesNotThrowAnyException();
-    ;
   }
 }
