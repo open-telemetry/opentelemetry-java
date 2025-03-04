@@ -19,12 +19,13 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchS
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ClientModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalGeneralInstrumentationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalHttpInstrumentationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLanguageSpecificInstrumentationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalPeerInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramAggregationModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.GeneralInstrumentationModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.HttpInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.InstrumentationModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LanguageSpecificInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
@@ -38,7 +39,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTe
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBasedSamplerModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeerInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PrometheusMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PropagatorModel;
@@ -376,9 +376,9 @@ class FileConfigurationParseTest {
     InstrumentationModel instrumentation =
         new InstrumentationModel()
             .withGeneral(
-                new GeneralInstrumentationModel()
+                new ExperimentalGeneralInstrumentationModel()
                     .withPeer(
-                        new PeerInstrumentationModel()
+                        new ExperimentalPeerInstrumentationModel()
                             .withServiceMapping(
                                 Arrays.asList(
                                     new ServiceMappingModel()
@@ -388,7 +388,7 @@ class FileConfigurationParseTest {
                                         .withPeer("2.3.4.5")
                                         .withService("BarService"))))
                     .withHttp(
-                        new HttpInstrumentationModel()
+                        new ExperimentalHttpInstrumentationModel()
                             .withClient(
                                 new ClientModel()
                                     .withRequestCapturedHeaders(
@@ -402,50 +402,50 @@ class FileConfigurationParseTest {
                                     .withResponseCapturedHeaders(
                                         Arrays.asList("Content-Type", "Content-Encoding")))))
             .withCpp(
-                new LanguageSpecificInstrumentationModel()
+                new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
                         "example", Collections.singletonMap("property", "value")))
             .withDotnet(
-                new LanguageSpecificInstrumentationModel()
+                new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
                         "example", Collections.singletonMap("property", "value")))
             .withErlang(
-                new LanguageSpecificInstrumentationModel()
+                new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
                         "example", Collections.singletonMap("property", "value")))
             .withGo(
-                new LanguageSpecificInstrumentationModel()
+                new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
                         "example", Collections.singletonMap("property", "value")))
             .withJava(
-                new LanguageSpecificInstrumentationModel()
+                new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
                         "example", Collections.singletonMap("property", "value")))
             .withJs(
-                new LanguageSpecificInstrumentationModel()
+                new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
                         "example", Collections.singletonMap("property", "value")))
             .withPhp(
-                new LanguageSpecificInstrumentationModel()
+                new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
                         "example", Collections.singletonMap("property", "value")))
             .withPython(
-                new LanguageSpecificInstrumentationModel()
+                new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
                         "example", Collections.singletonMap("property", "value")))
             .withRuby(
-                new LanguageSpecificInstrumentationModel()
+                new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
                         "example", Collections.singletonMap("property", "value")))
             .withRust(
-                new LanguageSpecificInstrumentationModel()
+                new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
                         "example", Collections.singletonMap("property", "value")))
             .withSwift(
-                new LanguageSpecificInstrumentationModel()
+                new ExperimentalLanguageSpecificInstrumentationModel()
                     .withAdditionalProperty(
                         "example", Collections.singletonMap("property", "value")));
-    expected.withInstrumentation(instrumentation);
+    expected.withInstrumentationDevelopment(instrumentation);
     // end instrumentation config
 
     try (FileInputStream configExampleFile =
@@ -478,7 +478,7 @@ class FileConfigurationParseTest {
       assertThat(configMeterProvider.getViews()).isEqualTo(Collections.singletonList(view));
 
       // Instrumentation config
-      InstrumentationModel configInstrumentation = config.getInstrumentation();
+      InstrumentationModel configInstrumentation = config.getInstrumentationDevelopment();
       assertThat(configInstrumentation).isEqualTo(instrumentation);
 
       // All configuration

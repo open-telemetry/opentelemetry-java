@@ -9,7 +9,7 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpFileMetricExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpGrpcMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
@@ -39,8 +39,8 @@ final class MetricExporterFactory implements Factory<PushMetricExporterModel, Me
     if (otlpGrpcModel != null) {
       model.getAdditionalProperties().put("otlp_grpc", otlpGrpcModel);
     }
-    OtlpFileMetricExporterModel otlpFileExporterModel = model.getOtlpFile();
-    if (model.getOtlpFile() != null) {
+    ExperimentalOtlpFileMetricExporterModel otlpFileExporterModel = model.getOtlpFileDevelopment();
+    if (otlpFileExporterModel != null) {
       model.getAdditionalProperties().put("otlp_file", otlpFileExporterModel);
     }
 
