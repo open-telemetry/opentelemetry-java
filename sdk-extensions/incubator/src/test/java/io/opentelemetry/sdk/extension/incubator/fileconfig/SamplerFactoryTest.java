@@ -9,10 +9,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.SamplerComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOffModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnModel;
@@ -140,7 +140,7 @@ class SamplerFactoryTest {
                                 "unknown_key", ImmutableMap.of("key1", "value1")),
                         spiHelper,
                         new ArrayList<>()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
             "No component provider detected for io.opentelemetry.sdk.trace.samplers.Sampler with name \"unknown_key\".");
     cleanup.addCloseables(closeables);

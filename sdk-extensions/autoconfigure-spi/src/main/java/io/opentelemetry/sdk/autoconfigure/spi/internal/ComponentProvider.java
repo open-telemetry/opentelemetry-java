@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure.spi.internal;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
@@ -20,8 +21,8 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
  * configuration.
  *
  * <p>NOTE: when {@link #getType()} is {@link Resource}, the {@link #getName()} is not (currently)
- * used, and {@link #create(StructuredConfigProperties)} is (currently) called with an empty {@link
- * StructuredConfigProperties}.
+ * used, and {@link #create(DeclarativeConfigProperties)} is (currently) called with an empty {@link
+ * DeclarativeConfigProperties}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
@@ -58,5 +59,5 @@ public interface ComponentProvider<T> {
    */
   // TODO (jack-berg): consider dynamic configuration use case before stabilizing in case that
   // affects any API decisions
-  T create(StructuredConfigProperties config);
+  T create(DeclarativeConfigProperties config);
 }

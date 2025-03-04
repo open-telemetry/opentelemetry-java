@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static java.util.stream.Collectors.joining;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -41,7 +41,7 @@ final class MetricExporterFactory implements Factory<PushMetricExporterModel, Me
     if (!model.getAdditionalProperties().isEmpty()) {
       Map<String, Object> additionalProperties = model.getAdditionalProperties();
       if (additionalProperties.size() > 1) {
-        throw new ConfigurationException(
+        throw new DeclarativeConfigException(
             "Invalid configuration - multiple metric exporters set: "
                 + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
       }
@@ -59,7 +59,7 @@ final class MetricExporterFactory implements Factory<PushMetricExporterModel, Me
               exporterKeyValue.getValue());
       return FileConfigUtil.addAndReturn(closeables, metricExporter);
     } else {
-      throw new ConfigurationException("metric exporter must be set");
+      throw new DeclarativeConfigException("metric exporter must be set");
     }
   }
 }

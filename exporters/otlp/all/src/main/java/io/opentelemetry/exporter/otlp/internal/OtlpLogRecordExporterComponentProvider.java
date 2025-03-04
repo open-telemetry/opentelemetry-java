@@ -9,13 +9,13 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_L
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 
 /**
@@ -39,13 +39,13 @@ public class OtlpLogRecordExporterComponentProvider
   }
 
   @Override
-  public LogRecordExporter create(StructuredConfigProperties config) {
-    String protocol = OtlpConfigUtil.getStructuredConfigOtlpProtocol(config);
+  public LogRecordExporter create(DeclarativeConfigProperties config) {
+    String protocol = OtlpDeclarativeConfigUtil.getStructuredConfigOtlpProtocol(config);
 
     if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
       OtlpHttpLogRecordExporterBuilder builder = httpBuilder();
 
-      OtlpConfigUtil.configureOtlpExporterBuilder(
+      OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_LOGS,
           config,
           builder::setEndpoint,
@@ -61,7 +61,7 @@ public class OtlpLogRecordExporterComponentProvider
     } else if (protocol.equals(PROTOCOL_GRPC)) {
       OtlpGrpcLogRecordExporterBuilder builder = grpcBuilder();
 
-      OtlpConfigUtil.configureOtlpExporterBuilder(
+      OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_LOGS,
           config,
           builder::setEndpoint,

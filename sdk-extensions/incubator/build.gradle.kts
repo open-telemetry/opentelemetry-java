@@ -25,6 +25,7 @@ dependencies {
   implementation("org.snakeyaml:snakeyaml-engine")
 
   // io.opentelemetry.sdk.extension.incubator.fileconfig
+  api(project(":api:incubator"))
   implementation("com.fasterxml.jackson.core:jackson-databind")
   api("com.fasterxml.jackson.core:jackson-annotations")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
@@ -39,7 +40,8 @@ dependencies {
   testImplementation(project(":sdk-extensions:jaeger-remote-sampler"))
   testImplementation(project(":extensions:trace-propagators"))
   // As a part of the tests we check that we can parse examples without error. The https://github.com/open-telemetry/opentelemetry-configuration/blob/main/examples/kitchen-sink.yam contains a reference to the xray propagator
-  testImplementation("io.opentelemetry.contrib:opentelemetry-aws-xray-propagator")
+  // TODO: add when updated to reflect new API locations
+  // testImplementation("io.opentelemetry.contrib:opentelemetry-aws-xray-propagator")
   testImplementation("com.linecorp.armeria:armeria-junit5")
 
   testImplementation("com.google.guava:guava-testlib")

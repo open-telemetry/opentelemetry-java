@@ -5,10 +5,10 @@
 
 package io.opentelemetry.extension.trace.propagation.internal;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 
 /**
  * Declarative configuration SPI implementation for {@link JaegerPropagator}.
@@ -29,7 +29,7 @@ public final class JaegerComponentProvider implements ComponentProvider<TextMapP
   }
 
   @Override
-  public TextMapPropagator create(StructuredConfigProperties config) {
+  public TextMapPropagator create(DeclarativeConfigProperties config) {
     return JaegerPropagator.getInstance();
   }
 }

@@ -18,8 +18,6 @@ import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.incubator.logs.ExtendedLogger;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.Meter;
@@ -38,7 +36,6 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
-import io.opentelemetry.proto.logs.v1.SeverityNumber;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;
@@ -204,13 +201,6 @@ public class FullConfigTest {
     logger.logRecordBuilder().setBody("debug log message").setSeverity(Severity.DEBUG).emit();
     logger.logRecordBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
 
-    ((ExtendedLogger) logger)
-        .logRecordBuilder()
-        .setEventName("namespace.test-name")
-        .setSeverity(Severity.INFO)
-        .setBody(Value.of(io.opentelemetry.api.common.KeyValue.of("cow", Value.of("moo"))))
-        .emit();
-
     openTelemetrySdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
     openTelemetrySdk.getSdkLoggerProvider().forceFlush().join(10, TimeUnit.SECONDS);
     openTelemetrySdk.getSdkMeterProvider().forceFlush().join(10, TimeUnit.SECONDS);
@@ -297,17 +287,6 @@ public class FullConfigTest {
               assertThat(logRecord.getBody().getStringValue()).isEqualTo("info log message");
               assertThat(logRecord.getSeverityNumberValue())
                   .isEqualTo(Severity.INFO.getSeverityNumber());
-            },
-            logRecord -> {
-              assertThat(logRecord.getBody().getKvlistValue().getValuesList())
-                  .containsExactlyInAnyOrder(
-                      KeyValue.newBuilder()
-                          .setKey("cow")
-                          .setValue(AnyValue.newBuilder().setStringValue("moo").build())
-                          .build());
-              assertThat(logRecord.getSeverityNumber())
-                  .isEqualTo(SeverityNumber.SEVERITY_NUMBER_INFO);
-              assertThat(logRecord.getEventName()).isEqualTo("namespace.test-name");
             });
   }
 

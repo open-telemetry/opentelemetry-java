@@ -6,10 +6,10 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,7 +35,7 @@ final class TextMapPropagatorFactory implements Factory<List<String>, TextMapPro
 
     if (model.contains("none")) {
       if (model.size() > 1) {
-        throw new ConfigurationException(
+        throw new DeclarativeConfigException(
             "propagators contains \"none\" along with other propagators");
       }
       return TextMapPropagator.noop();

@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,7 +31,7 @@ class AttributeListFactoryTest {
             () ->
                 AttributeListFactory.getInstance()
                     .create(model, mock(SpiHelper.class), Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining(expectedMessage);
   }
 
