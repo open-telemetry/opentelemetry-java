@@ -76,7 +76,8 @@ class MetricReaderFactoryTest {
                                 new PushMetricExporterModel()
                                     .withOtlpHttp(new OtlpHttpMetricExporterModel()))),
                 spiHelper,
-                closeables);
+                closeables)
+            .getMetricReader();
     cleanup.addCloseable(reader);
     cleanup.addCloseables(closeables);
 
@@ -104,7 +105,8 @@ class MetricReaderFactoryTest {
                                     .withOtlpHttp(new OtlpHttpMetricExporterModel()))
                             .withInterval(1)),
                 spiHelper,
-                closeables);
+                closeables)
+            .getMetricReader();
     cleanup.addCloseable(reader);
     cleanup.addCloseables(closeables);
 
@@ -131,7 +133,8 @@ class MetricReaderFactoryTest {
                                     .withPrometheus(
                                         new PrometheusMetricExporterModel().withPort(port)))),
                 spiHelper,
-                closeables);
+                closeables)
+            .getMetricReader();
     cleanup.addCloseable(reader);
     cleanup.addCloseables(closeables);
 
@@ -164,7 +167,8 @@ class MetricReaderFactoryTest {
                                             .withHost("localhost")
                                             .withPort(port)))),
                 spiHelper,
-                closeables);
+                closeables)
+            .getMetricReader();
     cleanup.addCloseable(reader);
     cleanup.addCloseables(closeables);
 
