@@ -12,8 +12,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.internal.testing.CleanupExtension;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +28,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.event.Level;
 
-class FileConfigurationCreateTest {
+class DeclarativeConfigurationCreateTest {
 
   @RegisterExtension
   static final SelfSignedCertificateExtension serverTls = new SelfSignedCertificateExtension();
@@ -40,12 +40,12 @@ class FileConfigurationCreateTest {
 
   @RegisterExtension
   LogCapturer logCapturer =
-      LogCapturer.create().captureForLogger(FileConfiguration.class.getName(), Level.TRACE);
+      LogCapturer.create().captureForLogger(DeclarativeConfiguration.class.getName(), Level.TRACE);
 
   /**
    * Verify each example in <a
    * href="https://github.com/open-telemetry/opentelemetry-configuration/tree/main/examples">open-telemetry/opentelemetry-configuration/examples</a>
-   * can pass {@link FileConfiguration#parseAndCreate(InputStream)}.
+   * can pass {@link DeclarativeConfiguration#parseAndCreate(InputStream)}.
    */
   @Test
   void parseAndCreate_Examples(@TempDir Path tempDir)
@@ -90,12 +90,15 @@ class FileConfigurationCreateTest {
                   "client_certificate: .*\n",
                   "client_certificate: "
                       + clientCertificatePath.replace("\\", "\\\\")
-                      + System.lineSeparator());
+                      + System.lineSeparator())
+              // TODO: remove once updated ComponentProvider SPI contract implemented in
+              // https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-xray-propagator
+              .replaceAll("xray,", "");
       InputStream is =
           new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
 
       // Verify that file can be parsed and interpreted without error
-      assertThatCode(() -> cleanup.addCloseable(FileConfiguration.parseAndCreate(is)))
+      assertThatCode(() -> cleanup.addCloseable(DeclarativeConfiguration.parseAndCreate(is)))
           .as("Example file: " + example.getName())
           .doesNotThrowAnyException();
     }
@@ -119,9 +122,9 @@ class FileConfigurationCreateTest {
 
     assertThatThrownBy(
             () ->
-                FileConfiguration.parseAndCreate(
+                DeclarativeConfiguration.parseAndCreate(
                     new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
             "No component provider detected for io.opentelemetry.sdk.logs.export.LogRecordExporter with name \"foo\".");
     logCapturer.assertContains(
@@ -144,9 +147,8 @@ class FileConfigurationCreateTest {
 
     assertThatCode(
             () ->
-                FileConfiguration.parseAndCreate(
+                DeclarativeConfiguration.parseAndCreate(
                     new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))))
         .doesNotThrowAnyException();
-    ;
   }
 }

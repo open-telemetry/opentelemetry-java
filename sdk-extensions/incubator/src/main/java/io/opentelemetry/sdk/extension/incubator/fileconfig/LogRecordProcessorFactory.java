@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static java.util.stream.Collectors.joining;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
@@ -75,7 +75,7 @@ final class LogRecordProcessorFactory
     if (!model.getAdditionalProperties().isEmpty()) {
       Map<String, Object> additionalProperties = model.getAdditionalProperties();
       if (additionalProperties.size() > 1) {
-        throw new ConfigurationException(
+        throw new DeclarativeConfigException(
             "Invalid configuration - multiple log record processors set: "
                 + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
       }
@@ -93,7 +93,7 @@ final class LogRecordProcessorFactory
               processorKeyValue.getValue());
       return FileConfigUtil.addAndReturn(closeables, logRecordProcessor);
     } else {
-      throw new ConfigurationException("log processor must be set");
+      throw new DeclarativeConfigException("log processor must be set");
     }
   }
 }
