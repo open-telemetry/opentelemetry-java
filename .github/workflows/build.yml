@@ -161,13 +161,19 @@ jobs:
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
 
   build-graal:
+    name: Build GraalVM
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        test-graal-version:
+          - 21
+          - 23
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: graalvm/setup-graalvm@b0cb26a8da53cb3e97cdc0c827d8e3071240e730 # v1.3.1
         with:
-          # TODO(jack-berg): Which versions do we need to test? Should we use a matrix scheme?
-          java-version: '21'
+          java-version: ${{ matrix.test-graal-version }}
           distribution: 'graalvm'
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
