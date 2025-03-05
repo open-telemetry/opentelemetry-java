@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import java.util.Collection;
 import javax.annotation.concurrent.Immutable;
 
@@ -15,6 +16,19 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public interface HistogramData extends Data<HistogramPointData> {
+
+  /**
+   * Creates a new instance of {@link HistogramData}.
+   *
+   * @param temporality the aggregation temporality of the histogram data
+   * @param points the collection of histogram point data
+   * @return a new instance of {@link HistogramData}
+   */
+  static HistogramData create(
+      AggregationTemporality temporality, Collection<HistogramPointData> points) {
+    return ImmutableHistogramData.create(temporality, points);
+  }
+
   /** Returns the histogram {@link AggregationTemporality}. */
   AggregationTemporality getAggregationTemporality();
 

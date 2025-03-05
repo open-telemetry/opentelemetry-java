@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import java.util.Collection;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -14,6 +16,20 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public interface SumData<T extends PointData> extends Data<T> {
+
+  /**
+   * Creates a new instance of {@link SumData}.
+   *
+   * @param isMonotonic {@code true} if the sum is monotonic.
+   * @param temporality the aggregation temporality of the sum data
+   * @param points the collection of sum point data
+   * @return a new instance of {@link SumData}
+   */
+  static <T extends PointData> ImmutableSumData<T> create(
+      boolean isMonotonic, AggregationTemporality temporality, Collection<T> points) {
+    return ImmutableSumData.create(isMonotonic, temporality, points);
+  }
+
   /** Returns "true" if the sum is monotonic. */
   boolean isMonotonic();
 
