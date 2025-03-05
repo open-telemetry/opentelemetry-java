@@ -205,17 +205,18 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     GrpcSenderProvider grpcSenderProvider = resolveGrpcSenderProvider();
     GrpcSender<T> grpcSender =
         grpcSenderProvider.createSender(
-            endpoint,
-            grpcEndpointPath,
-            compressor,
-            timeoutNanos,
-            connectTimeoutNanos,
-            headerSupplier,
-            grpcChannel,
-            grpcStubFactory,
-            retryPolicy,
-            isPlainHttp ? null : tlsConfigHelper.getSslContext(),
-            isPlainHttp ? null : tlsConfigHelper.getTrustManager());
+            GrpcSenderConfig.create(
+                endpoint,
+                grpcEndpointPath,
+                compressor,
+                timeoutNanos,
+                connectTimeoutNanos,
+                headerSupplier,
+                grpcChannel,
+                grpcStubFactory,
+                retryPolicy,
+                isPlainHttp ? null : tlsConfigHelper.getSslContext(),
+                isPlainHttp ? null : tlsConfigHelper.getTrustManager()));
     LOGGER.log(Level.FINE, "Using GrpcSender: " + grpcSender.getClass().getName());
 
     return new GrpcExporter<>(exporterName, type, grpcSender, meterProviderSupplier);
