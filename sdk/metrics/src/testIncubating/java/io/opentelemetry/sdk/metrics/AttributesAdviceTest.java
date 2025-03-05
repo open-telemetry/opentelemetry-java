@@ -11,7 +11,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equal
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-import com.google.common.util.concurrent.AtomicDouble;
+import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.metrics.ExtendedDoubleCounterBuilder;
@@ -24,6 +24,7 @@ import io.opentelemetry.api.incubator.metrics.ExtendedLongHistogramBuilder;
 import io.opentelemetry.api.incubator.metrics.ExtendedLongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
+import io.opentelemetry.api.metrics.DoubleGauge;
 import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
@@ -31,11 +32,14 @@ import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounterBuilder;
+import io.opentelemetry.api.metrics.LongGauge;
 import io.opentelemetry.api.metrics.LongGaugeBuilder;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
+import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
 import io.opentelemetry.sdk.testing.assertj.AbstractPointAssert;
 import io.opentelemetry.sdk.testing.assertj.DoublePointAssert;
 import io.opentelemetry.sdk.testing.assertj.HistogramPointAssert;
@@ -43,8 +47,6 @@ import io.opentelemetry.sdk.testing.assertj.LongPointAssert;
 import io.opentelemetry.sdk.testing.assertj.MetricAssert;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -140,6 +142,81 @@ class AttributesAdviceTest {
                             equalTo(stringKey("key2"), "2"), equalTo(stringKey("key3"), "3"))));
   }
 
+  @ParameterizedTest
+  @ArgumentsSource(InstrumentsProvider.class)
+  void instrumentWithAdviceAndDescriptionViews(
+      InstrumentFactory instrumentFactory, PointsAssert<AbstractPointAssert<?, ?>> pointsAssert) {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    // Register a view which sets a description. Since any matching view supersedes any instrument
+    // advice, the attribute advice is ignored and all attributes are recorded.
+    meterProvider =
+        SdkMeterProvider.builder()
+            .registerMetricReader(reader)
+            .registerView(
+                InstrumentSelector.builder().setName("test").build(),
+                View.builder().setDescription("description").build())
+            .build();
+
+    Instrument instrument =
+        instrumentFactory.create(
+            meterProvider, "test", asList(stringKey("key1"), stringKey("key2")));
+    instrument.record(1, ATTRIBUTES);
+
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                pointsAssert.hasPointSatisfying(
+                    assertThat(metric),
+                    point ->
+                        point.hasAttributesSatisfyingExactly(
+                            equalTo(stringKey("key1"), "1"),
+                            equalTo(stringKey("key2"), "2"),
+                            equalTo(stringKey("key3"), "3"))));
+  }
+
+  @ParameterizedTest
+  @ArgumentsSource(InstrumentsProvider.class)
+  void instrumentWithAdviceAndBaggage(
+      InstrumentFactory instrumentFactory, PointsAssert<AbstractPointAssert<?, ?>> pointsAssert) {
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
+    SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
+    // Register a view which appends a baggage entry. Since any matching view supersedes any
+    // instrument advice, the attribute advice is ignored and all attributes + the baggage entry are
+    // recorded.
+    ViewBuilder viewBuilder = View.builder();
+    SdkMeterProviderUtil.appendFilteredBaggageAttributes(
+        viewBuilder, name -> name.equals("baggage1"));
+    meterProvider =
+        builder
+            .registerMetricReader(reader)
+            .registerView(InstrumentSelector.builder().setName("*").build(), viewBuilder.build())
+            .build();
+
+    Instrument instrument =
+        instrumentFactory.create(
+            meterProvider, "test", asList(stringKey("key1"), stringKey("key2")));
+    try (Scope unused =
+        Baggage.current().toBuilder()
+            .put("baggage1", "value1")
+            .put("baggage2", "value2")
+            .build()
+            .makeCurrent()) {
+      instrument.record(1, ATTRIBUTES);
+    }
+
+    assertThat(reader.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                pointsAssert.hasPointSatisfying(
+                    assertThat(metric),
+                    point ->
+                        point.hasAttributesSatisfyingExactly(
+                            equalTo(stringKey("key1"), "1"),
+                            equalTo(stringKey("key2"), "2"),
+                            equalTo(stringKey("key3"), "3"),
+                            equalTo(stringKey("baggage1"), "value1"))));
+  }
+
   static final class InstrumentsProvider implements ArgumentsProvider {
 
     @Override
@@ -189,15 +266,8 @@ class AttributesAdviceTest {
                       ((ExtendedDoubleGaugeBuilder) doubleGaugeBuilder)
                           .setAttributesAdvice(attributesAdvice);
                     }
-                    AtomicDouble valueRef = new AtomicDouble();
-                    AtomicReference<Attributes> attributesRef = new AtomicReference<>();
-                    doubleGaugeBuilder.buildWithCallback(
-                        measurement ->
-                            measurement.record(valueRef.doubleValue(), attributesRef.get()));
-                    return (value, attributes) -> {
-                      valueRef.set((double) value);
-                      attributesRef.set(attributes);
-                    };
+                    DoubleGauge gauge = doubleGaugeBuilder.build();
+                    return gauge::set;
                   },
               (PointsAssert<DoublePointAssert>)
                   (metricAssert, assertions) ->
@@ -207,21 +277,14 @@ class AttributesAdviceTest {
           arguments(
               (InstrumentFactory)
                   (meterProvider, name, attributesAdvice) -> {
-                    LongGaugeBuilder doubleGaugeBuilder =
+                    LongGaugeBuilder longGaugeBuilder =
                         meterProvider.get("meter").gaugeBuilder(name).ofLongs();
                     if (attributesAdvice != null) {
-                      ((ExtendedLongGaugeBuilder) doubleGaugeBuilder)
+                      ((ExtendedLongGaugeBuilder) longGaugeBuilder)
                           .setAttributesAdvice(attributesAdvice);
                     }
-                    AtomicLong valueRef = new AtomicLong();
-                    AtomicReference<Attributes> attributesRef = new AtomicReference<>();
-                    doubleGaugeBuilder.buildWithCallback(
-                        measurement ->
-                            measurement.record(valueRef.longValue(), attributesRef.get()));
-                    return (value, attributes) -> {
-                      valueRef.set(value);
-                      attributesRef.set(attributes);
-                    };
+                    LongGauge gauge = longGaugeBuilder.build();
+                    return gauge::set;
                   },
               (PointsAssert<LongPointAssert>)
                   (metricAssert, assertions) ->
