@@ -114,9 +114,6 @@ public final class BatchSpanProcessorBuilder {
    */
   public BatchSpanProcessorBuilder setMaxQueueSize(int maxQueueSize) {
     checkArgument(maxQueueSize > 0, "maxQueueSize must be positive.");
-    if (maxExportBatchSize > maxQueueSize) {
-      logger.log(Level.WARNING, "maxExportBatchSize should not exceed maxQueueSize.");
-    }
     this.maxQueueSize = maxQueueSize;
     return this;
   }
@@ -138,9 +135,6 @@ public final class BatchSpanProcessorBuilder {
    */
   public BatchSpanProcessorBuilder setMaxExportBatchSize(int maxExportBatchSize) {
     checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive.");
-    if (maxExportBatchSize > maxQueueSize) {
-      logger.log(Level.WARNING, "maxExportBatchSize should not exceed maxQueueSize.");
-    }
     this.maxExportBatchSize = maxExportBatchSize;
     return this;
   }
@@ -168,8 +162,11 @@ public final class BatchSpanProcessorBuilder {
    */
   public BatchSpanProcessor build() {
     if (maxExportBatchSize > maxQueueSize) {
+      logger.log(
+          Level.WARNING,
+          "maxExportBatchSize should not exceed maxQueueSize. Setting maxExportBatchSize to {0} instead of {1}",
+          new Object[] {maxQueueSize, maxExportBatchSize});
       maxExportBatchSize = maxQueueSize;
-      logger.log(Level.FINE, "Using maxExportBatchSize: {0}", maxExportBatchSize);
     }
     return new BatchSpanProcessor(
         spanExporter,
