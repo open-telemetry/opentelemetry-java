@@ -44,7 +44,9 @@ class ExtendedLoggerBuilderTest {
                         equalTo(EXCEPTION_MESSAGE, "error"),
                         satisfies(
                             EXCEPTION_STACKTRACE,
-                            stacktrace -> stacktrace.startsWith("java.lang.Exception: error\n"))));
+                            stacktrace ->
+                                stacktrace.startsWith(
+                                    "java.lang.Exception: error" + System.lineSeparator()))));
   }
 
   @Test
