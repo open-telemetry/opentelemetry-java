@@ -61,6 +61,7 @@ public final class JdkHttpSender implements HttpSender {
 
   private static final Logger logger = Logger.getLogger(JdkHttpSender.class.getName());
 
+  private final boolean managedExecutor;
   private final ExecutorService executorService;
   private final HttpClient client;
   private final URI uri;
@@ -99,8 +100,13 @@ public final class JdkHttpSender implements HttpSender {
         Optional.ofNullable(retryPolicy)
             .map(RetryPolicy::getRetryExceptionPredicate)
             .orElse(JdkHttpSender::isRetryableException);
-    this.executorService =
-        executorService == null ? Executors.newFixedThreadPool(5) : executorService;
+    if (executorService == null) {
+      this.executorService = Executors.newFixedThreadPool(5);
+      this.managedExecutor = true;
+    } else {
+      this.executorService = executorService;
+      this.managedExecutor = false;
+    }
   }
 
   JdkHttpSender(
@@ -368,7 +374,9 @@ public final class JdkHttpSender implements HttpSender {
 
   @Override
   public CompletableResultCode shutdown() {
-    executorService.shutdown();
+    if (managedExecutor) {
+      executorService.shutdown();
+    }
     return CompletableResultCode.ofSuccess();
   }
 }

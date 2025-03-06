@@ -834,6 +834,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       assertThat(executorService.getTaskCount()).isPositive();
     } finally {
       exporter.shutdown();
+      // If setting executor, the user is responsible for calling shutdown
+      assertThat(executorService.isShutdown()).isFalse();
       executorService.shutdown();
     }
   }

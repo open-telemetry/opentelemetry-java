@@ -45,6 +45,7 @@ import okio.Okio;
  */
 public final class OkHttpHttpSender implements HttpSender {
 
+  private final boolean managedExecutor;
   private final OkHttpClient client;
   private final HttpUrl url;
   @Nullable private final Compressor compressor;
@@ -72,8 +73,15 @@ public final class OkHttpHttpSender implements HttpSender {
     int connectTimeoutMillis =
         (int) Math.min(Duration.ofNanos(connectionTimeoutNanos).toMillis(), Integer.MAX_VALUE);
 
-    Dispatcher dispatcher =
-        executorService == null ? OkHttpUtil.newDispatcher() : new Dispatcher(executorService);
+    Dispatcher dispatcher;
+    if (executorService == null) {
+      dispatcher = OkHttpUtil.newDispatcher();
+      this.managedExecutor = true;
+    } else {
+      dispatcher = new Dispatcher(executorService);
+      ;
+      this.managedExecutor = false;
+    }
 
     OkHttpClient.Builder builder =
         new OkHttpClient.Builder()
@@ -169,7 +177,9 @@ public final class OkHttpHttpSender implements HttpSender {
   @Override
   public CompletableResultCode shutdown() {
     client.dispatcher().cancelAll();
-    client.dispatcher().executorService().shutdownNow();
+    if (managedExecutor) {
+      client.dispatcher().executorService().shutdownNow();
+    }
     client.connectionPool().evictAll();
     return CompletableResultCode.ofSuccess();
   }

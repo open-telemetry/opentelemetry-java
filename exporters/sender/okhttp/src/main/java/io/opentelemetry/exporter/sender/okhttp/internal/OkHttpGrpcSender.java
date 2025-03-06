@@ -68,6 +68,7 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
   private static final String GRPC_STATUS = "grpc-status";
   private static final String GRPC_MESSAGE = "grpc-message";
 
+  private final boolean managedExecutor;
   private final OkHttpClient client;
   private final HttpUrl url;
   private final Supplier<Map<String, List<String>>> headersSupplier;
@@ -89,8 +90,15 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
     int connectTimeoutMillis =
         (int) Math.min(Duration.ofNanos(connectTimeoutNanos).toMillis(), Integer.MAX_VALUE);
 
-    Dispatcher dispatcher =
-        executorService == null ? OkHttpUtil.newDispatcher() : new Dispatcher(executorService);
+    Dispatcher dispatcher;
+    if (executorService == null) {
+      dispatcher = OkHttpUtil.newDispatcher();
+      this.managedExecutor = true;
+    } else {
+      dispatcher = new Dispatcher(executorService);
+      ;
+      this.managedExecutor = false;
+    }
 
     OkHttpClient.Builder clientBuilder =
         new OkHttpClient.Builder()
@@ -205,7 +213,9 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
   @Override
   public CompletableResultCode shutdown() {
     client.dispatcher().cancelAll();
-    client.dispatcher().executorService().shutdownNow();
+    if (managedExecutor) {
+      client.dispatcher().executorService().shutdownNow();
+    }
     client.connectionPool().evictAll();
     return CompletableResultCode.ofSuccess();
   }
