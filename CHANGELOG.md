@@ -36,8 +36,10 @@
 #### Exporters
 
 * OTLP: remove support for `otel.java.experimental.exporter.memory_mode`
+  which was previously replaced by `otel.java.exporter.memory_mode`
   ([#7127](https://github.com/open-telemetry/opentelemetry-java/pull/7127))
 * OTLP: Extract sender parameters to config carrier class
+  (incubating API)
   ([#7151](https://github.com/open-telemetry/opentelemetry-java/pull/7151))
 * OTLP: Add support for setting OTLP exporter service class loader
   ([#7150](https://github.com/open-telemetry/opentelemetry-java/pull/7150))
