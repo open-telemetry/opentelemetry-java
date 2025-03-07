@@ -258,7 +258,11 @@ public final class OtlpGrpcLogRecordExporterBuilder {
     return this;
   }
 
-  /** Set the {@link ClassLoader} used to load the sender API. */
+  /**
+   * Set the {@link ClassLoader} used to load the sender API.
+   *
+   * @since 1.48.0
+   */
   public OtlpGrpcLogRecordExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
     requireNonNull(serviceClassLoader, "serviceClassLoader");
     delegate.setServiceClassLoader(serviceClassLoader);
