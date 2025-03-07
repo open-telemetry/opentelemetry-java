@@ -8,7 +8,8 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.api.incubator.config.GlobalConfigProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -16,11 +17,9 @@ import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
-import io.opentelemetry.sdk.logs.internal.SdkEventLoggerProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.resources.Resource;
@@ -42,7 +41,8 @@ import javax.annotation.Nullable;
 public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
     implements DeclarativeConfigurationCustomizer {
 
-  private static final Logger logger = Logger.getLogger(FileConfiguration.class.getName());
+  private static final Logger logger =
+      Logger.getLogger(DeclarativeConfiguredOpenTelemetrySdkBuilder.class.getName());
 
   private static final boolean INCUBATOR_AVAILABLE;
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
@@ -63,14 +63,16 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
     INCUBATOR_AVAILABLE = incubatorAvailable;
   }
 
-  private BiFunction<SdkTracerProviderBuilder, StructuredConfigProperties, SdkTracerProviderBuilder>
+  private BiFunction<
+          SdkTracerProviderBuilder, DeclarativeConfigProperties, SdkTracerProviderBuilder>
       tracerProviderCustomizer = (a, unused) -> a;
-  private BiFunction<SdkMeterProviderBuilder, StructuredConfigProperties, SdkMeterProviderBuilder>
+  private BiFunction<SdkMeterProviderBuilder, DeclarativeConfigProperties, SdkMeterProviderBuilder>
       meterProviderCustomizer = (a, unused) -> a;
-  private BiFunction<SdkLoggerProviderBuilder, StructuredConfigProperties, SdkLoggerProviderBuilder>
+  private BiFunction<
+          SdkLoggerProviderBuilder, DeclarativeConfigProperties, SdkLoggerProviderBuilder>
       loggerProviderCustomizer = (a, unused) -> a;
   private BiFunction<
-          ? super TextMapPropagator, StructuredConfigProperties, ? extends TextMapPropagator>
+          ? super TextMapPropagator, DeclarativeConfigProperties, ? extends TextMapPropagator>
       propagatorCustomizer = (a, unused) -> a;
 
   @Nullable private String configurationFilePath;
@@ -83,7 +85,7 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
   public DeclarativeConfigurationCustomizer addTraceProviderCustomizer(
       BiFunction<
               ? super SdkTracerProviderBuilder,
-              StructuredConfigProperties,
+              DeclarativeConfigProperties,
               ? extends SdkTracerProviderBuilder>
           traceProviderCustomizer) {
     requireNonNull(traceProviderCustomizer);
@@ -96,7 +98,7 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
   public DeclarativeConfigurationCustomizer addMeterProviderCustomizer(
       BiFunction<
               ? super SdkMeterProviderBuilder,
-              StructuredConfigProperties,
+              DeclarativeConfigProperties,
               ? extends SdkMeterProviderBuilder>
           meterProviderCustomizer) {
     requireNonNull(propagatorCustomizer, "meterProviderCustomizer");
@@ -109,7 +111,7 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
   public DeclarativeConfigurationCustomizer addLoggerProviderCustomizer(
       BiFunction<
               ? super SdkLoggerProviderBuilder,
-              StructuredConfigProperties,
+              DeclarativeConfigProperties,
               ? extends SdkLoggerProviderBuilder>
           loggerProviderCustomizer) {
     requireNonNull(loggerProviderCustomizer, "loggerProviderCustomizer");
@@ -120,7 +122,8 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
 
   @Override
   public DeclarativeConfigurationCustomizer addPropagatorCustomizer(
-      BiFunction<? super TextMapPropagator, StructuredConfigProperties, ? extends TextMapPropagator>
+      BiFunction<
+              ? super TextMapPropagator, DeclarativeConfigProperties, ? extends TextMapPropagator>
           propagatorCustomizer) {
     requireNonNull(propagatorCustomizer, "propagatorCustomizer");
     this.propagatorCustomizer = mergeCustomizer(this.propagatorCustomizer, propagatorCustomizer);
@@ -168,7 +171,7 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
       throw new ConfigurationException("Configuration file path must be set!");
     }
     InputStream is = maybeExtractConfigurationFileInputStream(configurationFilePath);
-    OpenTelemetryConfigurationModel model = FileConfiguration.parse(is);
+    OpenTelemetryConfigurationModel model = DeclarativeConfiguration.parse(is);
     if (!"0.3".equals(model.getFileFormat())) {
       throw new ConfigurationException("Unsupported file format. Supported formats include: 0.3");
     }
@@ -180,7 +183,7 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
 
     List<Closeable> closeables = new ArrayList<>();
     try {
-      StructuredConfigProperties properties = FileConfiguration.toConfigProperties(is);
+      DeclarativeConfigProperties properties = DeclarativeConfiguration.toConfigProperties(is);
       Resource resource = createResource(model, closeables);
       maybeSetTraceProvider(builder, model, properties, resource, closeables);
       maybeSetMeterProvider(builder, model, properties, resource, closeables);
@@ -189,7 +192,7 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
       OpenTelemetrySdk sdk = builder.build();
 
       maybeRegisterShutdownHook(sdk);
-      maybeSetAsGlobal(sdk);
+      maybeSetAsGlobal(sdk, model);
       // TODO: callDeclarativeConfigureListeners
 
       return DeclarativeConfiguredOpenTelemetrySdk.create(sdk);
@@ -231,7 +234,7 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
   private void maybeSetTraceProvider(
       OpenTelemetrySdkBuilder builder,
       OpenTelemetryConfigurationModel model,
-      StructuredConfigProperties properties,
+      DeclarativeConfigProperties properties,
       Resource resource,
       List<Closeable> closeables) {
     if (model.getTracerProvider() == null) {
@@ -256,7 +259,7 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
   private void maybeSetMeterProvider(
       OpenTelemetrySdkBuilder builder,
       OpenTelemetryConfigurationModel model,
-      StructuredConfigProperties properties,
+      DeclarativeConfigProperties properties,
       Resource resource,
       List<Closeable> closeables) {
     if (model.getMeterProvider() == null) {
@@ -277,7 +280,7 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
   private void maybeSetLoggerProvider(
       OpenTelemetrySdkBuilder builder,
       OpenTelemetryConfigurationModel model,
-      StructuredConfigProperties properties,
+      DeclarativeConfigProperties properties,
       Resource resource,
       List<Closeable> closeables) {
     if (model.getLoggerProvider() == null) {
@@ -302,7 +305,7 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
   private void maybeSetPropagators(
       OpenTelemetrySdkBuilder builder,
       OpenTelemetryConfigurationModel model,
-      StructuredConfigProperties properties,
+      DeclarativeConfigProperties properties,
       List<Closeable> closeables) {
     if (model.getPropagator() == null) {
       return;
@@ -327,7 +330,7 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
     Runtime.getRuntime().addShutdownHook(new Thread(sdk::close));
   }
 
-  private void maybeSetAsGlobal(OpenTelemetrySdk sdk) {
+  private void maybeSetAsGlobal(OpenTelemetrySdk sdk, OpenTelemetryConfigurationModel model) {
     if (!setResultAsGlobal) {
       return;
     }
@@ -336,7 +339,7 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
     logger.log(Level.FINE, "Global OpenTelemetry set to {0} by declarative configuration", sdk);
 
     if (INCUBATOR_AVAILABLE) {
-      GlobalEventLoggerProvider.set(SdkEventLoggerProvider.create(sdk.getSdkLoggerProvider()));
+      GlobalConfigProvider.set(SdkConfigProvider.create(model));
     }
   }
 
@@ -358,10 +361,10 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
     }
   }
 
-  private static <I, O1, O2> BiFunction<I, StructuredConfigProperties, O2> mergeCustomizer(
-      BiFunction<? super I, StructuredConfigProperties, ? extends O1> first,
-      BiFunction<? super O1, StructuredConfigProperties, ? extends O2> second) {
-    return (I configured, StructuredConfigProperties config) -> {
+  private static <I, O1, O2> BiFunction<I, DeclarativeConfigProperties, O2> mergeCustomizer(
+      BiFunction<? super I, DeclarativeConfigProperties, ? extends O1> first,
+      BiFunction<? super O1, DeclarativeConfigProperties, ? extends O2> second) {
+    return (I configured, DeclarativeConfigProperties config) -> {
       O1 firstResult = first.apply(configured, config);
       return second.apply(firstResult, config);
     };

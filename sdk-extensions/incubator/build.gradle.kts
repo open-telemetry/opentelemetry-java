@@ -30,7 +30,6 @@ dependencies {
   api("com.fasterxml.jackson.core:jackson-annotations")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
   implementation(project(":sdk-extensions:autoconfigure"))
-  implementation(project(":api:incubator"))
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))

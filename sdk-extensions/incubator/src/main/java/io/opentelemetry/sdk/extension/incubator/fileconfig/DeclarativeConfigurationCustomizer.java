@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
@@ -25,7 +25,7 @@ public interface DeclarativeConfigurationCustomizer {
   DeclarativeConfigurationCustomizer addTraceProviderCustomizer(
       BiFunction<
               ? super SdkTracerProviderBuilder,
-              StructuredConfigProperties,
+              DeclarativeConfigProperties,
               ? extends SdkTracerProviderBuilder>
           traceProviderCustomizer);
 
@@ -39,7 +39,7 @@ public interface DeclarativeConfigurationCustomizer {
   DeclarativeConfigurationCustomizer addMeterProviderCustomizer(
       BiFunction<
               ? super SdkMeterProviderBuilder,
-              StructuredConfigProperties,
+              DeclarativeConfigProperties,
               ? extends SdkMeterProviderBuilder>
           meterProviderCustomizer);
 
@@ -53,7 +53,7 @@ public interface DeclarativeConfigurationCustomizer {
   DeclarativeConfigurationCustomizer addLoggerProviderCustomizer(
       BiFunction<
               ? super SdkLoggerProviderBuilder,
-              StructuredConfigProperties,
+              DeclarativeConfigProperties,
               ? extends SdkLoggerProviderBuilder>
           loggerProviderCustomizer);
 
@@ -65,6 +65,7 @@ public interface DeclarativeConfigurationCustomizer {
    * <p>Multiple calls will execute the customizers in order.
    */
   DeclarativeConfigurationCustomizer addPropagatorCustomizer(
-      BiFunction<? super TextMapPropagator, StructuredConfigProperties, ? extends TextMapPropagator>
+      BiFunction<
+              ? super TextMapPropagator, DeclarativeConfigProperties, ? extends TextMapPropagator>
           propagatorCustomizer);
 }
