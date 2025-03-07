@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.48.0 (2025-03-07)
+
 ### API
 
 * Add some helpful logging attribute methods to `LogRecordBuilder`
