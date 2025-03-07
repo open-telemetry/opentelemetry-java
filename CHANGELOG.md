@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 1.48.0 (2025-03-07)
 
 ### API
 
