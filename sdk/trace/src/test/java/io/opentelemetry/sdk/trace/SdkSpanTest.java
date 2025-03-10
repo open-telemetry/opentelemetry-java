@@ -1278,6 +1278,21 @@ class SdkSpanTest {
   }
 
   @Test
+  void recordException_SpanLimits() {
+    SdkSpan span = createTestSpan(SpanLimits.builder().setMaxNumberOfAttributes(2).build());
+    span.recordException(
+        new IllegalStateException("error"),
+        Attributes.builder().put("key1", "value").put("key2", "value").build());
+
+    List<EventData> events = span.toSpanData().getEvents();
+    assertThat(events.size()).isEqualTo(1);
+    EventData event = events.get(0);
+    assertThat(event.getAttributes().size()).isEqualTo(2);
+    assertThat(event.getTotalAttributeCount()).isEqualTo(5);
+    assertThat(event.getTotalAttributeCount() - event.getAttributes().size()).isPositive();
+  }
+
+  @Test
   void badArgsIgnored() {
     SdkSpan span = createTestRootSpan();
 
@@ -1519,7 +1534,9 @@ class SdkSpanTest {
     Resource resource = this.resource;
     Attributes attributes = TestUtils.generateRandomAttributes();
     AttributesMap attributesWithCapacity = AttributesMap.create(32, Integer.MAX_VALUE);
-    attributes.forEach(attributesWithCapacity::put);
+    attributes.forEach(
+        (attributeKey, object) ->
+            attributesWithCapacity.put((AttributeKey<Object>) attributeKey, object));
     Attributes event1Attributes = TestUtils.generateRandomAttributes();
     Attributes event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =

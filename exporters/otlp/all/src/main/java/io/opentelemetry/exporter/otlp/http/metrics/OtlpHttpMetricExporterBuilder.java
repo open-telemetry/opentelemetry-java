@@ -253,6 +253,17 @@ public final class OtlpHttpMetricExporterBuilder {
     return this;
   }
 
+  /**
+   * Set the {@link ClassLoader} used to load the sender API.
+   *
+   * @since 1.48.0
+   */
+  public OtlpHttpMetricExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
+    requireNonNull(serviceClassLoader, "serviceClassLoader");
+    delegate.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
   OtlpHttpMetricExporterBuilder exportAsJson() {
     delegate.exportAsJson();
     return this;

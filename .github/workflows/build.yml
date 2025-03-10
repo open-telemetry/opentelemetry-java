@@ -35,7 +35,7 @@ jobs:
           - 23
         # Collect coverage on latest LTS
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-latest
             test-java-version: 21
             coverage: true
             jmh-based-tests: true
@@ -99,12 +99,12 @@ jobs:
             exit 1
           fi
 
-      - uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
+      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         if: ${{ matrix.coverage }}
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+      - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         if: ${{ matrix.coverage }}
         with:
           name: coverage-report
@@ -161,13 +161,19 @@ jobs:
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
 
   build-graal:
+    name: Build GraalVM
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        test-graal-version:
+          - 21
+          - 23
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: graalvm/setup-graalvm@aafbedb8d382ed0ca6167d3a051415f20c859274 # v1.2.8
+      - uses: graalvm/setup-graalvm@01ed653ac833fe80569f1ef9f25585ba2811baab # v1.3.3
         with:
-          # TODO(jack-berg): Which versions do we need to test? Should we use a matrix scheme?
-          java-version: '21'
+          java-version: ${{ matrix.test-graal-version }}
           distribution: 'graalvm'
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}

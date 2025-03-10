@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNonNull;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalPrometheusMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
@@ -63,9 +63,10 @@ final class MetricReaderFactory implements Factory<MetricReaderModel, MetricRead
         return FileConfigUtil.addAndReturn(closeables, metricReader);
       }
 
-      throw new ConfigurationException("prometheus is the only currently supported pull reader");
+      throw new DeclarativeConfigException(
+          "prometheus is the only currently supported pull reader");
     }
 
-    throw new ConfigurationException("reader must be set");
+    throw new DeclarativeConfigException("reader must be set");
   }
 }

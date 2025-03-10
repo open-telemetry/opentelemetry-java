@@ -7,10 +7,10 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_TRACES;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**
@@ -32,10 +32,10 @@ public class OtlpGrpcSpanExporterComponentProvider implements ComponentProvider<
   }
 
   @Override
-  public SpanExporter create(StructuredConfigProperties config) {
+  public SpanExporter create(DeclarativeConfigProperties config) {
     OtlpGrpcSpanExporterBuilder builder = grpcBuilder();
 
-    OtlpConfigUtil.configureOtlpExporterBuilder(
+    OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
         DATA_TYPE_TRACES,
         config,
         builder::setEndpoint,

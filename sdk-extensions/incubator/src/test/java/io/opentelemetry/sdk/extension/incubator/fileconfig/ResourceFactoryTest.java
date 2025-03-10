@@ -10,7 +10,7 @@ import static org.mockito.Mockito.spy;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalDetectorsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
 import io.opentelemetry.sdk.resources.Resource;
@@ -26,7 +26,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class ResourceFactoryTest {
 
-  private SpiHelper spiHelper = SpiHelper.create(MetricExporterFactoryTest.class.getClassLoader());
+  private SpiHelper spiHelper = SpiHelper.create(ResourceFactoryTest.class.getClassLoader());
 
   @Test
   void create() {
@@ -65,8 +65,8 @@ class ResourceFactoryTest {
       @Nullable List<String> included, @Nullable List<String> excluded, Resource expectedResource) {
     ResourceModel resourceModel =
         new ResourceModel()
-            .withDetectors(
-                new DetectorsModel()
+            .withDetectorsDevelopment(
+                new ExperimentalDetectorsModel()
                     .withAttributes(
                         new IncludeExcludeModel().withIncluded(included).withExcluded(excluded)));
     Resource resource =

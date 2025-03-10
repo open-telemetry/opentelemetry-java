@@ -7,11 +7,11 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_METRICS;
 
-import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 
 /**
@@ -33,10 +33,10 @@ public class OtlpGrpcMetricExporterComponentProvider implements ComponentProvide
   }
 
   @Override
-  public MetricExporter create(StructuredConfigProperties config) {
+  public MetricExporter create(DeclarativeConfigProperties config) {
     OtlpGrpcMetricExporterBuilder builder = grpcBuilder();
 
-    OtlpConfigUtil.configureOtlpExporterBuilder(
+    OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
         DATA_TYPE_METRICS,
         config,
         builder::setEndpoint,
@@ -48,9 +48,9 @@ public class OtlpGrpcMetricExporterComponentProvider implements ComponentProvide
         builder::setRetryPolicy,
         builder::setMemoryMode,
         /* isHttpProtobuf= */ false);
-    ExporterBuilderUtil.configureOtlpAggregationTemporality(
+    IncubatingExporterBuilderUtil.configureOtlpAggregationTemporality(
         config, builder::setAggregationTemporalitySelector);
-    ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
+    IncubatingExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
         config, builder::setDefaultAggregationSelector);
 
     return builder.build();

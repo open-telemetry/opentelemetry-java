@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static java.util.stream.Collectors.joining;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.JaegerRemoteSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBasedSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
@@ -81,7 +81,7 @@ final class SamplerFactory implements Factory<SamplerModel, Sampler> {
     if (!model.getAdditionalProperties().isEmpty()) {
       Map<String, Object> additionalProperties = model.getAdditionalProperties();
       if (additionalProperties.size() > 1) {
-        throw new ConfigurationException(
+        throw new DeclarativeConfigException(
             "Invalid configuration - multiple samplers exporters set: "
                 + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
       }
@@ -95,7 +95,7 @@ final class SamplerFactory implements Factory<SamplerModel, Sampler> {
               spiHelper, Sampler.class, exporterKeyValue.getKey(), exporterKeyValue.getValue());
       return FileConfigUtil.addAndReturn(closeables, sampler);
     } else {
-      throw new ConfigurationException("sampler must be set");
+      throw new DeclarativeConfigException("sampler must be set");
     }
   }
 }

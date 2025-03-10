@@ -256,6 +256,17 @@ public final class OtlpGrpcSpanExporterBuilder {
   }
 
   /**
+   * Set the {@link ClassLoader} used to load the sender API.
+   *
+   * @since 1.48.0
+   */
+  public OtlpGrpcSpanExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
+    requireNonNull(serviceClassLoader, "serviceClassLoader");
+    delegate.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  /**
    * Constructs a new instance of the exporter based on the builder's values.
    *
    * @return a new exporter's instance

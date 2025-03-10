@@ -112,6 +112,12 @@ public class HttpSpanExporterBuilderWrapper implements TelemetryExporterBuilder<
   }
 
   @Override
+  public TelemetryExporterBuilder<SpanData> setServiceClassLoader(ClassLoader serviceClassLoader) {
+    builder.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  @Override
   public TelemetryExporter<SpanData> build() {
     return TelemetryExporter.wrap(builder.build());
   }

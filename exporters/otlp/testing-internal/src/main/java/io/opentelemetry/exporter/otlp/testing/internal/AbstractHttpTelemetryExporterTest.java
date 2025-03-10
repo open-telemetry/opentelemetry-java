@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.cert.CertificateEncodingException;
@@ -57,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -870,6 +872,39 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
       }
     } finally {
       exporter.shutdown();
+    }
+  }
+
+  @Test
+  void customServiceClassLoader() {
+    ClassLoaderSpy classLoaderSpy =
+        new ClassLoaderSpy(AbstractHttpTelemetryExporterTest.class.getClassLoader());
+
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setServiceClassLoader(classLoaderSpy)
+            .setEndpoint(server.httpUri() + path)
+            .build();
+
+    assertThat(classLoaderSpy.getResourcesNames)
+        .isEqualTo(
+            Collections.singletonList(
+                "META-INF/services/io.opentelemetry.exporter.internal.http.HttpSenderProvider"));
+
+    exporter.shutdown();
+  }
+
+  private static class ClassLoaderSpy extends ClassLoader {
+    private final List<String> getResourcesNames = new ArrayList<>();
+
+    private ClassLoaderSpy(ClassLoader delegate) {
+      super(delegate);
+    }
+
+    @Override
+    public Enumeration<URL> getResources(String name) throws IOException {
+      getResourcesNames.add(name);
+      return super.getResources(name);
     }
   }
 

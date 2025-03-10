@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2ExponentialBucketHistogramAggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramAggregationModel;
@@ -50,7 +50,7 @@ final class AggregationFactory implements Factory<AggregationModel, Aggregation>
       try {
         return Aggregation.base2ExponentialBucketHistogram(maxSize, maxScale);
       } catch (IllegalArgumentException e) {
-        throw new ConfigurationException("Invalid exponential bucket histogram", e);
+        throw new DeclarativeConfigException("Invalid exponential bucket histogram", e);
       }
     }
     ExplicitBucketHistogramAggregationModel explicitBucketHistogram =
@@ -63,7 +63,7 @@ final class AggregationFactory implements Factory<AggregationModel, Aggregation>
       try {
         return Aggregation.explicitBucketHistogram(boundaries);
       } catch (IllegalArgumentException e) {
-        throw new ConfigurationException("Invalid explicit bucket histogram", e);
+        throw new DeclarativeConfigException("Invalid explicit bucket histogram", e);
       }
     }
 

@@ -7,10 +7,10 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_LOGS;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 
 /**
@@ -33,10 +33,10 @@ public class OtlpHttpLogRecordExporterComponentProvider
   }
 
   @Override
-  public LogRecordExporter create(StructuredConfigProperties config) {
+  public LogRecordExporter create(DeclarativeConfigProperties config) {
     OtlpHttpLogRecordExporterBuilder builder = httpBuilder();
 
-    OtlpConfigUtil.configureOtlpExporterBuilder(
+    OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
         DATA_TYPE_LOGS,
         config,
         builder::setEndpoint,

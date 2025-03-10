@@ -10,8 +10,8 @@ import static java.util.stream.Collectors.toList;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import java.io.Closeable;
 import java.util.List;
@@ -115,7 +115,7 @@ final class AttributeListFactory implements Factory<List<AttributeNameValueModel
         }
         break;
     }
-    throw new ConfigurationException(
+    throw new DeclarativeConfigException(
         "Error processing attribute with name \""
             + name
             + "\": value did not match type "

@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOffSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnSamplerModel;
@@ -18,11 +18,12 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchL
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ClientModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalDetectorsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalGeneralInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalHttpInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLanguageSpecificInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalPeerInstrumentationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalPrometheusMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramAggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.InstrumentationModel;
@@ -40,7 +41,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHt
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBasedSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PrometheusMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PropagatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReaderModel;
@@ -76,15 +76,15 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class FileConfigurationParseTest {
+class DeclarativeConfigurationParseTest {
 
   @Test
   void parse_BadInputStream() {
     assertThatThrownBy(
             () ->
-                FileConfiguration.parseAndCreate(
+                DeclarativeConfiguration.parseAndCreate(
                     new ByteArrayInputStream("foo".getBytes(StandardCharsets.UTF_8))))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("Unable to parse configuration input stream");
   }
 
@@ -137,8 +137,8 @@ class FileConfigurationParseTest {
                         .withValue(Arrays.asList(1.1, 2.2))
                         .withType(AttributeNameValueModel.AttributeType.DOUBLE_ARRAY)))
             .withAttributesList("service.namespace=my-namespace,service.version=1.0.0")
-            .withDetectors(
-                new DetectorsModel()
+            .withDetectorsDevelopment(
+                new ExperimentalDetectorsModel()
                     .withAttributes(
                         new IncludeExcludeModel()
                             .withIncluded(Collections.singletonList("process.*"))
@@ -283,8 +283,8 @@ class FileConfigurationParseTest {
                 new PullMetricReaderModel()
                     .withExporter(
                         new PullMetricExporterModel()
-                            .withPrometheus(
-                                new PrometheusMetricExporterModel()
+                            .withPrometheusDevelopment(
+                                new ExperimentalPrometheusMetricExporterModel()
                                     .withHost("localhost")
                                     .withPort(9464)
                                     .withWithoutUnits(false)
@@ -450,7 +450,7 @@ class FileConfigurationParseTest {
 
     try (FileInputStream configExampleFile =
         new FileInputStream(System.getenv("CONFIG_EXAMPLE_DIR") + "/kitchen-sink.yaml")) {
-      OpenTelemetryConfigurationModel config = FileConfiguration.parse(configExampleFile);
+      OpenTelemetryConfigurationModel config = DeclarativeConfiguration.parse(configExampleFile);
 
       // General config
       assertThat(config.getFileFormat()).isEqualTo("0.3");
@@ -503,7 +503,7 @@ class FileConfigurationParseTest {
             + "        aggregation:\n"
             + "          drop: {}\n";
     OpenTelemetryConfigurationModel objectPlaceholderModel =
-        FileConfiguration.parse(
+        DeclarativeConfiguration.parse(
             new ByteArrayInputStream(objectPlaceholderString.getBytes(StandardCharsets.UTF_8)));
 
     String noOjbectPlaceholderString =
@@ -521,7 +521,7 @@ class FileConfigurationParseTest {
             + "        aggregation:\n"
             + "          drop:\n";
     OpenTelemetryConfigurationModel noObjectPlaceholderModel =
-        FileConfiguration.parse(
+        DeclarativeConfiguration.parse(
             new ByteArrayInputStream(noOjbectPlaceholderString.getBytes(StandardCharsets.UTF_8)));
 
     SpanExporterModel exporter =
@@ -555,7 +555,8 @@ class FileConfigurationParseTest {
             + "      ratio:\n"; // Double
 
     OpenTelemetryConfigurationModel model =
-        FileConfiguration.parse(new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
+        DeclarativeConfiguration.parse(
+            new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
 
     assertThat(model.getFileFormat()).isNull();
     assertThat(model.getDisabled()).isNull();
@@ -577,7 +578,7 @@ class FileConfigurationParseTest {
   @MethodSource("coreSchemaValuesArgs")
   void coreSchemaValues(String rawYaml, Object expectedYamlResult) {
     Object yaml =
-        FileConfiguration.loadYaml(
+        DeclarativeConfiguration.loadYaml(
             new ByteArrayInputStream(rawYaml.getBytes(StandardCharsets.UTF_8)),
             Collections.emptyMap());
     assertThat(yaml).isEqualTo(expectedYamlResult);
@@ -605,7 +606,7 @@ class FileConfigurationParseTest {
     environmentVariables.put("HEX", "0xdeadbeef");
 
     Object yaml =
-        FileConfiguration.loadYaml(
+        DeclarativeConfiguration.loadYaml(
             new ByteArrayInputStream(rawYaml.getBytes(StandardCharsets.UTF_8)),
             environmentVariables);
     assertThat(yaml).isEqualTo(expectedYamlResult);
@@ -693,7 +694,7 @@ class FileConfigurationParseTest {
     Map<String, String> envVars = new HashMap<>();
     envVars.put("OTEL_EXPORTER_OTLP_ENDPOINT", "http://collector:4317");
     OpenTelemetryConfigurationModel model =
-        FileConfiguration.parse(
+        DeclarativeConfiguration.parse(
             new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)), envVars);
     assertThat(model)
         .isEqualTo(

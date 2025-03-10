@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static java.util.stream.Collectors.joining;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpGrpcExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
@@ -57,7 +57,7 @@ final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExport
     if (!model.getAdditionalProperties().isEmpty()) {
       Map<String, Object> additionalProperties = model.getAdditionalProperties();
       if (additionalProperties.size() > 1) {
-        throw new ConfigurationException(
+        throw new DeclarativeConfigException(
             "Invalid configuration - multiple span exporters set: "
                 + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
       }
@@ -75,7 +75,7 @@ final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExport
               exporterKeyValue.getValue());
       return FileConfigUtil.addAndReturn(closeables, spanExporter);
     } else {
-      throw new ConfigurationException("span exporter must be set");
+      throw new DeclarativeConfigException("span exporter must be set");
     }
   }
 }

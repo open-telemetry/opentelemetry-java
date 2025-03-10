@@ -63,5 +63,7 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> setChannel(Object channel);
 
+  TelemetryExporterBuilder<T> setServiceClassLoader(ClassLoader serviceClassLoader);
+
   TelemetryExporter<T> build();
 }

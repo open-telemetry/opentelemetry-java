@@ -120,21 +120,6 @@ public final class SdkMeterProviderUtil {
     }
   }
 
-  /**
-   * Reflectively set the {@code cardinalityLimit} on the {@link ViewBuilder}.
-   *
-   * @param viewBuilder the builder
-   */
-  public static void setCardinalityLimit(ViewBuilder viewBuilder, int cardinalityLimit) {
-    try {
-      Method method = ViewBuilder.class.getDeclaredMethod("setCardinalityLimit", int.class);
-      method.setAccessible(true);
-      method.invoke(viewBuilder, cardinalityLimit);
-    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-      throw new IllegalStateException("Error setting cardinalityLimit on ViewBuilder", e);
-    }
-  }
-
   /** Reflectively reset the {@link SdkMeterProvider}, clearing all registered instruments. */
   public static void resetForTest(SdkMeterProvider sdkMeterProvider) {
     try {
