@@ -1,0 +1,8 @@
+Comparing source compatibility of opentelemetry-api-1.48.0.jar against opentelemetry-api-1.47.0.jar
+***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.logs.LogRecordBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.LogRecordBuilder setAttribute(java.lang.String, java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.LogRecordBuilder setAttribute(java.lang.String, long)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.LogRecordBuilder setAttribute(java.lang.String, double)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.LogRecordBuilder setAttribute(java.lang.String, boolean)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.logs.LogRecordBuilder setAttribute(java.lang.String, int)
