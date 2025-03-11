@@ -15,7 +15,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewSe
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import java.io.Closeable;
 import java.util.List;
 
@@ -38,10 +38,15 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
     if (readerModels != null) {
       readerModels.forEach(
           readerModel -> {
-            MetricReader metricReader =
+            MetricReaderAndCardinalityLimits readerAndCardinalityLimits =
                 MetricReaderFactory.getInstance().create(readerModel, spiHelper, closeables);
-            if (metricReader != null) {
-              builder.registerMetricReader(metricReader);
+            CardinalityLimitSelector cardinalityLimits =
+                readerAndCardinalityLimits.getCardinalityLimitsSelector();
+            if (cardinalityLimits == null) {
+              builder.registerMetricReader(readerAndCardinalityLimits.getMetricReader());
+            } else {
+              builder.registerMetricReader(
+                  readerAndCardinalityLimits.getMetricReader(), cardinalityLimits);
             }
           });
     }

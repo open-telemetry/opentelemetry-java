@@ -43,6 +43,9 @@ final class ViewFactory implements Factory<ViewStreamModel, View> {
       builder.setAggregation(
           AggregationFactory.getInstance().create(model.getAggregation(), spiHelper, closeables));
     }
+    if (model.getAggregationCardinalityLimit() != null) {
+      builder.setCardinalityLimit(model.getAggregationCardinalityLimit());
+    }
     return builder.build();
   }
 
