@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.GlobalConfigProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -16,7 +17,6 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
@@ -44,6 +44,7 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
   private static final Logger logger =
       Logger.getLogger(DeclarativeConfiguredOpenTelemetrySdkBuilder.class.getName());
 
+  private static final String SUPPORTED_CONFIG_FILE_FORMAT = "0.3";
   private static final boolean INCUBATOR_AVAILABLE;
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
       SpiHelper.serviceComponentLoader(
@@ -63,17 +64,19 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
     INCUBATOR_AVAILABLE = incubatorAvailable;
   }
 
-  private BiFunction<
-          SdkTracerProviderBuilder, DeclarativeConfigProperties, SdkTracerProviderBuilder>
-      tracerProviderCustomizer = (a, unused) -> a;
-  private BiFunction<SdkMeterProviderBuilder, DeclarativeConfigProperties, SdkMeterProviderBuilder>
-      meterProviderCustomizer = (a, unused) -> a;
-  private BiFunction<
-          SdkLoggerProviderBuilder, DeclarativeConfigProperties, SdkLoggerProviderBuilder>
-      loggerProviderCustomizer = (a, unused) -> a;
+  private BiFunction<? super Resource, DeclarativeConfigProperties, ? extends Resource>
+      resourceCustomizer = (a, unused) -> a;
   private BiFunction<
           ? super TextMapPropagator, DeclarativeConfigProperties, ? extends TextMapPropagator>
       propagatorCustomizer = (a, unused) -> a;
+  private BiFunction<SdkMeterProviderBuilder, DeclarativeConfigProperties, SdkMeterProviderBuilder>
+      meterProviderCustomizer = (a, unused) -> a;
+  private BiFunction<
+          SdkTracerProviderBuilder, DeclarativeConfigProperties, SdkTracerProviderBuilder>
+      tracerProviderCustomizer = (a, unused) -> a;
+  private BiFunction<
+          SdkLoggerProviderBuilder, DeclarativeConfigProperties, SdkLoggerProviderBuilder>
+      loggerProviderCustomizer = (a, unused) -> a;
 
   @Nullable private String configurationFilePath;
   private boolean registerShutdownHook;
@@ -82,20 +85,26 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
   DeclarativeConfiguredOpenTelemetrySdkBuilder() {}
 
   @Override
-  public DeclarativeConfigurationCustomizer addTraceProviderCustomizer(
-      BiFunction<
-              ? super SdkTracerProviderBuilder,
-              DeclarativeConfigProperties,
-              ? extends SdkTracerProviderBuilder>
-          traceProviderCustomizer) {
-    requireNonNull(traceProviderCustomizer);
-    this.tracerProviderCustomizer =
-        mergeCustomizer(this.tracerProviderCustomizer, traceProviderCustomizer);
+  public DeclarativeConfiguredOpenTelemetrySdkBuilder addResourceCustomizer(
+      BiFunction<? super Resource, DeclarativeConfigProperties, ? extends Resource>
+          resourceCustomizer) {
+    requireNonNull(resourceCustomizer);
+    this.resourceCustomizer = mergeCustomizer(this.resourceCustomizer, resourceCustomizer);
     return this;
   }
 
   @Override
-  public DeclarativeConfigurationCustomizer addMeterProviderCustomizer(
+  public DeclarativeConfiguredOpenTelemetrySdkBuilder addPropagatorCustomizer(
+      BiFunction<
+              ? super TextMapPropagator, DeclarativeConfigProperties, ? extends TextMapPropagator>
+          propagatorCustomizer) {
+    requireNonNull(propagatorCustomizer, "propagatorCustomizer");
+    this.propagatorCustomizer = mergeCustomizer(this.propagatorCustomizer, propagatorCustomizer);
+    return this;
+  }
+
+  @Override
+  public DeclarativeConfiguredOpenTelemetrySdkBuilder addMeterProviderCustomizer(
       BiFunction<
               ? super SdkMeterProviderBuilder,
               DeclarativeConfigProperties,
@@ -108,7 +117,20 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
   }
 
   @Override
-  public DeclarativeConfigurationCustomizer addLoggerProviderCustomizer(
+  public DeclarativeConfiguredOpenTelemetrySdkBuilder addTraceProviderCustomizer(
+      BiFunction<
+              ? super SdkTracerProviderBuilder,
+              DeclarativeConfigProperties,
+              ? extends SdkTracerProviderBuilder>
+          traceProviderCustomizer) {
+    requireNonNull(traceProviderCustomizer);
+    this.tracerProviderCustomizer =
+        mergeCustomizer(this.tracerProviderCustomizer, traceProviderCustomizer);
+    return this;
+  }
+
+  @Override
+  public DeclarativeConfiguredOpenTelemetrySdkBuilder addLoggerProviderCustomizer(
       BiFunction<
               ? super SdkLoggerProviderBuilder,
               DeclarativeConfigProperties,
@@ -117,16 +139,6 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
     requireNonNull(loggerProviderCustomizer, "loggerProviderCustomizer");
     this.loggerProviderCustomizer =
         mergeCustomizer(this.loggerProviderCustomizer, loggerProviderCustomizer);
-    return this;
-  }
-
-  @Override
-  public DeclarativeConfigurationCustomizer addPropagatorCustomizer(
-      BiFunction<
-              ? super TextMapPropagator, DeclarativeConfigProperties, ? extends TextMapPropagator>
-          propagatorCustomizer) {
-    requireNonNull(propagatorCustomizer, "propagatorCustomizer");
-    this.propagatorCustomizer = mergeCustomizer(this.propagatorCustomizer, propagatorCustomizer);
     return this;
   }
 
@@ -168,12 +180,13 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
   public DeclarativeConfiguredOpenTelemetrySdk build() {
     String configurationFilePath = maybeExtractConfigurationFilePath();
     if (configurationFilePath == null) {
-      throw new ConfigurationException("Configuration file path must be set!");
+      throw new DeclarativeConfigException("Configuration file path must be set!");
     }
     InputStream is = maybeExtractConfigurationFileInputStream(configurationFilePath);
     OpenTelemetryConfigurationModel model = DeclarativeConfiguration.parse(is);
-    if (!"0.3".equals(model.getFileFormat())) {
-      throw new ConfigurationException("Unsupported file format. Supported formats include: 0.3");
+    if (!SUPPORTED_CONFIG_FILE_FORMAT.equals(model.getFileFormat())) {
+      throw new DeclarativeConfigException(
+          "Unsupported file format. Supported formats include: " + SUPPORTED_CONFIG_FILE_FORMAT);
     }
 
     OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
@@ -184,16 +197,16 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
     List<Closeable> closeables = new ArrayList<>();
     try {
       DeclarativeConfigProperties properties = DeclarativeConfiguration.toConfigProperties(is);
-      Resource resource = createResource(model, closeables);
-      maybeSetTraceProvider(builder, model, properties, resource, closeables);
-      maybeSetMeterProvider(builder, model, properties, resource, closeables);
-      maybeSetLoggerProvider(builder, model, properties, resource, closeables);
+      Resource resource = createResource(model, closeables, properties);
       maybeSetPropagators(builder, model, properties, closeables);
+      maybeSetMeterProvider(builder, model, properties, resource, closeables);
+      maybeSetTraceProvider(builder, model, properties, resource, closeables);
+      maybeSetLoggerProvider(builder, model, properties, resource, closeables);
       OpenTelemetrySdk sdk = builder.build();
 
       maybeRegisterShutdownHook(sdk);
       maybeSetAsGlobal(sdk, model);
-      // TODO: callDeclarativeConfigureListeners
+      // TODO: callDeclarativeConfigureListeners??
 
       return DeclarativeConfiguredOpenTelemetrySdk.create(sdk);
     } catch (RuntimeException e) {
@@ -212,10 +225,10 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
         }
       }
 
-      if (e instanceof ConfigurationException) {
+      if (e instanceof DeclarativeConfigException) {
         throw e;
       }
-      throw new ConfigurationException(
+      throw new DeclarativeConfigException(
           "Unexpected exception during declarative OpenTelemetry SDK build!", e);
     }
   }
@@ -229,6 +242,60 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
       configurationFilePath = System.getenv("OTEL_EXPERIMENTAL_CONFIG_FILE");
     }
     return configurationFilePath;
+  }
+
+  private Resource createResource(
+      OpenTelemetryConfigurationModel model,
+      List<Closeable> closeables,
+      DeclarativeConfigProperties properties) {
+    Resource resource = Resource.getDefault();
+    if (model.getResource() != null) {
+      resource = ResourceFactory.getInstance().create(model.getResource(), SPI_HELPER, closeables);
+    }
+    resource = resourceCustomizer.apply(resource, properties);
+    return resource;
+  }
+
+  private void maybeSetPropagators(
+      OpenTelemetrySdkBuilder builder,
+      OpenTelemetryConfigurationModel model,
+      DeclarativeConfigProperties properties,
+      List<Closeable> closeables) {
+    if (model.getPropagator() == null) {
+      return;
+    }
+    if (model.getPropagator().getComposite() == null) {
+      throw new DeclarativeConfigException("composite propagator is required but it is null!");
+    }
+
+    TextMapPropagator textMapPropagator =
+        TextMapPropagatorFactory.getInstance()
+            .create(model.getPropagator().getComposite(), SPI_HELPER, closeables);
+    textMapPropagator = propagatorCustomizer.apply(textMapPropagator, properties);
+    ContextPropagators propagators = ContextPropagators.create(textMapPropagator);
+
+    builder.setPropagators(propagators);
+  }
+
+  private void maybeSetMeterProvider(
+      OpenTelemetrySdkBuilder builder,
+      OpenTelemetryConfigurationModel model,
+      DeclarativeConfigProperties properties,
+      Resource resource,
+      List<Closeable> closeables) {
+    if (model.getMeterProvider() == null) {
+      return;
+    }
+
+    SdkMeterProviderBuilder meterProviderBuilder =
+        MeterProviderFactory.getInstance()
+            .create(model.getMeterProvider(), SPI_HELPER, closeables)
+            .setResource(resource);
+    meterProviderBuilder = meterProviderCustomizer.apply(meterProviderBuilder, properties);
+    SdkMeterProvider meterProvider = meterProviderBuilder.build();
+
+    closeables.add(meterProvider);
+    builder.setMeterProvider(meterProvider);
   }
 
   private void maybeSetTraceProvider(
@@ -256,27 +323,6 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
     builder.setTracerProvider(tracerProvider);
   }
 
-  private void maybeSetMeterProvider(
-      OpenTelemetrySdkBuilder builder,
-      OpenTelemetryConfigurationModel model,
-      DeclarativeConfigProperties properties,
-      Resource resource,
-      List<Closeable> closeables) {
-    if (model.getMeterProvider() == null) {
-      return;
-    }
-
-    SdkMeterProviderBuilder meterProviderBuilder =
-        MeterProviderFactory.getInstance()
-            .create(model.getMeterProvider(), SPI_HELPER, closeables)
-            .setResource(resource);
-    meterProviderBuilder = meterProviderCustomizer.apply(meterProviderBuilder, properties);
-    SdkMeterProvider meterProvider = meterProviderBuilder.build();
-
-    closeables.add(meterProvider);
-    builder.setMeterProvider(meterProvider);
-  }
-
   private void maybeSetLoggerProvider(
       OpenTelemetrySdkBuilder builder,
       OpenTelemetryConfigurationModel model,
@@ -300,27 +346,6 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
 
     closeables.add(loggerProvider);
     builder.setLoggerProvider(loggerProvider);
-  }
-
-  private void maybeSetPropagators(
-      OpenTelemetrySdkBuilder builder,
-      OpenTelemetryConfigurationModel model,
-      DeclarativeConfigProperties properties,
-      List<Closeable> closeables) {
-    if (model.getPropagator() == null) {
-      return;
-    }
-    if (model.getPropagator().getComposite() == null) {
-      throw new ConfigurationException("composite propagator is required but it is null!");
-    }
-
-    TextMapPropagator textMapPropagator =
-        TextMapPropagatorFactory.getInstance()
-            .create(model.getPropagator().getComposite(), SPI_HELPER, closeables);
-    textMapPropagator = propagatorCustomizer.apply(textMapPropagator, properties);
-    ContextPropagators propagators = ContextPropagators.create(textMapPropagator);
-
-    builder.setPropagators(propagators);
   }
 
   private void maybeRegisterShutdownHook(OpenTelemetrySdk sdk) {
@@ -348,16 +373,7 @@ public final class DeclarativeConfiguredOpenTelemetrySdkBuilder
     try {
       return Files.newInputStream(Paths.get(configurationFilePath));
     } catch (IOException e) {
-      throw new ConfigurationException("Unable to extract configuration input stream!", e);
-    }
-  }
-
-  private static Resource createResource(
-      OpenTelemetryConfigurationModel model, List<Closeable> closeables) {
-    if (model.getResource() != null) {
-      return ResourceFactory.getInstance().create(model.getResource(), SPI_HELPER, closeables);
-    } else {
-      return Resource.getDefault();
+      throw new DeclarativeConfigException("Unable to extract configuration input stream!", e);
     }
   }
 
