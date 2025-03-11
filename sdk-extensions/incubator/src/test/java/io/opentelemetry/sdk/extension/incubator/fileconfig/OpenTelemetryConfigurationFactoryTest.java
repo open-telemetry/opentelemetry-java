@@ -212,14 +212,7 @@ class OpenTelemetryConfigurationFactoryTest {
                     .withFileFormat("0.3")
                     .withPropagator(
                         new PropagatorModel()
-                            .withComposite(
-                                Arrays.asList(
-                                    "tracecontext",
-                                    "baggage",
-                                    "ottrace",
-                                    "b3multi",
-                                    "b3",
-                                    "jaeger")))
+                            .withCompositeList("tracecontext,baggage,ottrace,b3multi,b3,jaeger"))
                     .withResource(
                         new ResourceModel()
                             .withAttributes(

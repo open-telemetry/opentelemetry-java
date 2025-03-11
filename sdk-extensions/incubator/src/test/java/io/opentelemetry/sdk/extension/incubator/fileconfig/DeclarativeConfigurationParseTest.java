@@ -152,9 +152,7 @@ class DeclarativeConfigurationParseTest {
 
     PropagatorModel propagator =
         new PropagatorModel()
-            .withComposite(
-                Arrays.asList(
-                    "tracecontext", "baggage", "b3", "b3multi", "jaeger", "xray", "ottrace"));
+            .withCompositeList("tracecontext,baggage,b3,b3multi,jaeger,xray,ottrace");
     expected.withPropagator(propagator);
 
     // TracerProvider config
