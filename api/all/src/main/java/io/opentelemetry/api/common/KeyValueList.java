@@ -51,7 +51,7 @@ final class KeyValueList implements Value<List<KeyValue>> {
   @Override
   public String asString() {
     return value.stream()
-        .map(item -> item.getKey() + "=" + item.getValue().asString())
+        .map(item -> item.key + "=" + item.value.asString())
         .collect(joining(", ", "[", "]"));
   }
 
@@ -65,7 +65,7 @@ final class KeyValueList implements Value<List<KeyValue>> {
     if (this == o) {
       return true;
     }
-    return (o instanceof Value) && Objects.equals(this.value, ((Value<?>) o).getValue());
+    return (o instanceof Value) && Objects.equals(this.value, ((Value<?>) o).value);
   }
 
   @Override

@@ -288,9 +288,9 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
     Value<?> bodyValue = actual.getBodyValue();
     assertNotNull(
         "Body was not expected to be null.", bodyValue); // Can't use assertj or nullaway complains
-    assertThat(bodyValue.getType()).isEqualTo(KEY_VALUE_LIST);
+    assertThat(bodyValue.type).isEqualTo(KEY_VALUE_LIST);
     Value<List<KeyValue>> body = (Value<List<KeyValue>>) bodyValue;
-    List<KeyValue> payload = body.getValue();
+    List<KeyValue> payload = body.value;
     KeyValue expected = KeyValue.of(key, value);
     assertThat(payload).contains(expected);
     return this;

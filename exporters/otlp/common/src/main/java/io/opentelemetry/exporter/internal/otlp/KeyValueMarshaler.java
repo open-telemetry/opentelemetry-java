@@ -42,14 +42,14 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
   /** Returns Marshaler for the given KeyValue. */
   public static KeyValueMarshaler createForKeyValue(KeyValue keyValue) {
     return new KeyValueMarshaler(
-        keyValue.getKey().getBytes(StandardCharsets.UTF_8),
-        AnyValueMarshaler.create(keyValue.getValue()));
+        keyValue.key.getBytes(StandardCharsets.UTF_8),
+        AnyValueMarshaler.create(keyValue.value));
   }
 
   /** Returns Marshalers for the given Attributes. */
   @SuppressWarnings("AvoidObjectArrays")
   public static KeyValueMarshaler[] createForAttributes(Attributes attributes) {
-    if (attributes.isEmpty()) {
+    if (attributes.isEmpty) {
       return EMPTY_REPEATED;
     }
 

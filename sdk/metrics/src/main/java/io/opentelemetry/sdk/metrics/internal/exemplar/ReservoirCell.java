@@ -122,7 +122,7 @@ class ReservoirCell {
 
   /** Returns filtered attributes for exemplars. */
   private static Attributes filtered(Attributes original, Attributes metricPoint) {
-    if (metricPoint.isEmpty()) {
+    if (metricPoint.isEmpty) {
       return original;
     }
     Set<AttributeKey<?>> metricPointKeys = metricPoint.asMap().keySet();

@@ -31,7 +31,7 @@ public final class AttributeUtil {
   @SuppressWarnings({"unchecked", "rawtypes"})
   public static Attributes applyAttributesLimit(
       Attributes attributes, int countLimit, int lengthLimit) {
-    if (attributes.isEmpty() || attributes.size() <= countLimit) {
+    if (attributes.isEmpty || attributes.size() <= countLimit) {
       if (lengthLimit == Integer.MAX_VALUE) {
         return attributes;
       }

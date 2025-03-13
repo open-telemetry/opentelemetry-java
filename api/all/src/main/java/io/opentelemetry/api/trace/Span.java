@@ -180,7 +180,7 @@ public interface Span extends ImplicitContextKeyed {
    */
   @SuppressWarnings("unchecked")
   default Span setAllAttributes(Attributes attributes) {
-    if (attributes == null || attributes.isEmpty()) {
+    if (attributes == null || attributes.isEmpty) {
       return this;
     }
     attributes.forEach(

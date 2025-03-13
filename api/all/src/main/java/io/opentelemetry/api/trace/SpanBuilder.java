@@ -261,7 +261,7 @@ public interface SpanBuilder {
    */
   @SuppressWarnings("unchecked")
   default SpanBuilder setAllAttributes(Attributes attributes) {
-    if (attributes == null || attributes.isEmpty()) {
+    if (attributes == null || attributes.isEmpty) {
       return this;
     }
     attributes.forEach(

@@ -78,7 +78,7 @@ class FilteredAttributesTest {
   @ParameterizedTest
   @MethodSource("mapArgs")
   void isEmpty(Attributes filteredAttributes, Map<AttributeKey<?>, Object> expectedMapEntries) {
-    assertThat(filteredAttributes.isEmpty()).isEqualTo(expectedMapEntries.isEmpty());
+    assertThat(filteredAttributes.isEmpty).isEqualTo(expectedMapEntries.isEmpty());
   }
 
   @ParameterizedTest
@@ -142,12 +142,12 @@ class FilteredAttributesTest {
 
     Attributes empty = FilteredAttributes.create(allAttributes, Collections.emptySet());
     assertThat(empty.size()).isEqualTo(0);
-    assertThat(empty.isEmpty()).isTrue();
+    assertThat(empty.isEmpty).isTrue();
 
     Set<AttributeKey<?>> oneKey = allKeys.stream().limit(1).collect(Collectors.toSet());
     Attributes one = FilteredAttributes.create(allAttributes, oneKey);
     assertThat(one.size()).isEqualTo(1);
-    assertThat(one.isEmpty()).isFalse();
+    assertThat(one.isEmpty).isFalse();
     allKeys.stream()
         .forEach(
             key -> {
@@ -161,7 +161,7 @@ class FilteredAttributesTest {
     Set<AttributeKey<?>> tenKeys = allKeys.stream().limit(10).collect(Collectors.toSet());
     Attributes ten = FilteredAttributes.create(allAttributes, tenKeys);
     assertThat(ten.size()).isEqualTo(10);
-    assertThat(ten.isEmpty()).isFalse();
+    assertThat(ten.isEmpty).isFalse();
     allKeys.stream()
         .forEach(
             key -> {

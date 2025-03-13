@@ -23,22 +23,22 @@ public final class AnyValueMarshaler {
 
   @SuppressWarnings("unchecked")
   public static MarshalerWithSize create(Value<?> value) {
-    switch (value.getType()) {
+    switch (value.type) {
       case STRING:
-        return StringAnyValueMarshaler.create((String) value.getValue());
+        return StringAnyValueMarshaler.create((String) value.value);
       case BOOLEAN:
-        return BoolAnyValueMarshaler.create((boolean) value.getValue());
+        return BoolAnyValueMarshaler.create((boolean) value.value);
       case LONG:
-        return IntAnyValueMarshaler.create((long) value.getValue());
+        return IntAnyValueMarshaler.create((long) value.value);
       case DOUBLE:
-        return DoubleAnyValueMarshaler.create((double) value.getValue());
+        return DoubleAnyValueMarshaler.create((double) value.value);
       case ARRAY:
-        return ArrayAnyValueMarshaler.createAnyValue((List<Value<?>>) value.getValue());
+        return ArrayAnyValueMarshaler.createAnyValue((List<Value<?>>) value.value);
       case KEY_VALUE_LIST:
-        return KeyValueListAnyValueMarshaler.create((List<KeyValue>) value.getValue());
+        return KeyValueListAnyValueMarshaler.create((List<KeyValue>) value.value);
       case BYTES:
-        return BytesAnyValueMarshaler.create((ByteBuffer) value.getValue());
+        return BytesAnyValueMarshaler.create((ByteBuffer) value.value);
     }
-    throw new IllegalArgumentException("Unsupported Value type: " + value.getType());
+    throw new IllegalArgumentException("Unsupported Value type: " + value.type);
   }
 }

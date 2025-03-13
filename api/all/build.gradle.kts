@@ -4,6 +4,7 @@ plugins {
 
   id("otel.jmh-conventions")
   id("otel.animalsniffer-conventions")
+  id("org.jetbrains.kotlin.jvm")
 }
 
 description = "OpenTelemetry API"

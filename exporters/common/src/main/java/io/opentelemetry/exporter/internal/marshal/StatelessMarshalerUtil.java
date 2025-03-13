@@ -200,7 +200,7 @@ public final class StatelessMarshalerUtil {
       Attributes attributes,
       StatelessMarshaler2<AttributeKey<?>, Object> marshaler,
       MarshalerContext context) {
-    if (attributes.isEmpty()) {
+    if (attributes.isEmpty) {
       return 0;
     }
 

@@ -587,7 +587,7 @@ public abstract class Serializer implements AutoCloseable {
       throws IOException {
     writeStartRepeated(field);
 
-    if (!attributes.isEmpty()) {
+    if (!attributes.isEmpty) {
       RepeatedElementPairWriter<AttributeKey<?>, Object> writer =
           context.getInstance(ATTRIBUTES_WRITER_KEY, RepeatedElementPairWriter::new);
       writer.initialize(field, this, marshaler, context);

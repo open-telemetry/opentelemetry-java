@@ -41,7 +41,7 @@ public interface ReadWriteLogRecord {
    */
   @SuppressWarnings("unchecked")
   default ReadWriteLogRecord setAllAttributes(Attributes attributes) {
-    if (attributes == null || attributes.isEmpty()) {
+    if (attributes == null || attributes.isEmpty) {
       return this;
     }
     attributes.forEach(

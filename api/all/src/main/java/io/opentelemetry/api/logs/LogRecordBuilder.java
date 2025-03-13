@@ -95,7 +95,7 @@ public interface LogRecordBuilder {
    */
   @SuppressWarnings("unchecked")
   default LogRecordBuilder setAllAttributes(Attributes attributes) {
-    if (attributes == null || attributes.isEmpty()) {
+    if (attributes == null || attributes.isEmpty) {
       return this;
     }
     attributes.forEach(

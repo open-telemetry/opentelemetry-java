@@ -403,7 +403,7 @@ class AttributesTest {
         Attributes.empty().toBuilder().put("cat", "meow").put("dog", "bark").build();
     assertThat(fromEmpty).isEqualTo(filled);
     // Original not mutated.
-    assertThat(Attributes.empty().isEmpty()).isTrue();
+    assertThat(Attributes.empty().isEmpty).isTrue();
 
     Attributes partial = Attributes.builder().put("cat", "meow").build();
     Attributes fromPartial = partial.toBuilder().put("dog", "bark").build();

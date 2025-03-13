@@ -57,7 +57,7 @@ final class ValueArray implements Value<List<Value<?>>> {
     if (this == o) {
       return true;
     }
-    return (o instanceof Value) && Objects.equals(this.value, ((Value<?>) o).getValue());
+    return (o instanceof Value) && Objects.equals(this.value, ((Value<?>) o).value);
   }
 
   @Override

@@ -40,8 +40,8 @@ class ValueBodyTest {
                   .isNotNull()
                   .satisfies(
                       body -> {
-                        assertThat(body.getType()).isEqualTo(ValueType.LONG);
-                        assertThat((Long) body.getValue()).isEqualTo(1L);
+                        assertThat(body.type).isEqualTo(ValueType.LONG);
+                        assertThat((Long) body.value).isEqualTo(1L);
                       });
             });
     exporter.reset();
@@ -59,8 +59,8 @@ class ValueBodyTest {
                   .isNotNull()
                   .satisfies(
                       body -> {
-                        assertThat(body.getType()).isEqualTo(ValueType.BYTES);
-                        assertThat((ByteBuffer) body.getValue())
+                        assertThat(body.type).isEqualTo(ValueType.BYTES);
+                        assertThat((ByteBuffer) body.value)
                             .isEqualTo(
                                 ByteBuffer.wrap("hello world".getBytes(StandardCharsets.UTF_8)));
                       });
@@ -107,7 +107,7 @@ class ValueBodyTest {
                   // https://github.com/open-telemetry/opentelemetry-java/pull/6509
                   .satisfies(
                       body -> {
-                        assertThat(body.getType()).isEqualTo(ValueType.KEY_VALUE_LIST);
+                        assertThat(body.type).isEqualTo(ValueType.KEY_VALUE_LIST);
                         assertThat(body)
                             .isEqualTo(
                                 Value.of(
@@ -158,7 +158,7 @@ class ValueBodyTest {
                   .isNotNull()
                   .satisfies(
                       body -> {
-                        assertThat(body.getType()).isEqualTo(ValueType.ARRAY);
+                        assertThat(body.type).isEqualTo(ValueType.ARRAY);
                         assertThat(body)
                             .isEqualTo(
                                 Value.of(Value.of("entry1"), Value.of("entry2"), Value.of(3)));

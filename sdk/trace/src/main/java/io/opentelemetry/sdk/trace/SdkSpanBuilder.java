@@ -208,7 +208,7 @@ class SdkSpanBuilder implements SpanBuilder {
       return Span.wrap(spanContext);
     }
     Attributes samplingAttributes = samplingResult.getAttributes();
-    if (!samplingAttributes.isEmpty()) {
+    if (!samplingAttributes.isEmpty) {
       samplingAttributes.forEach((key, value) -> attributes().put((AttributeKey) key, value));
     }
 

@@ -330,7 +330,7 @@ class SdkSpanBuilderTest {
     SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute(stringKey("nullStringAttributeValue"), null);
     SdkSpan span = (SdkSpan) spanBuilder.startSpan();
-    assertThat(span.toSpanData().getAttributes().isEmpty()).isTrue();
+    assertThat(span.toSpanData().getAttributes().isEmpty).isTrue();
   }
 
   @Test

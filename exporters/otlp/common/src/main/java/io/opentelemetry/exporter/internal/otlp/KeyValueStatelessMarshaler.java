@@ -28,7 +28,7 @@ public final class KeyValueStatelessMarshaler implements StatelessMarshaler<KeyV
   @Override
   public void writeTo(Serializer output, KeyValue value, MarshalerContext context)
       throws IOException {
-    String key = value.getKey();
+    String key = value.key;
     if (key.isEmpty()) {
       output.serializeString(io.opentelemetry.proto.common.v1.internal.KeyValue.KEY, EMPTY_BYTES);
     } else {
@@ -37,7 +37,7 @@ public final class KeyValueStatelessMarshaler implements StatelessMarshaler<KeyV
     }
     output.serializeMessageWithContext(
         io.opentelemetry.proto.common.v1.internal.KeyValue.VALUE,
-        value.getValue(),
+            value.value,
         AnyValueStatelessMarshaler.INSTANCE,
         context);
   }
@@ -45,7 +45,7 @@ public final class KeyValueStatelessMarshaler implements StatelessMarshaler<KeyV
   @Override
   public int getBinarySerializedSize(KeyValue value, MarshalerContext context) {
     int size = 0;
-    String key = value.getKey();
+    String key = value.key;
     if (!key.isEmpty()) {
       size +=
           StatelessMarshalerUtil.sizeStringWithContext(
@@ -54,7 +54,7 @@ public final class KeyValueStatelessMarshaler implements StatelessMarshaler<KeyV
     size +=
         StatelessMarshalerUtil.sizeMessageWithContext(
             io.opentelemetry.proto.common.v1.internal.KeyValue.VALUE,
-            value.getValue(),
+                value.value,
             AnyValueStatelessMarshaler.INSTANCE,
             context);
 

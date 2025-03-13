@@ -31,39 +31,39 @@ public final class AnyValueStatelessMarshaler implements StatelessMarshaler<Valu
   @Override
   public void writeTo(Serializer output, Value<?> value, MarshalerContext context)
       throws IOException {
-    switch (value.getType()) {
+    switch (value.type) {
       case STRING:
         StringAnyValueStatelessMarshaler.INSTANCE.writeTo(
-            output, (String) value.getValue(), context);
+            output, (String) value.value, context);
         return;
       case BOOLEAN:
         BoolAnyValueStatelessMarshaler.INSTANCE.writeTo(
-            output, (Boolean) value.getValue(), context);
+            output, (Boolean) value.value, context);
         return;
       case LONG:
-        IntAnyValueStatelessMarshaler.INSTANCE.writeTo(output, (Long) value.getValue(), context);
+        IntAnyValueStatelessMarshaler.INSTANCE.writeTo(output, (Long) value.value, context);
         return;
       case DOUBLE:
         DoubleAnyValueStatelessMarshaler.INSTANCE.writeTo(
-            output, (Double) value.getValue(), context);
+            output, (Double) value.value, context);
         return;
       case ARRAY:
         output.serializeMessageWithContext(
             io.opentelemetry.proto.common.v1.internal.AnyValue.ARRAY_VALUE,
-            (List<Value<?>>) value.getValue(),
+            (List<Value<?>>) value.value,
             ArrayAnyValueStatelessMarshaler.INSTANCE,
             context);
         return;
       case KEY_VALUE_LIST:
         output.serializeMessageWithContext(
             io.opentelemetry.proto.common.v1.internal.AnyValue.KVLIST_VALUE,
-            (List<KeyValue>) value.getValue(),
+            (List<KeyValue>) value.value,
             KeyValueListAnyValueStatelessMarshaler.INSTANCE,
             context);
         return;
       case BYTES:
         BytesAnyValueStatelessMarshaler.INSTANCE.writeTo(
-            output, (ByteBuffer) value.getValue(), context);
+            output, (ByteBuffer) value.value, context);
         return;
     }
     // Error prone ensures the switch statement is complete, otherwise only can happen with
@@ -74,34 +74,34 @@ public final class AnyValueStatelessMarshaler implements StatelessMarshaler<Valu
   @SuppressWarnings("unchecked")
   @Override
   public int getBinarySerializedSize(Value<?> value, MarshalerContext context) {
-    switch (value.getType()) {
+    switch (value.type) {
       case STRING:
         return StringAnyValueStatelessMarshaler.INSTANCE.getBinarySerializedSize(
-            (String) value.getValue(), context);
+            (String) value.value, context);
       case BOOLEAN:
         return BoolAnyValueStatelessMarshaler.INSTANCE.getBinarySerializedSize(
-            (Boolean) value.getValue(), context);
+            (Boolean) value.value, context);
       case LONG:
         return IntAnyValueStatelessMarshaler.INSTANCE.getBinarySerializedSize(
-            (Long) value.getValue(), context);
+            (Long) value.value, context);
       case DOUBLE:
         return DoubleAnyValueStatelessMarshaler.INSTANCE.getBinarySerializedSize(
-            (Double) value.getValue(), context);
+            (Double) value.value, context);
       case ARRAY:
         return StatelessMarshalerUtil.sizeMessageWithContext(
             io.opentelemetry.proto.common.v1.internal.AnyValue.ARRAY_VALUE,
-            (List<Value<?>>) value.getValue(),
+            (List<Value<?>>) value.value,
             ArrayAnyValueStatelessMarshaler.INSTANCE,
             context);
       case KEY_VALUE_LIST:
         return StatelessMarshalerUtil.sizeMessageWithContext(
             io.opentelemetry.proto.common.v1.internal.AnyValue.KVLIST_VALUE,
-            (List<KeyValue>) value.getValue(),
+            (List<KeyValue>) value.value,
             KeyValueListAnyValueStatelessMarshaler.INSTANCE,
             context);
       case BYTES:
         return BytesAnyValueStatelessMarshaler.INSTANCE.getBinarySerializedSize(
-            (ByteBuffer) value.getValue(), context);
+            (ByteBuffer) value.value, context);
     }
     // Error prone ensures the switch statement is complete, otherwise only can happen with
     // unaligned versions which are not supported.

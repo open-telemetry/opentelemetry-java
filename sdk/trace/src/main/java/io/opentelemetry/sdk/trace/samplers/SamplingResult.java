@@ -62,7 +62,7 @@ public interface SamplingResult {
    */
   static SamplingResult create(SamplingDecision decision, Attributes attributes) {
     requireNonNull(attributes, "attributes");
-    return attributes.isEmpty()
+    return attributes.isEmpty
         ? create(decision)
         : ImmutableSamplingResult.createSamplingResult(decision, attributes);
   }

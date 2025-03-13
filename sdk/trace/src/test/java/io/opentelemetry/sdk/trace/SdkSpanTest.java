@@ -1318,7 +1318,7 @@ class SdkSpanTest {
 
     // Ignored the bad calls
     SpanData data = span.toSpanData();
-    assertThat(data.getAttributes().isEmpty()).isTrue();
+    assertThat(data.getAttributes().isEmpty).isTrue();
     assertThat(data.getStatus()).isEqualTo(StatusData.unset());
     assertThat(data.getName()).isEqualTo(SPAN_NAME);
   }

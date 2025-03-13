@@ -50,7 +50,7 @@ class ResourceTest {
 
     Resource resource1 = Resource.create(Attributes.empty());
     assertThat(resource1.getAttributes()).isNotNull();
-    assertThat(resource1.getAttributes().isEmpty()).isTrue();
+    assertThat(resource1.getAttributes().isEmpty).isTrue();
   }
 
   @Test

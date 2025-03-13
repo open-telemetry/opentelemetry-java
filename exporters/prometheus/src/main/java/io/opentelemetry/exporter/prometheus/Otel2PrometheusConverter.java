@@ -121,7 +121,7 @@ final class Otel2PrometheusConverter {
       if (resource == null) {
         resource = metricData.getResource();
       }
-      if (otelScopeEnabled && !metricData.getInstrumentationScopeInfo().getAttributes().isEmpty()) {
+      if (otelScopeEnabled && !metricData.getInstrumentationScopeInfo().getAttributes().isEmpty) {
         scopes.add(metricData.getInstrumentationScopeInfo());
       }
     }
