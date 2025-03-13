@@ -13,7 +13,7 @@ val DEPENDENCY_BOMS = listOf(
   // (which is EPL licensed) or armeria bom (which is Apache licensed but is getting flagged
   // by FOSSA for containing EPL-licensed)
 
-  "com.fasterxml.jackson:jackson-bom:2.18.2",
+  "com.fasterxml.jackson:jackson-bom:2.18.3",
   "com.google.guava:guava-bom:33.4.0-jre",
   "com.google.protobuf:protobuf-bom:4.29.3",
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
@@ -73,7 +73,7 @@ val DEPENDENCIES = listOf(
   "io.prometheus:simpleclient_httpserver:${prometheusClientVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.53.0",
+  "com.google.api.grpc:proto-google-common-protos:2.54.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
