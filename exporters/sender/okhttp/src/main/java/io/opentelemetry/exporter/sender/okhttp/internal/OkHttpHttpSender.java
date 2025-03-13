@@ -79,7 +79,6 @@ public final class OkHttpHttpSender implements HttpSender {
       this.managedExecutor = true;
     } else {
       dispatcher = new Dispatcher(executorService);
-      ;
       this.managedExecutor = false;
     }
 

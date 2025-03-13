@@ -96,7 +96,6 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
       this.managedExecutor = true;
     } else {
       dispatcher = new Dispatcher(executorService);
-      ;
       this.managedExecutor = false;
     }
 
