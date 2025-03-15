@@ -10,12 +10,12 @@ import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterProviderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SelectorModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.StreamModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewSelectorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import java.io.Closeable;
 import java.util.List;
 
@@ -38,10 +38,15 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
     if (readerModels != null) {
       readerModels.forEach(
           readerModel -> {
-            MetricReader metricReader =
+            MetricReaderAndCardinalityLimits readerAndCardinalityLimits =
                 MetricReaderFactory.getInstance().create(readerModel, spiHelper, closeables);
-            if (metricReader != null) {
-              builder.registerMetricReader(metricReader);
+            CardinalityLimitSelector cardinalityLimits =
+                readerAndCardinalityLimits.getCardinalityLimitsSelector();
+            if (cardinalityLimits == null) {
+              builder.registerMetricReader(readerAndCardinalityLimits.getMetricReader());
+            } else {
+              builder.registerMetricReader(
+                  readerAndCardinalityLimits.getMetricReader(), cardinalityLimits);
             }
           });
     }
@@ -50,8 +55,8 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
     if (viewModels != null) {
       viewModels.forEach(
           viewModel -> {
-            SelectorModel selector = requireNonNull(viewModel.getSelector(), "view selector");
-            StreamModel stream = requireNonNull(viewModel.getStream(), "view stream");
+            ViewSelectorModel selector = requireNonNull(viewModel.getSelector(), "view selector");
+            ViewStreamModel stream = requireNonNull(viewModel.getStream(), "view stream");
             builder.registerView(
                 InstrumentSelectorFactory.getInstance().create(selector, spiHelper, closeables),
                 ViewFactory.getInstance().create(stream, spiHelper, closeables));

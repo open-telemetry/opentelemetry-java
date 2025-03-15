@@ -15,8 +15,8 @@ import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorAttributesModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DetectorsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalDetectorsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
@@ -48,7 +48,8 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
     for (Resource resourceProviderResource : resourceDetectorResources) {
       detectedResourceBuilder.putAll(resourceProviderResource);
     }
-    Predicate<String> detectorAttributeFilter = detectorAttributeFilter(model.getDetectors());
+    Predicate<String> detectorAttributeFilter =
+        detectorAttributeFilter(model.getDetectorsDevelopment());
     builder
         .putAll(
             detectedResourceBuilder.build().getAttributes().toBuilder()
@@ -137,16 +138,16 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
   }
 
   private static Predicate<String> detectorAttributeFilter(
-      @Nullable DetectorsModel detectorsModel) {
+      @Nullable ExperimentalDetectorsModel detectorsModel) {
     if (detectorsModel == null) {
       return ResourceFactory::matchAll;
     }
-    DetectorAttributesModel detectorAttributesModel = detectorsModel.getAttributes();
-    if (detectorAttributesModel == null) {
+    IncludeExcludeModel includedExcludeModel = detectorsModel.getAttributes();
+    if (includedExcludeModel == null) {
       return ResourceFactory::matchAll;
     }
-    List<String> included = detectorAttributesModel.getIncluded();
-    List<String> excluded = detectorAttributesModel.getExcluded();
+    List<String> included = includedExcludeModel.getIncluded();
+    List<String> excluded = includedExcludeModel.getExcluded();
     if (included == null && excluded == null) {
       return ResourceFactory::matchAll;
     }

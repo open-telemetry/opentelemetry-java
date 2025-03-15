@@ -17,7 +17,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordPr
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleLogRecordProcessorModel;
 import java.io.Closeable;
 import java.time.Duration;
@@ -63,7 +63,9 @@ class LogRecordProcessorFactoryTest {
                 new LogRecordProcessorModel()
                     .withBatch(
                         new BatchLogRecordProcessorModel()
-                            .withExporter(new LogRecordExporterModel().withOtlp(new OtlpModel()))),
+                            .withExporter(
+                                new LogRecordExporterModel()
+                                    .withOtlpHttp(new OtlpHttpExporterModel()))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(processor);
@@ -90,7 +92,9 @@ class LogRecordProcessorFactoryTest {
                 new LogRecordProcessorModel()
                     .withBatch(
                         new BatchLogRecordProcessorModel()
-                            .withExporter(new LogRecordExporterModel().withOtlp(new OtlpModel()))
+                            .withExporter(
+                                new LogRecordExporterModel()
+                                    .withOtlpHttp(new OtlpHttpExporterModel()))
                             .withScheduleDelay(1)
                             .withMaxExportBatchSize(2)
                             .withExportTimeout(3)),
@@ -130,7 +134,9 @@ class LogRecordProcessorFactoryTest {
                 new LogRecordProcessorModel()
                     .withSimple(
                         new SimpleLogRecordProcessorModel()
-                            .withExporter(new LogRecordExporterModel().withOtlp(new OtlpModel()))),
+                            .withExporter(
+                                new LogRecordExporterModel()
+                                    .withOtlpHttp(new OtlpHttpExporterModel()))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(processor);

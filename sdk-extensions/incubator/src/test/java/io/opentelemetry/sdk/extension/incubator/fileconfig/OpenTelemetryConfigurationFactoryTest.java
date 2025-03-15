@@ -23,7 +23,7 @@ import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
@@ -34,19 +34,19 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Logger
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MeterProviderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PropagatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SelectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.StreamModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewSelectorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
@@ -126,7 +126,8 @@ class OpenTelemetryConfigurationFactoryTest {
                                             new SimpleLogRecordProcessorModel()
                                                 .withExporter(
                                                     new LogRecordExporterModel()
-                                                        .withOtlp(new OtlpModel())))))),
+                                                        .withOtlpHttp(
+                                                            new OtlpHttpExporterModel())))))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(sdk);
@@ -211,14 +212,7 @@ class OpenTelemetryConfigurationFactoryTest {
                     .withFileFormat("0.3")
                     .withPropagator(
                         new PropagatorModel()
-                            .withComposite(
-                                Arrays.asList(
-                                    "tracecontext",
-                                    "baggage",
-                                    "ottrace",
-                                    "b3multi",
-                                    "b3",
-                                    "jaeger")))
+                            .withCompositeList("tracecontext,baggage,ottrace,b3multi,b3,jaeger"))
                     .withResource(
                         new ResourceModel()
                             .withAttributes(
@@ -242,7 +236,8 @@ class OpenTelemetryConfigurationFactoryTest {
                                             new BatchLogRecordProcessorModel()
                                                 .withExporter(
                                                     new LogRecordExporterModel()
-                                                        .withOtlp(new OtlpModel()))))))
+                                                        .withOtlpHttp(
+                                                            new OtlpHttpExporterModel()))))))
                     .withTracerProvider(
                         new TracerProviderModel()
                             .withLimits(
@@ -254,7 +249,8 @@ class OpenTelemetryConfigurationFactoryTest {
                                     .withLinkCountLimit(4)
                                     .withEventAttributeCountLimit(5)
                                     .withLinkAttributeCountLimit(6))
-                            .withSampler(new SamplerModel().withAlwaysOn(new AlwaysOnModel()))
+                            .withSampler(
+                                new SamplerModel().withAlwaysOn(new AlwaysOnSamplerModel()))
                             .withProcessors(
                                 Collections.singletonList(
                                     new SpanProcessorModel()
@@ -262,7 +258,8 @@ class OpenTelemetryConfigurationFactoryTest {
                                             new BatchSpanProcessorModel()
                                                 .withExporter(
                                                     new SpanExporterModel()
-                                                        .withOtlp(new OtlpModel()))))))
+                                                        .withOtlpHttp(
+                                                            new OtlpHttpExporterModel()))))))
                     .withMeterProvider(
                         new MeterProviderModel()
                             .withReaders(
@@ -272,16 +269,17 @@ class OpenTelemetryConfigurationFactoryTest {
                                             new PeriodicMetricReaderModel()
                                                 .withExporter(
                                                     new PushMetricExporterModel()
-                                                        .withOtlp(new OtlpMetricModel())))))
+                                                        .withOtlpHttp(
+                                                            new OtlpHttpMetricExporterModel())))))
                             .withViews(
                                 Collections.singletonList(
                                     new io.opentelemetry.sdk.extension.incubator.fileconfig.internal
                                             .model.ViewModel()
                                         .withSelector(
-                                            new SelectorModel()
+                                            new ViewSelectorModel()
                                                 .withInstrumentName("instrument-name"))
                                         .withStream(
-                                            new StreamModel()
+                                            new ViewStreamModel()
                                                 .withName("stream-name")
                                                 .withAttributeKeys(null))))),
                 spiHelper,
