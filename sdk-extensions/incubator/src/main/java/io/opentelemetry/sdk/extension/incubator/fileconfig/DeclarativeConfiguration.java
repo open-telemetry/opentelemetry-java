@@ -109,8 +109,8 @@ public final class DeclarativeConfiguration {
   public static OpenTelemetrySdk create(
       OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
     SpiHelper spiHelper = SpiHelper.create(componentLoader);
-    for (OpenTelemetryConfigurationModelCustomizerProvider provider :
-        spiHelper.loadOrdered(OpenTelemetryConfigurationModelCustomizerProvider.class)) {
+    for (DeclarativeConfigurationCustomizerProvider provider :
+        spiHelper.loadOrdered(DeclarativeConfigurationCustomizerProvider.class)) {
       configurationModel = provider.customize(configurationModel);
     }
     return createAndMaybeCleanup(

@@ -17,7 +17,6 @@ import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
@@ -73,7 +72,7 @@ class DeclarativeConfigurationCreateTest {
             tempDir, "clientCertificate.cert", clientTls.certificate().getEncoded());
 
     File examplesDir = new File(System.getenv("CONFIG_EXAMPLE_DIR"));
-    assertThat(examplesDir.isDirectory()).isTrue();
+    assertThat(examplesDir).isDirectory();
 
     for (File example : Objects.requireNonNull(examplesDir.listFiles())) {
       // Skip anchors.yaml because support for merge (i.e. "<<: *anchor") was explicitly removed in
@@ -174,15 +173,15 @@ class DeclarativeConfigurationCreateTest {
                 Collections.singletonList(
                     new SpanProcessorModel().withAdditionalProperty("test", null))));
     ComponentLoader componentLoader =
-        SpiHelper.serviceComponentLoader(FileConfiguration.class.getClassLoader());
+        SpiHelper.serviceComponentLoader(DeclarativeConfiguration.class.getClassLoader());
     OpenTelemetrySdk sdk =
-        FileConfiguration.create(
+        DeclarativeConfiguration.create(
             model,
             new ComponentLoader() {
               @SuppressWarnings("unchecked")
               @Override
               public <T> Iterable<T> load(Class<T> spiClass) {
-                if (OpenTelemetryConfigurationModelCustomizerProvider.class.equals(spiClass)) {
+                if (DeclarativeConfigurationCustomizerProvider.class.equals(spiClass)) {
                   return (Iterable<T>) Collections.singletonList(getCustomizerProvider());
                 }
                 return componentLoader.load(spiClass);
@@ -201,7 +200,7 @@ class DeclarativeConfigurationCreateTest {
                 + "telemetry.sdk.version=\"1.48.0-SNAPSHOT\"}}");
   }
 
-  private static OpenTelemetryConfigurationModelCustomizerProvider getCustomizerProvider() {
+  private static DeclarativeConfigurationCustomizerProvider getCustomizerProvider() {
     return model -> {
       ResourceModel resource = model.getResource();
       if (resource == null) {
