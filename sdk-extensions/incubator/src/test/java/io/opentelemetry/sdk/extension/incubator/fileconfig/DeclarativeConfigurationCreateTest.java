@@ -197,32 +197,34 @@ class DeclarativeConfigurationCreateTest {
                 + "shape=\"square\", "
                 + "telemetry.sdk.language=\"java\", "
                 + "telemetry.sdk.name=\"opentelemetry\", "
-                + "telemetry.sdk.version=\"1.48.0-SNAPSHOT\"}}");
+                + "telemetry.sdk.version=\"");
   }
 
   private static DeclarativeConfigurationCustomizerProvider getCustomizerProvider() {
-    return model -> {
-      ResourceModel resource = model.getResource();
-      if (resource == null) {
-        resource = new ResourceModel();
-        model.withResource(resource);
-      }
-      List<AttributeNameValueModel> attributes = resource.getAttributes();
-      if (attributes == null) {
-        attributes = new ArrayList<>();
-        resource.withAttributes(attributes);
-      }
-      attributes.add(
-          new AttributeNameValueModel()
-              .withName("foo")
-              .withType(AttributeNameValueModel.Type.STRING)
-              .withValue("bar"));
-      attributes.add(
-          new AttributeNameValueModel()
-              .withName("color")
-              .withType(AttributeNameValueModel.Type.STRING)
-              .withValue("blue"));
-      return model;
-    };
+    return provider ->
+        provider.addModelCustomizer(
+            model -> {
+              ResourceModel resource = model.getResource();
+              if (resource == null) {
+                resource = new ResourceModel();
+                model.withResource(resource);
+              }
+              List<AttributeNameValueModel> attributes = resource.getAttributes();
+              if (attributes == null) {
+                attributes = new ArrayList<>();
+                resource.withAttributes(attributes);
+              }
+              attributes.add(
+                  new AttributeNameValueModel()
+                      .withName("foo")
+                      .withType(AttributeNameValueModel.Type.STRING)
+                      .withValue("bar"));
+              attributes.add(
+                  new AttributeNameValueModel()
+                      .withName("color")
+                      .withType(AttributeNameValueModel.Type.STRING)
+                      .withValue("blue"));
+              return model;
+            });
   }
 }
