@@ -18,6 +18,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import okhttp3.Interceptor;
@@ -37,7 +38,7 @@ public final class RetryInterceptor implements Interceptor {
   private final Function<Response, Boolean> isRetryable;
   private final Predicate<IOException> retryExceptionPredicate;
   private final Sleeper sleeper;
-  private final BoundedLongGenerator randomLong;
+  private final Supplier<Double> randomJitter;
 
   /** Constructs a new retrier. */
   public RetryInterceptor(RetryPolicy retryPolicy, Function<Response, Boolean> isRetryable) {
@@ -48,7 +49,7 @@ public final class RetryInterceptor implements Interceptor {
             ? RetryInterceptor::isRetryableException
             : retryPolicy.getRetryExceptionPredicate(),
         TimeUnit.NANOSECONDS::sleep,
-        bound -> ThreadLocalRandom.current().nextLong(bound));
+        () -> ThreadLocalRandom.current().nextDouble(0.8d, 1.2d));
   }
 
   // Visible for testing
@@ -57,12 +58,12 @@ public final class RetryInterceptor implements Interceptor {
       Function<Response, Boolean> isRetryable,
       Predicate<IOException> retryExceptionPredicate,
       Sleeper sleeper,
-      BoundedLongGenerator randomLong) {
+      Supplier<Double> randomJitter) {
     this.retryPolicy = retryPolicy;
     this.isRetryable = isRetryable;
     this.retryExceptionPredicate = retryExceptionPredicate;
     this.sleeper = sleeper;
-    this.randomLong = randomLong;
+    this.randomJitter = randomJitter;
   }
 
   @Override
@@ -75,9 +76,10 @@ public final class RetryInterceptor implements Interceptor {
       if (attempt > 0) {
         // Compute and sleep for backoff
         // https://github.com/grpc/proposal/blob/master/A6-client-retries.md#exponential-backoff
-        long upperBoundNanos = Math.min(nextBackoffNanos, retryPolicy.getMaxBackoff().toNanos());
-        long backoffNanos = randomLong.get(upperBoundNanos);
-        nextBackoffNanos = (long) (nextBackoffNanos * retryPolicy.getBackoffMultiplier());
+        long currentBackoffNanos =
+            Math.min(nextBackoffNanos, retryPolicy.getMaxBackoff().toNanos());
+        long backoffNanos = (long) (randomJitter.get() * currentBackoffNanos);
+        nextBackoffNanos = (long) (currentBackoffNanos * retryPolicy.getBackoffMultiplier());
         try {
           sleeper.sleep(backoffNanos);
         } catch (InterruptedException e) {
@@ -88,31 +90,31 @@ public final class RetryInterceptor implements Interceptor {
         if (response != null) {
           response.close();
         }
+        exception = null;
       }
-
-      attempt++;
       try {
         response = chain.proceed(chain.request());
+        if (response != null) {
+          boolean retryable = Boolean.TRUE.equals(isRetryable.apply(response));
+          if (logger.isLoggable(Level.FINER)) {
+            logger.log(
+                Level.FINER,
+                "Attempt "
+                    + attempt
+                    + " returned "
+                    + (retryable ? "retryable" : "non-retryable")
+                    + " response: "
+                    + responseStringRepresentation(response));
+          }
+          if (!retryable) {
+            return response;
+          }
+        } else {
+          throw new NullPointerException("Response cannot be null.");
+        }
       } catch (IOException e) {
         exception = e;
-      }
-      if (response != null) {
-        boolean retryable = Boolean.TRUE.equals(isRetryable.apply(response));
-        if (logger.isLoggable(Level.FINER)) {
-          logger.log(
-              Level.FINER,
-              "Attempt "
-                  + attempt
-                  + " returned "
-                  + (retryable ? "retryable" : "non-retryable")
-                  + " response: "
-                  + responseStringRepresentation(response));
-        }
-        if (!retryable) {
-          return response;
-        }
-      }
-      if (exception != null) {
+        response = null;
         boolean retryable = retryExceptionPredicate.test(exception);
         if (logger.isLoggable(Level.FINER)) {
           logger.log(
@@ -128,8 +130,7 @@ public final class RetryInterceptor implements Interceptor {
           throw exception;
         }
       }
-
-    } while (attempt < retryPolicy.getMaxAttempts());
+    } while (++attempt < retryPolicy.getMaxAttempts());
 
     if (response != null) {
       return response;
@@ -170,11 +171,6 @@ public final class RetryInterceptor implements Interceptor {
       return true;
     }
     return false;
-  }
-
-  // Visible for testing
-  interface BoundedLongGenerator {
-    long get(long bound);
   }
 
   // Visible for testing
