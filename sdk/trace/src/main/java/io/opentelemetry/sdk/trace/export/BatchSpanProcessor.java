@@ -276,14 +276,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     private int drain(int limit) {
       int drained = JcTools.drain(queue, limit, span -> batch.add(span.toSpanData()));
-      if (drained > 0) {
-        int prev;
-        int next;
-        do {
-          prev = queueSize.get();
-          next = prev - drained;
-        } while (!queueSize.compareAndSet(prev, next));
-      }
+      queueSize.addAndGet(-drained);
       return drained;
     }
 
