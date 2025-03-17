@@ -110,7 +110,7 @@ public final class RetryInterceptor implements Interceptor {
             return response;
           }
         } else {
-          throw new NullPointerException("Response cannot be null.");
+          throw new NullPointerException("response cannot be null.");
         }
       } catch (IOException e) {
         exception = e;

@@ -11,6 +11,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -36,6 +37,7 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -92,6 +94,24 @@ class RetryInterceptorTest {
         new RetryInterceptor(
             retryPolicy, r -> !r.isSuccessful(), retryExceptionPredicate, sleeper, random);
     client = new OkHttpClient.Builder().addInterceptor(retrier).build();
+  }
+
+  @Test
+  void noRetryOnNullResponse() throws IOException {
+    Interceptor.Chain chain = mock(Interceptor.Chain.class);
+    when(chain.proceed(any())).thenReturn(null);
+    when(chain.request())
+        .thenReturn(new Request.Builder().url(server.httpUri().toString()).build());
+    assertThatThrownBy(
+            () -> {
+              retrier.intercept(chain);
+            })
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("response cannot be null.");
+
+    verifyNoInteractions(retryExceptionPredicate);
+    verifyNoInteractions(random);
+    verifyNoInteractions(sleeper);
   }
 
   @Test
