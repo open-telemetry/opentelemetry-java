@@ -64,14 +64,8 @@ class DeclarativeConfigurationCreateTest {
     assertThat(examplesDir.isDirectory()).isTrue();
 
     for (File example : Objects.requireNonNull(examplesDir.listFiles())) {
-      // Skip anchors.yaml because support for merge (i.e. "<<: *anchor") was explicitly removed in
-      // snakeyaml-engine:
-      // https://bitbucket.org/snakeyaml/snakeyaml-engine/issues/18/merge-tag-support
-      // As discussed in this issue merge is supported in snakeyaml:
-      // https://bitbucket.org/snakeyaml/snakeyaml-engine/issues/14/read-in-yaml-with-merge-then-dump-strips
-      // TODO(jack-berg): decide if we should try to support anchors, or remove anchors example from
-      // opentelemetry-configuration
-      if (example.getName().equals("anchors.yaml")) {
+      // TODO: remove once support is added for otlp_file exporters
+      if (example.getName().equals("kitchen-sink.yaml")) {
         continue;
       }
 
@@ -81,14 +75,18 @@ class DeclarativeConfigurationCreateTest {
       String rewrittenExampleContent =
           exampleContent
               .replaceAll(
-                  "certificate: .*\n",
-                  "certificate: " + certificatePath.replace("\\", "\\\\") + System.lineSeparator())
+                  "certificate_file: .*\n",
+                  "certificate_file: "
+                      + certificatePath.replace("\\", "\\\\")
+                      + System.lineSeparator())
               .replaceAll(
-                  "client_key: .*\n",
-                  "client_key: " + clientKeyPath.replace("\\", "\\\\") + System.lineSeparator())
+                  "client_key_file: .*\n",
+                  "client_key_file: "
+                      + clientKeyPath.replace("\\", "\\\\")
+                      + System.lineSeparator())
               .replaceAll(
-                  "client_certificate: .*\n",
-                  "client_certificate: "
+                  "client_certificate_file: .*\n",
+                  "client_certificate_file: "
                       + clientCertificatePath.replace("\\", "\\\\")
                       + System.lineSeparator())
               // TODO: remove once updated ComponentProvider SPI contract implemented in
@@ -115,7 +113,7 @@ class DeclarativeConfigurationCreateTest {
             + "  processors:\n"
             + "    - batch:\n"
             + "        exporter:\n"
-            + "          otlp: {}\n"
+            + "          otlp_http: {}\n"
             + "    - batch:\n"
             + "        exporter:\n"
             + "          foo: {}\n";
