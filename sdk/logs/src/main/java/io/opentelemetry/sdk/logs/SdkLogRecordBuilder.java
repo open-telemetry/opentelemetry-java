@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
@@ -19,12 +18,13 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 /** SDK implementation of {@link LogRecordBuilder}. */
-final class SdkLogRecordBuilder implements ExtendedLogRecordBuilder {
+class SdkLogRecordBuilder implements LogRecordBuilder {
 
   private final LoggerSharedState loggerSharedState;
   private final LogLimits logLimits;
 
   private final InstrumentationScopeInfo instrumentationScopeInfo;
+  @Nullable private String eventName;
   private long timestampEpochNanos;
   private long observedTimestampEpochNanos;
   @Nullable private Context context;
@@ -38,6 +38,12 @@ final class SdkLogRecordBuilder implements ExtendedLogRecordBuilder {
     this.loggerSharedState = loggerSharedState;
     this.logLimits = loggerSharedState.getLogLimits();
     this.instrumentationScopeInfo = instrumentationScopeInfo;
+  }
+
+  // accessible via ExtendedSdkLogRecordBuilder
+  SdkLogRecordBuilder setEventName(String eventName) {
+    this.eventName = eventName;
+    return this;
   }
 
   @Override
@@ -127,6 +133,7 @@ final class SdkLogRecordBuilder implements ExtendedLogRecordBuilder {
                 loggerSharedState.getLogLimits(),
                 loggerSharedState.getResource(),
                 instrumentationScopeInfo,
+                eventName,
                 timestampEpochNanos,
                 observedTimestampEpochNanos,
                 Span.fromContext(context).getSpanContext(),

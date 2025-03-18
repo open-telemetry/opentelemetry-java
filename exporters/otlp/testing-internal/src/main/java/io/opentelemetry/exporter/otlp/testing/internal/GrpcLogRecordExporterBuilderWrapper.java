@@ -6,13 +6,13 @@
 package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.grpc.ManagedChannel;
-import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -76,11 +76,6 @@ final class GrpcLogRecordExporterBuilderWrapper implements TelemetryExporterBuil
   }
 
   @Override
-  public TelemetryExporterBuilder<LogRecordData> setAuthenticator(Authenticator authenticator) {
-    return this;
-  }
-
-  @Override
   public TelemetryExporterBuilder<LogRecordData> setTrustedCertificates(byte[] certificates) {
     builder.setTrustedCertificates(certificates);
     return this;
@@ -115,6 +110,20 @@ final class GrpcLogRecordExporterBuilderWrapper implements TelemetryExporterBuil
   @SuppressWarnings("deprecation") // testing deprecated functionality
   public TelemetryExporterBuilder<LogRecordData> setChannel(Object channel) {
     builder.setChannel((ManagedChannel) channel);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<LogRecordData> setServiceClassLoader(
+      ClassLoader serviceClassLoader) {
+    builder.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<LogRecordData> setExecutorService(
+      ExecutorService executorService) {
+    builder.setExecutorService(executorService);
     return this;
   }
 

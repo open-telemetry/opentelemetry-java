@@ -28,11 +28,6 @@ class OtlpHttpSpanExporterJdkSenderTest
   }
 
   @Override
-  protected boolean hasAuthenticatorSupport() {
-    return false;
-  }
-
-  @Override
   protected TelemetryExporterBuilder<SpanData> exporterBuilder() {
     return new HttpSpanExporterBuilderWrapper(OtlpHttpSpanExporter.builder());
   }

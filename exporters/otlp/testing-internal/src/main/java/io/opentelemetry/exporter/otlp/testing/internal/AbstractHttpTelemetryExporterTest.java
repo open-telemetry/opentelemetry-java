@@ -8,7 +8,6 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.junit.jupiter.api.Named.named;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -50,6 +49,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.cert.CertificateEncodingException;
@@ -58,9 +58,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -403,36 +405,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
-  void withAuthenticator() {
-    assumeThat(hasAuthenticatorSupport()).isTrue();
-
-    TelemetryExporter<T> exporter =
-        exporterBuilder()
-            .setEndpoint(server.httpUri() + path)
-            .setAuthenticator(() -> Collections.singletonMap("key", "value"))
-            .build();
-
-    addHttpError(401);
-
-    try {
-      assertThat(
-              exporter
-                  .export(Collections.singletonList(generateFakeTelemetry()))
-                  .join(10, TimeUnit.SECONDS)
-                  .isSuccess())
-          .isTrue();
-      assertThat(httpRequests)
-          .element(0)
-          .satisfies(req -> assertThat(req.headers().get("key")).isNull());
-      assertThat(httpRequests)
-          .element(1)
-          .satisfies(req -> assertThat(req.headers().get("key")).isEqualTo("value"));
-    } finally {
-      exporter.shutdown();
-    }
-  }
-
-  @Test
   void tls() throws Exception {
     TelemetryExporter<T> exporter =
         exporterBuilder()
@@ -727,24 +699,66 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  void executorService() {
+    ExecutorServiceSpy executorService =
+        new ExecutorServiceSpy(Executors.newSingleThreadExecutor());
+
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpUri() + path)
+            .setExecutorService(executorService)
+            .build();
+
+    try {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(executorService.getTaskCount()).isPositive();
+    } finally {
+      exporter.shutdown();
+      // If setting executor, the user is responsible for calling shutdown
+      assertThat(executorService.isShutdown()).isFalse();
+      executorService.shutdown();
+    }
+  }
+
+  @Test
   @SuppressWarnings("PreferJavaTimeOverload")
   void validConfig() {
-    assertThatCode(() -> exporterBuilder().setTimeout(0, TimeUnit.MILLISECONDS))
+    // We must build exporters to test timeout settings, which intersect with underlying client
+    // implementations and may convert between Duration, int, and long, which may be susceptible to
+    // overflow exceptions.
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setTimeout(0, TimeUnit.MILLISECONDS)))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setTimeout(Duration.ofMillis(0)))
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setTimeout(Duration.ofMillis(0))))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setTimeout(10, TimeUnit.MILLISECONDS))
+    assertThatCode(
+            () ->
+                buildAndShutdown(
+                    exporterBuilder().setTimeout(Long.MAX_VALUE, TimeUnit.NANOSECONDS)))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setTimeout(Duration.ofMillis(10)))
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setTimeout(Duration.ofNanos(Long.MAX_VALUE))))
         .doesNotThrowAnyException();
-
-    assertThatCode(() -> exporterBuilder().setConnectTimeout(0, TimeUnit.MILLISECONDS))
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setTimeout(Long.MAX_VALUE, TimeUnit.SECONDS)))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setConnectTimeout(Duration.ofMillis(0)))
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setTimeout(10, TimeUnit.MILLISECONDS)))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setConnectTimeout(10, TimeUnit.MILLISECONDS))
+    assertThatCode(() -> buildAndShutdown(exporterBuilder().setTimeout(Duration.ofMillis(10))))
         .doesNotThrowAnyException();
-    assertThatCode(() -> exporterBuilder().setConnectTimeout(Duration.ofMillis(10)))
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setConnectTimeout(0, TimeUnit.MILLISECONDS)))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setConnectTimeout(Duration.ofMillis(0))))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setConnectTimeout(10, TimeUnit.MILLISECONDS)))
+        .doesNotThrowAnyException();
+    assertThatCode(
+            () -> buildAndShutdown(exporterBuilder().setConnectTimeout(Duration.ofMillis(10))))
         .doesNotThrowAnyException();
 
     assertThatCode(() -> exporterBuilder().setEndpoint("http://localhost:4318"))
@@ -769,6 +783,11 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
         .doesNotThrowAnyException();
   }
 
+  private void buildAndShutdown(TelemetryExporterBuilder<T> builder) {
+    TelemetryExporter<T> build = builder.build();
+    build.shutdown().join(10, TimeUnit.MILLISECONDS);
+  }
+
   @Test
   @SuppressWarnings({"PreferJavaTimeOverload", "NullAway"})
   void invalidConfig() {
@@ -781,6 +800,10 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThatThrownBy(() -> exporterBuilder().setTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
+    assertThatThrownBy(
+            () ->
+                buildAndShutdown(exporterBuilder().setTimeout(Duration.ofSeconds(Long.MAX_VALUE))))
+        .isInstanceOf(ArithmeticException.class);
 
     assertThatThrownBy(() -> exporterBuilder().setConnectTimeout(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
@@ -791,6 +814,11 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
     assertThatThrownBy(() -> exporterBuilder().setConnectTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
+    assertThatThrownBy(
+            () ->
+                buildAndShutdown(
+                    exporterBuilder().setConnectTimeout(Duration.ofSeconds(Long.MAX_VALUE))))
+        .isInstanceOf(ArithmeticException.class);
 
     assertThatThrownBy(() -> exporterBuilder().setEndpoint(null))
         .isInstanceOf(NullPointerException.class)
@@ -874,6 +902,39 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  void customServiceClassLoader() {
+    ClassLoaderSpy classLoaderSpy =
+        new ClassLoaderSpy(AbstractHttpTelemetryExporterTest.class.getClassLoader());
+
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setServiceClassLoader(classLoaderSpy)
+            .setEndpoint(server.httpUri() + path)
+            .build();
+
+    assertThat(classLoaderSpy.getResourcesNames)
+        .isEqualTo(
+            Collections.singletonList(
+                "META-INF/services/io.opentelemetry.exporter.internal.http.HttpSenderProvider"));
+
+    exporter.shutdown();
+  }
+
+  private static class ClassLoaderSpy extends ClassLoader {
+    private final List<String> getResourcesNames = new ArrayList<>();
+
+    private ClassLoaderSpy(ClassLoader delegate) {
+      super(delegate);
+    }
+
+    @Override
+    public Enumeration<URL> getResources(String name) throws IOException {
+      getResourcesNames.add(name);
+      return super.getResources(name);
+    }
+  }
+
+  @Test
   void stringRepresentation() throws IOException, CertificateEncodingException {
     TelemetryExporter<T> telemetryExporter = exporterBuilder().build();
     try {
@@ -935,7 +996,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + ", "
                   + "exportAsJson=false, "
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
-                  + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3\\}"
+                  + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3, retryExceptionPredicate=null\\}"
                   + ".*" // Maybe additional signal specific fields
                   + "\\}");
     } finally {
@@ -950,11 +1011,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   protected abstract T generateFakeTelemetry();
 
   protected abstract Marshaler[] toMarshalers(List<T> telemetry);
-
-  // TODO: remove once JdkHttpSender supports authenticator
-  protected boolean hasAuthenticatorSupport() {
-    return true;
-  }
 
   private List<U> toProto(List<T> telemetry) {
     return Arrays.stream(toMarshalers(telemetry))

@@ -24,6 +24,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
   private final LogLimits logLimits;
   private final Resource resource;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
+  @Nullable private final String eventName;
   private final long timestampEpochNanos;
   private final long observedTimestampEpochNanos;
   private final SpanContext spanContext;
@@ -40,6 +41,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       LogLimits logLimits,
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
+      @Nullable String eventName,
       long timestampEpochNanos,
       long observedTimestampEpochNanos,
       SpanContext spanContext,
@@ -50,6 +52,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
     this.logLimits = logLimits;
     this.resource = resource;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
+    this.eventName = eventName;
     this.timestampEpochNanos = timestampEpochNanos;
     this.observedTimestampEpochNanos = observedTimestampEpochNanos;
     this.spanContext = spanContext;
@@ -64,6 +67,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       LogLimits logLimits,
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
+      @Nullable String eventName,
       long timestampEpochNanos,
       long observedTimestampEpochNanos,
       SpanContext spanContext,
@@ -75,6 +79,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
         logLimits,
         resource,
         instrumentationScopeInfo,
+        eventName,
         timestampEpochNanos,
         observedTimestampEpochNanos,
         spanContext,
@@ -115,6 +120,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       return SdkLogRecordData.create(
           resource,
           instrumentationScopeInfo,
+          eventName,
           timestampEpochNanos,
           observedTimestampEpochNanos,
           spanContext,
@@ -123,6 +129,59 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
           body,
           getImmutableAttributes(),
           attributes == null ? 0 : attributes.getTotalAddedValues());
+    }
+  }
+
+  @Override
+  public InstrumentationScopeInfo getInstrumentationScopeInfo() {
+    return instrumentationScopeInfo;
+  }
+
+  @Override
+  public long getTimestampEpochNanos() {
+    return timestampEpochNanos;
+  }
+
+  @Override
+  public long getObservedTimestampEpochNanos() {
+    return observedTimestampEpochNanos;
+  }
+
+  @Override
+  public SpanContext getSpanContext() {
+    return spanContext;
+  }
+
+  @Override
+  public Severity getSeverity() {
+    return severity;
+  }
+
+  @Nullable
+  @Override
+  public String getSeverityText() {
+    return severityText;
+  }
+
+  @Nullable
+  @Override
+  public Value<?> getBodyValue() {
+    return body;
+  }
+
+  @Override
+  public Attributes getAttributes() {
+    return getImmutableAttributes();
+  }
+
+  @Nullable
+  @Override
+  public <T> T getAttribute(AttributeKey<T> key) {
+    synchronized (lock) {
+      if (attributes == null || attributes.isEmpty()) {
+        return null;
+      }
+      return attributes.get(key);
     }
   }
 }

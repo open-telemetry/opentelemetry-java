@@ -13,7 +13,6 @@ import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
 import io.netty.handler.ssl.SslContext;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
-import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -23,6 +22,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -109,12 +109,6 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
     return this;
   }
 
-  @Override
-  public TelemetryExporterBuilder<T> setAuthenticator(Authenticator authenticator) {
-    delegate.setAuthenticator(authenticator);
-    return this;
-  }
-
   // When a user provides a Channel, we are not in control of TLS or retry config and reimplement it
   // here for use in tests. Technically we don't have to test them since they are out of the SDK's
   // control, but it's probably worth verifying the baseline functionality anyways.
@@ -164,6 +158,18 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   @Override
   public TelemetryExporterBuilder<T> setChannel(Object channel) {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public TelemetryExporterBuilder<T> setServiceClassLoader(ClassLoader serviceClassLoader) {
+    delegate.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<T> setExecutorService(ExecutorService executorService) {
+    delegate.setExecutorService(executorService);
+    return this;
   }
 
   @Override

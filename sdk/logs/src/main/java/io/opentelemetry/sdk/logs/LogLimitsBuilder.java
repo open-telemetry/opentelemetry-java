@@ -32,7 +32,7 @@ public final class LogLimitsBuilder {
    * @throws IllegalArgumentException if {@code maxNumberOfAttributes} is not positive.
    */
   public LogLimitsBuilder setMaxNumberOfAttributes(int maxNumberOfAttributes) {
-    Utils.checkArgument(maxNumberOfAttributes > 0, "maxNumberOfAttributes must be greater than 0");
+    Utils.checkArgument(maxNumberOfAttributes >= 0, "maxNumberOfAttributes must be non-negative");
     this.maxNumAttributes = maxNumberOfAttributes;
     return this;
   }
@@ -48,7 +48,7 @@ public final class LogLimitsBuilder {
    */
   public LogLimitsBuilder setMaxAttributeValueLength(int maxAttributeValueLength) {
     Utils.checkArgument(
-        maxAttributeValueLength > -1, "maxAttributeValueLength must be non-negative");
+        maxAttributeValueLength >= 0, "maxAttributeValueLength must be non-negative");
     this.maxAttributeValueLength = maxAttributeValueLength;
     return this;
   }

@@ -10,7 +10,6 @@ import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
-import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
@@ -24,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.StringJoiner;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -61,7 +61,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
-  @Nullable private Authenticator authenticator;
+  private ClassLoader serviceClassLoader = HttpExporterBuilder.class.getClassLoader();
+  @Nullable private ExecutorService executorService;
 
   public HttpExporterBuilder(String exporterName, String type, String defaultEndpoint) {
     this.exporterName = exporterName;
@@ -71,12 +72,12 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   }
 
   public HttpExporterBuilder<T> setTimeout(long timeout, TimeUnit unit) {
-    timeoutNanos = unit.toNanos(timeout);
+    timeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
     return this;
   }
 
   public HttpExporterBuilder<T> setConnectTimeout(long timeout, TimeUnit unit) {
-    connectTimeoutNanos = unit.toNanos(timeout);
+    connectTimeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
     return this;
   }
 
@@ -98,11 +99,6 @@ public final class HttpExporterBuilder<T extends Marshaler> {
 
   public HttpExporterBuilder<T> setHeadersSupplier(Supplier<Map<String, String>> headerSupplier) {
     this.headerSupplier = headerSupplier;
-    return this;
-  }
-
-  public HttpExporterBuilder<T> setAuthenticator(Authenticator authenticator) {
-    this.authenticator = authenticator;
     return this;
   }
 
@@ -138,6 +134,16 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  public HttpExporterBuilder<T> setServiceClassLoader(ClassLoader servieClassLoader) {
+    this.serviceClassLoader = servieClassLoader;
+    return this;
+  }
+
+  public HttpExporterBuilder<T> setExecutorService(ExecutorService executorService) {
+    this.executorService = executorService;
+    return this;
+  }
+
   public HttpExporterBuilder<T> exportAsJson() {
     this.exportAsJson = true;
     return this;
@@ -158,7 +164,6 @@ public final class HttpExporterBuilder<T extends Marshaler> {
       copy.retryPolicy = retryPolicy.toBuilder().build();
     }
     copy.meterProviderSupplier = meterProviderSupplier;
-    copy.authenticator = authenticator;
     copy.proxyOptions = proxyOptions;
     return copy;
   }
@@ -189,18 +194,19 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     HttpSenderProvider httpSenderProvider = resolveHttpSenderProvider();
     HttpSender httpSender =
         httpSenderProvider.createSender(
-            endpoint,
-            compressor,
-            exportAsJson,
-            exportAsJson ? "application/json" : "application/x-protobuf",
-            timeoutNanos,
-            connectTimeoutNanos,
-            headerSupplier,
-            proxyOptions,
-            authenticator,
-            retryPolicy,
-            isPlainHttp ? null : tlsConfigHelper.getSslContext(),
-            isPlainHttp ? null : tlsConfigHelper.getTrustManager());
+            HttpSenderConfig.create(
+                endpoint,
+                compressor,
+                exportAsJson,
+                exportAsJson ? "application/json" : "application/x-protobuf",
+                timeoutNanos,
+                connectTimeoutNanos,
+                headerSupplier,
+                proxyOptions,
+                retryPolicy,
+                isPlainHttp ? null : tlsConfigHelper.getSslContext(),
+                isPlainHttp ? null : tlsConfigHelper.getTrustManager(),
+                executorService));
     LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
 
     return new HttpExporter<>(exporterName, type, httpSender, meterProviderSupplier, exportAsJson);
@@ -231,9 +237,12 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     if (retryPolicy != null) {
       joiner.add("retryPolicy=" + retryPolicy);
     }
+    joiner.add("serviceClassLoader=" + serviceClassLoader);
+    if (executorService != null) {
+      joiner.add("executorService=" + executorService);
+    }
     // Note: omit tlsConfigHelper because we can't log the configuration in any readable way
     // Note: omit meterProviderSupplier because we can't log the configuration in any readable way
-    // Note: omit authenticator because we can't log the configuration in any readable way
     return joiner.toString();
   }
 
@@ -258,10 +267,10 @@ public final class HttpExporterBuilder<T extends Marshaler> {
    *       matching provider. If none match, throw {@link IllegalStateException}.
    * </ul>
    */
-  private static HttpSenderProvider resolveHttpSenderProvider() {
+  private HttpSenderProvider resolveHttpSenderProvider() {
     Map<String, HttpSenderProvider> httpSenderProviders = new HashMap<>();
     for (HttpSenderProvider spi :
-        ServiceLoader.load(HttpSenderProvider.class, HttpExporterBuilder.class.getClassLoader())) {
+        ServiceLoader.load(HttpSenderProvider.class, serviceClassLoader)) {
       httpSenderProviders.put(spi.getClass().getName(), spi);
     }
 

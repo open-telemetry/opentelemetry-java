@@ -28,6 +28,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
+import io.opentelemetry.sdk.testing.logs.internal.TestExtendedLogRecordData;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -47,19 +48,21 @@ abstract class TestDataExporter<T> {
       Resource.create(Attributes.builder().put("key", "value").build());
 
   private static final LogRecordData LOG1 =
-      TestLogRecordData.builder()
+      TestExtendedLogRecordData.builder()
           .setResource(RESOURCE)
           .setInstrumentationScopeInfo(
               InstrumentationScopeInfo.builder("instrumentation")
                   .setVersion("1")
                   .setAttributes(Attributes.builder().put("key", "value").build())
                   .build())
+          .setEventName("event name")
           .setBody("body1")
           .setSeverity(Severity.INFO)
           .setSeverityText("INFO")
           .setTimestamp(100L, TimeUnit.NANOSECONDS)
           .setObservedTimestamp(200L, TimeUnit.NANOSECONDS)
           .setAttributes(Attributes.of(stringKey("animal"), "cat", longKey("lives"), 9L))
+          .setTotalAttributeCount(2)
           .setSpanContext(
               SpanContext.create(
                   "12345678876543211234567887654322",
@@ -79,6 +82,7 @@ abstract class TestDataExporter<T> {
           .setTimestamp(100L, TimeUnit.NANOSECONDS)
           .setObservedTimestamp(200L, TimeUnit.NANOSECONDS)
           .setAttributes(Attributes.of(booleanKey("important"), true))
+          .setTotalAttributeCount(1)
           .setSpanContext(
               SpanContext.create(
                   "12345678876543211234567887654322",

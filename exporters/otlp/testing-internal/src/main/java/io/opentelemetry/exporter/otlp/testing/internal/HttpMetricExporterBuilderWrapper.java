@@ -5,13 +5,13 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal;
 
-import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -76,12 +76,6 @@ public class HttpMetricExporterBuilderWrapper implements TelemetryExporterBuilde
   }
 
   @Override
-  public TelemetryExporterBuilder<MetricData> setAuthenticator(Authenticator authenticator) {
-    Authenticator.setAuthenticatorOnDelegate(builder, authenticator);
-    return this;
-  }
-
-  @Override
   public TelemetryExporterBuilder<MetricData> setTrustedCertificates(byte[] certificates) {
     builder.setTrustedCertificates(certificates);
     return this;
@@ -116,6 +110,19 @@ public class HttpMetricExporterBuilderWrapper implements TelemetryExporterBuilde
   @Override
   public TelemetryExporterBuilder<MetricData> setChannel(Object channel) {
     throw new UnsupportedOperationException("Not implemented");
+  }
+
+  @Override
+  public TelemetryExporterBuilder<MetricData> setServiceClassLoader(
+      ClassLoader serviceClassLoader) {
+    builder.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<MetricData> setExecutorService(ExecutorService executorService) {
+    builder.setExecutorService(executorService);
+    return this;
   }
 
   @Override

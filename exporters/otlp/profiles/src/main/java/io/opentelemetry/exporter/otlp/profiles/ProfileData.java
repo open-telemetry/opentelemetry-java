@@ -5,8 +5,8 @@
 
 package io.opentelemetry.exporter.otlp.profiles;
 
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.exporter.internal.otlp.AttributeKeyValue;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.nio.ByteBuffer;
@@ -51,7 +51,7 @@ public interface ProfileData {
   List<FunctionData> getFunctionTable();
 
   /** Lookup table for attributes. */
-  Attributes getAttributeTable();
+  List<AttributeKeyValue<?>> getAttributeTable();
 
   /** Represents a mapping between Attribute Keys and Units. */
   List<AttributeUnitData> getAttributeUnits();
@@ -99,13 +99,13 @@ public interface ProfileData {
   }
 
   /**
-   * Returns profile-wide attributes. Attribute keys MUST be unique (it is not allowed to have more
-   * than one attribute with the same key).
+   * Returns indexes of profile-wide attributes, referencing to Profile.attribute_table. Attribute
+   * keys MUST be unique (it is not allowed to have more than one attribute with the same key).
    *
    * @see
    *     "https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/common/README.md#attribute"
    */
-  Attributes getAttributes();
+  List<Integer> getAttributeIndices();
 
   /**
    * Returns the total number of attributes that were recorded on this profile.

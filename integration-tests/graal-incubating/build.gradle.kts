@@ -18,6 +18,7 @@ sourceSets {
 dependencies {
   implementation(project(":sdk:all"))
   implementation(project(":sdk:trace-shaded-deps"))
+  implementation(project(":sdk:testing"))
   implementation(project(":exporters:otlp:all"))
   implementation(project(":api:incubator"))
 }

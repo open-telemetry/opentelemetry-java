@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -48,6 +49,7 @@ import javax.net.ssl.X509TrustManager;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.ConnectionSpec;
+import okhttp3.Dispatcher;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
@@ -66,6 +68,7 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
   private static final String GRPC_STATUS = "grpc-status";
   private static final String GRPC_MESSAGE = "grpc-message";
 
+  private final boolean managedExecutor;
   private final OkHttpClient client;
   private final HttpUrl url;
   private final Supplier<Map<String, List<String>>> headersSupplier;
@@ -80,12 +83,27 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
       Supplier<Map<String, List<String>>> headersSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
-      @Nullable X509TrustManager trustManager) {
+      @Nullable X509TrustManager trustManager,
+      @Nullable ExecutorService executorService) {
+    int callTimeoutMillis =
+        (int) Math.min(Duration.ofNanos(timeoutNanos).toMillis(), Integer.MAX_VALUE);
+    int connectTimeoutMillis =
+        (int) Math.min(Duration.ofNanos(connectTimeoutNanos).toMillis(), Integer.MAX_VALUE);
+
+    Dispatcher dispatcher;
+    if (executorService == null) {
+      dispatcher = OkHttpUtil.newDispatcher();
+      this.managedExecutor = true;
+    } else {
+      dispatcher = new Dispatcher(executorService);
+      this.managedExecutor = false;
+    }
+
     OkHttpClient.Builder clientBuilder =
         new OkHttpClient.Builder()
-            .dispatcher(OkHttpUtil.newDispatcher())
-            .callTimeout(Duration.ofNanos(timeoutNanos))
-            .connectTimeout(Duration.ofNanos(connectTimeoutNanos));
+            .dispatcher(dispatcher)
+            .callTimeout(Duration.ofMillis(callTimeoutMillis))
+            .connectTimeout(Duration.ofMillis(connectTimeoutMillis));
     if (retryPolicy != null) {
       clientBuilder.addInterceptor(
           new RetryInterceptor(retryPolicy, OkHttpGrpcSender::isRetryable));
@@ -194,7 +212,9 @@ public final class OkHttpGrpcSender<T extends Marshaler> implements GrpcSender<T
   @Override
   public CompletableResultCode shutdown() {
     client.dispatcher().cancelAll();
-    client.dispatcher().executorService().shutdownNow();
+    if (managedExecutor) {
+      client.dispatcher().executorService().shutdownNow();
+    }
     client.connectionPool().evictAll();
     return CompletableResultCode.ofSuccess();
   }

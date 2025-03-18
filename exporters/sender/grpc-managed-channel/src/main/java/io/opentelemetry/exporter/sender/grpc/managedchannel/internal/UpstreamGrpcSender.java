@@ -19,9 +19,11 @@ import io.opentelemetry.exporter.internal.grpc.GrpcSender;
 import io.opentelemetry.exporter.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -38,24 +40,27 @@ public final class UpstreamGrpcSender<T extends Marshaler> implements GrpcSender
   private final boolean shutdownChannel;
   private final long timeoutNanos;
   private final Supplier<Map<String, List<String>>> headersSupplier;
+  private final Executor executor;
 
   /** Creates a new {@link UpstreamGrpcSender}. */
   public UpstreamGrpcSender(
       MarshalerServiceStub<T, ?, ?> stub,
       boolean shutdownChannel,
       long timeoutNanos,
-      Supplier<Map<String, List<String>>> headersSupplier) {
+      Supplier<Map<String, List<String>>> headersSupplier,
+      @Nullable ExecutorService executorService) {
     this.stub = stub;
     this.shutdownChannel = shutdownChannel;
     this.timeoutNanos = timeoutNanos;
     this.headersSupplier = headersSupplier;
+    this.executor = executorService == null ? MoreExecutors.directExecutor() : executorService;
   }
 
   @Override
   public void send(T request, Consumer<GrpcResponse> onResponse, Consumer<Throwable> onError) {
     MarshalerServiceStub<T, ?, ?> stub = this.stub;
     if (timeoutNanos > 0) {
-      stub = stub.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
+      stub = stub.withDeadlineAfter(Duration.ofNanos(timeoutNanos));
     }
     Map<String, List<String>> headers = headersSupplier.get();
     if (headers != null) {
@@ -88,7 +93,7 @@ public final class UpstreamGrpcSender<T extends Marshaler> implements GrpcSender
             }
           }
         },
-        MoreExecutors.directExecutor());
+        executor);
   }
 
   /**
