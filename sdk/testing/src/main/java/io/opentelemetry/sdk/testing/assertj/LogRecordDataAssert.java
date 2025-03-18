@@ -20,6 +20,7 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +53,15 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
           resource,
           actual.getResource());
     }
+    return this;
+  }
+
+  /** Asserts that the log has an event name field equal to the given name. */
+  public LogRecordDataAssert hasEventName(String eventName) {
+    isNotNull();
+    // TODO: This will be removed after the event bits of logs gets out of incubating.
+    assertThat(actual).isInstanceOf(ExtendedLogRecordData.class);
+    assertThat(((ExtendedLogRecordData) actual).getEventName()).isEqualTo(eventName);
     return this;
   }
 
