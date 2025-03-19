@@ -8,8 +8,11 @@ package io.opentelemetry.sdk.autoconfigure;
 import static io.opentelemetry.sdk.autoconfigure.LogRecordExporterConfiguration.configureLogRecordExporters;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.autoconfigure.internal.NamedSpiManager;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.logs.ConfigurableLogSamplerProvider;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.LogLimitsBuilder;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
@@ -18,6 +21,7 @@ import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
+import io.opentelemetry.sdk.logs.samplers.LogSampler;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -31,6 +35,7 @@ final class LoggerProviderConfiguration {
 
   private static final List<String> simpleProcessorExporterNames =
       Arrays.asList("console", "logging");
+  public static final String ALWAYS_ON = "always_on";
 
   static void configureLoggerProvider(
       SdkLoggerProviderBuilder loggerProviderBuilder,
@@ -48,6 +53,9 @@ final class LoggerProviderConfiguration {
     Map<String, LogRecordExporter> exportersByName =
         configureLogRecordExporters(config, spiHelper, logRecordExporterCustomizer, closeables);
 
+    String sampler = config.getString("otel.logs.sampler", ALWAYS_ON);
+    loggerProviderBuilder.setLogSampler(configSampler(sampler, config, spiHelper));
+
     List<LogRecordProcessor> processors =
         configureLogRecordProcessors(config, exportersByName, meterProvider, closeables);
     for (LogRecordProcessor processor : processors) {
@@ -56,6 +64,27 @@ final class LoggerProviderConfiguration {
         closeables.add(wrapped);
       }
       loggerProviderBuilder.addLogRecordProcessor(wrapped);
+    }
+  }
+
+  static LogSampler configSampler(String sampler, ConfigProperties config, SpiHelper spiHelper) {
+    NamedSpiManager<LogSampler> spiSamplersManager =
+        spiHelper.loadConfigurable(
+            ConfigurableLogSamplerProvider.class,
+            ConfigurableLogSamplerProvider::getName,
+            ConfigurableLogSamplerProvider::createSampler,
+            config);
+    switch (sampler) {
+      case "always_on":
+        return LogSampler.alwaysOnSampler();
+      case "parentbased":
+        return LogSampler.parentBasedSampler();
+      default:
+        LogSampler spiSampler = spiSamplersManager.getByName(sampler);
+        if (spiSampler == null) {
+          throw new ConfigurationException("Unrecognized value for otel.logs.sampler: " + sampler);
+        }
+        return spiSampler;
     }
   }
 
