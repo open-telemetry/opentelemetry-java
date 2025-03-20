@@ -262,7 +262,7 @@ public final class JdkHttpSender implements HttpSender {
               exception);
         }
         if (!retryable) {
-          throw e;
+          throw exception;
         }
       }
     } while (++attempt < retryPolicy.getMaxAttempts());
