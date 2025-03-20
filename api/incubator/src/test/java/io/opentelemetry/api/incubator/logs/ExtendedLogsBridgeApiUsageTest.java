@@ -14,6 +14,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
 import io.opentelemetry.api.incubator.common.ExtendedAttributes;
 import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
@@ -24,11 +25,13 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.function.BiConsumer;
 import org.junit.jupiter.api.Test;
 
 /** Demonstrating usage of extended Logs Bridge API. */
 class ExtendedLogsBridgeApiUsageTest {
+
+  private static final java.util.logging.Logger logger =
+      java.util.logging.Logger.getLogger(ExtendedLogsBridgeApiUsageTest.class.getName());
 
   @Test
   void loggerEnabled() {
@@ -102,7 +105,7 @@ class ExtendedLogsBridgeApiUsageTest {
       ExtendedAttributeKey.extendedAttributesKey("acme.map");
 
   @Test
-  @SuppressWarnings("SystemOut")
+  @SuppressLogger(ExtendedLogsBridgeApiUsageTest.class)
   void extendedAttributesUsage() {
     // Initialize from builder. Varargs style initialization (ExtendedAttributes.of(...) not
     // supported.
@@ -146,14 +149,11 @@ class ExtendedLogsBridgeApiUsageTest {
     // acme.string(STRING): value
     // acme.string_array(STRING_ARRAY): [value1, value2]
     extendedAttributes.forEach(
-        new BiConsumer<ExtendedAttributeKey<?>, Object>() {
-          @Override
-          public void accept(ExtendedAttributeKey<?> extendedAttributeKey, Object object) {
-            System.out.format(
-                "%s(%s): %s\n",
-                extendedAttributeKey.getKey(), extendedAttributeKey.getType(), object);
-          }
-        });
+        (extendedAttributeKey, object) ->
+            logger.info(
+                String.format(
+                    "%s(%s): %s",
+                    extendedAttributeKey.getKey(), extendedAttributeKey.getType(), object)));
   }
 
   @Test

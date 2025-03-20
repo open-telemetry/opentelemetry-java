@@ -16,7 +16,10 @@ import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 
 /**
- * TODO.
+ * A map with a fixed capacity that drops attributes when the map gets full, and which truncates
+ * string and array string attribute values to the {@link #lengthLimit}.
+ *
+ * <p>{@link ExtendedAttributes} analog of {@link AttributesMap}.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
