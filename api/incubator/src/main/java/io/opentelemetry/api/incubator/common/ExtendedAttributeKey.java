@@ -50,7 +50,7 @@ public interface ExtendedAttributeKey<T> {
   /** Return an ExtendedAttributeKey equivalent to the {@code attributeKey}. */
   // TODO (jack-berg): remove once AttributeKey.asExtendedAttributeKey is available
   static <T> ExtendedAttributeKey<T> fromAttributeKey(AttributeKey<T> attributeKey) {
-    return InternalExtendedAttributeKeyImpl.fromAttributeKey(attributeKey);
+    return InternalExtendedAttributeKeyImpl.toExtendedAttributeKey(attributeKey);
   }
 
   /** Returns a new ExtendedAttributeKey for String valued attributes. */

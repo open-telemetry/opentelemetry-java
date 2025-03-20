@@ -11,7 +11,6 @@ import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
 import io.opentelemetry.api.incubator.common.ExtendedAttributeType;
 import io.opentelemetry.api.internal.InternalAttributeKeyImpl;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 
 /**
@@ -19,9 +18,6 @@ import javax.annotation.Nullable;
  * any time.
  */
 public final class InternalExtendedAttributeKeyImpl<T> implements ExtendedAttributeKey<T> {
-
-  private static final ConcurrentHashMap<AttributeKey<?>, ExtendedAttributeKey<?>>
-      ATTRIBUTE_KEY_CACHE = new ConcurrentHashMap<>();
 
   private final ExtendedAttributeType type;
   private final String key;
@@ -45,17 +41,6 @@ public final class InternalExtendedAttributeKeyImpl<T> implements ExtendedAttrib
   public static <T> ExtendedAttributeKey<T> create(
       @Nullable String key, ExtendedAttributeType type) {
     return new InternalExtendedAttributeKeyImpl<>(type, key != null ? key : "");
-  }
-
-  /**
-   * Return an {@link ExtendedAttributeKey} equivalent to the {@code attributeKey}, caching entries
-   * in {@link #ATTRIBUTE_KEY_CACHE}.
-   */
-  @SuppressWarnings("unchecked")
-  public static <T> ExtendedAttributeKey<T> fromAttributeKey(AttributeKey<T> attributeKey) {
-    return (ExtendedAttributeKey<T>)
-        ATTRIBUTE_KEY_CACHE.computeIfAbsent(
-            attributeKey, InternalExtendedAttributeKeyImpl::toExtendedAttributeKey);
   }
 
   @Override
