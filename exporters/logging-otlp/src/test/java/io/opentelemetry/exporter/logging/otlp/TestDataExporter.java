@@ -60,6 +60,7 @@ abstract class TestDataExporter<T> {
           .setTimestamp(100L, TimeUnit.NANOSECONDS)
           .setObservedTimestamp(200L, TimeUnit.NANOSECONDS)
           .setAttributes(Attributes.of(stringKey("animal"), "cat", longKey("lives"), 9L))
+          .setTotalAttributeCount(2)
           .setSpanContext(
               SpanContext.create(
                   "12345678876543211234567887654322",
@@ -79,6 +80,7 @@ abstract class TestDataExporter<T> {
           .setTimestamp(100L, TimeUnit.NANOSECONDS)
           .setObservedTimestamp(200L, TimeUnit.NANOSECONDS)
           .setAttributes(Attributes.of(booleanKey("important"), true))
+          .setTotalAttributeCount(1)
           .setSpanContext(
               SpanContext.create(
                   "12345678876543211234567887654322",

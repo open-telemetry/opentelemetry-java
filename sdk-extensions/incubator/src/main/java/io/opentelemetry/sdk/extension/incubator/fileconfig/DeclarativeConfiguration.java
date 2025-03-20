@@ -9,12 +9,12 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -42,18 +42,20 @@ import org.snakeyaml.engine.v2.nodes.ScalarNode;
 import org.snakeyaml.engine.v2.schema.CoreSchema;
 
 /**
- * Configure {@link OpenTelemetrySdk} from YAML configuration files conforming to the schema in <a
- * href="https://github.com/open-telemetry/opentelemetry-configuration">open-telemetry/opentelemetry-configuration</a>.
- *
- * @see #parseAndCreate(InputStream)
+ * Configure {@link OpenTelemetrySdk} using <a
+ * href="https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/configuration#declarative-configuration">declarative
+ * configuration</a>. For most users, this means calling {@link #parseAndCreate(InputStream)} with a
+ * <a
+ * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/configuration/data-model.md#yaml-file-format">YAML
+ * configuration file</a>.
  */
-public final class FileConfiguration {
+public final class DeclarativeConfiguration {
 
-  private static final Logger logger = Logger.getLogger(FileConfiguration.class.getName());
+  private static final Logger logger = Logger.getLogger(DeclarativeConfiguration.class.getName());
   private static final Pattern ENV_VARIABLE_REFERENCE =
       Pattern.compile("\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)(:-([^\n}]*))?}");
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
-      SpiHelper.serviceComponentLoader(FileConfiguration.class.getClassLoader());
+      SpiHelper.serviceComponentLoader(DeclarativeConfiguration.class.getClassLoader());
 
   private static final ObjectMapper MAPPER;
 
@@ -70,12 +72,12 @@ public final class FileConfiguration {
     MAPPER.configOverride(Boolean.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SET));
   }
 
-  private FileConfiguration() {}
+  private DeclarativeConfiguration() {}
 
   /**
    * Combines {@link #parse(InputStream)} and {@link #create(OpenTelemetryConfigurationModel)}.
    *
-   * @throws ConfigurationException if unable to parse or interpret
+   * @throws DeclarativeConfigException if unable to parse or interpret
    */
   public static OpenTelemetrySdk parseAndCreate(InputStream inputStream) {
     OpenTelemetryConfigurationModel configurationModel = parse(inputStream);
@@ -88,7 +90,7 @@ public final class FileConfiguration {
    *
    * @param configurationModel the configuration model
    * @return the {@link OpenTelemetrySdk}
-   * @throws ConfigurationException if unable to interpret
+   * @throws DeclarativeConfigException if unable to interpret
    */
   public static OpenTelemetrySdk create(OpenTelemetryConfigurationModel configurationModel) {
     return create(configurationModel, DEFAULT_COMPONENT_LOADER);
@@ -102,7 +104,7 @@ public final class FileConfiguration {
    * @param componentLoader the component loader used to load {@link ComponentProvider}
    *     implementations
    * @return the {@link OpenTelemetrySdk}
-   * @throws ConfigurationException if unable to interpret
+   * @throws DeclarativeConfigException if unable to interpret
    */
   public static OpenTelemetrySdk create(
       OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
@@ -118,13 +120,13 @@ public final class FileConfiguration {
    * <p>Before parsing, environment variable substitution is performed as described in {@link
    * EnvSubstitutionConstructor}.
    *
-   * @throws ConfigurationException if unable to parse
+   * @throws DeclarativeConfigException if unable to parse
    */
   public static OpenTelemetryConfigurationModel parse(InputStream configuration) {
     try {
       return parse(configuration, System.getenv());
     } catch (RuntimeException e) {
-      throw new ConfigurationException("Unable to parse configuration input stream", e);
+      throw new DeclarativeConfigException("Unable to parse configuration input stream", e);
     }
   }
 
@@ -143,35 +145,35 @@ public final class FileConfiguration {
   }
 
   /**
-   * Convert the {@code model} to a generic {@link StructuredConfigProperties}.
+   * Convert the {@code model} to a generic {@link DeclarativeConfigProperties}.
    *
    * @param model the configuration model
-   * @return a generic {@link StructuredConfigProperties} representation of the model
+   * @return a generic {@link DeclarativeConfigProperties} representation of the model
    */
-  public static StructuredConfigProperties toConfigProperties(
+  public static DeclarativeConfigProperties toConfigProperties(
       OpenTelemetryConfigurationModel model) {
     return toConfigProperties(model, DEFAULT_COMPONENT_LOADER);
   }
 
   /**
-   * Convert the {@code configuration} YAML to a generic {@link StructuredConfigProperties}.
+   * Convert the {@code configuration} YAML to a generic {@link DeclarativeConfigProperties}.
    *
    * @param configuration configuration YAML
-   * @return a generic {@link StructuredConfigProperties} representation of the model
+   * @return a generic {@link DeclarativeConfigProperties} representation of the model
    */
-  public static StructuredConfigProperties toConfigProperties(InputStream configuration) {
+  public static DeclarativeConfigProperties toConfigProperties(InputStream configuration) {
     Object yamlObj = loadYaml(configuration, System.getenv());
     return toConfigProperties(yamlObj, DEFAULT_COMPONENT_LOADER);
   }
 
-  static StructuredConfigProperties toConfigProperties(
+  static DeclarativeConfigProperties toConfigProperties(
       Object model, ComponentLoader componentLoader) {
     Map<String, Object> configurationMap =
         MAPPER.convertValue(model, new TypeReference<Map<String, Object>>() {});
     if (configurationMap == null) {
       configurationMap = Collections.emptyMap();
     }
-    return YamlStructuredConfigProperties.create(configurationMap, componentLoader);
+    return YamlDeclarativeConfigProperties.create(configurationMap, componentLoader);
   }
 
   /**
@@ -179,33 +181,33 @@ public final class FileConfiguration {
    *
    * <p>This is used when samplers are composed, with one sampler accepting one or more additional
    * samplers as config properties. The {@link ComponentProvider} implementation can call this to
-   * configure a delegate {@link SamplerModel} from the {@link StructuredConfigProperties}
+   * configure a delegate {@link SamplerModel} from the {@link DeclarativeConfigProperties}
    * corresponding to a particular config property.
    */
   // TODO(jack-berg): add create methods for all SDK extension components supported by
   // ComponentProvider
-  public static Sampler createSampler(StructuredConfigProperties genericSamplerModel) {
-    YamlStructuredConfigProperties yamlStructuredConfigProperties =
-        requireYamlStructuredConfigProperties(genericSamplerModel);
-    SamplerModel samplerModel = convertToModel(yamlStructuredConfigProperties, SamplerModel.class);
+  public static Sampler createSampler(DeclarativeConfigProperties genericSamplerModel) {
+    YamlDeclarativeConfigProperties yamlDeclarativeConfigProperties =
+        requireYamlDeclarativeConfigProperties(genericSamplerModel);
+    SamplerModel samplerModel = convertToModel(yamlDeclarativeConfigProperties, SamplerModel.class);
     return createAndMaybeCleanup(
         SamplerFactory.getInstance(),
-        SpiHelper.create(yamlStructuredConfigProperties.getComponentLoader()),
+        SpiHelper.create(yamlDeclarativeConfigProperties.getComponentLoader()),
         samplerModel);
   }
 
-  private static YamlStructuredConfigProperties requireYamlStructuredConfigProperties(
-      StructuredConfigProperties structuredConfigProperties) {
-    if (!(structuredConfigProperties instanceof YamlStructuredConfigProperties)) {
-      throw new ConfigurationException(
-          "Only YamlStructuredConfigProperties can be converted to model");
+  private static YamlDeclarativeConfigProperties requireYamlDeclarativeConfigProperties(
+      DeclarativeConfigProperties declarativeConfigProperties) {
+    if (!(declarativeConfigProperties instanceof YamlDeclarativeConfigProperties)) {
+      throw new DeclarativeConfigException(
+          "Only YamlDeclarativeConfigProperties can be converted to model");
     }
-    return (YamlStructuredConfigProperties) structuredConfigProperties;
+    return (YamlDeclarativeConfigProperties) declarativeConfigProperties;
   }
 
   static <T> T convertToModel(
-      YamlStructuredConfigProperties structuredConfigProperties, Class<T> modelType) {
-    return MAPPER.convertValue(structuredConfigProperties.toMap(), modelType);
+      YamlDeclarativeConfigProperties yamlDeclarativeConfigProperties, Class<T> modelType) {
+    return MAPPER.convertValue(yamlDeclarativeConfigProperties.toMap(), modelType);
   }
 
   static <M, R> R createAndMaybeCleanup(Factory<M, R> factory, SpiHelper spiHelper, M model) {
@@ -223,10 +225,10 @@ public final class FileConfiguration {
               "Error closing " + closeable.getClass().getName() + ": " + ex.getMessage());
         }
       }
-      if (e instanceof ConfigurationException) {
+      if (e instanceof DeclarativeConfigException) {
         throw e;
       }
-      throw new ConfigurationException("Unexpected configuration error", e);
+      throw new DeclarativeConfigException("Unexpected configuration error", e);
     }
   }
 

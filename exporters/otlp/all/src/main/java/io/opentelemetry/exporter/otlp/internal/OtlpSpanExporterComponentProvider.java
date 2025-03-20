@@ -9,13 +9,13 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_T
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**
@@ -38,13 +38,13 @@ public class OtlpSpanExporterComponentProvider implements ComponentProvider<Span
   }
 
   @Override
-  public SpanExporter create(StructuredConfigProperties config) {
-    String protocol = OtlpConfigUtil.getStructuredConfigOtlpProtocol(config);
+  public SpanExporter create(DeclarativeConfigProperties config) {
+    String protocol = OtlpDeclarativeConfigUtil.getStructuredConfigOtlpProtocol(config);
 
     if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
       OtlpHttpSpanExporterBuilder builder = httpBuilder();
 
-      OtlpConfigUtil.configureOtlpExporterBuilder(
+      OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_TRACES,
           config,
           builder::setEndpoint,
@@ -60,7 +60,7 @@ public class OtlpSpanExporterComponentProvider implements ComponentProvider<Span
     } else if (protocol.equals(PROTOCOL_GRPC)) {
       OtlpGrpcSpanExporterBuilder builder = grpcBuilder();
 
-      OtlpConfigUtil.configureOtlpExporterBuilder(
+      OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_TRACES,
           config,
           builder::setEndpoint,

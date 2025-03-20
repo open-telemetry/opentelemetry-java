@@ -61,7 +61,8 @@ public final class JdkHttpSender implements HttpSender {
 
   private static final Logger logger = Logger.getLogger(JdkHttpSender.class.getName());
 
-  private final ExecutorService executorService = Executors.newFixedThreadPool(5);
+  private final boolean managedExecutor;
+  private final ExecutorService executorService;
   private final HttpClient client;
   private final URI uri;
   @Nullable private final Compressor compressor;
@@ -81,7 +82,8 @@ public final class JdkHttpSender implements HttpSender {
       String contentType,
       long timeoutNanos,
       Supplier<Map<String, List<String>>> headerSupplier,
-      @Nullable RetryPolicy retryPolicy) {
+      @Nullable RetryPolicy retryPolicy,
+      @Nullable ExecutorService executorService) {
     this.client = client;
     try {
       this.uri = new URI(endpoint);
@@ -98,6 +100,13 @@ public final class JdkHttpSender implements HttpSender {
         Optional.ofNullable(retryPolicy)
             .map(RetryPolicy::getRetryExceptionPredicate)
             .orElse(JdkHttpSender::isRetryableException);
+    if (executorService == null) {
+      this.executorService = Executors.newFixedThreadPool(5);
+      this.managedExecutor = true;
+    } else {
+      this.executorService = executorService;
+      this.managedExecutor = false;
+    }
   }
 
   JdkHttpSender(
@@ -110,7 +119,8 @@ public final class JdkHttpSender implements HttpSender {
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable ProxyOptions proxyOptions,
-      @Nullable SSLContext sslContext) {
+      @Nullable SSLContext sslContext,
+      @Nullable ExecutorService executorService) {
     this(
         configureClient(sslContext, connectTimeoutNanos, proxyOptions),
         endpoint,
@@ -119,7 +129,8 @@ public final class JdkHttpSender implements HttpSender {
         contentType,
         timeoutNanos,
         headerSupplier,
-        retryPolicy);
+        retryPolicy,
+        executorService);
   }
 
   private static HttpClient configureClient(
@@ -363,7 +374,9 @@ public final class JdkHttpSender implements HttpSender {
 
   @Override
   public CompletableResultCode shutdown() {
-    executorService.shutdown();
+    if (managedExecutor) {
+      executorService.shutdown();
+    }
     return CompletableResultCode.ofSuccess();
   }
 }

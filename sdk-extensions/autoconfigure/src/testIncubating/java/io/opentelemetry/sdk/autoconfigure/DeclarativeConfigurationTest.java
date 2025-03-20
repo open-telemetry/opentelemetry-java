@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static java.util.Collections.singletonMap;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -17,13 +19,18 @@ import static org.mockito.Mockito.verify;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.incubator.config.ConfigProvider;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.api.incubator.config.GlobalConfigProvider;
+import io.opentelemetry.api.incubator.config.InstrumentationConfigUtil;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.internal.AutoConfigureUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -31,14 +38,16 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.event.Level;
 
-class FileConfigurationTest {
+class DeclarativeConfigurationTest {
 
   @RegisterExtension private static final CleanupExtension cleanup = new CleanupExtension();
 
@@ -63,13 +72,43 @@ class FileConfigurationTest {
             + "    - simple:\n"
             + "        exporter:\n"
             + "          console: {}\n"
-            + "other:\n"
-            + "  str_key: str_value\n"
-            + "  map_key:\n"
-            + "    str_key1: str_value1\n";
+            + "instrumentation:\n"
+            + "  general:\n"
+            + "    http:\n"
+            + "      client:\n"
+            + "        request_captured_headers:\n"
+            + "          - Content-Type\n"
+            + "          - Accept\n"
+            + "  java:\n"
+            + "    example:\n"
+            + "      key: value\n";
     configFilePath = tempDir.resolve("otel-config.yaml");
     Files.write(configFilePath, yaml.getBytes(StandardCharsets.UTF_8));
     GlobalOpenTelemetry.resetForTest();
+    GlobalConfigProvider.resetForTest();
+  }
+
+  @Test
+  @SuppressLogger(AutoConfiguredOpenTelemetrySdkBuilder.class)
+  void configFile_fileNotFound() {
+    assertThatThrownBy(
+            () ->
+                AutoConfiguredOpenTelemetrySdk.builder()
+                    .addPropertiesSupplier(() -> singletonMap("otel.config.file", "foo"))
+                    .addPropertiesSupplier(
+                        () -> singletonMap("otel.experimental.config.file", "foo"))
+                    .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
+                    .build())
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Configuration file not found");
+
+    assertThatCode(
+            () ->
+                AutoConfiguredOpenTelemetrySdk.builder()
+                    .addPropertiesSupplier(() -> singletonMap("otel.experimental.config.file", ""))
+                    .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
+                    .build())
+        .doesNotThrowAnyException();
   }
 
   @Test
@@ -95,13 +134,14 @@ class FileConfigurationTest {
         builder.setConfig(config).build();
     cleanup.addCloseable(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
 
-    assertThat(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().toString())
+    Assertions.assertThat(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().toString())
         .isEqualTo(expectedSdk.toString());
     // AutoConfiguredOpenTelemetrySdk#getResource() is set to a dummy value when configuring from
     // file
-    assertThat(autoConfiguredOpenTelemetrySdk.getResource()).isEqualTo(Resource.getDefault());
+    Assertions.assertThat(autoConfiguredOpenTelemetrySdk.getResource())
+        .isEqualTo(Resource.getDefault());
     verify(builder, times(1)).shutdownHook(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
-    assertThat(Runtime.getRuntime().removeShutdownHook(thread)).isTrue();
+    Assertions.assertThat(Runtime.getRuntime().removeShutdownHook(thread)).isTrue();
     logCapturer.assertContains("Autoconfiguring from configuration file: " + configFilePath);
   }
 
@@ -131,7 +171,11 @@ class FileConfigurationTest {
     OpenTelemetrySdk openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
     cleanup.addCloseable(openTelemetrySdk);
 
-    assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isNotSameAs(openTelemetrySdk);
+    Assertions.assertThat(GlobalOpenTelemetry.get())
+        .extracting("delegate")
+        .isNotSameAs(openTelemetrySdk);
+    assertThat(GlobalConfigProvider.get())
+        .isNotSameAs(autoConfiguredOpenTelemetrySdk.getConfigProvider());
   }
 
   @Test
@@ -145,7 +189,11 @@ class FileConfigurationTest {
     OpenTelemetrySdk openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
     cleanup.addCloseable(openTelemetrySdk);
 
-    assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(openTelemetrySdk);
+    Assertions.assertThat(GlobalOpenTelemetry.get())
+        .extracting("delegate")
+        .isSameAs(openTelemetrySdk);
+    assertThat(GlobalConfigProvider.get())
+        .isSameAs(autoConfiguredOpenTelemetrySdk.getConfigProvider());
   }
 
   @Test
@@ -174,7 +222,7 @@ class FileConfigurationTest {
   }
 
   @Test
-  void configFile_StructuredConfigProperties() {
+  void configFile_ConfigProvider() {
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
             Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
@@ -185,14 +233,19 @@ class FileConfigurationTest {
     cleanup.addCloseable(openTelemetrySdk);
 
     // getConfig() should return ExtendedConfigProperties generic representation of the config file
-    StructuredConfigProperties structuredConfigProps =
-        autoConfiguredOpenTelemetrySdk.getStructuredConfig();
-    assertThat(structuredConfigProps).isNotNull();
-    StructuredConfigProperties otherProps = structuredConfigProps.getStructured("other");
-    assertThat(otherProps).isNotNull();
-    assertThat(otherProps.getString("str_key")).isEqualTo("str_value");
-    StructuredConfigProperties otherMapKeyProps = otherProps.getStructured("map_key");
-    assertThat(otherMapKeyProps).isNotNull();
-    assertThat(otherMapKeyProps.getString("str_key1")).isEqualTo("str_value1");
+    ConfigProvider globalConfigProvider = GlobalConfigProvider.get();
+    assertThat(globalConfigProvider)
+        .isNotNull()
+        .isSameAs(AutoConfigureUtil.getConfigProvider(autoConfiguredOpenTelemetrySdk));
+    DeclarativeConfigProperties instrumentationConfig =
+        globalConfigProvider.getInstrumentationConfig();
+    assertThat(instrumentationConfig).isNotNull();
+
+    // Extract instrumentation config from ConfigProvider
+    assertThat(InstrumentationConfigUtil.httpClientRequestCapturedHeaders(globalConfigProvider))
+        .isEqualTo(Arrays.asList("Content-Type", "Accept"));
+    assertThat(InstrumentationConfigUtil.javaInstrumentationConfig(globalConfigProvider, "example"))
+        .isNotNull()
+        .satisfies(exampleConfig -> assertThat(exampleConfig.getString("key")).isEqualTo("value"));
   }
 }

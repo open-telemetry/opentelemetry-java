@@ -69,7 +69,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -674,27 +673,5 @@ class AutoConfiguredOpenTelemetrySdkTest {
     verify(meterProvider).close();
 
     logs.assertContains("Error closing io.opentelemetry.sdk.trace.SdkTracerProvider: Error!");
-  }
-
-  @Test
-  @SuppressLogger(AutoConfiguredOpenTelemetrySdkBuilder.class)
-  void configurationError_fileNotFound() {
-    assertThatThrownBy(
-            () ->
-                AutoConfiguredOpenTelemetrySdk.builder()
-                    .addPropertiesSupplier(() -> singletonMap("otel.config.file", "foo"))
-                    .addPropertiesSupplier(
-                        () -> singletonMap("otel.experimental.config.file", "foo"))
-                    .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
-                    .build())
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("Configuration file not found");
-
-    Assertions.assertDoesNotThrow(
-        () ->
-            AutoConfiguredOpenTelemetrySdk.builder()
-                .addPropertiesSupplier(() -> singletonMap("otel.experimental.config.file", ""))
-                .addPropertiesSupplier(() -> singletonMap("otel.sdk.disabled", "true"))
-                .build());
   }
 }
