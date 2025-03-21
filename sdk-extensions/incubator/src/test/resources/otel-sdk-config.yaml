@@ -1,0 +1,28 @@
+# See https://github.com/open-telemetry/opentelemetry-configuration for details on schema and examples
+
+file_format: "0.3"
+
+resource:
+  attributes:
+    - name: service.name
+      value: file-configuration-example
+
+tracer_provider:
+  processors:
+    - batch:
+        exporter:
+          console:
+
+meter_provider:
+  readers:
+    - periodic:
+        exporter:
+          console:
+  views:
+    - selector:
+        instrument_type: histogram
+      stream:
+        aggregation:
+          drop:
+
+propagators: [tracecontext, baggage]
