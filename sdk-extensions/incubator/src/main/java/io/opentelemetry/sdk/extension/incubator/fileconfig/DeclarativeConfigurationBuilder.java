@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import java.util.function.Function;
 
+/** Builder for the declarative configuration. */
 public class DeclarativeConfigurationBuilder implements DeclarativeConfigurationCustomizer {
   private Function<OpenTelemetryConfigurationModel, OpenTelemetryConfigurationModel>
       modelCustomizer = Function.identity();
@@ -26,6 +27,7 @@ public class DeclarativeConfigurationBuilder implements DeclarativeConfiguration
     };
   }
 
+  /** Customize the configuration model. */
   public OpenTelemetryConfigurationModel customizeModel(
       OpenTelemetryConfigurationModel configurationModel) {
     return modelCustomizer.apply(configurationModel);
