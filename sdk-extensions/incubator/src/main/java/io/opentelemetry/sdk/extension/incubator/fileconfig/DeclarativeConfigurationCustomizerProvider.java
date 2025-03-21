@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 public interface DeclarativeConfigurationCustomizerProvider extends Ordered {
   /**
    * Method invoked when configuring the SDK to allow further customization of the declarative
+   * configuration.
    *
    * @param customizer the customizer to add
    */
