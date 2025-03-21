@@ -15,11 +15,8 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
 import java.io.ByteArrayInputStream;
@@ -30,9 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.CertificateEncodingException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -172,21 +167,12 @@ class DeclarativeConfigurationCreateTest {
             .withProcessors(
                 Collections.singletonList(
                     new SpanProcessorModel().withAdditionalProperty("test", null))));
-    ComponentLoader componentLoader =
-        SpiHelper.serviceComponentLoader(DeclarativeConfiguration.class.getClassLoader());
     OpenTelemetrySdk sdk =
         DeclarativeConfiguration.create(
             model,
-            new ComponentLoader() {
-              @SuppressWarnings("unchecked")
-              @Override
-              public <T> Iterable<T> load(Class<T> spiClass) {
-                if (DeclarativeConfigurationCustomizerProvider.class.equals(spiClass)) {
-                  return (Iterable<T>) Collections.singletonList(getCustomizerProvider());
-                }
-                return componentLoader.load(spiClass);
-              }
-            });
+            // customizer is TestDeclarativeConfigurationCustomizerProvider
+            SpiHelper.serviceComponentLoader(
+                DeclarativeConfigurationCreateTest.class.getClassLoader()));
     assertThat(sdk.toString())
         .contains(
             "resource=Resource{schemaUrl=null, attributes={"
@@ -198,33 +184,5 @@ class DeclarativeConfigurationCreateTest {
                 + "telemetry.sdk.language=\"java\", "
                 + "telemetry.sdk.name=\"opentelemetry\", "
                 + "telemetry.sdk.version=\"");
-  }
-
-  private static DeclarativeConfigurationCustomizerProvider getCustomizerProvider() {
-    return provider ->
-        provider.addModelCustomizer(
-            model -> {
-              ResourceModel resource = model.getResource();
-              if (resource == null) {
-                resource = new ResourceModel();
-                model.withResource(resource);
-              }
-              List<AttributeNameValueModel> attributes = resource.getAttributes();
-              if (attributes == null) {
-                attributes = new ArrayList<>();
-                resource.withAttributes(attributes);
-              }
-              attributes.add(
-                  new AttributeNameValueModel()
-                      .withName("foo")
-                      .withType(AttributeNameValueModel.Type.STRING)
-                      .withValue("bar"));
-              attributes.add(
-                  new AttributeNameValueModel()
-                      .withName("color")
-                      .withType(AttributeNameValueModel.Type.STRING)
-                      .withValue("blue"));
-              return model;
-            });
   }
 }
