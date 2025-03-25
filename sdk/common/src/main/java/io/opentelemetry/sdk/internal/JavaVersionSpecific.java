@@ -22,6 +22,8 @@
 
 package io.opentelemetry.sdk.internal;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,6 +61,7 @@ public class JavaVersionSpecific {
 
   /** Returns the number of nanoseconds since the epoch (00:00:00, 01-Jan-1970, GMT). */
   public long currentTimeNanos() {
-    return TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
+    Instant now = Clock.systemUTC().instant();
+    return TimeUnit.SECONDS.toNanos(now.getEpochSecond()) + now.getNano();
   }
 }

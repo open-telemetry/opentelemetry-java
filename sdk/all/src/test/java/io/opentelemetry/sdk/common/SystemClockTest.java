@@ -8,26 +8,9 @@ package io.opentelemetry.sdk.common;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledOnJre;
-import org.junit.jupiter.api.condition.EnabledOnJre;
-import org.junit.jupiter.api.condition.JRE;
 
-// This test is placed in the all artifact instead of the common one so it uses the dependency jar
-// instead of the classes directly, which allows verifying mrjar behavior.
 class SystemClockTest {
 
-  @EnabledOnJre(JRE.JAVA_8)
-  @Test
-  void now_millisPrecision() {
-    // If we test many times, we can be fairly sure we didn't just get lucky with having a rounded
-    // result on a higher than expected precision timestamp.
-    for (int i = 0; i < 100; i++) {
-      long now = SystemClock.getInstance().now();
-      assertThat(now % 1000000).isZero();
-    }
-  }
-
-  @DisabledOnJre(JRE.JAVA_8)
   @Test
   void now_microsPrecision() {
     // If we test many times, we can be fairly sure we get at least one timestamp that isn't
@@ -42,17 +25,6 @@ class SystemClockTest {
     assertThat(numHasMicros).isNotZero();
   }
 
-  @Test
-  void now_lowPrecision() {
-    // If we test many times, we can be fairly sure we didn't just get lucky with having a rounded
-    // result on a higher than expected precision timestamp.
-    for (int i = 0; i < 100; i++) {
-      long now = SystemClock.getInstance().now(false);
-      assertThat(now % 1000000).isZero();
-    }
-  }
-
-  @DisabledOnJre(JRE.JAVA_8)
   @Test
   void now_highPrecision() {
     // If we test many times, we can be fairly sure we get at least one timestamp that isn't
