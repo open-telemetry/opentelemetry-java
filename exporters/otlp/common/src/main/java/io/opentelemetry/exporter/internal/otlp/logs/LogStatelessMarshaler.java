@@ -55,22 +55,20 @@ final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
       output.serializeMessageWithContext(
           LogRecord.BODY, log.getBodyValue(), AnyValueStatelessMarshaler.INSTANCE, context);
     }
+
+    int droppedAttributesCount;
     if (INCUBATOR_AVAILABLE) {
       IncubatingUtil.serializeExtendedAttributes(output, log, context);
-
-      int droppedAttributesCount =
-          log.getTotalAttributeCount() - IncubatingUtil.extendedAttributesSize(log);
-      output.serializeUInt32(LogRecord.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
+      droppedAttributesCount = log.getTotalAttributeCount() - IncubatingUtil.extendedAttributesSize(log);
     } else {
       output.serializeRepeatedMessageWithContext(
           LogRecord.ATTRIBUTES,
           log.getAttributes(),
           AttributeKeyValueStatelessMarshaler.INSTANCE,
           context);
-
-      int droppedAttributesCount = log.getTotalAttributeCount() - log.getAttributes().size();
-      output.serializeUInt32(LogRecord.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
+      droppedAttributesCount = log.getTotalAttributeCount() - log.getAttributes().size();
     }
+    output.serializeUInt32(LogRecord.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
 
     SpanContext spanContext = log.getSpanContext();
     output.serializeFixed32(LogRecord.FLAGS, spanContext.getTraceFlags().asByte());
