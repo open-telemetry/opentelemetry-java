@@ -59,7 +59,8 @@ final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
     int droppedAttributesCount;
     if (INCUBATOR_AVAILABLE) {
       IncubatingUtil.serializeExtendedAttributes(output, log, context);
-      droppedAttributesCount = log.getTotalAttributeCount() - IncubatingUtil.extendedAttributesSize(log);
+      droppedAttributesCount =
+          log.getTotalAttributeCount() - IncubatingUtil.extendedAttributesSize(log);
     } else {
       output.serializeRepeatedMessageWithContext(
           LogRecord.ATTRIBUTES,
