@@ -10,7 +10,8 @@ import static org.mockito.Mockito.spy;
 
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalDetectorsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectionModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
 import io.opentelemetry.sdk.resources.Resource;
@@ -48,14 +49,9 @@ class ResourceFactoryTest {
                     Collections.emptyList()))
         .isEqualTo(
             Resource.getDefault().toBuilder()
+                .put("shape", "circle")
                 .put("service.name", "my-service")
                 .put("key", "val")
-                .put("shape", "circle")
-                // From ResourceComponentProvider
-                .put("color", "red")
-                // From ResourceOrderedSecondComponentProvider, which takes priority over
-                // ResourceOrderedFirstComponentProvider
-                .put("order", "second")
                 .build());
   }
 
@@ -65,8 +61,16 @@ class ResourceFactoryTest {
       @Nullable List<String> included, @Nullable List<String> excluded, Resource expectedResource) {
     ResourceModel resourceModel =
         new ResourceModel()
-            .withDetectorsDevelopment(
-                new ExperimentalDetectorsModel()
+            .withDetectionDevelopment(
+                new ExperimentalResourceDetectionModel()
+                    .withDetectors(
+                        Arrays.asList(
+                            new ExperimentalResourceDetectorModel()
+                                .withAdditionalProperty("order_first", null),
+                            new ExperimentalResourceDetectorModel()
+                                .withAdditionalProperty("order_second", null),
+                            new ExperimentalResourceDetectorModel()
+                                .withAdditionalProperty("shape_color", null)))
                     .withAttributes(
                         new IncludeExcludeModel().withIncluded(included).withExcluded(excluded)));
     Resource resource =

@@ -176,9 +176,7 @@ class DeclarativeConfigurationCreateTest {
             "resource=Resource{schemaUrl=null, attributes={"
                 + "color=\"blue\", "
                 + "foo=\"bar\", "
-                + "order=\"second\", "
                 + "service.name=\"unknown_service:java\", "
-                + "shape=\"square\", "
                 + "telemetry.sdk.language=\"java\", "
                 + "telemetry.sdk.name=\"opentelemetry\", "
                 + "telemetry.sdk.version=\"");

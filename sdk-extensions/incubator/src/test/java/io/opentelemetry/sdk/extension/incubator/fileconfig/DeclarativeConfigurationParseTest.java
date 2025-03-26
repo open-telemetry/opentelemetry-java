@@ -18,12 +18,12 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchL
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ClientModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalDetectorsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalGeneralInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalHttpInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLanguageSpecificInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalPeerInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalPrometheusMetricExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectionModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramAggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.InstrumentationModel;
@@ -137,8 +137,8 @@ class DeclarativeConfigurationParseTest {
                         .withValue(Arrays.asList(1.1, 2.2))
                         .withType(AttributeNameValueModel.AttributeType.DOUBLE_ARRAY)))
             .withAttributesList("service.namespace=my-namespace,service.version=1.0.0")
-            .withDetectorsDevelopment(
-                new ExperimentalDetectorsModel()
+            .withDetectionDevelopment(
+                new ExperimentalResourceDetectionModel()
                     .withAttributes(
                         new IncludeExcludeModel()
                             .withIncluded(Collections.singletonList("process.*"))

@@ -6,12 +6,10 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig.component;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.resources.Resource;
 
-public class ResourceOrderedSecondComponentProvider
-    implements ComponentProvider<Resource>, Ordered {
+public class ResourceSecondComponentProvider implements ComponentProvider<Resource> {
   @Override
   public Class<Resource> getType() {
     return Resource.class;
@@ -19,16 +17,11 @@ public class ResourceOrderedSecondComponentProvider
 
   @Override
   public String getName() {
-    return "unused";
+    return "order_second";
   }
 
   @Override
   public Resource create(DeclarativeConfigProperties config) {
     return Resource.builder().put("order", "second").build();
-  }
-
-  @Override
-  public int order() {
-    return 2;
   }
 }

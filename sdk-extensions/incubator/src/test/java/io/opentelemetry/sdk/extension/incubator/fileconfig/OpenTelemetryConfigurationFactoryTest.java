@@ -27,6 +27,8 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Always
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectionModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
@@ -215,6 +217,16 @@ class OpenTelemetryConfigurationFactoryTest {
                             .withCompositeList("tracecontext,baggage,ottrace,b3multi,b3,jaeger"))
                     .withResource(
                         new ResourceModel()
+                            .withDetectionDevelopment(
+                                new ExperimentalResourceDetectionModel()
+                                    .withDetectors(
+                                        Arrays.asList(
+                                            new ExperimentalResourceDetectorModel()
+                                                .withAdditionalProperty("order_first", null),
+                                            new ExperimentalResourceDetectorModel()
+                                                .withAdditionalProperty("order_second", null),
+                                            new ExperimentalResourceDetectorModel()
+                                                .withAdditionalProperty("shape_color", null))))
                             .withAttributes(
                                 Arrays.asList(
                                     new AttributeNameValueModel()
