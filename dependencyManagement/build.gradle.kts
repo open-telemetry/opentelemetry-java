@@ -14,7 +14,7 @@ val DEPENDENCY_BOMS = listOf(
   // by FOSSA for containing EPL-licensed)
 
   "com.fasterxml.jackson:jackson-bom:2.18.3",
-  "com.google.guava:guava-bom:33.4.0-jre",
+  "com.google.guava:guava-bom:33.4.5-jre",
   "com.google.protobuf:protobuf-bom:4.29.3",
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
   "com.squareup.okio:okio-bom:3.10.2", // applies to transitive dependencies of okhttp
@@ -36,8 +36,8 @@ val slf4jVersion = "2.0.17"
 val opencensusVersion = "0.31.1"
 val prometheusClientVersion = "0.16.0"
 val prometheusServerVersion = "1.3.6"
-val armeriaVersion = "1.32.0"
-val junitVersion = "5.12.0"
+val armeriaVersion = "1.32.3"
+val junitVersion = "5.12.1"
 
 val DEPENDENCIES = listOf(
   "org.junit.jupiter:junit-jupiter-api:${junitVersion}",
@@ -73,7 +73,7 @@ val DEPENDENCIES = listOf(
   "io.prometheus:simpleclient_httpserver:${prometheusClientVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.53.0",
+  "com.google.api.grpc:proto-google-common-protos:2.54.1",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",
@@ -89,7 +89,7 @@ val DEPENDENCIES = listOf(
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
   "junit:junit:4.13.2",
-  "nl.jqno.equalsverifier:equalsverifier:3.19.1",
+  "nl.jqno.equalsverifier:equalsverifier:3.19.2",
   "org.awaitility:awaitility:4.3.0",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
   "org.codehaus.mojo:animal-sniffer-annotations:1.24",
