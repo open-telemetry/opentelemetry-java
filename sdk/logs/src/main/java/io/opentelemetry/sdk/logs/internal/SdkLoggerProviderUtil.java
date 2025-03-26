@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logs.internal;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import java.lang.reflect.InvocationTargetException;
@@ -53,6 +54,22 @@ public final class SdkLoggerProviderUtil {
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       throw new IllegalStateException(
           "Error calling addLoggerConfiguratorCondition on SdkLoggerProviderBuilder", e);
+    }
+  }
+
+  /** Reflectively set exception attribute resolver to the {@link SdkLoggerProviderBuilder}. */
+  public static void setExceptionAttributeResolver(
+      SdkLoggerProviderBuilder sdkLoggerProviderBuilder,
+      ExceptionAttributeResolver exceptionAttributeResolver) {
+    try {
+      Method method =
+          SdkLoggerProviderBuilder.class.getDeclaredMethod(
+              "setExceptionAttributeResolver", ExceptionAttributeResolver.class);
+      method.setAccessible(true);
+      method.invoke(sdkLoggerProviderBuilder, exceptionAttributeResolver);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException(
+          "Error calling setExceptionAttributeResolver on SdkLoggerProviderBuilder", e);
     }
   }
 }
