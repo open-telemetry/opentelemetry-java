@@ -8,3 +8,7 @@ io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordProcessor
 io.opentelemetry.sdk.extension.incubator.fileconfig.component.ResourceComponentProvider
 io.opentelemetry.sdk.extension.incubator.fileconfig.component.ResourceFirstComponentProvider
 io.opentelemetry.sdk.extension.incubator.fileconfig.component.ResourceSecondComponentProvider
+io.opentelemetry.sdk.extension.incubator.fileconfig.component.ContainerResourceProvider
+io.opentelemetry.sdk.extension.incubator.fileconfig.component.HostResourceProvider
+io.opentelemetry.sdk.extension.incubator.fileconfig.component.OsResourceProvider
+io.opentelemetry.sdk.extension.incubator.fileconfig.component.ProcessResourceProvider

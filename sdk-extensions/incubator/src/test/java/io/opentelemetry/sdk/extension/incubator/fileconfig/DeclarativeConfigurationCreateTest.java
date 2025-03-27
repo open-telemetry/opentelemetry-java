@@ -70,11 +70,6 @@ class DeclarativeConfigurationCreateTest {
     assertThat(examplesDir).isDirectory();
 
     for (File example : Objects.requireNonNull(examplesDir.listFiles())) {
-      // TODO: remove once support is added for otlp_file exporters
-      if (example.getName().equals("kitchen-sink.yaml")) {
-        continue;
-      }
-
       // Rewrite references to cert files in examples
       String exampleContent =
           new String(Files.readAllBytes(example.toPath()), StandardCharsets.UTF_8);
