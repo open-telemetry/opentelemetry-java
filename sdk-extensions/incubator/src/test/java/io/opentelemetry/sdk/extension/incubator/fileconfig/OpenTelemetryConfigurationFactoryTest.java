@@ -45,8 +45,10 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Resour
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewSelectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
 import io.opentelemetry.sdk.logs.LogLimits;
@@ -253,8 +255,7 @@ class OpenTelemetryConfigurationFactoryTest {
                     .withTracerProvider(
                         new TracerProviderModel()
                             .withLimits(
-                                new io.opentelemetry.sdk.extension.incubator.fileconfig.internal
-                                        .model.SpanLimitsModel()
+                                new SpanLimitsModel()
                                     .withAttributeCountLimit(1)
                                     .withAttributeValueLengthLimit(2)
                                     .withEventCountLimit(3)
@@ -285,8 +286,7 @@ class OpenTelemetryConfigurationFactoryTest {
                                                             new OtlpHttpMetricExporterModel())))))
                             .withViews(
                                 Collections.singletonList(
-                                    new io.opentelemetry.sdk.extension.incubator.fileconfig.internal
-                                            .model.ViewModel()
+                                    new ViewModel()
                                         .withSelector(
                                             new ViewSelectorModel()
                                                 .withInstrumentName("instrument-name"))

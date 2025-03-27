@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Metric
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewSelectorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
@@ -26,6 +27,7 @@ import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -73,8 +75,7 @@ class MeterProviderFactoryTest {
                                             .withOtlpHttp(new OtlpHttpMetricExporterModel())))))
                 .withViews(
                     Collections.singletonList(
-                        new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                                .ViewModel()
+                        new ViewModel()
                             .withSelector(
                                 new ViewSelectorModel().withInstrumentName("instrument-name"))
                             .withStream(
@@ -98,9 +99,7 @@ class MeterProviderFactoryTest {
                             ScopeConfiguratorBuilder.nameMatchesGlob("foo"), MeterConfig.enabled())
                         .build())
                 .registerMetricReader(
-                    io.opentelemetry.sdk.metrics.export.PeriodicMetricReader.builder(
-                            OtlpHttpMetricExporter.getDefault())
-                        .build())
+                    PeriodicMetricReader.builder(OtlpHttpMetricExporter.getDefault()).build())
                 .registerView(
                     InstrumentSelector.builder().setName("instrument-name").build(),
                     View.builder().setName("stream-name").build())

@@ -6,8 +6,10 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.spy;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectionModel;
@@ -141,5 +143,44 @@ class ResourceFactoryTest {
             Collections.singletonList("*o*"),
             Collections.singletonList("order"),
             Resource.getDefault().toBuilder().put("color", "red").build()));
+  }
+
+  @ParameterizedTest
+  @MethodSource("createInvalidDetectorsArgs")
+  void createWithDetectors_Invalid(ResourceModel model, String expectedMessage) {
+    assertThatThrownBy(
+            () -> ResourceFactory.getInstance().create(model, spiHelper, Collections.emptyList()))
+        .isInstanceOf(DeclarativeConfigException.class)
+        .hasMessage(expectedMessage);
+  }
+
+  private static Stream<Arguments> createInvalidDetectorsArgs() {
+    return Stream.of(
+        Arguments.of(
+            new ResourceModel()
+                .withDetectionDevelopment(
+                    new ExperimentalResourceDetectionModel()
+                        .withDetectors(
+                            Collections.singletonList(
+                                new ExperimentalResourceDetectorModel()
+                                    .withAdditionalProperty("foo", null)))),
+            "No component provider detected for io.opentelemetry.sdk.resources.Resource with name \"foo\"."),
+        Arguments.of(
+            new ResourceModel()
+                .withDetectionDevelopment(
+                    new ExperimentalResourceDetectionModel()
+                        .withDetectors(
+                            Collections.singletonList(
+                                new ExperimentalResourceDetectorModel()
+                                    .withAdditionalProperty("foo", null)
+                                    .withAdditionalProperty("bar", null)))),
+            "Invalid configuration - multiple resource detectors set: [foo,bar]"),
+        Arguments.of(
+            new ResourceModel()
+                .withDetectionDevelopment(
+                    new ExperimentalResourceDetectionModel()
+                        .withDetectors(
+                            Collections.singletonList(new ExperimentalResourceDetectorModel()))),
+            "resource detector must be set"));
   }
 }

@@ -34,6 +34,7 @@ dependencies {
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk-extensions:autoconfigure"))
   testImplementation(project(":exporters:logging"))
+  testImplementation(project(":exporters:logging-otlp"))
   testImplementation(project(":exporters:otlp:all"))
   testImplementation(project(":exporters:prometheus"))
   testImplementation(project(":exporters:zipkin"))

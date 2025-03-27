@@ -42,7 +42,7 @@ final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExport
     }
     ExperimentalOtlpFileExporterModel otlpFileExporterModel = model.getOtlpFileDevelopment();
     if (otlpFileExporterModel != null) {
-      model.getAdditionalProperties().put("otlp_file", otlpFileExporterModel);
+      model.getAdditionalProperties().put("otlp_file/development", otlpFileExporterModel);
     }
 
     if (model.getConsole() != null) {

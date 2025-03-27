@@ -42,7 +42,7 @@ final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, 
     }
     ExperimentalOtlpFileExporterModel otlpFileExporterModel = model.getOtlpFileDevelopment();
     if (otlpFileExporterModel != null) {
-      model.getAdditionalProperties().put("otlp_file", otlpFileExporterModel);
+      model.getAdditionalProperties().put("otlp_file/development", otlpFileExporterModel);
     }
 
     ConsoleExporterModel consoleModel = model.getConsole();
