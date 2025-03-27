@@ -87,12 +87,12 @@ public final class GlobUtil {
 
     @Override
     public boolean test(String s) {
-      if (pattern != null) {
-        return pattern.matcher(s).matches();
-      }
       // Match all
       if (globPattern.equals("*")) {
         return true;
+      }
+      if (pattern != null) {
+        return pattern.matcher(s).matches();
       }
       // Exact match, ignoring case
       return globPattern.equalsIgnoreCase(s);

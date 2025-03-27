@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import static io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil.setLoggerConfigurator;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
@@ -12,13 +13,19 @@ import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLoggerConfigModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLoggerConfiguratorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLoggerMatcherAndConfigModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LoggerProviderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -74,8 +81,25 @@ class LoggerProviderFactoryTest {
                                     new BatchLogRecordProcessorModel()
                                         .withExporter(
                                             new LogRecordExporterModel()
-                                                .withOtlpHttp(new OtlpHttpExporterModel())))))),
-            SdkLoggerProvider.builder()
+                                                .withOtlpHttp(new OtlpHttpExporterModel())))))
+                    .withLoggerConfiguratorDevelopment(
+                        new ExperimentalLoggerConfiguratorModel()
+                            .withDefaultConfig(
+                                new ExperimentalLoggerConfigModel().withDisabled(true))
+                            .withLoggers(
+                                Collections.singletonList(
+                                    new ExperimentalLoggerMatcherAndConfigModel()
+                                        .withName("foo")
+                                        .withConfig(
+                                            new ExperimentalLoggerConfigModel()
+                                                .withDisabled(false)))))),
+            setLoggerConfigurator(
+                    SdkLoggerProvider.builder(),
+                    ScopeConfigurator.<LoggerConfig>builder()
+                        .setDefault(LoggerConfig.disabled())
+                        .addCondition(
+                            ScopeConfiguratorBuilder.nameMatchesGlob("foo"), LoggerConfig.enabled())
+                        .build())
                 .setLogLimits(
                     () ->
                         LogLimits.builder()
