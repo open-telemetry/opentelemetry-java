@@ -14,19 +14,36 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Always
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.B3MultiPropagatorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.B3PropagatorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BaggagePropagatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.CardinalityLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ClientModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalGeneralInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalHttpInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLanguageSpecificInstrumentationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLoggerConfigModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLoggerConfiguratorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLoggerMatcherAndConfigModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalMeterConfigModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalMeterConfiguratorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalMeterMatcherAndConfigModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalPeerInstrumentationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalPrometheusMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectionModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalTracerConfigModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalTracerConfiguratorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalTracerMatcherAndConfigModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramAggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.InstrumentationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.JaegerPropagatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
@@ -37,6 +54,9 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Metric
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.NameStringValuePairModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenCensusMetricProducerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTracingPropagatorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpGrpcExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpGrpcMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBasedSamplerModel;
@@ -54,6 +74,8 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Simple
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TextMapPropagatorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceContextPropagatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceIdRatioBasedSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewModel;
@@ -70,7 +92,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -89,12 +110,12 @@ class DeclarativeConfigurationParseTest {
   }
 
   @Test
-  @Disabled
   void parse_KitchenSinkExampleFile() throws IOException {
     OpenTelemetryConfigurationModel expected = new OpenTelemetryConfigurationModel();
 
     expected.withFileFormat("0.3");
     expected.withDisabled(false);
+    expected.withLogLevel("info");
 
     // General config
     ResourceModel resource =
@@ -142,7 +163,17 @@ class DeclarativeConfigurationParseTest {
                     .withAttributes(
                         new IncludeExcludeModel()
                             .withIncluded(Collections.singletonList("process.*"))
-                            .withExcluded(Collections.singletonList("process.command_args"))))
+                            .withExcluded(Collections.singletonList("process.command_args")))
+                    .withDetectors(
+                        Arrays.asList(
+                            new ExperimentalResourceDetectorModel()
+                                .withAdditionalProperty("container", null),
+                            new ExperimentalResourceDetectorModel()
+                                .withAdditionalProperty("host", null),
+                            new ExperimentalResourceDetectorModel()
+                                .withAdditionalProperty("os", null),
+                            new ExperimentalResourceDetectorModel()
+                                .withAdditionalProperty("process", null))))
             .withSchemaUrl("https://opentelemetry.io/schemas/1.16.0");
     expected.withResource(resource);
 
@@ -152,7 +183,16 @@ class DeclarativeConfigurationParseTest {
 
     PropagatorModel propagator =
         new PropagatorModel()
-            .withCompositeList("tracecontext,baggage,b3,b3multi,jaeger,xray,ottrace");
+            .withComposite(
+                Arrays.asList(
+                    new TextMapPropagatorModel()
+                        .withTracecontext(new TraceContextPropagatorModel()),
+                    new TextMapPropagatorModel().withBaggage(new BaggagePropagatorModel()),
+                    new TextMapPropagatorModel().withB3(new B3PropagatorModel()),
+                    new TextMapPropagatorModel().withB3multi(new B3MultiPropagatorModel()),
+                    new TextMapPropagatorModel().withJaeger(new JaegerPropagatorModel()),
+                    new TextMapPropagatorModel().withOttrace(new OpenTracingPropagatorModel())))
+            .withCompositeList("tracecontext,baggage,b3,b3multi,jaeger,ottrace,xray");
     expected.withPropagator(propagator);
 
     // TracerProvider config
@@ -186,6 +226,16 @@ class DeclarativeConfigurationParseTest {
                         new SamplerModel().withAlwaysOff(new AlwaysOffSamplerModel())));
     tracerProvider.withSampler(sampler);
 
+    ExperimentalTracerConfiguratorModel tracerConfigurator =
+        new ExperimentalTracerConfiguratorModel()
+            .withDefaultConfig(new ExperimentalTracerConfigModel().withDisabled(true))
+            .withTracers(
+                Collections.singletonList(
+                    new ExperimentalTracerMatcherAndConfigModel()
+                        .withName("io.opentelemetry.contrib.*")
+                        .withConfig(new ExperimentalTracerConfigModel().withDisabled(false))));
+    tracerProvider.withTracerConfiguratorDevelopment(tracerConfigurator);
+
     SpanProcessorModel spanProcessor1 =
         new SpanProcessorModel()
             .withBatch(
@@ -209,8 +259,49 @@ class DeclarativeConfigurationParseTest {
                                                 .withValue("1234")))
                                     .withHeadersList("api-key=1234")
                                     .withCompression("gzip")
-                                    .withTimeout(10_000))));
+                                    .withTimeout(10_000)
+                                    .withEncoding(
+                                        OtlpHttpExporterModel.OtlpHttpEncoding.PROTOBUF))));
     SpanProcessorModel spanProcessor2 =
+        new SpanProcessorModel()
+            .withBatch(
+                new BatchSpanProcessorModel()
+                    .withExporter(
+                        new SpanExporterModel()
+                            .withOtlpGrpc(
+                                new OtlpGrpcExporterModel()
+                                    .withEndpoint("http://localhost:4317")
+                                    .withCertificateFile("/app/cert.pem")
+                                    .withClientKeyFile("/app/cert.pem")
+                                    .withClientCertificateFile("/app/cert.pem")
+                                    .withHeaders(
+                                        Collections.singletonList(
+                                            new NameStringValuePairModel()
+                                                .withName("api-key")
+                                                .withValue("1234")))
+                                    .withHeadersList("api-key=1234")
+                                    .withCompression("gzip")
+                                    .withTimeout(10_000)
+                                    .withInsecure(false))));
+    SpanProcessorModel spanProcessor3 =
+        new SpanProcessorModel()
+            .withBatch(
+                new BatchSpanProcessorModel()
+                    .withExporter(
+                        new SpanExporterModel()
+                            .withOtlpFileDevelopment(
+                                new ExperimentalOtlpFileExporterModel()
+                                    .withOutputStream("file:///var/log/traces.jsonl"))));
+    SpanProcessorModel spanProcessor4 =
+        new SpanProcessorModel()
+            .withBatch(
+                new BatchSpanProcessorModel()
+                    .withExporter(
+                        new SpanExporterModel()
+                            .withOtlpFileDevelopment(
+                                new ExperimentalOtlpFileExporterModel()
+                                    .withOutputStream("stdout"))));
+    SpanProcessorModel spanProcessor5 =
         new SpanProcessorModel()
             .withBatch(
                 new BatchSpanProcessorModel()
@@ -220,12 +311,19 @@ class DeclarativeConfigurationParseTest {
                                 new ZipkinSpanExporterModel()
                                     .withEndpoint("http://localhost:9411/api/v2/spans")
                                     .withTimeout(10_000))));
-    SpanProcessorModel spanProcessor3 =
+    SpanProcessorModel spanProcessor6 =
         new SpanProcessorModel()
             .withSimple(
                 new SimpleSpanProcessorModel()
                     .withExporter(new SpanExporterModel().withConsole(new ConsoleExporterModel())));
-    tracerProvider.withProcessors(Arrays.asList(spanProcessor1, spanProcessor2, spanProcessor3));
+    tracerProvider.withProcessors(
+        Arrays.asList(
+            spanProcessor1,
+            spanProcessor2,
+            spanProcessor3,
+            spanProcessor4,
+            spanProcessor5,
+            spanProcessor6));
 
     expected.withTracerProvider(tracerProvider);
     // end TracerProvider config
@@ -236,6 +334,16 @@ class DeclarativeConfigurationParseTest {
     LogRecordLimitsModel logRecordLimits =
         new LogRecordLimitsModel().withAttributeValueLengthLimit(4096).withAttributeCountLimit(128);
     loggerProvider.withLimits(logRecordLimits);
+
+    ExperimentalLoggerConfiguratorModel loggerConfigurator =
+        new ExperimentalLoggerConfiguratorModel()
+            .withDefaultConfig(new ExperimentalLoggerConfigModel().withDisabled(true))
+            .withLoggers(
+                Collections.singletonList(
+                    new ExperimentalLoggerMatcherAndConfigModel()
+                        .withName("io.opentelemetry.contrib.*")
+                        .withConfig(new ExperimentalLoggerConfigModel().withDisabled(false))));
+    loggerProvider.withLoggerConfiguratorDevelopment(loggerConfigurator);
 
     LogRecordProcessorModel logRecordProcessor1 =
         new LogRecordProcessorModel()
@@ -260,14 +368,61 @@ class DeclarativeConfigurationParseTest {
                                                 .withValue("1234")))
                                     .withHeadersList("api-key=1234")
                                     .withCompression("gzip")
-                                    .withTimeout(10_000))));
+                                    .withTimeout(10_000)
+                                    .withEncoding(
+                                        OtlpHttpExporterModel.OtlpHttpEncoding.PROTOBUF))));
     LogRecordProcessorModel logRecordProcessor2 =
+        new LogRecordProcessorModel()
+            .withBatch(
+                new BatchLogRecordProcessorModel()
+                    .withExporter(
+                        new LogRecordExporterModel()
+                            .withOtlpGrpc(
+                                new OtlpGrpcExporterModel()
+                                    .withEndpoint("http://localhost:4317")
+                                    .withCertificateFile("/app/cert.pem")
+                                    .withClientKeyFile("/app/cert.pem")
+                                    .withClientCertificateFile("/app/cert.pem")
+                                    .withHeaders(
+                                        Collections.singletonList(
+                                            new NameStringValuePairModel()
+                                                .withName("api-key")
+                                                .withValue("1234")))
+                                    .withHeadersList("api-key=1234")
+                                    .withCompression("gzip")
+                                    .withTimeout(10_000)
+                                    .withInsecure(false))));
+    LogRecordProcessorModel logRecordProcessor3 =
+        new LogRecordProcessorModel()
+            .withBatch(
+                new BatchLogRecordProcessorModel()
+                    .withExporter(
+                        new LogRecordExporterModel()
+                            .withOtlpFileDevelopment(
+                                new ExperimentalOtlpFileExporterModel()
+                                    .withOutputStream("file:///var/log/logs.jsonl"))));
+    LogRecordProcessorModel logRecordProcessor4 =
+        new LogRecordProcessorModel()
+            .withBatch(
+                new BatchLogRecordProcessorModel()
+                    .withExporter(
+                        new LogRecordExporterModel()
+                            .withOtlpFileDevelopment(
+                                new ExperimentalOtlpFileExporterModel()
+                                    .withOutputStream("stdout"))));
+    LogRecordProcessorModel logRecordProcessor5 =
         new LogRecordProcessorModel()
             .withSimple(
                 new SimpleLogRecordProcessorModel()
                     .withExporter(
                         new LogRecordExporterModel().withConsole(new ConsoleExporterModel())));
-    loggerProvider.withProcessors(Arrays.asList(logRecordProcessor1, logRecordProcessor2));
+    loggerProvider.withProcessors(
+        Arrays.asList(
+            logRecordProcessor1,
+            logRecordProcessor2,
+            logRecordProcessor3,
+            logRecordProcessor4,
+            logRecordProcessor5));
 
     expected.withLoggerProvider(loggerProvider);
     // end LoggerProvider config
@@ -296,7 +451,17 @@ class DeclarativeConfigurationParseTest {
                     .withProducers(
                         Collections.singletonList(
                             new MetricProducerModel()
-                                .withOpencensus(new OpenCensusMetricProducerModel()))));
+                                .withOpencensus(new OpenCensusMetricProducerModel())))
+                    .withCardinalityLimits(
+                        new CardinalityLimitsModel()
+                            .withDefault(2000)
+                            .withCounter(2000)
+                            .withGauge(2000)
+                            .withHistogram(2000)
+                            .withObservableCounter(2000)
+                            .withObservableGauge(2000)
+                            .withObservableUpDownCounter(2000)
+                            .withUpDownCounter(2000)));
     MetricReaderModel metricReader2 =
         new MetricReaderModel()
             .withPeriodic(
@@ -319,6 +484,7 @@ class DeclarativeConfigurationParseTest {
                                     .withHeadersList("api-key=1234")
                                     .withCompression("gzip")
                                     .withTimeout(10_000)
+                                    .withEncoding(OtlpHttpExporterModel.OtlpHttpEncoding.PROTOBUF)
                                     .withTemporalityPreference(
                                         OtlpHttpMetricExporterModel.ExporterTemporalityPreference
                                             .DELTA)
@@ -328,14 +494,91 @@ class DeclarativeConfigurationParseTest {
                                             .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)))
                     .withProducers(
                         Collections.singletonList(
-                            new MetricProducerModel().withAdditionalProperty("prometheus", null))));
+                            new MetricProducerModel().withAdditionalProperty("prometheus", null)))
+                    .withCardinalityLimits(
+                        new CardinalityLimitsModel()
+                            .withDefault(2000)
+                            .withCounter(2000)
+                            .withGauge(2000)
+                            .withHistogram(2000)
+                            .withObservableCounter(2000)
+                            .withObservableGauge(2000)
+                            .withObservableUpDownCounter(2000)
+                            .withUpDownCounter(2000)));
     MetricReaderModel metricReader3 =
         new MetricReaderModel()
             .withPeriodic(
                 new PeriodicMetricReaderModel()
                     .withExporter(
+                        new PushMetricExporterModel()
+                            .withOtlpGrpc(
+                                new OtlpGrpcMetricExporterModel()
+                                    .withEndpoint("http://localhost:4317")
+                                    .withCertificateFile("/app/cert.pem")
+                                    .withClientKeyFile("/app/cert.pem")
+                                    .withClientCertificateFile("/app/cert.pem")
+                                    .withHeaders(
+                                        Collections.singletonList(
+                                            new NameStringValuePairModel()
+                                                .withName("api-key")
+                                                .withValue("1234")))
+                                    .withHeadersList("api-key=1234")
+                                    .withCompression("gzip")
+                                    .withTimeout(10_000)
+                                    .withInsecure(false)
+                                    .withTemporalityPreference(
+                                        OtlpHttpMetricExporterModel.ExporterTemporalityPreference
+                                            .DELTA)
+                                    .withDefaultHistogramAggregation(
+                                        OtlpHttpMetricExporterModel
+                                            .ExporterDefaultHistogramAggregation
+                                            .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM))));
+    MetricReaderModel metricReader4 =
+        new MetricReaderModel()
+            .withPeriodic(
+                new PeriodicMetricReaderModel()
+                    .withExporter(
+                        new PushMetricExporterModel()
+                            .withOtlpFileDevelopment(
+                                new ExperimentalOtlpFileMetricExporterModel()
+                                    .withOutputStream("file:///var/log/metrics.jsonl")
+                                    .withTemporalityPreference(
+                                        OtlpHttpMetricExporterModel.ExporterTemporalityPreference
+                                            .DELTA)
+                                    .withDefaultHistogramAggregation(
+                                        OtlpHttpMetricExporterModel
+                                            .ExporterDefaultHistogramAggregation
+                                            .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM))));
+    MetricReaderModel metricReader5 =
+        new MetricReaderModel()
+            .withPeriodic(
+                new PeriodicMetricReaderModel()
+                    .withExporter(
+                        new PushMetricExporterModel()
+                            .withOtlpFileDevelopment(
+                                new ExperimentalOtlpFileMetricExporterModel()
+                                    .withOutputStream("stdout")
+                                    .withTemporalityPreference(
+                                        OtlpHttpMetricExporterModel.ExporterTemporalityPreference
+                                            .DELTA)
+                                    .withDefaultHistogramAggregation(
+                                        OtlpHttpMetricExporterModel
+                                            .ExporterDefaultHistogramAggregation
+                                            .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM))));
+    MetricReaderModel metricReader6 =
+        new MetricReaderModel()
+            .withPeriodic(
+                new PeriodicMetricReaderModel()
+                    .withExporter(
                         new PushMetricExporterModel().withConsole(new ConsoleExporterModel())));
-    meterProvider.withReaders(Arrays.asList(metricReader1, metricReader2, metricReader3));
+    meterProvider.withReaders(
+        Arrays.asList(
+            metricReader1,
+            metricReader2,
+            metricReader3,
+            metricReader4,
+            metricReader5,
+            metricReader6));
 
     ViewModel view =
         new ViewModel()
@@ -360,12 +603,23 @@ class DeclarativeConfigurationParseTest {
                                             0.0, 5.0, 10.0, 25.0, 50.0, 75.0, 100.0, 250.0, 500.0,
                                             750.0, 1000.0, 2500.0, 5000.0, 7500.0, 10000.0))
                                     .withRecordMinMax(true)))
+                    .withAggregationCardinalityLimit(2000)
                     .withAttributeKeys(
                         new IncludeExcludeModel()
                             .withIncluded(Arrays.asList("key1", "key2"))
                             .withExcluded(Collections.singletonList("key3"))));
     meterProvider.withViews(Collections.singletonList(view));
     meterProvider.withExemplarFilter(MeterProviderModel.ExemplarFilter.TRACE_BASED);
+
+    ExperimentalMeterConfiguratorModel meterConfigurator =
+        new ExperimentalMeterConfiguratorModel()
+            .withDefaultConfig(new ExperimentalMeterConfigModel().withDisabled(true))
+            .withMeters(
+                Collections.singletonList(
+                    new ExperimentalMeterMatcherAndConfigModel()
+                        .withName("io.opentelemetry.contrib.*")
+                        .withConfig(new ExperimentalMeterConfigModel().withDisabled(false))));
+    meterProvider.withMeterConfiguratorDevelopment(meterConfigurator);
 
     expected.withMeterProvider(meterProvider);
     // end MeterProvider config
@@ -460,20 +714,49 @@ class DeclarativeConfigurationParseTest {
       TracerProviderModel configTracerProvider = config.getTracerProvider();
       assertThat(configTracerProvider.getLimits()).isEqualTo(spanLimits);
       assertThat(configTracerProvider.getSampler()).isEqualTo(sampler);
+      assertThat(configTracerProvider.getTracerConfiguratorDevelopment())
+          .isEqualTo(tracerConfigurator);
       assertThat(configTracerProvider.getProcessors())
-          .isEqualTo(Arrays.asList(spanProcessor1, spanProcessor2, spanProcessor3));
+          .isEqualTo(
+              Arrays.asList(
+                  spanProcessor1,
+                  spanProcessor2,
+                  spanProcessor3,
+                  spanProcessor4,
+                  spanProcessor5,
+                  spanProcessor6));
+      assertThat(configTracerProvider).isEqualTo(tracerProvider);
 
       // LoggerProvider config
       LoggerProviderModel configLoggerProvider = config.getLoggerProvider();
       assertThat(configLoggerProvider.getLimits()).isEqualTo(logRecordLimits);
+      assertThat(configLoggerProvider.getLoggerConfiguratorDevelopment())
+          .isEqualTo(loggerConfigurator);
       assertThat(configLoggerProvider.getProcessors())
-          .isEqualTo(Arrays.asList(logRecordProcessor1, logRecordProcessor2));
+          .isEqualTo(
+              Arrays.asList(
+                  logRecordProcessor1,
+                  logRecordProcessor2,
+                  logRecordProcessor3,
+                  logRecordProcessor4,
+                  logRecordProcessor5));
+      assertThat(configLoggerProvider).isEqualTo(loggerProvider);
 
       // MeterProvider config
       MeterProviderModel configMeterProvider = config.getMeterProvider();
       assertThat(configMeterProvider.getReaders())
-          .isEqualTo(Arrays.asList(metricReader1, metricReader2, metricReader3));
+          .isEqualTo(
+              Arrays.asList(
+                  metricReader1,
+                  metricReader2,
+                  metricReader3,
+                  metricReader4,
+                  metricReader5,
+                  metricReader6));
       assertThat(configMeterProvider.getViews()).isEqualTo(Collections.singletonList(view));
+      assertThat(configMeterProvider.getMeterConfiguratorDevelopment())
+          .isEqualTo(meterConfigurator);
+      assertThat(configMeterProvider).isEqualTo(meterProvider);
 
       // Instrumentation config
       InstrumentationModel configInstrumentation = config.getInstrumentationDevelopment();
