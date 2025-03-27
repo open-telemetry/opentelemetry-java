@@ -94,10 +94,7 @@ class DeclarativeConfigurationCreateTest {
                   "client_certificate_file: .*\n",
                   "client_certificate_file: "
                       + clientCertificatePath.replace("\\", "\\\\")
-                      + System.lineSeparator())
-              // TODO: remove once updated ComponentProvider SPI contract implemented in
-              // https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-xray-propagator
-              .replaceAll("xray,", "");
+                      + System.lineSeparator());
       InputStream is =
           new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
 

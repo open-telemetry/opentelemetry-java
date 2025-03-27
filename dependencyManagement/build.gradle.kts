@@ -14,7 +14,7 @@ val DEPENDENCY_BOMS = listOf(
   // by FOSSA for containing EPL-licensed)
 
   "com.fasterxml.jackson:jackson-bom:2.18.3",
-  "com.google.guava:guava-bom:33.4.5-jre",
+  "com.google.guava:guava-bom:33.4.6-jre",
   "com.google.protobuf:protobuf-bom:4.29.3",
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
   "com.squareup.okio:okio-bom:3.10.2", // applies to transitive dependencies of okhttp
@@ -83,7 +83,7 @@ val DEPENDENCIES = listOf(
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
-  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.39.0-alpha",
+  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.45.0-alpha",
   "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.30.0-alpha",
   "io.opentelemetry.proto:opentelemetry-proto:1.5.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
