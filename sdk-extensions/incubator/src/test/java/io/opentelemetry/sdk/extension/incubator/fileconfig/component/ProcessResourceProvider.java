@@ -6,12 +6,13 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig.component;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.Ordered;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.resources.Resource;
 
-public class ResourceOrderedSecondComponentProvider
-    implements ComponentProvider<Resource>, Ordered {
+// TODO(jack-berg): This allows DeclarativeConfigurationCreateTest to pass with kitchen-sink.yaml
+// example. Delete after resource providers from opentelemetry-java-instrumentation are renamed to
+// reflect declarative config naming
+public class ProcessResourceProvider implements ComponentProvider<Resource> {
   @Override
   public Class<Resource> getType() {
     return Resource.class;
@@ -19,16 +20,11 @@ public class ResourceOrderedSecondComponentProvider
 
   @Override
   public String getName() {
-    return "unused";
+    return "process";
   }
 
   @Override
   public Resource create(DeclarativeConfigProperties config) {
-    return Resource.builder().put("order", "second").build();
-  }
-
-  @Override
-  public int order() {
-    return 2;
+    return Resource.empty();
   }
 }
