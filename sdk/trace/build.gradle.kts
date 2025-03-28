@@ -16,13 +16,27 @@ sourceSets {
     val traceShadedDeps = project(":sdk:trace-shaded-deps")
     output.dir(traceShadedDeps.file("build/extracted/shadow"), "builtBy" to ":sdk:trace-shaded-deps:extractShadowJar")
   }
+  create("incubating")
+}
+
+java {
+  registerFeature("incubating") {
+    usingSourceSet(sourceSets["incubating"])
+  }
+}
+
+val incubatingImplementation by configurations.existing
+
+val compileOnly by configurations.existing {
+  extendsFrom(incubatingImplementation.get())
 }
 
 dependencies {
   api(project(":api:all"))
   api(project(":sdk:common"))
 
-  compileOnly(project(":api:incubator"))
+  incubatingImplementation(project(":api:incubator"))
+
   compileOnly(project(":sdk:trace-shaded-deps"))
 
   annotationProcessor("com.google.auto.value:auto-value")
