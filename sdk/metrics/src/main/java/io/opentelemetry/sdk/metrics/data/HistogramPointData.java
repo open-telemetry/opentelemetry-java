@@ -5,6 +5,9 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramPointData;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -15,6 +18,40 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public interface HistogramPointData extends PointData {
+
+  /**
+   * Creates a HistogramPointData. For a Histogram with N defined boundaries, there should be N+1
+   * counts.
+   *
+   * @return a HistogramPointData.
+   * @throws IllegalArgumentException if the given boundaries/counts were invalid
+   */
+  @SuppressWarnings("TooManyParameters")
+  static HistogramPointData create(
+      long startEpochNanos,
+      long epochNanos,
+      Attributes attributes,
+      double sum,
+      boolean hasMin,
+      double min,
+      boolean hasMax,
+      double max,
+      List<Double> boundaries,
+      List<Long> counts) {
+    return ImmutableHistogramPointData.create(
+        startEpochNanos,
+        epochNanos,
+        attributes,
+        sum,
+        hasMin,
+        min,
+        hasMax,
+        max,
+        boundaries,
+        counts,
+        Collections.emptyList());
+  }
+
   /**
    * The sum of all measurements recorded.
    *
