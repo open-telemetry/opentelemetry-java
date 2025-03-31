@@ -57,11 +57,8 @@ dependencies {
 // 7. deleteJs2pTmp - delete tmp directory
 // ... proceed with normal sourcesJar, compileJava, etc
 
-// TODO (trask) revert after the 0.4.0 release
-//  it was needed after 0.3.0 release because file_format in the examples weren't updated prior to the release tag
-// val configurationTag = "0.3.0"
-// val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
-val configurationRef = "a94e70f59fb7d9cb524118ca2cd315bd4dedd211"
+val configurationTag = "0.4.0"
+val configurationRef = "refs/tags/v$configurationTag" // Replace with commit SHA to point to experiment with a specific commit
 val configurationRepoZip = "https://github.com/open-telemetry/opentelemetry-configuration/archive/$configurationRef.zip"
 val buildDirectory = layout.buildDirectory.asFile.get()
 
