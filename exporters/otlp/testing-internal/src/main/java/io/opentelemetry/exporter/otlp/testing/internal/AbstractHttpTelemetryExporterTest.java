@@ -22,7 +22,6 @@ import com.linecorp.armeria.common.TlsKeyPair;
 import com.linecorp.armeria.server.HttpService;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
-import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -149,7 +148,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
           sb.https(0);
           sb.tls(TlsKeyPair.of(certificate.privateKey(), certificate.certificate()));
           sb.tlsCustomizer(ssl -> ssl.trustManager(clientCertificate.certificate()));
-          sb.decorator(LoggingService.newDecorator());
+          // Uncomment for detailed request / response logs from server
+          // sb.decorator(LoggingService.newDecorator());
         }
       };
 
