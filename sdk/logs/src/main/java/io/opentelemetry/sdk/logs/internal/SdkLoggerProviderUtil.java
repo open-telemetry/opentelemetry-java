@@ -24,7 +24,7 @@ public final class SdkLoggerProviderUtil {
   private SdkLoggerProviderUtil() {}
 
   /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkLoggerProviderBuilder}. */
-  public static void setLoggerConfigurator(
+  public static SdkLoggerProviderBuilder setLoggerConfigurator(
       SdkLoggerProviderBuilder sdkLoggerProviderBuilder,
       ScopeConfigurator<LoggerConfig> loggerConfigurator) {
     try {
@@ -37,10 +37,11 @@ public final class SdkLoggerProviderUtil {
       throw new IllegalStateException(
           "Error calling setLoggerConfigurator on SdkLoggerProviderBuilder", e);
     }
+    return sdkLoggerProviderBuilder;
   }
 
   /** Reflectively add a logger configurator condition to the {@link SdkLoggerProviderBuilder}. */
-  public static void addLoggerConfiguratorCondition(
+  public static SdkLoggerProviderBuilder addLoggerConfiguratorCondition(
       SdkLoggerProviderBuilder sdkLoggerProviderBuilder,
       Predicate<InstrumentationScopeInfo> scopeMatcher,
       LoggerConfig loggerConfig) {
@@ -54,5 +55,6 @@ public final class SdkLoggerProviderUtil {
       throw new IllegalStateException(
           "Error calling addLoggerConfiguratorCondition on SdkLoggerProviderBuilder", e);
     }
+    return sdkLoggerProviderBuilder;
   }
 }

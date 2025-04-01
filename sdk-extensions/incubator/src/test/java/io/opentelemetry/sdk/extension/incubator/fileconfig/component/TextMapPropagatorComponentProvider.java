@@ -35,7 +35,7 @@ public class TextMapPropagatorComponentProvider implements ComponentProvider<Tex
 
     public final DeclarativeConfigProperties config;
 
-    private TestTextMapPropagator(DeclarativeConfigProperties config) {
+    public TestTextMapPropagator(DeclarativeConfigProperties config) {
       this.config = config;
     }
 
@@ -50,6 +50,11 @@ public class TextMapPropagatorComponentProvider implements ComponentProvider<Tex
     @Override
     public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
       return context;
+    }
+
+    @Override
+    public String toString() {
+      return "TestTextMapPropagator{}";
     }
   }
 }

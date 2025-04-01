@@ -9,9 +9,11 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpGrpcExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.io.Closeable;
 import java.util.List;
@@ -30,12 +32,20 @@ final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, 
   @Override
   public LogRecordExporter create(
       LogRecordExporterModel model, SpiHelper spiHelper, List<Closeable> closeables) {
-    OtlpModel otlpModel = model.getOtlp();
-    if (otlpModel != null) {
-      model.getAdditionalProperties().put("otlp", otlpModel);
+    OtlpHttpExporterModel otlpHttpModel = model.getOtlpHttp();
+    if (otlpHttpModel != null) {
+      model.getAdditionalProperties().put("otlp_http", otlpHttpModel);
+    }
+    OtlpGrpcExporterModel otlpGrpcModel = model.getOtlpGrpc();
+    if (otlpGrpcModel != null) {
+      model.getAdditionalProperties().put("otlp_grpc", otlpGrpcModel);
+    }
+    ExperimentalOtlpFileExporterModel otlpFileExporterModel = model.getOtlpFileDevelopment();
+    if (otlpFileExporterModel != null) {
+      model.getAdditionalProperties().put("otlp_file/development", otlpFileExporterModel);
     }
 
-    ConsoleModel consoleModel = model.getConsole();
+    ConsoleExporterModel consoleModel = model.getConsole();
     if (consoleModel != null) {
       model.getAdditionalProperties().put("console", consoleModel);
     }
@@ -61,7 +71,7 @@ final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, 
               exporterKeyValue.getValue());
       return FileConfigUtil.addAndReturn(closeables, logRecordExporter);
     } else {
-      throw new DeclarativeConfigException("log exporter must be set");
+      throw new DeclarativeConfigException("log record exporter must be set");
     }
   }
 }

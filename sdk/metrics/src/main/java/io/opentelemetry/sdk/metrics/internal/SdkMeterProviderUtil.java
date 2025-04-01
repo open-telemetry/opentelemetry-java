@@ -34,7 +34,7 @@ public final class SdkMeterProviderUtil {
    *
    * @param sdkMeterProviderBuilder the builder
    */
-  public static void setExemplarFilter(
+  public static SdkMeterProviderBuilder setExemplarFilter(
       SdkMeterProviderBuilder sdkMeterProviderBuilder, ExemplarFilter exemplarFilter) {
     try {
       Method method =
@@ -46,10 +46,11 @@ public final class SdkMeterProviderUtil {
       throw new IllegalStateException(
           "Error calling setExemplarFilter on SdkMeterProviderBuilder", e);
     }
+    return sdkMeterProviderBuilder;
   }
 
   /** Reflectively set the {@link ScopeConfigurator} to the {@link SdkMeterProviderBuilder}. */
-  public static void setMeterConfigurator(
+  public static SdkMeterProviderBuilder setMeterConfigurator(
       SdkMeterProviderBuilder sdkMeterProviderBuilder,
       ScopeConfigurator<MeterConfig> meterConfigurator) {
     try {
@@ -62,10 +63,11 @@ public final class SdkMeterProviderUtil {
       throw new IllegalStateException(
           "Error calling setMeterConfigurator on SdkMeterProviderBuilder", e);
     }
+    return sdkMeterProviderBuilder;
   }
 
   /** Reflectively add a tracer configurator condition to the {@link SdkMeterProviderBuilder}. */
-  public static void addMeterConfiguratorCondition(
+  public static SdkMeterProviderBuilder addMeterConfiguratorCondition(
       SdkMeterProviderBuilder sdkMeterProviderBuilder,
       Predicate<InstrumentationScopeInfo> scopeMatcher,
       MeterConfig meterConfig) {
@@ -79,6 +81,7 @@ public final class SdkMeterProviderUtil {
       throw new IllegalStateException(
           "Error calling addMeterConfiguratorCondition on SdkMeterProviderBuilder", e);
     }
+    return sdkMeterProviderBuilder;
   }
 
   /**
