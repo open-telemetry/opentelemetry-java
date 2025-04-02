@@ -80,7 +80,8 @@ public class UpstreamGrpcSenderProvider implements GrpcSenderProvider {
         stub,
         shutdownChannel,
         grpcSenderConfig.getTimeoutNanos(),
-        grpcSenderConfig.getHeadersSupplier());
+        grpcSenderConfig.getHeadersSupplier(),
+        grpcSenderConfig.getExecutorService());
   }
 
   /**

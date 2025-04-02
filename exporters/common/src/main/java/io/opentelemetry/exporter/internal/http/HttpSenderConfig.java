@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -37,7 +38,8 @@ public abstract class HttpSenderConfig {
       @Nullable ProxyOptions proxyOptions,
       @Nullable RetryPolicy retryPolicy,
       @Nullable SSLContext sslContext,
-      @Nullable X509TrustManager trustManager) {
+      @Nullable X509TrustManager trustManager,
+      @Nullable ExecutorService executorService) {
     return new AutoValue_HttpSenderConfig(
         endpoint,
         compressor,
@@ -49,7 +51,8 @@ public abstract class HttpSenderConfig {
         proxyOptions,
         retryPolicy,
         sslContext,
-        trustManager);
+        trustManager,
+        executorService);
   }
 
   public abstract String getEndpoint();
@@ -78,4 +81,7 @@ public abstract class HttpSenderConfig {
 
   @Nullable
   public abstract X509TrustManager getTrustManager();
+
+  @Nullable
+  public abstract ExecutorService getExecutorService();
 }

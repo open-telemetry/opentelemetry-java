@@ -14,6 +14,11 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.internal.testing.CleanupExtension;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.CertificateEncodingException;
+import java.util.Collections;
 import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -61,7 +67,7 @@ class DeclarativeConfigurationCreateTest {
             tempDir, "clientCertificate.cert", clientTls.certificate().getEncoded());
 
     File examplesDir = new File(System.getenv("CONFIG_EXAMPLE_DIR"));
-    assertThat(examplesDir.isDirectory()).isTrue();
+    assertThat(examplesDir).isDirectory();
 
     for (File example : Objects.requireNonNull(examplesDir.listFiles())) {
       // Skip anchors.yaml because support for merge (i.e. "<<: *anchor") was explicitly removed in
@@ -90,10 +96,7 @@ class DeclarativeConfigurationCreateTest {
                   "client_certificate: .*\n",
                   "client_certificate: "
                       + clientCertificatePath.replace("\\", "\\\\")
-                      + System.lineSeparator())
-              // TODO: remove once updated ComponentProvider SPI contract implemented in
-              // https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-xray-propagator
-              .replaceAll("xray,", "");
+                      + System.lineSeparator());
       InputStream is =
           new ByteArrayInputStream(rewrittenExampleContent.getBytes(StandardCharsets.UTF_8));
 
@@ -150,5 +153,33 @@ class DeclarativeConfigurationCreateTest {
                 DeclarativeConfiguration.parseAndCreate(
                     new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8))))
         .doesNotThrowAnyException();
+  }
+
+  @Test
+  void create_ModelCustomizer() {
+    OpenTelemetryConfigurationModel model = new OpenTelemetryConfigurationModel();
+    model.withFileFormat("0.3");
+    model.withTracerProvider(
+        new TracerProviderModel()
+            .withProcessors(
+                Collections.singletonList(
+                    new SpanProcessorModel().withAdditionalProperty("test", null))));
+    OpenTelemetrySdk sdk =
+        DeclarativeConfiguration.create(
+            model,
+            // customizer is TestDeclarativeConfigurationCustomizerProvider
+            SpiHelper.serviceComponentLoader(
+                DeclarativeConfigurationCreateTest.class.getClassLoader()));
+    assertThat(sdk.toString())
+        .contains(
+            "resource=Resource{schemaUrl=null, attributes={"
+                + "color=\"blue\", "
+                + "foo=\"bar\", "
+                + "order=\"second\", "
+                + "service.name=\"unknown_service:java\", "
+                + "shape=\"square\", "
+                + "telemetry.sdk.language=\"java\", "
+                + "telemetry.sdk.name=\"opentelemetry\", "
+                + "telemetry.sdk.version=\"");
   }
 }

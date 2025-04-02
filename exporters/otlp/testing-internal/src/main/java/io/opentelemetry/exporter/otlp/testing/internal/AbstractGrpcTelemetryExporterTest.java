@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -812,6 +813,31 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     assertThat(httpRequests)
         .singleElement()
         .satisfies(req -> assertThat(req.authority()).isEqualTo("opentelemetry"));
+  }
+
+  @Test
+  void executorService() {
+    ExecutorServiceSpy executorService =
+        new ExecutorServiceSpy(Executors.newSingleThreadExecutor());
+
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpUri().toString())
+            .setExecutorService(executorService)
+            .build();
+
+    try {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(executorService.getTaskCount()).isPositive();
+    } finally {
+      exporter.shutdown();
+      // If setting executor, the user is responsible for calling shutdown
+      assertThat(executorService.isShutdown()).isFalse();
+      executorService.shutdown();
+    }
   }
 
   @Test
