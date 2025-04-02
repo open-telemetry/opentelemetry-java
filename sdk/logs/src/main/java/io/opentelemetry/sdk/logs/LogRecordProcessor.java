@@ -40,17 +40,15 @@ public interface LogRecordProcessor extends Closeable {
    */
   static LogRecordProcessor composite(Iterable<LogRecordProcessor> processors) {
     List<LogRecordProcessor> processorList = new ArrayList<>();
-    BatchLogRecordProcessor batchProcessor = null;
+    List<BatchLogRecordProcessor> batchProcessors = new ArrayList<>();
     for (LogRecordProcessor processor : processors) {
       if (!BatchLogRecordProcessor.class.equals(processor.getClass())) {
         processorList.add(processor);
       } else {
-        batchProcessor = (BatchLogRecordProcessor) processor;
+        batchProcessors.add((BatchLogRecordProcessor) processor);
       }
     }
-    if (batchProcessor != null) {
-      processorList.add(batchProcessor);
-    }
+    processorList.addAll(batchProcessors);
 
     if (processorList.isEmpty()) {
       return NoopLogRecordProcessor.getInstance();
