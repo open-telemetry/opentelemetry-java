@@ -21,27 +21,25 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 class SdkReadWriteLogRecord implements ReadWriteLogRecord {
 
-  private final LogLimits logLimits;
-  private final Resource resource;
-  private final InstrumentationScopeInfo instrumentationScopeInfo;
-  @Nullable private final String eventName;
-  private final long timestampEpochNanos;
-  private final long observedTimestampEpochNanos;
-  private final SpanContext spanContext;
-  private final Severity severity;
-  @Nullable private final String severityText;
-  @Nullable private final Value<?> body;
+  protected final LogLimits logLimits;
+  protected final Resource resource;
+  protected final InstrumentationScopeInfo instrumentationScopeInfo;
+  protected final long timestampEpochNanos;
+  protected final long observedTimestampEpochNanos;
+  protected final SpanContext spanContext;
+  protected final Severity severity;
+  @Nullable protected final String severityText;
+  @Nullable protected final Value<?> body;
   private final Object lock = new Object();
 
   @GuardedBy("lock")
   @Nullable
   private AttributesMap attributes;
 
-  private SdkReadWriteLogRecord(
+  protected SdkReadWriteLogRecord(
       LogLimits logLimits,
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
-      @Nullable String eventName,
       long timestampEpochNanos,
       long observedTimestampEpochNanos,
       SpanContext spanContext,
@@ -52,7 +50,6 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
     this.logLimits = logLimits;
     this.resource = resource;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
-    this.eventName = eventName;
     this.timestampEpochNanos = timestampEpochNanos;
     this.observedTimestampEpochNanos = observedTimestampEpochNanos;
     this.spanContext = spanContext;
@@ -67,7 +64,6 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       LogLimits logLimits,
       Resource resource,
       InstrumentationScopeInfo instrumentationScopeInfo,
-      @Nullable String eventName,
       long timestampEpochNanos,
       long observedTimestampEpochNanos,
       SpanContext spanContext,
@@ -79,7 +75,6 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
         logLimits,
         resource,
         instrumentationScopeInfo,
-        eventName,
         timestampEpochNanos,
         observedTimestampEpochNanos,
         spanContext,
@@ -120,7 +115,6 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
       return SdkLogRecordData.create(
           resource,
           instrumentationScopeInfo,
-          eventName,
           timestampEpochNanos,
           observedTimestampEpochNanos,
           spanContext,

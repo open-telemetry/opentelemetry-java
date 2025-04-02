@@ -20,17 +20,16 @@ import javax.annotation.Nullable;
 /** SDK implementation of {@link LogRecordBuilder}. */
 class SdkLogRecordBuilder implements LogRecordBuilder {
 
-  private final LoggerSharedState loggerSharedState;
-  private final LogLimits logLimits;
+  protected final LoggerSharedState loggerSharedState;
+  protected final LogLimits logLimits;
 
-  private final InstrumentationScopeInfo instrumentationScopeInfo;
-  @Nullable private String eventName;
-  private long timestampEpochNanos;
-  private long observedTimestampEpochNanos;
-  @Nullable private Context context;
-  private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
-  @Nullable private String severityText;
-  @Nullable private Value<?> body;
+  protected final InstrumentationScopeInfo instrumentationScopeInfo;
+  protected long timestampEpochNanos;
+  protected long observedTimestampEpochNanos;
+  @Nullable protected Context context;
+  protected Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
+  @Nullable protected String severityText;
+  @Nullable protected Value<?> body;
   @Nullable private AttributesMap attributes;
 
   SdkLogRecordBuilder(
@@ -38,12 +37,6 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
     this.loggerSharedState = loggerSharedState;
     this.logLimits = loggerSharedState.getLogLimits();
     this.instrumentationScopeInfo = instrumentationScopeInfo;
-  }
-
-  // accessible via ExtendedSdkLogRecordBuilder
-  SdkLogRecordBuilder setEventName(String eventName) {
-    this.eventName = eventName;
-    return this;
   }
 
   @Override
@@ -133,7 +126,6 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
                 loggerSharedState.getLogLimits(),
                 loggerSharedState.getResource(),
                 instrumentationScopeInfo,
-                eventName,
                 timestampEpochNanos,
                 observedTimestampEpochNanos,
                 Span.fromContext(context).getSpanContext(),
