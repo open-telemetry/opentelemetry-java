@@ -13,6 +13,8 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -37,6 +39,8 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
+import io.opentelemetry.sdk.internal.DefaultExceptionAttributeResolver;
+import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -67,6 +71,7 @@ import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -441,7 +446,7 @@ class SdkSpanTest {
   void getAttributes() {
     SdkSpan span = createTestSpanWithAttributes(attributes);
     try {
-      assertThat(span.getAttributes())
+      Assertions.assertThat(span.getAttributes())
           .isEqualTo(
               Attributes.builder()
                   .put("MyBooleanAttributeKey", false)
@@ -457,7 +462,7 @@ class SdkSpanTest {
   void getAttributes_Empty() {
     SdkSpan span = createTestSpan(SpanKind.INTERNAL);
     try {
-      assertThat(span.getAttributes()).isEqualTo(Attributes.empty());
+      Assertions.assertThat(span.getAttributes()).isEqualTo(Attributes.empty());
     } finally {
       span.end();
     }
@@ -791,48 +796,48 @@ class SdkSpanTest {
     }
     List<EventData> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(6);
-    assertThat(events.get(0))
+    Assertions.assertThat(events.get(0))
         .satisfies(
             event -> {
               assertThat(event.getName()).isEqualTo("event1");
-              assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
+              Assertions.assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
               assertThat(event.getEpochNanos()).isEqualTo(START_EPOCH_NANOS);
             });
-    assertThat(events.get(1))
+    Assertions.assertThat(events.get(1))
         .satisfies(
             event -> {
               assertThat(event.getName()).isEqualTo("event2");
-              assertThat(event.getAttributes())
+              Assertions.assertThat(event.getAttributes())
                   .isEqualTo(Attributes.of(stringKey("e1key"), "e1Value"));
               assertThat(event.getEpochNanos()).isEqualTo(START_EPOCH_NANOS);
             });
-    assertThat(events.get(2))
+    Assertions.assertThat(events.get(2))
         .satisfies(
             event -> {
               assertThat(event.getName()).isEqualTo("event3");
-              assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
+              Assertions.assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
               assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.SECONDS.toNanos(10));
             });
-    assertThat(events.get(3))
+    Assertions.assertThat(events.get(3))
         .satisfies(
             event -> {
               assertThat(event.getName()).isEqualTo("event4");
-              assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
+              Assertions.assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
               assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.SECONDS.toNanos(20));
             });
-    assertThat(events.get(4))
+    Assertions.assertThat(events.get(4))
         .satisfies(
             event -> {
               assertThat(event.getName()).isEqualTo("event5");
-              assertThat(event.getAttributes())
+              Assertions.assertThat(event.getAttributes())
                   .isEqualTo(Attributes.builder().put("foo", "bar").build());
               assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(30));
             });
-    assertThat(events.get(5))
+    Assertions.assertThat(events.get(5))
         .satisfies(
             event -> {
               assertThat(event.getName()).isEqualTo("event6");
-              assertThat(event.getAttributes())
+              Assertions.assertThat(event.getAttributes())
                   .isEqualTo(Attributes.builder().put("foo", "bar").build());
               assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(1000));
             });
@@ -942,7 +947,8 @@ class SdkSpanTest {
                 .build(),
             parentSpanId,
             null,
-            null);
+            null,
+            DefaultExceptionAttributeResolver.getInstance());
     try {
       Span span1 = createTestSpan(SpanKind.INTERNAL);
       Span span2 = createTestSpan(SpanKind.INTERNAL);
@@ -981,11 +987,11 @@ class SdkSpanTest {
           .satisfiesExactly(
               link -> {
                 assertThat(link.getSpanContext()).isEqualTo(span1.getSpanContext());
-                assertThat(link.getAttributes()).isEqualTo(Attributes.empty());
+                Assertions.assertThat(link.getAttributes()).isEqualTo(Attributes.empty());
               },
               link -> {
                 assertThat(link.getSpanContext()).isEqualTo(span2.getSpanContext());
-                assertThat(link.getAttributes())
+                Assertions.assertThat(link.getAttributes())
                     .isEqualTo(
                         Attributes.builder()
                             .put("key1", true)
@@ -1032,6 +1038,7 @@ class SdkSpanTest {
             Context.root(),
             SpanLimits.getDefault(),
             spanProcessor,
+            DefaultExceptionAttributeResolver.getInstance(),
             testClock,
             resource,
             null,
@@ -1137,7 +1144,7 @@ class SdkSpanTest {
         EventData expectedEvent =
             EventData.create(
                 START_EPOCH_NANOS + i * NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
-        assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
+        Assertions.assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
         assertThat(spanData.getTotalRecordedEvents()).isEqualTo(2 * maxNumberOfEvents);
       }
     } finally {
@@ -1149,7 +1156,7 @@ class SdkSpanTest {
       EventData expectedEvent =
           EventData.create(
               START_EPOCH_NANOS + i * NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
-      assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
+      Assertions.assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
     }
   }
 
@@ -1181,7 +1188,7 @@ class SdkSpanTest {
         .isEqualTo(exception.getClass().getName());
     assertThat(event.getAttributes().get(stringKey("exception.stacktrace"))).isEqualTo(stacktrace);
     assertThat(event.getAttributes().size()).isEqualTo(3);
-    assertThat(event)
+    Assertions.assertThat(event)
         .isInstanceOfSatisfying(
             ExceptionEventData.class,
             exceptionEvent -> {
@@ -1269,7 +1276,7 @@ class SdkSpanTest {
     assertThat(event.getAttributes().get(stringKey("exception.stacktrace"))).isEqualTo(stacktrace);
     assertThat(event.getAttributes().size()).isEqualTo(4);
 
-    assertThat(event)
+    Assertions.assertThat(event)
         .isInstanceOfSatisfying(
             ExceptionEventData.class,
             exceptionEvent -> {
@@ -1290,6 +1297,47 @@ class SdkSpanTest {
     assertThat(event.getAttributes().size()).isEqualTo(2);
     assertThat(event.getTotalAttributeCount()).isEqualTo(5);
     assertThat(event.getTotalAttributeCount() - event.getAttributes().size()).isPositive();
+  }
+
+  @Test
+  void recordException_CustomResolver() {
+    ExceptionAttributeResolver exceptionAttributeResolver =
+        new ExceptionAttributeResolver() {
+          @Override
+          public String getExceptionType(Throwable throwable) {
+            return "type";
+          }
+
+          @Nullable
+          @Override
+          public String getExceptionMessage(Throwable throwable) {
+            return null;
+          }
+
+          @Override
+          public String getExceptionStacktrace(Throwable throwable) {
+            return "stacktrace";
+          }
+        };
+
+    SdkSpan span =
+        createTestSpan(
+            SpanKind.INTERNAL,
+            SpanLimits.getDefault(),
+            parentSpanId,
+            null,
+            Collections.singletonList(link),
+            exceptionAttributeResolver);
+
+    span.recordException(new IllegalStateException("error"));
+
+    List<EventData> events = span.toSpanData().getEvents();
+    assertThat(events.size()).isEqualTo(1);
+    EventData event = events.get(0);
+    assertThat(event)
+        .hasAttributesSatisfyingExactly(
+            equalTo(ExceptionAttributeResolver.EXCEPTION_TYPE, "type"),
+            equalTo(ExceptionAttributeResolver.EXCEPTION_STACKTRACE, "stacktrace"));
   }
 
   @Test
@@ -1343,6 +1391,7 @@ class SdkSpanTest {
             Context.root(),
             spanLimits,
             spanProcessor,
+            DefaultExceptionAttributeResolver.getInstance(),
             testClock,
             resource,
             AttributesMap.create(
@@ -1424,7 +1473,8 @@ class SdkSpanTest {
         SpanLimits.getDefault(),
         null,
         attributesMap,
-        Collections.singletonList(link));
+        Collections.singletonList(link),
+        DefaultExceptionAttributeResolver.getInstance());
   }
 
   private SdkSpan createTestRootSpan() {
@@ -1433,17 +1483,28 @@ class SdkSpanTest {
         SpanLimits.getDefault(),
         SpanId.getInvalid(),
         null,
-        Collections.singletonList(link));
+        Collections.singletonList(link),
+        DefaultExceptionAttributeResolver.getInstance());
   }
 
   private SdkSpan createTestSpan(SpanKind kind) {
     return createTestSpan(
-        kind, SpanLimits.getDefault(), parentSpanId, null, Collections.singletonList(link));
+        kind,
+        SpanLimits.getDefault(),
+        parentSpanId,
+        null,
+        Collections.singletonList(link),
+        DefaultExceptionAttributeResolver.getInstance());
   }
 
   private SdkSpan createTestSpan(SpanLimits config) {
     return createTestSpan(
-        SpanKind.INTERNAL, config, parentSpanId, null, Collections.singletonList(link));
+        SpanKind.INTERNAL,
+        config,
+        parentSpanId,
+        null,
+        Collections.singletonList(link),
+        DefaultExceptionAttributeResolver.getInstance());
   }
 
   private SdkSpan createTestSpan(
@@ -1451,7 +1512,8 @@ class SdkSpanTest {
       SpanLimits config,
       @Nullable String parentSpanId,
       @Nullable AttributesMap attributes,
-      @Nullable List<LinkData> links) {
+      @Nullable List<LinkData> links,
+      ExceptionAttributeResolver exceptionAttributeResolver) {
     List<LinkData> linksCopy = links == null ? new ArrayList<>() : new ArrayList<>(links);
 
     SdkSpan span =
@@ -1468,6 +1530,7 @@ class SdkSpanTest {
             Context.root(),
             config,
             spanProcessor,
+            exceptionAttributeResolver,
             testClock,
             resource,
             attributes,
@@ -1534,9 +1597,7 @@ class SdkSpanTest {
     Resource resource = this.resource;
     Attributes attributes = TestUtils.generateRandomAttributes();
     AttributesMap attributesWithCapacity = AttributesMap.create(32, Integer.MAX_VALUE);
-    attributes.forEach(
-        (attributeKey, object) ->
-            attributesWithCapacity.put((AttributeKey<Object>) attributeKey, object));
+    attributes.forEach(attributesWithCapacity::put);
     Attributes event1Attributes = TestUtils.generateRandomAttributes();
     Attributes event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =
@@ -1557,6 +1618,7 @@ class SdkSpanTest {
             Context.root(),
             spanLimits,
             spanProcessor,
+            DefaultExceptionAttributeResolver.getInstance(),
             clock,
             resource,
             attributesWithCapacity,
