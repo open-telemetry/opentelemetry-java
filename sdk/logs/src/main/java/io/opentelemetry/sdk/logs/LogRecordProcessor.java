@@ -9,6 +9,7 @@ import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,15 +40,26 @@ public interface LogRecordProcessor extends Closeable {
    */
   static LogRecordProcessor composite(Iterable<LogRecordProcessor> processors) {
     List<LogRecordProcessor> processorList = new ArrayList<>();
+    BatchLogRecordProcessor batchProcessor = null;
     for (LogRecordProcessor processor : processors) {
-      processorList.add(processor);
+      if (!BatchLogRecordProcessor.class.equals(processor.getClass())) {
+        processorList.add(processor);
+      } else {
+        batchProcessor = (BatchLogRecordProcessor) processor;
+      }
     }
+    if (batchProcessor != null) {
+      processorList.add(batchProcessor);
+    }
+
     if (processorList.isEmpty()) {
       return NoopLogRecordProcessor.getInstance();
     }
+
     if (processorList.size() == 1) {
       return processorList.get(0);
     }
+
     return MultiLogRecordProcessor.create(processorList);
   }
 
