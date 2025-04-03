@@ -37,6 +37,9 @@ public interface LogRecordProcessor extends Closeable {
   /**
    * Returns a {@link LogRecordProcessor} which simply delegates to all processing to the {@code
    * processors} in order.
+   *
+   * <p>Note that if there are {@link BatchLogRecordProcessor} including, they are enforced to end
+   * of the processor pipeline.
    */
   static LogRecordProcessor composite(Iterable<LogRecordProcessor> processors) {
     List<LogRecordProcessor> processorList = new ArrayList<>();
