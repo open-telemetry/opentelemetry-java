@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.49.0 (2025-04-04)
+
 ### SDK
 
 #### Trace
