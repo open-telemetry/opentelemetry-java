@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.prometheus;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
+import com.sun.net.httpserver.Authenticator;
 import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -36,6 +37,7 @@ public final class PrometheusHttpServerBuilder {
   @Nullable private HttpHandler defaultHandler;
   private DefaultAggregationSelector defaultAggregationSelector =
       DefaultAggregationSelector.getDefault();
+  @Nullable private Authenticator authenticator;
 
   PrometheusHttpServerBuilder() {}
 
@@ -48,6 +50,7 @@ public final class PrometheusHttpServerBuilder {
     this.executor = builder.executor;
     this.memoryMode = builder.memoryMode;
     this.defaultAggregationSelector = builder.defaultAggregationSelector;
+    this.authenticator = builder.authenticator;
   }
 
   /** Sets the host to bind to. If unset, defaults to {@value #DEFAULT_HOST}. */
@@ -147,6 +150,17 @@ public final class PrometheusHttpServerBuilder {
   }
 
   /**
+   * Set the authenticator for {@link PrometheusHttpServer}.
+   *
+   * <p>If unset, no authentication will be performed.
+   */
+  public PrometheusHttpServerBuilder setAuthenticator(Authenticator authenticator) {
+    requireNonNull(authenticator, "authenticator");
+    this.authenticator = authenticator;
+    return this;
+  }
+
+  /**
    * Returns a new {@link PrometheusHttpServer} with the configuration of this builder which can be
    * registered with a {@link io.opentelemetry.sdk.metrics.SdkMeterProvider}.
    */
@@ -166,6 +180,7 @@ public final class PrometheusHttpServerBuilder {
         allowedResourceAttributesFilter,
         memoryMode,
         defaultHandler,
-        defaultAggregationSelector);
+        defaultAggregationSelector,
+        authenticator);
   }
 }
