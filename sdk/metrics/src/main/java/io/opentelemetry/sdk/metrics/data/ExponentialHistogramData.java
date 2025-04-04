@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramData;
 import java.util.Collection;
 import javax.annotation.concurrent.Immutable;
 
@@ -23,6 +24,12 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public interface ExponentialHistogramData extends Data<ExponentialHistogramPointData> {
+
+  /** Returns a new {@link ExponentialHistogramData}. */
+  static ExponentialHistogramData create(
+      AggregationTemporality temporality, Collection<ExponentialHistogramPointData> points) {
+    return ImmutableExponentialHistogramData.create(temporality, points);
+  }
 
   /**
    * Returns the {@code AggregationTemporality} of this metric.
