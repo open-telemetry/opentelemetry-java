@@ -268,6 +268,9 @@ public interface Context {
    * making this the {@linkplain Context#current() current context} before each execution.
    */
   default ExecutorService wrap(ExecutorService executor) {
+    if (executor instanceof ContextExecutorService) {
+      return executor;
+    }
     return new ContextExecutorService(this, executor);
   }
 
@@ -277,6 +280,9 @@ public interface Context {
    * execution.
    */
   default ScheduledExecutorService wrap(ScheduledExecutorService executor) {
+    if (executor instanceof ContextScheduledExecutorService) {
+      return executor;
+    }
     return new ContextScheduledExecutorService(this, executor);
   }
 
