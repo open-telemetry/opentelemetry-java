@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+### SDK
+
+#### Trace
+
+* Avoid linear queue.size() calls in span producers by storing queue size separately
+  ([#7141](https://github.com/open-telemetry/opentelemetry-java/pull/7141))
+
+#### Exporters
+
+* OTLP: Add support for setting exporter executor service
+  ([#7152](https://github.com/open-telemetry/opentelemetry-java/pull/7152))
+* OTLP: Refine delay jitter for exponential backoff
+  ([#7206](https://github.com/open-telemetry/opentelemetry-java/pull/7206))
+
+#### Extensions
+
+* Autoconfigure: Remove support for otel.experimental.exporter.otlp.retry.enabled
+  ([#7200](https://github.com/open-telemetry/opentelemetry-java/pull/7200))
+* Autoconfigure: Add stable cardinality limit property otel.java.metrics.cardinality.limit
+  ([#7199](https://github.com/open-telemetry/opentelemetry-java/pull/7199))
+* Incubator: Add declarative config model customizer SPI
+  ([#7118](https://github.com/open-telemetry/opentelemetry-java/pull/7118))
+
 ## Version 1.48.0 (2025-03-07)
 
 ### API
