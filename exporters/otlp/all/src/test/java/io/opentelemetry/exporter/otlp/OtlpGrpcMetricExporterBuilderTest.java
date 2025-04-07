@@ -74,6 +74,32 @@ class OtlpGrpcMetricExporterBuilderTest {
     when(meter.counterBuilder(eq("otlp.exporter.seen"))).thenReturn(counterBuilder);
     when(counterBuilder.build()).thenReturn(counter);
 
+    try (OtlpGrpcMetricExporter exporter =
+        OtlpGrpcMetricExporter.builder().setMeterProvider(meterProvider).build()) {
+      verifyNoInteractions(meterProvider, meter, counterBuilder, counter);
+
+      // Collection before MeterProvider is initialized.
+      when(meterProvider.get(any())).thenReturn(MeterProvider.noop().get("test"));
+      exporter.export(DATA_SET);
+
+      verifyNoInteractions(meter, counterBuilder, counter);
+
+      // Collection after MeterProvider is initialized.
+      when(meterProvider.get(any())).thenReturn(meter);
+      exporter.export(DATA_SET);
+
+      verify(meter).counterBuilder(eq("otlp.exporter.seen"));
+      verify(counter).add(eq(1L), any());
+      verifyNoMoreInteractions(meter, counter);
+    }
+  }
+
+  @Test
+  void setMeterProvider_supplier() {
+    when(meterProvider.get(any())).thenReturn(meter);
+    when(meter.counterBuilder(eq("otlp.exporter.seen"))).thenReturn(counterBuilder);
+    when(counterBuilder.build()).thenReturn(counter);
+
     @SuppressWarnings("unchecked")
     Supplier<MeterProvider> provider = mock(Supplier.class);
     try (OtlpGrpcMetricExporter exporter =
