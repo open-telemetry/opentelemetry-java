@@ -64,7 +64,10 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   static {
     boolean incubatorAvailable = false;
     try {
-      Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration");
+      Class.forName(
+          "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration",
+          false,
+          AutoConfiguredOpenTelemetrySdkBuilder.class.getClassLoader());
       incubatorAvailable = true;
     } catch (ClassNotFoundException e) {
       // Not available
