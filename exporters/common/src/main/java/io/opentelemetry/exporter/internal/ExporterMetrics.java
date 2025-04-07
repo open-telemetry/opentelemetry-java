@@ -70,7 +70,7 @@ public class ExporterMetrics {
 
   private LongCounter seen() {
     LongCounter seen = this.seen;
-    if (seen == null) {
+    if (seen == null || isNoop(seen)) {
       seen = meter().counterBuilder(exporterName + ".exporter.seen").build();
       this.seen = seen;
     }
@@ -79,7 +79,7 @@ public class ExporterMetrics {
 
   private LongCounter exported() {
     LongCounter exported = this.exported;
-    if (exported == null) {
+    if (exported == null || isNoop(exported)) {
       exported = meter().counterBuilder(exporterName + ".exporter.exported").build();
       this.exported = exported;
     }
@@ -90,6 +90,10 @@ public class ExporterMetrics {
     return meterProviderSupplier
         .get()
         .get("io.opentelemetry.exporters." + exporterName + "-" + transportName);
+  }
+
+  private static boolean isNoop(LongCounter counter) {
+    return counter.getClass().getSimpleName().startsWith("Noop");
   }
 
   /**
