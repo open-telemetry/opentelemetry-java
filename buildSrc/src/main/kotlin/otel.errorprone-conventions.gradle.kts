@@ -87,6 +87,9 @@ tasks {
         // cognitive load is dubious.
         disable("YodaCondition")
 
+        // Text blocks are not supported in java 8
+        disable("StringConcatToTextBlock")
+
         if ((name.contains("Jmh") || name.contains("Test") || project.name.contains("testing-internal")) && !project.name.equals("custom-checks")) {
           // Allow underscore in test-type method names
           disable("MemberName")
