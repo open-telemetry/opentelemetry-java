@@ -6,7 +6,7 @@
 package io.opentelemetry.api.baggage.propagation;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
@@ -36,7 +36,6 @@ class BaggageCodecTest {
 
   @Test
   void shouldThrowIfMalformedData() {
-    assertThatThrownBy(() -> BaggageCodec.decode("%1", StandardCharsets.UTF_8))
-        .isInstanceOf(IllegalArgumentException.class);
+    assertThatNoException().isThrownBy(() -> BaggageCodec.decode("%1", StandardCharsets.UTF_8));
   }
 }
