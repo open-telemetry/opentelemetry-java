@@ -17,16 +17,13 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface SumData<T extends PointData> extends Data<T> {
 
-  /**
-   * Creates a new instance of {@link SumData}.
-   *
-   * @param isMonotonic {@code true} if the sum is monotonic.
-   * @param temporality the aggregation temporality of the sum data
-   * @param points the collection of sum point data
-   * @return a new instance of {@link SumData}
-   */
-  static <T extends PointData> ImmutableSumData<T> create(
-      boolean isMonotonic, AggregationTemporality temporality, Collection<T> points) {
+  static SumData<LongPointData> createLongSumData(
+      boolean isMonotonic, AggregationTemporality temporality, Collection<LongPointData> points) {
+    return ImmutableSumData.create(isMonotonic, temporality, points);
+  }
+
+  static SumData<DoublePointData> createDoubleSumData(
+      boolean isMonotonic, AggregationTemporality temporality, Collection<DoublePointData> points) {
     return ImmutableSumData.create(isMonotonic, temporality, points);
   }
 

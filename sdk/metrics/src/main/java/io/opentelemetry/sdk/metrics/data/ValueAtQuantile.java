@@ -16,13 +16,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface ValueAtQuantile {
 
-  /**
-   * Creates a new {@code ValueAtQuantile} instance with the specified quantile and value.
-   *
-   * @param quantile the quantile for which the value is being recorded
-   * @param value the value at the specified quantile
-   * @return a new {@code ValueAtQuantile} instance
-   */
   static ValueAtQuantile create(double quantile, double value) {
     return ImmutableValueAtQuantile.create(quantile, value);
   }

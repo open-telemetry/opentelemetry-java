@@ -19,13 +19,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface HistogramPointData extends PointData {
 
-  /**
-   * Creates a HistogramPointData. For a Histogram with N defined boundaries, there should be N+1
-   * counts.
-   *
-   * @return a HistogramPointData.
-   * @throws IllegalArgumentException if the given boundaries/counts were invalid
-   */
   @SuppressWarnings("TooManyParameters")
   static HistogramPointData create(
       long startEpochNanos,

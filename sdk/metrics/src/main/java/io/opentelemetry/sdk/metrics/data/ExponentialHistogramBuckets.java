@@ -31,7 +31,6 @@ public interface ExponentialHistogramBuckets {
    *
    * @return a ExponentialHistogramBuckets.
    */
-  @SuppressWarnings("TooManyParameters")
   static ExponentialHistogramBuckets create(int scale, int offset, List<Long> bucketCounts) {
     return ImmutableExponentialHistogramBuckets.create(scale, offset, bucketCounts);
   }

@@ -23,10 +23,7 @@ public abstract class TestMetricData implements MetricData {
   public static Builder builder() {
     return new AutoValue_TestMetricData.Builder()
         .setResource(Resource.empty())
-        .setName("name")
-        .setInstrumentationScopeInfo(InstrumentationScopeInfo.empty())
-        .setDescription("description")
-        .setUnit("1");
+        .setInstrumentationScopeInfo(InstrumentationScopeInfo.empty());
   }
 
   /** A builder for {@link TestMetricData}. */

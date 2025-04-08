@@ -17,13 +17,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface SummaryData extends Data<SummaryPointData> {
 
-  /**
-   * Creates a new instance of {@link SummaryData} with the given collection of {@link
-   * SummaryPointData}.
-   *
-   * @param points a collection of {@link SummaryPointData} to be included in the summary data
-   * @return a new instance of {@link SummaryData} containing the provided points
-   */
   static SummaryData create(Collection<SummaryPointData> points) {
     return ImmutableSummaryData.create(points);
   }

@@ -18,15 +18,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface DoubleExemplarData extends ExemplarData {
 
-  /**
-   * Construct a new exemplar.
-   *
-   * @param filteredAttributes The set of {@link Attributes} not already associated with the {@link
-   *     PointData}.
-   * @param recordTimeNanos The time when the sample qas recorded in nanoseconds.
-   * @param spanContext The associated span context.
-   * @param value The value recorded.
-   */
   static DoubleExemplarData create(
       Attributes filteredAttributes, long recordTimeNanos, SpanContext spanContext, double value) {
     return ImmutableDoubleExemplarData.create(

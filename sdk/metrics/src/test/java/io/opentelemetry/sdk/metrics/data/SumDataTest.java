@@ -7,28 +7,32 @@ package io.opentelemetry.sdk.metrics.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import java.util.Collections;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 public class SumDataTest {
 
   @Test
-  void create() {
-    long startEpochNanos = TimeUnit.MILLISECONDS.toNanos(1000);
-    long epochNanos = TimeUnit.MILLISECONDS.toNanos(2000);
-    long longValue = 10;
-    AttributeKey<String> key = AttributeKey.stringKey("key");
-    LongPointData longPoint =
-        LongPointData.create(startEpochNanos, epochNanos, Attributes.of(key, "value"), longValue);
+  void createLongSumData() {
+    LongPointData point = LongPointData.create(0, 0, Attributes.empty(), 1);
     SumData<LongPointData> sumData =
-        SumData.create(
+        SumData.createLongSumData(
             /* isMonotonic= */ false,
             AggregationTemporality.CUMULATIVE,
-            Collections.singletonList(longPoint));
-    assertThat(sumData.isMonotonic()).isFalse();
-    assertThat(sumData.getAggregationTemporality()).isEqualTo(AggregationTemporality.CUMULATIVE);
+            Collections.singletonList(point));
+    assertThat(sumData.getPoints()).containsExactly(point);
+  }
+
+  @Test
+  void createDoubleSumData() {
+    DoublePointData point =
+        DoublePointData.create(0, 0, Attributes.empty(), 1.0, Collections.emptyList());
+    SumData<DoublePointData> sumData =
+        SumData.createDoubleSumData(
+            /* isMonotonic= */ false,
+            AggregationTemporality.CUMULATIVE,
+            Collections.singletonList(point));
+    assertThat(sumData.getPoints()).containsExactly(point);
   }
 }

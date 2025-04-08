@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics.data;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoublePointData;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -17,20 +16,14 @@ import java.util.List;
  */
 public interface DoublePointData extends PointData {
 
-  /**
-   * Creates a {@link DoublePointData}.
-   *
-   * @param startEpochNanos The starting time for the period where this point was sampled. Note:
-   *     While start time is optional in OTLP, all SDKs should produce it for all their metrics, so
-   *     it is required here.
-   * @param epochNanos The ending time for the period when this value was sampled.
-   * @param attributes The set of attributes associated with this point.
-   * @param value The value that was sampled.
-   */
   static DoublePointData create(
-      long startEpochNanos, long epochNanos, Attributes attributes, double value) {
+      long startEpochNanos,
+      long epochNanos,
+      Attributes attributes,
+      double value,
+      List<DoubleExemplarData> exemplars) {
     return ImmutableDoublePointData.create(
-        startEpochNanos, epochNanos, attributes, value, Collections.emptyList());
+        startEpochNanos, epochNanos, attributes, value, exemplars);
   }
 
   /** Returns the value of the data point. */

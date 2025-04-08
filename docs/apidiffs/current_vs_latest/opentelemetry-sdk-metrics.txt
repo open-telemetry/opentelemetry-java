@@ -1,4 +1,4 @@
-Comparing source compatibility of opentelemetry-sdk-metrics-1.49.0-SNAPSHOT.jar against opentelemetry-sdk-metrics-1.48.0.jar
+Comparing source compatibility of opentelemetry-sdk-metrics-1.49.0-SNAPSHOT.jar against opentelemetry-sdk-metrics-1.49.0.jar
 +++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.DelegatingMetricData  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.data.MetricData
@@ -18,7 +18,7 @@ Comparing source compatibility of opentelemetry-sdk-metrics-1.49.0-SNAPSHOT.jar 
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.DoubleExemplarData create(io.opentelemetry.api.common.Attributes, long, io.opentelemetry.api.trace.SpanContext, double)
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.data.DoublePointData  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.DoublePointData create(long, long, io.opentelemetry.api.common.Attributes, double)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.DoublePointData create(long, long, io.opentelemetry.api.common.Attributes, double, java.util.List<io.opentelemetry.sdk.metrics.data.DoubleExemplarData>)
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets create(int, int, java.util.List<java.lang.Long>)
@@ -31,8 +31,8 @@ Comparing source compatibility of opentelemetry-sdk-metrics-1.49.0-SNAPSHOT.jar 
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.data.GaugeData  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	GENERIC TEMPLATES: === T:io.opentelemetry.sdk.metrics.data.PointData
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.GaugeData<T> create(java.util.Collection<T>)
-		GENERIC TEMPLATES: +++ T:io.opentelemetry.sdk.metrics.data.PointData
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.GaugeData<io.opentelemetry.sdk.metrics.data.DoublePointData> createDoubleGaugeData(java.util.Collection<io.opentelemetry.sdk.metrics.data.DoublePointData>)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.GaugeData<io.opentelemetry.sdk.metrics.data.LongPointData> createLongGaugeData(java.util.Collection<io.opentelemetry.sdk.metrics.data.LongPointData>)
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.data.HistogramData  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.HistogramData create(io.opentelemetry.sdk.metrics.data.AggregationTemporality, java.util.Collection<io.opentelemetry.sdk.metrics.data.HistogramPointData>)
@@ -48,8 +48,8 @@ Comparing source compatibility of opentelemetry-sdk-metrics-1.49.0-SNAPSHOT.jar 
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.data.SumData  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	GENERIC TEMPLATES: === T:io.opentelemetry.sdk.metrics.data.PointData
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData<T> create(boolean, io.opentelemetry.sdk.metrics.data.AggregationTemporality, java.util.Collection<T>)
-		GENERIC TEMPLATES: +++ T:io.opentelemetry.sdk.metrics.data.PointData
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.SumData<io.opentelemetry.sdk.metrics.data.DoublePointData> createDoubleSumData(boolean, io.opentelemetry.sdk.metrics.data.AggregationTemporality, java.util.Collection<io.opentelemetry.sdk.metrics.data.DoublePointData>)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.SumData<io.opentelemetry.sdk.metrics.data.LongPointData> createLongSumData(boolean, io.opentelemetry.sdk.metrics.data.AggregationTemporality, java.util.Collection<io.opentelemetry.sdk.metrics.data.LongPointData>)
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.data.SummaryData  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.SummaryData create(java.util.Collection<io.opentelemetry.sdk.metrics.data.SummaryPointData>)
