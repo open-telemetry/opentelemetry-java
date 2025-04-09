@@ -53,6 +53,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   private final AggregationTemporality aggregationTemporality;
   private final Aggregator<T, U> aggregator;
   private final AttributesProcessor attributesProcessor;
+  private final MemoryMode memoryMode;
 
   /**
    * This field is set to 1 less than the actual intended cardinality limit, allowing the last slot
@@ -63,14 +64,14 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   // Only populated if aggregationTemporality == DELTA
   private Map<Attributes, T> lastPoints;
 
+  private Map<Attributes, AggregatorHandle<T, U>> aggregatorHandles = new HashMap<>();
+
   // Only populated if memoryMode == REUSABLE_DATA
   private final ObjectPool<T> reusablePointsPool;
   private final List<T> reusableDeltaPoints = new ArrayList<>();
 
-  private Map<Attributes, AggregatorHandle<T, U>> aggregatorHandles = new HashMap<>();
-  private Map<Attributes, Measurement> latestRecordedMeasurements = new HashMap<>();
-
-  private final MemoryMode memoryMode;
+  private long startEpochNanos;
+  private long epochNanos;
 
   private AsynchronousMetricStorage(
       RegisteredReader registeredReader,
@@ -91,13 +92,11 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     this.reusablePointsPool = new ObjectPool<>(aggregator::createReusablePoint);
 
     if (memoryMode == REUSABLE_DATA) {
-      lastPoints = new PooledHashMap<>();
-      aggregatorHandles = new PooledHashMap<>();
-      latestRecordedMeasurements = new PooledHashMap<>();
+      this.lastPoints = new PooledHashMap<>();
+      this.aggregatorHandles = new PooledHashMap<>();
     } else {
-      lastPoints = new HashMap<>();
-      aggregatorHandles = new HashMap<>();
-      latestRecordedMeasurements = new HashMap<>();
+      this.lastPoints = new HashMap<>();
+      this.aggregatorHandles = new HashMap<>();
     }
   }
 
@@ -127,24 +126,34 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
         registeredView.getCardinalityLimit());
   }
 
-  /**
-   * Record callback measurement from {@link ObservableLongMeasurement} or {@link
-   * ObservableDoubleMeasurement}.
-   */
-  void record(Measurement measurement) {
-    Context context = Context.current();
-    Attributes processedAttributes = attributesProcessor.process(measurement.attributes(), context);
-    long start =
-        aggregationTemporality == AggregationTemporality.DELTA
-            ? registeredReader.getLastCollectEpochNanos()
-            : measurement.startEpochNanos();
-
-    measurement = measurement.withAttributes(processedAttributes).withStartEpochNanos(start);
-
-    recordPoint(processedAttributes, measurement);
+  /** Record callback measurement from {@link ObservableLongMeasurement}. */
+  void record(Attributes attributes, long value) {
+    attributes = validateAndProcessAttributes(attributes);
+    AggregatorHandle<T, U> handle =
+        aggregatorHandles.computeIfAbsent(attributes, key -> aggregator.createHandle());
+    handle.recordLong(value, attributes, Context.current());
   }
 
-  private void recordPoint(Attributes attributes, Measurement measurement) {
+  /** Record callback measurement from {@link ObservableDoubleMeasurement}. */
+  void record(Attributes attributes, double value) {
+    attributes = validateAndProcessAttributes(attributes);
+    AggregatorHandle<T, U> handle =
+        aggregatorHandles.computeIfAbsent(attributes, key -> aggregator.createHandle());
+    handle.recordDouble(value, attributes, Context.current());
+  }
+
+  void setEpochInformation(long startEpochNanos, long epochNanos) {
+    this.startEpochNanos =
+        aggregationTemporality == AggregationTemporality.DELTA
+            ? registeredReader.getLastCollectEpochNanos()
+            : startEpochNanos;
+    this.epochNanos = epochNanos;
+  }
+
+  private Attributes validateAndProcessAttributes(Attributes attributes) {
+    Context context = Context.current();
+    attributes = attributesProcessor.process(attributes, context);
+
     if (aggregatorHandles.size() >= maxCardinality) {
       throttlingLogger.log(
           Level.WARNING,
@@ -153,9 +162,10 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
               + " has exceeded the maximum allowed cardinality ("
               + maxCardinality
               + ").");
-      attributes = MetricStorage.CARDINALITY_OVERFLOW;
-      measurement = measurement.withAttributes(attributes);
-    } else if (aggregatorHandles.containsKey(
+      return MetricStorage.CARDINALITY_OVERFLOW;
+    }
+
+    if (aggregatorHandles.containsKey(
         attributes)) { // Check there is not already a recording for the attributes
       throttlingLogger.log(
           Level.WARNING,
@@ -165,31 +175,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
               + attributes);
     }
 
-    Measurement recentMeasurement = latestRecordedMeasurements.get(attributes);
-    if (recentMeasurement != null
-        && (recentMeasurement.startEpochNanos() != measurement.startEpochNanos()
-            || recentMeasurement.epochNanos() != measurement.epochNanos())) {
-      String msg =
-          String.format(
-              "Instrument "
-                  + metricDescriptor.getSourceInstrument().getName()
-                  + " has recorded multiple values for the same attributes (%s) with different metadata: %s/%s",
-              attributes,
-              recentMeasurement,
-              measurement);
-      throttlingLogger.log(Level.WARNING, msg);
-    }
-    latestRecordedMeasurements.put(attributes, measurement);
-
-    AggregatorHandle<T, U> handle =
-        aggregatorHandles.computeIfAbsent(attributes, key -> aggregator.createHandle());
-    if (measurement.hasDoubleValue()) {
-      handle.recordDouble(measurement.doubleValue(), attributes, Context.current());
-    } else if (measurement.hasLongValue()) {
-      handle.recordLong(measurement.longValue(), attributes, Context.current());
-    } else {
-      throw new IllegalStateException();
-    }
+    return attributes;
   }
 
   @Override
@@ -220,14 +206,10 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     Map<Attributes, T> currentPoints = new HashMap<>();
     aggregatorHandles.forEach(
         (attributes, handle) -> {
-          Measurement latestRecordedMeasurement = latestRecordedMeasurements.get(attributes);
-          if (latestRecordedMeasurement == null) {
-            throw new IllegalStateException("Unexpected");
-          }
           T value =
               handle.aggregateThenMaybeReset(
-                  latestRecordedMeasurement.startEpochNanos(),
-                  latestRecordedMeasurement.epochNanos(),
+                  AsynchronousMetricStorage.this.startEpochNanos,
+                  AsynchronousMetricStorage.this.epochNanos,
                   attributes,
                   reset);
           currentPoints.put(attributes, value);
@@ -235,16 +217,13 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
 
     if (memoryMode == REUSABLE_DATA) {
       aggregatorHandles.clear();
-      latestRecordedMeasurements.clear();
     } else {
       aggregatorHandles = new HashMap<>();
-      latestRecordedMeasurements = new HashMap<>();
     }
 
     Collection<T> result;
     if (aggregationTemporality == AggregationTemporality.DELTA) {
-      Collection<T> deltaPoints =
-          memoryMode == REUSABLE_DATA ? reusableDeltaPoints : new ArrayList<>();
+      result = memoryMode == REUSABLE_DATA ? reusableDeltaPoints : new ArrayList<>();
       currentPoints.forEach(
           (attributes, currentPoint) -> {
             T lastPoint = lastPoints.get(attributes);
@@ -265,15 +244,13 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
               }
             }
 
-            deltaPoints.add(deltaPoint);
+            result.add(deltaPoint);
           });
 
       if (memoryMode == REUSABLE_DATA) {
         lastPoints.forEach((attributes, value) -> reusablePointsPool.returnObject(value));
         lastPoints.clear();
       }
-
-      result = deltaPoints;
     } else {
       result = currentPoints.values();
     }
