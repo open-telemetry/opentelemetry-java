@@ -6,7 +6,7 @@
 package io.opentelemetry.exporter.internal.http;
 
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.ExporterMetrics;
+import io.opentelemetry.exporter.internal.LegacyExporterMetrics;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
@@ -35,7 +35,7 @@ public final class HttpExporter<T extends Marshaler> {
 
   private final String type;
   private final HttpSender httpSender;
-  private final ExporterMetrics exporterMetrics;
+  private final LegacyExporterMetrics exporterMetrics;
 
   public HttpExporter(
       String exporterName,
@@ -47,8 +47,8 @@ public final class HttpExporter<T extends Marshaler> {
     this.httpSender = httpSender;
     this.exporterMetrics =
         exportAsJson
-            ? ExporterMetrics.createHttpJson(exporterName, type, meterProviderSupplier)
-            : ExporterMetrics.createHttpProtobuf(exporterName, type, meterProviderSupplier);
+            ? LegacyExporterMetrics.createHttpJson(exporterName, type, meterProviderSupplier)
+            : LegacyExporterMetrics.createHttpProtobuf(exporterName, type, meterProviderSupplier);
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {

@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.zipkin;
 
 import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.ExporterMetrics;
+import io.opentelemetry.exporter.internal.LegacyExporterMetrics;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -41,7 +41,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   private final ZipkinSpanExporterBuilder builder;
   private final BytesEncoder<Span> encoder;
   private final BytesMessageSender sender;
-  private final ExporterMetrics exporterMetrics;
+  private final LegacyExporterMetrics exporterMetrics;
 
   private final OtelToZipkinSpanTransformer transformer;
 
@@ -56,8 +56,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
     this.sender = sender;
     this.exporterMetrics =
         sender.encoding() == Encoding.JSON
-            ? ExporterMetrics.createHttpJson("zipkin", "span", meterProviderSupplier)
-            : ExporterMetrics.createHttpProtobuf("zipkin", "span", meterProviderSupplier);
+            ? LegacyExporterMetrics.createHttpJson("zipkin", "span", meterProviderSupplier)
+            : LegacyExporterMetrics.createHttpProtobuf("zipkin", "span", meterProviderSupplier);
     this.transformer = transformer;
   }
 
