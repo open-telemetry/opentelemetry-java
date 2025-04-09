@@ -61,15 +61,18 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
    */
   private final int maxCardinality;
 
+  // Handles responsible for aggregating data recorded during callbacks
+  private Map<Attributes, AggregatorHandle<T, U>> aggregatorHandles;
+
   // Only populated if aggregationTemporality == DELTA
   private Map<Attributes, T> lastPoints;
-
-  private Map<Attributes, AggregatorHandle<T, U>> aggregatorHandles = new HashMap<>();
 
   // Only populated if memoryMode == REUSABLE_DATA
   private final ObjectPool<T> reusablePointsPool;
   private final List<T> reusableDeltaPoints = new ArrayList<>();
 
+  // Time information relative to recording of data in aggregatorHandles, set while calling
+  // callbacks
   private long startEpochNanos;
   private long epochNanos;
 
