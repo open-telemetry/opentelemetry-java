@@ -227,7 +227,7 @@ class AsynchronousMetricStorageTest {
                         sum ->
                             sum.hasPointsSatisfying(
                                 point ->
-                                    point.hasValue(1).hasAttributes(attributeEntry("key1", "a")))));
+                                    point.hasValue(3).hasAttributes(attributeEntry("key1", "a")))));
     logs.assertContains(
         "Instrument long-counter has recorded multiple values for the same attributes: {key1=\"a\"}");
   }
