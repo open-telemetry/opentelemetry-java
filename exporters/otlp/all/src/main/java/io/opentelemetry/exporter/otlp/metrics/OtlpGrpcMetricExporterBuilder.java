@@ -9,15 +9,20 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.internal.ExporterMetrics;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
+import io.opentelemetry.sdk.common.HealthMetricLevel;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -66,7 +71,7 @@ public final class OtlpGrpcMetricExporterBuilder {
   OtlpGrpcMetricExporterBuilder(GrpcExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
     this.memoryMode = memoryMode;
-    delegate.setMeterProvider(MeterProvider::noop);
+    delegate.setHealthMetricLevel(HealthMetricLevel.OFF);
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeader);
   }
 
@@ -74,7 +79,8 @@ public final class OtlpGrpcMetricExporterBuilder {
     this(
         new GrpcExporterBuilder<>(
             "otlp",
-            "metric",
+            ExporterMetrics.Signal.METRIC,
+            ComponentId.generateLazy("otlp_grpc_metric_exporter"),
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerMetricsServiceGrpc::newFutureStub,
@@ -265,6 +271,38 @@ public final class OtlpGrpcMetricExporterBuilder {
    */
   public OtlpGrpcMetricExporterBuilder setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
     delegate.setRetryPolicy(retryPolicy);
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
+   * {@link GlobalOpenTelemetry#getMeterProvider()}.
+   */
+  public OtlpGrpcMetricExporterBuilder setMeterProvider(MeterProvider meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
+    setMeterProvider(() -> meterProvider);
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} supplier used to collect metrics related to export. If not set,
+   * uses {@link GlobalOpenTelemetry#getMeterProvider()}.
+   *
+   * @since 1.32.0
+   */
+  public OtlpGrpcMetricExporterBuilder setMeterProvider(
+      Supplier<MeterProvider> meterProviderSupplier) {
+    requireNonNull(meterProviderSupplier, "meterProviderSupplier");
+    delegate.setMeterProvider(meterProviderSupplier);
+    return this;
+  }
+
+  /**
+   * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter collects.
+   */
+  public OtlpGrpcMetricExporterBuilder setHealthMetricLevel(HealthMetricLevel level) {
+    requireNonNull(level, "level");
+    delegate.setHealthMetricLevel(level);
     return this;
   }
 

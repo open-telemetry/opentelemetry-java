@@ -27,6 +27,11 @@ public class ExporterMetrics {
       this.namespace = namespace;
       this.unit = unit;
     }
+
+    @Override
+    public String toString() {
+      return namespace;
+    }
   }
 
   private final Supplier<MeterProvider> meterProviderSupplier;

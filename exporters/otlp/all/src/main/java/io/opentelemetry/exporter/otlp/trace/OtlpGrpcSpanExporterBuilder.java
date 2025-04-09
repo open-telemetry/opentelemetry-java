@@ -11,14 +11,18 @@ import static java.util.Objects.requireNonNull;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.internal.ExporterMetrics;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
+import io.opentelemetry.sdk.common.HealthMetricLevel;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.ComponentId;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
@@ -56,7 +60,8 @@ public final class OtlpGrpcSpanExporterBuilder {
     this(
         new GrpcExporterBuilder<>(
             "otlp",
-            "span",
+            ExporterMetrics.Signal.SPAN,
+            ComponentId.generateLazy("otlp_grpc_span_exporter"),
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerTraceServiceGrpc::newFutureStub,
@@ -239,6 +244,15 @@ public final class OtlpGrpcSpanExporterBuilder {
       Supplier<MeterProvider> meterProviderSupplier) {
     requireNonNull(meterProviderSupplier, "meterProviderSupplier");
     delegate.setMeterProvider(meterProviderSupplier);
+    return this;
+  }
+
+  /**
+   * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter collects.
+   */
+  public OtlpGrpcSpanExporterBuilder setHealthMetricLevel(HealthMetricLevel level) {
+    requireNonNull(level, "level");
+    delegate.setHealthMetricLevel(level);
     return this;
   }
 

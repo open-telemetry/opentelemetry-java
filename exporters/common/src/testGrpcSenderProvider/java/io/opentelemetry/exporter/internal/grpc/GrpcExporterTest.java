@@ -15,6 +15,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ManagedChannelBuilder;
+import io.opentelemetry.exporter.internal.ExporterMetrics;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSender;
@@ -23,6 +24,7 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.annotation.Nullable;
+import io.opentelemetry.sdk.internal.ComponentId;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junitpioneer.jupiter.SetSystemProperty;
@@ -40,7 +42,8 @@ class GrpcExporterTest {
             () ->
                 new GrpcExporterBuilder<>(
                         "exporter",
-                        "type",
+                        ExporterMetrics.Signal.SPAN,
+                        ComponentId.generateLazy("testing"),
                         10,
                         new URI("http://localhost"),
                         () -> DummyServiceFutureStub::newFutureStub,
@@ -64,7 +67,8 @@ class GrpcExporterTest {
     assertThat(
             new GrpcExporterBuilder<>(
                     "exporter",
-                    "type",
+                    ExporterMetrics.Signal.SPAN,
+                    ComponentId.generateLazy("testing"),
                     10,
                     new URI("http://localhost"),
                     () -> DummyServiceFutureStub::newFutureStub,
@@ -85,7 +89,8 @@ class GrpcExporterTest {
     assertThat(
             new GrpcExporterBuilder<>(
                     "exporter",
-                    "type",
+                    ExporterMetrics.Signal.SPAN,
+                    ComponentId.generateLazy("testing"),
                     10,
                     new URI("http://localhost"),
                     () -> DummyServiceFutureStub::newFutureStub,
@@ -107,7 +112,8 @@ class GrpcExporterTest {
             () ->
                 new GrpcExporterBuilder<>(
                         "exporter",
-                        "type",
+                        ExporterMetrics.Signal.SPAN,
+                        ComponentId.generateLazy("testing"),
                         10,
                         new URI("http://localhost"),
                         () -> DummyServiceFutureStub::newFutureStub,

@@ -91,6 +91,11 @@ public class ExporterMetricsAdapter {
       }
     }
 
+    public void finishFailed(Throwable e) {
+      //TODO: check in java instrumentation if this is correct
+      finishFailed(e.getClass().getName());
+    }
+
     public void finishFailed(String errorReason) {
       if (legacyExporterMetrics != null) {
         finishLegacy(itemCount);
@@ -108,6 +113,7 @@ public class ExporterMetricsAdapter {
         legacyExporterMetrics.addFailed(failedCount);
       }
     }
+
   }
 
 
