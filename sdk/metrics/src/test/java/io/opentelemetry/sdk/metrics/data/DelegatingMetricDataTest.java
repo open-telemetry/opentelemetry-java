@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableHistogramData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.metrics.TestMetricData;
@@ -108,8 +109,10 @@ class DelegatingMetricDataTest {
 
   @Test
   void equals_differentType() {
-    MetricData metricData1 = createBasicMetricBuilder().setType(MetricDataType.SUMMARY).build();
-    MetricData metricData2 = createBasicMetricBuilder().setType(MetricDataType.LONG_SUM).build();
+    MetricData metricData1 =
+        createBasicMetricBuilder().setHistogramData(ImmutableHistogramData.empty()).build();
+    MetricData metricData2 =
+        createBasicMetricBuilder().setSummaryData(ImmutableSummaryData.empty()).build();
     MetricData noOpWrapper1 = new NoOpDelegatingMetricData(metricData1);
     MetricData noOpWrapper2 = new NoOpDelegatingMetricData(metricData2);
 
@@ -119,9 +122,9 @@ class DelegatingMetricDataTest {
   @Test
   void equals_differentData() {
     MetricData metricData1 =
-        createBasicMetricBuilder().setData(ImmutableSummaryData.empty()).build();
+        createBasicMetricBuilder().setSummaryData(ImmutableSummaryData.empty()).build();
     MetricData metricData2 =
-        createBasicMetricBuilder().setData(ImmutableSummaryData.empty()).build();
+        createBasicMetricBuilder().setSummaryData(ImmutableSummaryData.empty()).build();
     MetricData noOpWrapper1 = new NoOpDelegatingMetricData(metricData1);
     MetricData noOpWrapper2 = new NoOpDelegatingMetricData(metricData2);
 
@@ -184,8 +187,7 @@ class DelegatingMetricDataTest {
         .setDescription("")
         .setUnit("1")
         .setName("name")
-        .setData(ImmutableSummaryData.empty())
-        .setType(MetricDataType.SUMMARY); // Not sure what type should be here
+        .setSummaryData(ImmutableSummaryData.empty());
   }
 
   private static final class NoOpDelegatingMetricData extends DelegatingMetricData {

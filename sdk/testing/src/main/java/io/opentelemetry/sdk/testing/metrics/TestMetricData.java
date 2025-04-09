@@ -8,8 +8,15 @@ package io.opentelemetry.sdk.testing.metrics;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.Data;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
+import io.opentelemetry.sdk.metrics.data.GaugeData;
+import io.opentelemetry.sdk.metrics.data.HistogramData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.data.SumData;
+import io.opentelemetry.sdk.metrics.data.SummaryData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
@@ -31,70 +38,53 @@ public abstract class TestMetricData implements MetricData {
   public abstract static class Builder {
     abstract TestMetricData autoBuild();
 
-    /**
-     * Builds and returns a new {@link MetricData} instance from the data in {@code this}.
-     *
-     * @return a new {@link MetricData} instance.
-     */
     public TestMetricData build() {
       return autoBuild();
     }
 
-    /**
-     * Sets the resource of the metric.
-     *
-     * @param resource the resource of the metric.
-     * @return this.
-     */
     public abstract Builder setResource(Resource resource);
 
-    /**
-     * Sets the name of the metric.
-     *
-     * @param name the name of the metric.
-     * @return this.
-     */
     public abstract Builder setName(String name);
 
-    /**
-     * Sets the description of the metric.
-     *
-     * @param description the description of the metric.
-     * @return this.
-     */
     public abstract Builder setDescription(String description);
 
-    /**
-     * Sets the unit of the metric.
-     *
-     * @param unit the unit of the metric.
-     * @return this.
-     */
     public abstract Builder setUnit(String unit);
 
-    /**
-     * Sets the type of the metric.
-     *
-     * @param type the type of the metric.
-     * @return this.
-     */
-    public abstract Builder setType(MetricDataType type);
+    // Make setType package-private to restrict direct access
+    abstract Builder setType(MetricDataType type);
 
-    /**
-     * Sets the data of the metric.
-     *
-     * @param data the data of the metric.
-     * @return this.
-     */
-    public abstract Builder setData(Data<?> data);
+    // Keep the generic setData method for internal use
+    abstract Builder setData(Data<?> data);
 
-    /**
-     * Sets the Instrumentation scope of the metric.
-     *
-     * @param instrumentationScopeInfo the instrumentation scope of the tracer which created this
-     *     metric.
-     * @return this.
-     */
+    // Add specific setData overloads for each metric data type
+    public Builder setExponentialHistogramData(ExponentialHistogramData data) {
+      return setType(MetricDataType.EXPONENTIAL_HISTOGRAM).setData(data);
+    }
+
+    public Builder setHistogramData(HistogramData data) {
+      return setType(MetricDataType.HISTOGRAM).setData(data);
+    }
+
+    public Builder setLongSumData(SumData<LongPointData> data) {
+      return setType(MetricDataType.LONG_SUM).setData(data);
+    }
+
+    public Builder setDoubleSumData(SumData<DoublePointData> data) {
+      return setType(MetricDataType.DOUBLE_SUM).setData(data);
+    }
+
+    public Builder setDoubleGaugeData(GaugeData<DoublePointData> data) {
+      return setType(MetricDataType.DOUBLE_GAUGE).setData(data);
+    }
+
+    public Builder setLongGaugeData(GaugeData<LongPointData> data) {
+      return setType(MetricDataType.LONG_GAUGE).setData(data);
+    }
+
+    public Builder setSummaryData(SummaryData data) {
+      return setType(MetricDataType.SUMMARY).setData(data);
+    }
+
     public abstract Builder setInstrumentationScopeInfo(
         InstrumentationScopeInfo instrumentationScopeInfo);
   }
