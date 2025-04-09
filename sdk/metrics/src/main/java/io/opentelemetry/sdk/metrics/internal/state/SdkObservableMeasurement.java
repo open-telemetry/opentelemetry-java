@@ -101,6 +101,7 @@ public final class SdkObservableMeasurement
 
   @Override
   public void record(long value, Attributes attributes) {
+    RegisteredReader activeReader = this.activeReader;
     if (activeReader == null) {
       logNoActiveReader();
       return;
