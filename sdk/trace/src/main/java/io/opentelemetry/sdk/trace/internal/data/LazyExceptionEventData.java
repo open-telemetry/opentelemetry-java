@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.data.ExceptionEventData;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -40,17 +41,26 @@ public abstract class LazyExceptionEventData implements ExceptionEventData {
     return EXCEPTION_EVENT_NAME;
   }
 
-  /** TODO. */
+  // Autowire generates AutoValue_LazyExceptionEventData and $AutoValue_LazyExceptionEventData to
+  // account to memoize getAttributes. Unfortunately, $AutoValue_LazyExceptionEventData's
+  // exceptionMessage constructor param is properly annotated with @Nullable, but
+  // AutoValue_LazyExceptionEventData's is not. So we suppress the NullAway false positive.
+  @SuppressWarnings("NullAway")
   public static ExceptionEventData create(
       long epochNanos,
       Throwable exception,
       Attributes additionalAttributes,
       SpanLimits spanLimits) {
+    // Compute exception message at initialization time to be conservative about possibility of
+    // Exception#geMessage() not being thread safe
     return new AutoValue_LazyExceptionEventData(
-        epochNanos, exception, spanLimits, additionalAttributes);
+        epochNanos, exception, spanLimits, exception.getMessage(), additionalAttributes);
   }
 
   abstract SpanLimits getSpanLimits();
+
+  @Nullable
+  abstract String getExceptionMessage();
 
   public abstract Attributes getAdditionalAttributes();
 
@@ -65,7 +75,7 @@ public abstract class LazyExceptionEventData implements ExceptionEventData {
         AttributesMap.create(
             spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
     String exceptionName = exception.getClass().getCanonicalName();
-    String exceptionMessage = exception.getMessage();
+    String exceptionMessage = getExceptionMessage();
     StringWriter stringWriter = new StringWriter();
     try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
       exception.printStackTrace(printWriter);
