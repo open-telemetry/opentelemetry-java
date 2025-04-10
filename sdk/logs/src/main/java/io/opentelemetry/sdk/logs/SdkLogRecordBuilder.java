@@ -5,10 +5,6 @@
 
 package io.opentelemetry.sdk.logs;
 
-import static io.opentelemetry.sdk.internal.ExceptionAttributeResolver.EXCEPTION_MESSAGE;
-import static io.opentelemetry.sdk.internal.ExceptionAttributeResolver.EXCEPTION_STACKTRACE;
-import static io.opentelemetry.sdk.internal.ExceptionAttributeResolver.EXCEPTION_TYPE;
-
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.LogRecordBuilder;
@@ -17,7 +13,6 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
-import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -48,28 +43,6 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
   // accessible via ExtendedSdkLogRecordBuilder
   SdkLogRecordBuilder setEventName(String eventName) {
     this.eventName = eventName;
-    return this;
-  }
-
-  // accessible via ExtendedSdkLogRecordBuilder
-  SdkLogRecordBuilder setException(Throwable throwable) {
-    if (throwable == null) {
-      return this;
-    }
-    ExceptionAttributeResolver exceptionAttributeResolver =
-        loggerSharedState.getExceptionAttributeResolver();
-    String type = exceptionAttributeResolver.getExceptionType(throwable);
-    if (type != null) {
-      setAttribute(EXCEPTION_TYPE, type);
-    }
-    String message = exceptionAttributeResolver.getExceptionMessage(throwable);
-    if (message != null) {
-      setAttribute(EXCEPTION_MESSAGE, message);
-    }
-    String stacktrace = exceptionAttributeResolver.getExceptionStacktrace(throwable);
-    if (stacktrace != null) {
-      setAttribute(EXCEPTION_STACKTRACE, stacktrace);
-    }
     return this;
   }
 

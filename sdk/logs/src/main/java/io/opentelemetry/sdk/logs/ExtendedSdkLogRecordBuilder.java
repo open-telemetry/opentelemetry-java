@@ -30,12 +30,6 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
   }
 
   @Override
-  public ExtendedSdkLogRecordBuilder setException(Throwable throwable) {
-    super.setException(throwable);
-    return this;
-  }
-
-  @Override
   public ExtendedSdkLogRecordBuilder setTimestamp(long timestamp, TimeUnit unit) {
     super.setTimestamp(timestamp, unit);
     return this;

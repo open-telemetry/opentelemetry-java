@@ -41,11 +41,6 @@ class ExtendedDefaultLogger implements ExtendedLogger {
     }
 
     @Override
-    public ExtendedLogRecordBuilder setException(Throwable throwable) {
-      return this;
-    }
-
-    @Override
     public LogRecordBuilder setTimestamp(long timestamp, TimeUnit unit) {
       return this;
     }

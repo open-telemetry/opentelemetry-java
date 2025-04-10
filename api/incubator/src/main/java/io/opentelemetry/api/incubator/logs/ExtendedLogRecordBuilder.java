@@ -19,7 +19,4 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
    * record with a non-empty event name is an Event.
    */
   ExtendedLogRecordBuilder setEventName(String eventName);
-
-  /** Set standard {@code exception.*} attributes based on the {@code throwable}. */
-  ExtendedLogRecordBuilder setException(Throwable throwable);
 }
