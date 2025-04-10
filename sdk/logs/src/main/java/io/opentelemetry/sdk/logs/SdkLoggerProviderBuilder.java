@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil;
+import io.opentelemetry.sdk.logs.samplers.LogSampler;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,8 @@ public final class SdkLoggerProviderBuilder {
   private Clock clock = Clock.getDefault();
   private ScopeConfiguratorBuilder<LoggerConfig> loggerConfiguratorBuilder =
       LoggerConfig.configuratorBuilder();
+
+  private LogSampler sampler = LogSampler.alwaysOnSampler();
 
   SdkLoggerProviderBuilder() {}
 
@@ -93,6 +96,18 @@ public final class SdkLoggerProviderBuilder {
   public SdkLoggerProviderBuilder addLogRecordProcessor(LogRecordProcessor processor) {
     requireNonNull(processor, "processor");
     logRecordProcessors.add(processor);
+    return this;
+  }
+
+  /**
+   * Set log sampler
+   *
+   * @param sampler the log sampler
+   * @return this
+   */
+  public SdkLoggerProviderBuilder setLogSampler(LogSampler sampler) {
+    requireNonNull(sampler, "sampler");
+    this.sampler = sampler;
     return this;
   }
 
@@ -156,6 +171,11 @@ public final class SdkLoggerProviderBuilder {
    */
   public SdkLoggerProvider build() {
     return new SdkLoggerProvider(
-        resource, logLimitsSupplier, logRecordProcessors, clock, loggerConfiguratorBuilder.build());
+        resource,
+        logLimitsSupplier,
+        logRecordProcessors,
+        sampler,
+        clock,
+        loggerConfiguratorBuilder.build());
   }
 }
