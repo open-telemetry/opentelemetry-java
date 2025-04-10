@@ -22,7 +22,6 @@ import com.linecorp.armeria.common.TlsKeyPair;
 import com.linecorp.armeria.server.HttpService;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
-import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -62,6 +61,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -148,7 +148,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
           sb.https(0);
           sb.tls(TlsKeyPair.of(certificate.privateKey(), certificate.certificate()));
           sb.tlsCustomizer(ssl -> ssl.trustManager(clientCertificate.certificate()));
-          sb.decorator(LoggingService.newDecorator());
+          // Uncomment for detailed request / response logs from server
+          // sb.decorator(LoggingService.newDecorator());
         }
       };
 
@@ -694,6 +695,31 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
       } finally {
         exporter.shutdown();
       }
+    }
+  }
+
+  @Test
+  void executorService() {
+    ExecutorServiceSpy executorService =
+        new ExecutorServiceSpy(Executors.newSingleThreadExecutor());
+
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpUri() + path)
+            .setExecutorService(executorService)
+            .build();
+
+    try {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(executorService.getTaskCount()).isPositive();
+    } finally {
+      exporter.shutdown();
+      // If setting executor, the user is responsible for calling shutdown
+      assertThat(executorService.isShutdown()).isFalse();
+      executorService.shutdown();
     }
   }
 

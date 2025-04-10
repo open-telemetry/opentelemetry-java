@@ -15,10 +15,10 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Streams;
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -306,7 +306,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
 
   @Test
   void componentProviderConfig() {
-    StructuredConfigProperties properties = mock(StructuredConfigProperties.class);
+    DeclarativeConfigProperties properties = mock(DeclarativeConfigProperties.class);
     T exporter = exporterFromComponentProvider(properties);
 
     assertThat(exporter).extracting("wrapperJsonObject").isEqualTo(true);
@@ -328,7 +328,7 @@ abstract class AbstractOtlpStdoutExporterTest<T> {
   }
 
   @SuppressWarnings("unchecked")
-  protected T exporterFromComponentProvider(StructuredConfigProperties properties) {
+  protected T exporterFromComponentProvider(DeclarativeConfigProperties properties) {
     return (T)
         ((ComponentProvider<?>)
                 loadSpi(ComponentProvider.class)

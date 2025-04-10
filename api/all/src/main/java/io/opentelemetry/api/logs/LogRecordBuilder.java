@@ -123,6 +123,7 @@ public interface LogRecordBuilder {
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
+   * @since 1.48.0
    */
   default LogRecordBuilder setAttribute(String key, String value) {
     return setAttribute(stringKey(key), value);
@@ -138,6 +139,7 @@ public interface LogRecordBuilder {
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
+   * @since 1.48.0
    */
   default LogRecordBuilder setAttribute(String key, long value) {
     return setAttribute(longKey(key), value);
@@ -153,6 +155,7 @@ public interface LogRecordBuilder {
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
+   * @since 1.48.0
    */
   default LogRecordBuilder setAttribute(String key, double value) {
     return setAttribute(doubleKey(key), value);
@@ -168,6 +171,7 @@ public interface LogRecordBuilder {
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
+   * @since 1.48.0
    */
   default LogRecordBuilder setAttribute(String key, boolean value) {
     return setAttribute(booleanKey(key), value);
@@ -183,6 +187,7 @@ public interface LogRecordBuilder {
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
+   * @since 1.48.0
    */
   default LogRecordBuilder setAttribute(String key, int value) {
     return setAttribute(key, (long) value);
