@@ -299,6 +299,8 @@ public final class OtlpGrpcMetricExporterBuilder {
 
   /**
    * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter collects.
+   *
+   * @since 1.50.0
    */
   public OtlpGrpcMetricExporterBuilder setHealthMetricLevel(HealthMetricLevel level) {
     requireNonNull(level, "level");

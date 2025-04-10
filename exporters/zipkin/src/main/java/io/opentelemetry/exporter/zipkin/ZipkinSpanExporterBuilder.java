@@ -190,6 +190,8 @@ public final class ZipkinSpanExporterBuilder {
 
   /**
    * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter collects.
+   *
+   * @since 1.50.0
    */
   public ZipkinSpanExporterBuilder setHealthMetricLevel(HealthMetricLevel level) {
     requireNonNull(level, "level");
