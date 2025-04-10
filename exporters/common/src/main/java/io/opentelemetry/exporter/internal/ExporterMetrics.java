@@ -7,13 +7,16 @@ package io.opentelemetry.exporter.internal;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.HealthMetricLevel;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
+import java.util.Collections;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -44,6 +47,8 @@ public class ExporterMetrics {
     }
   }
 
+  private static final Clock CLOCK = Clock.getDefault();
+
   private final Supplier<MeterProvider> meterProviderSupplier;
   private final Signal signal;
   private final ComponentId componentId;
@@ -52,6 +57,7 @@ public class ExporterMetrics {
 
   @Nullable private volatile LongUpDownCounter inflight = null;
   @Nullable private volatile LongCounter exported = null;
+  @Nullable private volatile DoubleHistogram duration = null;
   @Nullable private volatile Attributes allAttributes = null;
 
   public ExporterMetrics(
@@ -148,6 +154,21 @@ public class ExporterMetrics {
     return exported;
   }
 
+  private DoubleHistogram duration() {
+    DoubleHistogram duration = this.duration;
+    if (duration == null) {
+      duration =
+          meter()
+              .histogramBuilder("otel.sdk.exporter.operation.duration")
+              .setUnit("s")
+              .setDescription("The duration of exporting a batch of telemetry records")
+              .setExplicitBucketBoundariesAdvice(Collections.emptyList())
+              .build();
+      this.duration = duration;
+    }
+    return duration;
+  }
+
   private void incrementInflight(long count) {
     if (!enabled) {
       return;
@@ -166,11 +187,22 @@ public class ExporterMetrics {
     if (!enabled) {
       return;
     }
+    exported().add(count, getAttributesWithPotentialError(errorType));
+  }
+
+  private Attributes getAttributesWithPotentialError(@Nullable String errorType) {
     Attributes attributes = allAttributes();
     if (errorType != null && !errorType.isEmpty()) {
       attributes = attributes.toBuilder().put(SemConvAttributes.ERROR_TYPE, errorType).build();
     }
-    exported().add(count, attributes);
+    return attributes;
+  }
+
+  private void recordDuration(double seconds, @Nullable String errorType) {
+    if (!enabled) {
+      return;
+    }
+    duration().record(seconds, getAttributesWithPotentialError(errorType));
   }
 
   /**
@@ -179,11 +211,13 @@ public class ExporterMetrics {
   public class Recording {
     /** The number items (spans, log records or metric data points) being exported */
     private final int itemCount;
+    private final long startNanoTime;
 
     private boolean alreadyEnded = false;
 
     private Recording(int itemCount) {
       this.itemCount = itemCount;
+      startNanoTime = CLOCK.nanoTime();
       incrementInflight(itemCount);
     }
 
@@ -207,6 +241,7 @@ public class ExporterMetrics {
 
       decrementInflight(itemCount);
 
+
       if (failedCount > 0) {
         if (errorType == null || errorType.isEmpty()) {
           throw new IllegalArgumentException(
@@ -218,6 +253,8 @@ public class ExporterMetrics {
       if (successCount > 0) {
         incrementExported(successCount, null);
       }
+      long durationNanos = CLOCK.nanoTime() - startNanoTime;
+      recordDuration(durationNanos / 1_000_000_000.0, errorType);
     }
   }
 }

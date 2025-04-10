@@ -119,7 +119,7 @@ class HttpExporterTest {
       exporter.export(mockMarshaller, 7);
 
       assertThat(inMemoryMetrics.collectAllMetrics())
-          .hasSize(2)
+          .hasSize(3)
           .anySatisfy(metric -> assertThat(metric)
               .hasName(signalMetricPrefix + "inflight")
               .hasUnit(expectedUnit)
@@ -146,6 +146,25 @@ class HttpExporterTest {
                               .put(SemConvAttributes.ERROR_TYPE, "java.io.IOException")
                               .build())
                           .hasValue(7)
+                  ))
+          )
+          .anySatisfy(metric -> assertThat(metric)
+              .hasName("otel.sdk.exporter.operation.duration")
+              .hasUnit("s")
+              .hasHistogramSatisfying(ma -> ma
+                  .hasPointsSatisfying(pa -> pa
+                          .hasAttributes(expectedAttributes)
+                      .hasBucketCounts(1),
+                      pa -> pa
+                          .hasAttributes(expectedAttributes.toBuilder()
+                              .put(SemConvAttributes.ERROR_TYPE, "404")
+                              .build())
+                          .hasBucketCounts(1),
+                      pa -> pa
+                          .hasAttributes(expectedAttributes.toBuilder()
+                              .put(SemConvAttributes.ERROR_TYPE, "java.io.IOException")
+                              .build())
+                          .hasBucketCounts(1)
                   ))
           );
 
