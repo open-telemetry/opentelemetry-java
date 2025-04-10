@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -22,20 +21,17 @@ final class LoggerSharedState {
   private final Supplier<LogLimits> logLimitsSupplier;
   private final LogRecordProcessor logRecordProcessor;
   private final Clock clock;
-  private final ExceptionAttributeResolver exceptionAttributeResolver;
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
   LoggerSharedState(
       Resource resource,
       Supplier<LogLimits> logLimitsSupplier,
       LogRecordProcessor logRecordProcessor,
-      Clock clock,
-      ExceptionAttributeResolver exceptionAttributeResolver) {
+      Clock clock) {
     this.resource = resource;
     this.logLimitsSupplier = logLimitsSupplier;
     this.logRecordProcessor = logRecordProcessor;
     this.clock = clock;
-    this.exceptionAttributeResolver = exceptionAttributeResolver;
   }
 
   Resource getResource() {
@@ -52,10 +48,6 @@ final class LoggerSharedState {
 
   Clock getClock() {
     return clock;
-  }
-
-  ExceptionAttributeResolver getExceptionAttributeResolver() {
-    return exceptionAttributeResolver;
   }
 
   boolean hasBeenShutdown() {
