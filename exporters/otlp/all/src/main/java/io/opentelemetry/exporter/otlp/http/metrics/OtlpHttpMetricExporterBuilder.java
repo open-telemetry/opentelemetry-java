@@ -8,13 +8,18 @@ package io.opentelemetry.exporter.otlp.http.metrics;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.internal.ExporterMetrics;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
+import io.opentelemetry.sdk.common.HealthMetricLevel;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -62,7 +67,7 @@ public final class OtlpHttpMetricExporterBuilder {
   }
 
   OtlpHttpMetricExporterBuilder() {
-    this(new HttpExporterBuilder<>("otlp", "metric", DEFAULT_ENDPOINT), DEFAULT_MEMORY_MODE);
+    this(new HttpExporterBuilder<>("otlp", ExporterMetrics.Signal.METRIC, "otlp_http_metric_exporter",  DEFAULT_ENDPOINT), DEFAULT_MEMORY_MODE);
   }
 
   /**
@@ -236,6 +241,38 @@ public final class OtlpHttpMetricExporterBuilder {
   }
 
   /**
+   * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
+   * {@link GlobalOpenTelemetry#getMeterProvider()}.
+   */
+  public OtlpHttpMetricExporterBuilder setMeterProvider(MeterProvider meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
+    setMeterProvider(() -> meterProvider);
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} supplier used to collect metrics related to export. If not set,
+   * uses {@link GlobalOpenTelemetry#getMeterProvider()}.
+   *
+   * @since 1.32.0
+   */
+  public OtlpHttpMetricExporterBuilder setMeterProvider(
+      Supplier<MeterProvider> meterProviderSupplier) {
+    requireNonNull(meterProviderSupplier, "meterProviderSupplier");
+    delegate.setMeterProvider(meterProviderSupplier);
+    return this;
+  }
+
+  /**
+   * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter collects.
+   */
+  public OtlpHttpMetricExporterBuilder setHealthMetricLevel(HealthMetricLevel level) {
+    requireNonNull(level, "level");
+    delegate.setHealthMetricLevel(level);
+    return this;
+  }
+
+  /**
    * Set the {@link MemoryMode}. If unset, defaults to {@link #DEFAULT_MEMORY_MODE}.
    *
    * <p>When memory mode is {@link MemoryMode#REUSABLE_DATA}, serialization is optimized to reduce
@@ -280,6 +317,7 @@ public final class OtlpHttpMetricExporterBuilder {
 
   OtlpHttpMetricExporterBuilder exportAsJson() {
     delegate.exportAsJson();
+    delegate.setComponentType("otlp_http_json_metric_exporter");
     return this;
   }
 

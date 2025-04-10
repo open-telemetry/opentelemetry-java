@@ -10,15 +10,19 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.internal.ExporterMetrics;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
+import io.opentelemetry.sdk.common.HealthMetricLevel;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.ComponentId;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -48,7 +52,7 @@ public final class OtlpHttpLogRecordExporterBuilder {
   }
 
   OtlpHttpLogRecordExporterBuilder() {
-    this(new HttpExporterBuilder<>("otlp", "log", DEFAULT_ENDPOINT), DEFAULT_MEMORY_MODE);
+    this(new HttpExporterBuilder<>("otlp", ExporterMetrics.Signal.LOG, "otlp_http_log_exporter", DEFAULT_ENDPOINT), DEFAULT_MEMORY_MODE);
   }
 
   /**
@@ -209,6 +213,15 @@ public final class OtlpHttpLogRecordExporterBuilder {
       Supplier<MeterProvider> meterProviderSupplier) {
     requireNonNull(meterProviderSupplier, "meterProviderSupplier");
     delegate.setMeterProvider(meterProviderSupplier);
+    return this;
+  }
+
+  /**
+   * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter collects.
+   */
+  public OtlpHttpLogRecordExporterBuilder setHealthMetricLevel(HealthMetricLevel level) {
+    requireNonNull(level, "level");
+    delegate.setHealthMetricLevel(level);
     return this;
   }
 

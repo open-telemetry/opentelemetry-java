@@ -11,7 +11,6 @@ import static io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil.GRPC_STAT
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterMetrics;
 import io.opentelemetry.exporter.internal.ExporterMetricsAdapter;
-import io.opentelemetry.exporter.internal.LegacyExporterMetrics;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -83,7 +82,7 @@ public final class GrpcExporter<T extends Marshaler> {
       return;
     }
 
-    metricRecording.finishFailed("grpc status " + statusCode);
+    metricRecording.finishFailed("" + statusCode);
     switch (statusCode) {
       case GRPC_STATUS_UNIMPLEMENTED:
         if (loggedUnimplemented.compareAndSet(false, true)) {

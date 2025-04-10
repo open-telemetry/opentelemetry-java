@@ -52,8 +52,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   private static final Logger LOGGER = Logger.getLogger(GrpcExporterBuilder.class.getName());
 
   private final String legacyExporterName;
-  private final ExporterMetrics.Signal type;
-  private final ComponentId componentId;
+  private final ExporterMetrics.Signal signal;
+  private final String componentType;
   private final String grpcEndpointPath;
   private final Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>>
       grpcStubFactory;
@@ -77,15 +77,15 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
   public GrpcExporterBuilder(
       String legacyExporterName,
-      ExporterMetrics.Signal type,
-      ComponentId componentId,
+      ExporterMetrics.Signal signal,
+      String componentType,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> grpcStubFactory,
       String grpcEndpointPath) {
     this.legacyExporterName = legacyExporterName;
-    this.type = type;
-    this.componentId = componentId;
+    this.signal = signal;
+    this.componentType = componentType;
     this.grpcEndpointPath = grpcEndpointPath;
     timeoutNanos = TimeUnit.SECONDS.toNanos(defaultTimeoutSecs);
     endpoint = defaultEndpoint;
@@ -178,8 +178,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     GrpcExporterBuilder<T> copy =
         new GrpcExporterBuilder<>(
             legacyExporterName,
-            type,
-            componentId,
+            signal,
+            componentType,
             TimeUnit.NANOSECONDS.toSeconds(timeoutNanos),
             endpoint,
             grpcStubFactory,
@@ -242,7 +242,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
                 executorService));
     LOGGER.log(Level.FINE, "Using GrpcSender: " + grpcSender.getClass().getName());
 
-    return new GrpcExporter<>(legacyExporterName, type, grpcSender, healthMetricLevel, componentId, meterProviderSupplier);
+    return new GrpcExporter<>(legacyExporterName, signal, grpcSender, healthMetricLevel,
+        ComponentId.generateLazy(componentType), meterProviderSupplier);
   }
 
   public String toString(boolean includePrefixAndSuffix) {
@@ -251,7 +252,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
             ? new StringJoiner(", ", "GrpcExporterBuilder{", "}")
             : new StringJoiner(", ");
     joiner.add("exporterName=" + legacyExporterName);
-    joiner.add("type=" + type);
+    joiner.add("type=" + signal);
     joiner.add("endpoint=" + endpoint.toString());
     joiner.add("endpointPath=" + grpcEndpointPath);
     joiner.add("timeoutNanos=" + timeoutNanos);

@@ -9,11 +9,14 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
+import io.opentelemetry.exporter.internal.ExporterMetrics;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.sdk.common.HealthMetricLevel;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.ComponentId;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,7 +49,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private static final Logger LOGGER = Logger.getLogger(HttpExporterBuilder.class.getName());
 
   private final String exporterName;
-  private final String type;
+  private final ExporterMetrics.Signal signal;
+  private String componentType;
 
   private String endpoint;
 
@@ -61,12 +65,14 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
+  private HealthMetricLevel healthMetricLevel = HealthMetricLevel.LEGACY;
   private ClassLoader serviceClassLoader = HttpExporterBuilder.class.getClassLoader();
   @Nullable private ExecutorService executorService;
 
-  public HttpExporterBuilder(String exporterName, String type, String defaultEndpoint) {
+  public HttpExporterBuilder(String exporterName, ExporterMetrics.Signal signal, String componentType, String defaultEndpoint) {
     this.exporterName = exporterName;
-    this.type = type;
+    this.signal = signal;
+    this.componentType = componentType;
 
     endpoint = defaultEndpoint;
   }
@@ -124,6 +130,16 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  public HttpExporterBuilder<T> setHealthMetricLevel(HealthMetricLevel healthMetricLevel) {
+    this.healthMetricLevel = healthMetricLevel;
+    return this;
+  }
+
+  public HttpExporterBuilder<T> setComponentType(String componentType) {
+    this.componentType = componentType;
+    return this;
+  }
+
   public HttpExporterBuilder<T> setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
     this.retryPolicy = retryPolicy;
     return this;
@@ -151,7 +167,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
 
   @SuppressWarnings("BuilderReturnThis")
   public HttpExporterBuilder<T> copy() {
-    HttpExporterBuilder<T> copy = new HttpExporterBuilder<>(exporterName, type, endpoint);
+    HttpExporterBuilder<T> copy = new HttpExporterBuilder<>(exporterName, signal, componentType, endpoint);
     copy.endpoint = endpoint;
     copy.timeoutNanos = timeoutNanos;
     copy.connectTimeoutNanos = connectTimeoutNanos;
@@ -164,6 +180,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
       copy.retryPolicy = retryPolicy.toBuilder().build();
     }
     copy.meterProviderSupplier = meterProviderSupplier;
+    copy.healthMetricLevel = healthMetricLevel;
     copy.proxyOptions = proxyOptions;
     return copy;
   }
@@ -209,7 +226,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
                 executorService));
     LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
 
-    return new HttpExporter<>(exporterName, type, httpSender, meterProviderSupplier, exportAsJson);
+    return new HttpExporter<>(exporterName, signal, ComponentId.generateLazy(componentType), httpSender, meterProviderSupplier, healthMetricLevel, exportAsJson);
   }
 
   public String toString(boolean includePrefixAndSuffix) {
@@ -218,7 +235,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
             ? new StringJoiner(", ", "HttpExporterBuilder{", "}")
             : new StringJoiner(", ");
     joiner.add("exporterName=" + exporterName);
-    joiner.add("type=" + type);
+    joiner.add("type=" + signal);
     joiner.add("endpoint=" + endpoint);
     joiner.add("timeoutNanos=" + timeoutNanos);
     joiner.add("proxyOptions=" + proxyOptions);

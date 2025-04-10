@@ -80,7 +80,7 @@ public final class OtlpGrpcMetricExporterBuilder {
         new GrpcExporterBuilder<>(
             "otlp",
             ExporterMetrics.Signal.METRIC,
-            ComponentId.generateLazy("otlp_grpc_metric_exporter"),
+            "otlp_grpc_metric_exporter",
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerMetricsServiceGrpc::newFutureStub,

@@ -19,7 +19,7 @@ class GrpcExporterTest {
     assertThatThrownBy(
             () ->
                 new GrpcExporterBuilder<>(
-                        "exporter", ExporterMetrics.Signal.SPAN, ComponentId.generateLazy("testing"),10, new URI("http://localhost"), null, "/path")
+                        "exporter", ExporterMetrics.Signal.SPAN, "testing",10, new URI("http://localhost"), null, "/path")
                     .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(

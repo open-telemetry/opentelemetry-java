@@ -61,7 +61,7 @@ public final class OtlpGrpcSpanExporterBuilder {
         new GrpcExporterBuilder<>(
             "otlp",
             ExporterMetrics.Signal.SPAN,
-            ComponentId.generateLazy("otlp_grpc_span_exporter"),
+            "otlp_grpc_span_exporter",
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerTraceServiceGrpc::newFutureStub,

@@ -23,7 +23,7 @@ class GrpcExporterBuilderTest {
   void setUp() {
     builder =
         new GrpcExporterBuilder<>(
-            "otlp", ExporterMetrics.Signal.SPAN, ComponentId.generateLazy("testing"), 0, URI.create("http://localhost:4317"), null, "/test");
+            "otlp", ExporterMetrics.Signal.SPAN, "testing", 0, URI.create("http://localhost:4317"), null, "/test");
   }
 
   @Test

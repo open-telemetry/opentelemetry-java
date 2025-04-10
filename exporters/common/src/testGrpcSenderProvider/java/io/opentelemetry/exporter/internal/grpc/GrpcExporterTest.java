@@ -43,7 +43,7 @@ class GrpcExporterTest {
                 new GrpcExporterBuilder<>(
                         "exporter",
                         ExporterMetrics.Signal.SPAN,
-                        ComponentId.generateLazy("testing"),
+                        "testing",
                         10,
                         new URI("http://localhost"),
                         () -> DummyServiceFutureStub::newFutureStub,
@@ -68,7 +68,7 @@ class GrpcExporterTest {
             new GrpcExporterBuilder<>(
                     "exporter",
                     ExporterMetrics.Signal.SPAN,
-                    ComponentId.generateLazy("testing"),
+                    "testing",
                     10,
                     new URI("http://localhost"),
                     () -> DummyServiceFutureStub::newFutureStub,
@@ -90,7 +90,7 @@ class GrpcExporterTest {
             new GrpcExporterBuilder<>(
                     "exporter",
                     ExporterMetrics.Signal.SPAN,
-                    ComponentId.generateLazy("testing"),
+                    "testing",
                     10,
                     new URI("http://localhost"),
                     () -> DummyServiceFutureStub::newFutureStub,
@@ -113,7 +113,7 @@ class GrpcExporterTest {
                 new GrpcExporterBuilder<>(
                         "exporter",
                         ExporterMetrics.Signal.SPAN,
-                        ComponentId.generateLazy("testing"),
+                        "testing",
                         10,
                         new URI("http://localhost"),
                         () -> DummyServiceFutureStub::newFutureStub,

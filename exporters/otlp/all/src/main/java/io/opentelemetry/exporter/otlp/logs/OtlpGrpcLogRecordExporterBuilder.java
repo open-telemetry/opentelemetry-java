@@ -64,7 +64,7 @@ public final class OtlpGrpcLogRecordExporterBuilder {
         new GrpcExporterBuilder<>(
             "otlp",
             ExporterMetrics.Signal.LOG,
-            ComponentId.generateLazy("otlp_grpc_log_exporter"),
+            "otlp_grpc_log_exporter",
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerLogsServiceGrpc::newFutureStub,
