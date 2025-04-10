@@ -6,16 +6,15 @@
 package io.opentelemetry.sdk.internal;
 
 import io.opentelemetry.api.common.AttributesBuilder;
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nullable;
 
 /**
  * The component id used for SDK health metrics. This corresponds to the otel.component.name and
- * otel.component.id semconv attributes.
- * This class is internal and is hence not for public use. Its APIs are unstable and can change at
- * any time.
+ * otel.component.id semconv attributes. This class is internal and is hence not for public use. Its
+ * APIs are unstable and can change at any time.
  */
 public abstract class ComponentId {
 
@@ -35,8 +34,7 @@ public abstract class ComponentId {
     private static final Map<String, AtomicInteger> nextIdCounters = new ConcurrentHashMap<>();
 
     private final String componentType;
-    @Nullable
-    private volatile String componentName = null;
+    @Nullable private volatile String componentName = null;
 
     private Lazy(String componentType) {
       this.componentType = componentType;
@@ -62,8 +60,6 @@ public abstract class ComponentId {
       }
       return componentName;
     }
-
-
   }
 
   public static ComponentId generateLazy(String componentType) {

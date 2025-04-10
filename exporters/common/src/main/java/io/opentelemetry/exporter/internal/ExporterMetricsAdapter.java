@@ -18,7 +18,8 @@ import javax.annotation.Nullable;
  * on the {@link io.opentelemetry.sdk.common.HealthMetricLevel} setting. This class mimics the
  * interface of {@link ExporterMetrics} to allow it to be easily removed later.
  *
- * This class is internal and is hence not for public use. Its APIs are unstable and can change at any time.
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 public class ExporterMetricsAdapter {
 
@@ -67,14 +68,14 @@ public class ExporterMetricsAdapter {
   }
 
   /**
-   * This class is internal and is hence not for public use. Its APIs are unstable and can change at any time.
+   * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+   * any time.
    */
   public class Recording {
     /** The number items (spans, log records or metric data points) being exported */
     private final int itemCount;
 
-    @Nullable
-    private final ExporterMetrics.Recording delegate;
+    @Nullable private final ExporterMetrics.Recording delegate;
 
     private Recording(int itemCount) {
       this.itemCount = itemCount;

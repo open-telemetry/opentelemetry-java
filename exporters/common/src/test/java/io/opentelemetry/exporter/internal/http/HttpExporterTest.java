@@ -31,10 +31,10 @@ class HttpExporterTest {
   @Test
   void build_NoHttpSenderProvider() {
     assertThatThrownBy(
-        () ->
-            new HttpExporterBuilder<>(
-                "name", ExporterMetrics.Signal.SPAN, "testing", "http://localhost")
-                .build())
+            () ->
+                new HttpExporterBuilder<>(
+                        "name", ExporterMetrics.Signal.SPAN, "testing", "http://localhost")
+                    .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(
             "No HttpSenderProvider found on classpath. Please add dependency on "
@@ -64,111 +64,134 @@ class HttpExporterTest {
     }
 
     InMemoryMetricReader inMemoryMetrics = InMemoryMetricReader.create();
-    try (SdkMeterProvider meterProvider = SdkMeterProvider.builder()
-        .registerMetricReader(inMemoryMetrics)
-        .build()) {
+    try (SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {
 
       ComponentId id = ComponentId.generateLazy("test_exporter");
 
-      Attributes expectedAttributes = Attributes.builder()
-          .put(SemConvAttributes.OTEL_COMPONENT_TYPE, "test_exporter")
-          .put(SemConvAttributes.OTEL_COMPONENT_NAME, id.getComponentName())
-          .build();
+      Attributes expectedAttributes =
+          Attributes.builder()
+              .put(SemConvAttributes.OTEL_COMPONENT_TYPE, "test_exporter")
+              .put(SemConvAttributes.OTEL_COMPONENT_NAME, id.getComponentName())
+              .build();
 
       HttpSender mockSender = Mockito.mock(HttpSender.class);
       Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
 
-      HttpExporter<Marshaler> exporter = new HttpExporter<Marshaler>("legacy_exporter",
-          signal, id, mockSender, () -> meterProvider,
-          HealthMetricLevel.ON, false);
+      HttpExporter<Marshaler> exporter =
+          new HttpExporter<Marshaler>(
+              "legacy_exporter",
+              signal,
+              id,
+              mockSender,
+              () -> meterProvider,
+              HealthMetricLevel.ON,
+              false);
 
-      doAnswer(invoc -> {
-        Consumer<HttpSender.Response> onResponse = invoc.getArgument(2);
+      doAnswer(
+              invoc -> {
+                Consumer<HttpSender.Response> onResponse = invoc.getArgument(2);
 
-        assertThat(inMemoryMetrics.collectAllMetrics())
-            .hasSize(1)
-            .anySatisfy(metric -> assertThat(metric)
-                .hasName(signalMetricPrefix + "inflight")
-                .hasUnit(expectedUnit)
-                .hasLongSumSatisfying(ma -> ma
-                    .isNotMonotonic()
-                    .hasPointsSatisfying(pa -> pa
-                        .hasAttributes(expectedAttributes)
-                        .hasValue(42)
-                    ))
-            );
+                assertThat(inMemoryMetrics.collectAllMetrics())
+                    .hasSize(1)
+                    .anySatisfy(
+                        metric ->
+                            assertThat(metric)
+                                .hasName(signalMetricPrefix + "inflight")
+                                .hasUnit(expectedUnit)
+                                .hasLongSumSatisfying(
+                                    ma ->
+                                        ma.isNotMonotonic()
+                                            .hasPointsSatisfying(
+                                                pa ->
+                                                    pa.hasAttributes(expectedAttributes)
+                                                        .hasValue(42))));
 
-        onResponse.accept(new FakeHttpResponse(200, "Ok"));
-        return null;
-      }).when(mockSender).send(any(), anyInt(), any(), any());
+                onResponse.accept(new FakeHttpResponse(200, "Ok"));
+                return null;
+              })
+          .when(mockSender)
+          .send(any(), anyInt(), any(), any());
 
       exporter.export(mockMarshaller, 42);
 
-      doAnswer(invoc -> {
-        Consumer<HttpSender.Response> onResponse = invoc.getArgument(2);
-        onResponse.accept(new FakeHttpResponse(404, "Not Found"));
-        return null;
-      }).when(mockSender).send(any(), anyInt(), any(), any());
+      doAnswer(
+              invoc -> {
+                Consumer<HttpSender.Response> onResponse = invoc.getArgument(2);
+                onResponse.accept(new FakeHttpResponse(404, "Not Found"));
+                return null;
+              })
+          .when(mockSender)
+          .send(any(), anyInt(), any(), any());
       exporter.export(mockMarshaller, 15);
 
-      doAnswer(invoc -> {
-        Consumer<Throwable> onError = invoc.getArgument(3);
-        onError.accept(new IOException("Computer says no"));
-        return null;
-      }).when(mockSender).send(any(), anyInt(), any(), any());
+      doAnswer(
+              invoc -> {
+                Consumer<Throwable> onError = invoc.getArgument(3);
+                onError.accept(new IOException("Computer says no"));
+                return null;
+              })
+          .when(mockSender)
+          .send(any(), anyInt(), any(), any());
       exporter.export(mockMarshaller, 7);
 
       assertThat(inMemoryMetrics.collectAllMetrics())
           .hasSize(3)
-          .anySatisfy(metric -> assertThat(metric)
-              .hasName(signalMetricPrefix + "inflight")
-              .hasUnit(expectedUnit)
-              .hasLongSumSatisfying(ma -> ma
-                  .hasPointsSatisfying(pa -> pa
-                      .hasAttributes(expectedAttributes)
-                      .hasValue(0)
-                  ))
-          )
-          .anySatisfy(metric -> assertThat(metric)
-              .hasName(signalMetricPrefix + "exported")
-              .hasUnit(expectedUnit)
-              .hasLongSumSatisfying(ma -> ma
-                  .hasPointsSatisfying(pa -> pa
-                          .hasAttributes(expectedAttributes)
-                          .hasValue(42),
-                      pa -> pa
-                          .hasAttributes(expectedAttributes.toBuilder()
-                              .put(SemConvAttributes.ERROR_TYPE, "404")
-                              .build())
-                          .hasValue(15),
-                      pa -> pa
-                          .hasAttributes(expectedAttributes.toBuilder()
-                              .put(SemConvAttributes.ERROR_TYPE, "java.io.IOException")
-                              .build())
-                          .hasValue(7)
-                  ))
-          )
-          .anySatisfy(metric -> assertThat(metric)
-              .hasName("otel.sdk.exporter.operation.duration")
-              .hasUnit("s")
-              .hasHistogramSatisfying(ma -> ma
-                  .hasPointsSatisfying(pa -> pa
-                          .hasAttributes(expectedAttributes)
-                      .hasBucketCounts(1),
-                      pa -> pa
-                          .hasAttributes(expectedAttributes.toBuilder()
-                              .put(SemConvAttributes.ERROR_TYPE, "404")
-                              .build())
-                          .hasBucketCounts(1),
-                      pa -> pa
-                          .hasAttributes(expectedAttributes.toBuilder()
-                              .put(SemConvAttributes.ERROR_TYPE, "java.io.IOException")
-                              .build())
-                          .hasBucketCounts(1)
-                  ))
-          );
-
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName(signalMetricPrefix + "inflight")
+                      .hasUnit(expectedUnit)
+                      .hasLongSumSatisfying(
+                          ma ->
+                              ma.hasPointsSatisfying(
+                                  pa -> pa.hasAttributes(expectedAttributes).hasValue(0))))
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName(signalMetricPrefix + "exported")
+                      .hasUnit(expectedUnit)
+                      .hasLongSumSatisfying(
+                          ma ->
+                              ma.hasPointsSatisfying(
+                                  pa -> pa.hasAttributes(expectedAttributes).hasValue(42),
+                                  pa ->
+                                      pa.hasAttributes(
+                                              expectedAttributes.toBuilder()
+                                                  .put(SemConvAttributes.ERROR_TYPE, "404")
+                                                  .build())
+                                          .hasValue(15),
+                                  pa ->
+                                      pa.hasAttributes(
+                                              expectedAttributes.toBuilder()
+                                                  .put(
+                                                      SemConvAttributes.ERROR_TYPE,
+                                                      "java.io.IOException")
+                                                  .build())
+                                          .hasValue(7))))
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName("otel.sdk.exporter.operation.duration")
+                      .hasUnit("s")
+                      .hasHistogramSatisfying(
+                          ma ->
+                              ma.hasPointsSatisfying(
+                                  pa -> pa.hasAttributes(expectedAttributes).hasBucketCounts(1),
+                                  pa ->
+                                      pa.hasAttributes(
+                                              expectedAttributes.toBuilder()
+                                                  .put(SemConvAttributes.ERROR_TYPE, "404")
+                                                  .build())
+                                          .hasBucketCounts(1),
+                                  pa ->
+                                      pa.hasAttributes(
+                                              expectedAttributes.toBuilder()
+                                                  .put(
+                                                      SemConvAttributes.ERROR_TYPE,
+                                                      "java.io.IOException")
+                                                  .build())
+                                          .hasBucketCounts(1))));
     }
-
   }
 }

@@ -21,12 +21,14 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
- * This class is internal and is hence not for public use. Its APIs are unstable and can change at any time.
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
  */
 public class ExporterMetrics {
 
   /**
-   * This class is internal and is hence not for public use. Its APIs are unstable and can change at any time.
+   * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+   * any time.
    */
   public enum Signal {
     SPAN("span", "span"),
@@ -206,11 +208,13 @@ public class ExporterMetrics {
   }
 
   /**
-   * This class is internal and is hence not for public use. Its APIs are unstable and can change at any time.
+   * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+   * any time.
    */
   public class Recording {
     /** The number items (spans, log records or metric data points) being exported */
     private final int itemCount;
+
     private final long startNanoTime;
 
     private boolean alreadyEnded = false;
@@ -240,7 +244,6 @@ public class ExporterMetrics {
       alreadyEnded = true;
 
       decrementInflight(itemCount);
-
 
       if (failedCount > 0) {
         if (errorType == null || errorType.isEmpty()) {
