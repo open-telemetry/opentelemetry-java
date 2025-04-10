@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.internal;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -20,50 +19,24 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class ComponentId {
 
-  // TODO: add tests against semconv
-  private static final AttributeKey<String> OTEL_COMPONENT_TYPE =
-      AttributeKey.stringKey("otel.component.type");
-  private static final AttributeKey<String> OTEL_COMPONENT_NAME =
-      AttributeKey.stringKey("otel.component.name");
-
   private ComponentId() {}
 
   public abstract String getTypeName();
 
-  public abstract void put(AttributesBuilder attributes);
+  public abstract String getComponentName();
 
-  private static class Impl extends ComponentId {
-    private static final Map<String, AtomicInteger> nextIdCounters = new ConcurrentHashMap<>();
-
-    private final String componentType;
-    private final String componentName;
-
-    private Impl(String componentType) {
-      int id =
-          nextIdCounters
-              .computeIfAbsent(componentType, k -> new AtomicInteger(0))
-              .getAndIncrement();
-      this.componentType = componentType;
-      componentName = componentType + "/" + id;
-    }
-
-    @Override
-    public String getTypeName() {
-      return componentType;
-    }
-
-    @Override
-    public void put(AttributesBuilder attributes) {
-      attributes.put(OTEL_COMPONENT_TYPE, componentType);
-      attributes.put(OTEL_COMPONENT_NAME, componentName);
-    }
+  public void put(AttributesBuilder attributes) {
+    attributes.put(SemConvAttributes.OTEL_COMPONENT_TYPE, getTypeName());
+    attributes.put(SemConvAttributes.OTEL_COMPONENT_NAME, getComponentName());
   }
 
   private static class Lazy extends ComponentId {
 
+    private static final Map<String, AtomicInteger> nextIdCounters = new ConcurrentHashMap<>();
+
     private final String componentType;
     @Nullable
-    private volatile Impl delegate = null;
+    private volatile String componentName = null;
 
     private Lazy(String componentType) {
       this.componentType = componentType;
@@ -75,16 +48,22 @@ public abstract class ComponentId {
     }
 
     @Override
-    public void put(AttributesBuilder attributes) {
-      if (delegate == null) {
+    public String getComponentName() {
+      if (componentName == null) {
         synchronized (this) {
-          if (delegate == null) {
-            delegate = new Impl(componentType);
+          if (componentName == null) {
+            int id =
+                nextIdCounters
+                    .computeIfAbsent(componentType, k -> new AtomicInteger(0))
+                    .getAndIncrement();
+            componentName = componentType + "/" + id;
           }
         }
       }
-      delegate.put(attributes);
+      return componentName;
     }
+
+
   }
 
   public static ComponentId generateLazy(String componentType) {

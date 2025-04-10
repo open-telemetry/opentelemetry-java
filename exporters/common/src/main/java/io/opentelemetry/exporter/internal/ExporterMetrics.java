@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.internal;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -14,6 +13,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.HealthMetricLevel;
 import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.SemConvAttributes;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -21,10 +21,6 @@ import javax.annotation.Nullable;
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at any time.
  */
 public class ExporterMetrics {
-
-  // TODO: add semconv test
-  private static final AttributeKey<String> ERROR_TYPE_ATTRIB =
-      AttributeKey.stringKey("error.type");
 
   /**
    * This class is internal and is hence not for public use. Its APIs are unstable and can change at any time.
@@ -172,7 +168,7 @@ public class ExporterMetrics {
     }
     Attributes attributes = allAttributes();
     if (errorType != null && !errorType.isEmpty()) {
-      attributes = attributes.toBuilder().put(ERROR_TYPE_ATTRIB, errorType).build();
+      attributes = attributes.toBuilder().put(SemConvAttributes.ERROR_TYPE, errorType).build();
     }
     exported().add(count, attributes);
   }
