@@ -242,8 +242,13 @@ public class GrpcExporterBuilder<T extends Marshaler> {
                 executorService));
     LOGGER.log(Level.FINE, "Using GrpcSender: " + grpcSender.getClass().getName());
 
-    return new GrpcExporter<>(legacyExporterName, signal, grpcSender, healthMetricLevel,
-        ComponentId.generateLazy(componentType), meterProviderSupplier);
+    return new GrpcExporter<>(
+        legacyExporterName,
+        signal,
+        grpcSender,
+        healthMetricLevel,
+        ComponentId.generateLazy(componentType),
+        meterProviderSupplier);
   }
 
   public String toString(boolean includePrefixAndSuffix) {

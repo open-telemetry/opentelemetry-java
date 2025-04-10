@@ -52,8 +52,16 @@ public final class GrpcExporter<T extends Marshaler> {
       Supplier<MeterProvider> meterProviderSupplier) {
     this.type = type.toString();
     this.grpcSender = grpcSender;
-    //TODO: add a way of extracting the server.address and server.port attributes from GrpcSender
-    this.exporterMetrics = new ExporterMetricsAdapter(healthMetricLevel, meterProviderSupplier, type, componentId, null, legacyExporterName, "grpc");
+    // TODO: add a way of extracting the server.address and server.port attributes from GrpcSender
+    this.exporterMetrics =
+        new ExporterMetricsAdapter(
+            healthMetricLevel,
+            meterProviderSupplier,
+            type,
+            componentId,
+            null,
+            legacyExporterName,
+            "grpc");
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {
@@ -61,7 +69,8 @@ public final class GrpcExporter<T extends Marshaler> {
       return CompletableResultCode.ofFailure();
     }
 
-    ExporterMetricsAdapter.Recording metricRecording = exporterMetrics.startRecordingExport(numItems);
+    ExporterMetricsAdapter.Recording metricRecording =
+        exporterMetrics.startRecordingExport(numItems);
 
     CompletableResultCode result = new CompletableResultCode();
 
@@ -73,7 +82,10 @@ public final class GrpcExporter<T extends Marshaler> {
     return result;
   }
 
-  private void onResponse(CompletableResultCode result, ExporterMetricsAdapter.Recording metricRecording, GrpcResponse grpcResponse) {
+  private void onResponse(
+      CompletableResultCode result,
+      ExporterMetricsAdapter.Recording metricRecording,
+      GrpcResponse grpcResponse) {
     int statusCode = grpcResponse.grpcStatusValue();
 
     if (statusCode == 0) {
@@ -114,7 +126,8 @@ public final class GrpcExporter<T extends Marshaler> {
     result.failExceptionally(FailedExportException.grpcFailedWithResponse(grpcResponse));
   }
 
-  private void onError(CompletableResultCode result, ExporterMetricsAdapter.Recording metricRecording, Throwable e) {
+  private void onError(
+      CompletableResultCode result, ExporterMetricsAdapter.Recording metricRecording, Throwable e) {
     metricRecording.finishFailed(e);
     logger.log(
         Level.SEVERE,

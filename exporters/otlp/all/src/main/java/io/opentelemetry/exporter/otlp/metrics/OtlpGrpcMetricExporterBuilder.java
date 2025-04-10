@@ -18,11 +18,9 @@ import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
-import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.sdk.common.HealthMetricLevel;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -298,7 +296,8 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
-   * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter collects.
+   * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter
+   * collects.
    *
    * @since 1.50.0
    */

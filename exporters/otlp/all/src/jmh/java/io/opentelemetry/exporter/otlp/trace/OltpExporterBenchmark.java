@@ -24,11 +24,11 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.HealthMetricLevel;
+import io.opentelemetry.sdk.internal.ComponentId;
 import java.net.URI;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
-import io.opentelemetry.sdk.common.HealthMetricLevel;
-import io.opentelemetry.sdk.internal.ComponentId;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -119,7 +119,10 @@ public class OltpExporterBenchmark {
 
     httpExporter =
         new HttpExporterBuilder<TraceRequestMarshaler>(
-                "otlp", ExporterMetrics.Signal.SPAN, "http_exporter", "http://localhost:" + server.activeLocalPort() + "/v1/traces")
+                "otlp",
+                ExporterMetrics.Signal.SPAN,
+                "http_exporter",
+                "http://localhost:" + server.activeLocalPort() + "/v1/traces")
             .build();
   }
 

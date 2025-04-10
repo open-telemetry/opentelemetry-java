@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.internal;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -7,18 +12,21 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * The component id used for SDK health metrics.
- * This corresponds to the otel.component.name and otel.component.id semconv attributes.
+ * The component id used for SDK health metrics. This corresponds to the otel.component.name and
+ * otel.component.id semconv attributes.
  */
 public abstract class ComponentId {
 
   // TODO: add tests against semconv
-  private static final AttributeKey<String> OTEL_COMPONENT_TYPE = AttributeKey.stringKey("otel.component.type");
-  private static final AttributeKey<String> OTEL_COMPONENT_NAME = AttributeKey.stringKey("otel.component.name");
+  private static final AttributeKey<String> OTEL_COMPONENT_TYPE =
+      AttributeKey.stringKey("otel.component.type");
+  private static final AttributeKey<String> OTEL_COMPONENT_NAME =
+      AttributeKey.stringKey("otel.component.name");
 
   private ComponentId() {}
 
   public abstract String getTypeName();
+
   public abstract void put(AttributesBuilder attributes);
 
   private static class Impl extends ComponentId {
@@ -28,7 +36,10 @@ public abstract class ComponentId {
     private final String componentName;
 
     private Impl(String componentType) {
-      int id = nextIdCounters.computeIfAbsent(componentType, k -> new AtomicInteger(0)).getAndIncrement();
+      int id =
+          nextIdCounters
+              .computeIfAbsent(componentType, k -> new AtomicInteger(0))
+              .getAndIncrement();
       this.componentType = componentType;
       componentName = componentType + "/" + id;
     }
@@ -44,7 +55,6 @@ public abstract class ComponentId {
       attributes.put(OTEL_COMPONENT_NAME, componentName);
     }
   }
-
 
   private static class Lazy extends ComponentId {
 
@@ -76,6 +86,4 @@ public abstract class ComponentId {
   public static ComponentId generateLazy(String componentType) {
     return new Lazy(componentType);
   }
-
-
 }

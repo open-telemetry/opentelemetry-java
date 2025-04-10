@@ -24,7 +24,6 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.annotation.Nullable;
-import io.opentelemetry.sdk.internal.ComponentId;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junitpioneer.jupiter.SetSystemProperty;

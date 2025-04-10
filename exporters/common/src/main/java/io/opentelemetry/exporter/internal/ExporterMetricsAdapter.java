@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.exporter.internal;
 
 import io.opentelemetry.api.common.Attributes;
@@ -8,15 +13,14 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
- * Adapter class delegating to {@link ExporterMetrics} and {@link LegacyExporterMetrics} depending on the {@link io.opentelemetry.sdk.common.HealthMetricLevel} setting.
- * This class mimics the interface of {@link ExporterMetrics} to allow it to be easily removed later.
+ * Adapter class delegating to {@link ExporterMetrics} and {@link LegacyExporterMetrics} depending
+ * on the {@link io.opentelemetry.sdk.common.HealthMetricLevel} setting. This class mimics the
+ * interface of {@link ExporterMetrics} to allow it to be easily removed later.
  */
 public class ExporterMetricsAdapter {
 
-  @Nullable
-  private final ExporterMetrics exporterMetrics;
-  @Nullable
-  private final LegacyExporterMetrics legacyExporterMetrics;
+  @Nullable private final ExporterMetrics exporterMetrics;
+  @Nullable private final LegacyExporterMetrics legacyExporterMetrics;
 
   public ExporterMetricsAdapter(
       HealthMetricLevel level,
@@ -25,19 +29,22 @@ public class ExporterMetricsAdapter {
       ComponentId componentId,
       @Nullable Attributes additionalAttributes,
       String legacyExporterName,
-      String legacyTransportName
-  ) {
+      String legacyTransportName) {
 
     if (level == HealthMetricLevel.LEGACY) {
       exporterMetrics = null;
-      legacyExporterMetrics = new LegacyExporterMetrics(meterProviderSupplier, legacyExporterName,
-          getLegacyType(signal), legacyTransportName);
+      legacyExporterMetrics =
+          new LegacyExporterMetrics(
+              meterProviderSupplier,
+              legacyExporterName,
+              getLegacyType(signal),
+              legacyTransportName);
     } else {
-      exporterMetrics = new ExporterMetrics(level, meterProviderSupplier, signal, componentId,
-          additionalAttributes);
+      exporterMetrics =
+          new ExporterMetrics(
+              level, meterProviderSupplier, signal, componentId, additionalAttributes);
       legacyExporterMetrics = null;
     }
-
   }
 
   private static String getLegacyType(ExporterMetrics.Signal signal) {
@@ -56,15 +63,11 @@ public class ExporterMetricsAdapter {
     return new Recording(itemCount);
   }
 
-
   public class Recording {
-    /**
-     * The number items (spans, log records or metric data points) being exported
-     */
+    /** The number items (spans, log records or metric data points) being exported */
     private final int itemCount;
 
-    @Nullable
-    private final ExporterMetrics.Recording delegate;
+    @Nullable private final ExporterMetrics.Recording delegate;
 
     private Recording(int itemCount) {
       this.itemCount = itemCount;
@@ -92,7 +95,7 @@ public class ExporterMetricsAdapter {
     }
 
     public void finishFailed(Throwable e) {
-      //TODO: check in java instrumentation if this is correct
+      // TODO: check in java instrumentation if this is correct
       finishFailed(e.getClass().getName());
     }
 
@@ -113,8 +116,5 @@ public class ExporterMetricsAdapter {
         legacyExporterMetrics.addFailed(failedCount);
       }
     }
-
   }
-
-
 }

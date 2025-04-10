@@ -69,7 +69,11 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private ClassLoader serviceClassLoader = HttpExporterBuilder.class.getClassLoader();
   @Nullable private ExecutorService executorService;
 
-  public HttpExporterBuilder(String exporterName, ExporterMetrics.Signal signal, String componentType, String defaultEndpoint) {
+  public HttpExporterBuilder(
+      String exporterName,
+      ExporterMetrics.Signal signal,
+      String componentType,
+      String defaultEndpoint) {
     this.exporterName = exporterName;
     this.signal = signal;
     this.componentType = componentType;
@@ -167,7 +171,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
 
   @SuppressWarnings("BuilderReturnThis")
   public HttpExporterBuilder<T> copy() {
-    HttpExporterBuilder<T> copy = new HttpExporterBuilder<>(exporterName, signal, componentType, endpoint);
+    HttpExporterBuilder<T> copy =
+        new HttpExporterBuilder<>(exporterName, signal, componentType, endpoint);
     copy.endpoint = endpoint;
     copy.timeoutNanos = timeoutNanos;
     copy.connectTimeoutNanos = connectTimeoutNanos;
@@ -226,7 +231,14 @@ public final class HttpExporterBuilder<T extends Marshaler> {
                 executorService));
     LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
 
-    return new HttpExporter<>(exporterName, signal, ComponentId.generateLazy(componentType), httpSender, meterProviderSupplier, healthMetricLevel, exportAsJson);
+    return new HttpExporter<>(
+        exporterName,
+        signal,
+        ComponentId.generateLazy(componentType),
+        httpSender,
+        meterProviderSupplier,
+        healthMetricLevel,
+        exportAsJson);
   }
 
   public String toString(boolean includePrefixAndSuffix) {

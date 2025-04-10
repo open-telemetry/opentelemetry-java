@@ -21,7 +21,6 @@ import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.HealthMetricLevel;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.internal.ComponentId;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
@@ -250,7 +249,8 @@ public final class OtlpGrpcLogRecordExporterBuilder {
   }
 
   /**
-   * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter collects.
+   * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter
+   * collects.
    *
    * @since 1.50.0
    */

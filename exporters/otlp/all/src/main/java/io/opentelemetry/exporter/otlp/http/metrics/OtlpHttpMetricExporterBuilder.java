@@ -16,9 +16,7 @@ import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.sdk.common.HealthMetricLevel;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
@@ -67,7 +65,10 @@ public final class OtlpHttpMetricExporterBuilder {
   }
 
   OtlpHttpMetricExporterBuilder() {
-    this(new HttpExporterBuilder<>("otlp", ExporterMetrics.Signal.METRIC, "otlp_http_metric_exporter",  DEFAULT_ENDPOINT), DEFAULT_MEMORY_MODE);
+    this(
+        new HttpExporterBuilder<>(
+            "otlp", ExporterMetrics.Signal.METRIC, "otlp_http_metric_exporter", DEFAULT_ENDPOINT),
+        DEFAULT_MEMORY_MODE);
   }
 
   /**
@@ -266,7 +267,8 @@ public final class OtlpHttpMetricExporterBuilder {
   }
 
   /**
-   * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter collects.
+   * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter
+   * collects.
    *
    * @since 1.50.0
    */

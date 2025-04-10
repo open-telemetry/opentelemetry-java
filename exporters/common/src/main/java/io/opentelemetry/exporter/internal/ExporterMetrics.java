@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.exporter.internal;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -15,10 +20,13 @@ import javax.annotation.Nullable;
 public class ExporterMetrics {
 
   // TODO: add semconv test
-  private static final AttributeKey<String> ERROR_TYPE_ATTRIB = AttributeKey.stringKey("error.type");
+  private static final AttributeKey<String> ERROR_TYPE_ATTRIB =
+      AttributeKey.stringKey("error.type");
 
   public enum Signal {
-    SPAN("span", "span"), METRIC("metric", "data_point"), LOG("log", "log_record");
+    SPAN("span", "span"),
+    METRIC("metric", "data_point"),
+    LOG("log", "log_record");
 
     private final String namespace;
     private final String unit;
@@ -40,16 +48,22 @@ public class ExporterMetrics {
   private final Attributes additionalAttributes;
   private final boolean enabled;
 
-  @Nullable
-  private volatile LongUpDownCounter inflight = null;
+  @Nullable private volatile LongUpDownCounter inflight = null;
   private volatile LongCounter exported = null;
   private volatile Attributes allAttributes = null;
 
-  public ExporterMetrics(HealthMetricLevel level, Supplier<MeterProvider> meterProviderSupplier, Signal signal, ComponentId componentId) {
+  public ExporterMetrics(
+      HealthMetricLevel level,
+      Supplier<MeterProvider> meterProviderSupplier,
+      Signal signal,
+      ComponentId componentId) {
     this(level, meterProviderSupplier, signal, componentId, null);
   }
 
-  public ExporterMetrics(HealthMetricLevel level, Supplier<MeterProvider> meterProviderSupplier, Signal signal,
+  public ExporterMetrics(
+      HealthMetricLevel level,
+      Supplier<MeterProvider> meterProviderSupplier,
+      Signal signal,
       ComponentId componentId,
       @Nullable Attributes additionalAttributes) {
     switch (level) {
@@ -62,7 +76,8 @@ public class ExporterMetrics {
         break;
       default:
         throw new IllegalArgumentException("Unhandled case " + level);
-    };
+    }
+    ;
 
     this.meterProviderSupplier = meterProviderSupplier;
     this.componentId = componentId;
@@ -85,7 +100,7 @@ public class ExporterMetrics {
   }
 
   private Attributes allAttributes() {
-    //attributes are initialized lazily to trigger lazy initialization of the componentId
+    // attributes are initialized lazily to trigger lazy initialization of the componentId
     Attributes allAttributes = this.allAttributes;
     if (allAttributes == null) {
       AttributesBuilder builder = Attributes.builder();
@@ -100,11 +115,15 @@ public class ExporterMetrics {
   private LongUpDownCounter inflight() {
     LongUpDownCounter inflight = this.inflight;
     if (inflight == null) {
-      inflight = meter().upDownCounterBuilder("otel.sdk.exporter." + signal.namespace + ".inflight")
-          .setUnit("{" + signal.unit + "}")
-          .setDescription("The number of " + signal.unit
-              + "s which were passed to the exporter, but that have not been exported yet (neither successful, nor failed)")
-          .build();
+      inflight =
+          meter()
+              .upDownCounterBuilder("otel.sdk.exporter." + signal.namespace + ".inflight")
+              .setUnit("{" + signal.unit + "}")
+              .setDescription(
+                  "The number of "
+                      + signal.unit
+                      + "s which were passed to the exporter, but that have not been exported yet (neither successful, nor failed)")
+              .build();
       this.inflight = inflight;
     }
     return inflight;
@@ -113,11 +132,15 @@ public class ExporterMetrics {
   private LongCounter exported() {
     LongCounter exported = this.exported;
     if (exported == null) {
-      exported = meter().counterBuilder("otel.sdk.exporter." + signal.namespace + ".exported")
-          .setUnit("{" + signal.unit + "}")
-          .setDescription("The number of " + signal.unit
-              + "s for which the export has finished, either successful or failed")
-          .build();
+      exported =
+          meter()
+              .counterBuilder("otel.sdk.exporter." + signal.namespace + ".exported")
+              .setUnit("{" + signal.unit + "}")
+              .setDescription(
+                  "The number of "
+                      + signal.unit
+                      + "s for which the export has finished, either successful or failed")
+              .build();
       this.exported = exported;
     }
     return exported;
@@ -143,18 +166,15 @@ public class ExporterMetrics {
     }
     Attributes attributes = allAttributes;
     if (errorType != null && !errorType.isEmpty()) {
-      attributes = allAttributes.toBuilder()
-          .put(ERROR_TYPE_ATTRIB, errorType)
-          .build();
+      attributes = allAttributes.toBuilder().put(ERROR_TYPE_ATTRIB, errorType).build();
     }
     exported().add(count, allAttributes);
   }
 
   public class Recording {
-    /**
-     * The number items (spans, log records or metric data points) being exported
-     */
+    /** The number items (spans, log records or metric data points) being exported */
     private final int itemCount;
+
     private boolean alreadyEnded = false;
 
     private Recording(int itemCount) {
@@ -182,9 +202,10 @@ public class ExporterMetrics {
 
       decrementInflight(itemCount);
 
-      if (failedCount > 0 ) {
+      if (failedCount > 0) {
         if (errorType == null || errorType.isEmpty()) {
-          throw new IllegalArgumentException("Some items failed but no failure reason was provided");
+          throw new IllegalArgumentException(
+              "Some items failed but no failure reason was provided");
         }
         incrementExported(failedCount, errorType);
       }
@@ -194,5 +215,4 @@ public class ExporterMetrics {
       }
     }
   }
-
 }
