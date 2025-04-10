@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -109,6 +110,19 @@ final class GrpcMetricExporterBuilderWrapper implements TelemetryExporterBuilder
   @SuppressWarnings("deprecation") // testing deprecated functionality
   public TelemetryExporterBuilder<MetricData> setChannel(Object channel) {
     builder.setChannel((ManagedChannel) channel);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<MetricData> setServiceClassLoader(
+      ClassLoader serviceClassLoader) {
+    builder.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<MetricData> setExecutorService(ExecutorService executorService) {
+    builder.setExecutorService(executorService);
     return this;
   }
 

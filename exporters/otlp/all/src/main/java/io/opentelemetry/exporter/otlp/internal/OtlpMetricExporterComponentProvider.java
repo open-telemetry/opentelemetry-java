@@ -9,14 +9,14 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.DATA_TYPE_M
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_GRPC;
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
-import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 
 /**
@@ -39,13 +39,13 @@ public class OtlpMetricExporterComponentProvider implements ComponentProvider<Me
   }
 
   @Override
-  public MetricExporter create(StructuredConfigProperties config) {
-    String protocol = OtlpConfigUtil.getStructuredConfigOtlpProtocol(config);
+  public MetricExporter create(DeclarativeConfigProperties config) {
+    String protocol = OtlpDeclarativeConfigUtil.getStructuredConfigOtlpProtocol(config);
 
     if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
       OtlpHttpMetricExporterBuilder builder = httpBuilder();
 
-      OtlpConfigUtil.configureOtlpExporterBuilder(
+      OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_METRICS,
           config,
           builder::setEndpoint,
@@ -56,16 +56,16 @@ public class OtlpMetricExporterComponentProvider implements ComponentProvider<Me
           builder::setClientTls,
           builder::setRetryPolicy,
           builder::setMemoryMode);
-      ExporterBuilderUtil.configureOtlpAggregationTemporality(
+      IncubatingExporterBuilderUtil.configureOtlpAggregationTemporality(
           config, builder::setAggregationTemporalitySelector);
-      ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
+      IncubatingExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
           config, builder::setDefaultAggregationSelector);
 
       return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
       OtlpGrpcMetricExporterBuilder builder = grpcBuilder();
 
-      OtlpConfigUtil.configureOtlpExporterBuilder(
+      OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_METRICS,
           config,
           builder::setEndpoint,
@@ -76,9 +76,9 @@ public class OtlpMetricExporterComponentProvider implements ComponentProvider<Me
           builder::setClientTls,
           builder::setRetryPolicy,
           builder::setMemoryMode);
-      ExporterBuilderUtil.configureOtlpAggregationTemporality(
+      IncubatingExporterBuilderUtil.configureOtlpAggregationTemporality(
           config, builder::setAggregationTemporalitySelector);
-      ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
+      IncubatingExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
           config, builder::setDefaultAggregationSelector);
 
       return builder.build();

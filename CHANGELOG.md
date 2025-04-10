@@ -2,6 +2,80 @@
 
 ## Unreleased
 
+## Version 1.49.0 (2025-04-04)
+
+### SDK
+
+#### Trace
+
+* Avoid linear queue.size() calls in span producers by storing queue size separately
+  ([#7141](https://github.com/open-telemetry/opentelemetry-java/pull/7141))
+
+#### Exporters
+
+* OTLP: Add support for setting exporter executor service
+  ([#7152](https://github.com/open-telemetry/opentelemetry-java/pull/7152))
+* OTLP: Refine delay jitter for exponential backoff
+  ([#7206](https://github.com/open-telemetry/opentelemetry-java/pull/7206))
+
+#### Extensions
+
+* Autoconfigure: Remove support for otel.experimental.exporter.otlp.retry.enabled
+  ([#7200](https://github.com/open-telemetry/opentelemetry-java/pull/7200))
+* Autoconfigure: Add stable cardinality limit property otel.java.metrics.cardinality.limit
+  ([#7199](https://github.com/open-telemetry/opentelemetry-java/pull/7199))
+* Incubator: Add declarative config model customizer SPI
+  ([#7118](https://github.com/open-telemetry/opentelemetry-java/pull/7118))
+
+## Version 1.48.0 (2025-03-07)
+
+### API
+
+* Add some helpful logging attribute methods to `LogRecordBuilder`
+  ([#7089](https://github.com/open-telemetry/opentelemetry-java/pull/7089))
+
+#### Incubator
+
+* Introduce ConfigProvider API. Rename `StructuredConfigProperties` to `DeclarativeConfigProperties`
+  and move to `opentelemetry-api-incubator`. Rename `FileConfiguration`
+  to `DeclarativeConfiguration`.
+  ([#6549](https://github.com/open-telemetry/opentelemetry-java/pull/6549))
+
+### SDK
+
+* Log warning and adjust when BatchLogRecordProcessor, BatchSpanProcessor `maxExportBatchSize`
+  exceeds `maxQueueSize`.
+  ([#7045](https://github.com/open-telemetry/opentelemetry-java/pull/7045),
+  [#7148](https://github.com/open-telemetry/opentelemetry-java/pull/7148))
+* Fix bug causing `ThrottlingLogger` to log more than once per minute
+  ([#7156](https://github.com/open-telemetry/opentelemetry-java/pull/7156))
+
+#### Metrics
+
+* Remove obsolete `SdkMeterProviderUtil#setCardinalitylimit` API
+  ([#7169](https://github.com/open-telemetry/opentelemetry-java/pull/7169))
+
+#### Traces
+
+* Fix bug preventing accurate reporting of span event dropped attribute count
+  ([#7142](https://github.com/open-telemetry/opentelemetry-java/pull/7142))
+
+#### Exporters
+
+* OTLP: remove support for `otel.java.experimental.exporter.memory_mode`
+  which was previously replaced by `otel.java.exporter.memory_mode`
+  ([#7127](https://github.com/open-telemetry/opentelemetry-java/pull/7127))
+* OTLP: Extract sender parameters to config carrier class
+  (incubating API)
+  ([#7151](https://github.com/open-telemetry/opentelemetry-java/pull/7151))
+* OTLP: Add support for setting OTLP exporter service class loader
+  ([#7150](https://github.com/open-telemetry/opentelemetry-java/pull/7150))
+
+### Tooling
+
+* Update android animalsniffer min API version to 23
+  ([#7153](https://github.com/open-telemetry/opentelemetry-java/pull/7153))
+
 ## Version 1.47.0 (2025-02-07)
 
 ### API

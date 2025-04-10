@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static java.util.stream.Collectors.joining;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
@@ -43,7 +43,7 @@ final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, 
     if (!model.getAdditionalProperties().isEmpty()) {
       Map<String, Object> additionalProperties = model.getAdditionalProperties();
       if (additionalProperties.size() > 1) {
-        throw new ConfigurationException(
+        throw new DeclarativeConfigException(
             "Invalid configuration - multiple log record exporters set: "
                 + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
       }
@@ -61,7 +61,7 @@ final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, 
               exporterKeyValue.getValue());
       return FileConfigUtil.addAndReturn(closeables, logRecordExporter);
     } else {
-      throw new ConfigurationException("log exporter must be set");
+      throw new DeclarativeConfigException("log exporter must be set");
     }
   }
 }
