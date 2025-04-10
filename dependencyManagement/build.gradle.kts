@@ -15,11 +15,11 @@ val DEPENDENCY_BOMS = listOf(
 
   "com.fasterxml.jackson:jackson-bom:2.18.3",
   "com.google.guava:guava-bom:33.4.6-jre",
-  "com.google.protobuf:protobuf-bom:4.29.3",
+  "com.google.protobuf:protobuf-bom:4.30.2",
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
   "com.squareup.okio:okio-bom:3.10.2", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.71.0",
-  "io.netty:netty-bom:4.1.119.Final",
+  "io.netty:netty-bom:4.2.0.Final",
   "io.zipkin.brave:brave-bom:6.1.0",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.5.0",
   "org.assertj:assertj-bom:3.27.3",
@@ -28,7 +28,7 @@ val DEPENDENCY_BOMS = listOf(
 )
 
 val autoValueVersion = "1.11.0"
-val errorProneVersion = "2.36.0"
+val errorProneVersion = "2.37.0"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
@@ -84,12 +84,12 @@ val DEPENDENCIES = listOf(
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
   "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.45.0-alpha",
-  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.31.0-alpha",
+  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.32.0-alpha",
   "io.opentelemetry.proto:opentelemetry-proto:1.5.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",
   "io.opentracing:opentracing-noop:0.33.0",
   "junit:junit:4.13.2",
-  "nl.jqno.equalsverifier:equalsverifier:3.19.2",
+  "nl.jqno.equalsverifier:equalsverifier:3.19.3",
   "org.awaitility:awaitility:4.3.0",
   "org.bouncycastle:bcpkix-jdk15on:1.70",
   "org.codehaus.mojo:animal-sniffer-annotations:1.24",

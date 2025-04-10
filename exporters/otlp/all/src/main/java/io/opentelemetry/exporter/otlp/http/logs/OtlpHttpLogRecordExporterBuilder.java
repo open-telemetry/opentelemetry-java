@@ -256,6 +256,8 @@ public final class OtlpHttpLogRecordExporterBuilder {
    * <p>NOTE: By calling this method, you are opting into managing the lifecycle of the {@code
    * executorService}. {@link ExecutorService#shutdown()} will NOT be called when this exporter is
    * shutdown.
+   *
+   * @since 1.49.0
    */
   public OtlpHttpLogRecordExporterBuilder setExecutorService(ExecutorService executorService) {
     requireNonNull(executorService, "executorService");
