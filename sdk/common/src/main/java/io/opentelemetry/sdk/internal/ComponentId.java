@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.internal;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -14,6 +15,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * The component id used for SDK health metrics. This corresponds to the otel.component.name and
  * otel.component.id semconv attributes.
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
  */
 public abstract class ComponentId {
 
@@ -59,6 +62,7 @@ public abstract class ComponentId {
   private static class Lazy extends ComponentId {
 
     private final String componentType;
+    @Nullable
     private volatile Impl delegate = null;
 
     private Lazy(String componentType) {

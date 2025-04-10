@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.HealthMetricLevel;
 import io.opentelemetry.sdk.internal.ComponentId;
+import java.util.Objects;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -16,6 +17,8 @@ import javax.annotation.Nullable;
  * Adapter class delegating to {@link ExporterMetrics} and {@link LegacyExporterMetrics} depending
  * on the {@link io.opentelemetry.sdk.common.HealthMetricLevel} setting. This class mimics the
  * interface of {@link ExporterMetrics} to allow it to be easily removed later.
+ *
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at any time.
  */
 public class ExporterMetricsAdapter {
 
@@ -63,23 +66,29 @@ public class ExporterMetricsAdapter {
     return new Recording(itemCount);
   }
 
+  /**
+   * This class is internal and is hence not for public use. Its APIs are unstable and can change at any time.
+   */
   public class Recording {
     /** The number items (spans, log records or metric data points) being exported */
     private final int itemCount;
 
-    @Nullable private final ExporterMetrics.Recording delegate;
+    @Nullable
+    private final ExporterMetrics.Recording delegate;
 
     private Recording(int itemCount) {
       this.itemCount = itemCount;
       if (legacyExporterMetrics != null) {
         legacyExporterMetrics.addSeen(itemCount);
+        delegate = null;
       } else {
+        Objects.requireNonNull(exporterMetrics);
         delegate = exporterMetrics.startRecordingExport(itemCount);
       }
     }
 
     public void finishSuccessful() {
-      if (legacyExporterMetrics != null) {
+      if (delegate == null) {
         finishLegacy(0);
       } else {
         delegate.finishSuccessful();
@@ -87,7 +96,7 @@ public class ExporterMetricsAdapter {
     }
 
     public void finishPartialSuccess(int rejectedCount) {
-      if (legacyExporterMetrics != null) {
+      if (delegate == null) {
         finishLegacy(rejectedCount);
       } else {
         delegate.finishPartialSuccess(rejectedCount);
@@ -100,7 +109,7 @@ public class ExporterMetricsAdapter {
     }
 
     public void finishFailed(String errorReason) {
-      if (legacyExporterMetrics != null) {
+      if (delegate == null) {
         finishLegacy(itemCount);
       } else {
         delegate.finishFailed(errorReason);
@@ -108,6 +117,7 @@ public class ExporterMetricsAdapter {
     }
 
     private void finishLegacy(int failedCount) {
+      Objects.requireNonNull(legacyExporterMetrics);
       int successCount = itemCount - failedCount;
       if (successCount > 0) {
         legacyExporterMetrics.addSuccess(successCount);

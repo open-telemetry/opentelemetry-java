@@ -17,12 +17,18 @@ import io.opentelemetry.sdk.internal.ComponentId;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
+/**
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at any time.
+ */
 public class ExporterMetrics {
 
   // TODO: add semconv test
   private static final AttributeKey<String> ERROR_TYPE_ATTRIB =
       AttributeKey.stringKey("error.type");
 
+  /**
+   * This class is internal and is hence not for public use. Its APIs are unstable and can change at any time.
+   */
   public enum Signal {
     SPAN("span", "span"),
     METRIC("metric", "data_point"),
@@ -49,8 +55,8 @@ public class ExporterMetrics {
   private final boolean enabled;
 
   @Nullable private volatile LongUpDownCounter inflight = null;
-  private volatile LongCounter exported = null;
-  private volatile Attributes allAttributes = null;
+  @Nullable private volatile LongCounter exported = null;
+  @Nullable private volatile Attributes allAttributes = null;
 
   public ExporterMetrics(
       HealthMetricLevel level,
@@ -150,27 +156,30 @@ public class ExporterMetrics {
     if (!enabled) {
       return;
     }
-    inflight().add(count, allAttributes);
+    inflight().add(count, allAttributes());
   }
 
   private void decrementInflight(long count) {
     if (!enabled) {
       return;
     }
-    inflight().add(-count, allAttributes);
+    inflight().add(-count, allAttributes());
   }
 
   private void incrementExported(long count, @Nullable String errorType) {
     if (!enabled) {
       return;
     }
-    Attributes attributes = allAttributes;
+    Attributes attributes = allAttributes();
     if (errorType != null && !errorType.isEmpty()) {
-      attributes = allAttributes.toBuilder().put(ERROR_TYPE_ATTRIB, errorType).build();
+      attributes = attributes.toBuilder().put(ERROR_TYPE_ATTRIB, errorType).build();
     }
-    exported().add(count, allAttributes);
+    exported().add(count, attributes);
   }
 
+  /**
+   * This class is internal and is hence not for public use. Its APIs are unstable and can change at any time.
+   */
   public class Recording {
     /** The number items (spans, log records or metric data points) being exported */
     private final int itemCount;
