@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -225,10 +226,29 @@ public final class OtlpHttpLogRecordExporterBuilder {
     return this;
   }
 
-  /** Set the {@link ClassLoader} used to load the sender API. */
+  /**
+   * Set the {@link ClassLoader} used to load the sender API.
+   *
+   * @since 1.48.0
+   */
   public OtlpHttpLogRecordExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
     requireNonNull(serviceClassLoader, "serviceClassLoader");
     delegate.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  /**
+   * Set the {@link ExecutorService} used to execute requests.
+   *
+   * <p>NOTE: By calling this method, you are opting into managing the lifecycle of the {@code
+   * executorService}. {@link ExecutorService#shutdown()} will NOT be called when this exporter is
+   * shutdown.
+   *
+   * @since 1.49.0
+   */
+  public OtlpHttpLogRecordExporterBuilder setExecutorService(ExecutorService executorService) {
+    requireNonNull(executorService, "executorService");
+    delegate.setExecutorService(executorService);
     return this;
   }
 

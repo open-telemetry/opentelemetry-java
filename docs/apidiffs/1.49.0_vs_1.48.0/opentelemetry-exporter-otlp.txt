@@ -1,0 +1,19 @@
+Comparing source compatibility of opentelemetry-exporter-otlp-1.49.0.jar against opentelemetry-exporter-otlp-1.48.0.jar
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporterBuilder setExecutorService(java.util.concurrent.ExecutorService)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder setExecutorService(java.util.concurrent.ExecutorService)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder setExecutorService(java.util.concurrent.ExecutorService)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder setExecutorService(java.util.concurrent.ExecutorService)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder setExecutorService(java.util.concurrent.ExecutorService)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder setExecutorService(java.util.concurrent.ExecutorService)

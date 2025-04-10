@@ -22,6 +22,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -162,6 +163,12 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   @Override
   public TelemetryExporterBuilder<T> setServiceClassLoader(ClassLoader serviceClassLoader) {
     delegate.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<T> setExecutorService(ExecutorService executorService) {
+    delegate.setExecutorService(executorService);
     return this;
   }
 

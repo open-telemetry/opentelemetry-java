@@ -134,13 +134,6 @@ public final class OtlpConfigUtil {
     }
 
     Boolean retryDisabled = config.getBoolean("otel.java.exporter.otlp.retry.disabled");
-    if (retryDisabled == null) {
-      Boolean experimentalRetryEnabled =
-          config.getBoolean("otel.experimental.exporter.otlp.retry.enabled");
-      if (experimentalRetryEnabled != null) {
-        retryDisabled = !experimentalRetryEnabled;
-      }
-    }
     if (retryDisabled != null && retryDisabled) {
       setRetryPolicy.accept(null);
     }
