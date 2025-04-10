@@ -15,7 +15,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.stream.Collectors.joining;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -68,7 +67,6 @@ import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -443,7 +441,7 @@ class SdkSpanTest {
   void getAttributes() {
     SdkSpan span = createTestSpanWithAttributes(attributes);
     try {
-      Assertions.assertThat(span.getAttributes())
+      assertThat(span.getAttributes())
           .isEqualTo(
               Attributes.builder()
                   .put("MyBooleanAttributeKey", false)
@@ -459,7 +457,7 @@ class SdkSpanTest {
   void getAttributes_Empty() {
     SdkSpan span = createTestSpan(SpanKind.INTERNAL);
     try {
-      Assertions.assertThat(span.getAttributes()).isEqualTo(Attributes.empty());
+      assertThat(span.getAttributes()).isEqualTo(Attributes.empty());
     } finally {
       span.end();
     }
@@ -793,48 +791,48 @@ class SdkSpanTest {
     }
     List<EventData> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(6);
-    Assertions.assertThat(events.get(0))
+    assertThat(events.get(0))
         .satisfies(
             event -> {
               assertThat(event.getName()).isEqualTo("event1");
-              Assertions.assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
+              assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
               assertThat(event.getEpochNanos()).isEqualTo(START_EPOCH_NANOS);
             });
-    Assertions.assertThat(events.get(1))
+    assertThat(events.get(1))
         .satisfies(
             event -> {
               assertThat(event.getName()).isEqualTo("event2");
-              Assertions.assertThat(event.getAttributes())
+              assertThat(event.getAttributes())
                   .isEqualTo(Attributes.of(stringKey("e1key"), "e1Value"));
               assertThat(event.getEpochNanos()).isEqualTo(START_EPOCH_NANOS);
             });
-    Assertions.assertThat(events.get(2))
+    assertThat(events.get(2))
         .satisfies(
             event -> {
               assertThat(event.getName()).isEqualTo("event3");
-              Assertions.assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
+              assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
               assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.SECONDS.toNanos(10));
             });
-    Assertions.assertThat(events.get(3))
+    assertThat(events.get(3))
         .satisfies(
             event -> {
               assertThat(event.getName()).isEqualTo("event4");
-              Assertions.assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
+              assertThat(event.getAttributes()).isEqualTo(Attributes.empty());
               assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.SECONDS.toNanos(20));
             });
-    Assertions.assertThat(events.get(4))
+    assertThat(events.get(4))
         .satisfies(
             event -> {
               assertThat(event.getName()).isEqualTo("event5");
-              Assertions.assertThat(event.getAttributes())
+              assertThat(event.getAttributes())
                   .isEqualTo(Attributes.builder().put("foo", "bar").build());
               assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(30));
             });
-    Assertions.assertThat(events.get(5))
+    assertThat(events.get(5))
         .satisfies(
             event -> {
               assertThat(event.getName()).isEqualTo("event6");
-              Assertions.assertThat(event.getAttributes())
+              assertThat(event.getAttributes())
                   .isEqualTo(Attributes.builder().put("foo", "bar").build());
               assertThat(event.getEpochNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(1000));
             });
@@ -983,11 +981,11 @@ class SdkSpanTest {
           .satisfiesExactly(
               link -> {
                 assertThat(link.getSpanContext()).isEqualTo(span1.getSpanContext());
-                Assertions.assertThat(link.getAttributes()).isEqualTo(Attributes.empty());
+                assertThat(link.getAttributes()).isEqualTo(Attributes.empty());
               },
               link -> {
                 assertThat(link.getSpanContext()).isEqualTo(span2.getSpanContext());
-                Assertions.assertThat(link.getAttributes())
+                assertThat(link.getAttributes())
                     .isEqualTo(
                         Attributes.builder()
                             .put("key1", true)
@@ -1139,7 +1137,7 @@ class SdkSpanTest {
         EventData expectedEvent =
             EventData.create(
                 START_EPOCH_NANOS + i * NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
-        Assertions.assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
+        assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
         assertThat(spanData.getTotalRecordedEvents()).isEqualTo(2 * maxNumberOfEvents);
       }
     } finally {
@@ -1151,7 +1149,7 @@ class SdkSpanTest {
       EventData expectedEvent =
           EventData.create(
               START_EPOCH_NANOS + i * NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
-      Assertions.assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
+      assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
     }
   }
 
@@ -1183,7 +1181,7 @@ class SdkSpanTest {
         .isEqualTo(exception.getClass().getName());
     assertThat(event.getAttributes().get(stringKey("exception.stacktrace"))).isEqualTo(stacktrace);
     assertThat(event.getAttributes().size()).isEqualTo(3);
-    Assertions.assertThat(event)
+    assertThat(event)
         .isInstanceOfSatisfying(
             ExceptionEventData.class,
             exceptionEvent -> {
@@ -1271,7 +1269,7 @@ class SdkSpanTest {
     assertThat(event.getAttributes().get(stringKey("exception.stacktrace"))).isEqualTo(stacktrace);
     assertThat(event.getAttributes().size()).isEqualTo(4);
 
-    Assertions.assertThat(event)
+    assertThat(event)
         .isInstanceOfSatisfying(
             ExceptionEventData.class,
             exceptionEvent -> {
