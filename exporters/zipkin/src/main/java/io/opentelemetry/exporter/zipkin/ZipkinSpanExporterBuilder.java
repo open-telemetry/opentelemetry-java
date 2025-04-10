@@ -16,6 +16,7 @@ import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import io.opentelemetry.sdk.common.HealthMetricLevel;
 import zipkin2.Span;
 import zipkin2.reporter.BytesEncoder;
 import zipkin2.reporter.BytesMessageSender;
@@ -33,6 +34,7 @@ public final class ZipkinSpanExporterBuilder {
   private boolean compressionEnabled = true;
   private int readTimeoutMillis = (int) TimeUnit.SECONDS.toMillis(10);
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
+  private HealthMetricLevel healthMetricLevel = HealthMetricLevel.LEGACY;
 
   /**
    * Sets the Zipkin sender. Implements the client side of the span transport. An {@link
@@ -186,6 +188,15 @@ public final class ZipkinSpanExporterBuilder {
     return this;
   }
 
+  /**
+   * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter collects.
+   */
+  public ZipkinSpanExporterBuilder setHealthMetricLevel(HealthMetricLevel level) {
+    requireNonNull(level, "level");
+    this.healthMetricLevel = level;
+    return this;
+  }
+
   String toString(boolean includePrefixAndSuffix) {
     StringJoiner joiner =
         includePrefixAndSuffix
@@ -194,6 +205,7 @@ public final class ZipkinSpanExporterBuilder {
     joiner.add("endpoint=" + endpoint);
     joiner.add("compressionEnabled=" + compressionEnabled);
     joiner.add("readTimeoutMillis=" + readTimeoutMillis);
+    joiner.add("healthMetricLevel=" + healthMetricLevel);
     // Note: omit sender because we can't log the configuration in any readable way
     // Note: omit encoder because we can't log the configuration in any readable way
     // Note: omit localIpAddressSupplier because we can't log the configuration in any readable way
@@ -218,6 +230,6 @@ public final class ZipkinSpanExporterBuilder {
     }
     OtelToZipkinSpanTransformer transformer =
         OtelToZipkinSpanTransformer.create(localIpAddressSupplier);
-    return new ZipkinSpanExporter(this, encoder, sender, meterProviderSupplier, transformer);
+    return new ZipkinSpanExporter(this, encoder, sender, meterProviderSupplier, healthMetricLevel, transformer);
   }
 }
