@@ -33,7 +33,7 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
   private final byte[] keyUtf8;
   private final Marshaler value;
 
-  private KeyValueMarshaler(byte[] keyUtf8, Marshaler value) {
+  KeyValueMarshaler(byte[] keyUtf8, Marshaler value) {
     super(calculateSize(keyUtf8, value));
     this.keyUtf8 = keyUtf8;
     this.value = value;
