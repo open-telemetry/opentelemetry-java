@@ -74,7 +74,7 @@ public abstract class LazyExceptionEventData implements ExceptionEventData {
         AttributesMap.create(
             spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
 
-    AttributeUtil.addExceptionAttributes(attributes::put, exception);
+    AttributeUtil.addExceptionAttributes(attributes::put, exception, getExceptionMessage());
 
     additionalAttributes.forEach(attributes::put);
 
