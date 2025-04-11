@@ -5,6 +5,9 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableDoubleExemplarData;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -14,6 +17,13 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public interface DoubleExemplarData extends ExemplarData {
+
+  static DoubleExemplarData create(
+      Attributes filteredAttributes, long recordTimeNanos, SpanContext spanContext, double value) {
+    return ImmutableDoubleExemplarData.create(
+        filteredAttributes, recordTimeNanos, spanContext, value);
+  }
+
   /** Numerical value of the measurement that was recorded. */
   double getValue();
 }

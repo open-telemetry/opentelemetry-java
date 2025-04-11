@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableExponentialHistogramBuckets;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -24,6 +25,10 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public interface ExponentialHistogramBuckets {
+
+  static ExponentialHistogramBuckets create(int scale, int offset, List<Long> bucketCounts) {
+    return ImmutableExponentialHistogramBuckets.create(scale, offset, bucketCounts);
+  }
 
   /** The scale of the buckets. Must align with {@link ExponentialHistogramPointData#getScale()}. */
   int getScale();

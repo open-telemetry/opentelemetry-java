@@ -13,8 +13,8 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.stream.Collectors.joining;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -1534,9 +1534,7 @@ class SdkSpanTest {
     Resource resource = this.resource;
     Attributes attributes = TestUtils.generateRandomAttributes();
     AttributesMap attributesWithCapacity = AttributesMap.create(32, Integer.MAX_VALUE);
-    attributes.forEach(
-        (attributeKey, object) ->
-            attributesWithCapacity.put((AttributeKey<Object>) attributeKey, object));
+    attributes.forEach(attributesWithCapacity::put);
     Attributes event1Attributes = TestUtils.generateRandomAttributes();
     Attributes event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =

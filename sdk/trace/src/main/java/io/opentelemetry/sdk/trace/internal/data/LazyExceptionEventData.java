@@ -9,6 +9,7 @@ import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.internal.AttributeUtil;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.data.ExceptionEventData;
@@ -74,6 +75,11 @@ public abstract class LazyExceptionEventData implements ExceptionEventData {
     AttributesMap attributes =
         AttributesMap.create(
             spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
+
+    AttributeUtil.addExceptionAttributes(attributes::put, exception);
+
+    additionalAttributes.forEach(attributes::put);
+
     String exceptionName = exception.getClass().getCanonicalName();
     String exceptionMessage = getExceptionMessage();
     StringWriter stringWriter = new StringWriter();

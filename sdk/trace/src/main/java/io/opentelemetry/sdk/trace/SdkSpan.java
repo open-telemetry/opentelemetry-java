@@ -457,7 +457,6 @@ final class SdkSpan implements ReadWriteSpan {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public ReadWriteSpan recordException(Throwable exception, Attributes additionalAttributes) {
     if (exception == null) {
       return this;

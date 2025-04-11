@@ -42,7 +42,7 @@ final class TracerSharedState {
     this.resource = resource;
     this.spanLimitsSupplier = spanLimitsSupplier;
     this.sampler = sampler;
-    activeSpanProcessor = SpanProcessor.composite(spanProcessors);
+    this.activeSpanProcessor = SpanProcessor.composite(spanProcessors);
   }
 
   Clock getClock() {
