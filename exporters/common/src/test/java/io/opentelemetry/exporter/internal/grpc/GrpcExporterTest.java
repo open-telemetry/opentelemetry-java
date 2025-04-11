@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.internal.grpc;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.opentelemetry.exporter.internal.ExporterMetrics;
 import java.net.URI;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +18,13 @@ class GrpcExporterTest {
     assertThatThrownBy(
             () ->
                 new GrpcExporterBuilder<>(
-                        "exporter", "type", 10, new URI("http://localhost"), null, "/path")
+                        "exporter",
+                        ExporterMetrics.Signal.SPAN,
+                        "testing",
+                        10,
+                        new URI("http://localhost"),
+                        null,
+                        "/path")
                     .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(

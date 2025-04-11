@@ -10,9 +10,12 @@ import static io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil.GRPC_STAT
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterMetrics;
+import io.opentelemetry.exporter.internal.ExporterMetricsAdapter;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.HealthMetricLevel;
+import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -38,16 +41,27 @@ public final class GrpcExporter<T extends Marshaler> {
 
   private final String type;
   private final GrpcSender<T> grpcSender;
-  private final ExporterMetrics exporterMetrics;
+  private final ExporterMetricsAdapter exporterMetrics;
 
   public GrpcExporter(
-      String exporterName,
-      String type,
+      String legacyExporterName,
+      ExporterMetrics.Signal type,
       GrpcSender<T> grpcSender,
+      HealthMetricLevel healthMetricLevel,
+      ComponentId componentId,
       Supplier<MeterProvider> meterProviderSupplier) {
-    this.type = type;
+    this.type = type.toString();
     this.grpcSender = grpcSender;
-    this.exporterMetrics = ExporterMetrics.createGrpc(exporterName, type, meterProviderSupplier);
+    // TODO: add a way of extracting the server.address and server.port attributes from GrpcSender
+    this.exporterMetrics =
+        new ExporterMetricsAdapter(
+            healthMetricLevel,
+            meterProviderSupplier,
+            type,
+            componentId,
+            null,
+            legacyExporterName,
+            "grpc");
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {
@@ -55,28 +69,32 @@ public final class GrpcExporter<T extends Marshaler> {
       return CompletableResultCode.ofFailure();
     }
 
-    exporterMetrics.addSeen(numItems);
+    ExporterMetricsAdapter.Recording metricRecording =
+        exporterMetrics.startRecordingExport(numItems);
 
     CompletableResultCode result = new CompletableResultCode();
 
     grpcSender.send(
         exportRequest,
-        grpcResponse -> onResponse(result, numItems, grpcResponse),
-        throwable -> onError(result, numItems, throwable));
+        grpcResponse -> onResponse(result, metricRecording, grpcResponse),
+        throwable -> onError(result, metricRecording, throwable));
 
     return result;
   }
 
-  private void onResponse(CompletableResultCode result, int numItems, GrpcResponse grpcResponse) {
+  private void onResponse(
+      CompletableResultCode result,
+      ExporterMetricsAdapter.Recording metricRecording,
+      GrpcResponse grpcResponse) {
     int statusCode = grpcResponse.grpcStatusValue();
 
     if (statusCode == 0) {
-      exporterMetrics.addSuccess(numItems);
+      metricRecording.finishSuccessful();
       result.succeed();
       return;
     }
 
-    exporterMetrics.addFailed(numItems);
+    metricRecording.finishFailed("" + statusCode);
     switch (statusCode) {
       case GRPC_STATUS_UNIMPLEMENTED:
         if (loggedUnimplemented.compareAndSet(false, true)) {
@@ -108,8 +126,9 @@ public final class GrpcExporter<T extends Marshaler> {
     result.failExceptionally(FailedExportException.grpcFailedWithResponse(grpcResponse));
   }
 
-  private void onError(CompletableResultCode result, int numItems, Throwable e) {
-    exporterMetrics.addFailed(numItems);
+  private void onError(
+      CompletableResultCode result, ExporterMetricsAdapter.Recording metricRecording, Throwable e) {
+    metricRecording.finishFailed(e);
     logger.log(
         Level.SEVERE,
         "Failed to export "

@@ -20,6 +20,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.HealthMetricLevel;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -60,6 +61,7 @@ class ZipkinSpanExporterTest {
             mockEncoder,
             mockSender,
             MeterProvider::noop,
+            HealthMetricLevel.OFF,
             mockTransformer);
 
     byte[] someBytes = new byte[0];
@@ -89,6 +91,7 @@ class ZipkinSpanExporterTest {
             mockEncoder,
             mockSender,
             MeterProvider::noop,
+            HealthMetricLevel.OFF,
             mockTransformer);
 
     byte[] someBytes = new byte[0];
@@ -276,6 +279,7 @@ class ZipkinSpanExporterTest {
             mockEncoder,
             suppressCatchingSender,
             MeterProvider::noop,
+            HealthMetricLevel.OFF,
             mockTransformer);
 
     byte[] someBytes = new byte[0];

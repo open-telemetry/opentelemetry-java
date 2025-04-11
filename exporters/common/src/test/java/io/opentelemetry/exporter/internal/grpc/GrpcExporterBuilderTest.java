@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.internal.grpc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.exporter.internal.ExporterMetrics;
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import java.net.URI;
@@ -21,7 +22,13 @@ class GrpcExporterBuilderTest {
   void setUp() {
     builder =
         new GrpcExporterBuilder<>(
-            "otlp", "span", 0, URI.create("http://localhost:4317"), null, "/test");
+            "otlp",
+            ExporterMetrics.Signal.SPAN,
+            "testing",
+            0,
+            URI.create("http://localhost:4317"),
+            null,
+            "/test");
   }
 
   @Test
