@@ -13,8 +13,6 @@ import io.opentelemetry.sdk.internal.AttributeUtil;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.data.ExceptionEventData;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -77,26 +75,6 @@ public abstract class LazyExceptionEventData implements ExceptionEventData {
             spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
 
     AttributeUtil.addExceptionAttributes(attributes::put, exception);
-
-    additionalAttributes.forEach(attributes::put);
-
-    String exceptionName = exception.getClass().getCanonicalName();
-    String exceptionMessage = getExceptionMessage();
-    StringWriter stringWriter = new StringWriter();
-    try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
-      exception.printStackTrace(printWriter);
-    }
-    String stackTrace = stringWriter.toString();
-
-    if (exceptionName != null) {
-      attributes.put(EXCEPTION_TYPE, exceptionName);
-    }
-    if (exceptionMessage != null) {
-      attributes.put(EXCEPTION_MESSAGE, exceptionMessage);
-    }
-    if (stackTrace != null) {
-      attributes.put(EXCEPTION_STACKTRACE, stackTrace);
-    }
 
     additionalAttributes.forEach(attributes::put);
 
