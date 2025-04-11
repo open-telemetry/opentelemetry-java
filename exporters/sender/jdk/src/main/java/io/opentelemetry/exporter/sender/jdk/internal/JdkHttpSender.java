@@ -213,9 +213,11 @@ public final class JdkHttpSender implements HttpSender {
     do {
       if (attempt > 0) {
         // Compute and sleep for backoff
-        long upperBoundNanos = Math.min(nextBackoffNanos, retryPolicy.getMaxBackoff().toNanos());
-        long backoffNanos = ThreadLocalRandom.current().nextLong(upperBoundNanos);
-        nextBackoffNanos = (long) (nextBackoffNanos * retryPolicy.getBackoffMultiplier());
+        long currentBackoffNanos =
+            Math.min(nextBackoffNanos, retryPolicy.getMaxBackoff().toNanos());
+        long backoffNanos =
+            (long) (ThreadLocalRandom.current().nextDouble(0.8d, 1.2d) * currentBackoffNanos);
+        nextBackoffNanos = (long) (currentBackoffNanos * retryPolicy.getBackoffMultiplier());
         try {
           TimeUnit.NANOSECONDS.sleep(backoffNanos);
         } catch (InterruptedException e) {
@@ -227,16 +229,11 @@ public final class JdkHttpSender implements HttpSender {
           break;
         }
       }
-
-      attempt++;
+      httpResponse = null;
+      exception = null;
       requestBuilder.timeout(Duration.ofNanos(timeoutNanos - (System.nanoTime() - startTimeNanos)));
       try {
         httpResponse = sendRequest(requestBuilder, byteBufferPool);
-      } catch (IOException e) {
-        exception = e;
-      }
-
-      if (httpResponse != null) {
         boolean retryable = retryableStatusCodes.contains(httpResponse.statusCode());
         if (logger.isLoggable(Level.FINER)) {
           logger.log(
@@ -251,8 +248,8 @@ public final class JdkHttpSender implements HttpSender {
         if (!retryable) {
           return httpResponse;
         }
-      }
-      if (exception != null) {
+      } catch (IOException e) {
+        exception = e;
         boolean retryable = retryExceptionPredicate.test(exception);
         if (logger.isLoggable(Level.FINER)) {
           logger.log(
@@ -268,7 +265,7 @@ public final class JdkHttpSender implements HttpSender {
           throw exception;
         }
       }
-    } while (attempt < retryPolicy.getMaxAttempts());
+    } while (++attempt < retryPolicy.getMaxAttempts());
 
     if (httpResponse != null) {
       return httpResponse;

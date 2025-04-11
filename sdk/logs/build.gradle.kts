@@ -28,6 +28,7 @@ testing {
       dependencies {
         implementation(project(":sdk:testing"))
         implementation(project(":api:incubator"))
+        implementation("io.opentelemetry.semconv:opentelemetry-semconv-incubating")
         implementation("com.google.guava:guava")
       }
     }

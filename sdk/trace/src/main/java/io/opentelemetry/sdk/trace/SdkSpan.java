@@ -25,8 +25,6 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.internal.ExtendedSpanProcessor;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -116,13 +114,6 @@ final class SdkSpan implements ReadWriteSpan {
   @GuardedBy("lock")
   @Nullable
   private Thread spanEndingThread;
-
-  private static final AttributeKey<String> EXCEPTION_TYPE =
-      AttributeKey.stringKey("exception.type");
-  private static final AttributeKey<String> EXCEPTION_MESSAGE =
-      AttributeKey.stringKey("exception.message");
-  private static final AttributeKey<String> EXCEPTION_STACKTRACE =
-      AttributeKey.stringKey("exception.stacktrace");
 
   private SdkSpan(
       SpanContext context,
@@ -466,7 +457,6 @@ final class SdkSpan implements ReadWriteSpan {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public ReadWriteSpan recordException(Throwable exception, Attributes additionalAttributes) {
     if (exception == null) {
       return this;
@@ -478,23 +468,8 @@ final class SdkSpan implements ReadWriteSpan {
     AttributesMap attributes =
         AttributesMap.create(
             spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
-    String exceptionName = exception.getClass().getCanonicalName();
-    String exceptionMessage = exception.getMessage();
-    StringWriter stringWriter = new StringWriter();
-    try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
-      exception.printStackTrace(printWriter);
-    }
-    String stackTrace = stringWriter.toString();
 
-    if (exceptionName != null) {
-      attributes.put(EXCEPTION_TYPE, exceptionName);
-    }
-    if (exceptionMessage != null) {
-      attributes.put(EXCEPTION_MESSAGE, exceptionMessage);
-    }
-    if (stackTrace != null) {
-      attributes.put(EXCEPTION_STACKTRACE, stackTrace);
-    }
+    AttributeUtil.addExceptionAttributes(exception, attributes::put);
 
     additionalAttributes.forEach(attributes::put);
 

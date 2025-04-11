@@ -108,10 +108,19 @@ public final class DeclarativeConfiguration {
    */
   public static OpenTelemetrySdk create(
       OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
+    SpiHelper spiHelper = SpiHelper.create(componentLoader);
+
+    DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
+
+    for (DeclarativeConfigurationCustomizerProvider provider :
+        spiHelper.loadOrdered(DeclarativeConfigurationCustomizerProvider.class)) {
+      provider.customize(builder);
+    }
+
     return createAndMaybeCleanup(
         OpenTelemetryConfigurationFactory.getInstance(),
-        SpiHelper.create(componentLoader),
-        configurationModel);
+        spiHelper,
+        builder.customizeModel(configurationModel));
   }
 
   /**

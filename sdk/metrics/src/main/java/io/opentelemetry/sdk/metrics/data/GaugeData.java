@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
+import java.util.Collection;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -13,4 +15,14 @@ import javax.annotation.concurrent.Immutable;
  * @since 1.14.0
  */
 @Immutable
-public interface GaugeData<T extends PointData> extends Data<T> {}
+public interface GaugeData<T extends PointData> extends Data<T> {
+
+  // For double gauges
+  static GaugeData<DoublePointData> createDoubleGaugeData(Collection<DoublePointData> points) {
+    return ImmutableGaugeData.create(points);
+  }
+
+  static GaugeData<LongPointData> createLongGaugeData(Collection<LongPointData> points) {
+    return ImmutableGaugeData.create(points);
+  }
+}

@@ -41,6 +41,11 @@ class ExtendedDefaultLogger implements ExtendedLogger {
     }
 
     @Override
+    public ExtendedLogRecordBuilder setException(Throwable throwable) {
+      return this;
+    }
+
+    @Override
     public <T> ExtendedLogRecordBuilder setAttribute(ExtendedAttributeKey<T> key, T value) {
       return this;
     }

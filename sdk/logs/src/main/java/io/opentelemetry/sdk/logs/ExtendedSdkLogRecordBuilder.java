@@ -13,6 +13,7 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.AttributeUtil;
 import io.opentelemetry.sdk.internal.ExtendedAttributesMap;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +34,17 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
   @Override
   public ExtendedSdkLogRecordBuilder setEventName(String eventName) {
     this.eventName = eventName;
+    return this;
+  }
+
+  @Override
+  public ExtendedSdkLogRecordBuilder setException(Throwable throwable) {
+    if (throwable == null) {
+      return this;
+    }
+
+    AttributeUtil.addExceptionAttributes(throwable, this::setAttribute);
+
     return this;
   }
 
