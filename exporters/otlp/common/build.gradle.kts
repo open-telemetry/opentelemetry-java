@@ -50,6 +50,7 @@ testing {
 
         implementation("com.fasterxml.jackson.core:jackson-databind")
         implementation("com.google.protobuf:protobuf-java-util")
+        implementation("com.google.guava:guava")
         implementation("io.opentelemetry.proto:opentelemetry-proto")
       }
     }
