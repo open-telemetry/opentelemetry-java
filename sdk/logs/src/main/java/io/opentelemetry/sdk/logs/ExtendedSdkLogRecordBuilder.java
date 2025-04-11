@@ -43,7 +43,11 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
       return this;
     }
 
-    AttributeUtil.addExceptionAttributes(throwable, this::setAttribute);
+    AttributeUtil.addExceptionAttributes(
+        loggerSharedState.getExceptionAttributeResolver(),
+        loggerSharedState.getLogLimits().getMaxAttributeValueLength(),
+        throwable,
+        this::setAttribute);
 
     return this;
   }
