@@ -13,8 +13,8 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.stream.Collectors.joining;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -1275,6 +1275,21 @@ class SdkSpanTest {
             exceptionEvent -> {
               assertThat(exceptionEvent.getException()).isSameAs(exception);
             });
+  }
+
+  @Test
+  void recordException_SpanLimits() {
+    SdkSpan span = createTestSpan(SpanLimits.builder().setMaxNumberOfAttributes(2).build());
+    span.recordException(
+        new IllegalStateException("error"),
+        Attributes.builder().put("key1", "value").put("key2", "value").build());
+
+    List<EventData> events = span.toSpanData().getEvents();
+    assertThat(events.size()).isEqualTo(1);
+    EventData event = events.get(0);
+    assertThat(event.getAttributes().size()).isEqualTo(2);
+    assertThat(event.getTotalAttributeCount()).isEqualTo(5);
+    assertThat(event.getTotalAttributeCount() - event.getAttributes().size()).isPositive();
   }
 
   @Test

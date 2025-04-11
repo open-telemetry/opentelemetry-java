@@ -22,7 +22,6 @@ import com.linecorp.armeria.common.TlsKeyPair;
 import com.linecorp.armeria.server.HttpService;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
-import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -49,6 +48,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.cert.CertificateEncodingException;
@@ -57,9 +57,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -146,7 +148,8 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
           sb.https(0);
           sb.tls(TlsKeyPair.of(certificate.privateKey(), certificate.certificate()));
           sb.tlsCustomizer(ssl -> ssl.trustManager(clientCertificate.certificate()));
-          sb.decorator(LoggingService.newDecorator());
+          // Uncomment for detailed request / response logs from server
+          // sb.decorator(LoggingService.newDecorator());
         }
       };
 
@@ -696,6 +699,31 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  void executorService() {
+    ExecutorServiceSpy executorService =
+        new ExecutorServiceSpy(Executors.newSingleThreadExecutor());
+
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpUri() + path)
+            .setExecutorService(executorService)
+            .build();
+
+    try {
+      CompletableResultCode result =
+          exporter.export(Collections.singletonList(generateFakeTelemetry()));
+
+      assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(executorService.getTaskCount()).isPositive();
+    } finally {
+      exporter.shutdown();
+      // If setting executor, the user is responsible for calling shutdown
+      assertThat(executorService.isShutdown()).isFalse();
+      executorService.shutdown();
+    }
+  }
+
+  @Test
   @SuppressWarnings("PreferJavaTimeOverload")
   void validConfig() {
     // We must build exporters to test timeout settings, which intersect with underlying client
@@ -874,6 +902,39 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
   }
 
   @Test
+  void customServiceClassLoader() {
+    ClassLoaderSpy classLoaderSpy =
+        new ClassLoaderSpy(AbstractHttpTelemetryExporterTest.class.getClassLoader());
+
+    TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setServiceClassLoader(classLoaderSpy)
+            .setEndpoint(server.httpUri() + path)
+            .build();
+
+    assertThat(classLoaderSpy.getResourcesNames)
+        .isEqualTo(
+            Collections.singletonList(
+                "META-INF/services/io.opentelemetry.exporter.internal.http.HttpSenderProvider"));
+
+    exporter.shutdown();
+  }
+
+  private static class ClassLoaderSpy extends ClassLoader {
+    private final List<String> getResourcesNames = new ArrayList<>();
+
+    private ClassLoaderSpy(ClassLoader delegate) {
+      super(delegate);
+    }
+
+    @Override
+    public Enumeration<URL> getResources(String name) throws IOException {
+      getResourcesNames.add(name);
+      return super.getResources(name);
+    }
+  }
+
+  @Test
   void stringRepresentation() throws IOException, CertificateEncodingException {
     TelemetryExporter<T> telemetryExporter = exporterBuilder().build();
     try {
@@ -935,7 +996,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   + ", "
                   + "exportAsJson=false, "
                   + "headers=Headers\\{.*foo=OBFUSCATED.*\\}, "
-                  + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3\\}"
+                  + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3, retryExceptionPredicate=null\\}"
                   + ".*" // Maybe additional signal specific fields
                   + "\\}");
     } finally {

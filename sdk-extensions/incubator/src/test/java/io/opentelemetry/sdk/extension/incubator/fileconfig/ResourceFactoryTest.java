@@ -26,7 +26,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class ResourceFactoryTest {
 
-  private SpiHelper spiHelper = SpiHelper.create(MetricExporterFactoryTest.class.getClassLoader());
+  private SpiHelper spiHelper = SpiHelper.create(ResourceFactoryTest.class.getClassLoader());
 
   @Test
   void create() {

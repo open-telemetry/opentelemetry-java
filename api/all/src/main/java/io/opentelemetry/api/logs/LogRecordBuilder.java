@@ -5,6 +5,11 @@
 
 package io.opentelemetry.api.logs;
 
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Value;
@@ -98,8 +103,95 @@ public interface LogRecordBuilder {
     return this;
   }
 
-  /** Sets an attribute. */
+  /**
+   * Sets an attribute on the {@code LogRecord}. If the {@code LogRecord} previously contained a
+   * mapping for the key, the old value is replaced by the specified value.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @return this.
+   */
   <T> LogRecordBuilder setAttribute(AttributeKey<T> key, T value);
+
+  /**
+   * Sets a String attribute on the {@code LogRecord}. If the {@code LogRecord} previously contained
+   * a mapping for the key, the old value is replaced by the specified value.
+   *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @return this.
+   * @since 1.48.0
+   */
+  default LogRecordBuilder setAttribute(String key, String value) {
+    return setAttribute(stringKey(key), value);
+  }
+
+  /**
+   * Sets a Long attribute on the {@code LogRecord}. If the {@code LogRecord} previously contained a
+   * mapping for the key, the old value is replaced by the specified value.
+   *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @return this.
+   * @since 1.48.0
+   */
+  default LogRecordBuilder setAttribute(String key, long value) {
+    return setAttribute(longKey(key), value);
+  }
+
+  /**
+   * Sets a Double attribute on the {@code LogRecord}. If the {@code LogRecord} previously contained
+   * a mapping for the key, the old value is replaced by the specified value.
+   *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @return this.
+   * @since 1.48.0
+   */
+  default LogRecordBuilder setAttribute(String key, double value) {
+    return setAttribute(doubleKey(key), value);
+  }
+
+  /**
+   * Sets a Boolean attribute on the {@code LogRecord}. If the {@code LogRecord} previously
+   * contained a mapping for the key, the old value is replaced by the specified value.
+   *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @return this.
+   * @since 1.48.0
+   */
+  default LogRecordBuilder setAttribute(String key, boolean value) {
+    return setAttribute(booleanKey(key), value);
+  }
+
+  /**
+   * Sets an Integer attribute on the {@code LogRecord}. If the {@code LogRecord} previously
+   * contained a mapping for the key, the old value is replaced by the specified value.
+   *
+   * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
+   * pre-allocate your keys, if possible.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @return this.
+   * @since 1.48.0
+   */
+  default LogRecordBuilder setAttribute(String key, int value) {
+    return setAttribute(key, (long) value);
+  }
 
   /** Emit the log record. */
   void emit();

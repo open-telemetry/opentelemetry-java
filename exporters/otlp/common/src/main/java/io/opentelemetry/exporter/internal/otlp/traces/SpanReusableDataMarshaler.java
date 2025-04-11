@@ -9,9 +9,9 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.BiFunction;
 
 /**
@@ -20,7 +20,8 @@ import java.util.function.BiFunction;
  */
 public class SpanReusableDataMarshaler {
 
-  private final Deque<LowAllocationTraceRequestMarshaler> marshalerPool = new ArrayDeque<>();
+  private final Deque<LowAllocationTraceRequestMarshaler> marshalerPool =
+      new ConcurrentLinkedDeque<>();
 
   private final MemoryMode memoryMode;
   private final BiFunction<Marshaler, Integer, CompletableResultCode> doExport;

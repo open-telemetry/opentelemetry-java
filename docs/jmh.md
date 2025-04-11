@@ -1,7 +1,7 @@
 
 # how to jmh
 
-[jmh] (Java Benchmark Harness) is a tool for running benchmarks and reporting results.
+[jmh](https://github.com/openjdk/jmh) is a tool for running benchmarks and reporting results.
 
 opentelemetry-java has a lot of micro benchmarks. They live inside
 `jmh` directories in the appropriate module.

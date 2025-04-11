@@ -46,7 +46,7 @@ class MeterProviderConfigurationTest {
                       ImmutableMap.of(
                           "otel.metrics.exporter",
                           "logging",
-                          "otel.experimental.metrics.cardinality.limit",
+                          "otel.java.metrics.cardinality.limit",
                           "0")),
                   spiHelper,
                   (a, b) -> a,
@@ -54,7 +54,7 @@ class MeterProviderConfigurationTest {
                   closeables);
             })
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("otel.experimental.metrics.cardinality.limit must be >= 1");
+        .hasMessage("otel.java.metrics.cardinality.limit must be >= 1");
     cleanup.addCloseables(closeables);
   }
 
@@ -76,6 +76,26 @@ class MeterProviderConfigurationTest {
     assertCardinalityLimit(builder, 2000);
 
     // Customized limit cardinality limit to 100
+    builder = SdkMeterProvider.builder();
+    MeterProviderConfiguration.configureMeterProvider(
+        builder,
+        DefaultConfigProperties.createFromMap(
+            ImmutableMap.of(
+                "otel.metrics.exporter",
+                "logging",
+                "otel.java.metrics.cardinality.limit",
+                "100",
+                // otel.java.metrics.cardinality.limit takes priority over deprecated property
+                "otel.experimental.metrics.cardinality.limit",
+                "200")),
+        spiHelper,
+        (a, b) -> a,
+        (a, b) -> a,
+        closeables);
+    cleanup.addCloseables(closeables);
+    assertCardinalityLimit(builder, 100);
+
+    // Deprecated property
     builder = SdkMeterProvider.builder();
     MeterProviderConfiguration.configureMeterProvider(
         builder,

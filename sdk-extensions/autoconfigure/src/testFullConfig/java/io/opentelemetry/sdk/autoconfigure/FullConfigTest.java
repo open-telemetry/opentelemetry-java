@@ -18,8 +18,6 @@ import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.incubator.events.EventLogger;
-import io.opentelemetry.api.incubator.events.GlobalEventLoggerProvider;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.Meter;
@@ -38,7 +36,6 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
-import io.opentelemetry.proto.logs.v1.SeverityNumber;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.ArrayList;
@@ -160,7 +157,6 @@ public class FullConfigTest {
 
     // Initialize here so we can shutdown when done
     GlobalOpenTelemetry.resetForTest();
-    GlobalEventLoggerProvider.resetForTest();
     openTelemetrySdk = AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
   }
 
@@ -168,7 +164,6 @@ public class FullConfigTest {
   void afterEach() {
     openTelemetrySdk.close();
     GlobalOpenTelemetry.resetForTest();
-    GlobalEventLoggerProvider.resetForTest();
   }
 
   @Test
@@ -205,9 +200,6 @@ public class FullConfigTest {
     Logger logger = GlobalOpenTelemetry.get().getLogsBridge().get("test");
     logger.logRecordBuilder().setBody("debug log message").setSeverity(Severity.DEBUG).emit();
     logger.logRecordBuilder().setBody("info log message").setSeverity(Severity.INFO).emit();
-
-    EventLogger eventLogger = GlobalEventLoggerProvider.get().eventLoggerBuilder("test").build();
-    eventLogger.builder("namespace.test-name").put("cow", "moo").emit();
 
     openTelemetrySdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
     openTelemetrySdk.getSdkLoggerProvider().forceFlush().join(10, TimeUnit.SECONDS);
@@ -295,17 +287,6 @@ public class FullConfigTest {
               assertThat(logRecord.getBody().getStringValue()).isEqualTo("info log message");
               assertThat(logRecord.getSeverityNumberValue())
                   .isEqualTo(Severity.INFO.getSeverityNumber());
-            },
-            logRecord -> {
-              assertThat(logRecord.getBody().getKvlistValue().getValuesList())
-                  .containsExactlyInAnyOrder(
-                      KeyValue.newBuilder()
-                          .setKey("cow")
-                          .setValue(AnyValue.newBuilder().setStringValue("moo").build())
-                          .build());
-              assertThat(logRecord.getSeverityNumber())
-                  .isEqualTo(SeverityNumber.SEVERITY_NUMBER_INFO);
-              assertHasKeyValue(logRecord.getAttributesList(), "event.name", "namespace.test-name");
             });
   }
 

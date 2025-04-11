@@ -40,6 +40,7 @@ public class RetryPolicyTest {
     assertThat(retryPolicy.getInitialBackoff()).isEqualTo(Duration.ofMillis(2));
     assertThat(retryPolicy.getMaxBackoff()).isEqualTo(Duration.ofSeconds(1));
     assertThat(retryPolicy.getBackoffMultiplier()).isEqualTo(1.1);
+    assertThat(retryPolicy.getRetryExceptionPredicate()).isEqualTo(null);
   }
 
   @Test

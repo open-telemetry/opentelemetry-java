@@ -6,7 +6,7 @@
 package io.opentelemetry.exporter.otlp.internal.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.exporter.internal.otlp.AttributeKeyValue;
 import io.opentelemetry.exporter.otlp.profiles.AttributeUnitData;
 import io.opentelemetry.exporter.otlp.profiles.FunctionData;
 import io.opentelemetry.exporter.otlp.profiles.LinkData;
@@ -48,7 +48,7 @@ public abstract class ImmutableProfileData implements ProfileData {
       List<LocationData> locationTable,
       List<Integer> locationIndices,
       List<FunctionData> functionTable,
-      Attributes attributeTable,
+      List<AttributeKeyValue<?>> attributeTable,
       List<AttributeUnitData> attributeUnits,
       List<LinkData> linkTable,
       List<String> stringTable,

@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -62,6 +63,10 @@ public interface TelemetryExporterBuilder<T> {
   TelemetryExporterBuilder<T> setProxyOptions(ProxyOptions proxyOptions);
 
   TelemetryExporterBuilder<T> setChannel(Object channel);
+
+  TelemetryExporterBuilder<T> setServiceClassLoader(ClassLoader serviceClassLoader);
+
+  TelemetryExporterBuilder<T> setExecutorService(ExecutorService executorService);
 
   TelemetryExporter<T> build();
 }

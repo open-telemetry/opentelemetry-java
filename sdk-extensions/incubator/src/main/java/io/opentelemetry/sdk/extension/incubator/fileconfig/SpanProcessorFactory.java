@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static java.util.stream.Collectors.joining;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
@@ -71,7 +71,7 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
     if (!model.getAdditionalProperties().isEmpty()) {
       Map<String, Object> additionalProperties = model.getAdditionalProperties();
       if (additionalProperties.size() > 1) {
-        throw new ConfigurationException(
+        throw new DeclarativeConfigException(
             "Invalid configuration - multiple span processors set: "
                 + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
       }
@@ -89,7 +89,7 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
               processorKeyValue.getValue());
       return FileConfigUtil.addAndReturn(closeables, spanProcessor);
     } else {
-      throw new ConfigurationException("span processor must be set");
+      throw new DeclarativeConfigException("span processor must be set");
     }
   }
 }

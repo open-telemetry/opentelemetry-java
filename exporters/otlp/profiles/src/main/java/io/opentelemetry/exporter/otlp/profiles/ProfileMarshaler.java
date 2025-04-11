@@ -51,7 +51,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
     FunctionMarshaler[] functionMarshalers =
         FunctionMarshaler.createRepeated(profileData.getFunctionTable());
     KeyValueMarshaler[] attributeTableMarshalers =
-        KeyValueMarshaler.createForAttributes(profileData.getAttributeTable());
+        KeyValueMarshaler.createRepeated(profileData.getAttributeTable());
     AttributeUnitMarshaler[] attributeUnitsMarshalers =
         AttributeUnitMarshaler.createRepeated(profileData.getAttributeUnits());
     LinkMarshaler[] linkMarshalers = LinkMarshaler.createRepeated(profileData.getLinkTable());

@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
@@ -35,6 +36,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,7 +61,8 @@ public final class JdkHttpSender implements HttpSender {
 
   private static final Logger logger = Logger.getLogger(JdkHttpSender.class.getName());
 
-  private final ExecutorService executorService = Executors.newFixedThreadPool(5);
+  private final boolean managedExecutor;
+  private final ExecutorService executorService;
   private final HttpClient client;
   private final URI uri;
   @Nullable private final Compressor compressor;
@@ -68,6 +71,7 @@ public final class JdkHttpSender implements HttpSender {
   private final long timeoutNanos;
   private final Supplier<Map<String, List<String>>> headerSupplier;
   @Nullable private final RetryPolicy retryPolicy;
+  private final Predicate<IOException> retryExceptionPredicate;
 
   // Visible for testing
   JdkHttpSender(
@@ -78,7 +82,8 @@ public final class JdkHttpSender implements HttpSender {
       String contentType,
       long timeoutNanos,
       Supplier<Map<String, List<String>>> headerSupplier,
-      @Nullable RetryPolicy retryPolicy) {
+      @Nullable RetryPolicy retryPolicy,
+      @Nullable ExecutorService executorService) {
     this.client = client;
     try {
       this.uri = new URI(endpoint);
@@ -91,6 +96,17 @@ public final class JdkHttpSender implements HttpSender {
     this.timeoutNanos = timeoutNanos;
     this.headerSupplier = headerSupplier;
     this.retryPolicy = retryPolicy;
+    this.retryExceptionPredicate =
+        Optional.ofNullable(retryPolicy)
+            .map(RetryPolicy::getRetryExceptionPredicate)
+            .orElse(JdkHttpSender::isRetryableException);
+    if (executorService == null) {
+      this.executorService = Executors.newFixedThreadPool(5);
+      this.managedExecutor = true;
+    } else {
+      this.executorService = executorService;
+      this.managedExecutor = false;
+    }
   }
 
   JdkHttpSender(
@@ -103,7 +119,8 @@ public final class JdkHttpSender implements HttpSender {
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable RetryPolicy retryPolicy,
       @Nullable ProxyOptions proxyOptions,
-      @Nullable SSLContext sslContext) {
+      @Nullable SSLContext sslContext,
+      @Nullable ExecutorService executorService) {
     this(
         configureClient(sslContext, connectTimeoutNanos, proxyOptions),
         endpoint,
@@ -112,7 +129,8 @@ public final class JdkHttpSender implements HttpSender {
         contentType,
         timeoutNanos,
         headerSupplier,
-        retryPolicy);
+        retryPolicy,
+        executorService);
   }
 
   private static HttpClient configureClient(
@@ -195,9 +213,11 @@ public final class JdkHttpSender implements HttpSender {
     do {
       if (attempt > 0) {
         // Compute and sleep for backoff
-        long upperBoundNanos = Math.min(nextBackoffNanos, retryPolicy.getMaxBackoff().toNanos());
-        long backoffNanos = ThreadLocalRandom.current().nextLong(upperBoundNanos);
-        nextBackoffNanos = (long) (nextBackoffNanos * retryPolicy.getBackoffMultiplier());
+        long currentBackoffNanos =
+            Math.min(nextBackoffNanos, retryPolicy.getMaxBackoff().toNanos());
+        long backoffNanos =
+            (long) (ThreadLocalRandom.current().nextDouble(0.8d, 1.2d) * currentBackoffNanos);
+        nextBackoffNanos = (long) (currentBackoffNanos * retryPolicy.getBackoffMultiplier());
         try {
           TimeUnit.NANOSECONDS.sleep(backoffNanos);
         } catch (InterruptedException e) {
@@ -209,16 +229,11 @@ public final class JdkHttpSender implements HttpSender {
           break;
         }
       }
-
-      attempt++;
+      httpResponse = null;
+      exception = null;
       requestBuilder.timeout(Duration.ofNanos(timeoutNanos - (System.nanoTime() - startTimeNanos)));
       try {
         httpResponse = sendRequest(requestBuilder, byteBufferPool);
-      } catch (IOException e) {
-        exception = e;
-      }
-
-      if (httpResponse != null) {
         boolean retryable = retryableStatusCodes.contains(httpResponse.statusCode());
         if (logger.isLoggable(Level.FINER)) {
           logger.log(
@@ -233,9 +248,9 @@ public final class JdkHttpSender implements HttpSender {
         if (!retryable) {
           return httpResponse;
         }
-      }
-      if (exception != null) {
-        boolean retryable = isRetryableException(exception);
+      } catch (IOException e) {
+        exception = e;
+        boolean retryable = retryExceptionPredicate.test(exception);
         if (logger.isLoggable(Level.FINER)) {
           logger.log(
               Level.FINER,
@@ -250,7 +265,7 @@ public final class JdkHttpSender implements HttpSender {
           throw exception;
         }
       }
-    } while (attempt < retryPolicy.getMaxAttempts());
+    } while (++attempt < retryPolicy.getMaxAttempts());
 
     if (httpResponse != null) {
       return httpResponse;
@@ -356,7 +371,9 @@ public final class JdkHttpSender implements HttpSender {
 
   @Override
   public CompletableResultCode shutdown() {
-    executorService.shutdown();
+    if (managedExecutor) {
+      executorService.shutdown();
+    }
     return CompletableResultCode.ofSuccess();
   }
 }
