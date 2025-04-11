@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 
 /**
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
@@ -107,13 +108,19 @@ public final class AttributeUtil {
   }
 
   public static void addExceptionAttributes(
-      Throwable exception, BiConsumer<AttributeKey<String>, String> attributeConsumer) {
+      BiConsumer<AttributeKey<String>, String> attributeConsumer, Throwable exception) {
+    addExceptionAttributes(attributeConsumer, exception, exception.getMessage());
+  }
+
+  public static void addExceptionAttributes(
+      BiConsumer<AttributeKey<String>, String> attributeConsumer,
+      Throwable exception,
+      @Nullable String exceptionMessage) {
     String exceptionType = exception.getClass().getCanonicalName();
     if (exceptionType != null) {
       attributeConsumer.accept(EXCEPTION_TYPE, exceptionType);
     }
 
-    String exceptionMessage = exception.getMessage();
     if (exceptionMessage != null) {
       attributeConsumer.accept(EXCEPTION_MESSAGE, exceptionMessage);
     }

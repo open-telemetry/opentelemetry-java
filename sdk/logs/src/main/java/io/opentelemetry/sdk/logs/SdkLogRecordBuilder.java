@@ -53,7 +53,7 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
       return this;
     }
 
-    AttributeUtil.addExceptionAttributes(throwable, this::setAttribute);
+    AttributeUtil.addExceptionAttributes(this::setAttribute, throwable);
 
     return this;
   }

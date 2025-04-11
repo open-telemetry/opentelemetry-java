@@ -20,11 +20,11 @@ import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
-import io.opentelemetry.sdk.trace.data.ExceptionEventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.internal.ExtendedSpanProcessor;
+import io.opentelemetry.sdk.trace.internal.data.LazyExceptionEventData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -465,17 +465,9 @@ final class SdkSpan implements ReadWriteSpan {
       additionalAttributes = Attributes.empty();
     }
 
-    AttributesMap attributes =
-        AttributesMap.create(
-            spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
-
-    AttributeUtil.addExceptionAttributes(exception, attributes::put);
-
-    additionalAttributes.forEach(attributes::put);
-
     addTimedEvent(
-        ExceptionEventData.create(
-            clock.now(), exception, attributes, attributes.getTotalAddedValues()));
+        LazyExceptionEventData.create(clock.now(), exception, additionalAttributes, spanLimits));
+
     return this;
   }
 
