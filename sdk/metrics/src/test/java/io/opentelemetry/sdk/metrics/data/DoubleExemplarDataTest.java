@@ -14,7 +14,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import org.junit.jupiter.api.Test;
 
-public class DoubleExemplarDataTest {
+class DoubleExemplarDataTest {
 
   private static final String TRACE_ID = "00000000000000000000000000000061";
   private static final String SPAN_ID = "0000000000000061";

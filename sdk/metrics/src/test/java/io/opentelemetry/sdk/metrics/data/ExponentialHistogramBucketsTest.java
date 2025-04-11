@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
-public class ExponentialHistogramBucketsTest {
+class ExponentialHistogramBucketsTest {
 
   @Test
   void create() {

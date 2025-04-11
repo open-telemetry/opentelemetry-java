@@ -11,7 +11,7 @@ import io.opentelemetry.api.common.Attributes;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-public class SumDataTest {
+class SumDataTest {
 
   @Test
   void createLongSumData() {

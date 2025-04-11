@@ -12,7 +12,7 @@ import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 
-public class HistogramPointDataTest {
+class HistogramPointDataTest {
 
   @Test
   void create() {
@@ -21,21 +21,21 @@ public class HistogramPointDataTest {
             0,
             0,
             Attributes.empty(),
-            0.0,
+            3.0,
             /* hasMin= */ false,
-            0.0,
+            1.0,
             /* hasMax= */ false,
-            0.0,
+            2.0,
             new ArrayList<>(),
             ImmutableList.of(0L));
     assertThat(pointData.getStartEpochNanos()).isEqualTo(0);
     assertThat(pointData.getEpochNanos()).isEqualTo(0);
     assertThat(pointData.getAttributes()).isEqualTo(Attributes.empty());
-    assertThat(pointData.getSum()).isEqualTo(0.0);
+    assertThat(pointData.getSum()).isEqualTo(3.0);
     assertThat(pointData.getCount()).isEqualTo(0);
     assertThat(pointData.hasMin()).isFalse();
-    assertThat(pointData.getMin()).isEqualTo(0.0);
+    assertThat(pointData.getMin()).isEqualTo(1.0);
     assertThat(pointData.hasMax()).isFalse();
-    assertThat(pointData.getMax()).isEqualTo(0.0);
+    assertThat(pointData.getMax()).isEqualTo(2.0);
   }
 }

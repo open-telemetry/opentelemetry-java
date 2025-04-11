@@ -13,7 +13,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import org.junit.jupiter.api.Test;
 
-public class LongExemplarDataTest {
+class LongExemplarDataTest {
 
   @Test
   void create() {

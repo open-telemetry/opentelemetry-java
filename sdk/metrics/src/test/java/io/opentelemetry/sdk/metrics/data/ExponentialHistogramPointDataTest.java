@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-public class ExponentialHistogramPointDataTest {
+class ExponentialHistogramPointDataTest {
 
   @Test
   void create() {

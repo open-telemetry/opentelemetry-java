@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
-public class SummaryPointDataTest {
+class SummaryPointDataTest {
 
   @Test
   void create() {

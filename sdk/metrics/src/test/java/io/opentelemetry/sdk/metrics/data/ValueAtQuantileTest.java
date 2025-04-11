@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-public class ValueAtQuantileTest {
+class ValueAtQuantileTest {
 
   @Test
   void create() {

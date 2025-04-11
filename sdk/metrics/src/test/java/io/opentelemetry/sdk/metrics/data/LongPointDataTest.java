@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.common.Attributes;
 import org.junit.jupiter.api.Test;
 
-public class LongPointDataTest {
+class LongPointDataTest {
 
   @Test
   void create() {
