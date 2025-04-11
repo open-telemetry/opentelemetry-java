@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.logs;
 
 import io.opentelemetry.api.incubator.logs.ExtendedLogRecordBuilder;
 import io.opentelemetry.api.incubator.logs.ExtendedLogger;
+import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 
@@ -24,7 +26,7 @@ final class ExtendedSdkLogger extends SdkLogger implements ExtendedLogger {
   }
 
   @Override
-  public boolean isEnabled() {
+  public boolean isEnabled(Severity severity, Context context) {
     return loggerEnabled;
   }
 
