@@ -16,7 +16,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 import static java.util.stream.Collectors.joining;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -1304,18 +1303,18 @@ class SdkSpanTest {
     ExceptionAttributeResolver exceptionAttributeResolver =
         new ExceptionAttributeResolver() {
           @Override
-          public String getExceptionType(Throwable throwable) {
+          public String getExceptionType(Throwable throwable, int maxAttributeLength) {
             return "type";
           }
 
           @Nullable
           @Override
-          public String getExceptionMessage(Throwable throwable) {
+          public String getExceptionMessage(Throwable throwable, int maxAttributeLength) {
             return null;
           }
 
           @Override
-          public String getExceptionStacktrace(Throwable throwable) {
+          public String getExceptionStacktrace(Throwable throwable, int maxAttributeLength) {
             return "stacktrace";
           }
         };

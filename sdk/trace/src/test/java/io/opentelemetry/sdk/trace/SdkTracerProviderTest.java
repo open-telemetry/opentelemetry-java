@@ -289,7 +289,12 @@ class SdkTracerProviderTest {
 
   @Test
   void exceptionAttributeResolver() {
-    SdkTracerProviderBuilder builder = SdkTracerProvider.builder().addSpanProcessor(spanProcessor);
+    int maxAttributeLength = 5;
+    SdkTracerProviderBuilder builder =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(spanProcessor)
+            .setSpanLimits(
+                SpanLimits.builder().setMaxAttributeValueLength(maxAttributeLength).build());
     ExceptionAttributeResolver exceptionAttributeResolver =
         spy(DefaultExceptionAttributeResolver.getInstance());
     SdkTracerProviderUtil.setExceptionAttributeResolver(builder, exceptionAttributeResolver);
@@ -297,8 +302,8 @@ class SdkTracerProviderTest {
     Exception exception = new Exception("error");
     builder.build().get("tracer").spanBuilder("span").startSpan().recordException(exception).end();
 
-    verify(exceptionAttributeResolver).getExceptionType(exception);
-    verify(exceptionAttributeResolver).getExceptionMessage(exception);
-    verify(exceptionAttributeResolver).getExceptionStacktrace(exception);
+    verify(exceptionAttributeResolver).getExceptionType(exception, maxAttributeLength);
+    verify(exceptionAttributeResolver).getExceptionMessage(exception, maxAttributeLength);
+    verify(exceptionAttributeResolver).getExceptionStacktrace(exception, maxAttributeLength);
   }
 }

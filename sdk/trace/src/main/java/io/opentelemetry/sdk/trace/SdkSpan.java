@@ -5,10 +5,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static io.opentelemetry.sdk.internal.ExceptionAttributeResolver.EXCEPTION_MESSAGE;
-import static io.opentelemetry.sdk.internal.ExceptionAttributeResolver.EXCEPTION_STACKTRACE;
-import static io.opentelemetry.sdk.internal.ExceptionAttributeResolver.EXCEPTION_TYPE;
-
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.GuardedBy;
@@ -476,22 +472,13 @@ final class SdkSpan implements ReadWriteSpan {
       additionalAttributes = Attributes.empty();
     }
 
+    int maxAttributeLength = spanLimits.getMaxAttributeValueLength();
     AttributesMap attributes =
         AttributesMap.create(
             spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
 
-    String type = exceptionAttributeResolver.getExceptionType(exception);
-    if (type != null) {
-      attributes.put(EXCEPTION_TYPE, type);
-    }
-    String message = exceptionAttributeResolver.getExceptionMessage(exception);
-    if (message != null) {
-      attributes.put(EXCEPTION_MESSAGE, message);
-    }
-    String stacktrace = exceptionAttributeResolver.getExceptionStacktrace(exception);
-    if (stacktrace != null) {
-      attributes.put(EXCEPTION_STACKTRACE, stacktrace);
-    }
+    AttributeUtil.addExceptionAttributes(
+        exceptionAttributeResolver, maxAttributeLength, exception, attributes::put);
 
     additionalAttributes.forEach(attributes::put);
 

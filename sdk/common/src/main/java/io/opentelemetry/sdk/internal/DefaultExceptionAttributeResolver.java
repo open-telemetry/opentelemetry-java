@@ -27,19 +27,19 @@ public final class DefaultExceptionAttributeResolver implements ExceptionAttribu
 
   @Override
   @Nullable
-  public String getExceptionType(Throwable throwable) {
+  public String getExceptionType(Throwable throwable, int maxAttributeLength) {
     return throwable.getClass().getCanonicalName();
   }
 
   @Override
   @Nullable
-  public String getExceptionMessage(Throwable throwable) {
+  public String getExceptionMessage(Throwable throwable, int maxAttributeLength) {
     return throwable.getMessage();
   }
 
   @Override
   @Nullable
-  public String getExceptionStacktrace(Throwable throwable) {
+  public String getExceptionStacktrace(Throwable throwable, int maxAttributeLength) {
     StringWriter stringWriter = new StringWriter();
     try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
       throwable.printStackTrace(printWriter);

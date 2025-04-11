@@ -24,21 +24,36 @@ public interface ExceptionAttributeResolver {
   /**
    * Resolve the {@link #EXCEPTION_TYPE} attribute from the {@code throwable}, or {@code null} if no
    * value should be set.
+   *
+   * @param throwable the throwable
+   * @param maxAttributeLength the max attribute length that will be retained by the SDK. Responses
+   *     are not required to conform to this limit, but implementations may incorporate this limit
+   *     to avoid unnecessary compute.
    */
   @Nullable
-  String getExceptionType(Throwable throwable);
+  String getExceptionType(Throwable throwable, int maxAttributeLength);
 
   /**
    * Resolve the {@link #EXCEPTION_MESSAGE} attribute from the {@code throwable}, or {@code null} if
    * no value should be set.
+   *
+   * @param throwable the throwable
+   * @param maxAttributeLength the max attribute length that will be retained by the SDK. Responses
+   *     are not required to conform to this limit, but implementations may incorporate this limit
+   *     to avoid unnecessary compute.
    */
   @Nullable
-  String getExceptionMessage(Throwable throwable);
+  String getExceptionMessage(Throwable throwable, int maxAttributeLength);
 
   /**
    * Resolve the {@link #EXCEPTION_STACKTRACE} attribute from the {@code throwable}, or {@code null}
    * if no value should be set.
+   *
+   * @param throwable the throwable
+   * @param maxAttributeLength the max attribute length that will be retained by the SDK. Responses
+   *     are not required to conform to this limit, but implementations may incorporate this limit
+   *     to avoid unnecessary compute.
    */
   @Nullable
-  String getExceptionStacktrace(Throwable throwable);
+  String getExceptionStacktrace(Throwable throwable, int maxAttributeLength);
 }

@@ -36,7 +36,7 @@ val slf4jVersion = "2.0.17"
 val opencensusVersion = "0.31.1"
 val prometheusClientVersion = "0.16.0"
 val prometheusServerVersion = "1.3.6"
-val armeriaVersion = "1.32.3"
+val armeriaVersion = "1.32.4"
 val junitVersion = "5.12.1"
 
 val DEPENDENCIES = listOf(
@@ -83,7 +83,7 @@ val DEPENDENCIES = listOf(
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
-  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.45.0-alpha",
+  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.46.0-alpha",
   "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.32.0-alpha",
   "io.opentelemetry.proto:opentelemetry-proto:1.5.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",

@@ -5,12 +5,17 @@
 
 package io.opentelemetry.sdk.internal;
 
+import static io.opentelemetry.sdk.internal.ExceptionAttributeResolver.EXCEPTION_MESSAGE;
+import static io.opentelemetry.sdk.internal.ExceptionAttributeResolver.EXCEPTION_STACKTRACE;
+import static io.opentelemetry.sdk.internal.ExceptionAttributeResolver.EXCEPTION_TYPE;
+
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 /**
@@ -94,5 +99,29 @@ public final class AttributeUtil {
       return str.length() < lengthLimit ? value : str.substring(0, lengthLimit);
     }
     return value;
+  }
+
+  public static void addExceptionAttributes(
+      ExceptionAttributeResolver exceptionAttributeResolver,
+      int maxAttributeLength,
+      Throwable exception,
+      BiConsumer<AttributeKey<String>, String> attributeConsumer) {
+    String exceptionType =
+        exceptionAttributeResolver.getExceptionType(exception, maxAttributeLength);
+    if (exceptionType != null) {
+      attributeConsumer.accept(EXCEPTION_TYPE, exceptionType);
+    }
+
+    String exceptionMessage =
+        exceptionAttributeResolver.getExceptionMessage(exception, maxAttributeLength);
+    if (exceptionMessage != null) {
+      attributeConsumer.accept(EXCEPTION_MESSAGE, exceptionMessage);
+    }
+
+    String stackTrace =
+        exceptionAttributeResolver.getExceptionStacktrace(exception, maxAttributeLength);
+    if (stackTrace != null) {
+      attributeConsumer.accept(EXCEPTION_STACKTRACE, stackTrace);
+    }
   }
 }
