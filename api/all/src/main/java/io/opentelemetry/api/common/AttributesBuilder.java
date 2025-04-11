@@ -18,6 +18,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 
 /** A builder of {@link Attributes} supporting an arbitrary number of key-value pairs. */
 public interface AttributesBuilder {
@@ -35,8 +36,8 @@ public interface AttributesBuilder {
   // version.
   <T> AttributesBuilder put(AttributeKey<Long> key, int value);
 
-  /** Puts a {@link AttributeKey} with associated value into this. */
-  <T> AttributesBuilder put(AttributeKey<T> key, T value);
+  /** Puts an {@link AttributeKey} with an associated value into this if the value is non-null. */
+  <T> AttributesBuilder put(AttributeKey<T> key, @Nullable T value);
 
   /**
    * Puts a String attribute into this.
@@ -46,7 +47,7 @@ public interface AttributesBuilder {
    *
    * @return this Builder
    */
-  default AttributesBuilder put(String key, String value) {
+  default AttributesBuilder put(String key, @Nullable String value) {
     return put(stringKey(key), value);
   }
 
