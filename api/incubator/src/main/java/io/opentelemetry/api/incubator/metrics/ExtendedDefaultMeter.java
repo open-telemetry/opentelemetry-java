@@ -95,6 +95,11 @@ class ExtendedDefaultMeter implements Meter {
 
   private static class NoopLongCounter implements ExtendedLongCounter {
     @Override
+    public boolean isEnabled() {
+      return false;
+    }
+
+    @Override
     public void add(long value, Attributes attributes, Context context) {}
 
     @Override
@@ -105,6 +110,11 @@ class ExtendedDefaultMeter implements Meter {
   }
 
   private static class NoopDoubleCounter implements ExtendedDoubleCounter {
+    @Override
+    public boolean isEnabled() {
+      return false;
+    }
+
     @Override
     public void add(double value, Attributes attributes, Context context) {}
 
@@ -187,6 +197,11 @@ class ExtendedDefaultMeter implements Meter {
 
   private static class NoopLongUpDownCounter implements ExtendedLongUpDownCounter {
     @Override
+    public boolean isEnabled() {
+      return false;
+    }
+
+    @Override
     public void add(long value, Attributes attributes, Context context) {}
 
     @Override
@@ -197,6 +212,11 @@ class ExtendedDefaultMeter implements Meter {
   }
 
   private static class NoopDoubleUpDownCounter implements ExtendedDoubleUpDownCounter {
+    @Override
+    public boolean isEnabled() {
+      return false;
+    }
+
     @Override
     public void add(double value, Attributes attributes, Context context) {}
 
@@ -282,6 +302,11 @@ class ExtendedDefaultMeter implements Meter {
 
   private static class NoopDoubleHistogram implements ExtendedDoubleHistogram {
     @Override
+    public boolean isEnabled() {
+      return false;
+    }
+
+    @Override
     public void record(double value, Attributes attributes, Context context) {}
 
     @Override
@@ -292,6 +317,11 @@ class ExtendedDefaultMeter implements Meter {
   }
 
   private static class NoopLongHistogram implements ExtendedLongHistogram {
+    @Override
+    public boolean isEnabled() {
+      return false;
+    }
+
     @Override
     public void record(long value, Attributes attributes, Context context) {}
 
@@ -386,6 +416,11 @@ class ExtendedDefaultMeter implements Meter {
 
   private static class NoopDoubleGauge implements ExtendedDoubleGauge {
     @Override
+    public boolean isEnabled() {
+      return false;
+    }
+
+    @Override
     public void set(double value) {}
 
     @Override
@@ -426,6 +461,11 @@ class ExtendedDefaultMeter implements Meter {
   }
 
   private static class NoopLongGauge implements ExtendedLongGauge {
+    @Override
+    public boolean isEnabled() {
+      return false;
+    }
+
     @Override
     public void set(long value) {}
 

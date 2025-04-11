@@ -13,6 +13,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 
 import io.opentelemetry.api.incubator.logs.ExtendedLogger;
 import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -61,9 +62,9 @@ class LoggerConfigTest {
               assertThat(logsByScope.get(InstrumentationScopeInfo.create("loggerC"))).hasSize(1);
             });
     // loggerA and loggerC are enabled, loggerB is disabled.
-    assertThat(((ExtendedLogger) loggerA).isEnabled()).isTrue();
-    assertThat(((ExtendedLogger) loggerB).isEnabled()).isFalse();
-    assertThat(((ExtendedLogger) loggerC).isEnabled()).isTrue();
+    assertThat(((ExtendedLogger) loggerA).isEnabled(Severity.INFO)).isTrue();
+    assertThat(((ExtendedLogger) loggerB).isEnabled(Severity.INFO)).isFalse();
+    assertThat(((ExtendedLogger) loggerC).isEnabled(Severity.INFO)).isTrue();
   }
 
   @ParameterizedTest

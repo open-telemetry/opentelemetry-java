@@ -19,6 +19,7 @@ import io.opentelemetry.api.incubator.metrics.ExtendedLongHistogram;
 import io.opentelemetry.api.incubator.metrics.ExtendedLongUpDownCounter;
 import io.opentelemetry.api.incubator.trace.ExtendedTracer;
 import io.opentelemetry.api.logs.LoggerProvider;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
@@ -50,8 +51,8 @@ class IncubatingApiTests {
             .build();
 
     ExtendedLogger logger = (ExtendedLogger) loggerProvider.get("logger");
-    logger.isEnabled();
-    logger.logRecordBuilder().setBody("message").emit();
+    logger.isEnabled(Severity.INFO);
+    logger.logRecordBuilder().setSeverity(Severity.INFO).setBody("message").emit();
   }
 
   @Test
