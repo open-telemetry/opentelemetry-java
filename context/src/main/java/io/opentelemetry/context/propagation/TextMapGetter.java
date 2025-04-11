@@ -42,9 +42,6 @@ public interface TextMapGetter<C> {
    * <p>The default method returns the first value of the given propagation {@code key} as a
    * singleton list, or returns an empty list.
    *
-   * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
-   * at any time.
-   *
    * @param carrier carrier of propagation fields, such as an http request.
    * @param key the key of the field.
    * @return all values for a given {@code key} in order, or returns an empty list. Default method
