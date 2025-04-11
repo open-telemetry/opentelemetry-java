@@ -33,7 +33,7 @@ class DoubleExemplarDataTest {
         DoubleExemplarData.create(
             Attributes.builder().put("key", "value1").build(), // attributes
             1, // epochNanos
-            /* spanContext= */ spanContext, // spanContext
+            /* spanContext= */ spanContext,
             /* value= */ 2.0);
     assertThat(exemplarData.getValue()).isEqualTo(2.0);
     assertThat(exemplarData.getEpochNanos()).isEqualTo(1);
