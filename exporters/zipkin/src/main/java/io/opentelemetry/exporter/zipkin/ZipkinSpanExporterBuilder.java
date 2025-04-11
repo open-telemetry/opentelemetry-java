@@ -10,6 +10,7 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.internal.ServerAttributesUtil;
 import io.opentelemetry.sdk.common.HealthMetricLevel;
 import java.net.InetAddress;
 import java.time.Duration;
@@ -234,6 +235,7 @@ public final class ZipkinSpanExporterBuilder {
     OtelToZipkinSpanTransformer transformer =
         OtelToZipkinSpanTransformer.create(localIpAddressSupplier);
     return new ZipkinSpanExporter(
-        this, encoder, sender, meterProviderSupplier, healthMetricLevel, transformer);
+        this, encoder, sender, meterProviderSupplier, healthMetricLevel, ServerAttributesUtil.extractServerAttributes(endpoint),
+        transformer);
   }
 }

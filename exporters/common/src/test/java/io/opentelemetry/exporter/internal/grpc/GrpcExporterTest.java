@@ -81,6 +81,7 @@ class GrpcExporterTest {
           Attributes.builder()
               .put(SemConvAttributes.OTEL_COMPONENT_TYPE, "test_exporter")
               .put(SemConvAttributes.OTEL_COMPONENT_NAME, id.getComponentName())
+              .put("foo", "bar")
               .build();
 
       GrpcSender<Marshaler> mockSender = Mockito.mock(GrpcSender.class);
@@ -93,7 +94,8 @@ class GrpcExporterTest {
               mockSender,
               HealthMetricLevel.ON,
               id,
-              () -> meterProvider
+              () -> meterProvider,
+              Attributes.builder().put("foo", "bar").build()
           );
 
       doAnswer(
@@ -221,7 +223,8 @@ class GrpcExporterTest {
               mockSender,
               HealthMetricLevel.OFF,
               id,
-              () -> meterProvider
+              () -> meterProvider,
+              Attributes.empty()
           );
 
       doAnswer(

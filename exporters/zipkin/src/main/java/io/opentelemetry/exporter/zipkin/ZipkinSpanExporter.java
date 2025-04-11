@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.zipkin;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterMetrics;
@@ -54,6 +55,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
       BytesMessageSender sender,
       Supplier<MeterProvider> meterProviderSupplier,
       HealthMetricLevel healthMetricLevel,
+      Attributes additonalHealthAttributes,
       OtelToZipkinSpanTransformer transformer) {
     this.builder = builder;
     this.encoder = encoder;
@@ -76,7 +78,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
             meterProviderSupplier,
             ExporterMetrics.Signal.SPAN,
             ComponentId.generateLazy(componentType),
-            null,
+            additonalHealthAttributes,
             "zipkin",
             transportName);
   }

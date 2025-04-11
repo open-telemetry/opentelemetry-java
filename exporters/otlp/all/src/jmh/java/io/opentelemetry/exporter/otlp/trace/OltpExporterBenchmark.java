@@ -11,6 +11,7 @@ import com.linecorp.armeria.server.grpc.GrpcService;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterMetrics;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
@@ -95,7 +96,8 @@ public class OltpExporterBenchmark {
                 null),
             HealthMetricLevel.OFF,
             ComponentId.generateLazy("upstream_grpc_exporter"),
-            MeterProvider::noop);
+            MeterProvider::noop,
+            Attributes.empty());
 
     okhttpGrpcSender =
         new GrpcExporter<>(
@@ -115,7 +117,8 @@ public class OltpExporterBenchmark {
                 null),
             HealthMetricLevel.OFF,
             ComponentId.generateLazy("okhttp_grpc_exporter"),
-            MeterProvider::noop);
+            MeterProvider::noop,
+            Attributes.empty());
 
     httpExporter =
         new HttpExporterBuilder<TraceRequestMarshaler>(

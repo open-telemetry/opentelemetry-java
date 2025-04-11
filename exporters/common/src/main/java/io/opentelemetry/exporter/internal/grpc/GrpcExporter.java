@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.internal.grpc;
 import static io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE;
 import static io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil.GRPC_STATUS_UNIMPLEMENTED;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterMetrics;
 import io.opentelemetry.exporter.internal.ExporterMetricsAdapter;
@@ -49,17 +50,17 @@ public final class GrpcExporter<T extends Marshaler> {
       GrpcSender<T> grpcSender,
       HealthMetricLevel healthMetricLevel,
       ComponentId componentId,
-      Supplier<MeterProvider> meterProviderSupplier) {
+      Supplier<MeterProvider> meterProviderSupplier,
+      Attributes healthMetricAttributes) {
     this.type = type.toString();
     this.grpcSender = grpcSender;
-    // TODO: add a way of extracting the server.address and server.port attributes from GrpcSender
     this.exporterMetrics =
         new ExporterMetricsAdapter(
             healthMetricLevel,
             meterProviderSupplier,
             type,
             componentId,
-            null,
+            healthMetricAttributes,
             legacyExporterName,
             "grpc");
   }

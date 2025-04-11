@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
@@ -62,6 +63,7 @@ class ZipkinSpanExporterTest {
             mockSender,
             MeterProvider::noop,
             HealthMetricLevel.OFF,
+            Attributes.empty(),
             mockTransformer);
 
     byte[] someBytes = new byte[0];
@@ -92,6 +94,7 @@ class ZipkinSpanExporterTest {
             mockSender,
             MeterProvider::noop,
             HealthMetricLevel.OFF,
+            Attributes.empty(),
             mockTransformer);
 
     byte[] someBytes = new byte[0];
@@ -280,6 +283,7 @@ class ZipkinSpanExporterTest {
             suppressCatchingSender,
             MeterProvider::noop,
             HealthMetricLevel.OFF,
+            Attributes.empty(),
             mockTransformer);
 
     byte[] someBytes = new byte[0];

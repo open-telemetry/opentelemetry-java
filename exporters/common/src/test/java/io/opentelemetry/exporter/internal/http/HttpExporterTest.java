@@ -73,6 +73,7 @@ class HttpExporterTest {
           Attributes.builder()
               .put(SemConvAttributes.OTEL_COMPONENT_TYPE, "test_exporter")
               .put(SemConvAttributes.OTEL_COMPONENT_NAME, id.getComponentName())
+              .put("foo", "bar")
               .build();
 
       HttpSender mockSender = Mockito.mock(HttpSender.class);
@@ -86,7 +87,8 @@ class HttpExporterTest {
               mockSender,
               () -> meterProvider,
               HealthMetricLevel.ON,
-              false);
+              false,
+              Attributes.builder().put("foo", "bar").build());
 
       doAnswer(
               invoc -> {
@@ -213,7 +215,8 @@ class HttpExporterTest {
               mockSender,
               () -> meterProvider,
               HealthMetricLevel.OFF,
-              false);
+              false,
+              Attributes.empty());
 
       doAnswer(
           invoc -> {

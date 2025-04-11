@@ -12,6 +12,7 @@ import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.ExporterMetrics;
+import io.opentelemetry.exporter.internal.ServerAttributesUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
@@ -248,7 +249,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
         grpcSender,
         healthMetricLevel,
         ComponentId.generateLazy(componentType),
-        meterProviderSupplier);
+        meterProviderSupplier,
+        ServerAttributesUtil.extractServerAttributes(endpoint));
   }
 
   public String toString(boolean includePrefixAndSuffix) {

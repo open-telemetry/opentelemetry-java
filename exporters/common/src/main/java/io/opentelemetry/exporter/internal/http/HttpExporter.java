@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.http;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterMetrics;
 import io.opentelemetry.exporter.internal.ExporterMetricsAdapter;
@@ -47,7 +48,8 @@ public final class HttpExporter<T extends Marshaler> {
       HttpSender httpSender,
       Supplier<MeterProvider> meterProviderSupplier,
       HealthMetricLevel healthMetricLevel,
-      boolean exportAsJson) {
+      boolean exportAsJson,
+      Attributes healthMetricAttributes) {
     this.type = type.toString();
     this.httpSender = httpSender;
     // TODO: extract server.address and server.port here
@@ -57,7 +59,7 @@ public final class HttpExporter<T extends Marshaler> {
             meterProviderSupplier,
             type,
             componentId,
-            null,
+            healthMetricAttributes,
             legacyExporterName,
             exportAsJson ? "http-json" : "http");
   }
