@@ -5,12 +5,21 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNonNull;
+
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalTracerConfigModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalTracerConfiguratorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalTracerMatcherAndConfigModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TracerProviderModel;
+import io.opentelemetry.sdk.internal.ScopeConfigurator;
+import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
+import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
+import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.util.List;
@@ -59,6 +68,48 @@ final class TracerProviderFactory
                   SpanProcessorFactory.getInstance().create(processor, spiHelper, closeables)));
     }
 
+    ExperimentalTracerConfiguratorModel tracerConfiguratorModel =
+        tracerProviderModel.getTracerConfiguratorDevelopment();
+    if (tracerConfiguratorModel != null) {
+      ExperimentalTracerConfigModel defaultConfigModel = tracerConfiguratorModel.getDefaultConfig();
+      ScopeConfiguratorBuilder<TracerConfig> configuratorBuilder = ScopeConfigurator.builder();
+      if (defaultConfigModel != null) {
+        configuratorBuilder.setDefault(
+            TracerConfigFactory.INSTANCE.create(defaultConfigModel, spiHelper, closeables));
+      }
+      List<ExperimentalTracerMatcherAndConfigModel> tracerMatcherAndConfigs =
+          tracerConfiguratorModel.getTracers();
+      if (tracerMatcherAndConfigs != null) {
+        for (ExperimentalTracerMatcherAndConfigModel tracerMatcherAndConfig :
+            tracerMatcherAndConfigs) {
+          String name = requireNonNull(tracerMatcherAndConfig.getName(), "tracer matcher name");
+          ExperimentalTracerConfigModel config = tracerMatcherAndConfig.getConfig();
+          if (name == null || config == null) {
+            continue;
+          }
+          configuratorBuilder.addCondition(
+              ScopeConfiguratorBuilder.nameMatchesGlob(name),
+              TracerConfigFactory.INSTANCE.create(config, spiHelper, closeables));
+        }
+      }
+      SdkTracerProviderUtil.setTracerConfigurator(builder, configuratorBuilder.build());
+    }
+
     return builder;
+  }
+
+  private static class TracerConfigFactory
+      implements Factory<ExperimentalTracerConfigModel, TracerConfig> {
+
+    private static final TracerConfigFactory INSTANCE = new TracerConfigFactory();
+
+    @Override
+    public TracerConfig create(
+        ExperimentalTracerConfigModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+      if (model.getDisabled() != null && model.getDisabled()) {
+        return TracerConfig.disabled();
+      }
+      return TracerConfig.defaultConfig();
+    }
   }
 }

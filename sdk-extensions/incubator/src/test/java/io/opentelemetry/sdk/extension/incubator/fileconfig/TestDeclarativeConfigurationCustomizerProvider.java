@@ -29,12 +29,12 @@ public class TestDeclarativeConfigurationCustomizerProvider
           attributes.add(
               new AttributeNameValueModel()
                   .withName("foo")
-                  .withType(AttributeNameValueModel.Type.STRING)
+                  .withType(AttributeNameValueModel.AttributeType.STRING)
                   .withValue("bar"));
           attributes.add(
               new AttributeNameValueModel()
                   .withName("color")
-                  .withType(AttributeNameValueModel.Type.STRING)
+                  .withType(AttributeNameValueModel.AttributeType.STRING)
                   .withValue("blue"));
           return model;
         });
