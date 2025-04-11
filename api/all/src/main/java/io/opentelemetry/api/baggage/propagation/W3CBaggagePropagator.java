@@ -16,7 +16,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
-import io.opentelemetry.context.propagation.internal.ExtendedTextMapGetter;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -97,33 +96,11 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
       return context;
     }
 
-    if (getter instanceof ExtendedTextMapGetter) {
-      return extractMulti(context, carrier, (ExtendedTextMapGetter<C>) getter);
-    }
-    return extractSingle(context, carrier, getter);
-  }
-
-  private static <C> Context extractSingle(
-      Context context, @Nullable C carrier, TextMapGetter<C> getter) {
-    String baggageHeader = getter.get(carrier, FIELD);
-    if (baggageHeader == null) {
-      return context;
-    }
-    if (baggageHeader.isEmpty()) {
-      return context;
-    }
-
-    BaggageBuilder baggageBuilder = Baggage.builder();
-    try {
-      extractEntries(baggageHeader, baggageBuilder);
-    } catch (RuntimeException e) {
-      return context;
-    }
-    return context.with(baggageBuilder.build());
+    return extractMulti(context, carrier, getter);
   }
 
   private static <C> Context extractMulti(
-      Context context, @Nullable C carrier, ExtendedTextMapGetter<C> getter) {
+      Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     Iterator<String> baggageHeaders = getter.getAll(carrier, FIELD);
     if (baggageHeaders == null) {
       return context;

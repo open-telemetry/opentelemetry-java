@@ -14,7 +14,6 @@ import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
-import io.opentelemetry.context.propagation.internal.ExtendedTextMapGetter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -40,8 +39,8 @@ class W3CBaggagePropagatorTest {
         }
       };
 
-  private static final ExtendedTextMapGetter<Map<String, List<String>>> multiGetter =
-      new ExtendedTextMapGetter<Map<String, List<String>>>() {
+  private static final TextMapGetter<Map<String, List<String>>> multiGetter =
+      new TextMapGetter<Map<String, List<String>>>() {
         @Override
         public Iterable<String> keys(Map<String, List<String>> carrier) {
           return carrier.keySet();
