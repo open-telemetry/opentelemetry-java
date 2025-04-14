@@ -162,6 +162,7 @@ jobs:
         run: |
           release_date=$(gh release view v$VERSION --json publishedAt --jq .publishedAt | sed 's/T.*//')
           RELEASE_DATE=$release_date .github/scripts/merge-change-log-after-release.sh
+          git add CHANGELOG.md
 
       - name: Wait for release to be available in maven central
         env:
@@ -184,6 +185,7 @@ jobs:
         run: |
           ./gradlew japicmp -PapiBaseVersion=$PRIOR_VERSION -PapiNewVersion=$VERSION
           ./gradlew --refresh-dependencies japicmp
+          git add docs/apidiffs
 
       - name: Use CLA approved bot
         run: .github/scripts/use-cla-approved-bot.sh
@@ -205,8 +207,7 @@ jobs:
           branch="otelbot/update-apidiff-baseline-to-released-version-${VERSION}"
 
           git checkout -b $branch
-          git add docs/apidiffs
-          git commit -a -m "$message"
+          git commit -m "$message"
           git push --set-upstream origin $branch
           gh pr create --title "$message" \
                        --body "$body" \
