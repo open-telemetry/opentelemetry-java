@@ -206,7 +206,7 @@ jobs:
 
           git checkout -b $branch
           git add docs/apidiffs
-          git commit -m "$message"
+          git commit -a -m "$message"
           git push --set-upstream origin $branch
           gh pr create --title "$message" \
                        --body "$body" \
