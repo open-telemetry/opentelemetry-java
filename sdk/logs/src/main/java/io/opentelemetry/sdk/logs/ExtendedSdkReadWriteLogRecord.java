@@ -25,7 +25,6 @@ import javax.annotation.concurrent.ThreadSafe;
 class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
     implements ExtendedReadWriteLogRecord {
 
-  @Nullable private final String eventName;
   private final Object lock = new Object();
 
   @GuardedBy("lock")
@@ -55,8 +54,8 @@ class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
         severity,
         severityText,
         body,
-        null);
-    this.eventName = eventName;
+        null,
+        eventName);
     this.extendedAttributes = extendedAttributes;
   }
 

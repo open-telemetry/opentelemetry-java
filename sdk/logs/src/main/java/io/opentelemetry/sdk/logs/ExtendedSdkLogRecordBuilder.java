@@ -23,7 +23,6 @@ import javax.annotation.Nullable;
 final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
     implements ExtendedLogRecordBuilder {
 
-  @Nullable private String eventName;
   @Nullable private ExtendedAttributesMap extendedAttributes;
 
   ExtendedSdkLogRecordBuilder(
@@ -33,7 +32,7 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
 
   @Override
   public ExtendedSdkLogRecordBuilder setEventName(String eventName) {
-    this.eventName = eventName;
+    super.setEventName(eventName);
     return this;
   }
 

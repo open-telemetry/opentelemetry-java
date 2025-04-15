@@ -30,6 +30,7 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
   protected Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
   @Nullable protected String severityText;
   @Nullable protected Value<?> body;
+  @Nullable protected String eventName;
   @Nullable private AttributesMap attributes;
 
   SdkLogRecordBuilder(
@@ -37,6 +38,12 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
     this.loggerSharedState = loggerSharedState;
     this.logLimits = loggerSharedState.getLogLimits();
     this.instrumentationScopeInfo = instrumentationScopeInfo;
+  }
+
+  @Override
+  public SdkLogRecordBuilder setEventName(String eventName) {
+    this.eventName = eventName;
+    return this;
   }
 
   @Override
@@ -132,6 +139,7 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
                 severity,
                 severityText,
                 body,
-                attributes));
+                attributes,
+                eventName));
   }
 }
