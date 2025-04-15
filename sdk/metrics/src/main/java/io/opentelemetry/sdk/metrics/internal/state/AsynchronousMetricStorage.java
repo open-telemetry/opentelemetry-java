@@ -254,7 +254,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
         lastPoints.forEach((attributes, value) -> reusablePointsPool.returnObject(value));
         lastPoints.clear();
       }
-    } else {
+    } else { /* CUMULATIVE */
       result = currentPoints.values();
     }
     this.lastPoints = currentPoints;
