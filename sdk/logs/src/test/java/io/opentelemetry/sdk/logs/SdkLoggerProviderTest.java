@@ -29,7 +29,6 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -125,31 +124,12 @@ class SdkLoggerProviderTest {
 
   @Test
   void builder_multipleProcessors() {
+    LogRecordProcessor firstProcessor = mock(LogRecordProcessor.class);
     assertThat(
             SdkLoggerProvider.builder()
                 .addLogRecordProcessor(logRecordProcessor)
                 .addLogRecordProcessor(logRecordProcessor)
-                .build())
-        .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
-        .extracting(LoggerSharedState::getLogRecordProcessor)
-        .satisfies(
-            activeLogRecordProcessor -> {
-              assertThat(activeLogRecordProcessor).isInstanceOf(MultiLogRecordProcessor.class);
-              assertThat(activeLogRecordProcessor)
-                  .extracting(
-                      "logRecordProcessors",
-                      as(InstanceOfAssertFactories.list(LogRecordProcessor.class)))
-                  .hasSize(2);
-            });
-  }
-
-  @Test
-  void builder_multipleProcessorsWithBatchProcessor() {
-    assertThat(
-            SdkLoggerProvider.builder()
-                .addLogRecordProcessor(mock(BatchLogRecordProcessor.class))
-                .addLogRecordProcessor(logRecordProcessor)
-                .addLogRecordProcessor(logRecordProcessor)
+                .addLogRecordProcessorFirst(firstProcessor)
                 .build())
         .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
         .extracting(LoggerSharedState::getLogRecordProcessor)
@@ -161,8 +141,8 @@ class SdkLoggerProviderTest {
                       "logRecordProcessors",
                       as(InstanceOfAssertFactories.list(LogRecordProcessor.class)))
                   .hasSize(3)
-                  .last()
-                  .isInstanceOf(BatchLogRecordProcessor.class);
+                  .first()
+                  .isEqualTo(firstProcessor);
             });
   }
 

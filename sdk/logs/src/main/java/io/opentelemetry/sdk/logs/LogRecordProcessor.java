@@ -9,7 +9,6 @@ import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,30 +36,18 @@ public interface LogRecordProcessor extends Closeable {
   /**
    * Returns a {@link LogRecordProcessor} which simply delegates to all processing to the {@code
    * processors} in order.
-   *
-   * <p>Note that if there are {@link BatchLogRecordProcessor} including, they are enforced to end
-   * of the processor pipeline.
    */
   static LogRecordProcessor composite(Iterable<LogRecordProcessor> processors) {
     List<LogRecordProcessor> processorList = new ArrayList<>();
-    List<BatchLogRecordProcessor> batchProcessors = new ArrayList<>();
     for (LogRecordProcessor processor : processors) {
-      if (!BatchLogRecordProcessor.class.equals(processor.getClass())) {
-        processorList.add(processor);
-      } else {
-        batchProcessors.add((BatchLogRecordProcessor) processor);
-      }
+      processorList.add(processor);
     }
-    processorList.addAll(batchProcessors);
-
     if (processorList.isEmpty()) {
       return NoopLogRecordProcessor.getInstance();
     }
-
     if (processorList.size() == 1) {
       return processorList.get(0);
     }
-
     return MultiLogRecordProcessor.create(processorList);
   }
 
