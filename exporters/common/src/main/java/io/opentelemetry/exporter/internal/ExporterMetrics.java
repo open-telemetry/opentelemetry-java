@@ -93,6 +93,8 @@ public class ExporterMetrics {
   }
 
   private static boolean isNoop(LongCounter counter) {
+    // This is a poor way to identify a Noop implementation, but the API doesn't provide a better
+    // way. Perhaps we could add a common "Noop" interface to allow for an instanceof check?
     return counter.getClass().getSimpleName().startsWith("Noop");
   }
 

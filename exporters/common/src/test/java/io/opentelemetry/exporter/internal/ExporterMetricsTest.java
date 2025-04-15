@@ -57,7 +57,8 @@ class ExporterMetricsTest {
     ExporterMetrics exporterMetrics =
         ExporterMetrics.createHttpProtobuf("test", "test", meterProviderSupplier);
     verifyNoInteractions(meterProviderSupplier); // Ensure lazy
-    // Verify the supplied meterProvider is not reused.
+
+    // Verify the supplier is only called once per underlying meter.
     exporterMetrics.addSeen(10);
     exporterMetrics.addSeen(20);
     verify(meterProviderSupplier, times(1)).get();
@@ -75,7 +76,8 @@ class ExporterMetricsTest {
     ExporterMetrics exporterMetrics =
         ExporterMetrics.createHttpProtobuf("test", "test", meterProviderSupplier);
     verifyNoInteractions(meterProviderSupplier); // Ensure lazy
-    // Verify the supplied meterProvider is not reused.
+
+    // Verify the supplier is invoked multiple times since it returns a noop meter.
     exporterMetrics.addSeen(10);
     exporterMetrics.addSeen(20);
     verify(meterProviderSupplier, times(2)).get();
