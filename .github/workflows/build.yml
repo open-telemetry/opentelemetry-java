@@ -82,7 +82,7 @@ jobs:
           RUN_JMH_BASED_TESTS: ${{ matrix.jmh-based-tests }}
 
       - name: Check for diff
-        # The jApiCmp diff compares current to latest, which isn't appropriate for release branches, or for bot-generated PRs
+        # The jApiCmp diff compares current to latest, which isn't appropriate for release branches
         # this fails on windows because of the bash-specific if/then/else syntax, but that's ok
         # because we only need to run this validation once (on any platform)
         if: ${{ matrix.os != 'windows-latest' && !startsWith(github.ref_name, 'release/') && !startsWith(github.base_ref, 'release/') }}
