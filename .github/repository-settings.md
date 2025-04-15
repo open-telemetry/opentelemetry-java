@@ -103,3 +103,12 @@ Repository settings in addition to what's documented already at
   - Key is associated with [@trask](https://github.com/trask)'s gmail address
 - `SONATYPE_KEY` - owned by [@jack-berg](https://github.com/jack-berg)
 - `SONATYPE_USER` - owned by [@jack-berg](https://github.com/jack-berg)
+
+### Organization secrets
+
+- `FOSSA_API_KEY`
+- `OTELBOT_PRIVATE_KEY`
+
+### Organization variables
+
+- `OTELBOT_APP_ID`
