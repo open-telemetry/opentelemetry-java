@@ -10,6 +10,7 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import com.sun.net.httpserver.Authenticator;
 import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -70,7 +71,8 @@ public final class PrometheusHttpServer implements MetricReader {
       @Nullable Predicate<String> allowedResourceAttributesFilter,
       MemoryMode memoryMode,
       @Nullable HttpHandler defaultHandler,
-      DefaultAggregationSelector defaultAggregationSelector) {
+      DefaultAggregationSelector defaultAggregationSelector,
+      @Nullable Authenticator authenticator) {
     this.builder = builder;
     this.prometheusMetricReader =
         new PrometheusMetricReader(otelScopeEnabled, allowedResourceAttributesFilter);
@@ -99,6 +101,7 @@ public final class PrometheusHttpServer implements MetricReader {
               .executorService(executor)
               .registry(prometheusRegistry)
               .defaultHandler(defaultHandler)
+              .authenticator(authenticator)
               .buildAndStart();
     } catch (IOException e) {
       throw new UncheckedIOException("Could not create Prometheus HTTP server", e);

@@ -7,12 +7,13 @@ package io.opentelemetry.api.incubator.logs;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Value;
-import io.opentelemetry.api.logs.LogRecordBuilder;
+import io.opentelemetry.api.incubator.common.ExtendedAttributeKey;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 class ExtendedDefaultLogger implements ExtendedLogger {
 
@@ -41,52 +42,62 @@ class ExtendedDefaultLogger implements ExtendedLogger {
     }
 
     @Override
-    public LogRecordBuilder setTimestamp(long timestamp, TimeUnit unit) {
+    public ExtendedLogRecordBuilder setException(Throwable throwable) {
       return this;
     }
 
     @Override
-    public LogRecordBuilder setTimestamp(Instant instant) {
+    public <T> ExtendedLogRecordBuilder setAttribute(ExtendedAttributeKey<T> key, T value) {
       return this;
     }
 
     @Override
-    public LogRecordBuilder setObservedTimestamp(long timestamp, TimeUnit unit) {
+    public <T> ExtendedLogRecordBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
       return this;
     }
 
     @Override
-    public LogRecordBuilder setObservedTimestamp(Instant instant) {
+    public ExtendedLogRecordBuilder setTimestamp(long timestamp, TimeUnit unit) {
       return this;
     }
 
     @Override
-    public LogRecordBuilder setContext(Context context) {
+    public ExtendedLogRecordBuilder setTimestamp(Instant instant) {
       return this;
     }
 
     @Override
-    public LogRecordBuilder setSeverity(Severity severity) {
+    public ExtendedLogRecordBuilder setObservedTimestamp(long timestamp, TimeUnit unit) {
       return this;
     }
 
     @Override
-    public LogRecordBuilder setSeverityText(String severityText) {
+    public ExtendedLogRecordBuilder setObservedTimestamp(Instant instant) {
       return this;
     }
 
     @Override
-    public LogRecordBuilder setBody(String body) {
+    public ExtendedLogRecordBuilder setContext(Context context) {
       return this;
     }
 
     @Override
-    public LogRecordBuilder setBody(Value<?> body) {
+    public ExtendedLogRecordBuilder setSeverity(Severity severity) {
       return this;
     }
 
     @Override
-    public <T> LogRecordBuilder setAttribute(AttributeKey<T> key, T value) {
+    public ExtendedLogRecordBuilder setSeverityText(String severityText) {
+      return this;
+    }
+
+    @Override
+    public ExtendedLogRecordBuilder setBody(String body) {
+      return this;
+    }
+
+    @Override
+    public ExtendedLogRecordBuilder setBody(Value<?> body) {
       return this;
     }
 

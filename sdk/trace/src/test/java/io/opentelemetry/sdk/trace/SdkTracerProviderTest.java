@@ -38,11 +38,11 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SdkTracerProviderTest {
   @Mock private SpanProcessor spanProcessor;
-  private SdkTracerProvider tracerFactory;
+  private SdkTracerProvider tracerProvider;
 
   @BeforeEach
   void setUp() {
-    tracerFactory = SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
+    tracerProvider = SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
     when(spanProcessor.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
     when(spanProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
@@ -137,34 +137,35 @@ class SdkTracerProviderTest {
 
   @Test
   void defaultGet() {
-    assertThat(tracerFactory.get("test")).isInstanceOf(SdkTracer.class);
+    assertThat(tracerProvider.get("test")).isInstanceOf(SdkTracer.class);
   }
 
   @Test
   void getSameInstanceForSameName_WithoutVersion() {
-    assertThat(tracerFactory.get("test")).isSameAs(tracerFactory.get("test"));
-    assertThat(tracerFactory.get("test"))
-        .isSameAs(tracerFactory.get("test", null))
-        .isSameAs(tracerFactory.tracerBuilder("test").build());
+    assertThat(tracerProvider.get("test")).isSameAs(tracerProvider.get("test"));
+    assertThat(tracerProvider.get("test"))
+        .isSameAs(tracerProvider.get("test", null))
+        .isSameAs(tracerProvider.tracerBuilder("test").build());
   }
 
   @Test
   void getSameInstanceForSameName_WithVersion() {
-    assertThat(tracerFactory.get("test", "version"))
-        .isSameAs(tracerFactory.get("test", "version"))
-        .isSameAs(tracerFactory.tracerBuilder("test").setInstrumentationVersion("version").build());
+    assertThat(tracerProvider.get("test", "version"))
+        .isSameAs(tracerProvider.get("test", "version"))
+        .isSameAs(
+            tracerProvider.tracerBuilder("test").setInstrumentationVersion("version").build());
   }
 
   @Test
   void getSameInstanceForSameName_WithVersionAndSchema() {
     assertThat(
-            tracerFactory
+            tracerProvider
                 .tracerBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
                 .build())
         .isSameAs(
-            tracerFactory
+            tracerProvider
                 .tracerBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
@@ -179,7 +180,7 @@ class SdkTracerProviderTest {
             .setSchemaUrl("http://url")
             .build();
     Tracer tracer =
-        tracerFactory
+        tracerProvider
             .tracerBuilder(expected.getName())
             .setInstrumentationVersion(expected.getVersion())
             .setSchemaUrl(expected.getSchemaUrl())
@@ -198,7 +199,7 @@ class SdkTracerProviderTest {
   }
 
   void propagatesEnablementToTracer(boolean directly) {
-    SdkTracer tracer = (SdkTracer) tracerFactory.get("test");
+    SdkTracer tracer = (SdkTracer) tracerProvider.get("test");
     boolean isEnabled = tracer.isEnabled();
     ScopeConfigurator<TracerConfig> flipConfigurator =
         new ScopeConfigurator<TracerConfig>() {
@@ -209,9 +210,9 @@ class SdkTracerProviderTest {
         };
     // all in the same thread, so should see enablement change immediately
     if (directly) {
-      tracerFactory.setTracerConfigurator(flipConfigurator);
+      tracerProvider.setTracerConfigurator(flipConfigurator);
     } else {
-      SdkTracerProviderUtil.setTracerConfigurator(tracerFactory, flipConfigurator);
+      SdkTracerProviderUtil.setTracerConfigurator(tracerProvider, flipConfigurator);
     }
     assertThat(tracer.isEnabled()).isEqualTo(!isEnabled);
   }
@@ -227,57 +228,57 @@ class SdkTracerProviderTest {
 
   @Test
   void shutdown() {
-    tracerFactory.shutdown();
+    tracerProvider.shutdown();
     Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
   }
 
   @Test
   void close() {
-    tracerFactory.close();
+    tracerProvider.close();
     Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
   }
 
   @Test
   void forceFlush() {
-    tracerFactory.forceFlush();
+    tracerProvider.forceFlush();
     Mockito.verify(spanProcessor, Mockito.times(1)).forceFlush();
   }
 
   @Test
   @SuppressLogger(SdkTracerProvider.class)
   void shutdownTwice_OnlyFlushSpanProcessorOnce() {
-    tracerFactory.shutdown();
+    tracerProvider.shutdown();
     Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
-    tracerFactory.shutdown(); // the second call will be ignored
+    tracerProvider.shutdown(); // the second call will be ignored
     Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
   }
 
   @Test
   void returnNoopSpanAfterShutdown() {
-    tracerFactory.shutdown();
-    Span span = tracerFactory.get("noop").spanBuilder("span").startSpan();
+    tracerProvider.shutdown();
+    Span span = tracerProvider.get("noop").spanBuilder("span").startSpan();
     assertThat(span.getSpanContext().isValid()).isFalse();
     span.end();
   }
 
   @Test
   void suppliesDefaultTracerForNullName() {
-    SdkTracer tracer = (SdkTracer) tracerFactory.get(null);
+    SdkTracer tracer = (SdkTracer) tracerProvider.get(null);
     assertThat(tracer.getInstrumentationScopeInfo().getName())
         .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
 
-    tracer = (SdkTracer) tracerFactory.get(null, null);
+    tracer = (SdkTracer) tracerProvider.get(null, null);
     assertThat(tracer.getInstrumentationScopeInfo().getName())
         .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
   }
 
   @Test
   void suppliesDefaultTracerForEmptyName() {
-    SdkTracer tracer = (SdkTracer) tracerFactory.get("");
+    SdkTracer tracer = (SdkTracer) tracerProvider.get("");
     assertThat(tracer.getInstrumentationScopeInfo().getName())
         .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
 
-    tracer = (SdkTracer) tracerFactory.get("", "");
+    tracer = (SdkTracer) tracerProvider.get("", "");
     assertThat(tracer.getInstrumentationScopeInfo().getName())
         .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
   }

@@ -65,7 +65,6 @@ class SdkLogRecordBuilderTest {
     Instant timestamp = Instant.now();
     Instant observedTimestamp = Instant.now().plusNanos(100);
 
-    String eventName = "event name";
     String bodyStr = "body";
     String sevText = "sevText";
     Severity severity = Severity.DEBUG3;
@@ -76,7 +75,6 @@ class SdkLogRecordBuilderTest {
             TraceFlags.getSampled(),
             TraceState.getDefault());
 
-    builder.setEventName(eventName);
     builder.setBody(bodyStr);
     builder.setTimestamp(123, TimeUnit.SECONDS);
     builder.setTimestamp(timestamp);
