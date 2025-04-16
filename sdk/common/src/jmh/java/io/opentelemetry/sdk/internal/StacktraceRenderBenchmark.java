@@ -32,6 +32,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @Warmup(iterations = 5, time = 100, timeUnit = TimeUnit.MILLISECONDS)
 @Measurement(iterations = 5, time = 100, timeUnit = TimeUnit.MILLISECONDS)
 @Fork(1)
+@SuppressWarnings("StaticAssignmentOfThrowable")
 public class StacktraceRenderBenchmark {
 
   private static final Exception simple = new Exception("error");
