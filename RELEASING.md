@@ -63,21 +63,6 @@ and deadlocks.
   contains documentation on autoconfiguration properties. If the release has updated or modified any
   properties, open and merge a pull request to update the documentation.
 
-## Update release versions in documentations
-
-After releasing is done, you need to first update the docs. This needs to happen after artifacts have propagated
-to Maven Central so should probably be done an hour or two after the release workflow finishes.
-
-```
-./gradlew updateVersionInDocs -Prelease.version=x.y.z
-./gradlew japicmp -PapiBaseVersion=a.b.c -PapiNewVersion=x.y.z
-./gradlew --refresh-dependencies japicmp
-```
-
-Where `x.y.z` is the version just released and `a.b.c` is the previous version.
-
-Create a PR against the main branch with the changes.
-
 ## Credentials
 
 The following credentials are required for building or publishing (and automatically set in Github Actions):

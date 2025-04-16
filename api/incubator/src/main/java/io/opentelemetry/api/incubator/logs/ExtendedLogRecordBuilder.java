@@ -15,6 +15,7 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 /** Extended {@link LogRecordBuilder} with experimental APIs. */
 public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
@@ -119,7 +120,7 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
    * attribute APIs.
    */
   @Override
-  <T> ExtendedLogRecordBuilder setAttribute(AttributeKey<T> key, T value);
+  <T> ExtendedLogRecordBuilder setAttribute(AttributeKey<T> key, @Nullable T value);
 
   /**
    * Set an attribute.
