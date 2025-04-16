@@ -10,6 +10,7 @@ import io.opentelemetry.api.common.Value;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 class DefaultLogger implements Logger {
 
@@ -77,7 +78,7 @@ class DefaultLogger implements Logger {
     }
 
     @Override
-    public <T> LogRecordBuilder setAttribute(AttributeKey<T> key, T value) {
+    public <T> LogRecordBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
       return this;
     }
 

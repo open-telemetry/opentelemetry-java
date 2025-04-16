@@ -118,7 +118,7 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
   }
 
   @Override
-  public <T> ExtendedSdkLogRecordBuilder setAttribute(AttributeKey<T> key, T value) {
+  public <T> ExtendedSdkLogRecordBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
