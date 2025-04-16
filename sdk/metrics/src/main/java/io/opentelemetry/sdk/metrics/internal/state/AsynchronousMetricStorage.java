@@ -225,7 +225,8 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
                   AsynchronousMetricStorage.this.startEpochNanos,
                   AsynchronousMetricStorage.this.epochNanos,
                   attributes,
-                  /* reset= */ true);
+                  // No need to reset, aggregatorHandles is going to be cleared anyways
+                  /* reset= */ false);
           currentPoints.put(attributes, value);
         });
 
@@ -257,6 +258,8 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
       Map<Attributes, T> tmp = lastPoints;
       lastPoints = reusablePointsMap;
       reusablePointsMap = tmp;
+    } else {
+      lastPoints = currentPoints;
     }
 
     return deltaPoints;
@@ -271,6 +274,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
                   AsynchronousMetricStorage.this.startEpochNanos,
                   AsynchronousMetricStorage.this.epochNanos,
                   attributes,
+                  // No need to reset, aggregatorHandles is going to be cleared anyways
                   /* reset= */ false);
           currentPoints.add(value);
         });
