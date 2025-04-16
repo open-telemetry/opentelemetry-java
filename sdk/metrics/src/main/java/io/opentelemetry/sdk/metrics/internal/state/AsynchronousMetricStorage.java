@@ -168,16 +168,6 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
       return MetricStorage.CARDINALITY_OVERFLOW;
     }
 
-    if (aggregatorHandles.containsKey(
-        attributes)) { // Check there is not already a recording for the attributes
-      throttlingLogger.log(
-          Level.WARNING,
-          "Instrument "
-              + metricDescriptor.getSourceInstrument().getName()
-              + " has recorded multiple values for the same attributes: "
-              + attributes);
-    }
-
     return attributes;
   }
 
