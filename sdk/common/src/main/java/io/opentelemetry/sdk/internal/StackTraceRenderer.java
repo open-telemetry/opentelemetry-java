@@ -13,7 +13,7 @@ import java.util.Set;
 /**
  * An alternative to exception stacktrace renderer that replicates the behavior of {@link
  * Throwable#printStackTrace(PrintStream)}, but which is aware of a maximum stacktrace length limit,
- * and exits early when the lenght limit has been exceeded to avoid unnecessary computation.
+ * and exits early when the length limit has been exceeded to avoid unnecessary computation.
  *
  * <p>Instances should only be used once.
  */
