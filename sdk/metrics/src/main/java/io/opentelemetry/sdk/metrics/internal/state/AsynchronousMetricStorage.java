@@ -69,7 +69,10 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
 
   // Only populated if memoryMode == REUSABLE_DATA
   private final ObjectPool<T> reusablePointsPool;
-  private final List<T> reusableDeltaPoints = new ArrayList<>();
+  private final List<T> reusablePointsList = new ArrayList<>();
+  // If aggregationTemporality == DELTA, this reference and lastPoints will be swapped at every
+  // collection
+  private Map<Attributes, T> reusablePointsMap = new PooledHashMap<>();
 
   // Time information relative to recording of data in aggregatorHandles, set while calling
   // callbacks
@@ -187,26 +190,20 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
       InstrumentationScopeInfo instrumentationScopeInfo,
       long startEpochNanos,
       long epochNanos) {
-    boolean reset = aggregationTemporality == AggregationTemporality.DELTA;
-
     if (memoryMode == REUSABLE_DATA) {
       // Collect can not run concurrently for same reader, hence we safely assume
       // the previous collect result has been used and done with
-      reusableDeltaPoints.forEach(reusablePointsPool::returnObject);
-      reusableDeltaPoints.clear();
+      reusablePointsList.forEach(reusablePointsPool::returnObject);
+      reusablePointsList.clear();
+
+      reusablePointsMap.forEach((key, value) -> reusablePointsPool.returnObject(value));
+      reusablePointsMap.clear();
     }
 
-    Map<Attributes, T> currentPoints = new HashMap<>();
-    aggregatorHandles.forEach(
-        (attributes, handle) -> {
-          T value =
-              handle.aggregateThenMaybeReset(
-                  AsynchronousMetricStorage.this.startEpochNanos,
-                  AsynchronousMetricStorage.this.epochNanos,
-                  attributes,
-                  reset);
-          currentPoints.put(attributes, value);
-        });
+    Collection<T> result =
+        aggregationTemporality == AggregationTemporality.DELTA
+            ? collectWithDeltaAggregationTemporality()
+            : collectWithCumulativeAggregationTemporality();
 
     if (memoryMode == REUSABLE_DATA) {
       aggregatorHandles.clear();
@@ -214,43 +211,70 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
       aggregatorHandles = new HashMap<>();
     }
 
-    Collection<T> result;
-    if (aggregationTemporality == AggregationTemporality.DELTA) {
-      result = memoryMode == REUSABLE_DATA ? reusableDeltaPoints : new ArrayList<>();
-      currentPoints.forEach(
-          (attributes, currentPoint) -> {
-            T lastPoint = lastPoints.get(attributes);
-
-            T deltaPoint;
-            if (lastPoint == null) {
-              deltaPoint = currentPoint;
-            } else {
-              if (memoryMode == REUSABLE_DATA) {
-                aggregator.diffInPlace(lastPoint, currentPoint);
-                deltaPoint = lastPoint;
-
-                // Remaining last points are returned to reusablePointsPool, but
-                // this reusable point is still used, so don't return it to pool yet
-                lastPoints.remove(attributes);
-              } else {
-                deltaPoint = aggregator.diff(lastPoint, currentPoint);
-              }
-            }
-
-            result.add(deltaPoint);
-          });
-
-      if (memoryMode == REUSABLE_DATA) {
-        lastPoints.forEach((attributes, value) -> reusablePointsPool.returnObject(value));
-        lastPoints.clear();
-      }
-    } else { /* CUMULATIVE */
-      result = currentPoints.values();
-    }
-    this.lastPoints = currentPoints;
-
     return aggregator.toMetricData(
         resource, instrumentationScopeInfo, metricDescriptor, result, aggregationTemporality);
+  }
+
+  private Collection<T> collectWithDeltaAggregationTemporality() {
+    Map<Attributes, T> currentPoints =
+        memoryMode == REUSABLE_DATA ? reusablePointsMap : new HashMap<>();
+    aggregatorHandles.forEach(
+        (attributes, handle) -> {
+          T value =
+              handle.aggregateThenMaybeReset(
+                  AsynchronousMetricStorage.this.startEpochNanos,
+                  AsynchronousMetricStorage.this.epochNanos,
+                  attributes,
+                  /* reset= */ true);
+          currentPoints.put(attributes, value);
+        });
+
+    List<T> deltaPoints = memoryMode == REUSABLE_DATA ? reusablePointsList : new ArrayList<>();
+    currentPoints.forEach(
+        (attributes, currentPoint) -> {
+          T lastPoint = lastPoints.get(attributes);
+
+          T deltaPoint;
+          if (lastPoint == null) {
+            deltaPoint = currentPoint;
+          } else {
+            if (memoryMode == REUSABLE_DATA) {
+              aggregator.diffInPlace(lastPoint, currentPoint);
+              deltaPoint = lastPoint;
+
+              // Remaining last points are returned to reusablePointsPool, but
+              // this reusable point is still used, so don't return it to pool yet
+              lastPoints.remove(attributes);
+            } else {
+              deltaPoint = aggregator.diff(lastPoint, currentPoint);
+            }
+          }
+
+          deltaPoints.add(deltaPoint);
+        });
+
+    if (memoryMode == REUSABLE_DATA) {
+      Map<Attributes, T> tmp = lastPoints;
+      lastPoints = reusablePointsMap;
+      reusablePointsMap = tmp;
+    }
+
+    return deltaPoints;
+  }
+
+  private Collection<T> collectWithCumulativeAggregationTemporality() {
+    List<T> currentPoints = memoryMode == REUSABLE_DATA ? reusablePointsList : new ArrayList<>();
+    aggregatorHandles.forEach(
+        (attributes, handle) -> {
+          T value =
+              handle.aggregateThenMaybeReset(
+                  AsynchronousMetricStorage.this.startEpochNanos,
+                  AsynchronousMetricStorage.this.epochNanos,
+                  attributes,
+                  /* reset= */ false);
+          currentPoints.add(value);
+        });
+    return currentPoints;
   }
 
   @Override
