@@ -1812,7 +1812,7 @@ This release is a notable release for metrics:
 * Autoconfigure performs percent decoding on `otel.resource.attributes` values.
   [(#4653)](https://github.com/open-telemetry/opentelemetry-java/issues/4653)
 * Unify compression configuration for exporters including
-  [(#4775)](https://github.com/open-telemetry/opentelemetry-java/issues/4775):
+  [(#4775)](https://github.com/open-telemetry/opentelemetry-java/pull/4775):
   * Fix handling of `none` in OTLP exporters.
   * Add `JaegerGrpcSpanExporterBuilder#setCompression(String)`.
   * Add `ZipkinSpanExporterBuilder#setCompression(String)`.
