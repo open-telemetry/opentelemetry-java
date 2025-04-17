@@ -104,10 +104,10 @@ public final class ZipkinSpanExporter implements SpanExporter {
         () -> {
           try {
             sender.send(encodedSpans);
-            metricRecording.finishSuccessful();
+            metricRecording.finishSuccessful(Attributes.empty());
             resultCode.succeed();
           } catch (IOException | RuntimeException e) {
-            metricRecording.finishFailed(e);
+            metricRecording.finishFailed(e, Attributes.empty());
             logger.log(Level.WARNING, "Failed to export spans", e);
             resultCode.fail();
           }

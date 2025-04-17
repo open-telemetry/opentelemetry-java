@@ -189,13 +189,21 @@ class GrpcExporterTest {
                       .hasHistogramSatisfying(
                           ma ->
                               ma.hasPointsSatisfying(
-                                  pa -> pa.hasAttributes(expectedAttributes).hasBucketCounts(1),
+                                  pa ->
+                                      pa.hasAttributes(
+                                              expectedAttributes.toBuilder()
+                                                  .put(SemConvAttributes.RPC_GRPC_STATUS_CODE, 0)
+                                                  .build())
+                                          .hasBucketCounts(1),
                                   pa ->
                                       pa.hasAttributes(
                                               expectedAttributes.toBuilder()
                                                   .put(
                                                       SemConvAttributes.ERROR_TYPE,
                                                       "" + GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE)
+                                                  .put(
+                                                      SemConvAttributes.RPC_GRPC_STATUS_CODE,
+                                                      GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE)
                                                   .build())
                                           .hasBucketCounts(1),
                                   pa ->

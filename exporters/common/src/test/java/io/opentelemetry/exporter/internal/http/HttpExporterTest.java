@@ -179,11 +179,21 @@ class HttpExporterTest {
                       .hasHistogramSatisfying(
                           ma ->
                               ma.hasPointsSatisfying(
-                                  pa -> pa.hasAttributes(expectedAttributes).hasBucketCounts(1),
+                                  pa ->
+                                      pa.hasAttributes(
+                                              expectedAttributes.toBuilder()
+                                                  .put(
+                                                      SemConvAttributes.HTTP_RESPONSE_STATUS_CODE,
+                                                      200)
+                                                  .build())
+                                          .hasBucketCounts(1),
                                   pa ->
                                       pa.hasAttributes(
                                               expectedAttributes.toBuilder()
                                                   .put(SemConvAttributes.ERROR_TYPE, "404")
+                                                  .put(
+                                                      SemConvAttributes.HTTP_RESPONSE_STATUS_CODE,
+                                                      404)
                                                   .build())
                                           .hasBucketCounts(1),
                                   pa ->

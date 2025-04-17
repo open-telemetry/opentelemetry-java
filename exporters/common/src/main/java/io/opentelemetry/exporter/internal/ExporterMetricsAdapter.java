@@ -88,32 +88,23 @@ public class ExporterMetricsAdapter {
       }
     }
 
-    public void finishSuccessful() {
+    public void finishSuccessful(Attributes operationAttributes) {
       if (delegate == null) {
         finishLegacy(0);
       } else {
-        delegate.finishSuccessful();
+        delegate.finishSuccessful(operationAttributes);
       }
     }
 
-    public void finishPartialSuccess(int rejectedCount) {
-      if (delegate == null) {
-        finishLegacy(rejectedCount);
-      } else {
-        delegate.finishPartialSuccess(rejectedCount);
-      }
+    public void finishFailed(Throwable e, Attributes operationAttributes) {
+      finishFailed(e.getClass().getName(), operationAttributes);
     }
 
-    public void finishFailed(Throwable e) {
-      // TODO: check in java instrumentation if this is correct
-      finishFailed(e.getClass().getName());
-    }
-
-    public void finishFailed(String errorReason) {
+    public void finishFailed(String errorReason, Attributes requestAttributes) {
       if (delegate == null) {
         finishLegacy(itemCount);
       } else {
-        delegate.finishFailed(errorReason);
+        delegate.finishFailed(errorReason, requestAttributes);
       }
     }
 

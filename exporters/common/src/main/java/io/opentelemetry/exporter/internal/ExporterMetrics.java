@@ -189,22 +189,29 @@ public class ExporterMetrics {
     if (!enabled) {
       return;
     }
-    exported().add(count, getAttributesWithPotentialError(errorType));
+    exported().add(count, getAttributesWithPotentialError(errorType, Attributes.empty()));
   }
 
-  private Attributes getAttributesWithPotentialError(@Nullable String errorType) {
+  private Attributes getAttributesWithPotentialError(
+      @Nullable String errorType, Attributes additionalAttributes) {
     Attributes attributes = allAttributes();
-    if (errorType != null && !errorType.isEmpty()) {
-      attributes = attributes.toBuilder().put(SemConvAttributes.ERROR_TYPE, errorType).build();
+    boolean errorPresent = errorType != null && !errorType.isEmpty();
+    if (errorPresent || !additionalAttributes.isEmpty()) {
+      AttributesBuilder builder = attributes.toBuilder();
+      if (errorPresent) {
+        builder.put(SemConvAttributes.ERROR_TYPE, errorType);
+      }
+      attributes = builder.putAll(additionalAttributes).build();
     }
     return attributes;
   }
 
-  private void recordDuration(double seconds, @Nullable String errorType) {
+  private void recordDuration(
+      double seconds, @Nullable String errorType, Attributes requestAttributes) {
     if (!enabled) {
       return;
     }
-    duration().record(seconds, getAttributesWithPotentialError(errorType));
+    duration().record(seconds, getAttributesWithPotentialError(errorType, requestAttributes));
   }
 
   /**
@@ -225,19 +232,15 @@ public class ExporterMetrics {
       incrementInflight(itemCount);
     }
 
-    public void finishSuccessful() {
-      finish(0, null);
+    public void finishSuccessful(Attributes requestAttributes) {
+      finish(0, null, requestAttributes);
     }
 
-    public void finishPartialSuccess(int rejectedCount) {
-      finish(rejectedCount, "rejected");
+    public void finishFailed(String errorReason, Attributes requestAttributes) {
+      finish(itemCount, errorReason, requestAttributes);
     }
 
-    public void finishFailed(String errorReason) {
-      finish(itemCount, errorReason);
-    }
-
-    private void finish(int failedCount, @Nullable String errorType) {
+    private void finish(int failedCount, @Nullable String errorType, Attributes requestAttributes) {
       if (alreadyEnded) {
         throw new IllegalStateException("Recording already ended");
       }
@@ -257,7 +260,7 @@ public class ExporterMetrics {
         incrementExported(successCount, null);
       }
       long durationNanos = CLOCK.nanoTime() - startNanoTime;
-      recordDuration(durationNanos / 1_000_000_000.0, errorType);
+      recordDuration(durationNanos / 1_000_000_000.0, errorType, requestAttributes);
     }
   }
 }
