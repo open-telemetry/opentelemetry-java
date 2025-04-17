@@ -1,22 +1,25 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.exporter.internal;
+
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.sdk.internal.SemConvAttributes;
 import org.junit.jupiter.api.Test;
-
-import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 public class ServerAttributesUtilTest {
 
   @Test
   public void invalidUrl() {
-    assertThat(ServerAttributesUtil.extractServerAttributes("^"))
-        .isEmpty();
+    assertThat(ServerAttributesUtil.extractServerAttributes("^")).isEmpty();
   }
 
   @Test
   public void emptyUrl() {
-    assertThat(ServerAttributesUtil.extractServerAttributes(""))
-        .isEmpty();
+    assertThat(ServerAttributesUtil.extractServerAttributes("")).isEmpty();
   }
 
   @Test

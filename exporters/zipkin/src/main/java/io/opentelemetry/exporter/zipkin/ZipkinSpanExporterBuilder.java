@@ -235,7 +235,12 @@ public final class ZipkinSpanExporterBuilder {
     OtelToZipkinSpanTransformer transformer =
         OtelToZipkinSpanTransformer.create(localIpAddressSupplier);
     return new ZipkinSpanExporter(
-        this, encoder, sender, meterProviderSupplier, healthMetricLevel, ServerAttributesUtil.extractServerAttributes(endpoint),
+        this,
+        encoder,
+        sender,
+        meterProviderSupplier,
+        healthMetricLevel,
+        ServerAttributesUtil.extractServerAttributes(endpoint),
         transformer);
   }
 }

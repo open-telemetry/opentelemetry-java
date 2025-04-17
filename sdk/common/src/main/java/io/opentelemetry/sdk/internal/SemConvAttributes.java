@@ -27,6 +27,7 @@ public class SemConvAttributes {
   // TODO: add semconv test
   public static final AttributeKey<String> ERROR_TYPE = AttributeKey.stringKey("error.type");
 
-  public static final AttributeKey<String> SERVER_ADDRESS = AttributeKey.stringKey("server.address");
+  public static final AttributeKey<String> SERVER_ADDRESS =
+      AttributeKey.stringKey("server.address");
   public static final AttributeKey<Long> SERVER_PORT = AttributeKey.longKey("server.port");
 }

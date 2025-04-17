@@ -219,25 +219,24 @@ class HttpExporterTest {
               Attributes.empty());
 
       doAnswer(
-          invoc -> {
-            Consumer<HttpSender.Response> onResponse = invoc.getArgument(2);
-            onResponse.accept(new FakeHttpResponse(200, "Ok"));
-            return null;
-          })
+              invoc -> {
+                Consumer<HttpSender.Response> onResponse = invoc.getArgument(2);
+                onResponse.accept(new FakeHttpResponse(200, "Ok"));
+                return null;
+              })
           .when(mockSender)
           .send(any(), anyInt(), any(), any());
       exporter.export(mockMarshaller, 42);
 
       doAnswer(
-          invoc -> {
-            Consumer<HttpSender.Response> onResponse = invoc.getArgument(2);
-            onResponse.accept(new FakeHttpResponse(404, "not Found"));
-            return null;
-          })
+              invoc -> {
+                Consumer<HttpSender.Response> onResponse = invoc.getArgument(2);
+                onResponse.accept(new FakeHttpResponse(404, "not Found"));
+                return null;
+              })
           .when(mockSender)
           .send(any(), anyInt(), any(), any());
       exporter.export(mockMarshaller, 42);
-
 
       assertThat(inMemoryMetrics.collectAllMetrics()).isEmpty();
     }

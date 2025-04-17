@@ -12,9 +12,6 @@ import static org.mockito.Mockito.doAnswer;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.internal.ExporterMetrics;
-import java.io.IOException;
-import java.net.URI;
-import java.util.function.Consumer;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.HealthMetricLevel;
 import io.opentelemetry.sdk.internal.ComponentId;
@@ -22,6 +19,9 @@ import io.opentelemetry.sdk.internal.SemConvAttributes;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
+import java.io.IOException;
+import java.net.URI;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -95,52 +95,52 @@ class GrpcExporterTest {
               HealthMetricLevel.ON,
               id,
               () -> meterProvider,
-              Attributes.builder().put("foo", "bar").build()
-          );
+              Attributes.builder().put("foo", "bar").build());
 
       doAnswer(
-          invoc -> {
-            Consumer<GrpcResponse> onResponse = invoc.getArgument(1);
+              invoc -> {
+                Consumer<GrpcResponse> onResponse = invoc.getArgument(1);
 
-            assertThat(inMemoryMetrics.collectAllMetrics())
-                .hasSize(1)
-                .anySatisfy(
-                    metric ->
-                        OpenTelemetryAssertions.assertThat(metric)
-                            .hasName(signalMetricPrefix + "inflight")
-                            .hasUnit(expectedUnit)
-                            .hasLongSumSatisfying(
-                                ma ->
-                                    ma.isNotMonotonic()
-                                        .hasPointsSatisfying(
-                                            pa ->
-                                                pa.hasAttributes(expectedAttributes)
-                                                    .hasValue(42))));
+                assertThat(inMemoryMetrics.collectAllMetrics())
+                    .hasSize(1)
+                    .anySatisfy(
+                        metric ->
+                            OpenTelemetryAssertions.assertThat(metric)
+                                .hasName(signalMetricPrefix + "inflight")
+                                .hasUnit(expectedUnit)
+                                .hasLongSumSatisfying(
+                                    ma ->
+                                        ma.isNotMonotonic()
+                                            .hasPointsSatisfying(
+                                                pa ->
+                                                    pa.hasAttributes(expectedAttributes)
+                                                        .hasValue(42))));
 
-            onResponse.accept(GrpcResponse.create(0, null));
-            return null;
-          })
+                onResponse.accept(GrpcResponse.create(0, null));
+                return null;
+              })
           .when(mockSender)
           .send(any(), any(), any());
 
       exporter.export(mockMarshaller, 42);
 
       doAnswer(
-          invoc -> {
-            Consumer<GrpcResponse> onResponse = invoc.getArgument(1);
-            onResponse.accept(GrpcResponse.create(GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE, null));
-            return null;
-          })
+              invoc -> {
+                Consumer<GrpcResponse> onResponse = invoc.getArgument(1);
+                onResponse.accept(
+                    GrpcResponse.create(GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE, null));
+                return null;
+              })
           .when(mockSender)
-          .send(any(),any(), any());
+          .send(any(), any(), any());
       exporter.export(mockMarshaller, 15);
 
       doAnswer(
-          invoc -> {
-            Consumer<Throwable> onError = invoc.getArgument(2);
-            onError.accept(new IOException("Computer says no"));
-            return null;
-          })
+              invoc -> {
+                Consumer<Throwable> onError = invoc.getArgument(2);
+                onError.accept(new IOException("Computer says no"));
+                return null;
+              })
           .when(mockSender)
           .send(any(), any(), any());
       exporter.export(mockMarshaller, 7);
@@ -168,7 +168,9 @@ class GrpcExporterTest {
                                   pa ->
                                       pa.hasAttributes(
                                               expectedAttributes.toBuilder()
-                                                  .put(SemConvAttributes.ERROR_TYPE, ""+GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE)
+                                                  .put(
+                                                      SemConvAttributes.ERROR_TYPE,
+                                                      "" + GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE)
                                                   .build())
                                           .hasValue(15),
                                   pa ->
@@ -191,7 +193,9 @@ class GrpcExporterTest {
                                   pa ->
                                       pa.hasAttributes(
                                               expectedAttributes.toBuilder()
-                                                  .put(SemConvAttributes.ERROR_TYPE, ""+GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE)
+                                                  .put(
+                                                      SemConvAttributes.ERROR_TYPE,
+                                                      "" + GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE)
                                                   .build())
                                           .hasBucketCounts(1),
                                   pa ->
@@ -224,25 +228,25 @@ class GrpcExporterTest {
               HealthMetricLevel.OFF,
               id,
               () -> meterProvider,
-              Attributes.empty()
-          );
+              Attributes.empty());
 
       doAnswer(
-          invoc -> {
-            Consumer<GrpcResponse> onResponse = invoc.getArgument(1);
-            onResponse.accept(GrpcResponse.create(0, null));
-            return null;
-          })
+              invoc -> {
+                Consumer<GrpcResponse> onResponse = invoc.getArgument(1);
+                onResponse.accept(GrpcResponse.create(0, null));
+                return null;
+              })
           .when(mockSender)
           .send(any(), any(), any());
       exporter.export(mockMarshaller, 42);
 
       doAnswer(
-          invoc -> {
-            Consumer<GrpcResponse> onResponse = invoc.getArgument(1);
-            onResponse.accept(GrpcResponse.create(GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE, null));
-            return null;
-          })
+              invoc -> {
+                Consumer<GrpcResponse> onResponse = invoc.getArgument(1);
+                onResponse.accept(
+                    GrpcResponse.create(GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE, null));
+                return null;
+              })
           .when(mockSender)
           .send(any(), any(), any());
       exporter.export(mockMarshaller, 42);
