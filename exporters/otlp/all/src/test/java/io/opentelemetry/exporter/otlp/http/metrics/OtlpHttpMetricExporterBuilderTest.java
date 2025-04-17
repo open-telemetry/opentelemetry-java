@@ -13,10 +13,10 @@ import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class OtlpHttpMetricExporterBuilderTest {
+class OtlpHttpMetricExporterBuilderTest {
 
   @Test
-  public void verifyToBuilderPreservesSettings() {
+  void verifyToBuilderPreservesSettings() {
     AggregationTemporalitySelector temporalitySelector =
         Mockito.mock(AggregationTemporalitySelector.class);
     DefaultAggregationSelector defaultAggregationSelector =
@@ -34,5 +34,8 @@ public class OtlpHttpMetricExporterBuilderTest {
     assertThat(copy.getMemoryMode()).isEqualTo(MemoryMode.IMMUTABLE_DATA);
     assertThat(copy.aggregationTemporalitySelector).isSameAs(temporalitySelector);
     assertThat(copy.defaultAggregationSelector).isSameAs(defaultAggregationSelector);
+
+    original.close();
+    copy.close();
   }
 }
