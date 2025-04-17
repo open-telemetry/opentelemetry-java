@@ -14,10 +14,10 @@ val DEPENDENCY_BOMS = listOf(
   // by FOSSA for containing EPL-licensed)
 
   "com.fasterxml.jackson:jackson-bom:2.18.3",
-  "com.google.guava:guava-bom:33.4.6-jre",
+  "com.google.guava:guava-bom:33.4.8-jre",
   "com.google.protobuf:protobuf-bom:4.30.2",
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
-  "com.squareup.okio:okio-bom:3.10.2", // applies to transitive dependencies of okhttp
+  "com.squareup.okio:okio-bom:3.11.0", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.71.0",
   "io.netty:netty-bom:4.2.0.Final",
   "io.zipkin.brave:brave-bom:6.1.0",
@@ -36,8 +36,8 @@ val slf4jVersion = "2.0.17"
 val opencensusVersion = "0.31.1"
 val prometheusClientVersion = "0.16.0"
 val prometheusServerVersion = "1.3.6"
-val armeriaVersion = "1.32.3"
-val junitVersion = "5.12.1"
+val armeriaVersion = "1.32.5"
+val junitVersion = "5.12.2"
 
 val DEPENDENCIES = listOf(
   "org.junit.jupiter:junit-jupiter-api:${junitVersion}",
@@ -83,7 +83,7 @@ val DEPENDENCIES = listOf(
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.7",
   "io.github.netmikey.logunit:logunit-jul:2.0.0",
   "io.jaegertracing:jaeger-client:1.8.1",
-  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.45.0-alpha",
+  "io.opentelemetry.contrib:opentelemetry-aws-xray-propagator:1.46.0-alpha",
   "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.32.0-alpha",
   "io.opentelemetry.proto:opentelemetry-proto:1.5.0-alpha",
   "io.opentracing:opentracing-api:0.33.0",

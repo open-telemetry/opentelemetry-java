@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import org.snakeyaml.engine.v2.api.Load;
 import org.snakeyaml.engine.v2.api.LoadSettings;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
@@ -308,6 +309,10 @@ public final class DeclarativeConfiguration {
       return mapping;
     }
 
+    private static final String ESCAPE_SEQUENCE = "$$";
+    private static final int ESCAPE_SEQUENCE_LENGTH = ESCAPE_SEQUENCE.length();
+    private static final char ESCAPE_SEQUENCE_REPLACEMENT = '$';
+
     private Object constructValueObject(Node node) {
       Object value = constructObject(node);
       if (!(node instanceof ScalarNode)) {
@@ -318,14 +323,53 @@ public final class DeclarativeConfiguration {
       }
 
       String val = (String) value;
+      ScalarStyle scalarStyle = ((ScalarNode) node).getScalarStyle();
+
+      // Iterate through val left to right, search for escape sequence "$$"
+      // For the substring of val between the last escape sequence and the next found, perform
+      // environment variable substitution
+      // Add the escape replacement character '$' in place of each escape sequence found
+
+      int lastEscapeIndexEnd = 0;
+      StringBuilder newVal = null;
+      while (true) {
+        int escapeIndex = val.indexOf(ESCAPE_SEQUENCE, lastEscapeIndexEnd);
+        int substitutionEndIndex = escapeIndex == -1 ? val.length() : escapeIndex;
+        newVal = envVarSubstitution(newVal, val, lastEscapeIndexEnd, substitutionEndIndex);
+        if (escapeIndex == -1) {
+          break;
+        } else {
+          newVal.append(ESCAPE_SEQUENCE_REPLACEMENT);
+        }
+        lastEscapeIndexEnd = escapeIndex + ESCAPE_SEQUENCE_LENGTH;
+        if (lastEscapeIndexEnd >= val.length()) {
+          break;
+        }
+      }
+
+      // If the value was double quoted, retain the double quotes so we don't change a value
+      // intended to be a string to a different type after environment variable substitution
+      if (scalarStyle == ScalarStyle.DOUBLE_QUOTED) {
+        newVal.insert(0, "\"");
+        newVal.append("\"");
+      }
+      return load.loadFromString(newVal.toString());
+    }
+
+    private StringBuilder envVarSubstitution(
+        @Nullable StringBuilder newVal, String source, int startIndex, int endIndex) {
+      String val = source.substring(startIndex, endIndex);
       Matcher matcher = ENV_VARIABLE_REFERENCE.matcher(val);
+
       if (!matcher.find()) {
-        return value;
+        return newVal == null ? new StringBuilder(val) : newVal.append(val);
+      }
+
+      if (newVal == null) {
+        newVal = new StringBuilder();
       }
 
       int offset = 0;
-      StringBuilder newVal = new StringBuilder();
-      ScalarStyle scalarStyle = ((ScalarNode) node).getScalarStyle();
       do {
         MatchResult matchResult = matcher.toMatchResult();
         String envVarKey = matcher.group(1);
@@ -340,13 +384,8 @@ public final class DeclarativeConfiguration {
       if (offset != val.length()) {
         newVal.append(val, offset, val.length());
       }
-      // If the value was double quoted, retain the double quotes so we don't change a value
-      // intended to be a string to a different type after environment variable substitution
-      if (scalarStyle == ScalarStyle.DOUBLE_QUOTED) {
-        newVal.insert(0, "\"");
-        newVal.append("\"");
-      }
-      return load.loadFromString(newVal.toString());
+
+      return newVal;
     }
   }
 }

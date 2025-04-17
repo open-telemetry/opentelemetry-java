@@ -1,5 +1,8 @@
+# see https://github.com/cncf/clomonitor/blob/main/docs/checks.md#exemptions
 exemptions:
   - check: artifacthub_badge
     reason: "Artifact Hub doesn't support Java packages"
   - check: signed_releases
     reason: "Maven central releases are signed and there are no GitHub release artifacts"
+  - check: openssf_badge
+    reason: "ETOOMANYBADGES, but the work has been done: https://www.bestpractices.dev/projects/9991"

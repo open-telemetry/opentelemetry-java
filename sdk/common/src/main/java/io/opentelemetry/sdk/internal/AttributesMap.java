@@ -66,7 +66,7 @@ public final class AttributesMap extends HashMap<AttributeKey<?>, Object> implem
     return super.put(key, AttributeUtil.applyAttributeLengthLimit(value, lengthLimit));
   }
 
-  /** Get the total number of attributes added, including those dropped for capcity limits. */
+  /** Get the total number of attributes added, including those dropped for capacity limits. */
   public int getTotalAddedValues() {
     return totalAddedValues;
   }
