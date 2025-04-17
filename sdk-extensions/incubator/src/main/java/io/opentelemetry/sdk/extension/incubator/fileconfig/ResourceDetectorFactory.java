@@ -42,10 +42,9 @@ final class ResourceDetectorFactory
               .orElseThrow(
                   () ->
                       new IllegalStateException("Missing detector. This is a programming error."));
-      Resource resource =
-          FileConfigUtil.loadComponent(
-              spiHelper, Resource.class, detectorKeyValue.getKey(), detectorKeyValue.getValue());
-      return resource;
+
+      return FileConfigUtil.loadComponent(
+          spiHelper, Resource.class, detectorKeyValue.getKey(), detectorKeyValue.getValue());
     } else {
       throw new DeclarativeConfigException("resource detector must be set");
     }

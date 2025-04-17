@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import static io.opentelemetry.sdk.internal.GlobUtil.toGlobPatternPredicate;
+import static io.opentelemetry.sdk.internal.GlobUtil.createGlobPatternPredicate;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.ResourceConfiguration;
@@ -109,7 +109,7 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
   private static Predicate<String> includedPredicate(List<String> included) {
     Predicate<String> result = attributeKey -> false;
     for (String include : included) {
-      result = result.or(toGlobPatternPredicate(include));
+      result = result.or(createGlobPatternPredicate(include));
     }
     return result;
   }
@@ -121,7 +121,7 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
   private static Predicate<String> excludedPredicate(List<String> excluded) {
     Predicate<String> result = attributeKey -> true;
     for (String exclude : excluded) {
-      result = result.and(toGlobPatternPredicate(exclude).negate());
+      result = result.and(createGlobPatternPredicate(exclude).negate());
     }
     return result;
   }

@@ -74,7 +74,7 @@ public final class ScopeConfiguratorBuilder<T> {
    * @see #addCondition(Predicate, Object)
    */
   public static Predicate<InstrumentationScopeInfo> nameMatchesGlob(String globPattern) {
-    return new ScopeNameMatcher(GlobUtil.toGlobPatternPredicate(globPattern));
+    return new ScopeNameMatcher(GlobUtil.createGlobPatternPredicate(globPattern));
   }
 
   /**

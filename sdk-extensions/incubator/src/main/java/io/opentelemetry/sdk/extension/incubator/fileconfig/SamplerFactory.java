@@ -9,7 +9,6 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.JaegerRemoteSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBasedSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceIdRatioBasedSamplerModel;
@@ -73,10 +72,7 @@ final class SamplerFactory implements Factory<SamplerModel, Sampler> {
       return builder.build();
     }
 
-    JaegerRemoteSamplerModel jaegerRemoteModel = model.getJaegerRemote();
-    if (jaegerRemoteModel != null) {
-      model.getAdditionalProperties().put("jaeger_remote", jaegerRemoteModel);
-    }
+    model.getAdditionalProperties().compute("jaeger_remote", (v1, v2) -> model.getJaegerRemote());
 
     if (!model.getAdditionalProperties().isEmpty()) {
       Map<String, Object> additionalProperties = model.getAdditionalProperties();

@@ -9,11 +9,7 @@ import static java.util.stream.Collectors.joining;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileExporterModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpGrpcExporterModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ZipkinSpanExporterModel;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.util.List;
@@ -32,27 +28,14 @@ final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExport
   @Override
   public SpanExporter create(
       SpanExporterModel model, SpiHelper spiHelper, List<Closeable> closeables) {
-    OtlpHttpExporterModel otlpHttpModel = model.getOtlpHttp();
-    if (otlpHttpModel != null) {
-      model.getAdditionalProperties().put("otlp_http", otlpHttpModel);
-    }
-    OtlpGrpcExporterModel otlpGrpcModel = model.getOtlpGrpc();
-    if (otlpGrpcModel != null) {
-      model.getAdditionalProperties().put("otlp_grpc", otlpGrpcModel);
-    }
-    ExperimentalOtlpFileExporterModel otlpFileExporterModel = model.getOtlpFileDevelopment();
-    if (otlpFileExporterModel != null) {
-      model.getAdditionalProperties().put("otlp_file/development", otlpFileExporterModel);
-    }
 
-    if (model.getConsole() != null) {
-      model.getAdditionalProperties().put("console", model.getConsole());
-    }
-
-    ZipkinSpanExporterModel zipkinModel = model.getZipkin();
-    if (zipkinModel != null) {
-      model.getAdditionalProperties().put("zipkin", model.getZipkin());
-    }
+    model.getAdditionalProperties().compute("otlp_http", (v1, v2) -> model.getOtlpHttp());
+    model.getAdditionalProperties().compute("otlp_grpc", (v1, v2) -> model.getOtlpGrpc());
+    model
+        .getAdditionalProperties()
+        .compute("otlp_file/development", (v1, v2) -> model.getOtlpFileDevelopment());
+    model.getAdditionalProperties().compute("console", (v1, v2) -> model.getConsole());
+    model.getAdditionalProperties().compute("zipkin", (v1, v2) -> model.getZipkin());
 
     if (!model.getAdditionalProperties().isEmpty()) {
       Map<String, Object> additionalProperties = model.getAdditionalProperties();

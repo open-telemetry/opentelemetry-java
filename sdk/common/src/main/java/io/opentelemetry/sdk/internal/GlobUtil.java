@@ -30,8 +30,18 @@ public final class GlobUtil {
    *   <li>{@code ?} matches exactly one instance of any character
    * </ul>
    */
-  public static Predicate<String> toGlobPatternPredicate(String globPattern) {
-    return new GlobPatternPredicate(globPattern);
+  public static Predicate<String> createGlobPatternPredicate(String globPattern) {
+    // If globPattern contains '*' or '?', convert it to a regex and return corresponding
+    // predicate
+    Pattern pattern = null;
+    for (int i = 0; i < globPattern.length(); i++) {
+      char c = globPattern.charAt(i);
+      if (c == '*' || c == '?') {
+        pattern = toRegexPattern(globPattern);
+        break;
+      }
+    }
+    return new GlobPatternPredicate(globPattern, pattern);
   }
 
   /**
@@ -66,22 +76,16 @@ public final class GlobUtil {
     return Pattern.compile(patternBuilder.toString());
   }
 
+  /**
+   * A predicate which evaluates if a test string matches the {@link #globPattern}, and which has a
+   * valid {@link #toString()} implementation.
+   */
   private static class GlobPatternPredicate implements Predicate<String> {
     private final String globPattern;
     @Nullable private final Pattern pattern;
 
-    private GlobPatternPredicate(String globPattern) {
+    private GlobPatternPredicate(String globPattern, @Nullable Pattern pattern) {
       this.globPattern = globPattern;
-      // If globPattern contains '*' or '?', convert it to a regex and return corresponding
-      // predicate
-      Pattern pattern = null;
-      for (int i = 0; i < globPattern.length(); i++) {
-        char c = globPattern.charAt(i);
-        if (c == '*' || c == '?') {
-          pattern = toRegexPattern(globPattern);
-          break;
-        }
-      }
       this.pattern = pattern;
     }
 
