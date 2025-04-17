@@ -32,7 +32,7 @@ public class ExporterMetrics {
    */
   public enum Signal {
     SPAN("span", "span"),
-    METRIC("metric", "data_point"),
+    METRIC("metric_data_point", "data_point"),
     LOG("log", "log_record");
 
     private final String namespace;

@@ -64,7 +64,7 @@ class GrpcExporterTest {
         expectedUnit = "{log_record}";
         break;
       case METRIC:
-        signalMetricPrefix = "otel.sdk.exporter.metric.";
+        signalMetricPrefix = "otel.sdk.exporter.metric_data_point.";
         expectedUnit = "{data_point}";
         break;
       default:
