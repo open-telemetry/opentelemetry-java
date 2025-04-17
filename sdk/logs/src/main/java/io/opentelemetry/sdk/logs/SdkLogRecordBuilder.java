@@ -10,6 +10,8 @@ import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
@@ -118,20 +120,24 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
         this.observedTimestampEpochNanos == 0
             ? this.loggerSharedState.getClock().now()
             : this.observedTimestampEpochNanos;
-    loggerSharedState
-        .getLogRecordProcessor()
-        .onEmit(
-            context,
-            SdkReadWriteLogRecord.create(
-                loggerSharedState.getLogLimits(),
-                loggerSharedState.getResource(),
-                instrumentationScopeInfo,
-                timestampEpochNanos,
-                observedTimestampEpochNanos,
-                Span.fromContext(context).getSpanContext(),
-                severity,
-                severityText,
-                body,
-                attributes));
+    SpanContext spanContext = Span.fromContext(context).getSpanContext();
+    TraceFlags traceFlags = spanContext.getTraceFlags();
+    if (!traceFlags.isSampled()) {
+      loggerSharedState
+          .getLogRecordProcessor()
+          .onEmit(
+              context,
+              SdkReadWriteLogRecord.create(
+                  loggerSharedState.getLogLimits(),
+                  loggerSharedState.getResource(),
+                  instrumentationScopeInfo,
+                  timestampEpochNanos,
+                  observedTimestampEpochNanos,
+                  spanContext,
+                  severity,
+                  severityText,
+                  body,
+                  attributes));
+    }
   }
 }
