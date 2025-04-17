@@ -1,4 +1,14 @@
 Comparing source compatibility of opentelemetry-sdk-testing-1.50.0-SNAPSHOT.jar against opentelemetry-sdk-testing-1.49.0.jar
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasEventName(java.lang.String)
+**** MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.testing.logs.TestLogRecordData  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getEventName()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+**** MODIFIED CLASS: PUBLIC ABSTRACT STATIC io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder setEventName(java.lang.String)
 +++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.metrics.TestMetricData  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
