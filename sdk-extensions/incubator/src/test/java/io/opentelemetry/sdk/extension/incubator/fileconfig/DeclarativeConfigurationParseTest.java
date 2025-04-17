@@ -878,8 +878,10 @@ class DeclarativeConfigurationParseTest {
   @MethodSource("envVarSubstitutionArgs")
   void envSubstituteAndLoadYaml(String rawYaml, Object expectedYamlResult) {
     Map<String, String> environmentVariables = new HashMap<>();
+    environmentVariables.put("FOO", "BAR");
     environmentVariables.put("STR_1", "value1");
     environmentVariables.put("STR_2", "value2");
+    environmentVariables.put("VALUE_WITH_ESCAPE", "value$$");
     environmentVariables.put("EMPTY_STR", "");
     environmentVariables.put("BOOL", "true");
     environmentVariables.put("INT", "1");
@@ -942,7 +944,30 @@ class DeclarativeConfigurationParseTest {
         Arguments.of("key1: \"${EMPTY_STR}\"\n", mapOf(entry("key1", ""))),
         Arguments.of("key1: \"${BOOL}\"\n", mapOf(entry("key1", "true"))),
         Arguments.of("key1: \"${INT}\"\n", mapOf(entry("key1", "1"))),
-        Arguments.of("key1: \"${FLOAT}\"\n", mapOf(entry("key1", "1.1"))));
+        Arguments.of("key1: \"${FLOAT}\"\n", mapOf(entry("key1", "1.1"))),
+        // Escaped
+        Arguments.of("key1: ${FOO}\n", mapOf(entry("key1", "BAR"))),
+        Arguments.of("key1: $${FOO}\n", mapOf(entry("key1", "${FOO}"))),
+        Arguments.of("key1: $$${FOO}\n", mapOf(entry("key1", "$BAR"))),
+        Arguments.of("key1: $$$${FOO}\n", mapOf(entry("key1", "$${FOO}"))),
+        Arguments.of("key1: a $$ b\n", mapOf(entry("key1", "a $ b"))),
+        Arguments.of("key1: $$ b\n", mapOf(entry("key1", "$ b"))),
+        Arguments.of("key1: a $$\n", mapOf(entry("key1", "a $"))),
+        Arguments.of("key1: a $ b\n", mapOf(entry("key1", "a $ b"))),
+        Arguments.of("key1: $${STR_1}\n", mapOf(entry("key1", "${STR_1}"))),
+        Arguments.of("key1: $${STR_1}$${STR_1}\n", mapOf(entry("key1", "${STR_1}${STR_1}"))),
+        Arguments.of("key1: $${STR_1}$$\n", mapOf(entry("key1", "${STR_1}$"))),
+        Arguments.of("key1: $$${STR_1}\n", mapOf(entry("key1", "$value1"))),
+        Arguments.of("key1: \"$${STR_1}\"\n", mapOf(entry("key1", "${STR_1}"))),
+        Arguments.of("key1: $${STR_1} ${STR_2}\n", mapOf(entry("key1", "${STR_1} value2"))),
+        Arguments.of("key1: $${STR_1} $${STR_2}\n", mapOf(entry("key1", "${STR_1} ${STR_2}"))),
+        Arguments.of("key1: $${NOT_SET:-value1}\n", mapOf(entry("key1", "${NOT_SET:-value1}"))),
+        Arguments.of("key1: $${STR_1:-fallback}\n", mapOf(entry("key1", "${STR_1:-fallback}"))),
+        Arguments.of("key1: $${STR_1:-${STR_1}}\n", mapOf(entry("key1", "${STR_1:-value1}"))),
+        Arguments.of("key1: ${NOT_SET:-${FALLBACK}}\n", mapOf(entry("key1", "${FALLBACK}"))),
+        Arguments.of(
+            "key1: ${NOT_SET:-$${FALLBACK}}\n", mapOf(entry("key1", "${NOT_SET:-${FALLBACK}}"))),
+        Arguments.of("key1: ${VALUE_WITH_ESCAPE}\n", mapOf(entry("key1", "value$$"))));
   }
 
   private static <K, V> Map.Entry<K, V> entry(K key, @Nullable V value) {

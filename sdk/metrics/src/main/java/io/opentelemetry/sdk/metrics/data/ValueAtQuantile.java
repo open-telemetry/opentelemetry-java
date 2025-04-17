@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableValueAtQuantile;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -14,6 +15,11 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public interface ValueAtQuantile {
+
+  static ValueAtQuantile create(double quantile, double value) {
+    return ImmutableValueAtQuantile.create(quantile, value);
+  }
+
   /** Returns the quantile of a distribution. Must be in the interval [0.0, 1.0]. */
   double getQuantile();
 

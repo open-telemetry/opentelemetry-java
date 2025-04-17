@@ -9,26 +9,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnJre;
-import org.junit.jupiter.api.condition.EnabledOnJre;
 import org.junit.jupiter.api.condition.JRE;
 
-// This test is placed in the all artifact instead of the common one so it uses the dependency jar
-// instead of the classes directly, which allows verifying mrjar behavior.
 class SystemClockTest {
 
-  @EnabledOnJre(JRE.JAVA_8)
   @Test
-  void now_millisPrecision() {
-    // If we test many times, we can be fairly sure we didn't just get lucky with having a rounded
-    // result on a higher than expected precision timestamp.
-    for (int i = 0; i < 100; i++) {
-      long now = SystemClock.getInstance().now();
-      assertThat(now % 1000000).isZero();
-    }
+  void now() {
+    assertThat(SystemClock.getInstance().now()).isNotZero();
+    assertThat(SystemClock.getInstance().now(true)).isNotZero();
+    assertThat(SystemClock.getInstance().now(false)).isNotZero();
   }
 
-  @DisabledOnJre(JRE.JAVA_8)
   @Test
+  // On java 8, the APIs used to produce micro precision are available but still only produce millis
+  // precision
+  @DisabledOnJre(JRE.JAVA_8)
   void now_microsPrecision() {
     // If we test many times, we can be fairly sure we get at least one timestamp that isn't
     // coincidentally rounded to millis precision.
@@ -52,8 +47,10 @@ class SystemClockTest {
     }
   }
 
-  @DisabledOnJre(JRE.JAVA_8)
   @Test
+  // On java 8, the APIs used to produce micro precision are available but still only produce millis
+  // precision
+  @DisabledOnJre(JRE.JAVA_8)
   void now_highPrecision() {
     // If we test many times, we can be fairly sure we get at least one timestamp that isn't
     // coincidentally rounded to millis precision.
