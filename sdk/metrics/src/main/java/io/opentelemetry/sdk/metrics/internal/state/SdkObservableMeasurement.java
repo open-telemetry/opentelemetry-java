@@ -36,8 +36,6 @@ public final class SdkObservableMeasurement
   // These fields are set before invoking callbacks. They allow measurements to be recorded to the
   // storages for correct reader, and with the correct time.
   @Nullable private volatile RegisteredReader activeReader;
-  private volatile long startEpochNanos;
-  private volatile long epochNanos;
 
   private SdkObservableMeasurement(
       InstrumentationScopeInfo instrumentationScopeInfo,
@@ -75,8 +73,11 @@ public final class SdkObservableMeasurement
   public void setActiveReader(
       RegisteredReader registeredReader, long startEpochNanos, long epochNanos) {
     this.activeReader = registeredReader;
-    this.startEpochNanos = startEpochNanos;
-    this.epochNanos = epochNanos;
+    for (AsynchronousMetricStorage<?, ?> storage : storages) {
+      if (storage.getRegisteredReader().equals(activeReader)) {
+        storage.setEpochInformation(startEpochNanos, epochNanos);
+      }
+    }
   }
 
   /**
@@ -109,7 +110,6 @@ public final class SdkObservableMeasurement
 
     for (AsynchronousMetricStorage<?, ?> storage : storages) {
       if (storage.getRegisteredReader().equals(activeReader)) {
-        storage.setEpochInformation(startEpochNanos, epochNanos);
         storage.record(attributes, value);
       }
     }
@@ -141,7 +141,6 @@ public final class SdkObservableMeasurement
 
     for (AsynchronousMetricStorage<?, ?> storage : storages) {
       if (storage.getRegisteredReader().equals(activeReader)) {
-        storage.setEpochInformation(startEpochNanos, epochNanos);
         storage.record(attributes, value);
       }
     }
