@@ -72,7 +72,7 @@ final class SamplerFactory implements Factory<SamplerModel, Sampler> {
       return builder.build();
     }
 
-    model.getAdditionalProperties().compute("jaeger_remote", (v1, v2) -> model.getJaegerRemote());
+    model.getAdditionalProperties().compute("jaeger_remote", (k, v) -> model.getJaegerRemote());
 
     if (!model.getAdditionalProperties().isEmpty()) {
       Map<String, Object> additionalProperties = model.getAdditionalProperties();

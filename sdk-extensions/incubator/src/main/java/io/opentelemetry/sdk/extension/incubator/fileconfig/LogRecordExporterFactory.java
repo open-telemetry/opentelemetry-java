@@ -29,12 +29,12 @@ final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, 
   public LogRecordExporter create(
       LogRecordExporterModel model, SpiHelper spiHelper, List<Closeable> closeables) {
 
-    model.getAdditionalProperties().compute("otlp_http", (v1, v2) -> model.getOtlpHttp());
-    model.getAdditionalProperties().compute("otlp_grpc", (v1, v2) -> model.getOtlpGrpc());
+    model.getAdditionalProperties().compute("otlp_http", (k, v) -> model.getOtlpHttp());
+    model.getAdditionalProperties().compute("otlp_grpc", (k, v) -> model.getOtlpGrpc());
     model
         .getAdditionalProperties()
-        .compute("otlp_file/development", (v1, v2) -> model.getOtlpFileDevelopment());
-    model.getAdditionalProperties().compute("console", (v1, v2) -> model.getConsole());
+        .compute("otlp_file/development", (k, v) -> model.getOtlpFileDevelopment());
+    model.getAdditionalProperties().compute("console", (k, v) -> model.getConsole());
 
     if (!model.getAdditionalProperties().isEmpty()) {
       Map<String, Object> additionalProperties = model.getAdditionalProperties();
