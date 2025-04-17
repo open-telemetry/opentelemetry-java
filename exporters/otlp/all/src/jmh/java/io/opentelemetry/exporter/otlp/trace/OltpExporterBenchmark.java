@@ -11,7 +11,9 @@ import com.linecorp.armeria.server.grpc.GrpcService;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.exporter.internal.ExporterMetrics;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
@@ -23,6 +25,8 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.HealthMetricLevel;
+import io.opentelemetry.sdk.internal.ComponentId;
 import java.net.URI;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -83,19 +87,22 @@ public class OltpExporterBenchmark {
     upstreamGrpcExporter =
         new GrpcExporter<>(
             "otlp",
-            "span",
+            ExporterMetrics.Signal.SPAN,
             new UpstreamGrpcSender<>(
                 MarshalerTraceServiceGrpc.newFutureStub(defaultGrpcChannel, null),
                 /* shutdownChannel= */ false,
                 10,
                 Collections::emptyMap,
                 null),
-            MeterProvider::noop);
+            HealthMetricLevel.OFF,
+            ComponentId.generateLazy("upstream_grpc_exporter"),
+            MeterProvider::noop,
+            Attributes.empty());
 
     okhttpGrpcSender =
         new GrpcExporter<>(
             "otlp",
-            "span",
+            ExporterMetrics.Signal.SPAN,
             new OkHttpGrpcSender<>(
                 URI.create("http://localhost:" + server.activeLocalPort())
                     .resolve(OtlpGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH)
@@ -108,11 +115,17 @@ public class OltpExporterBenchmark {
                 null,
                 null,
                 null),
-            MeterProvider::noop);
+            HealthMetricLevel.OFF,
+            ComponentId.generateLazy("okhttp_grpc_exporter"),
+            MeterProvider::noop,
+            Attributes.empty());
 
     httpExporter =
         new HttpExporterBuilder<TraceRequestMarshaler>(
-                "otlp", "span", "http://localhost:" + server.activeLocalPort() + "/v1/traces")
+                "otlp",
+                ExporterMetrics.Signal.SPAN,
+                "http_exporter",
+                "http://localhost:" + server.activeLocalPort() + "/v1/traces")
             .build();
   }
 

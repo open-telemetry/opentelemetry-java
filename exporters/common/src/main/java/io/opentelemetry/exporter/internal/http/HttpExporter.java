@@ -5,12 +5,17 @@
 
 package io.opentelemetry.exporter.internal.http;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterMetrics;
+import io.opentelemetry.exporter.internal.ExporterMetricsAdapter;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.HealthMetricLevel;
+import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.SemConvAttributes;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -35,20 +40,29 @@ public final class HttpExporter<T extends Marshaler> {
 
   private final String type;
   private final HttpSender httpSender;
-  private final ExporterMetrics exporterMetrics;
+  private final ExporterMetricsAdapter exporterMetrics;
 
   public HttpExporter(
-      String exporterName,
-      String type,
+      String legacyExporterName,
+      ExporterMetrics.Signal type,
+      ComponentId componentId,
       HttpSender httpSender,
       Supplier<MeterProvider> meterProviderSupplier,
-      boolean exportAsJson) {
-    this.type = type;
+      HealthMetricLevel healthMetricLevel,
+      boolean exportAsJson,
+      Attributes healthMetricAttributes) {
+    this.type = type.toString();
     this.httpSender = httpSender;
+    // TODO: extract server.address and server.port here
     this.exporterMetrics =
-        exportAsJson
-            ? ExporterMetrics.createHttpJson(exporterName, type, meterProviderSupplier)
-            : ExporterMetrics.createHttpProtobuf(exporterName, type, meterProviderSupplier);
+        new ExporterMetricsAdapter(
+            healthMetricLevel,
+            meterProviderSupplier,
+            type,
+            componentId,
+            healthMetricAttributes,
+            legacyExporterName,
+            exportAsJson ? "http-json" : "http");
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {
@@ -56,30 +70,36 @@ public final class HttpExporter<T extends Marshaler> {
       return CompletableResultCode.ofFailure();
     }
 
-    exporterMetrics.addSeen(numItems);
+    ExporterMetricsAdapter.Recording metricRecording =
+        exporterMetrics.startRecordingExport(numItems);
 
     CompletableResultCode result = new CompletableResultCode();
 
     httpSender.send(
         exportRequest,
         exportRequest.getBinarySerializedSize(),
-        httpResponse -> onResponse(result, numItems, httpResponse),
-        throwable -> onError(result, numItems, throwable));
+        httpResponse -> onResponse(result, metricRecording, httpResponse),
+        throwable -> onError(result, metricRecording, throwable));
 
     return result;
   }
 
   private void onResponse(
-      CompletableResultCode result, int numItems, HttpSender.Response httpResponse) {
+      CompletableResultCode result,
+      ExporterMetricsAdapter.Recording metricRecording,
+      HttpSender.Response httpResponse) {
     int statusCode = httpResponse.statusCode();
 
+    Attributes requestAttributes =
+        Attributes.builder().put(SemConvAttributes.HTTP_RESPONSE_STATUS_CODE, statusCode).build();
+
     if (statusCode >= 200 && statusCode < 300) {
-      exporterMetrics.addSuccess(numItems);
+      metricRecording.finishSuccessful(requestAttributes);
       result.succeed();
       return;
     }
 
-    exporterMetrics.addFailed(numItems);
+    metricRecording.finishFailed("" + statusCode, requestAttributes);
 
     byte[] body = null;
     try {
@@ -102,8 +122,9 @@ public final class HttpExporter<T extends Marshaler> {
     result.failExceptionally(FailedExportException.httpFailedWithResponse(httpResponse));
   }
 
-  private void onError(CompletableResultCode result, int numItems, Throwable e) {
-    exporterMetrics.addFailed(numItems);
+  private void onError(
+      CompletableResultCode result, ExporterMetricsAdapter.Recording metricRecording, Throwable e) {
+    metricRecording.finishFailed(e, Attributes.empty());
     logger.log(
         Level.SEVERE,
         "Failed to export "
