@@ -11,6 +11,7 @@ import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import io.github.netmikey.logunit.api.LogCapturer;
@@ -38,10 +39,10 @@ class SdkObservableMeasurementTest {
       LogCapturer.create().captureForLogger(SdkObservableMeasurement.class.getName(), Level.DEBUG);
 
   private AsynchronousMetricStorage mockAsyncStorage1;
+  private AsynchronousMetricStorage mockAsyncStorage2;
   private RegisteredReader registeredReader1;
   private SdkObservableMeasurement sdkObservableMeasurement;
 
-  @SuppressWarnings("unchecked")
   private void setup(MemoryMode memoryMode) {
     InstrumentationScopeInfo instrumentationScopeInfo =
         InstrumentationScopeInfo.builder("test-scope").build();
@@ -66,7 +67,7 @@ class SdkObservableMeasurementTest {
 
     mockAsyncStorage1 = mock(AsynchronousMetricStorage.class);
     when(mockAsyncStorage1.getRegisteredReader()).thenReturn(registeredReader1);
-    AsynchronousMetricStorage mockAsyncStorage2 = mock(AsynchronousMetricStorage.class);
+    mockAsyncStorage2 = mock(AsynchronousMetricStorage.class);
     when(mockAsyncStorage2.getRegisteredReader()).thenReturn(registeredReader2);
 
     sdkObservableMeasurement =
@@ -76,15 +77,28 @@ class SdkObservableMeasurementTest {
             Arrays.asList(mockAsyncStorage1, mockAsyncStorage2));
   }
 
+  void setupAndSetActiveReader(MemoryMode memoryMode) {
+    setup(memoryMode);
+    sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
+  }
+
   @Test
-  void recordLong_ImmutableData() {
+  void setActiveReader_SetsEpochInformation() {
     setup(MemoryMode.IMMUTABLE_DATA);
 
     sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
 
+    verify(mockAsyncStorage1).setEpochInformation(0, 10);
+    verify(mockAsyncStorage2).getRegisteredReader();
+    verifyNoMoreInteractions(mockAsyncStorage2);
+  }
+
+  @Test
+  void recordLong_ImmutableData() {
+    setupAndSetActiveReader(MemoryMode.IMMUTABLE_DATA);
+
     try {
       sdkObservableMeasurement.record(5);
-
       verify(mockAsyncStorage1).record(Attributes.empty(), 5);
     } finally {
       sdkObservableMeasurement.unsetActiveReader();
@@ -93,13 +107,10 @@ class SdkObservableMeasurementTest {
 
   @Test
   void recordDouble_ImmutableData() {
-    setup(MemoryMode.IMMUTABLE_DATA);
-
-    sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
+    setupAndSetActiveReader(MemoryMode.IMMUTABLE_DATA);
 
     try {
       sdkObservableMeasurement.record(4.3);
-
       verify(mockAsyncStorage1).record(Attributes.empty(), 4.3);
     } finally {
       sdkObservableMeasurement.unsetActiveReader();
@@ -108,9 +119,7 @@ class SdkObservableMeasurementTest {
 
   @Test
   void recordDouble_ReusableData() {
-    setup(MemoryMode.REUSABLE_DATA);
-
-    sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
+    setupAndSetActiveReader(MemoryMode.REUSABLE_DATA);
 
     try {
       sdkObservableMeasurement.record(4.3);
@@ -125,9 +134,7 @@ class SdkObservableMeasurementTest {
 
   @Test
   void recordLong_ReusableData() {
-    setup(MemoryMode.REUSABLE_DATA);
-
-    sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
+    setupAndSetActiveReader(MemoryMode.REUSABLE_DATA);
 
     try {
       sdkObservableMeasurement.record(2);
@@ -143,10 +150,9 @@ class SdkObservableMeasurementTest {
   @Test
   @SuppressLogger(SdkObservableMeasurement.class)
   void recordDouble_NaN() {
-    setup(MemoryMode.REUSABLE_DATA);
-    sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
-    sdkObservableMeasurement.record(Double.NaN);
+    setupAndSetActiveReader(MemoryMode.REUSABLE_DATA);
 
+    sdkObservableMeasurement.record(Double.NaN);
     verify(mockAsyncStorage1, never()).record(any(), anyDouble());
     logs.assertContains(
         "Instrument testCounter has recorded measurement Not-a-Number (NaN) value with attributes {}. Dropping measurement.");
