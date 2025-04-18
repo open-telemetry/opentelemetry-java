@@ -62,13 +62,13 @@ class ReadWriteLogRecordTest {
         limits,
         resource,
         scope,
-        "event name",
         0L,
         0L,
         spanContext,
         Severity.DEBUG,
         "buggin",
         body,
-        initialAttributes);
+        initialAttributes,
+        "my.event.name");
   }
 }

@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp;
+package io.opentelemetry.exporter.otlp.metrics;
 
 import static io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData.createDoubleGauge;
 import static java.util.Collections.singleton;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -24,12 +25,13 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
+import io.opentelemetry.sdk.metrics.export.DefaultAggregationSelector;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -37,6 +39,7 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class OtlpGrpcMetricExporterBuilderTest {
 
@@ -170,5 +173,29 @@ class OtlpGrpcMetricExporterBuilderTest {
                         .build()));
     meterProviderAtomicReference.set(builder.build());
     meterProviderAtomicReference.get().close();
+  }
+
+  @Test
+  void verifyToBuilderPreservesSettings() {
+    AggregationTemporalitySelector temporalitySelector =
+        Mockito.mock(AggregationTemporalitySelector.class);
+    DefaultAggregationSelector defaultAggregationSelector =
+        Mockito.mock(DefaultAggregationSelector.class);
+
+    OtlpGrpcMetricExporter original =
+        OtlpGrpcMetricExporter.builder()
+            .setMemoryMode(MemoryMode.IMMUTABLE_DATA)
+            .setAggregationTemporalitySelector(temporalitySelector)
+            .setDefaultAggregationSelector(defaultAggregationSelector)
+            .build();
+
+    OtlpGrpcMetricExporter copy = original.toBuilder().build();
+
+    assertThat(copy.getMemoryMode()).isEqualTo(MemoryMode.IMMUTABLE_DATA);
+    assertThat(copy.aggregationTemporalitySelector).isSameAs(temporalitySelector);
+    assertThat(copy.defaultAggregationSelector).isSameAs(defaultAggregationSelector);
+
+    original.close();
+    copy.close();
   }
 }

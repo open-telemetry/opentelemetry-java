@@ -84,7 +84,19 @@ public final class LogRecordDataAssert extends AbstractAssert<LogRecordDataAsser
     return this;
   }
 
-  // TODO (trask) once event name stabilizes, add hasEventName(String)
+  /** Asserts the log has the given epoch {@code eventName}. */
+  public LogRecordDataAssert hasEventName(String eventName) {
+    isNotNull();
+    if (!eventName.equals(actual.getEventName())) {
+      failWithActualExpectedAndMessage(
+          actual.getEventName(),
+          eventName,
+          "Expected log to have eventName <%s> but was <%s>",
+          eventName,
+          actual.getEventName());
+    }
+    return this;
+  }
 
   /** Asserts the log has the given epoch {@code timestamp}. */
   public LogRecordDataAssert hasTimestamp(long timestampEpochNanos) {
