@@ -9,7 +9,10 @@ import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.resources.Resource;
 
-public class ResourceComponentProvider implements ComponentProvider<Resource> {
+// TODO(jack-berg): This allows DeclarativeConfigurationCreateTest to pass with kitchen-sink.yaml
+// example. Delete after resource providers from opentelemetry-java-instrumentation are renamed to
+// reflect declarative config naming
+public class HostResourceProvider implements ComponentProvider<Resource> {
   @Override
   public Class<Resource> getType() {
     return Resource.class;
@@ -17,11 +20,11 @@ public class ResourceComponentProvider implements ComponentProvider<Resource> {
 
   @Override
   public String getName() {
-    return "shape_color";
+    return "host";
   }
 
   @Override
   public Resource create(DeclarativeConfigProperties config) {
-    return Resource.builder().put("shape", "square").put("color", "red").build();
+    return Resource.empty();
   }
 }

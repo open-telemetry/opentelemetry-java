@@ -15,7 +15,7 @@ import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.SpanProcessorComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanProcessorModel;
@@ -63,7 +63,8 @@ class SpanProcessorFactoryTest {
                 new SpanProcessorModel()
                     .withBatch(
                         new BatchSpanProcessorModel()
-                            .withExporter(new SpanExporterModel().withOtlp(new OtlpModel()))),
+                            .withExporter(
+                                new SpanExporterModel().withOtlpHttp(new OtlpHttpExporterModel()))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(processor);
@@ -90,7 +91,8 @@ class SpanProcessorFactoryTest {
                 new SpanProcessorModel()
                     .withBatch(
                         new BatchSpanProcessorModel()
-                            .withExporter(new SpanExporterModel().withOtlp(new OtlpModel()))
+                            .withExporter(
+                                new SpanExporterModel().withOtlpHttp(new OtlpHttpExporterModel()))
                             .withScheduleDelay(1)
                             .withMaxExportBatchSize(2)
                             .withExportTimeout(3)),
@@ -129,7 +131,8 @@ class SpanProcessorFactoryTest {
                 new SpanProcessorModel()
                     .withSimple(
                         new SimpleSpanProcessorModel()
-                            .withExporter(new SpanExporterModel().withOtlp(new OtlpModel()))),
+                            .withExporter(
+                                new SpanExporterModel().withOtlpHttp(new OtlpHttpExporterModel()))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(processor);

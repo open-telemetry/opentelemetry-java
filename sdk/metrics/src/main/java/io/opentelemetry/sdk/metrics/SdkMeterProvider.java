@@ -180,6 +180,8 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
         + metricProducers
         + ", views="
         + registeredViews
+        + ", meterConfigurator="
+        + meterConfigurator
         + "}";
   }
 
