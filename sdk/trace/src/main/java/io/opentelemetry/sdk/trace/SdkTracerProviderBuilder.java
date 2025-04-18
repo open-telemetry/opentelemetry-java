@@ -151,7 +151,24 @@ public final class SdkTracerProviderBuilder {
    * @return this
    */
   public SdkTracerProviderBuilder addSpanProcessor(SpanProcessor spanProcessor) {
+    requireNonNull(spanProcessor, "spanProcessor");
     spanProcessors.add(spanProcessor);
+    return this;
+  }
+
+  /**
+   * Add a SpanProcessor to the beginning of the span pipeline that will be built. {@link
+   * SpanProcessor} will be called each time a {@link Span} is started or ended.
+   *
+   * <p>The {@code spanProcessor} must be thread-safe and return immediately (no remote calls, as
+   * contention free as possible).
+   *
+   * @param spanProcessor the processor to be added to the beginning of the span pipeline.
+   * @return this
+   */
+  public SdkTracerProviderBuilder addSpanProcessorFirst(SpanProcessor spanProcessor) {
+    requireNonNull(spanProcessor, "spanProcessor");
+    spanProcessors.add(0, spanProcessor);
     return this;
   }
 

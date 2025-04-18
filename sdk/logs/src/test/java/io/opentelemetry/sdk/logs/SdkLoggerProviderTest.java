@@ -124,10 +124,12 @@ class SdkLoggerProviderTest {
 
   @Test
   void builder_multipleProcessors() {
+    LogRecordProcessor firstProcessor = mock(LogRecordProcessor.class);
     assertThat(
             SdkLoggerProvider.builder()
                 .addLogRecordProcessor(logRecordProcessor)
                 .addLogRecordProcessor(logRecordProcessor)
+                .addLogRecordProcessorFirst(firstProcessor)
                 .build())
         .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
         .extracting(LoggerSharedState::getLogRecordProcessor)
@@ -138,7 +140,9 @@ class SdkLoggerProviderTest {
                   .extracting(
                       "logRecordProcessors",
                       as(InstanceOfAssertFactories.list(LogRecordProcessor.class)))
-                  .hasSize(2);
+                  .hasSize(3)
+                  .first()
+                  .isEqualTo(firstProcessor);
             });
   }
 
