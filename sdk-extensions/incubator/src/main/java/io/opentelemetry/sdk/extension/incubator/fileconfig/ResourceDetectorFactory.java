@@ -5,9 +5,6 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import static java.util.stream.Collectors.joining;
-
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectorModel;
 import io.opentelemetry.sdk.resources.Resource;
@@ -29,24 +26,9 @@ final class ResourceDetectorFactory
   @Override
   public Resource create(
       ExperimentalResourceDetectorModel model, SpiHelper spiHelper, List<Closeable> closeables) {
-    Map<String, Object> additionalProperties = model.getAdditionalProperties();
-    if (!additionalProperties.isEmpty()) {
-      if (additionalProperties.size() > 1) {
-        throw new DeclarativeConfigException(
-            "Invalid configuration - multiple resource detectors set: "
-                + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
-      }
-      Map.Entry<String, Object> detectorKeyValue =
-          additionalProperties.entrySet().stream()
-              .findFirst()
-              .orElseThrow(
-                  () ->
-                      new IllegalStateException("Missing detector. This is a programming error."));
-
-      return FileConfigUtil.loadComponent(
-          spiHelper, Resource.class, detectorKeyValue.getKey(), detectorKeyValue.getValue());
-    } else {
-      throw new DeclarativeConfigException("resource detector must be set");
-    }
+    Map.Entry<String, Object> keyValue =
+        FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "resource detector");
+    return FileConfigUtil.loadComponent(
+        spiHelper, Resource.class, keyValue.getKey(), keyValue.getValue());
   }
 }

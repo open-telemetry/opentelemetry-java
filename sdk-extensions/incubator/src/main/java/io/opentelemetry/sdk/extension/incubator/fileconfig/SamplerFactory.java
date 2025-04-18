@@ -5,9 +5,6 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import static java.util.stream.Collectors.joining;
-
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBasedSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
@@ -74,24 +71,11 @@ final class SamplerFactory implements Factory<SamplerModel, Sampler> {
 
     model.getAdditionalProperties().compute("jaeger_remote", (k, v) -> model.getJaegerRemote());
 
-    if (!model.getAdditionalProperties().isEmpty()) {
-      Map<String, Object> additionalProperties = model.getAdditionalProperties();
-      if (additionalProperties.size() > 1) {
-        throw new DeclarativeConfigException(
-            "Invalid configuration - multiple samplers exporters set: "
-                + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
-      }
-      Map.Entry<String, Object> exporterKeyValue =
-          additionalProperties.entrySet().stream()
-              .findFirst()
-              .orElseThrow(
-                  () -> new IllegalStateException("Missing sampler. This is a programming error."));
-      Sampler sampler =
-          FileConfigUtil.loadComponent(
-              spiHelper, Sampler.class, exporterKeyValue.getKey(), exporterKeyValue.getValue());
-      return FileConfigUtil.addAndReturn(closeables, sampler);
-    } else {
-      throw new DeclarativeConfigException("sampler must be set");
-    }
+    Map.Entry<String, Object> keyValue =
+        FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "sampler");
+    Sampler sampler =
+        FileConfigUtil.loadComponent(
+            spiHelper, Sampler.class, keyValue.getKey(), keyValue.getValue());
+    return FileConfigUtil.addAndReturn(closeables, sampler);
   }
 }

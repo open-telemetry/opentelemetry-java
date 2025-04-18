@@ -5,10 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import static java.util.stream.Collectors.joining;
-
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -50,30 +47,13 @@ final class TextMapPropagatorFactory
     if (model.getOttrace() != null) {
       return getPropagator(spiHelper, "ottrace");
     }
-    if (!model.getAdditionalProperties().isEmpty()) {
-      Map<String, Object> additionalProperties = model.getAdditionalProperties();
-      if (additionalProperties.size() > 1) {
-        throw new DeclarativeConfigException(
-            "Invalid configuration - multiple propgators set: "
-                + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
-      }
-      Map.Entry<String, Object> propagatorKeyValue =
-          additionalProperties.entrySet().stream()
-              .findFirst()
-              .orElseThrow(
-                  () ->
-                      new IllegalStateException(
-                          "Missing propagator. This is a programming error."));
-      TextMapPropagator propagator =
-          FileConfigUtil.loadComponent(
-              spiHelper,
-              TextMapPropagator.class,
-              propagatorKeyValue.getKey(),
-              propagatorKeyValue.getValue());
-      return TextMapPropagatorAndName.create(propagator, propagatorKeyValue.getKey());
-    } else {
-      throw new DeclarativeConfigException("propagator must be set");
-    }
+
+    Map.Entry<String, Object> keyValue =
+        FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "propagator");
+    TextMapPropagator propagator =
+        FileConfigUtil.loadComponent(
+            spiHelper, TextMapPropagator.class, keyValue.getKey(), keyValue.getValue());
+    return TextMapPropagatorAndName.create(propagator, keyValue.getKey());
   }
 
   static TextMapPropagatorAndName getPropagator(SpiHelper spiHelper, String name) {

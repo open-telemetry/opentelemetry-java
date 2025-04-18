@@ -12,11 +12,11 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Propag
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TextMapPropagatorModel;
 import java.io.Closeable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 final class PropagatorFactory implements Factory<PropagatorModel, ContextPropagators> {
 
@@ -34,7 +34,7 @@ final class PropagatorFactory implements Factory<PropagatorModel, ContextPropaga
     List<TextMapPropagatorModel> textMapPropagatorModels = model.getComposite();
     Set<String> propagatorNames = new HashSet<>();
     List<TextMapPropagator> textMapPropagators = new ArrayList<>();
-    if (textMapPropagatorModels != null && !textMapPropagatorModels.isEmpty()) {
+    if (textMapPropagatorModels != null) {
       textMapPropagatorModels.forEach(
           textMapPropagatorModel -> {
             TextMapPropagatorAndName propagatorAndName =
@@ -50,19 +50,18 @@ final class PropagatorFactory implements Factory<PropagatorModel, ContextPropaga
       List<String> propagatorNamesList =
           // Process string list same as we process OTEL_PROPAGATORS, trimming and filtering empty
           // and 'none'
-          Arrays.asList(compositeList.split(",")).stream()
+          Stream.of(compositeList.split(","))
               .map(String::trim)
               .filter(s -> !s.isEmpty())
               .filter(s -> !s.equals("none"))
               .collect(Collectors.toList());
       for (String propagatorName : propagatorNamesList) {
         // Only add entries which weren't already previously added
-        if (!propagatorNames.add(propagatorName)) {
-          continue;
+        if (propagatorNames.add(propagatorName)) {
+          textMapPropagators.add(
+              TextMapPropagatorFactory.getPropagator(spiHelper, propagatorName)
+                  .getTextMapPropagator());
         }
-        textMapPropagators.add(
-            TextMapPropagatorFactory.getPropagator(spiHelper, propagatorName)
-                .getTextMapPropagator());
       }
     }
 

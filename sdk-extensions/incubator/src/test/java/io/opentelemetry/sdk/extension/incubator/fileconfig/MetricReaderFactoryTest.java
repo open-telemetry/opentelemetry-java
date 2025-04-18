@@ -34,7 +34,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -118,7 +117,8 @@ class MetricReaderFactoryTest {
 
     assertThat(reader.toString()).isEqualTo(expectedReader.toString());
     assertThat(
-            Objects.requireNonNull(readerAndCardinalityLimits.getCardinalityLimitsSelector())
+            readerAndCardinalityLimits
+                .getCardinalityLimitsSelector()
                 .getCardinalityLimit(InstrumentType.COUNTER))
         .isEqualTo(100);
   }
@@ -189,7 +189,8 @@ class MetricReaderFactoryTest {
 
     assertThat(reader.toString()).isEqualTo(expectedReader.toString());
     assertThat(
-            Objects.requireNonNull(readerAndCardinalityLimits.getCardinalityLimitsSelector())
+            readerAndCardinalityLimits
+                .getCardinalityLimitsSelector()
                 .getCardinalityLimit(InstrumentType.COUNTER))
         .isEqualTo(100);
     // TODO(jack-berg): validate prometheus component provider was invoked with correct arguments
