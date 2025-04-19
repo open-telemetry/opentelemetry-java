@@ -421,7 +421,7 @@ class CardinalityTest {
                                             0,
                                             asyncCounterLimit,
                                             LongPointData::getValue,
-                                            1))));
+                                            DEFAULT_MAX_CARDINALITY - (asyncCounterLimit - 1)))));
     assertThat(cumulativeReader.collectAllMetrics())
         .as("cumulative collection")
         .satisfiesExactlyInAnyOrder(
@@ -485,7 +485,7 @@ class CardinalityTest {
                                             0,
                                             asyncCounterLimit,
                                             LongPointData::getValue,
-                                            1))));
+                                            DEFAULT_MAX_CARDINALITY - (asyncCounterLimit - 1)))));
 
     // Record another round of measurements, again exceeding cardinality limits
     for (int i = DEFAULT_MAX_CARDINALITY; i < DEFAULT_MAX_CARDINALITY * 2; i++) {
@@ -625,7 +625,7 @@ class CardinalityTest {
                                             0,
                                             asyncCounterLimit,
                                             LongPointData::getValue,
-                                            1))));
+                                            DEFAULT_MAX_CARDINALITY - (asyncCounterLimit - 1)))));
   }
 
   /**
