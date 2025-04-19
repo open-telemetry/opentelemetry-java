@@ -9,6 +9,8 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
@@ -18,6 +20,8 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.DefaultExceptionAttributeResolver;
+import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
@@ -281,5 +285,25 @@ class SdkTracerProviderTest {
     tracer = (SdkTracer) tracerProvider.get("", "");
     assertThat(tracer.getInstrumentationScopeInfo().getName())
         .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
+  }
+
+  @Test
+  void exceptionAttributeResolver() {
+    int maxAttributeLength = 5;
+    SdkTracerProviderBuilder builder =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(spanProcessor)
+            .setSpanLimits(
+                SpanLimits.builder().setMaxAttributeValueLength(maxAttributeLength).build());
+    ExceptionAttributeResolver exceptionAttributeResolver =
+        spy(DefaultExceptionAttributeResolver.getInstance());
+    SdkTracerProviderUtil.setExceptionAttributeResolver(builder, exceptionAttributeResolver);
+
+    Exception exception = new Exception("error");
+    builder.build().get("tracer").spanBuilder("span").startSpan().recordException(exception).end();
+
+    verify(exceptionAttributeResolver).getExceptionType(exception, maxAttributeLength);
+    verify(exceptionAttributeResolver).getExceptionMessage(exception, maxAttributeLength);
+    verify(exceptionAttributeResolver).getExceptionStacktrace(exception, maxAttributeLength);
   }
 }
