@@ -8,8 +8,6 @@ package io.opentelemetry.sdk.internal;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -107,7 +105,9 @@ public final class AttributeUtil {
   }
 
   public static void addExceptionAttributes(
-      Throwable exception, BiConsumer<AttributeKey<String>, String> attributeConsumer) {
+      Throwable exception,
+      BiConsumer<AttributeKey<String>, String> attributeConsumer,
+      int lengthLimit) {
     String exceptionType = exception.getClass().getCanonicalName();
     if (exceptionType != null) {
       attributeConsumer.accept(EXCEPTION_TYPE, exceptionType);
@@ -118,11 +118,7 @@ public final class AttributeUtil {
       attributeConsumer.accept(EXCEPTION_MESSAGE, exceptionMessage);
     }
 
-    StringWriter stringWriter = new StringWriter();
-    try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
-      exception.printStackTrace(printWriter);
-    }
-    String stackTrace = stringWriter.toString();
+    String stackTrace = new StackTraceRenderer(exception, lengthLimit).render();
     if (stackTrace != null) {
       attributeConsumer.accept(EXCEPTION_STACKTRACE, stackTrace);
     }

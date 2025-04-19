@@ -4,6 +4,7 @@ plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
   id("otel.animalsniffer-conventions")
+  id("otel.jmh-conventions")
 }
 apply<OtelVersionClassPlugin>()
 

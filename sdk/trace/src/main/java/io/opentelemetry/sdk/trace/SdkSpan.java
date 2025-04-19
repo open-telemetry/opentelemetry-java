@@ -469,7 +469,8 @@ final class SdkSpan implements ReadWriteSpan {
         AttributesMap.create(
             spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
 
-    AttributeUtil.addExceptionAttributes(exception, attributes::put);
+    AttributeUtil.addExceptionAttributes(
+        exception, attributes::put, spanLimits.getMaxAttributeValueLength());
 
     additionalAttributes.forEach(attributes::put);
 
