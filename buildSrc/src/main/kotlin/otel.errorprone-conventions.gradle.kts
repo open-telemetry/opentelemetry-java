@@ -50,7 +50,6 @@ tasks {
         disable("UnnecessarilyFullyQualified")
 
         // We use animal sniffer
-        disable("Java7ApiChecker")
         disable("Java8ApiChecker")
         disable("AndroidJdkLibsChecker")
 
