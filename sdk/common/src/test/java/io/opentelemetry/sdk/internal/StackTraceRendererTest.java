@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Random;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -16,9 +17,22 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class StackTraceRendererTest {
 
+  private static final Random random = new Random();
+
   @ParameterizedTest
   @MethodSource("renderStacktraceArgs")
-  void renderStacktrace(Throwable throwable) {
+  void renderStacktrace_randomLength(Throwable throwable) {
+    // Test equal stacktrace for random lengths to test edges
+    for (int i = 0; i < 100; i++) {
+      int length = random.nextInt(10_000);
+      assertThat(new StackTraceRenderer(throwable, length).render())
+          .isEqualTo(jdkStackTrace(throwable, length));
+    }
+  }
+
+  @ParameterizedTest
+  @MethodSource("renderStacktraceArgs")
+  void renderStacktrace_fixedLengths(Throwable throwable) {
     assertThat(new StackTraceRenderer(throwable, 10).render())
         .isEqualTo(jdkStackTrace(throwable, 10));
     assertThat(new StackTraceRenderer(throwable, 100).render())

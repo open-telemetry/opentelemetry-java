@@ -40,13 +40,15 @@ class StackTraceRenderer {
   }
 
   private void appendStackTrace() {
-    if (appendLine(throwable.toString())) {
+    builder.append(throwable).append(System.lineSeparator());
+    if (isOverLimit()) {
       return;
     }
 
     StackTraceElement[] stackTraceElements = throwable.getStackTrace();
     for (StackTraceElement stackTraceElement : stackTraceElements) {
-      if (appendLine("\tat " + stackTraceElement)) {
+      builder.append("\tat ").append(stackTraceElement).append(System.lineSeparator());
+      if (isOverLimit()) {
         return;
       }
     }
@@ -75,7 +77,13 @@ class StackTraceRenderer {
       String caption,
       Set<Throwable> seen) {
     if (seen.contains(innerThrowable)) {
-      appendLine(prefix + caption + "[CIRCULAR REFERENCE: " + innerThrowable + "]");
+      builder
+          .append(prefix)
+          .append(caption)
+          .append("[CIRCULAR REFERENCE: ")
+          .append(innerThrowable)
+          .append("]")
+          .append(System.lineSeparator());
       return true;
     }
     seen.add(innerThrowable);
@@ -96,20 +104,32 @@ class StackTraceRenderer {
       lastSharedFrameIndex--;
     }
 
-    if (appendLine(prefix + caption + innerThrowable)) {
+    builder.append(prefix).append(caption).append(innerThrowable).append(System.lineSeparator());
+    if (isOverLimit()) {
       return true;
     }
 
     for (int i = 0; i <= lastSharedFrameIndex; i++) {
       StackTraceElement stackTraceElement = currentElements[i];
-      if (appendLine(prefix + "\tat " + stackTraceElement)) {
+      builder
+          .append(prefix)
+          .append("\tat ")
+          .append(stackTraceElement)
+          .append(System.lineSeparator());
+      if (isOverLimit()) {
         return true;
       }
     }
 
     int duplicateFrames = currentElements.length - 1 - lastSharedFrameIndex;
     if (duplicateFrames != 0) {
-      if (appendLine(prefix + "\t... " + duplicateFrames + " more")) {
+      builder
+          .append(prefix)
+          .append("\t... ")
+          .append(duplicateFrames)
+          .append(" more")
+          .append(System.lineSeparator());
+      if (isOverLimit()) {
         return true;
       }
     }
@@ -128,12 +148,7 @@ class StackTraceRenderer {
     return false;
   }
 
-  /**
-   * Append the string as a new line on {@link #builder}, returning {@code true} if the builder now
-   * exceeds the length limit.
-   */
-  private boolean appendLine(String s) {
-    builder.append(s).append(System.lineSeparator());
+  private boolean isOverLimit() {
     return builder.length() >= lengthLimit;
   }
 }
