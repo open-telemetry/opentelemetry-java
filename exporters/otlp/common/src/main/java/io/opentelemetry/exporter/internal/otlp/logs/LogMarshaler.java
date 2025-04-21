@@ -15,18 +15,30 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.ProtoEnumInfo;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.otlp.AnyValueMarshaler;
+import io.opentelemetry.exporter.internal.otlp.IncubatingUtil;
 import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
 import io.opentelemetry.proto.logs.v1.internal.LogRecord;
 import io.opentelemetry.proto.logs.v1.internal.SeverityNumber;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
 import java.io.IOException;
 import javax.annotation.Nullable;
 
 final class LogMarshaler extends MarshalerWithSize {
+  private static final boolean INCUBATOR_AVAILABLE;
+
+  static {
+    boolean incubatorAvailable = false;
+    try {
+      Class.forName("io.opentelemetry.api.incubator.common.ExtendedAttributes");
+      incubatorAvailable = true;
+    } catch (ClassNotFoundException e) {
+      // Not available
+    }
+    INCUBATOR_AVAILABLE = incubatorAvailable;
+  }
+
   private static final String INVALID_TRACE_ID = TraceId.getInvalid();
   private static final String INVALID_SPAN_ID = SpanId.getInvalid();
-  private static final byte[] EMPTY_BYTES = new byte[0];
 
   private final long timeUnixNano;
   private final long observedTimeUnixNano;
@@ -42,7 +54,14 @@ final class LogMarshaler extends MarshalerWithSize {
 
   static LogMarshaler create(LogRecordData logRecordData) {
     KeyValueMarshaler[] attributeMarshalers =
-        KeyValueMarshaler.createForAttributes(logRecordData.getAttributes());
+        INCUBATOR_AVAILABLE
+            ? IncubatingUtil.createdExtendedAttributesMarhsalers(logRecordData)
+            : KeyValueMarshaler.createForAttributes(logRecordData.getAttributes());
+
+    int attributeSize =
+        INCUBATOR_AVAILABLE
+            ? IncubatingUtil.extendedAttributesSize(logRecordData)
+            : logRecordData.getAttributes().size();
 
     MarshalerWithSize bodyMarshaler =
         logRecordData.getBodyValue() == null
@@ -57,13 +76,11 @@ final class LogMarshaler extends MarshalerWithSize {
         MarshalerUtil.toBytes(logRecordData.getSeverityText()),
         bodyMarshaler,
         attributeMarshalers,
-        logRecordData.getTotalAttributeCount() - logRecordData.getAttributes().size(),
+        logRecordData.getTotalAttributeCount() - attributeSize,
         spanContext.getTraceFlags(),
         spanContext.getTraceId().equals(INVALID_TRACE_ID) ? null : spanContext.getTraceId(),
         spanContext.getSpanId().equals(INVALID_SPAN_ID) ? null : spanContext.getSpanId(),
-        logRecordData instanceof ExtendedLogRecordData
-            ? MarshalerUtil.toBytes(((ExtendedLogRecordData) logRecordData).getEventName())
-            : EMPTY_BYTES);
+        MarshalerUtil.toBytes(logRecordData.getEventName()));
   }
 
   private LogMarshaler(

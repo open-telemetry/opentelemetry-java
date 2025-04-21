@@ -1,2 +1,33 @@
-Comparing source compatibility of opentelemetry-sdk-testing-1.49.0-SNAPSHOT.jar against opentelemetry-sdk-testing-1.48.0.jar
-No changes.
+Comparing source compatibility of opentelemetry-sdk-testing-1.50.0-SNAPSHOT.jar against opentelemetry-sdk-testing-1.49.0.jar
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.LogRecordDataAssert hasEventName(java.lang.String)
+**** MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.testing.logs.TestLogRecordData  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getEventName()
+		+++  NEW ANNOTATION: javax.annotation.Nullable
+**** MODIFIED CLASS: PUBLIC ABSTRACT STATIC io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.logs.TestLogRecordData$Builder setEventName(java.lang.String)
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.metrics.TestMetricData  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW CONSTRUCTOR: PUBLIC(+) TestMetricData()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.metrics.TestMetricData$Builder builder()
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) STATIC(+) io.opentelemetry.sdk.testing.metrics.TestMetricData$Builder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW CONSTRUCTOR: PUBLIC(+) TestMetricData$Builder()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.metrics.TestMetricData build()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.metrics.TestMetricData$Builder setDescription(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.metrics.TestMetricData$Builder setDoubleGaugeData(io.opentelemetry.sdk.metrics.data.GaugeData<io.opentelemetry.sdk.metrics.data.DoublePointData>)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.metrics.TestMetricData$Builder setDoubleSumData(io.opentelemetry.sdk.metrics.data.SumData<io.opentelemetry.sdk.metrics.data.DoublePointData>)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.metrics.TestMetricData$Builder setExponentialHistogramData(io.opentelemetry.sdk.metrics.data.ExponentialHistogramData)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.metrics.TestMetricData$Builder setHistogramData(io.opentelemetry.sdk.metrics.data.HistogramData)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.metrics.TestMetricData$Builder setInstrumentationScopeInfo(io.opentelemetry.sdk.common.InstrumentationScopeInfo)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.metrics.TestMetricData$Builder setLongGaugeData(io.opentelemetry.sdk.metrics.data.GaugeData<io.opentelemetry.sdk.metrics.data.LongPointData>)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.metrics.TestMetricData$Builder setLongSumData(io.opentelemetry.sdk.metrics.data.SumData<io.opentelemetry.sdk.metrics.data.LongPointData>)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.metrics.TestMetricData$Builder setName(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.metrics.TestMetricData$Builder setResource(io.opentelemetry.sdk.resources.Resource)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.metrics.TestMetricData$Builder setSummaryData(io.opentelemetry.sdk.metrics.data.SummaryData)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.testing.metrics.TestMetricData$Builder setUnit(java.lang.String)

@@ -54,9 +54,8 @@ public final class OtlpDeclarativeConfigUtil {
       Consumer<byte[]> setTrustedCertificates,
       BiConsumer<byte[], byte[]> setClientTls,
       Consumer<RetryPolicy> setRetryPolicy,
-      Consumer<MemoryMode> setMemoryMode) {
-    String protocol = getStructuredConfigOtlpProtocol(config);
-    boolean isHttpProtobuf = protocol.equals(PROTOCOL_HTTP_PROTOBUF);
+      Consumer<MemoryMode> setMemoryMode,
+      boolean isHttpProtobuf) {
     URL endpoint = validateEndpoint(config.getString("endpoint"), isHttpProtobuf);
     if (endpoint != null) {
       setEndpoint.accept(endpoint.toString());
@@ -92,16 +91,16 @@ public final class OtlpDeclarativeConfigUtil {
       setTimeout.accept(Duration.ofMillis(timeoutMs));
     }
 
-    String certificatePath = config.getString("certificate");
-    String clientKeyPath = config.getString("client_key");
-    String clientKeyChainPath = config.getString("client_certificate");
+    String certificatePath = config.getString("certificate_file");
+    String clientKeyPath = config.getString("client_key_file");
+    String clientKeyChainPath = config.getString("client_certificate_file");
 
     if (clientKeyPath != null && clientKeyChainPath == null) {
       throw new ConfigurationException(
-          "client_key provided without client_certificate - both client_key and client_certificate must be set");
+          "client_key_file provided without client_certificate_file - both client_key_file and client_certificate_file must be set");
     } else if (clientKeyPath == null && clientKeyChainPath != null) {
       throw new ConfigurationException(
-          "client_certificate provided without client_key - both client_key and client_certificate must be set");
+          "client_certificate_file provided without client_key_file - both client_key_file and client_certificate_file must be set");
     }
     byte[] certificateBytes = readFileBytes(certificatePath);
     if (certificateBytes != null) {

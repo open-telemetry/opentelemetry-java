@@ -107,8 +107,7 @@ public class LogAssertionsTest {
                     satisfies(DOG, val -> val.startsWith("bar")),
                     satisfies(AttributeKey.booleanKey("dog is cute"), val -> val.isTrue())))
         .hasInstrumentationScope(INSTRUMENTATION_SCOPE_INFO)
-        // TODO (trask) once event name stabilizes
-        //  .hasEventName("event name")
+        .hasEventName("event name")
         .hasTimestamp(100)
         .hasObservedTimestamp(200)
         .hasSpanContext(
@@ -207,6 +206,7 @@ public class LogAssertionsTest {
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
         () -> assertThat(LOG_DATA).hasInstrumentationScope(InstrumentationScopeInfo.empty()));
+    assertThatThrownBy(() -> assertThat(LOG_DATA).hasEventName("foo"));
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasTimestamp(200));
     assertThatThrownBy(() -> assertThat(LOG_DATA).hasObservedTimestamp(100));
     assertThatThrownBy(

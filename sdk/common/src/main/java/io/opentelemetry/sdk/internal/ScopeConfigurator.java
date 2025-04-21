@@ -19,7 +19,7 @@ public interface ScopeConfigurator<T> extends Function<InstrumentationScopeInfo,
 
   /** Create a new builder. */
   static <T> ScopeConfiguratorBuilder<T> builder() {
-    return new ScopeConfiguratorBuilder<>(unused -> null);
+    return new ScopeConfiguratorBuilder<>(null);
   }
 
   /**

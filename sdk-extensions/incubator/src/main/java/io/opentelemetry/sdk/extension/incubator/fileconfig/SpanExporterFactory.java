@@ -5,13 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import static java.util.stream.Collectors.joining;
-
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ZipkinModel;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.util.List;
@@ -30,42 +25,20 @@ final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExport
   @Override
   public SpanExporter create(
       SpanExporterModel model, SpiHelper spiHelper, List<Closeable> closeables) {
-    OtlpModel otlpModel = model.getOtlp();
-    if (otlpModel != null) {
-      model.getAdditionalProperties().put("otlp", otlpModel);
-    }
 
-    if (model.getConsole() != null) {
-      model.getAdditionalProperties().put("console", model.getConsole());
-    }
+    model.getAdditionalProperties().compute("otlp_http", (k, v) -> model.getOtlpHttp());
+    model.getAdditionalProperties().compute("otlp_grpc", (k, v) -> model.getOtlpGrpc());
+    model
+        .getAdditionalProperties()
+        .compute("otlp_file/development", (k, v) -> model.getOtlpFileDevelopment());
+    model.getAdditionalProperties().compute("console", (k, v) -> model.getConsole());
+    model.getAdditionalProperties().compute("zipkin", (k, v) -> model.getZipkin());
 
-    ZipkinModel zipkinModel = model.getZipkin();
-    if (zipkinModel != null) {
-      model.getAdditionalProperties().put("zipkin", model.getZipkin());
-    }
-
-    if (!model.getAdditionalProperties().isEmpty()) {
-      Map<String, Object> additionalProperties = model.getAdditionalProperties();
-      if (additionalProperties.size() > 1) {
-        throw new DeclarativeConfigException(
-            "Invalid configuration - multiple span exporters set: "
-                + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
-      }
-      Map.Entry<String, Object> exporterKeyValue =
-          additionalProperties.entrySet().stream()
-              .findFirst()
-              .orElseThrow(
-                  () ->
-                      new IllegalStateException("Missing exporter. This is a programming error."));
-      SpanExporter spanExporter =
-          FileConfigUtil.loadComponent(
-              spiHelper,
-              SpanExporter.class,
-              exporterKeyValue.getKey(),
-              exporterKeyValue.getValue());
-      return FileConfigUtil.addAndReturn(closeables, spanExporter);
-    } else {
-      throw new DeclarativeConfigException("span exporter must be set");
-    }
+    Map.Entry<String, Object> keyValue =
+        FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "span exporter");
+    SpanExporter metricExporter =
+        FileConfigUtil.loadComponent(
+            spiHelper, SpanExporter.class, keyValue.getKey(), keyValue.getValue());
+    return FileConfigUtil.addAndReturn(closeables, metricExporter);
   }
 }

@@ -56,15 +56,18 @@ public final class OtlpGrpcMetricExporterBuilder {
   // Visible for testing
   final GrpcExporterBuilder<Marshaler> delegate;
 
-  private AggregationTemporalitySelector aggregationTemporalitySelector =
-      DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR;
-
-  private DefaultAggregationSelector defaultAggregationSelector =
-      DefaultAggregationSelector.getDefault();
+  private AggregationTemporalitySelector aggregationTemporalitySelector;
+  private DefaultAggregationSelector defaultAggregationSelector;
   private MemoryMode memoryMode;
 
-  OtlpGrpcMetricExporterBuilder(GrpcExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
+  OtlpGrpcMetricExporterBuilder(
+      GrpcExporterBuilder<Marshaler> delegate,
+      AggregationTemporalitySelector aggregationTemporalitySelector,
+      DefaultAggregationSelector defaultAggregationSelector,
+      MemoryMode memoryMode) {
     this.delegate = delegate;
+    this.aggregationTemporalitySelector = aggregationTemporalitySelector;
+    this.defaultAggregationSelector = defaultAggregationSelector;
     this.memoryMode = memoryMode;
     delegate.setMeterProvider(MeterProvider::noop);
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeader);
@@ -79,6 +82,8 @@ public final class OtlpGrpcMetricExporterBuilder {
             DEFAULT_ENDPOINT,
             () -> MarshalerMetricsServiceGrpc::newFutureStub,
             GRPC_ENDPOINT_PATH),
+        DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR,
+        DefaultAggregationSelector.getDefault(),
         DEFAULT_MEMORY_MODE);
   }
 
@@ -304,6 +309,8 @@ public final class OtlpGrpcMetricExporterBuilder {
    * <p>NOTE: By calling this method, you are opting into managing the lifecycle of the {@code
    * executorService}. {@link ExecutorService#shutdown()} will NOT be called when this exporter is
    * shutdown.
+   *
+   * @since 1.49.0
    */
   public OtlpGrpcMetricExporterBuilder setExecutorService(ExecutorService executorService) {
     requireNonNull(executorService, "executorService");

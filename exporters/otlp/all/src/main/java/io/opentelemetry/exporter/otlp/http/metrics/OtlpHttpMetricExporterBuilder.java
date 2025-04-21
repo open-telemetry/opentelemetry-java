@@ -47,22 +47,30 @@ public final class OtlpHttpMetricExporterBuilder {
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
 
   private final HttpExporterBuilder<Marshaler> delegate;
-  private AggregationTemporalitySelector aggregationTemporalitySelector =
-      DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR;
 
-  private DefaultAggregationSelector defaultAggregationSelector =
-      DefaultAggregationSelector.getDefault();
+  private AggregationTemporalitySelector aggregationTemporalitySelector;
+  private DefaultAggregationSelector defaultAggregationSelector;
   private MemoryMode memoryMode;
 
-  OtlpHttpMetricExporterBuilder(HttpExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
+  OtlpHttpMetricExporterBuilder(
+      HttpExporterBuilder<Marshaler> delegate,
+      AggregationTemporalitySelector aggregationTemporalitySelector,
+      DefaultAggregationSelector defaultAggregationSelector,
+      MemoryMode memoryMode) {
     this.delegate = delegate;
+    this.aggregationTemporalitySelector = aggregationTemporalitySelector;
+    this.defaultAggregationSelector = defaultAggregationSelector;
     this.memoryMode = memoryMode;
     delegate.setMeterProvider(MeterProvider::noop);
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeaders);
   }
 
   OtlpHttpMetricExporterBuilder() {
-    this(new HttpExporterBuilder<>("otlp", "metric", DEFAULT_ENDPOINT), DEFAULT_MEMORY_MODE);
+    this(
+        new HttpExporterBuilder<>("otlp", "metric", DEFAULT_ENDPOINT),
+        DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR,
+        DefaultAggregationSelector.getDefault(),
+        DEFAULT_MEMORY_MODE);
   }
 
   /**
@@ -271,6 +279,8 @@ public final class OtlpHttpMetricExporterBuilder {
    * <p>NOTE: By calling this method, you are opting into managing the lifecycle of the {@code
    * executorService}. {@link ExecutorService#shutdown()} will NOT be called when this exporter is
    * shutdown.
+   *
+   * @since 1.49.0
    */
   public OtlpHttpMetricExporterBuilder setExecutorService(ExecutorService executorService) {
     requireNonNull(executorService, "executorService");
