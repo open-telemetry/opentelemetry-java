@@ -6,7 +6,6 @@
 package io.opentelemetry.api.baggage.propagation;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
@@ -35,7 +34,7 @@ class BaggageCodecTest {
   }
 
   @Test
-  void shouldThrowIfMalformedData() {
-    assertThatNoException().isThrownBy(() -> BaggageCodec.decode("%1", StandardCharsets.UTF_8));
+  void shouldIgnoreIfMalformedData() {
+    assertThat(BaggageCodec.decode("%1", StandardCharsets.UTF_8)).isEqualTo("");
   }
 }
