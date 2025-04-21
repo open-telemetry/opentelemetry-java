@@ -35,6 +35,7 @@ class BaggageCodecTest {
 
   @Test
   void shouldIgnoreIfMalformedData() {
+    assertThat(BaggageCodec.decode("%", StandardCharsets.UTF_8)).isEqualTo("");
     assertThat(BaggageCodec.decode("%1", StandardCharsets.UTF_8)).isEqualTo("");
   }
 }
