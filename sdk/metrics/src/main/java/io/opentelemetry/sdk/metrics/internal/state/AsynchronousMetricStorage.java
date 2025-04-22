@@ -175,9 +175,9 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     Context context = Context.current();
     attributes = attributesProcessor.process(attributes, context);
 
-    if (aggregatorHandles.size() == maxCardinality) {
+    if (aggregatorHandles.size() >= maxCardinality) {
       aggregatorHandles.forEach(handlesDeleter);
-      if (aggregatorHandles.size() == maxCardinality) {
+      if (aggregatorHandles.size() >= maxCardinality) {
         throttlingLogger.log(
             Level.WARNING,
             "Instrument "
