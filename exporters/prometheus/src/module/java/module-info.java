@@ -5,4 +5,5 @@ module io.opentelemetry.exporter.prometheus {
   requires transitive io.opentelemetry.sdk.metrics;
   requires jdk.httpserver;
   requires java.logging;
+  requires com.fasterxml.jackson.databind;
 }

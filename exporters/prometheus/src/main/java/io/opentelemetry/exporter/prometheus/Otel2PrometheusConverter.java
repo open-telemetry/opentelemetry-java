@@ -9,7 +9,10 @@ import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeLab
 import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeMetricName;
 import static java.util.Objects.requireNonNull;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -76,6 +79,7 @@ final class Otel2PrometheusConverter {
   private static final String OTEL_SCOPE_NAME = "otel_scope_name";
   private static final String OTEL_SCOPE_VERSION = "otel_scope_version";
   private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   static final int MAX_CACHE_SIZE = 10;
 
   private final boolean otelScopeEnabled;
@@ -472,7 +476,9 @@ final class Otel2PrometheusConverter {
 
     Map<String, String> labelNameToValue = new HashMap<>();
     attributes.forEach(
-        (key, value) -> labelNameToValue.put(sanitizeLabelName(key.getKey()), value.toString()));
+        (key, value) ->
+            labelNameToValue.put(
+                sanitizeLabelName(key.getKey()), toLabelValue(key.getType(), value)));
 
     for (int i = 0; i < additionalAttributes.length; i += 2) {
       labelNameToValue.putIfAbsent(
@@ -641,5 +647,25 @@ final class Otel2PrometheusConverter {
   private static String typeString(MetricSnapshot snapshot) {
     // Simple helper for a log message.
     return snapshot.getClass().getSimpleName().replace("Snapshot", "").toLowerCase(Locale.ENGLISH);
+  }
+
+  private static String toLabelValue(AttributeType type, Object attributeValue) {
+    if (type.isPrimitive()) {
+      return attributeValue.toString();
+    } else {
+      return maybeToJson(attributeValue);
+    }
+  }
+
+  private static String maybeToJson(Object attributeValue) {
+    try {
+      return OBJECT_MAPPER.writeValueAsString(attributeValue);
+    } catch (JsonProcessingException e) {
+      LOGGER.log(
+          Level.WARNING,
+          "Label value couldn't be serialized, toString() is being used as fallback value...",
+          e);
+      return attributeValue.toString();
+    }
   }
 }
