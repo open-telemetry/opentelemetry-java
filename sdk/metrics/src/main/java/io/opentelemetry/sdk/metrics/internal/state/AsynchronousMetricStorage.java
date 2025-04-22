@@ -62,7 +62,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   private final int maxCardinality;
 
   // Handles responsible for aggregating data recorded during callbacks
-  private Map<Attributes, AggregatorHandle<T, U>> aggregatorHandles;
+  private final Map<Attributes, AggregatorHandle<T, U>> aggregatorHandles;
 
   // Only populated if aggregationTemporality == DELTA
   private Map<Attributes, T> lastPoints;
@@ -190,25 +190,13 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
       InstrumentationScopeInfo instrumentationScopeInfo,
       long startEpochNanos,
       long epochNanos) {
-    if (memoryMode == REUSABLE_DATA) {
-      // Collect can not run concurrently for same reader, hence we safely assume
-      // the previous collect result has been used and done with
-      reusablePointsList.forEach(reusablePointsPool::returnObject);
-      reusablePointsList.clear();
-
-      reusablePointsMap.forEach((key, value) -> reusablePointsPool.returnObject(value));
-      reusablePointsMap.clear();
-    }
-
     Collection<T> result =
         aggregationTemporality == AggregationTemporality.DELTA
             ? collectWithDeltaAggregationTemporality()
             : collectWithCumulativeAggregationTemporality();
 
-    if (memoryMode == REUSABLE_DATA) {
+    if (memoryMode != REUSABLE_DATA) {
       aggregatorHandles.clear();
-    } else {
-      aggregatorHandles = new HashMap<>();
     }
 
     return aggregator.toMetricData(
@@ -216,18 +204,40 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   }
 
   private Collection<T> collectWithDeltaAggregationTemporality() {
-    Map<Attributes, T> currentPoints =
-        memoryMode == REUSABLE_DATA ? reusablePointsMap : new HashMap<>();
+    Map<Attributes, T> currentPoints;
+    if (memoryMode == REUSABLE_DATA) {
+      // deltaPoints computed in the previous collection can be released
+      reusablePointsList.forEach(reusablePointsPool::returnObject);
+      reusablePointsList.clear();
+
+      currentPoints = reusablePointsMap;
+    } else {
+      currentPoints = new HashMap<>();
+    }
+
     aggregatorHandles.forEach(
         (attributes, handle) -> {
-          T value =
+          if (!handle.hasRecordedValues()) {
+            return;
+          }
+
+          T point =
               handle.aggregateThenMaybeReset(
                   AsynchronousMetricStorage.this.startEpochNanos,
                   AsynchronousMetricStorage.this.epochNanos,
                   attributes,
-                  // No need to reset, aggregatorHandles is going to be cleared anyways
-                  /* reset= */ false);
-          currentPoints.put(attributes, value);
+                  /* reset= */ true);
+
+          T pointForCurrentPoints;
+          if (memoryMode == REUSABLE_DATA) {
+            // AggregatorHandle is going to modify the point eventually, but we must persist its
+            // value to used it at the next collection (within lastPoints). Thus, we make a copy.
+            pointForCurrentPoints = reusablePointsPool.borrowObject();
+            aggregator.copyPoint(point, pointForCurrentPoints);
+          } else {
+            pointForCurrentPoints = point;
+          }
+          currentPoints.put(attributes, pointForCurrentPoints);
         });
 
     List<T> deltaPoints = memoryMode == REUSABLE_DATA ? reusablePointsList : new ArrayList<>();
@@ -237,24 +247,33 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
 
           T deltaPoint;
           if (lastPoint == null) {
-            deltaPoint = currentPoint;
+            if (memoryMode == REUSABLE_DATA) {
+              // All deltaPoints are released at the end of the collection. Thus, we need a copy
+              // to make sure currentPoint can still be used within lastPoints during the next
+              // collection.
+              deltaPoint = reusablePointsPool.borrowObject();
+              aggregator.copyPoint(currentPoint, deltaPoint);
+            } else {
+              deltaPoint = currentPoint;
+            }
           } else {
             if (memoryMode == REUSABLE_DATA) {
               aggregator.diffInPlace(lastPoint, currentPoint);
               deltaPoint = lastPoint;
-
-              // Remaining last points are returned to reusablePointsPool, but
-              // this reusable point is still used, so don't return it to pool yet
-              lastPoints.remove(attributes);
             } else {
               deltaPoint = aggregator.diff(lastPoint, currentPoint);
             }
           }
-
           deltaPoints.add(deltaPoint);
         });
 
     if (memoryMode == REUSABLE_DATA) {
+      // lastPoints for the current collection can be discarded when the collection is completed.
+      // They can be returned to the pool because they're not managed by the AggregatorHandle,
+      // we made a copy.
+      lastPoints.forEach((attributes, point) -> reusablePointsPool.returnObject(point));
+      lastPoints.clear();
+
       Map<Attributes, T> tmp = lastPoints;
       lastPoints = reusablePointsMap;
       reusablePointsMap = tmp;
@@ -266,16 +285,28 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   }
 
   private Collection<T> collectWithCumulativeAggregationTemporality() {
-    List<T> currentPoints = memoryMode == REUSABLE_DATA ? reusablePointsList : new ArrayList<>();
+    List<T> currentPoints;
+    if (memoryMode == REUSABLE_DATA) {
+      // We should not return the points in this list to the pool, they belong to the
+      // AggregatorHandle
+      reusablePointsList.clear();
+      currentPoints = reusablePointsList;
+    } else {
+      currentPoints = new ArrayList<>();
+    }
+
     aggregatorHandles.forEach(
         (attributes, handle) -> {
+          if (!handle.hasRecordedValues()) {
+            return;
+          }
+
           T value =
               handle.aggregateThenMaybeReset(
                   AsynchronousMetricStorage.this.startEpochNanos,
                   AsynchronousMetricStorage.this.epochNanos,
                   attributes,
-                  // No need to reset, aggregatorHandles is going to be cleared anyways
-                  /* reset= */ false);
+                  /* reset= */ true);
           currentPoints.add(value);
         });
     return currentPoints;
