@@ -68,6 +68,7 @@ class SpanExporterFactoryTest {
 
   private final SpiHelper spiHelper =
       spy(SpiHelper.create(SpanExporterFactoryTest.class.getClassLoader()));
+  private final DeclarativeConfigContext context = new DeclarativeConfigContext(spiHelper);
   private List<ComponentProvider<?>> loadedComponentProviders = Collections.emptyList();
 
   @BeforeEach
@@ -102,10 +103,7 @@ class SpanExporterFactoryTest {
 
     SpanExporter exporter =
         SpanExporterFactory.getInstance()
-            .create(
-                new SpanExporterModel().withOtlpHttp(new OtlpHttpExporterModel()),
-                spiHelper,
-                closeables);
+            .create(new SpanExporterModel().withOtlpHttp(new OtlpHttpExporterModel()), context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -170,8 +168,7 @@ class SpanExporterFactoryTest {
                             .withCertificateFile(certificatePath)
                             .withClientKeyFile(clientKeyPath)
                             .withClientCertificateFile(clientCertificatePath)),
-                spiHelper,
-                closeables);
+                context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -211,10 +208,7 @@ class SpanExporterFactoryTest {
 
     SpanExporter exporter =
         SpanExporterFactory.getInstance()
-            .create(
-                new SpanExporterModel().withOtlpGrpc(new OtlpGrpcExporterModel()),
-                spiHelper,
-                closeables);
+            .create(new SpanExporterModel().withOtlpGrpc(new OtlpGrpcExporterModel()), context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -278,8 +272,7 @@ class SpanExporterFactoryTest {
                             .withCertificateFile(certificatePath)
                             .withClientKeyFile(clientKeyPath)
                             .withClientCertificateFile(clientCertificatePath)),
-                spiHelper,
-                closeables);
+                context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -319,10 +312,7 @@ class SpanExporterFactoryTest {
 
     SpanExporter exporter =
         SpanExporterFactory.getInstance()
-            .create(
-                new SpanExporterModel().withConsole(new ConsoleExporterModel()),
-                spiHelper,
-                closeables);
+            .create(new SpanExporterModel().withConsole(new ConsoleExporterModel()), context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -338,10 +328,7 @@ class SpanExporterFactoryTest {
 
     SpanExporter exporter =
         SpanExporterFactory.getInstance()
-            .create(
-                new SpanExporterModel().withZipkin(new ZipkinSpanExporterModel()),
-                spiHelper,
-                closeables);
+            .create(new SpanExporterModel().withZipkin(new ZipkinSpanExporterModel()), context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -374,8 +361,7 @@ class SpanExporterFactoryTest {
                         new ZipkinSpanExporterModel()
                             .withEndpoint("http://zipkin:9411/v1/v2/spans")
                             .withTimeout(15_000)),
-                spiHelper,
-                closeables);
+                context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -401,8 +387,7 @@ class SpanExporterFactoryTest {
             .create(
                 new SpanExporterModel()
                     .withOtlpFileDevelopment(new ExperimentalOtlpFileExporterModel()),
-                spiHelper,
-                closeables);
+                context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -426,8 +411,7 @@ class SpanExporterFactoryTest {
                         new SpanExporterModel()
                             .withAdditionalProperty(
                                 "unknown_key", ImmutableMap.of("key1", "value1")),
-                        spiHelper,
-                        new ArrayList<>()))
+                        context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
             "No component provider detected for io.opentelemetry.sdk.trace.export.SpanExporter with name \"unknown_key\".");
@@ -441,8 +425,7 @@ class SpanExporterFactoryTest {
             .create(
                 new SpanExporterModel()
                     .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
-                spiHelper,
-                new ArrayList<>());
+                context);
     assertThat(spanExporter).isInstanceOf(SpanExporterComponentProvider.TestSpanExporter.class);
     assertThat(
             ((SpanExporterComponentProvider.TestSpanExporter) spanExporter)

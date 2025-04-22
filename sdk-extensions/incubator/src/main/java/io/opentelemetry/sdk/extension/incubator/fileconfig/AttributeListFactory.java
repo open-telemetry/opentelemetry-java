@@ -11,9 +11,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
-import java.io.Closeable;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -28,8 +26,7 @@ final class AttributeListFactory implements Factory<List<AttributeNameValueModel
   }
 
   @Override
-  public Attributes create(
-      List<AttributeNameValueModel> model, SpiHelper spiHelper, List<Closeable> closeables) {
+  public Attributes create(List<AttributeNameValueModel> model, DeclarativeConfigContext context) {
     AttributesBuilder builder = Attributes.builder();
 
     for (AttributeNameValueModel nameValueModel : model) {

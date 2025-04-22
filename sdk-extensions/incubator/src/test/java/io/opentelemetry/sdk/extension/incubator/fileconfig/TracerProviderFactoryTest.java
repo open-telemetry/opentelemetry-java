@@ -44,8 +44,9 @@ class TracerProviderFactoryTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
-  private final SpiHelper spiHelper =
-      SpiHelper.create(TracerProviderFactoryTest.class.getClassLoader());
+  private final DeclarativeConfigContext context =
+      new DeclarativeConfigContext(
+          SpiHelper.create(TracerProviderFactoryTest.class.getClassLoader()));
 
   @ParameterizedTest
   @MethodSource("createArguments")
@@ -53,8 +54,7 @@ class TracerProviderFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     cleanup.addCloseable(expectedProvider);
 
-    SdkTracerProvider provider =
-        TracerProviderFactory.getInstance().create(model, spiHelper, closeables).build();
+    SdkTracerProvider provider = TracerProviderFactory.getInstance().create(model, context).build();
     cleanup.addCloseable(provider);
     cleanup.addCloseables(closeables);
 

@@ -70,8 +70,9 @@ class OpenTelemetryConfigurationFactoryTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
-  private final SpiHelper spiHelper =
-      SpiHelper.create(OpenTelemetryConfigurationFactoryTest.class.getClassLoader());
+  private final DeclarativeConfigContext context =
+      new DeclarativeConfigContext(
+          SpiHelper.create(OpenTelemetryConfigurationFactoryTest.class.getClassLoader()));
 
   @Test
   void create_InvalidFileFormat() {
@@ -83,9 +84,7 @@ class OpenTelemetryConfigurationFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     for (OpenTelemetryConfigurationModel testCase : testCases) {
       assertThatThrownBy(
-              () ->
-                  OpenTelemetryConfigurationFactory.getInstance()
-                      .create(testCase, spiHelper, closeables))
+              () -> OpenTelemetryConfigurationFactory.getInstance().create(testCase, context))
           .isInstanceOf(DeclarativeConfigException.class)
           .hasMessage("Unsupported file format. Supported formats include: 0.4");
       cleanup.addCloseables(closeables);
@@ -100,8 +99,7 @@ class OpenTelemetryConfigurationFactoryTest {
 
     OpenTelemetrySdk sdk =
         OpenTelemetryConfigurationFactory.getInstance()
-            .create(
-                new OpenTelemetryConfigurationModel().withFileFormat("0.4"), spiHelper, closeables);
+            .create(new OpenTelemetryConfigurationModel().withFileFormat("0.4"), context);
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 
@@ -132,8 +130,7 @@ class OpenTelemetryConfigurationFactoryTest {
                                                     new LogRecordExporterModel()
                                                         .withOtlpHttp(
                                                             new OtlpHttpExporterModel())))))),
-                spiHelper,
-                closeables);
+                context);
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 
@@ -294,8 +291,7 @@ class OpenTelemetryConfigurationFactoryTest {
                                             new ViewStreamModel()
                                                 .withName("stream-name")
                                                 .withAttributeKeys(null))))),
-                spiHelper,
-                closeables);
+                context);
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 

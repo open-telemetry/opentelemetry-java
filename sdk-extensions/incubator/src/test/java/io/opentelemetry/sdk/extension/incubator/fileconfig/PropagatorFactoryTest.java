@@ -37,14 +37,13 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class PropagatorFactoryTest {
 
-  private final SpiHelper spiHelper =
-      SpiHelper.create(PropagatorFactoryTest.class.getClassLoader());
+  private final DeclarativeConfigContext context =
+      new DeclarativeConfigContext(SpiHelper.create(PropagatorFactoryTest.class.getClassLoader()));
 
   @ParameterizedTest
   @MethodSource("createArguments")
   void create(PropagatorModel model, ContextPropagators expectedPropagators) {
-    ContextPropagators propagators =
-        PropagatorFactory.getInstance().create(model, spiHelper, Collections.emptyList());
+    ContextPropagators propagators = PropagatorFactory.getInstance().create(model, context);
 
     assertThat(propagators.toString()).isEqualTo(expectedPropagators.toString());
   }
@@ -140,10 +139,7 @@ class PropagatorFactoryTest {
     assertThatThrownBy(
             () ->
                 PropagatorFactory.getInstance()
-                    .create(
-                        new PropagatorModel().withCompositeList("foo"),
-                        spiHelper,
-                        Collections.emptyList()))
+                    .create(new PropagatorModel().withCompositeList("foo"), context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
             "No component provider detected for io.opentelemetry.context.propagation.TextMapPropagator with name \"foo\".");

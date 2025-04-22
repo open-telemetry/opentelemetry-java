@@ -11,7 +11,6 @@ import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,7 +29,7 @@ class AttributeListFactoryTest {
     assertThatThrownBy(
             () ->
                 AttributeListFactory.getInstance()
-                    .create(model, mock(SpiHelper.class), Collections.emptyList()))
+                    .create(model, mock(DeclarativeConfigContext.class)))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessageContaining(expectedMessage);
   }
@@ -133,8 +132,7 @@ class AttributeListFactoryTest {
                             .withName("boolArrKey")
                             .withValue(Arrays.asList(true, false))
                             .withType(AttributeNameValueModel.AttributeType.BOOL_ARRAY)),
-                    mock(SpiHelper.class),
-                    Collections.emptyList()))
+                    mock(DeclarativeConfigContext.class)))
         .isEqualTo(expectedAttributes);
   }
 }

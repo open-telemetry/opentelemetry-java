@@ -8,11 +8,8 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.resources.Resource;
-import java.io.Closeable;
-import java.util.List;
 import java.util.Objects;
 
 final class OpenTelemetryConfigurationFactory
@@ -31,7 +28,7 @@ final class OpenTelemetryConfigurationFactory
 
   @Override
   public OpenTelemetrySdk create(
-      OpenTelemetryConfigurationModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+      OpenTelemetryConfigurationModel model, DeclarativeConfigContext context) {
     OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
     if (!CURRENT_SUPPORTED_FILE_FORMAT.equals(model.getFileFormat())) {
       throw new DeclarativeConfigException(
@@ -44,52 +41,47 @@ final class OpenTelemetryConfigurationFactory
 
     if (model.getPropagator() != null) {
       builder.setPropagators(
-          PropagatorFactory.getInstance().create(model.getPropagator(), spiHelper, closeables));
+          PropagatorFactory.getInstance().create(model.getPropagator(), context));
     }
 
     Resource resource = Resource.getDefault();
     if (model.getResource() != null) {
-      resource = ResourceFactory.getInstance().create(model.getResource(), spiHelper, closeables);
+      resource = ResourceFactory.getInstance().create(model.getResource(), context);
     }
 
     if (model.getLoggerProvider() != null) {
       builder.setLoggerProvider(
-          FileConfigUtil.addAndReturn(
-              closeables,
+          context.addCloseable(
               LoggerProviderFactory.getInstance()
                   .create(
                       LoggerProviderAndAttributeLimits.create(
                           model.getAttributeLimits(), model.getLoggerProvider()),
-                      spiHelper,
-                      closeables)
+                      context)
                   .setResource(resource)
                   .build()));
     }
 
     if (model.getTracerProvider() != null) {
       builder.setTracerProvider(
-          FileConfigUtil.addAndReturn(
-              closeables,
+          context.addCloseable(
               TracerProviderFactory.getInstance()
                   .create(
                       TracerProviderAndAttributeLimits.create(
                           model.getAttributeLimits(), model.getTracerProvider()),
-                      spiHelper,
-                      closeables)
+                      context)
                   .setResource(resource)
                   .build()));
     }
 
     if (model.getMeterProvider() != null) {
       builder.setMeterProvider(
-          FileConfigUtil.addAndReturn(
-              closeables,
+          context.addCloseable(
               MeterProviderFactory.getInstance()
-                  .create(model.getMeterProvider(), spiHelper, closeables)
+                  .create(model.getMeterProvider(), context)
                   .setResource(resource)
                   .build()));
     }
 
-    return FileConfigUtil.addAndReturn(closeables, builder.build());
+    return context.addCloseable(builder.build());
   }
 }
