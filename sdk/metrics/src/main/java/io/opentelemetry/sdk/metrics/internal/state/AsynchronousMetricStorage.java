@@ -161,16 +161,23 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     attributes = attributesProcessor.process(attributes, context);
 
     if (aggregatorHandles.size() >= maxCardinality) {
-      throttlingLogger.log(
-          Level.WARNING,
-          "Instrument "
-              + metricDescriptor.getSourceInstrument().getName()
-              + " has exceeded the maximum allowed cardinality ("
-              + maxCardinality
-              + ").");
-      return MetricStorage.CARDINALITY_OVERFLOW;
+      aggregatorHandles.forEach(
+          (attr, handle) -> {
+            if (!handle.hasRecordedValues()) {
+              aggregatorHandles.remove(attr);
+            }
+          });
+      if (aggregatorHandles.size() >= maxCardinality) {
+        throttlingLogger.log(
+            Level.WARNING,
+            "Instrument "
+                + metricDescriptor.getSourceInstrument().getName()
+                + " has exceeded the maximum allowed cardinality ("
+                + maxCardinality
+                + ").");
+        return MetricStorage.CARDINALITY_OVERFLOW;
+      }
     }
-
     return attributes;
   }
 
