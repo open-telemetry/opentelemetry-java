@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -78,6 +79,20 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   // callbacks
   private long startEpochNanos;
   private long epochNanos;
+
+  // Delete the first empty handle to reclaim space, and return quickly for all subsequent entries
+  private final BiConsumer<Attributes, AggregatorHandle<T, U>> handlesDeleter =
+      new BiConsumer<Attributes, AggregatorHandle<T, U>>() {
+        private boolean active = true;
+
+        @Override
+        public void accept(Attributes attributes, AggregatorHandle<T, U> handle) {
+          if (active && !handle.hasRecordedValues()) {
+            aggregatorHandles.remove(attributes);
+            active = false;
+          }
+        }
+      };
 
   private AsynchronousMetricStorage(
       RegisteredReader registeredReader,
@@ -160,14 +175,9 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     Context context = Context.current();
     attributes = attributesProcessor.process(attributes, context);
 
-    if (aggregatorHandles.size() >= maxCardinality) {
-      aggregatorHandles.forEach(
-          (attr, handle) -> {
-            if (!handle.hasRecordedValues()) {
-              aggregatorHandles.remove(attr);
-            }
-          });
-      if (aggregatorHandles.size() >= maxCardinality) {
+    if (aggregatorHandles.size() == maxCardinality) {
+      aggregatorHandles.forEach(handlesDeleter);
+      if (aggregatorHandles.size() == maxCardinality) {
         throttlingLogger.log(
             Level.WARNING,
             "Instrument "
