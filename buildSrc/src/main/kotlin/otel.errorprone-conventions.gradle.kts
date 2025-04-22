@@ -86,9 +86,6 @@ tasks {
         // cognitive load is dubious.
         disable("YodaCondition")
 
-        // Text blocks are not supported in java 8
-        disable("StringConcatToTextBlock")
-
         // We annotate packages with @ParametersAreNonnullByDefault from com.google.code.findbugs:jsr305.
         // @NullMarked is the equivalent from jspecify.
         disable("AddNullMarkedToPackageInfo")
