@@ -70,6 +70,8 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
 
   // Only populated if memoryMode == REUSABLE_DATA
   private final ObjectPool<T> reusablePointsPool;
+  private final ObjectPool<AggregatorHandle<T, U>> reusableHandlesPool;
+
   private final List<T> reusablePointsList = new ArrayList<>();
   // If aggregationTemporality == DELTA, this reference and lastPoints will be swapped at every
   // collection
@@ -100,6 +102,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     this.attributesProcessor = attributesProcessor;
     this.maxCardinality = maxCardinality - 1;
     this.reusablePointsPool = new ObjectPool<>(aggregator::createReusablePoint);
+    this.reusableHandlesPool = new ObjectPool<>(aggregator::createHandle);
     this.handlesDeleter = new HandlesDeleter();
 
     if (memoryMode == REUSABLE_DATA) {
@@ -141,7 +144,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   void record(Attributes attributes, long value) {
     attributes = validateAndProcessAttributes(attributes);
     AggregatorHandle<T, U> handle =
-        aggregatorHandles.computeIfAbsent(attributes, key -> aggregator.createHandle());
+        aggregatorHandles.computeIfAbsent(attributes, key -> reusableHandlesPool.borrowObject());
     handle.recordLong(value, attributes, Context.current());
   }
 
@@ -149,7 +152,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   void record(Attributes attributes, double value) {
     attributes = validateAndProcessAttributes(attributes);
     AggregatorHandle<T, U> handle =
-        aggregatorHandles.computeIfAbsent(attributes, key -> aggregator.createHandle());
+        aggregatorHandles.computeIfAbsent(attributes, key -> reusableHandlesPool.borrowObject());
     handle.recordDouble(value, attributes, Context.current());
   }
 
@@ -336,7 +339,8 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     @Override
     public void accept(Attributes attributes, AggregatorHandle<T, U> handle) {
       if (active && !handle.hasRecordedValues()) {
-        aggregatorHandles.remove(attributes);
+        AggregatorHandle<T, U> aggregatorHandle = aggregatorHandles.remove(attributes);
+        reusableHandlesPool.returnObject(aggregatorHandle);
         active = false;
       }
     }
