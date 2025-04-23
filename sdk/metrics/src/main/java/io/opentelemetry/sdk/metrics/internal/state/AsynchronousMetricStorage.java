@@ -34,7 +34,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -82,9 +81,6 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   private long startEpochNanos;
   private long epochNanos;
 
-  // Delete the first empty handle to reclaim space, and return quickly for all subsequent entries
-  private HandlesDeleter handlesDeleter;
-
   private AsynchronousMetricStorage(
       RegisteredReader registeredReader,
       MetricDescriptor metricDescriptor,
@@ -103,7 +99,6 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     this.maxCardinality = maxCardinality - 1;
     this.reusablePointsPool = new ObjectPool<>(aggregator::createReusablePoint);
     this.reusableHandlesPool = new ObjectPool<>(aggregator::createHandle);
-    this.handlesDeleter = new HandlesDeleter();
 
     if (memoryMode == REUSABLE_DATA) {
       this.lastPoints = new PooledHashMap<>();
@@ -169,23 +164,14 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     attributes = attributesProcessor.process(attributes, context);
 
     if (aggregatorHandles.size() >= maxCardinality) {
-      aggregatorHandles.forEach(handlesDeleter);
-      if (memoryMode == REUSABLE_DATA) {
-        handlesDeleter.reset();
-      } else {
-        handlesDeleter = new HandlesDeleter();
-      }
-
-      if (aggregatorHandles.size() >= maxCardinality) {
-        throttlingLogger.log(
-            Level.WARNING,
-            "Instrument "
-                + metricDescriptor.getSourceInstrument().getName()
-                + " has exceeded the maximum allowed cardinality ("
-                + maxCardinality
-                + ").");
-        return MetricStorage.CARDINALITY_OVERFLOW;
-      }
+      throttlingLogger.log(
+          Level.WARNING,
+          "Instrument "
+              + metricDescriptor.getSourceInstrument().getName()
+              + " has exceeded the maximum allowed cardinality ("
+              + maxCardinality
+              + ").");
+      return MetricStorage.CARDINALITY_OVERFLOW;
     }
     return attributes;
   }
@@ -211,9 +197,9 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
             ? collectWithDeltaAggregationTemporality()
             : collectWithCumulativeAggregationTemporality();
 
-    if (memoryMode != REUSABLE_DATA) {
-      aggregatorHandles.clear();
-    }
+    // collectWith*AggregationTemporality() methods are responsible for resetting the handle
+    aggregatorHandles.forEach((attribute, handle) -> reusableHandlesPool.returnObject(handle));
+    aggregatorHandles.clear();
 
     return aggregator.toMetricData(
         resource, instrumentationScopeInfo, metricDescriptor, result, aggregationTemporality);
@@ -233,10 +219,6 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
 
     aggregatorHandles.forEach(
         (attributes, handle) -> {
-          if (!handle.hasRecordedValues()) {
-            return;
-          }
-
           T point =
               handle.aggregateThenMaybeReset(
                   AsynchronousMetricStorage.this.startEpochNanos,
@@ -313,10 +295,6 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
 
     aggregatorHandles.forEach(
         (attributes, handle) -> {
-          if (!handle.hasRecordedValues()) {
-            return;
-          }
-
           T value =
               handle.aggregateThenMaybeReset(
                   AsynchronousMetricStorage.this.startEpochNanos,
@@ -331,22 +309,5 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   @Override
   public boolean isEmpty() {
     return aggregator == Aggregator.drop();
-  }
-
-  private class HandlesDeleter implements BiConsumer<Attributes, AggregatorHandle<T, U>> {
-    private boolean active = true;
-
-    @Override
-    public void accept(Attributes attributes, AggregatorHandle<T, U> handle) {
-      if (active && !handle.hasRecordedValues()) {
-        AggregatorHandle<T, U> aggregatorHandle = aggregatorHandles.remove(attributes);
-        reusableHandlesPool.returnObject(aggregatorHandle);
-        active = false;
-      }
-    }
-
-    private void reset() {
-      active = true;
-    }
   }
 }
