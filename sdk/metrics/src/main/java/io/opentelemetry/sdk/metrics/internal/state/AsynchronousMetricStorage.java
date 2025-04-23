@@ -74,6 +74,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   private final ObjectPool<AggregatorHandle<T, U>> reusableHandlesPool;
   private final Function<Attributes, AggregatorHandle<T, U>> handleBuilder;
   private final BiConsumer<Attributes, AggregatorHandle<T, U>> handleReleaser;
+  private final BiConsumer<Attributes, T> pointReleaser;
 
   private final List<T> reusablePointsList = new ArrayList<>();
   // If aggregationTemporality == DELTA, this reference and lastPoints will be swapped at every
@@ -105,6 +106,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     this.reusableHandlesPool = new ObjectPool<>(aggregator::createHandle);
     this.handleBuilder = ignored -> reusableHandlesPool.borrowObject();
     this.handleReleaser = (ignored, handle) -> reusableHandlesPool.returnObject(handle);
+    this.pointReleaser = (ignored, point) -> reusablePointsPool.returnObject(point);
 
     if (memoryMode == REUSABLE_DATA) {
       this.lastPoints = new PooledHashMap<>();
@@ -273,7 +275,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
       // lastPoints for the current collection can be discarded when the collection is completed.
       // They can be returned to the pool because they're not managed by the AggregatorHandle,
       // we made a copy.
-      lastPoints.forEach((attributes, point) -> reusablePointsPool.returnObject(point));
+      lastPoints.forEach(pointReleaser);
       lastPoints.clear();
 
       Map<Attributes, T> tmp = lastPoints;
