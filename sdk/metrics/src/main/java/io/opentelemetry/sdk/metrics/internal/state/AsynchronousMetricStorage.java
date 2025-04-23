@@ -81,18 +81,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   private long epochNanos;
 
   // Delete the first empty handle to reclaim space, and return quickly for all subsequent entries
-  private final BiConsumer<Attributes, AggregatorHandle<T, U>> handlesDeleter =
-      new BiConsumer<Attributes, AggregatorHandle<T, U>>() {
-        private boolean active = true;
-
-        @Override
-        public void accept(Attributes attributes, AggregatorHandle<T, U> handle) {
-          if (active && !handle.hasRecordedValues()) {
-            aggregatorHandles.remove(attributes);
-            active = false;
-          }
-        }
-      };
+  private HandlesDeleter handlesDeleter;
 
   private AsynchronousMetricStorage(
       RegisteredReader registeredReader,
@@ -111,6 +100,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     this.attributesProcessor = attributesProcessor;
     this.maxCardinality = maxCardinality - 1;
     this.reusablePointsPool = new ObjectPool<>(aggregator::createReusablePoint);
+    this.handlesDeleter = new HandlesDeleter();
 
     if (memoryMode == REUSABLE_DATA) {
       this.lastPoints = new PooledHashMap<>();
@@ -177,6 +167,12 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
 
     if (aggregatorHandles.size() >= maxCardinality) {
       aggregatorHandles.forEach(handlesDeleter);
+      if (memoryMode == REUSABLE_DATA) {
+        handlesDeleter.reset();
+      } else {
+        handlesDeleter = new HandlesDeleter();
+      }
+
       if (aggregatorHandles.size() >= maxCardinality) {
         throttlingLogger.log(
             Level.WARNING,
@@ -332,5 +328,21 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   @Override
   public boolean isEmpty() {
     return aggregator == Aggregator.drop();
+  }
+
+  private class HandlesDeleter implements BiConsumer<Attributes, AggregatorHandle<T, U>> {
+    private boolean active = true;
+
+    @Override
+    public void accept(Attributes attributes, AggregatorHandle<T, U> handle) {
+      if (active && !handle.hasRecordedValues()) {
+        aggregatorHandles.remove(attributes);
+        active = false;
+      }
+    }
+
+    private void reset() {
+      active = true;
+    }
   }
 }
