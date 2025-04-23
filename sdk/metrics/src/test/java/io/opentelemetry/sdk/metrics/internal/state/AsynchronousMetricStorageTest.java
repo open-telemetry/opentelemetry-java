@@ -210,6 +210,37 @@ class AsynchronousMetricStorageTest {
 
   @ParameterizedTest
   @EnumSource(MemoryMode.class)
+  void record_HandlesSpotsAreReleasedAfterCollection(MemoryMode memoryMode) {
+    setup(memoryMode);
+
+    longCounterStorage.setEpochInformation(0, 1);
+    for (int i = 0; i < CARDINALITY_LIMIT - 1; i++) {
+      longCounterStorage.record(Attributes.builder().put("key" + i, "val").build(), 1);
+    }
+
+    assertThat(longCounterStorage.collect(resource, scope, 0, testClock.nanoTime()))
+        .satisfies(
+            metricData ->
+                assertThat(metricData.getLongSumData().getPoints()).hasSize(CARDINALITY_LIMIT - 1));
+    logs.assertDoesNotContain(
+        "Instrument long-counter has exceeded the maximum allowed cardinality");
+
+    longCounterStorage.setEpochInformation(1, 2);
+    for (int i = 0; i < CARDINALITY_LIMIT - 1; i++) {
+      // Different attribute
+      longCounterStorage.record(Attributes.builder().put("key" + i, "val2").build(), 1);
+    }
+
+    assertThat(longCounterStorage.collect(resource, scope, 0, testClock.nanoTime()))
+        .satisfies(
+            metricData ->
+                assertThat(metricData.getLongSumData().getPoints()).hasSize(CARDINALITY_LIMIT - 1));
+    logs.assertDoesNotContain(
+        "Instrument long-counter has exceeded the maximum allowed cardinality");
+  }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
   void record_DuplicateAttributes(MemoryMode memoryMode) {
     setup(memoryMode);
 
