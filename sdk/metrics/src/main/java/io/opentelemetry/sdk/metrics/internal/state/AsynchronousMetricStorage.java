@@ -247,7 +247,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     List<T> deltaPoints = memoryMode == REUSABLE_DATA ? reusablePointsList : new ArrayList<>();
     currentPoints.forEach(
         (attributes, currentPoint) -> {
-          T lastPoint = lastPoints.get(attributes);
+          T lastPoint = lastPoints.remove(attributes);
 
           T deltaPoint;
           if (lastPoint == null) {
@@ -272,9 +272,9 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
         });
 
     if (memoryMode == REUSABLE_DATA) {
-      // lastPoints for the current collection can be discarded when the collection is completed.
-      // They can be returned to the pool because they're not managed by the AggregatorHandle,
-      // we made a copy.
+      // - If the point was used to compute a delta, it's now in deltaPoints (and thus in
+      //  reusablePointsList)
+      // - If the point hasn't been used, it's still in lastPoints and can be returned
       lastPoints.forEach(pointReleaser);
       lastPoints.clear();
 
