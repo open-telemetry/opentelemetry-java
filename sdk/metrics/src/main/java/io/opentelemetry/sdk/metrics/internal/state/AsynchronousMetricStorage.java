@@ -34,6 +34,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,6 +72,8 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   // Only populated if memoryMode == REUSABLE_DATA
   private final ObjectPool<T> reusablePointsPool;
   private final ObjectPool<AggregatorHandle<T, U>> reusableHandlesPool;
+  private final Function<Attributes, AggregatorHandle<T, U>> handleBuilder;
+  private final BiConsumer<Attributes, AggregatorHandle<T, U>> handleReleaser;
 
   private final List<T> reusablePointsList = new ArrayList<>();
   // If aggregationTemporality == DELTA, this reference and lastPoints will be swapped at every
@@ -99,6 +103,8 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     this.maxCardinality = maxCardinality - 1;
     this.reusablePointsPool = new ObjectPool<>(aggregator::createReusablePoint);
     this.reusableHandlesPool = new ObjectPool<>(aggregator::createHandle);
+    this.handleBuilder = ignored -> reusableHandlesPool.borrowObject();
+    this.handleReleaser = (ignored, handle) -> reusableHandlesPool.returnObject(handle);
 
     if (memoryMode == REUSABLE_DATA) {
       this.lastPoints = new PooledHashMap<>();
@@ -138,16 +144,14 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   /** Record callback measurement from {@link ObservableLongMeasurement}. */
   void record(Attributes attributes, long value) {
     attributes = validateAndProcessAttributes(attributes);
-    AggregatorHandle<T, U> handle =
-        aggregatorHandles.computeIfAbsent(attributes, key -> reusableHandlesPool.borrowObject());
+    AggregatorHandle<T, U> handle = aggregatorHandles.computeIfAbsent(attributes, handleBuilder);
     handle.recordLong(value, attributes, Context.current());
   }
 
   /** Record callback measurement from {@link ObservableDoubleMeasurement}. */
   void record(Attributes attributes, double value) {
     attributes = validateAndProcessAttributes(attributes);
-    AggregatorHandle<T, U> handle =
-        aggregatorHandles.computeIfAbsent(attributes, key -> reusableHandlesPool.borrowObject());
+    AggregatorHandle<T, U> handle = aggregatorHandles.computeIfAbsent(attributes, handleBuilder);
     handle.recordDouble(value, attributes, Context.current());
   }
 
@@ -198,7 +202,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
             : collectWithCumulativeAggregationTemporality();
 
     // collectWith*AggregationTemporality() methods are responsible for resetting the handle
-    aggregatorHandles.forEach((attribute, handle) -> reusableHandlesPool.returnObject(handle));
+    aggregatorHandles.forEach(handleReleaser);
     aggregatorHandles.clear();
 
     return aggregator.toMetricData(
