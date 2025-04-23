@@ -164,9 +164,6 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   }
 
   private Attributes validateAndProcessAttributes(Attributes attributes) {
-    Context context = Context.current();
-    attributes = attributesProcessor.process(attributes, context);
-
     if (aggregatorHandles.size() >= maxCardinality) {
       throttlingLogger.log(
           Level.WARNING,
@@ -177,6 +174,9 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
               + ").");
       return MetricStorage.CARDINALITY_OVERFLOW;
     }
+
+    Context context = Context.current();
+    attributes = attributesProcessor.process(attributes, context);
     return attributes;
   }
 
