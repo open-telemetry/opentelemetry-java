@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.metrics.internal.state.Measurement;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -112,7 +113,7 @@ public final class DoubleLastValueAggregator
   }
 
   static final class Handle extends AggregatorHandle<DoublePointData, DoubleExemplarData> {
-    private volatile boolean set = false;
+    private final AtomicBoolean set = new AtomicBoolean(false);
     private volatile double current = 0;
 
     // Only used when memoryMode is REUSABLE_DATA
@@ -135,11 +136,8 @@ public final class DoubleLastValueAggregator
         List<DoubleExemplarData> exemplars,
         boolean reset) {
       double currentLocal = current;
-      if (!set) {
+      if ((reset && !set.compareAndSet(true, false)) || (!reset && !set.get())) {
         throw new NullPointerException();
-      }
-      if (reset) {
-        set = false;
       }
 
       DoublePointData output;
@@ -151,14 +149,13 @@ public final class DoubleLastValueAggregator
             ImmutableDoublePointData.create(
                 startEpochNanos, epochNanos, attributes, currentLocal, exemplars);
       }
-
       return output;
     }
 
     @Override
     protected void doRecordDouble(double value) {
       current = value;
-      set = true;
+      set.set(true);
     }
   }
 }
