@@ -22,8 +22,6 @@ import io.opentelemetry.sdk.metrics.internal.state.Measurement;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -114,8 +112,8 @@ public final class DoubleLastValueAggregator
   }
 
   static final class Handle extends AggregatorHandle<DoublePointData, DoubleExemplarData> {
-    @Nullable private static final Double DEFAULT_VALUE = null;
-    private final AtomicReference<Double> current = new AtomicReference<>(DEFAULT_VALUE);
+    private volatile boolean set = false;
+    private volatile double current = 0;
 
     // Only used when memoryMode is REUSABLE_DATA
     @Nullable private final MutableDoublePointData reusablePoint;
@@ -136,20 +134,31 @@ public final class DoubleLastValueAggregator
         Attributes attributes,
         List<DoubleExemplarData> exemplars,
         boolean reset) {
-      Double value = reset ? this.current.getAndSet(DEFAULT_VALUE) : this.current.get();
-      if (reusablePoint != null) {
-        reusablePoint.set(
-            startEpochNanos, epochNanos, attributes, Objects.requireNonNull(value), exemplars);
-        return reusablePoint;
-      } else {
-        return ImmutableDoublePointData.create(
-            startEpochNanos, epochNanos, attributes, Objects.requireNonNull(value), exemplars);
+      double currentLocal = current;
+      if (!set) {
+        throw new NullPointerException();
       }
+      if (reset) {
+        set = false;
+      }
+
+      DoublePointData output;
+      if (reusablePoint != null) {
+        reusablePoint.set(startEpochNanos, epochNanos, attributes, currentLocal, exemplars);
+        output = reusablePoint;
+      } else {
+        output =
+            ImmutableDoublePointData.create(
+                startEpochNanos, epochNanos, attributes, currentLocal, exemplars);
+      }
+
+      return output;
     }
 
     @Override
     protected void doRecordDouble(double value) {
-      current.set(value);
+      current = value;
+      set = true;
     }
   }
 }
