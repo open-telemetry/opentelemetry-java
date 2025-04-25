@@ -132,14 +132,14 @@ public final class JavaDocsCrawler {
     List<String> updatedArtifacts = new ArrayList<>();
 
     for (Artifact artifact : artifacts) {
-      String[] parts = artifact.name().split("-");
+      String[] parts = artifact.getName().split("-");
       StringBuilder path = new StringBuilder();
       path.append(JAVA_DOCS_BASE_URL)
           .append(GROUP)
           .append("/")
-          .append(artifact.name())
+          .append(artifact.getName())
           .append("/")
-          .append(artifact.version())
+          .append(artifact.getVersion())
           .append("/")
           .append(String.join("/", parts))
           .append("/package-summary.html");
@@ -155,7 +155,7 @@ public final class JavaDocsCrawler {
             String.format(
                 Locale.ROOT,
                 "Crawl failed for %s with status code %d at URL %s\nResponse: %s",
-                artifact.name(),
+                artifact.getName(),
                 crawlResponse.statusCode(),
                 path,
                 crawlResponse.body()));
@@ -163,7 +163,7 @@ public final class JavaDocsCrawler {
       }
 
       if (crawlResponse.body().contains(JAVA_DOC_DOWNLOADED_TEXT)) {
-        updatedArtifacts.add(artifact.name());
+        updatedArtifacts.add(artifact.getName());
       }
 
       Thread.sleep(THROTTLE_MS); // some light throttling

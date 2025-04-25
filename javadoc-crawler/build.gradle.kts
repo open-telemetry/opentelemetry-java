@@ -17,6 +17,14 @@ tasks {
     options.release.set(17)
   }
 
+  // only test on java 17+
+  val testJavaVersion: String? by project
+  if (testJavaVersion != null && Integer.valueOf(testJavaVersion) < 17) {
+    test {
+      enabled = false
+    }
+  }
+
   val crawl by registering(JavaExec::class) {
     dependsOn(classes)
 
