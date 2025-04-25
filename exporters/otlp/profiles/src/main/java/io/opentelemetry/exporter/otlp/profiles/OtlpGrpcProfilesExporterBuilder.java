@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.otlp.profiles;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
+import io.grpc.ManagedChannel;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
@@ -19,6 +20,7 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -51,11 +53,30 @@ public final class OtlpGrpcProfilesExporterBuilder {
     this(
         new GrpcExporterBuilder<>(
             "otlp",
-            "profiles",
+            "profile",
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerProfilesServiceGrpc::newFutureStub,
             GRPC_ENDPOINT_PATH));
+  }
+
+  /**
+   * Sets the managed chanel to use when communicating with the backend. Takes precedence over
+   * {@link #setEndpoint(String)} if both are called.
+   *
+   * <p>Note: calling this overrides the spec compliant {@code User-Agent} header. To ensure spec
+   * compliance, set {@link io.grpc.ManagedChannelBuilder#userAgent(String)} to {@link
+   * OtlpUserAgent#getUserAgent()} when building the channel.
+   *
+   * @param channel the channel to use
+   * @return this builder's instance
+   * @deprecated Use {@link #setEndpoint(String)}. If you have a use case not satisfied by the
+   *     methods on this builder, please file an issue to let us know what it is.
+   */
+  @Deprecated
+  public OtlpGrpcProfilesExporterBuilder setChannel(ManagedChannel channel) {
+    delegate.setChannel(channel);
+    return this;
   }
 
   /**
@@ -178,6 +199,26 @@ public final class OtlpGrpcProfilesExporterBuilder {
    */
   public OtlpGrpcProfilesExporterBuilder setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
     delegate.setRetryPolicy(retryPolicy);
+    return this;
+  }
+
+  /** Set the {@link ClassLoader} used to load the sender API. */
+  public OtlpGrpcProfilesExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
+    requireNonNull(serviceClassLoader, "serviceClassLoader");
+    delegate.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  /**
+   * Set the {@link ExecutorService} used to execute requests.
+   *
+   * <p>NOTE: By calling this method, you are opting into managing the lifecycle of the {@code
+   * executorService}. {@link ExecutorService#shutdown()} will NOT be called when this exporter is
+   * shutdown.
+   */
+  public OtlpGrpcProfilesExporterBuilder setExecutorService(ExecutorService executorService) {
+    requireNonNull(executorService, "executorService");
+    delegate.setExecutorService(executorService);
     return this;
   }
 
