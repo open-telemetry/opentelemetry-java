@@ -18,6 +18,8 @@ import java.util.Objects;
 final class OpenTelemetryConfigurationFactory
     implements Factory<OpenTelemetryConfigurationModel, OpenTelemetrySdk> {
 
+  private static final String CURRENT_SUPPORTED_FILE_FORMAT = "0.4";
+
   private static final OpenTelemetryConfigurationFactory INSTANCE =
       new OpenTelemetryConfigurationFactory();
 
@@ -31,9 +33,9 @@ final class OpenTelemetryConfigurationFactory
   public OpenTelemetrySdk create(
       OpenTelemetryConfigurationModel model, SpiHelper spiHelper, List<Closeable> closeables) {
     OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
-    if (!"0.3".equals(model.getFileFormat())) {
+    if (!CURRENT_SUPPORTED_FILE_FORMAT.equals(model.getFileFormat())) {
       throw new DeclarativeConfigException(
-          "Unsupported file format. Supported formats include: 0.3");
+          "Unsupported file format. Supported formats include: " + CURRENT_SUPPORTED_FILE_FORMAT);
     }
 
     if (Objects.equals(Boolean.TRUE, model.getDisabled())) {

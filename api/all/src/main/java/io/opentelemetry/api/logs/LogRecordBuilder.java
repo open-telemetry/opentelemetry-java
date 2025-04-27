@@ -198,6 +198,16 @@ public interface LogRecordBuilder {
     return setAttribute(key, (long) value);
   }
 
+  /**
+   * Sets the event name, which identifies the class / type of the Event.
+   *
+   * <p>This name should uniquely identify the event structure (both attributes and body). A log
+   * record with a non-empty event name is an Event.
+   */
+  default LogRecordBuilder setEventName(String eventName) {
+    return this;
+  }
+
   /** Emit the log record. */
   void emit();
 }

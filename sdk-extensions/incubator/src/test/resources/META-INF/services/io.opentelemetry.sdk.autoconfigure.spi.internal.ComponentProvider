@@ -6,5 +6,9 @@ io.opentelemetry.sdk.extension.incubator.fileconfig.component.SamplerComponentPr
 io.opentelemetry.sdk.extension.incubator.fileconfig.component.SpanProcessorComponentProvider
 io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordProcessorComponentProvider
 io.opentelemetry.sdk.extension.incubator.fileconfig.component.ResourceComponentProvider
-io.opentelemetry.sdk.extension.incubator.fileconfig.component.ResourceOrderedFirstComponentProvider
-io.opentelemetry.sdk.extension.incubator.fileconfig.component.ResourceOrderedSecondComponentProvider
+io.opentelemetry.sdk.extension.incubator.fileconfig.component.ResourceFirstComponentProvider
+io.opentelemetry.sdk.extension.incubator.fileconfig.component.ResourceSecondComponentProvider
+io.opentelemetry.sdk.extension.incubator.fileconfig.component.ContainerResourceProvider
+io.opentelemetry.sdk.extension.incubator.fileconfig.component.HostResourceProvider
+io.opentelemetry.sdk.extension.incubator.fileconfig.component.OsResourceProvider
+io.opentelemetry.sdk.extension.incubator.fileconfig.component.ProcessResourceProvider

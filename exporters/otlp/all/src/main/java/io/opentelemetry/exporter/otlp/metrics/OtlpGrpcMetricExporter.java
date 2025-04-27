@@ -32,8 +32,10 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
   private final GrpcExporterBuilder<Marshaler> builder;
   private final GrpcExporter<Marshaler> delegate;
-  private final AggregationTemporalitySelector aggregationTemporalitySelector;
-  private final DefaultAggregationSelector defaultAggregationSelector;
+  // Visible for testing
+  final AggregationTemporalitySelector aggregationTemporalitySelector;
+  // Visible for testing
+  final DefaultAggregationSelector defaultAggregationSelector;
   private final MetricReusableDataMarshaler marshaler;
 
   /**
@@ -78,7 +80,11 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    * @since 1.29.0
    */
   public OtlpGrpcMetricExporterBuilder toBuilder() {
-    return new OtlpGrpcMetricExporterBuilder(builder.copy(), marshaler.getMemoryMode());
+    return new OtlpGrpcMetricExporterBuilder(
+        builder.copy(),
+        aggregationTemporalitySelector,
+        defaultAggregationSelector,
+        marshaler.getMemoryMode());
   }
 
   @Override

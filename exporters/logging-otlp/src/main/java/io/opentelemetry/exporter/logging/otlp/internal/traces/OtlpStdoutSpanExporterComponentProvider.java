@@ -26,7 +26,7 @@ public final class OtlpStdoutSpanExporterComponentProvider
 
   @Override
   public String getName() {
-    return "experimental-otlp/stdout";
+    return "otlp_file/development";
   }
 
   @Override
