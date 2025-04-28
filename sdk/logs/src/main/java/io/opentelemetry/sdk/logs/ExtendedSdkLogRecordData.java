@@ -44,14 +44,18 @@ abstract class ExtendedSdkLogRecordData implements ExtendedLogRecordData {
         severity,
         severityText,
         totalAttributeCount,
-        eventName,
         attributes,
-        body);
+        body,
+        eventName);
   }
 
   @Override
   @Nullable
   public abstract Value<?> getBodyValue();
+
+  @Override
+  @Nullable
+  public abstract String getEventName();
 
   @Override
   @SuppressWarnings("deprecation") // Implementation of deprecated method

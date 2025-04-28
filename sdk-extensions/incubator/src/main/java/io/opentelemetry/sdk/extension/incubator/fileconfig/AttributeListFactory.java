@@ -43,9 +43,9 @@ final class AttributeListFactory implements Factory<List<AttributeNameValueModel
       AttributeNameValueModel nameValueModel, AttributesBuilder builder) {
     String name = FileConfigUtil.requireNonNull(nameValueModel.getName(), "attribute name");
     Object value = FileConfigUtil.requireNonNull(nameValueModel.getValue(), "attribute value");
-    AttributeNameValueModel.Type type = nameValueModel.getType();
+    AttributeNameValueModel.AttributeType type = nameValueModel.getType();
     if (type == null) {
-      type = AttributeNameValueModel.Type.STRING;
+      type = AttributeNameValueModel.AttributeType.STRING;
     }
     switch (type) {
       case STRING:

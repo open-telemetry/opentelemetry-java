@@ -17,7 +17,7 @@ public class ResourceComponentProvider implements ComponentProvider<Resource> {
 
   @Override
   public String getName() {
-    return "unused";
+    return "shape_color";
   }
 
   @Override

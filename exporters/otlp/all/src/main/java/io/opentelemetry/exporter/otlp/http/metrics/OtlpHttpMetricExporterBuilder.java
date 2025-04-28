@@ -50,17 +50,20 @@ public final class OtlpHttpMetricExporterBuilder {
   private static final MemoryMode DEFAULT_MEMORY_MODE = MemoryMode.REUSABLE_DATA;
 
   private final HttpExporterBuilder<Marshaler> delegate;
-  private AggregationTemporalitySelector aggregationTemporalitySelector =
-      DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR;
 
-  private DefaultAggregationSelector defaultAggregationSelector =
-      DefaultAggregationSelector.getDefault();
+  private AggregationTemporalitySelector aggregationTemporalitySelector;
+  private DefaultAggregationSelector defaultAggregationSelector;
   private MemoryMode memoryMode;
 
-  OtlpHttpMetricExporterBuilder(HttpExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
+  OtlpHttpMetricExporterBuilder(
+      HttpExporterBuilder<Marshaler> delegate,
+      AggregationTemporalitySelector aggregationTemporalitySelector,
+      DefaultAggregationSelector defaultAggregationSelector,
+      MemoryMode memoryMode) {
     this.delegate = delegate;
+    this.aggregationTemporalitySelector = aggregationTemporalitySelector;
+    this.defaultAggregationSelector = defaultAggregationSelector;
     this.memoryMode = memoryMode;
-    delegate.setMeterProvider(MeterProvider::noop);
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeaders);
   }
 
@@ -68,6 +71,8 @@ public final class OtlpHttpMetricExporterBuilder {
     this(
         new HttpExporterBuilder<>(
             "otlp", ExporterMetrics.Signal.METRIC, "otlp_http_metric_exporter", DEFAULT_ENDPOINT),
+        DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR,
+        DefaultAggregationSelector.getDefault(),
         DEFAULT_MEMORY_MODE);
   }
 
@@ -242,39 +247,34 @@ public final class OtlpHttpMetricExporterBuilder {
   }
 
   /**
-   * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
-   * {@link GlobalOpenTelemetry#getMeterProvider()}.
-   *
-   * @since 1.50.0
-   */
-  public OtlpHttpMetricExporterBuilder setMeterProvider(MeterProvider meterProvider) {
-    requireNonNull(meterProvider, "meterProvider");
-    setMeterProvider(() -> meterProvider);
-    return this;
-  }
-
-  /**
-   * Sets the {@link MeterProvider} supplier used to collect metrics related to export. If not set,
-   * uses {@link GlobalOpenTelemetry#getMeterProvider()}.
-   *
-   * @since 1.50.0
-   */
-  public OtlpHttpMetricExporterBuilder setMeterProvider(
-      Supplier<MeterProvider> meterProviderSupplier) {
-    requireNonNull(meterProviderSupplier, "meterProviderSupplier");
-    delegate.setMeterProvider(meterProviderSupplier);
-    return this;
-  }
-
-  /**
-   * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter
-   * collects.
+   * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter collects.
    *
    * @since 1.50.0
    */
   public OtlpHttpMetricExporterBuilder setHealthMetricLevel(HealthMetricLevel level) {
     requireNonNull(level, "level");
     delegate.setHealthMetricLevel(level);
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
+   * {@link GlobalOpenTelemetry#getMeterProvider()}.
+   */
+  public OtlpHttpMetricExporterBuilder setMeterProvider(MeterProvider meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
+    delegate.setMeterProvider(() -> meterProvider);
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} supplier to use to collect metrics related to export. If not
+   * set, uses {@link GlobalOpenTelemetry#getMeterProvider()}.
+   */
+  public OtlpHttpMetricExporterBuilder setMeterProvider(
+      Supplier<MeterProvider> meterProviderSupplier) {
+    requireNonNull(meterProviderSupplier, "meterProvider");
+    delegate.setMeterProvider(meterProviderSupplier);
     return this;
   }
 

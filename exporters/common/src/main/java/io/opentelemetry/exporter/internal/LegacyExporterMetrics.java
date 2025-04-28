@@ -70,7 +70,7 @@ public class LegacyExporterMetrics {
 
   private LongCounter seen() {
     LongCounter seen = this.seen;
-    if (seen == null) {
+    if (seen == null || ExporterMetrics.isNoop(seen)) {
       seen = meter().counterBuilder(exporterName + ".exporter.seen").build();
       this.seen = seen;
     }
@@ -79,7 +79,7 @@ public class LegacyExporterMetrics {
 
   private LongCounter exported() {
     LongCounter exported = this.exported;
-    if (exported == null) {
+    if (exported == null || ExporterMetrics.isNoop(exported)) {
       exported = meter().counterBuilder(exporterName + ".exporter.exported").build();
       this.exported = exported;
     }

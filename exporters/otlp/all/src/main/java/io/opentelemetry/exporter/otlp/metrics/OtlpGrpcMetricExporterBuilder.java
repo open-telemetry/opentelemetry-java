@@ -59,17 +59,19 @@ public final class OtlpGrpcMetricExporterBuilder {
   // Visible for testing
   final GrpcExporterBuilder<Marshaler> delegate;
 
-  private AggregationTemporalitySelector aggregationTemporalitySelector =
-      DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR;
-
-  private DefaultAggregationSelector defaultAggregationSelector =
-      DefaultAggregationSelector.getDefault();
+  private AggregationTemporalitySelector aggregationTemporalitySelector;
+  private DefaultAggregationSelector defaultAggregationSelector;
   private MemoryMode memoryMode;
 
-  OtlpGrpcMetricExporterBuilder(GrpcExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
+  OtlpGrpcMetricExporterBuilder(
+      GrpcExporterBuilder<Marshaler> delegate,
+      AggregationTemporalitySelector aggregationTemporalitySelector,
+      DefaultAggregationSelector defaultAggregationSelector,
+      MemoryMode memoryMode) {
     this.delegate = delegate;
+    this.aggregationTemporalitySelector = aggregationTemporalitySelector;
+    this.defaultAggregationSelector = defaultAggregationSelector;
     this.memoryMode = memoryMode;
-    delegate.setHealthMetricLevel(HealthMetricLevel.OFF);
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeader);
   }
 
@@ -83,6 +85,8 @@ public final class OtlpGrpcMetricExporterBuilder {
             DEFAULT_ENDPOINT,
             () -> MarshalerMetricsServiceGrpc::newFutureStub,
             GRPC_ENDPOINT_PATH),
+        DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR,
+        DefaultAggregationSelector.getDefault(),
         DEFAULT_MEMORY_MODE);
   }
 
@@ -273,37 +277,34 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
-   * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
-   * {@link GlobalOpenTelemetry#getMeterProvider()}.
-   */
-  public OtlpGrpcMetricExporterBuilder setMeterProvider(MeterProvider meterProvider) {
-    requireNonNull(meterProvider, "meterProvider");
-    setMeterProvider(() -> meterProvider);
-    return this;
-  }
-
-  /**
-   * Sets the {@link MeterProvider} supplier used to collect metrics related to export. If not set,
-   * uses {@link GlobalOpenTelemetry#getMeterProvider()}.
-   *
-   * @since 1.32.0
-   */
-  public OtlpGrpcMetricExporterBuilder setMeterProvider(
-      Supplier<MeterProvider> meterProviderSupplier) {
-    requireNonNull(meterProviderSupplier, "meterProviderSupplier");
-    delegate.setMeterProvider(meterProviderSupplier);
-    return this;
-  }
-
-  /**
-   * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter
-   * collects.
+   * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter collects.
    *
    * @since 1.50.0
    */
   public OtlpGrpcMetricExporterBuilder setHealthMetricLevel(HealthMetricLevel level) {
     requireNonNull(level, "level");
     delegate.setHealthMetricLevel(level);
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
+   * {@link GlobalOpenTelemetry#getMeterProvider()}.
+   */
+  public OtlpGrpcMetricExporterBuilder setMeterProvider(MeterProvider meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
+    delegate.setMeterProvider(() -> meterProvider);
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} supplier to use to collect metrics related to export. If not
+   * set, uses {@link GlobalOpenTelemetry#getMeterProvider()}.
+   */
+  public OtlpGrpcMetricExporterBuilder setMeterProvider(
+      Supplier<MeterProvider> meterProviderSupplier) {
+    requireNonNull(meterProviderSupplier, "meterProvider");
+    delegate.setMeterProvider(meterProviderSupplier);
     return this;
   }
 

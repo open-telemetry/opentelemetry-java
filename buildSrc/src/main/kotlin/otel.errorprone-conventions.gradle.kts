@@ -50,7 +50,6 @@ tasks {
         disable("UnnecessarilyFullyQualified")
 
         // We use animal sniffer
-        disable("Java7ApiChecker")
         disable("Java8ApiChecker")
         disable("AndroidJdkLibsChecker")
 
@@ -87,8 +86,9 @@ tasks {
         // cognitive load is dubious.
         disable("YodaCondition")
 
-        // Text blocks are not supported in java 8
-        disable("StringConcatToTextBlock")
+        // We annotate packages with @ParametersAreNonnullByDefault from com.google.code.findbugs:jsr305.
+        // @NullMarked is the equivalent from jspecify.
+        disable("AddNullMarkedToPackageInfo")
 
         if ((name.contains("Jmh") || name.contains("Test") || project.name.contains("testing-internal")) && !project.name.equals("custom-checks")) {
           // Allow underscore in test-type method names

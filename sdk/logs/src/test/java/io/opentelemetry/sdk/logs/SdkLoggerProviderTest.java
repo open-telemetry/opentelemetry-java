@@ -124,10 +124,12 @@ class SdkLoggerProviderTest {
 
   @Test
   void builder_multipleProcessors() {
+    LogRecordProcessor firstProcessor = mock(LogRecordProcessor.class);
     assertThat(
             SdkLoggerProvider.builder()
                 .addLogRecordProcessor(logRecordProcessor)
                 .addLogRecordProcessor(logRecordProcessor)
+                .addLogRecordProcessorFirst(firstProcessor)
                 .build())
         .extracting("sharedState", as(InstanceOfAssertFactories.type(LoggerSharedState.class)))
         .extracting(LoggerSharedState::getLogRecordProcessor)
@@ -138,7 +140,9 @@ class SdkLoggerProviderTest {
                   .extracting(
                       "logRecordProcessors",
                       as(InstanceOfAssertFactories.list(LogRecordProcessor.class)))
-                  .hasSize(2);
+                  .hasSize(3)
+                  .first()
+                  .isEqualTo(firstProcessor);
             });
   }
 
@@ -246,8 +250,7 @@ class SdkLoggerProviderTest {
     sdkLoggerProvider
         .get("test")
         .logRecordBuilder()
-        // TODO (trask) once event name stabilizes
-        // .setEventName("event name")
+        .setEventName("my.event.name")
         .setTimestamp(100, TimeUnit.NANOSECONDS)
         .setContext(Span.wrap(spanContext).storeInContext(Context.root()))
         .setSeverity(Severity.DEBUG)
@@ -260,8 +263,7 @@ class SdkLoggerProviderTest {
     assertThat(logRecordData.get())
         .hasResource(resource)
         .hasInstrumentationScope(InstrumentationScopeInfo.create("test"))
-        // TODO (trask) once event name stabilizes
-        // .hasEventName("event name")
+        .hasEventName("my.event.name")
         .hasTimestamp(100)
         .hasSpanContext(spanContext)
         .hasSeverity(Severity.DEBUG)
@@ -344,7 +346,8 @@ class SdkLoggerProviderTest {
                 + "clock=SystemClock{}, "
                 + "resource=Resource{schemaUrl=null, attributes={key=\"value\"}}, "
                 + "logLimits=LogLimits{maxNumberOfAttributes=128, maxAttributeValueLength=2147483647}, "
-                + "logRecordProcessor=MockLogRecordProcessor"
+                + "logRecordProcessor=MockLogRecordProcessor, "
+                + "loggerConfigurator=ScopeConfiguratorImpl{conditions=[]}"
                 + "}");
   }
 }

@@ -5,12 +5,15 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import static java.util.stream.Collectors.joining;
+
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import java.io.Closeable;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -102,5 +105,25 @@ final class FileConfigUtil {
       throw new DeclarativeConfigException(
           "Error configuring " + type.getName() + " with name \"" + name + "\"", throwable);
     }
+  }
+
+  static Map.Entry<String, Object> getSingletonMapEntry(
+      Map<String, Object> additionalProperties, String resourceName) {
+    if (additionalProperties.isEmpty()) {
+      throw new DeclarativeConfigException(resourceName + " must be set");
+    }
+    if (additionalProperties.size() > 1) {
+      throw new DeclarativeConfigException(
+          "Invalid configuration - multiple "
+              + resourceName
+              + "s set: "
+              + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
+    }
+    return additionalProperties.entrySet().stream()
+        .findFirst()
+        .orElseThrow(
+            () ->
+                new IllegalStateException(
+                    "Missing " + resourceName + ". This is a programming error."));
   }
 }

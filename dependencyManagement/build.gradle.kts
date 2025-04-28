@@ -18,17 +18,17 @@ val DEPENDENCY_BOMS = listOf(
   "com.google.protobuf:protobuf-bom:4.30.2",
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
   "com.squareup.okio:okio-bom:3.11.0", // applies to transitive dependencies of okhttp
-  "io.grpc:grpc-bom:1.71.0",
+  "io.grpc:grpc-bom:1.72.0",
   "io.netty:netty-bom:4.2.0.Final",
   "io.zipkin.brave:brave-bom:6.1.0",
   "io.zipkin.reporter2:zipkin-reporter-bom:3.5.0",
   "org.assertj:assertj-bom:3.27.3",
-  "org.testcontainers:testcontainers-bom:1.20.6",
+  "org.testcontainers:testcontainers-bom:1.21.0",
   "org.snakeyaml:snakeyaml-engine:2.9"
 )
 
 val autoValueVersion = "1.11.0"
-val errorProneVersion = "2.37.0"
+val errorProneVersion = "2.38.0"
 val jmhVersion = "1.37"
 // Mockito 5.x.x requires Java 11 https://github.com/mockito/mockito/releases/tag/v5.0.0
 val mockitoVersion = "4.11.0"
@@ -73,7 +73,7 @@ val DEPENDENCIES = listOf(
   "io.prometheus:simpleclient_httpserver:${prometheusClientVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.54.1",
+  "com.google.api.grpc:proto-google-common-protos:2.55.2",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",

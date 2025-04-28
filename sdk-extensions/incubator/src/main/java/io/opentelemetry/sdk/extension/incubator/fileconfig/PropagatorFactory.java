@@ -5,14 +5,18 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNonNull;
-
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PropagatorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TextMapPropagatorModel;
 import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 final class PropagatorFactory implements Factory<PropagatorModel, ContextPropagators> {
 
@@ -27,9 +31,40 @@ final class PropagatorFactory implements Factory<PropagatorModel, ContextPropaga
   @Override
   public ContextPropagators create(
       PropagatorModel model, SpiHelper spiHelper, List<Closeable> closeables) {
-    List<String> compositeModel = requireNonNull(model.getComposite(), "composite propagator");
-    TextMapPropagator textMapPropagator =
-        TextMapPropagatorFactory.getInstance().create(compositeModel, spiHelper, closeables);
-    return ContextPropagators.create(textMapPropagator);
+    List<TextMapPropagatorModel> textMapPropagatorModels = model.getComposite();
+    Set<String> propagatorNames = new HashSet<>();
+    List<TextMapPropagator> textMapPropagators = new ArrayList<>();
+    if (textMapPropagatorModels != null) {
+      textMapPropagatorModels.forEach(
+          textMapPropagatorModel -> {
+            TextMapPropagatorAndName propagatorAndName =
+                TextMapPropagatorFactory.getInstance()
+                    .create(textMapPropagatorModel, spiHelper, closeables);
+            textMapPropagators.add(propagatorAndName.getTextMapPropagator());
+            propagatorNames.add(propagatorAndName.getName());
+          });
+    }
+
+    String compositeList = model.getCompositeList();
+    if (compositeList != null) {
+      List<String> propagatorNamesList =
+          // Process string list same as we process OTEL_PROPAGATORS, trimming and filtering empty
+          // and 'none'
+          Stream.of(compositeList.split(","))
+              .map(String::trim)
+              .filter(s -> !s.isEmpty())
+              .filter(s -> !s.equals("none"))
+              .collect(Collectors.toList());
+      for (String propagatorName : propagatorNamesList) {
+        // Only add entries which weren't already previously added
+        if (propagatorNames.add(propagatorName)) {
+          textMapPropagators.add(
+              TextMapPropagatorFactory.getPropagator(spiHelper, propagatorName)
+                  .getTextMapPropagator());
+        }
+      }
+    }
+
+    return ContextPropagators.create(TextMapPropagator.composite(textMapPropagators));
   }
 }

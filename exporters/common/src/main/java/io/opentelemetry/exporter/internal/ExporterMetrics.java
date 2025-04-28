@@ -124,7 +124,7 @@ public class ExporterMetrics {
 
   private LongUpDownCounter inflight() {
     LongUpDownCounter inflight = this.inflight;
-    if (inflight == null) {
+    if (inflight == null || isNoop(inflight)) {
       inflight =
           meter()
               .upDownCounterBuilder("otel.sdk.exporter." + signal.namespace + ".inflight")
@@ -141,7 +141,7 @@ public class ExporterMetrics {
 
   private LongCounter exported() {
     LongCounter exported = this.exported;
-    if (exported == null) {
+    if (exported == null || isNoop(exported)) {
       exported =
           meter()
               .counterBuilder("otel.sdk.exporter." + signal.namespace + ".exported")
@@ -158,7 +158,7 @@ public class ExporterMetrics {
 
   private DoubleHistogram duration() {
     DoubleHistogram duration = this.duration;
-    if (duration == null) {
+    if (duration == null || isNoop(duration)) {
       duration =
           meter()
               .histogramBuilder("otel.sdk.exporter.operation.duration")
@@ -190,6 +190,12 @@ public class ExporterMetrics {
       return;
     }
     exported().add(count, getAttributesWithPotentialError(errorType, Attributes.empty()));
+  }
+
+  static boolean isNoop(Object instrument) {
+    // This is a poor way to identify a Noop implementation, but the API doesn't provide a better
+    // way. Perhaps we could add a common "Noop" interface to allow for an instanceof check?
+    return instrument.getClass().getSimpleName().startsWith("Noop");
   }
 
   private Attributes getAttributesWithPotentialError(

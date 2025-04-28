@@ -1,2 +1,9 @@
 Comparing source compatibility of opentelemetry-exporter-otlp-1.50.0-SNAPSHOT.jar against opentelemetry-exporter-otlp-1.49.0.jar
-No changes.
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder setMeterProvider(io.opentelemetry.api.metrics.MeterProvider)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder setMeterProvider(java.util.function.Supplier<io.opentelemetry.api.metrics.MeterProvider>)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder setMeterProvider(io.opentelemetry.api.metrics.MeterProvider)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder setMeterProvider(java.util.function.Supplier<io.opentelemetry.api.metrics.MeterProvider>)
