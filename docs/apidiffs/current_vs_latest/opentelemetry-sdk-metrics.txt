@@ -59,3 +59,6 @@ Comparing source compatibility of opentelemetry-sdk-metrics-1.50.0-SNAPSHOT.jar 
 ***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.metrics.data.ValueAtQuantile  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.metrics.data.ValueAtQuantile create(double, double)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	***  MODIFIED METHOD: PUBLIC (<- PACKAGE_PROTECTED) io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder addMeterConfiguratorCondition(java.util.function.Predicate<io.opentelemetry.sdk.common.InstrumentationScopeInfo><io.opentelemetry.sdk.common.InstrumentationScopeInfo>, io.opentelemetry.sdk.metrics.internal.MeterConfig)
