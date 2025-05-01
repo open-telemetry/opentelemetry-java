@@ -121,7 +121,7 @@ public final class JavaDocsCrawler {
     HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
     if (response.statusCode() != 200) {
       logger.log(
-          Level.SEVERE, "Unexpected response code: " + response.statusCode() + ": " + response);
+          Level.SEVERE, "Unexpected response code: " + response.statusCode() + ": " + response.body());
       throw new IOException("Unable to pull Maven central artifacts list");
     }
     return objectMapper.readValue(response.body(), Map.class);
