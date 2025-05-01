@@ -19,10 +19,10 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.linecorp.armeria.server.ServerBuilder;
-import com.linecorp.armeria.server.grpc.GrpcService;
+import com.linecorp.armeria.server.ServiceRequestContext;
+import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
-import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -31,9 +31,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
-import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -45,6 +43,8 @@ import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -72,23 +72,16 @@ class OtlpGrpcMetricExporterBuilderTest {
         @Override
         protected void configure(ServerBuilder sb) {
           sb.service(
-              GrpcService.builder()
-                  .addService(
-                      new MetricsServiceGrpc.MetricsServiceImplBase() {
-                        @Override
-                        public void export(
-                            ExportMetricsServiceRequest request,
-                            StreamObserver<
-                                    io.opentelemetry.proto.collector.metrics.v1
-                                        .ExportMetricsServiceResponse>
-                                responseObserver) {
-                          responseObserver.onNext(
-                              ExportMetricsServiceResponse.getDefaultInstance());
-                          responseObserver.onCompleted();
-                          responseObserver.onCompleted();
-                        }
-                      })
-                  .build());
+              "/opentelemetry.proto.collector.metrics.v1.MetricsService/Export",
+              new AbstractUnaryGrpcService() {
+                @Override
+                protected CompletionStage<byte[]> handleMessage(
+                    ServiceRequestContext ctx, byte[] message) {
+                  return CompletableFuture.completedFuture(
+                      ExportMetricsServiceResponse.getDefaultInstance().toByteArray());
+                }
+              });
+          sb.http(0);
           sb.decorator(LoggingService.newDecorator());
         }
       };

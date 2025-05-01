@@ -26,7 +26,7 @@ dependencies {
 
   testImplementation(project(":exporters:otlp:testing-internal"))
   testImplementation("com.linecorp.armeria:armeria-junit5")
-  implementation("com.linecorp.armeria:armeria-grpc")
+  testImplementation("com.linecorp.armeria:armeria-grpc-protocol")
   testImplementation("io.grpc:grpc-stub")
 
   jmhImplementation(project(":sdk:testing"))
