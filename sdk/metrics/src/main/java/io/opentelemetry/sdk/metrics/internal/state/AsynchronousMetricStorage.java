@@ -227,10 +227,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
         (attributes, handle) -> {
           T point =
               handle.aggregateThenMaybeReset(
-                  AsynchronousMetricStorage.this.startEpochNanos,
-                  AsynchronousMetricStorage.this.epochNanos,
-                  attributes,
-                  /* reset= */ true);
+                  this.startEpochNanos, this.epochNanos, attributes, /* reset= */ true);
 
           T pointForCurrentPoints;
           if (memoryMode == REUSABLE_DATA) {
