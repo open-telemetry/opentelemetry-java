@@ -121,7 +121,8 @@ public final class JavaDocsCrawler {
     HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
     if (response.statusCode() != 200) {
       logger.log(
-          Level.SEVERE, "Unexpected response code: " + response.statusCode() + ": " + response.body());
+          Level.SEVERE,
+          "Unexpected response code: " + response.statusCode() + ": " + response.body());
       throw new IOException("Unable to pull Maven central artifacts list");
     }
     return objectMapper.readValue(response.body(), Map.class);
@@ -132,14 +133,14 @@ public final class JavaDocsCrawler {
     List<String> updatedArtifacts = new ArrayList<>();
 
     for (Artifact artifact : artifacts) {
-      String[] parts = artifact.getName().split("-");
+      String[] parts = artifact.name().split("-");
       StringBuilder path = new StringBuilder();
       path.append(JAVA_DOCS_BASE_URL)
           .append(GROUP)
           .append("/")
-          .append(artifact.getName())
+          .append(artifact.name())
           .append("/")
-          .append(artifact.getVersion())
+          .append(artifact.version())
           .append("/")
           .append(String.join("/", parts))
           .append("/package-summary.html");
@@ -155,7 +156,7 @@ public final class JavaDocsCrawler {
             String.format(
                 Locale.ROOT,
                 "Crawl failed for %s with status code %d at URL %s\nResponse: %s",
-                artifact.getName(),
+                artifact.name(),
                 crawlResponse.statusCode(),
                 path,
                 crawlResponse.body()));
@@ -163,7 +164,7 @@ public final class JavaDocsCrawler {
       }
 
       if (crawlResponse.body().contains(JAVA_DOC_DOWNLOADED_TEXT)) {
-        updatedArtifacts.add(artifact.getName());
+        updatedArtifacts.add(artifact.name());
       }
 
       Thread.sleep(THROTTLE_MS); // some light throttling
