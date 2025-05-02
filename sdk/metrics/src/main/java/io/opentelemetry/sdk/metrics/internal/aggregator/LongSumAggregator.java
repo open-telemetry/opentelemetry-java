@@ -21,7 +21,6 @@ import io.opentelemetry.sdk.metrics.internal.data.MutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
-import io.opentelemetry.sdk.metrics.internal.state.Measurement;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.List;
@@ -73,25 +72,6 @@ public final class LongSumAggregator
             currentPoint.getAttributes(),
             currentPoint.getValue() - previousReusablePoint.getValue(),
             currentPoint.getExemplars());
-  }
-
-  @Override
-  public LongPointData toPoint(Measurement measurement) {
-    return ImmutableLongPointData.create(
-        measurement.startEpochNanos(),
-        measurement.epochNanos(),
-        measurement.attributes(),
-        measurement.longValue());
-  }
-
-  @Override
-  public void toPoint(Measurement measurement, LongPointData reusablePoint) {
-    ((MutableLongPointData) reusablePoint)
-        .set(
-            measurement.startEpochNanos(),
-            measurement.epochNanos(),
-            measurement.attributes(),
-            measurement.longValue());
   }
 
   @Override
