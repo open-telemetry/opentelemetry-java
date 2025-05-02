@@ -17,14 +17,29 @@ import io.opentelemetry.exporter.internal.marshal.StatelessMarshaler;
 import io.opentelemetry.exporter.internal.marshal.StatelessMarshalerUtil;
 import io.opentelemetry.exporter.internal.otlp.AnyValueStatelessMarshaler;
 import io.opentelemetry.exporter.internal.otlp.AttributeKeyValueStatelessMarshaler;
+import io.opentelemetry.exporter.internal.otlp.IncubatingUtil;
 import io.opentelemetry.proto.logs.v1.internal.LogRecord;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.io.IOException;
 
 /** See {@link LogMarshaler}. */
 final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
+
   private static final String INVALID_TRACE_ID = TraceId.getInvalid();
   private static final String INVALID_SPAN_ID = SpanId.getInvalid();
+  private static final boolean INCUBATOR_AVAILABLE;
+
+  static {
+    boolean incubatorAvailable = false;
+    try {
+      Class.forName("io.opentelemetry.api.incubator.common.ExtendedAttributes");
+      incubatorAvailable = true;
+    } catch (ClassNotFoundException e) {
+      // Not available
+    }
+    INCUBATOR_AVAILABLE = incubatorAvailable;
+  }
+
   static final LogStatelessMarshaler INSTANCE = new LogStatelessMarshaler();
 
   @Override
@@ -39,12 +54,20 @@ final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
       output.serializeMessageWithContext(
           LogRecord.BODY, log.getBodyValue(), AnyValueStatelessMarshaler.INSTANCE, context);
     }
-    output.serializeRepeatedMessageWithContext(
-        LogRecord.ATTRIBUTES,
-        log.getAttributes(),
-        AttributeKeyValueStatelessMarshaler.INSTANCE,
-        context);
-    int droppedAttributesCount = log.getTotalAttributeCount() - log.getAttributes().size();
+
+    int droppedAttributesCount;
+    if (INCUBATOR_AVAILABLE) {
+      IncubatingUtil.serializeExtendedAttributes(output, log, context);
+      droppedAttributesCount =
+          log.getTotalAttributeCount() - IncubatingUtil.extendedAttributesSize(log);
+    } else {
+      output.serializeRepeatedMessageWithContext(
+          LogRecord.ATTRIBUTES,
+          log.getAttributes(),
+          AttributeKeyValueStatelessMarshaler.INSTANCE,
+          context);
+      droppedAttributesCount = log.getTotalAttributeCount() - log.getAttributes().size();
+    }
     output.serializeUInt32(LogRecord.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
 
     SpanContext spanContext = log.getSpanContext();
@@ -55,6 +78,7 @@ final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
     if (!spanContext.getSpanId().equals(INVALID_SPAN_ID)) {
       output.serializeSpanId(LogRecord.SPAN_ID, spanContext.getSpanId(), context);
     }
+    output.serializeStringWithContext(LogRecord.EVENT_NAME, log.getEventName(), context);
   }
 
   @Override
@@ -75,14 +99,23 @@ final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
           StatelessMarshalerUtil.sizeMessageWithContext(
               LogRecord.BODY, log.getBodyValue(), AnyValueStatelessMarshaler.INSTANCE, context);
     }
-    size +=
-        StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
-            LogRecord.ATTRIBUTES,
-            log.getAttributes(),
-            AttributeKeyValueStatelessMarshaler.INSTANCE,
-            context);
-    int droppedAttributesCount = log.getTotalAttributeCount() - log.getAttributes().size();
-    size += MarshalerUtil.sizeUInt32(LogRecord.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
+    if (INCUBATOR_AVAILABLE) {
+      size += IncubatingUtil.sizeExtendedAttributes(log, context);
+
+      int droppedAttributesCount =
+          log.getTotalAttributeCount() - IncubatingUtil.extendedAttributesSize(log);
+      size += MarshalerUtil.sizeUInt32(LogRecord.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
+    } else {
+      size +=
+          StatelessMarshalerUtil.sizeRepeatedMessageWithContext(
+              LogRecord.ATTRIBUTES,
+              log.getAttributes(),
+              AttributeKeyValueStatelessMarshaler.INSTANCE,
+              context);
+
+      int droppedAttributesCount = log.getTotalAttributeCount() - log.getAttributes().size();
+      size += MarshalerUtil.sizeUInt32(LogRecord.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
+    }
 
     SpanContext spanContext = log.getSpanContext();
     size += MarshalerUtil.sizeFixed32(LogRecord.FLAGS, spanContext.getTraceFlags().asByte());
@@ -92,6 +125,10 @@ final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
     if (!spanContext.getSpanId().equals(INVALID_SPAN_ID)) {
       size += MarshalerUtil.sizeSpanId(LogRecord.SPAN_ID, spanContext.getSpanId());
     }
+
+    size +=
+        StatelessMarshalerUtil.sizeStringWithContext(
+            LogRecord.EVENT_NAME, log.getEventName(), context);
 
     return size;
   }

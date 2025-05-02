@@ -62,10 +62,8 @@ class JdkHttpSenderTest {
             "text/plain",
             Duration.ofSeconds(10).toNanos(),
             Collections::emptyMap,
-            RetryPolicy.builder()
-                .setMaxAttempts(2)
-                .setInitialBackoff(Duration.ofMillis(1))
-                .build());
+            RetryPolicy.builder().setMaxAttempts(2).setInitialBackoff(Duration.ofMillis(1)).build(),
+            null);
   }
 
   @Test
@@ -90,10 +88,8 @@ class JdkHttpSenderTest {
             "text/plain",
             Duration.ofSeconds(10).toNanos(),
             Collections::emptyMap,
-            RetryPolicy.builder()
-                .setMaxAttempts(2)
-                .setInitialBackoff(Duration.ofMillis(1))
-                .build());
+            RetryPolicy.builder().setMaxAttempts(2).setInitialBackoff(Duration.ofMillis(1)).build(),
+            null);
 
     assertThatThrownBy(() -> sender.sendInternal(new NoOpMarshaler()))
         .satisfies(
@@ -147,6 +143,7 @@ class JdkHttpSenderTest {
             1,
             TimeUnit.SECONDS.toNanos(10),
             Collections::emptyMap,
+            null,
             null,
             null,
             null);

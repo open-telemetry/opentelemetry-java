@@ -50,7 +50,6 @@ tasks {
         disable("UnnecessarilyFullyQualified")
 
         // We use animal sniffer
-        disable("Java7ApiChecker")
         disable("Java8ApiChecker")
         disable("AndroidJdkLibsChecker")
 
@@ -86,6 +85,10 @@ tasks {
         // YodaConditions may improve safety in some cases. The argument of increased
         // cognitive load is dubious.
         disable("YodaCondition")
+
+        // We annotate packages with @ParametersAreNonnullByDefault from com.google.code.findbugs:jsr305.
+        // @NullMarked is the equivalent from jspecify.
+        disable("AddNullMarkedToPackageInfo")
 
         if ((name.contains("Jmh") || name.contains("Test") || project.name.contains("testing-internal")) && !project.name.equals("custom-checks")) {
           // Allow underscore in test-type method names

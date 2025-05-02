@@ -5,11 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import static java.util.stream.Collectors.joining;
-
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.Closeable;
@@ -29,37 +25,19 @@ final class MetricExporterFactory implements Factory<PushMetricExporterModel, Me
   @Override
   public MetricExporter create(
       PushMetricExporterModel model, SpiHelper spiHelper, List<Closeable> closeables) {
-    OtlpMetricModel otlpModel = model.getOtlp();
-    if (otlpModel != null) {
-      model.getAdditionalProperties().put("otlp", otlpModel);
-    }
 
-    if (model.getConsole() != null) {
-      model.getAdditionalProperties().put("console", model.getConsole());
-    }
+    model.getAdditionalProperties().compute("otlp_http", (k, v) -> model.getOtlpHttp());
+    model.getAdditionalProperties().compute("otlp_grpc", (k, v) -> model.getOtlpGrpc());
+    model
+        .getAdditionalProperties()
+        .compute("otlp_file/development", (k, v) -> model.getOtlpFileDevelopment());
+    model.getAdditionalProperties().compute("console", (k, v) -> model.getConsole());
 
-    if (!model.getAdditionalProperties().isEmpty()) {
-      Map<String, Object> additionalProperties = model.getAdditionalProperties();
-      if (additionalProperties.size() > 1) {
-        throw new ConfigurationException(
-            "Invalid configuration - multiple metric exporters set: "
-                + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
-      }
-      Map.Entry<String, Object> exporterKeyValue =
-          additionalProperties.entrySet().stream()
-              .findFirst()
-              .orElseThrow(
-                  () ->
-                      new IllegalStateException("Missing exporter. This is a programming error."));
-      MetricExporter metricExporter =
-          FileConfigUtil.loadComponent(
-              spiHelper,
-              MetricExporter.class,
-              exporterKeyValue.getKey(),
-              exporterKeyValue.getValue());
-      return FileConfigUtil.addAndReturn(closeables, metricExporter);
-    } else {
-      throw new ConfigurationException("metric exporter must be set");
-    }
+    Map.Entry<String, Object> keyValue =
+        FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "metric exporter");
+    MetricExporter metricExporter =
+        FileConfigUtil.loadComponent(
+            spiHelper, MetricExporter.class, keyValue.getKey(), keyValue.getValue());
+    return FileConfigUtil.addAndReturn(closeables, metricExporter);
   }
 }

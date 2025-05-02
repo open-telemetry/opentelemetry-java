@@ -11,19 +11,22 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.CardinalityLimitsModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalPrometheusMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PrometheusModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PullMetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -40,7 +43,7 @@ class MetricReaderFactoryTest {
 
   @RegisterExtension
   LogCapturer logCapturer =
-      LogCapturer.create().captureForLogger(FileConfiguration.class.getName());
+      LogCapturer.create().captureForLogger(DeclarativeConfiguration.class.getName());
 
   private SpiHelper spiHelper = SpiHelper.create(MetricReaderFactoryTest.class.getClassLoader());
 
@@ -53,7 +56,7 @@ class MetricReaderFactoryTest {
                         new MetricReaderModel().withPeriodic(new PeriodicMetricReaderModel()),
                         spiHelper,
                         Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("periodic metric reader exporter is required but is null");
   }
 
@@ -66,20 +69,23 @@ class MetricReaderFactoryTest {
             .build();
     cleanup.addCloseable(expectedReader);
 
-    io.opentelemetry.sdk.metrics.export.MetricReader reader =
+    MetricReaderAndCardinalityLimits readerAndCardinalityLimits =
         MetricReaderFactory.getInstance()
             .create(
                 new MetricReaderModel()
                     .withPeriodic(
                         new PeriodicMetricReaderModel()
                             .withExporter(
-                                new PushMetricExporterModel().withOtlp(new OtlpMetricModel()))),
+                                new PushMetricExporterModel()
+                                    .withOtlpHttp(new OtlpHttpMetricExporterModel()))),
                 spiHelper,
                 closeables);
+    MetricReader reader = readerAndCardinalityLimits.getMetricReader();
     cleanup.addCloseable(reader);
     cleanup.addCloseables(closeables);
 
     assertThat(reader.toString()).isEqualTo(expectedReader.toString());
+    assertThat(readerAndCardinalityLimits.getCardinalityLimitsSelector()).isNull();
   }
 
   @Test
@@ -92,21 +98,29 @@ class MetricReaderFactoryTest {
             .build();
     cleanup.addCloseable(expectedReader);
 
-    io.opentelemetry.sdk.metrics.export.MetricReader reader =
+    MetricReaderAndCardinalityLimits readerAndCardinalityLimits =
         MetricReaderFactory.getInstance()
             .create(
                 new MetricReaderModel()
                     .withPeriodic(
                         new PeriodicMetricReaderModel()
                             .withExporter(
-                                new PushMetricExporterModel().withOtlp(new OtlpMetricModel()))
-                            .withInterval(1)),
+                                new PushMetricExporterModel()
+                                    .withOtlpHttp(new OtlpHttpMetricExporterModel()))
+                            .withInterval(1)
+                            .withCardinalityLimits(new CardinalityLimitsModel().withDefault(100))),
                 spiHelper,
                 closeables);
+    MetricReader reader = readerAndCardinalityLimits.getMetricReader();
     cleanup.addCloseable(reader);
     cleanup.addCloseables(closeables);
 
     assertThat(reader.toString()).isEqualTo(expectedReader.toString());
+    assertThat(
+            readerAndCardinalityLimits
+                .getCardinalityLimitsSelector()
+                .getCardinalityLimit(InstrumentType.COUNTER))
+        .isEqualTo(100);
   }
 
   @Test
@@ -118,7 +132,7 @@ class MetricReaderFactoryTest {
     // Close the reader to avoid port conflict with the new instance created by MetricReaderFactory
     expectedReader.close();
 
-    io.opentelemetry.sdk.metrics.export.MetricReader reader =
+    MetricReaderAndCardinalityLimits readerAndCardinalityLimits =
         MetricReaderFactory.getInstance()
             .create(
                 new MetricReaderModel()
@@ -126,13 +140,18 @@ class MetricReaderFactoryTest {
                         new PullMetricReaderModel()
                             .withExporter(
                                 new PullMetricExporterModel()
-                                    .withPrometheus(new PrometheusModel().withPort(port)))),
+                                    .withPrometheusDevelopment(
+                                        new ExperimentalPrometheusMetricExporterModel()
+                                            .withPort(port)))),
                 spiHelper,
                 closeables);
+    io.opentelemetry.sdk.metrics.export.MetricReader reader =
+        readerAndCardinalityLimits.getMetricReader();
     cleanup.addCloseable(reader);
     cleanup.addCloseables(closeables);
 
     assertThat(reader.toString()).isEqualTo(expectedReader.toString());
+    assertThat(readerAndCardinalityLimits.getCardinalityLimitsSelector()).isNull();
     // TODO(jack-berg): validate prometheus component provider was invoked with correct arguments
     verify(spiHelper).load(ComponentProvider.class);
   }
@@ -148,7 +167,7 @@ class MetricReaderFactoryTest {
     // Close the reader to avoid port conflict with the new instance created by MetricReaderFactory
     expectedReader.close();
 
-    io.opentelemetry.sdk.metrics.export.MetricReader reader =
+    MetricReaderAndCardinalityLimits readerAndCardinalityLimits =
         MetricReaderFactory.getInstance()
             .create(
                 new MetricReaderModel()
@@ -156,16 +175,24 @@ class MetricReaderFactoryTest {
                         new PullMetricReaderModel()
                             .withExporter(
                                 new PullMetricExporterModel()
-                                    .withPrometheus(
-                                        new PrometheusModel()
+                                    .withPrometheusDevelopment(
+                                        new ExperimentalPrometheusMetricExporterModel()
                                             .withHost("localhost")
-                                            .withPort(port)))),
+                                            .withPort(port)))
+                            .withCardinalityLimits(new CardinalityLimitsModel().withDefault(100))),
                 spiHelper,
                 closeables);
+    io.opentelemetry.sdk.metrics.export.MetricReader reader =
+        readerAndCardinalityLimits.getMetricReader();
     cleanup.addCloseable(reader);
     cleanup.addCloseables(closeables);
 
     assertThat(reader.toString()).isEqualTo(expectedReader.toString());
+    assertThat(
+            readerAndCardinalityLimits
+                .getCardinalityLimitsSelector()
+                .getCardinalityLimit(InstrumentType.COUNTER))
+        .isEqualTo(100);
     // TODO(jack-berg): validate prometheus component provider was invoked with correct arguments
     verify(spiHelper).load(ComponentProvider.class);
   }
@@ -179,7 +206,7 @@ class MetricReaderFactoryTest {
                         new MetricReaderModel().withPull(new PullMetricReaderModel()),
                         spiHelper,
                         Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("pull metric reader exporter is required but is null");
 
     assertThatThrownBy(
@@ -192,7 +219,7 @@ class MetricReaderFactoryTest {
                                     .withExporter(new PullMetricExporterModel())),
                         spiHelper,
                         Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("prometheus is the only currently supported pull reader");
   }
 

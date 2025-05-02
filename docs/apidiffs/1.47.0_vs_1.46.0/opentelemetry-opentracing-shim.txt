@@ -1,0 +1,2 @@
+Comparing source compatibility of opentelemetry-opentracing-shim-1.47.0.jar against opentelemetry-opentracing-shim-1.46.0.jar
+No changes.

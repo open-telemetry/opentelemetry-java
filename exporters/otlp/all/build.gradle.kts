@@ -20,6 +20,8 @@ dependencies {
   implementation(project(":exporters:sender:okhttp"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
 
+  compileOnly(project(":api:incubator"))
+
   compileOnly("io.grpc:grpc-stub")
 
   testImplementation(project(":exporters:otlp:testing-internal"))

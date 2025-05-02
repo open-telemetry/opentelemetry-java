@@ -48,13 +48,7 @@ final class LogRecordExporterConfiguration {
         throw new ConfigurationException(
             "otel.logs.exporter contains " + EXPORTER_NONE + " along with other exporters");
       }
-      LogRecordExporter noop = LogRecordExporter.composite();
-      LogRecordExporter customized = logRecordExporterCustomizer.apply(noop, config);
-      if (customized == noop) {
-        return Collections.emptyMap();
-      }
-      closeables.add(customized);
-      return Collections.singletonMap(EXPORTER_NONE, customized);
+      return Collections.emptyMap();
     }
 
     if (exporterNames.isEmpty()) {

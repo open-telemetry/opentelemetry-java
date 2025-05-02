@@ -52,6 +52,12 @@ public interface ReadWriteLogRecord {
   /** Return an immutable {@link LogRecordData} instance representing this log record. */
   LogRecordData toLogRecordData();
 
+  /** Returns the log record event name, or {@code null} if none is set. */
+  @Nullable
+  default String getEventName() {
+    return null;
+  }
+
   /**
    * Returns the value of a given attribute if it exists. This is the equivalent of calling {@code
    * getAttributes().get(key)}.

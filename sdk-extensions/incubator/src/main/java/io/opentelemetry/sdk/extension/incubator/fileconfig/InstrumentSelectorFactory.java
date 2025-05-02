@@ -5,16 +5,16 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SelectorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewSelectorModel;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import java.io.Closeable;
 import java.util.List;
 
-final class InstrumentSelectorFactory implements Factory<SelectorModel, InstrumentSelector> {
+final class InstrumentSelectorFactory implements Factory<ViewSelectorModel, InstrumentSelector> {
 
   private static final InstrumentSelectorFactory INSTANCE = new InstrumentSelectorFactory();
 
@@ -26,7 +26,7 @@ final class InstrumentSelectorFactory implements Factory<SelectorModel, Instrume
 
   @Override
   public InstrumentSelector create(
-      SelectorModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+      ViewSelectorModel model, SpiHelper spiHelper, List<Closeable> closeables) {
     InstrumentSelectorBuilder builder = InstrumentSelector.builder();
     if (model.getInstrumentName() != null) {
       builder.setName(model.getInstrumentName());
@@ -36,7 +36,7 @@ final class InstrumentSelectorFactory implements Factory<SelectorModel, Instrume
       try {
         instrumentType = InstrumentType.valueOf(model.getInstrumentType().name());
       } catch (IllegalArgumentException e) {
-        throw new ConfigurationException(
+        throw new DeclarativeConfigException(
             "Unrecognized instrument type: " + model.getInstrumentType(), e);
       }
       builder.setType(instrumentType);
@@ -54,7 +54,7 @@ final class InstrumentSelectorFactory implements Factory<SelectorModel, Instrume
     try {
       return builder.build();
     } catch (IllegalArgumentException e) {
-      throw new ConfigurationException("Invalid selector", e);
+      throw new DeclarativeConfigException("Invalid selector", e);
     }
   }
 }

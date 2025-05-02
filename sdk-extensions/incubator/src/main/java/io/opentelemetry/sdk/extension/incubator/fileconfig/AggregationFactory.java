@@ -5,11 +5,11 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AggregationModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2ExponentialBucketHistogramModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2ExponentialBucketHistogramAggregationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramAggregationModel;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import java.io.Closeable;
 import java.util.List;
@@ -36,7 +36,7 @@ final class AggregationFactory implements Factory<AggregationModel, Aggregation>
     if (model.getLastValue() != null) {
       return Aggregation.lastValue();
     }
-    Base2ExponentialBucketHistogramModel exponentialBucketHistogram =
+    Base2ExponentialBucketHistogramAggregationModel exponentialBucketHistogram =
         model.getBase2ExponentialBucketHistogram();
     if (exponentialBucketHistogram != null) {
       Integer maxScale = exponentialBucketHistogram.getMaxScale();
@@ -50,10 +50,11 @@ final class AggregationFactory implements Factory<AggregationModel, Aggregation>
       try {
         return Aggregation.base2ExponentialBucketHistogram(maxSize, maxScale);
       } catch (IllegalArgumentException e) {
-        throw new ConfigurationException("Invalid exponential bucket histogram", e);
+        throw new DeclarativeConfigException("Invalid exponential bucket histogram", e);
       }
     }
-    ExplicitBucketHistogramModel explicitBucketHistogram = model.getExplicitBucketHistogram();
+    ExplicitBucketHistogramAggregationModel explicitBucketHistogram =
+        model.getExplicitBucketHistogram();
     if (explicitBucketHistogram != null) {
       List<Double> boundaries = explicitBucketHistogram.getBoundaries();
       if (boundaries == null) {
@@ -62,7 +63,7 @@ final class AggregationFactory implements Factory<AggregationModel, Aggregation>
       try {
         return Aggregation.explicitBucketHistogram(boundaries);
       } catch (IllegalArgumentException e) {
-        throw new ConfigurationException("Invalid explicit bucket histogram", e);
+        throw new DeclarativeConfigException("Invalid explicit bucket histogram", e);
       }
     }
 

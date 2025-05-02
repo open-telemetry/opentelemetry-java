@@ -5,12 +5,12 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig.component;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import java.util.Collection;
 import java.util.Collections;
 import javax.annotation.Nullable;
@@ -27,15 +27,15 @@ public class TextMapPropagatorComponentProvider implements ComponentProvider<Tex
   }
 
   @Override
-  public TextMapPropagator create(StructuredConfigProperties config) {
+  public TextMapPropagator create(DeclarativeConfigProperties config) {
     return new TestTextMapPropagator(config);
   }
 
   public static class TestTextMapPropagator implements TextMapPropagator {
 
-    public final StructuredConfigProperties config;
+    public final DeclarativeConfigProperties config;
 
-    private TestTextMapPropagator(StructuredConfigProperties config) {
+    public TestTextMapPropagator(DeclarativeConfigProperties config) {
       this.config = config;
     }
 
@@ -50,6 +50,11 @@ public class TextMapPropagatorComponentProvider implements ComponentProvider<Tex
     @Override
     public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
       return context;
+    }
+
+    @Override
+    public String toString() {
+      return "TestTextMapPropagator{}";
     }
   }
 }

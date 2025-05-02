@@ -5,13 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import static java.util.stream.Collectors.joining;
-
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.io.Closeable;
 import java.util.List;
@@ -30,38 +25,19 @@ final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, 
   @Override
   public LogRecordExporter create(
       LogRecordExporterModel model, SpiHelper spiHelper, List<Closeable> closeables) {
-    OtlpModel otlpModel = model.getOtlp();
-    if (otlpModel != null) {
-      model.getAdditionalProperties().put("otlp", otlpModel);
-    }
 
-    ConsoleModel consoleModel = model.getConsole();
-    if (consoleModel != null) {
-      model.getAdditionalProperties().put("console", consoleModel);
-    }
+    model.getAdditionalProperties().compute("otlp_http", (k, v) -> model.getOtlpHttp());
+    model.getAdditionalProperties().compute("otlp_grpc", (k, v) -> model.getOtlpGrpc());
+    model
+        .getAdditionalProperties()
+        .compute("otlp_file/development", (k, v) -> model.getOtlpFileDevelopment());
+    model.getAdditionalProperties().compute("console", (k, v) -> model.getConsole());
 
-    if (!model.getAdditionalProperties().isEmpty()) {
-      Map<String, Object> additionalProperties = model.getAdditionalProperties();
-      if (additionalProperties.size() > 1) {
-        throw new ConfigurationException(
-            "Invalid configuration - multiple log record exporters set: "
-                + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
-      }
-      Map.Entry<String, Object> exporterKeyValue =
-          additionalProperties.entrySet().stream()
-              .findFirst()
-              .orElseThrow(
-                  () ->
-                      new IllegalStateException("Missing exporter. This is a programming error."));
-      LogRecordExporter logRecordExporter =
-          FileConfigUtil.loadComponent(
-              spiHelper,
-              LogRecordExporter.class,
-              exporterKeyValue.getKey(),
-              exporterKeyValue.getValue());
-      return FileConfigUtil.addAndReturn(closeables, logRecordExporter);
-    } else {
-      throw new ConfigurationException("log exporter must be set");
-    }
+    Map.Entry<String, Object> keyValue =
+        FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "log record exporter");
+    LogRecordExporter logRecordExporter =
+        FileConfigUtil.loadComponent(
+            spiHelper, LogRecordExporter.class, keyValue.getKey(), keyValue.getValue());
+    return FileConfigUtil.addAndReturn(closeables, logRecordExporter);
   }
 }

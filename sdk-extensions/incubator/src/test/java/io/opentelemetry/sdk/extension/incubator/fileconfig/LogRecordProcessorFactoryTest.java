@@ -9,15 +9,15 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.LogRecordProcessorComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleLogRecordProcessorModel;
 import java.io.Closeable;
 import java.time.Duration;
@@ -44,7 +44,7 @@ class LogRecordProcessorFactoryTest {
                         new LogRecordProcessorModel().withBatch(new BatchLogRecordProcessorModel()),
                         spiHelper,
                         Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("batch log record processor exporter is required but is null");
   }
 
@@ -63,7 +63,9 @@ class LogRecordProcessorFactoryTest {
                 new LogRecordProcessorModel()
                     .withBatch(
                         new BatchLogRecordProcessorModel()
-                            .withExporter(new LogRecordExporterModel().withOtlp(new OtlpModel()))),
+                            .withExporter(
+                                new LogRecordExporterModel()
+                                    .withOtlpHttp(new OtlpHttpExporterModel()))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(processor);
@@ -90,7 +92,9 @@ class LogRecordProcessorFactoryTest {
                 new LogRecordProcessorModel()
                     .withBatch(
                         new BatchLogRecordProcessorModel()
-                            .withExporter(new LogRecordExporterModel().withOtlp(new OtlpModel()))
+                            .withExporter(
+                                new LogRecordExporterModel()
+                                    .withOtlpHttp(new OtlpHttpExporterModel()))
                             .withScheduleDelay(1)
                             .withMaxExportBatchSize(2)
                             .withExportTimeout(3)),
@@ -112,7 +116,7 @@ class LogRecordProcessorFactoryTest {
                             .withSimple(new SimpleLogRecordProcessorModel()),
                         spiHelper,
                         Collections.emptyList()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("simple log record processor exporter is required but is null");
   }
 
@@ -130,7 +134,9 @@ class LogRecordProcessorFactoryTest {
                 new LogRecordProcessorModel()
                     .withSimple(
                         new SimpleLogRecordProcessorModel()
-                            .withExporter(new LogRecordExporterModel().withOtlp(new OtlpModel()))),
+                            .withExporter(
+                                new LogRecordExporterModel()
+                                    .withOtlpHttp(new OtlpHttpExporterModel()))),
                 spiHelper,
                 closeables);
     cleanup.addCloseable(processor);
@@ -150,7 +156,7 @@ class LogRecordProcessorFactoryTest {
                                 "unknown_key", ImmutableMap.of("key1", "value1")),
                         spiHelper,
                         new ArrayList<>()))
-        .isInstanceOf(ConfigurationException.class)
+        .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
             "No component provider detected for io.opentelemetry.sdk.logs.LogRecordProcessor with name \"unknown_key\".");
   }

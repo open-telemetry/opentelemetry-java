@@ -10,12 +10,15 @@ import static java.util.stream.Collectors.joining;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.Locale;
+import java.net.UnknownHostException;
 import java.util.StringJoiner;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import okhttp3.Interceptor;
@@ -33,32 +36,34 @@ public final class RetryInterceptor implements Interceptor {
 
   private final RetryPolicy retryPolicy;
   private final Function<Response, Boolean> isRetryable;
-  private final Function<IOException, Boolean> isRetryableException;
+  private final Predicate<IOException> retryExceptionPredicate;
   private final Sleeper sleeper;
-  private final BoundedLongGenerator randomLong;
+  private final Supplier<Double> randomJitter;
 
   /** Constructs a new retrier. */
   public RetryInterceptor(RetryPolicy retryPolicy, Function<Response, Boolean> isRetryable) {
     this(
         retryPolicy,
         isRetryable,
-        RetryInterceptor::isRetryableException,
+        retryPolicy.getRetryExceptionPredicate() == null
+            ? RetryInterceptor::isRetryableException
+            : retryPolicy.getRetryExceptionPredicate(),
         TimeUnit.NANOSECONDS::sleep,
-        bound -> ThreadLocalRandom.current().nextLong(bound));
+        () -> ThreadLocalRandom.current().nextDouble(0.8d, 1.2d));
   }
 
   // Visible for testing
   RetryInterceptor(
       RetryPolicy retryPolicy,
       Function<Response, Boolean> isRetryable,
-      Function<IOException, Boolean> isRetryableException,
+      Predicate<IOException> retryExceptionPredicate,
       Sleeper sleeper,
-      BoundedLongGenerator randomLong) {
+      Supplier<Double> randomJitter) {
     this.retryPolicy = retryPolicy;
     this.isRetryable = isRetryable;
-    this.isRetryableException = isRetryableException;
+    this.retryExceptionPredicate = retryExceptionPredicate;
     this.sleeper = sleeper;
-    this.randomLong = randomLong;
+    this.randomJitter = randomJitter;
   }
 
   @Override
@@ -71,9 +76,10 @@ public final class RetryInterceptor implements Interceptor {
       if (attempt > 0) {
         // Compute and sleep for backoff
         // https://github.com/grpc/proposal/blob/master/A6-client-retries.md#exponential-backoff
-        long upperBoundNanos = Math.min(nextBackoffNanos, retryPolicy.getMaxBackoff().toNanos());
-        long backoffNanos = randomLong.get(upperBoundNanos);
-        nextBackoffNanos = (long) (nextBackoffNanos * retryPolicy.getBackoffMultiplier());
+        long currentBackoffNanos =
+            Math.min(nextBackoffNanos, retryPolicy.getMaxBackoff().toNanos());
+        long backoffNanos = (long) (randomJitter.get() * currentBackoffNanos);
+        nextBackoffNanos = (long) (currentBackoffNanos * retryPolicy.getBackoffMultiplier());
         try {
           sleeper.sleep(backoffNanos);
         } catch (InterruptedException e) {
@@ -84,32 +90,32 @@ public final class RetryInterceptor implements Interceptor {
         if (response != null) {
           response.close();
         }
+        exception = null;
       }
-
-      attempt++;
       try {
         response = chain.proceed(chain.request());
+        if (response != null) {
+          boolean retryable = Boolean.TRUE.equals(isRetryable.apply(response));
+          if (logger.isLoggable(Level.FINER)) {
+            logger.log(
+                Level.FINER,
+                "Attempt "
+                    + attempt
+                    + " returned "
+                    + (retryable ? "retryable" : "non-retryable")
+                    + " response: "
+                    + responseStringRepresentation(response));
+          }
+          if (!retryable) {
+            return response;
+          }
+        } else {
+          throw new NullPointerException("response cannot be null.");
+        }
       } catch (IOException e) {
         exception = e;
-      }
-      if (response != null) {
-        boolean retryable = Boolean.TRUE.equals(isRetryable.apply(response));
-        if (logger.isLoggable(Level.FINER)) {
-          logger.log(
-              Level.FINER,
-              "Attempt "
-                  + attempt
-                  + " returned "
-                  + (retryable ? "retryable" : "non-retryable")
-                  + " response: "
-                  + responseStringRepresentation(response));
-        }
-        if (!retryable) {
-          return response;
-        }
-      }
-      if (exception != null) {
-        boolean retryable = Boolean.TRUE.equals(isRetryableException.apply(exception));
+        response = null;
+        boolean retryable = retryExceptionPredicate.test(exception);
         if (logger.isLoggable(Level.FINER)) {
           logger.log(
               Level.FINER,
@@ -124,8 +130,7 @@ public final class RetryInterceptor implements Interceptor {
           throw exception;
         }
       }
-
-    } while (attempt < retryPolicy.getMaxAttempts());
+    } while (++attempt < retryPolicy.getMaxAttempts());
 
     if (response != null) {
       return response;
@@ -145,23 +150,27 @@ public final class RetryInterceptor implements Interceptor {
   }
 
   // Visible for testing
-  static boolean isRetryableException(IOException e) {
-    if (e instanceof SocketTimeoutException) {
-      String message = e.getMessage();
-      // Connect timeouts can produce SocketTimeoutExceptions with no message, or with "connect
-      // timed out"
-      return message == null || message.toLowerCase(Locale.ROOT).contains("connect timed out");
-    } else if (e instanceof ConnectException) {
-      // Exceptions resemble: java.net.ConnectException: Failed to connect to
-      // localhost/[0:0:0:0:0:0:0:1]:62611
-      return true;
-    }
-    return false;
+  boolean shouldRetryOnException(IOException e) {
+    return retryExceptionPredicate.test(e);
   }
 
   // Visible for testing
-  interface BoundedLongGenerator {
-    long get(long bound);
+  static boolean isRetryableException(IOException e) {
+    // Known retryable SocketTimeoutException messages: null, "connect timed out", "timeout"
+    // Known retryable ConnectTimeout messages: "Failed to connect to
+    // localhost/[0:0:0:0:0:0:0:1]:62611"
+    // Known retryable UnknownHostException messages: "xxxxxx.com"
+    // Known retryable SocketException: Socket closed
+    if (e instanceof SocketTimeoutException) {
+      return true;
+    } else if (e instanceof ConnectException) {
+      return true;
+    } else if (e instanceof UnknownHostException) {
+      return true;
+    } else if (e instanceof SocketException) {
+      return true;
+    }
+    return false;
   }
 
   // Visible for testing

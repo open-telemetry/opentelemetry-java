@@ -5,10 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import static java.util.stream.Collectors.joining;
-
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SimpleSpanProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
@@ -68,28 +65,11 @@ final class SpanProcessorFactory implements Factory<SpanProcessorModel, SpanProc
       return FileConfigUtil.addAndReturn(closeables, SimpleSpanProcessor.create(spanExporter));
     }
 
-    if (!model.getAdditionalProperties().isEmpty()) {
-      Map<String, Object> additionalProperties = model.getAdditionalProperties();
-      if (additionalProperties.size() > 1) {
-        throw new ConfigurationException(
-            "Invalid configuration - multiple span processors set: "
-                + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
-      }
-      Map.Entry<String, Object> processorKeyValue =
-          additionalProperties.entrySet().stream()
-              .findFirst()
-              .orElseThrow(
-                  () ->
-                      new IllegalStateException("Missing processor. This is a programming error."));
-      SpanProcessor spanProcessor =
-          FileConfigUtil.loadComponent(
-              spiHelper,
-              SpanProcessor.class,
-              processorKeyValue.getKey(),
-              processorKeyValue.getValue());
-      return FileConfigUtil.addAndReturn(closeables, spanProcessor);
-    } else {
-      throw new ConfigurationException("span processor must be set");
-    }
+    Map.Entry<String, Object> keyValue =
+        FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "span processor");
+    SpanProcessor spanProcessor =
+        FileConfigUtil.loadComponent(
+            spiHelper, SpanProcessor.class, keyValue.getKey(), keyValue.getValue());
+    return FileConfigUtil.addAndReturn(closeables, spanProcessor);
   }
 }

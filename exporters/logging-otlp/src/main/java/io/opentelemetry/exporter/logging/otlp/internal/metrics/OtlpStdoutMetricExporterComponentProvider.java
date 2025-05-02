@@ -5,9 +5,9 @@
 
 package io.opentelemetry.exporter.logging.otlp.internal.metrics;
 
-import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
+import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 
 /**
@@ -26,16 +26,16 @@ public final class OtlpStdoutMetricExporterComponentProvider
 
   @Override
   public String getName() {
-    return "experimental-otlp/stdout";
+    return "otlp_file/development";
   }
 
   @Override
-  public MetricExporter create(StructuredConfigProperties config) {
+  public MetricExporter create(DeclarativeConfigProperties config) {
     OtlpStdoutMetricExporterBuilder builder = OtlpStdoutMetricExporter.builder();
-    ExporterBuilderUtil.configureExporterMemoryMode(config, builder::setMemoryMode);
-    ExporterBuilderUtil.configureOtlpAggregationTemporality(
+    IncubatingExporterBuilderUtil.configureExporterMemoryMode(config, builder::setMemoryMode);
+    IncubatingExporterBuilderUtil.configureOtlpAggregationTemporality(
         config, builder::setAggregationTemporalitySelector);
-    ExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
+    IncubatingExporterBuilderUtil.configureOtlpHistogramDefaultAggregation(
         config, builder::setDefaultAggregationSelector);
     return builder.build();
   }

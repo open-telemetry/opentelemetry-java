@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -109,6 +110,18 @@ public class HttpSpanExporterBuilderWrapper implements TelemetryExporterBuilder<
   @Override
   public TelemetryExporterBuilder<SpanData> setChannel(Object channel) {
     throw new UnsupportedOperationException("Not implemented");
+  }
+
+  @Override
+  public TelemetryExporterBuilder<SpanData> setServiceClassLoader(ClassLoader serviceClassLoader) {
+    builder.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<SpanData> setExecutorService(ExecutorService executorService) {
+    builder.setExecutorService(executorService);
+    return this;
   }
 
   @Override

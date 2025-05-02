@@ -15,11 +15,14 @@ val versions: Map<String, String> by project
 dependencies {
   protoSource("io.opentelemetry.proto:opentelemetry-proto:${versions["io.opentelemetry.proto"]}")
 
+  annotationProcessor("com.google.auto.value:auto-value")
+
   api(project(":exporters:common"))
 
   compileOnly(project(":sdk:metrics"))
   compileOnly(project(":sdk:trace"))
   compileOnly(project(":sdk:logs"))
+  compileOnly(project(":api:incubator"))
 
   testImplementation(project(":sdk:metrics"))
   testImplementation(project(":sdk:trace"))
@@ -36,6 +39,22 @@ dependencies {
   jmhImplementation("com.fasterxml.jackson.core:jackson-core")
   jmhImplementation("io.opentelemetry.proto:opentelemetry-proto")
   jmhImplementation("io.grpc:grpc-netty")
+}
+
+testing {
+  suites {
+    register<JvmTestSuite>("testIncubating") {
+      dependencies {
+        implementation(project(":api:incubator"))
+        implementation(project(":sdk:testing"))
+
+        implementation("com.fasterxml.jackson.core:jackson-databind")
+        implementation("com.google.protobuf:protobuf-java-util")
+        implementation("com.google.guava:guava")
+        implementation("io.opentelemetry.proto:opentelemetry-proto")
+      }
+    }
+  }
 }
 
 wire {

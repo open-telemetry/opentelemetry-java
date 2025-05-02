@@ -9,6 +9,7 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
@@ -27,6 +28,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -55,17 +57,19 @@ public final class OtlpGrpcMetricExporterBuilder {
   // Visible for testing
   final GrpcExporterBuilder<Marshaler> delegate;
 
-  private AggregationTemporalitySelector aggregationTemporalitySelector =
-      DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR;
-
-  private DefaultAggregationSelector defaultAggregationSelector =
-      DefaultAggregationSelector.getDefault();
+  private AggregationTemporalitySelector aggregationTemporalitySelector;
+  private DefaultAggregationSelector defaultAggregationSelector;
   private MemoryMode memoryMode;
 
-  OtlpGrpcMetricExporterBuilder(GrpcExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
+  OtlpGrpcMetricExporterBuilder(
+      GrpcExporterBuilder<Marshaler> delegate,
+      AggregationTemporalitySelector aggregationTemporalitySelector,
+      DefaultAggregationSelector defaultAggregationSelector,
+      MemoryMode memoryMode) {
     this.delegate = delegate;
+    this.aggregationTemporalitySelector = aggregationTemporalitySelector;
+    this.defaultAggregationSelector = defaultAggregationSelector;
     this.memoryMode = memoryMode;
-    delegate.setMeterProvider(MeterProvider::noop);
     OtlpUserAgent.addUserAgentHeader(delegate::addConstantHeader);
   }
 
@@ -78,6 +82,8 @@ public final class OtlpGrpcMetricExporterBuilder {
             DEFAULT_ENDPOINT,
             () -> MarshalerMetricsServiceGrpc::newFutureStub,
             GRPC_ENDPOINT_PATH),
+        DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR,
+        DefaultAggregationSelector.getDefault(),
         DEFAULT_MEMORY_MODE);
   }
 
@@ -268,6 +274,27 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
+   * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
+   * {@link GlobalOpenTelemetry#getMeterProvider()}.
+   */
+  public OtlpGrpcMetricExporterBuilder setMeterProvider(MeterProvider meterProvider) {
+    requireNonNull(meterProvider, "meterProvider");
+    delegate.setMeterProvider(() -> meterProvider);
+    return this;
+  }
+
+  /**
+   * Sets the {@link MeterProvider} supplier to use to collect metrics related to export. If not
+   * set, uses {@link GlobalOpenTelemetry#getMeterProvider()}.
+   */
+  public OtlpGrpcMetricExporterBuilder setMeterProvider(
+      Supplier<MeterProvider> meterProviderSupplier) {
+    requireNonNull(meterProviderSupplier, "meterProvider");
+    delegate.setMeterProvider(meterProviderSupplier);
+    return this;
+  }
+
+  /**
    * Set the {@link MemoryMode}. If unset, defaults to {@link #DEFAULT_MEMORY_MODE}.
    *
    * <p>When memory mode is {@link MemoryMode#REUSABLE_DATA}, serialization is optimized to reduce
@@ -283,6 +310,32 @@ public final class OtlpGrpcMetricExporterBuilder {
   public OtlpGrpcMetricExporterBuilder setMemoryMode(MemoryMode memoryMode) {
     requireNonNull(memoryMode, "memoryMode");
     this.memoryMode = memoryMode;
+    return this;
+  }
+
+  /**
+   * Set the {@link ClassLoader} used to load the sender API.
+   *
+   * @since 1.48.0
+   */
+  public OtlpGrpcMetricExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
+    requireNonNull(serviceClassLoader, "serviceClassLoader");
+    delegate.setServiceClassLoader(serviceClassLoader);
+    return this;
+  }
+
+  /**
+   * Set the {@link ExecutorService} used to execute requests.
+   *
+   * <p>NOTE: By calling this method, you are opting into managing the lifecycle of the {@code
+   * executorService}. {@link ExecutorService#shutdown()} will NOT be called when this exporter is
+   * shutdown.
+   *
+   * @since 1.49.0
+   */
+  public OtlpGrpcMetricExporterBuilder setExecutorService(ExecutorService executorService) {
+    requireNonNull(executorService, "executorService");
+    delegate.setExecutorService(executorService);
     return this;
   }
 

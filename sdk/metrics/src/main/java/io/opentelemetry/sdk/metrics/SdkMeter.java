@@ -49,6 +49,18 @@ import java.util.regex.Pattern;
 final class SdkMeter implements Meter {
 
   private static final Logger logger = Logger.getLogger(SdkMeter.class.getName());
+  private static final boolean INCUBATOR_AVAILABLE;
+
+  static {
+    boolean incubatorAvailable = false;
+    try {
+      Class.forName("io.opentelemetry.api.incubator.metrics.ExtendedDefaultMeterProvider");
+      incubatorAvailable = true;
+    } catch (ClassNotFoundException e) {
+      // Not available
+    }
+    INCUBATOR_AVAILABLE = incubatorAvailable;
+  }
 
   /**
    * Instrument names MUST conform to the following syntax.
@@ -145,30 +157,42 @@ final class SdkMeter implements Meter {
 
   @Override
   public LongCounterBuilder counterBuilder(String name) {
-    return checkValidInstrumentName(name)
-        ? new SdkLongCounter.SdkLongCounterBuilder(this, name)
-        : NOOP_METER.counterBuilder(NOOP_INSTRUMENT_NAME);
+    if (!checkValidInstrumentName(name)) {
+      return NOOP_METER.counterBuilder(NOOP_INSTRUMENT_NAME);
+    }
+    return INCUBATOR_AVAILABLE
+        ? IncubatingUtil.createExtendedLongCounterBuilder(this, name)
+        : new SdkLongCounter.SdkLongCounterBuilder(this, name);
   }
 
   @Override
   public LongUpDownCounterBuilder upDownCounterBuilder(String name) {
-    return checkValidInstrumentName(name)
-        ? new SdkLongUpDownCounter.SdkLongUpDownCounterBuilder(this, name)
-        : NOOP_METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME);
+    if (!checkValidInstrumentName(name)) {
+      return NOOP_METER.upDownCounterBuilder(NOOP_INSTRUMENT_NAME);
+    }
+    return INCUBATOR_AVAILABLE
+        ? IncubatingUtil.createExtendedLongUpDownCounterBuilder(this, name)
+        : new SdkLongUpDownCounter.SdkLongUpDownCounterBuilder(this, name);
   }
 
   @Override
   public DoubleHistogramBuilder histogramBuilder(String name) {
-    return checkValidInstrumentName(name)
-        ? new SdkDoubleHistogram.SdkDoubleHistogramBuilder(this, name)
-        : NOOP_METER.histogramBuilder(NOOP_INSTRUMENT_NAME);
+    if (!checkValidInstrumentName(name)) {
+      return NOOP_METER.histogramBuilder(NOOP_INSTRUMENT_NAME);
+    }
+    return INCUBATOR_AVAILABLE
+        ? IncubatingUtil.createExtendedDoubleHistogramBuilder(this, name)
+        : new SdkDoubleHistogram.SdkDoubleHistogramBuilder(this, name);
   }
 
   @Override
   public DoubleGaugeBuilder gaugeBuilder(String name) {
-    return checkValidInstrumentName(name)
-        ? new SdkDoubleGauge.SdkDoubleGaugeBuilder(this, name)
-        : NOOP_METER.gaugeBuilder(NOOP_INSTRUMENT_NAME);
+    if (!checkValidInstrumentName(name)) {
+      return NOOP_METER.gaugeBuilder(NOOP_INSTRUMENT_NAME);
+    }
+    return INCUBATOR_AVAILABLE
+        ? IncubatingUtil.createExtendedDoubleGaugeBuilder(this, name)
+        : new SdkDoubleGauge.SdkDoubleGaugeBuilder(this, name);
   }
 
   @Override

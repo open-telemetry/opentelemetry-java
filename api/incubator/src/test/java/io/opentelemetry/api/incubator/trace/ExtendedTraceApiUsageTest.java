@@ -166,6 +166,7 @@ class ExtendedTraceApiUsageTest {
 
     // Get a Tracer for a scope
     Tracer tracer = tracerProvider.get("org.foo.my-scope");
+    ExtendedTracer extendedTracer = (ExtendedTracer) tracer;
 
     // Wrap the resetCheckout method in a span
     String cartId =
@@ -173,20 +174,24 @@ class ExtendedTraceApiUsageTest {
             .setAttribute("key123", "val456")
             .startAndCall(() -> resetCheckoutAndReturn("abc123", /* throwException= */ false));
     assertThat(cartId).isEqualTo("abc123");
+    // ...or use ExtendedTracer instance
     // ...or runnable variation
-    ((ExtendedSpanBuilder) tracer.spanBuilder("reset_checkout"))
+    extendedTracer
+        .spanBuilder("reset_checkout")
         .startAndRun(() -> resetCheckout("abc123", /* throwException= */ false));
 
     // Wrap the resetCheckout method in a span; resetCheckout throws an exception
     try {
-      ((ExtendedSpanBuilder) tracer.spanBuilder("reset_checkout_and_return"))
+      extendedTracer
+          .spanBuilder("reset_checkout_and_return")
           .startAndCall(() -> resetCheckoutAndReturn("def456", /* throwException= */ true));
     } catch (Throwable e) {
       // Ignore expected exception
     }
     // ...or runnable variation
     try {
-      ((ExtendedSpanBuilder) tracer.spanBuilder("reset_checkout"))
+      extendedTracer
+          .spanBuilder("reset_checkout")
           .startAndRun(() -> resetCheckout("def456", /* throwException= */ true));
     } catch (Throwable e) {
       // Ignore expected exception
@@ -195,7 +200,8 @@ class ExtendedTraceApiUsageTest {
     // Wrap the resetCheckout method in a span; resetCheckout throws an exception; use custom error
     // handler
     try {
-      ((ExtendedSpanBuilder) tracer.spanBuilder("reset_checkout_and_return"))
+      extendedTracer
+          .spanBuilder("reset_checkout_and_return")
           .startAndCall(
               () -> resetCheckoutAndReturn("ghi789", /* throwException= */ true),
               (span, throwable) -> span.setAttribute("my-attribute", "error"));
@@ -204,7 +210,8 @@ class ExtendedTraceApiUsageTest {
     }
     // ...or runnable variation
     try {
-      ((ExtendedSpanBuilder) tracer.spanBuilder("reset_checkout"))
+      extendedTracer
+          .spanBuilder("reset_checkout")
           .startAndRun(
               () -> resetCheckout("ghi789", /* throwException= */ true),
               (span, throwable) -> span.setAttribute("my-attribute", "error"));

@@ -5,8 +5,14 @@ on:
     - cron: "23 3 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   copy-images:
+    permissions:
+      contents: read
+      packages: write
     strategy:
       matrix:
         include:
@@ -21,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Docker login
-        uses: docker/login-action@v3
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}

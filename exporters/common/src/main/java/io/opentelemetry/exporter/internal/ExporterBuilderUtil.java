@@ -9,7 +9,6 @@ import static io.opentelemetry.sdk.metrics.Aggregation.explicitBucketHistogram;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.StructuredConfigProperties;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
@@ -21,7 +20,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 
 /**
  * Utilities for exporter builders.
@@ -30,8 +28,6 @@ import java.util.logging.Logger;
  * at any time.
  */
 public final class ExporterBuilderUtil {
-
-  private static final Logger logger = Logger.getLogger(ExporterBuilderUtil.class.getName());
 
   /** Validate OTLP endpoint. */
   public static URI validateEndpoint(String endpoint) {
@@ -55,13 +51,6 @@ public final class ExporterBuilderUtil {
       ConfigProperties config, Consumer<MemoryMode> memoryModeConsumer) {
     String memoryModeStr = config.getString("otel.java.exporter.memory_mode");
     if (memoryModeStr == null) {
-      memoryModeStr = config.getString("otel.java.experimental.exporter.memory_mode");
-      if (memoryModeStr != null) {
-        logger.warning(
-            "otel.java.experimental.exporter.memory_mode was set but has been replaced with otel.java.exporter.memory_mode and will be removed in a future release");
-      }
-    }
-    if (memoryModeStr == null) {
       return;
     }
     MemoryMode memoryMode;
@@ -69,22 +58,6 @@ public final class ExporterBuilderUtil {
       memoryMode = MemoryMode.valueOf(memoryModeStr.toUpperCase(Locale.ROOT));
     } catch (IllegalArgumentException e) {
       throw new ConfigurationException("Unrecognized memory mode: " + memoryModeStr, e);
-    }
-    memoryModeConsumer.accept(memoryMode);
-  }
-
-  /** Invoke the {@code memoryModeConsumer} with the configured {@link MemoryMode}. */
-  public static void configureExporterMemoryMode(
-      StructuredConfigProperties config, Consumer<MemoryMode> memoryModeConsumer) {
-    String memoryModeStr = config.getString("memory_mode");
-    if (memoryModeStr == null) {
-      return;
-    }
-    MemoryMode memoryMode;
-    try {
-      memoryMode = MemoryMode.valueOf(memoryModeStr.toUpperCase(Locale.ROOT));
-    } catch (IllegalArgumentException e) {
-      throw new ConfigurationException("Unrecognized memory_mode: " + memoryModeStr, e);
     }
     memoryModeConsumer.accept(memoryMode);
   }
@@ -136,30 +109,6 @@ public final class ExporterBuilderUtil {
     aggregationTemporalitySelectorConsumer.accept(temporalitySelector);
   }
 
-  public static void configureOtlpAggregationTemporality(
-      StructuredConfigProperties config,
-      Consumer<AggregationTemporalitySelector> aggregationTemporalitySelectorConsumer) {
-    String temporalityStr = config.getString("temporality_preference");
-    if (temporalityStr == null) {
-      return;
-    }
-    AggregationTemporalitySelector temporalitySelector;
-    switch (temporalityStr.toLowerCase(Locale.ROOT)) {
-      case "cumulative":
-        temporalitySelector = AggregationTemporalitySelector.alwaysCumulative();
-        break;
-      case "delta":
-        temporalitySelector = AggregationTemporalitySelector.deltaPreferred();
-        break;
-      case "lowmemory":
-        temporalitySelector = AggregationTemporalitySelector.lowMemory();
-        break;
-      default:
-        throw new ConfigurationException("Unrecognized temporality_preference: " + temporalityStr);
-    }
-    aggregationTemporalitySelectorConsumer.accept(temporalitySelector);
-  }
-
   /**
    * Invoke the {@code defaultAggregationSelectorConsumer} with the configured {@link
    * DefaultAggregationSelector}.
@@ -172,29 +121,6 @@ public final class ExporterBuilderUtil {
     if (defaultHistogramAggregation != null) {
       configureHistogramDefaultAggregation(
           defaultHistogramAggregation, defaultAggregationSelectorConsumer);
-    }
-  }
-
-  /**
-   * Invoke the {@code defaultAggregationSelectorConsumer} with the configured {@link
-   * DefaultAggregationSelector}.
-   */
-  public static void configureOtlpHistogramDefaultAggregation(
-      StructuredConfigProperties config,
-      Consumer<DefaultAggregationSelector> defaultAggregationSelectorConsumer) {
-    String defaultHistogramAggregation = config.getString("default_histogram_aggregation");
-    if (defaultHistogramAggregation == null) {
-      return;
-    }
-    if (AggregationUtil.aggregationName(Aggregation.base2ExponentialBucketHistogram())
-        .equalsIgnoreCase(defaultHistogramAggregation)) {
-      defaultAggregationSelectorConsumer.accept(
-          DefaultAggregationSelector.getDefault()
-              .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()));
-    } else if (!AggregationUtil.aggregationName(explicitBucketHistogram())
-        .equalsIgnoreCase(defaultHistogramAggregation)) {
-      throw new ConfigurationException(
-          "Unrecognized default_histogram_aggregation: " + defaultHistogramAggregation);
     }
   }
 

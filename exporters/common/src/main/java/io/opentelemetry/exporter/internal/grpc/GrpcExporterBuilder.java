@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.StringJoiner;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -62,6 +63,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
+  private ClassLoader serviceClassLoader = GrpcExporterBuilder.class.getClassLoader();
+  @Nullable private ExecutorService executorService;
 
   // Use Object type since gRPC may not be on the classpath.
   @Nullable private Object grpcChannel;
@@ -87,7 +90,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   }
 
   public GrpcExporterBuilder<T> setTimeout(long timeout, TimeUnit unit) {
-    timeoutNanos = unit.toNanos(timeout);
+    timeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
     return this;
   }
 
@@ -96,7 +99,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   }
 
   public GrpcExporterBuilder<T> setConnectTimeout(long timeout, TimeUnit unit) {
-    connectTimeoutNanos = unit.toNanos(timeout);
+    connectTimeoutNanos = timeout == 0 ? Long.MAX_VALUE : unit.toNanos(timeout);
     return this;
   }
 
@@ -144,6 +147,16 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
   public GrpcExporterBuilder<T> setMeterProvider(Supplier<MeterProvider> meterProviderSupplier) {
     this.meterProviderSupplier = meterProviderSupplier;
+    return this;
+  }
+
+  public GrpcExporterBuilder<T> setServiceClassLoader(ClassLoader servieClassLoader) {
+    this.serviceClassLoader = servieClassLoader;
+    return this;
+  }
+
+  public GrpcExporterBuilder<T> setExecutorService(ExecutorService executorService) {
+    this.executorService = executorService;
     return this;
   }
 
@@ -199,17 +212,19 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     GrpcSenderProvider grpcSenderProvider = resolveGrpcSenderProvider();
     GrpcSender<T> grpcSender =
         grpcSenderProvider.createSender(
-            endpoint,
-            grpcEndpointPath,
-            compressor,
-            timeoutNanos,
-            connectTimeoutNanos,
-            headerSupplier,
-            grpcChannel,
-            grpcStubFactory,
-            retryPolicy,
-            isPlainHttp ? null : tlsConfigHelper.getSslContext(),
-            isPlainHttp ? null : tlsConfigHelper.getTrustManager());
+            GrpcSenderConfig.create(
+                endpoint,
+                grpcEndpointPath,
+                compressor,
+                timeoutNanos,
+                connectTimeoutNanos,
+                headerSupplier,
+                grpcChannel,
+                grpcStubFactory,
+                retryPolicy,
+                isPlainHttp ? null : tlsConfigHelper.getSslContext(),
+                isPlainHttp ? null : tlsConfigHelper.getTrustManager(),
+                executorService));
     LOGGER.log(Level.FINE, "Using GrpcSender: " + grpcSender.getClass().getName());
 
     return new GrpcExporter<>(exporterName, type, grpcSender, meterProviderSupplier);
@@ -242,6 +257,10 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     if (grpcChannel != null) {
       joiner.add("grpcChannel=" + grpcChannel);
     }
+    joiner.add("serviceClassLoader=" + serviceClassLoader);
+    if (executorService != null) {
+      joiner.add("executorService=" + executorService);
+    }
     // Note: omit tlsConfigHelper because we can't log the configuration in any readable way
     // Note: omit meterProviderSupplier because we can't log the configuration in any readable way
     return joiner.toString();
@@ -268,10 +287,10 @@ public class GrpcExporterBuilder<T extends Marshaler> {
    *       matching provider. If none match, throw {@link IllegalStateException}.
    * </ul>
    */
-  private static GrpcSenderProvider resolveGrpcSenderProvider() {
+  private GrpcSenderProvider resolveGrpcSenderProvider() {
     Map<String, GrpcSenderProvider> grpcSenderProviders = new HashMap<>();
     for (GrpcSenderProvider spi :
-        ServiceLoader.load(GrpcSenderProvider.class, GrpcExporterBuilder.class.getClassLoader())) {
+        ServiceLoader.load(GrpcSenderProvider.class, serviceClassLoader)) {
       grpcSenderProviders.put(spi.getClass().getName(), spi);
     }
 

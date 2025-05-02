@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.Closeable;
@@ -17,6 +17,8 @@ import java.util.Objects;
 
 final class OpenTelemetryConfigurationFactory
     implements Factory<OpenTelemetryConfigurationModel, OpenTelemetrySdk> {
+
+  private static final String CURRENT_SUPPORTED_FILE_FORMAT = "0.4";
 
   private static final OpenTelemetryConfigurationFactory INSTANCE =
       new OpenTelemetryConfigurationFactory();
@@ -31,8 +33,9 @@ final class OpenTelemetryConfigurationFactory
   public OpenTelemetrySdk create(
       OpenTelemetryConfigurationModel model, SpiHelper spiHelper, List<Closeable> closeables) {
     OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
-    if (!"0.3".equals(model.getFileFormat())) {
-      throw new ConfigurationException("Unsupported file format. Supported formats include: 0.3");
+    if (!CURRENT_SUPPORTED_FILE_FORMAT.equals(model.getFileFormat())) {
+      throw new DeclarativeConfigException(
+          "Unsupported file format. Supported formats include: " + CURRENT_SUPPORTED_FILE_FORMAT);
     }
 
     if (Objects.equals(Boolean.TRUE, model.getDisabled())) {
