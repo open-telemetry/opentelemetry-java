@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -179,13 +180,28 @@ class Otel2PrometheusConverterTest {
     MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
 
     assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("stringKey"))
-        .isEqualTo("[\"stringValue1\",\"stringValue2\"]");
+        .isEqualTo("[\"stringValue1\", \"stringValue2\"]");
     assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("booleanKey"))
-        .isEqualTo("[true,false]");
+        .isEqualTo("[true, false]");
     assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("longKey"))
-        .isEqualTo("[12345,6789]");
+        .isEqualTo("[12345, 6789]");
     assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("doubleKey"))
-        .isEqualTo("[0.12345,0.6789]");
+        .isEqualTo("[0.12345, 0.6789]");
+  }
+
+  @Test
+  void labelValueSerialization_Should_Handle_All_AttributeTypes() {
+    assertThat(Stream.of(AttributeType.values()).map(Enum::name))
+        .isEqualTo(
+            Arrays.asList(
+                "STRING",
+                "BOOLEAN",
+                "LONG",
+                "DOUBLE",
+                "STRING_ARRAY",
+                "BOOLEAN_ARRAY",
+                "LONG_ARRAY",
+                "DOUBLE_ARRAY"));
   }
 
   private static Stream<Arguments> resourceAttributesAdditionArgs() {

@@ -13,7 +13,6 @@ dependencies {
   implementation(project(":exporters:common"))
   implementation(project(":sdk-extensions:autoconfigure-spi"))
   implementation("io.prometheus:prometheus-metrics-exporter-httpserver")
-  implementation("com.fasterxml.jackson.core:jackson-databind")
 
   compileOnly("com.google.auto.value:auto-value-annotations")
 

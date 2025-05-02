@@ -9,8 +9,6 @@ import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeLab
 import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeMetricName;
 import static java.util.Objects.requireNonNull;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
@@ -79,7 +77,6 @@ final class Otel2PrometheusConverter {
   private static final String OTEL_SCOPE_NAME = "otel_scope_name";
   private static final String OTEL_SCOPE_VERSION = "otel_scope_version";
   private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   static final int MAX_CACHE_SIZE = 10;
 
   private final boolean otelScopeEnabled;
@@ -650,22 +647,76 @@ final class Otel2PrometheusConverter {
   }
 
   private static String toLabelValue(AttributeType type, Object attributeValue) {
-    if (type.isPrimitive()) {
+    if (AttributeType.STRING.equals(type)) {
+      return attributeValue.toString();
+    } else if (AttributeType.BOOLEAN.equals(type)) {
+      return attributeValue.toString();
+    } else if (AttributeType.LONG.equals(type)) {
+      return attributeValue.toString();
+    } else if (AttributeType.DOUBLE.equals(type)) {
+      return attributeValue.toString();
+    } else if (AttributeType.STRING_ARRAY.equals(type)) {
+      if (attributeValue instanceof List) {
+        return ((List<?>) attributeValue)
+            .stream()
+                .map(String.class::cast)
+                .map(Otel2PrometheusConverter::toJsonValidStr)
+                .collect(Collectors.toList())
+                .toString();
+      } else {
+        LOGGER.log(
+            Level.WARNING,
+            "Unexpected label value for AttributeType.STRING_ARRAY, toString() is being used as fallback value...");
+        return attributeValue.toString();
+      }
+    } else if (AttributeType.BOOLEAN_ARRAY.equals(type)) {
+      return attributeValue.toString();
+    } else if (AttributeType.LONG_ARRAY.equals(type)) {
+      return attributeValue.toString();
+    } else if (AttributeType.DOUBLE_ARRAY.equals(type)) {
       return attributeValue.toString();
     } else {
-      return maybeToJson(attributeValue);
+      throw new IllegalStateException(("Unrecognized AttributeType: " + type));
     }
   }
 
-  private static String maybeToJson(Object attributeValue) {
-    try {
-      return OBJECT_MAPPER.writeValueAsString(attributeValue);
-    } catch (JsonProcessingException e) {
-      LOGGER.log(
-          Level.WARNING,
-          "Label value couldn't be serialized, toString() is being used as fallback value...",
-          e);
-      return attributeValue.toString();
+  public static String toJsonValidStr(String str) {
+    StringBuilder sb = new StringBuilder();
+    sb.append('"');
+    for (int i = 0; i < str.length(); i++) {
+      char c = str.charAt(i);
+
+      switch (c) {
+        case '"':
+          sb.append("\\\"");
+          break;
+        case '\\':
+          sb.append("\\\\");
+          break;
+        case '\b':
+          sb.append("\\b");
+          break;
+        case '\f':
+          sb.append("\\f");
+          break;
+        case '\n':
+          sb.append("\\n");
+          break;
+        case '\r':
+          sb.append("\\r");
+          break;
+        case '\t':
+          sb.append("\\t");
+          break;
+        default:
+          if (c <= 0x1F) {
+            sb.append(String.format(Locale.ROOT, "\\u%04X", (int) c));
+          } else {
+            sb.append(c);
+          }
+      }
     }
+    sb.append('"');
+    return sb.toString();
   }
 }
