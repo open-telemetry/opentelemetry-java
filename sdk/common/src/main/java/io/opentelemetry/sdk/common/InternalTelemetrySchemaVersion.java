@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.common;
 
-public enum HealthMetricLevel {
+public enum InternalTelemetrySchemaVersion {
   OFF,
   LEGACY,
   ON

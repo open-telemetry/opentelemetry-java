@@ -15,7 +15,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ManagedChannelBuilder;
-import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
+import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSender;
@@ -41,7 +41,7 @@ class GrpcExporterTest {
             () ->
                 new GrpcExporterBuilder<>(
                         "exporter",
-                        SemConvExporterMetrics.Signal.SPAN,
+                        ExporterMetrics.Signal.SPAN,
                         "testing",
                         10,
                         new URI("http://localhost"),
@@ -66,7 +66,7 @@ class GrpcExporterTest {
     assertThat(
             new GrpcExporterBuilder<>(
                     "exporter",
-                    SemConvExporterMetrics.Signal.SPAN,
+                    ExporterMetrics.Signal.SPAN,
                     "testing",
                     10,
                     new URI("http://localhost"),
@@ -88,7 +88,7 @@ class GrpcExporterTest {
     assertThat(
             new GrpcExporterBuilder<>(
                     "exporter",
-                    SemConvExporterMetrics.Signal.SPAN,
+                    ExporterMetrics.Signal.SPAN,
                     "testing",
                     10,
                     new URI("http://localhost"),
@@ -111,7 +111,7 @@ class GrpcExporterTest {
             () ->
                 new GrpcExporterBuilder<>(
                         "exporter",
-                        SemConvExporterMetrics.Signal.SPAN,
+                        ExporterMetrics.Signal.SPAN,
                         "testing",
                         10,
                         new URI("http://localhost"),

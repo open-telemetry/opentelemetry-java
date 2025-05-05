@@ -8,10 +8,10 @@ package io.opentelemetry.exporter.zipkin;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
-import io.opentelemetry.exporter.internal.ExporterInstrumentation;
+import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
+import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.HealthMetricLevel;
+import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -54,7 +54,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
       BytesEncoder<Span> encoder,
       BytesMessageSender sender,
       Supplier<MeterProvider> meterProviderSupplier,
-      HealthMetricLevel healthMetricLevel,
+      InternalTelemetrySchemaVersion internalTelemetrySchemaVersion,
       Attributes additonalHealthAttributes,
       OtelToZipkinSpanTransformer transformer) {
     this.builder = builder;
@@ -74,9 +74,9 @@ public final class ZipkinSpanExporter implements SpanExporter {
     // TODO: add server address and port attributes
     this.exporterMetrics =
         new ExporterInstrumentation(
-            healthMetricLevel,
+            internalTelemetrySchemaVersion,
             meterProviderSupplier,
-            SemConvExporterMetrics.Signal.SPAN,
+            ExporterMetrics.Signal.SPAN,
             ComponentId.generateLazy(componentType),
             additonalHealthAttributes,
             "zipkin",

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal;
+package io.opentelemetry.exporter.internal.metrics;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -13,7 +13,6 @@ import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.common.HealthMetricLevel;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
 import java.util.Collections;
@@ -24,30 +23,7 @@ import javax.annotation.Nullable;
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
  * any time.
  */
-public class SemConvExporterMetrics {
-
-  /**
-   * This class is internal and is hence not for public use. Its APIs are unstable and can change at
-   * any time.
-   */
-  public enum Signal {
-    SPAN("span", "span"),
-    METRIC("metric_data_point", "data_point"),
-    LOG("log", "log_record");
-
-    private final String namespace;
-    private final String unit;
-
-    Signal(String namespace, String unit) {
-      this.namespace = namespace;
-      this.unit = unit;
-    }
-
-    @Override
-    public String toString() {
-      return namespace;
-    }
-  }
+public class SemConvExporterMetrics implements ExporterMetrics {
 
   private static final Clock CLOCK = Clock.getDefault();
 
@@ -55,7 +31,6 @@ public class SemConvExporterMetrics {
   private final Signal signal;
   private final ComponentId componentId;
   private final Attributes additionalAttributes;
-  private final boolean enabled;
 
   @Nullable private volatile LongUpDownCounter inflight = null;
   @Nullable private volatile LongCounter exported = null;
@@ -63,32 +38,10 @@ public class SemConvExporterMetrics {
   @Nullable private volatile Attributes allAttributes = null;
 
   public SemConvExporterMetrics(
-      HealthMetricLevel level,
-      Supplier<MeterProvider> meterProviderSupplier,
-      Signal signal,
-      ComponentId componentId) {
-    this(level, meterProviderSupplier, signal, componentId, null);
-  }
-
-  public SemConvExporterMetrics(
-      HealthMetricLevel level,
       Supplier<MeterProvider> meterProviderSupplier,
       Signal signal,
       ComponentId componentId,
       @Nullable Attributes additionalAttributes) {
-    switch (level) {
-      case ON:
-        enabled = true;
-        break;
-      case OFF:
-      case LEGACY:
-        enabled = false;
-        break;
-      default:
-        throw new IllegalArgumentException("Unhandled case " + level);
-    }
-    ;
-
     this.meterProviderSupplier = meterProviderSupplier;
     this.componentId = componentId;
     this.signal = signal;
@@ -99,8 +52,33 @@ public class SemConvExporterMetrics {
     }
   }
 
-  public Recording startRecordingExport(int itemCount) {
+  @Override
+  public ExporterMetrics.Recording startRecordingExport(int itemCount) {
     return new Recording(itemCount);
+  }
+
+  private static String getNamespace(Signal signal) {
+    switch (signal) {
+      case SPAN:
+        return "otel.sdk.exporter.span";
+      case METRIC:
+        return "otel.sdk.exporter.metric_data_point";
+      case LOG:
+        return "otel.sdk.exporter.log";
+    }
+    throw new IllegalArgumentException("Unhandled signal: " + signal);
+  }
+
+  private static String getUnit(Signal signal) {
+    switch (signal) {
+      case SPAN:
+        return "span";
+      case METRIC:
+        return "data_point";
+      case LOG:
+        return "log_record";
+    }
+    throw new IllegalArgumentException("Unhandled signal: " + signal);
   }
 
   private Meter meter() {
@@ -122,16 +100,18 @@ public class SemConvExporterMetrics {
     return allAttributes;
   }
 
+
   private LongUpDownCounter inflight() {
     LongUpDownCounter inflight = this.inflight;
     if (inflight == null || isNoop(inflight)) {
+      String unit = getUnit(signal);
       inflight =
           meter()
-              .upDownCounterBuilder("otel.sdk.exporter." + signal.namespace + ".inflight")
-              .setUnit("{" + signal.unit + "}")
+              .upDownCounterBuilder(getNamespace(signal) + ".inflight")
+              .setUnit("{" + unit + "}")
               .setDescription(
                   "The number of "
-                      + signal.unit
+                      + unit
                       + "s which were passed to the exporter, but that have not been exported yet (neither successful, nor failed)")
               .build();
       this.inflight = inflight;
@@ -142,13 +122,14 @@ public class SemConvExporterMetrics {
   private LongCounter exported() {
     LongCounter exported = this.exported;
     if (exported == null || isNoop(exported)) {
+      String unit = getUnit(signal);
       exported =
           meter()
-              .counterBuilder("otel.sdk.exporter." + signal.namespace + ".exported")
-              .setUnit("{" + signal.unit + "}")
+              .counterBuilder(getNamespace(signal) + ".exported")
+              .setUnit("{" + unit + "}")
               .setDescription(
                   "The number of "
-                      + signal.unit
+                      + unit
                       + "s for which the export has finished, either successful or failed")
               .build();
       this.exported = exported;
@@ -172,23 +153,14 @@ public class SemConvExporterMetrics {
   }
 
   private void incrementInflight(long count) {
-    if (!enabled) {
-      return;
-    }
     inflight().add(count, allAttributes());
   }
 
   private void decrementInflight(long count) {
-    if (!enabled) {
-      return;
-    }
     inflight().add(-count, allAttributes());
   }
 
   private void incrementExported(long count, @Nullable String errorType) {
-    if (!enabled) {
-      return;
-    }
     exported().add(count, getAttributesWithPotentialError(errorType, Attributes.empty()));
   }
 
@@ -214,23 +186,14 @@ public class SemConvExporterMetrics {
 
   private void recordDuration(
       double seconds, @Nullable String errorType, Attributes requestAttributes) {
-    if (!enabled) {
-      return;
-    }
     duration().record(seconds, getAttributesWithPotentialError(errorType, requestAttributes));
   }
 
-  /**
-   * This class is internal and is hence not for public use. Its APIs are unstable and can change at
-   * any time.
-   */
-  public class Recording {
+  private class Recording extends ExporterMetrics.Recording {
     /** The number items (spans, log records or metric data points) being exported */
     private final int itemCount;
 
     private final long startNanoTime;
-
-    private boolean alreadyEnded = false;
 
     private Recording(int itemCount) {
       this.itemCount = itemCount;
@@ -238,33 +201,10 @@ public class SemConvExporterMetrics {
       incrementInflight(itemCount);
     }
 
-    public void finishSuccessful(Attributes requestAttributes) {
-      finish(0, null, requestAttributes);
-    }
-
-    public void finishFailed(String errorReason, Attributes requestAttributes) {
-      finish(itemCount, errorReason, requestAttributes);
-    }
-
-    private void finish(int failedCount, @Nullable String errorType, Attributes requestAttributes) {
-      if (alreadyEnded) {
-        throw new IllegalStateException("Recording already ended");
-      }
-      alreadyEnded = true;
-
+    @Override
+    protected void doFinish(@Nullable String errorType, Attributes requestAttributes) {
       decrementInflight(itemCount);
-
-      if (failedCount > 0) {
-        if (errorType == null || errorType.isEmpty()) {
-          throw new IllegalArgumentException(
-              "Some items failed but no failure reason was provided");
-        }
-        incrementExported(failedCount, errorType);
-      }
-      int successCount = itemCount - failedCount;
-      if (successCount > 0) {
-        incrementExported(successCount, null);
-      }
+      incrementExported(itemCount, errorType);
       long durationNanos = CLOCK.nanoTime() - startNanoTime;
       recordDuration(durationNanos / 1_000_000_000.0, errorType, requestAttributes);
     }

@@ -11,9 +11,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
+import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.sdk.common.HealthMetricLevel;
+import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -35,7 +35,7 @@ class GrpcExporterTest {
             () ->
                 new GrpcExporterBuilder<>(
                         "exporter",
-                        SemConvExporterMetrics.Signal.SPAN,
+                        ExporterMetrics.Signal.SPAN,
                         "testing",
                         10,
                         new URI("http://localhost"),
@@ -51,7 +51,7 @@ class GrpcExporterTest {
   @ParameterizedTest
   @EnumSource
   @SuppressWarnings("unchecked")
-  void testHealthMetrics(SemConvExporterMetrics.Signal signal) {
+  void testHealthMetrics(ExporterMetrics.Signal signal) {
     String signalMetricPrefix;
     String expectedUnit;
     switch (signal) {
@@ -92,7 +92,7 @@ class GrpcExporterTest {
               "legacy_exporter",
               signal,
               mockSender,
-              HealthMetricLevel.ON,
+              InternalTelemetrySchemaVersion.ON,
               id,
               () -> meterProvider,
               Attributes.builder().put("foo", "bar").build());
@@ -231,9 +231,9 @@ class GrpcExporterTest {
       GrpcExporter<Marshaler> exporter =
           new GrpcExporter<Marshaler>(
               "legacy_exporter",
-              SemConvExporterMetrics.Signal.SPAN,
+              ExporterMetrics.Signal.SPAN,
               mockSender,
-              HealthMetricLevel.OFF,
+              InternalTelemetrySchemaVersion.OFF,
               id,
               () -> meterProvider,
               Attributes.empty());

@@ -11,7 +11,7 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ServerAttributesUtil;
-import io.opentelemetry.sdk.common.HealthMetricLevel;
+import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import java.net.InetAddress;
 import java.time.Duration;
 import java.util.StringJoiner;
@@ -35,7 +35,7 @@ public final class ZipkinSpanExporterBuilder {
   private boolean compressionEnabled = true;
   private int readTimeoutMillis = (int) TimeUnit.SECONDS.toMillis(10);
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
-  private HealthMetricLevel healthMetricLevel = HealthMetricLevel.LEGACY;
+  private InternalTelemetrySchemaVersion internalTelemetrySchemaVersion = InternalTelemetrySchemaVersion.LEGACY;
 
   /**
    * Sets the Zipkin sender. Implements the client side of the span transport. An {@link
@@ -190,14 +190,14 @@ public final class ZipkinSpanExporterBuilder {
   }
 
   /**
-   * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter
+   * Sets the {@link InternalTelemetrySchemaVersion} defining which self-monitoring metrics this exporter
    * collects.
    *
    * @since 1.50.0
    */
-  public ZipkinSpanExporterBuilder setHealthMetricLevel(HealthMetricLevel level) {
+  public ZipkinSpanExporterBuilder setHealthMetricLevel(InternalTelemetrySchemaVersion level) {
     requireNonNull(level, "level");
-    this.healthMetricLevel = level;
+    this.internalTelemetrySchemaVersion = level;
     return this;
   }
 
@@ -209,7 +209,7 @@ public final class ZipkinSpanExporterBuilder {
     joiner.add("endpoint=" + endpoint);
     joiner.add("compressionEnabled=" + compressionEnabled);
     joiner.add("readTimeoutMillis=" + readTimeoutMillis);
-    joiner.add("healthMetricLevel=" + healthMetricLevel);
+    joiner.add("healthMetricLevel=" + internalTelemetrySchemaVersion);
     // Note: omit sender because we can't log the configuration in any readable way
     // Note: omit encoder because we can't log the configuration in any readable way
     // Note: omit localIpAddressSupplier because we can't log the configuration in any readable way
@@ -239,7 +239,7 @@ public final class ZipkinSpanExporterBuilder {
         encoder,
         sender,
         meterProviderSupplier,
-        healthMetricLevel,
+        internalTelemetrySchemaVersion,
         ServerAttributesUtil.extractServerAttributes(endpoint),
         transformer);
   }

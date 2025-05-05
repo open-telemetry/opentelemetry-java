@@ -12,9 +12,9 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
+import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.sdk.common.HealthMetricLevel;
+import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -33,7 +33,7 @@ class HttpExporterTest {
     assertThatThrownBy(
             () ->
                 new HttpExporterBuilder<>(
-                        "name", SemConvExporterMetrics.Signal.SPAN, "testing", "http://localhost")
+                        "name", ExporterMetrics.Signal.SPAN, "testing", "http://localhost")
                     .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(
@@ -43,7 +43,7 @@ class HttpExporterTest {
 
   @ParameterizedTest
   @EnumSource
-  void testHealthMetrics(SemConvExporterMetrics.Signal signal) {
+  void testHealthMetrics(ExporterMetrics.Signal signal) {
     String signalMetricPrefix;
     String expectedUnit;
     switch (signal) {
@@ -86,7 +86,7 @@ class HttpExporterTest {
               id,
               mockSender,
               () -> meterProvider,
-              HealthMetricLevel.ON,
+              InternalTelemetrySchemaVersion.ON,
               false,
               Attributes.builder().put("foo", "bar").build());
 
@@ -220,11 +220,11 @@ class HttpExporterTest {
       HttpExporter<Marshaler> exporter =
           new HttpExporter<Marshaler>(
               "legacy_exporter",
-              SemConvExporterMetrics.Signal.METRIC,
+              ExporterMetrics.Signal.METRIC,
               id,
               mockSender,
               () -> meterProvider,
-              HealthMetricLevel.OFF,
+              InternalTelemetrySchemaVersion.OFF,
               false,
               Attributes.empty());
 

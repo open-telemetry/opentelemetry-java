@@ -11,12 +11,12 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
-import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
+import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
 import io.opentelemetry.exporter.internal.ServerAttributesUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.sdk.common.HealthMetricLevel;
+import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.internal.ComponentId;
 import java.net.URI;
@@ -53,7 +53,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   private static final Logger LOGGER = Logger.getLogger(GrpcExporterBuilder.class.getName());
 
   private final String legacyExporterName;
-  private final SemConvExporterMetrics.Signal signal;
+  private final ExporterMetrics.Signal signal;
   private final String componentType;
   private final String grpcEndpointPath;
   private final Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>>
@@ -68,7 +68,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
-  private HealthMetricLevel healthMetricLevel = HealthMetricLevel.LEGACY;
+  private InternalTelemetrySchemaVersion internalTelemetrySchemaVersion = InternalTelemetrySchemaVersion.LEGACY;
 
   private ClassLoader serviceClassLoader = GrpcExporterBuilder.class.getClassLoader();
   @Nullable private ExecutorService executorService;
@@ -78,7 +78,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
   public GrpcExporterBuilder(
       String legacyExporterName,
-      SemConvExporterMetrics.Signal signal,
+      ExporterMetrics.Signal signal,
       String componentType,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
@@ -159,8 +159,9 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public GrpcExporterBuilder<T> setHealthMetricLevel(HealthMetricLevel healthMetricLevel) {
-    this.healthMetricLevel = healthMetricLevel;
+  public GrpcExporterBuilder<T> setHealthMetricLevel(
+      InternalTelemetrySchemaVersion internalTelemetrySchemaVersion) {
+    this.internalTelemetrySchemaVersion = internalTelemetrySchemaVersion;
     return this;
   }
 
@@ -197,7 +198,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
       copy.retryPolicy = retryPolicy.toBuilder().build();
     }
     copy.meterProviderSupplier = meterProviderSupplier;
-    copy.healthMetricLevel = healthMetricLevel;
+    copy.internalTelemetrySchemaVersion = internalTelemetrySchemaVersion;
     copy.grpcChannel = grpcChannel;
     return copy;
   }
@@ -247,7 +248,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
         legacyExporterName,
         signal,
         grpcSender,
-        healthMetricLevel,
+        internalTelemetrySchemaVersion,
         ComponentId.generateLazy(componentType),
         meterProviderSupplier,
         ServerAttributesUtil.extractServerAttributes(endpoint));

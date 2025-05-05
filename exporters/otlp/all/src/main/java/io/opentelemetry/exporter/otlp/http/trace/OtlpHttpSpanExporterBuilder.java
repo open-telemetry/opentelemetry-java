@@ -10,14 +10,14 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
+import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
-import io.opentelemetry.sdk.common.HealthMetricLevel;
+import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -52,7 +52,7 @@ public final class OtlpHttpSpanExporterBuilder {
   OtlpHttpSpanExporterBuilder() {
     this(
         new HttpExporterBuilder<>(
-            "otlp", SemConvExporterMetrics.Signal.SPAN, "otlp_http_span_exporter", DEFAULT_ENDPOINT),
+            "otlp", ExporterMetrics.Signal.SPAN, "otlp_http_span_exporter", DEFAULT_ENDPOINT),
         DEFAULT_MEMORY_MODE);
   }
 
@@ -219,12 +219,12 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /**
-   * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter
+   * Sets the {@link InternalTelemetrySchemaVersion} defining which self-monitoring metrics this exporter
    * collects.
    *
    * @since 1.50.0
    */
-  public OtlpHttpSpanExporterBuilder setHealthMetricLevel(HealthMetricLevel level) {
+  public OtlpHttpSpanExporterBuilder setHealthMetricLevel(InternalTelemetrySchemaVersion level) {
     requireNonNull(level, "level");
     delegate.setHealthMetricLevel(level);
     return this;

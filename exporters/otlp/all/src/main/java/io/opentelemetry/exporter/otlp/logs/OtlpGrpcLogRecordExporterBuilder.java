@@ -11,14 +11,14 @@ import static java.util.Objects.requireNonNull;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
+import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
-import io.opentelemetry.sdk.common.HealthMetricLevel;
+import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
@@ -62,7 +62,7 @@ public final class OtlpGrpcLogRecordExporterBuilder {
     this(
         new GrpcExporterBuilder<>(
             "otlp",
-            SemConvExporterMetrics.Signal.LOG,
+            ExporterMetrics.Signal.LOG,
             "otlp_grpc_log_exporter",
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
@@ -249,12 +249,12 @@ public final class OtlpGrpcLogRecordExporterBuilder {
   }
 
   /**
-   * Sets the {@link HealthMetricLevel} defining which self-monitoring metrics this exporter
+   * Sets the {@link InternalTelemetrySchemaVersion} defining which self-monitoring metrics this exporter
    * collects.
    *
    * @since 1.50.0
    */
-  public OtlpGrpcLogRecordExporterBuilder setHealthMetricLevel(HealthMetricLevel level) {
+  public OtlpGrpcLogRecordExporterBuilder setHealthMetricLevel(InternalTelemetrySchemaVersion level) {
     requireNonNull(level, "level");
     delegate.setHealthMetricLevel(level);
     return this;

@@ -7,13 +7,13 @@ package io.opentelemetry.exporter.internal.http;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
-import io.opentelemetry.exporter.internal.ExporterInstrumentation;
+import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
+import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.HealthMetricLevel;
+import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
@@ -44,11 +44,11 @@ public final class HttpExporter<T extends Marshaler> {
 
   public HttpExporter(
       String legacyExporterName,
-      SemConvExporterMetrics.Signal type,
+      ExporterMetrics.Signal type,
       ComponentId componentId,
       HttpSender httpSender,
       Supplier<MeterProvider> meterProviderSupplier,
-      HealthMetricLevel healthMetricLevel,
+      InternalTelemetrySchemaVersion internalTelemetrySchemaVersion,
       boolean exportAsJson,
       Attributes healthMetricAttributes) {
     this.type = type.toString();
@@ -56,7 +56,7 @@ public final class HttpExporter<T extends Marshaler> {
     // TODO: extract server.address and server.port here
     this.exporterMetrics =
         new ExporterInstrumentation(
-            healthMetricLevel,
+            internalTelemetrySchemaVersion,
             meterProviderSupplier,
             type,
             componentId,

@@ -9,12 +9,12 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
-import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
+import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
 import io.opentelemetry.exporter.internal.ServerAttributesUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.sdk.common.HealthMetricLevel;
+import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.internal.ComponentId;
@@ -50,7 +50,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private static final Logger LOGGER = Logger.getLogger(HttpExporterBuilder.class.getName());
 
   private final String exporterName;
-  private final SemConvExporterMetrics.Signal signal;
+  private final ExporterMetrics.Signal signal;
   private String componentType;
 
   private String endpoint;
@@ -66,13 +66,13 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
-  private HealthMetricLevel healthMetricLevel = HealthMetricLevel.LEGACY;
+  private InternalTelemetrySchemaVersion internalTelemetrySchemaVersion = InternalTelemetrySchemaVersion.LEGACY;
   private ClassLoader serviceClassLoader = HttpExporterBuilder.class.getClassLoader();
   @Nullable private ExecutorService executorService;
 
   public HttpExporterBuilder(
       String exporterName,
-      SemConvExporterMetrics.Signal signal,
+      ExporterMetrics.Signal signal,
       String componentType,
       String defaultEndpoint) {
     this.exporterName = exporterName;
@@ -135,8 +135,9 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public HttpExporterBuilder<T> setHealthMetricLevel(HealthMetricLevel healthMetricLevel) {
-    this.healthMetricLevel = healthMetricLevel;
+  public HttpExporterBuilder<T> setHealthMetricLevel(
+      InternalTelemetrySchemaVersion internalTelemetrySchemaVersion) {
+    this.internalTelemetrySchemaVersion = internalTelemetrySchemaVersion;
     return this;
   }
 
@@ -186,7 +187,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
       copy.retryPolicy = retryPolicy.toBuilder().build();
     }
     copy.meterProviderSupplier = meterProviderSupplier;
-    copy.healthMetricLevel = healthMetricLevel;
+    copy.internalTelemetrySchemaVersion = internalTelemetrySchemaVersion;
     copy.proxyOptions = proxyOptions;
     return copy;
   }
@@ -238,7 +239,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
         ComponentId.generateLazy(componentType),
         httpSender,
         meterProviderSupplier,
-        healthMetricLevel,
+        internalTelemetrySchemaVersion,
         exportAsJson,
         ServerAttributesUtil.extractServerAttributes(endpoint));
   }

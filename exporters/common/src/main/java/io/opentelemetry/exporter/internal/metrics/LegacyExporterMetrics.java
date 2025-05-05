@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal;
+package io.opentelemetry.exporter.internal.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
@@ -17,12 +17,12 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
- * Helper for recording metrics from exporters.
+ * Implements health metrics for exporters which were defined prior to the standardization in semantic conventions.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class LegacyExporterMetrics {
+public class LegacyExporterMetrics implements ExporterMetrics {
 
   private static final AttributeKey<String> ATTRIBUTE_KEY_TYPE = stringKey("type");
   private static final AttributeKey<Boolean> ATTRIBUTE_KEY_SUCCESS = booleanKey("success");
@@ -43,28 +43,40 @@ public class LegacyExporterMetrics {
   LegacyExporterMetrics(
       Supplier<MeterProvider> meterProviderSupplier,
       String exporterName,
-      String type,
+      Signal signal,
       String transportName) {
     this.meterProviderSupplier = meterProviderSupplier;
     this.exporterName = exporterName;
     this.transportName = transportName;
-    this.seenAttrs = Attributes.builder().put(ATTRIBUTE_KEY_TYPE, type).build();
+    this.seenAttrs = Attributes.builder().put(ATTRIBUTE_KEY_TYPE, getTypeString(signal)).build();
     this.successAttrs = this.seenAttrs.toBuilder().put(ATTRIBUTE_KEY_SUCCESS, true).build();
     this.failedAttrs = this.seenAttrs.toBuilder().put(ATTRIBUTE_KEY_SUCCESS, false).build();
   }
 
+  private static String getTypeString(Signal signal) {
+    switch (signal) {
+      case SPAN:
+        return "span";
+      case LOG:
+        return "log";
+      case METRIC:
+        return "metric";
+    }
+    throw new IllegalArgumentException("Unhandled case: " + signal);
+  }
+
   /** Record number of records seen. */
-  public void addSeen(long value) {
+  private void addSeen(long value) {
     seen().add(value, seenAttrs);
   }
 
   /** Record number of records which successfully exported. */
-  public void addSuccess(long value) {
+  private void addSuccess(long value) {
     exported().add(value, successAttrs);
   }
 
   /** Record number of records which failed to export. */
-  public void addFailed(long value) {
+  private void addFailed(long value) {
     exported().add(value, failedAttrs);
   }
 
@@ -92,39 +104,27 @@ public class LegacyExporterMetrics {
         .get("io.opentelemetry.exporters." + exporterName + "-" + transportName);
   }
 
-  /**
-   * Create an instance for recording exporter metrics under the meter {@code
-   * "io.opentelemetry.exporters." + exporterName + "-grpc}".
-   */
-  public static LegacyExporterMetrics createGrpc(
-      String exporterName, String type, Supplier<MeterProvider> meterProvider) {
-    return new LegacyExporterMetrics(meterProvider, exporterName, type, "grpc");
+  @Override
+  public ExporterMetrics.Recording startRecordingExport(int itemCount) {
+    return new Recording(itemCount);
   }
 
-  /**
-   * Create an instance for recording exporter metrics under the meter {@code
-   * "io.opentelemetry.exporters." + exporterName + "-grpc-okhttp}".
-   */
-  public static LegacyExporterMetrics createGrpcOkHttp(
-      String exporterName, String type, Supplier<MeterProvider> meterProvider) {
-    return new LegacyExporterMetrics(meterProvider, exporterName, type, "grpc-okhttp");
-  }
+  private class Recording extends ExporterMetrics.Recording {
+    /** The number items (spans, log records or metric data points) being exported */
+    private final int itemCount;
 
-  /**
-   * Create an instance for recording exporter metrics under the meter {@code
-   * "io.opentelemetry.exporters." + exporterName + "-http}".
-   */
-  public static LegacyExporterMetrics createHttpProtobuf(
-      String exporterName, String type, Supplier<MeterProvider> meterProvider) {
-    return new LegacyExporterMetrics(meterProvider, exporterName, type, "http");
-  }
+    private Recording(int itemCount) {
+      this.itemCount = itemCount;
+      addSeen(itemCount);
+    }
 
-  /**
-   * Create an instance for recording exporter metrics under the meter {@code
-   * "io.opentelemetry.exporters." + exporterName + "-http-json}".
-   */
-  public static LegacyExporterMetrics createHttpJson(
-      String exporterName, String type, Supplier<MeterProvider> meterProvider) {
-    return new LegacyExporterMetrics(meterProvider, exporterName, type, "http-json");
+    @Override
+    protected void doFinish(@Nullable String errorType, Attributes requestAttributes) {
+      if (errorType != null) {
+        addFailed(itemCount);
+      } else {
+        addSuccess(itemCount);
+      }
+    }
   }
 }

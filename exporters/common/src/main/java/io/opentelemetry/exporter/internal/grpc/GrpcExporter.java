@@ -10,12 +10,12 @@ import static io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil.GRPC_STAT
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
-import io.opentelemetry.exporter.internal.ExporterInstrumentation;
+import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
+import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.HealthMetricLevel;
+import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
@@ -47,9 +47,9 @@ public final class GrpcExporter<T extends Marshaler> {
 
   public GrpcExporter(
       String legacyExporterName,
-      SemConvExporterMetrics.Signal type,
+      ExporterMetrics.Signal type,
       GrpcSender<T> grpcSender,
-      HealthMetricLevel healthMetricLevel,
+      InternalTelemetrySchemaVersion internalTelemetrySchemaVersion,
       ComponentId componentId,
       Supplier<MeterProvider> meterProviderSupplier,
       Attributes healthMetricAttributes) {
@@ -57,7 +57,7 @@ public final class GrpcExporter<T extends Marshaler> {
     this.grpcSender = grpcSender;
     this.exporterMetrics =
         new ExporterInstrumentation(
-            healthMetricLevel,
+            internalTelemetrySchemaVersion,
             meterProviderSupplier,
             type,
             componentId,
