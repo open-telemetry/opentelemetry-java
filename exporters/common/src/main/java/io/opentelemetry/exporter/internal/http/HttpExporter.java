@@ -7,8 +7,8 @@ package io.opentelemetry.exporter.internal.http;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.ExporterMetrics;
-import io.opentelemetry.exporter.internal.ExporterMetricsAdapter;
+import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
+import io.opentelemetry.exporter.internal.ExporterInstrumentation;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
@@ -40,11 +40,11 @@ public final class HttpExporter<T extends Marshaler> {
 
   private final String type;
   private final HttpSender httpSender;
-  private final ExporterMetricsAdapter exporterMetrics;
+  private final ExporterInstrumentation exporterMetrics;
 
   public HttpExporter(
       String legacyExporterName,
-      ExporterMetrics.Signal type,
+      SemConvExporterMetrics.Signal type,
       ComponentId componentId,
       HttpSender httpSender,
       Supplier<MeterProvider> meterProviderSupplier,
@@ -55,7 +55,7 @@ public final class HttpExporter<T extends Marshaler> {
     this.httpSender = httpSender;
     // TODO: extract server.address and server.port here
     this.exporterMetrics =
-        new ExporterMetricsAdapter(
+        new ExporterInstrumentation(
             healthMetricLevel,
             meterProviderSupplier,
             type,
@@ -70,7 +70,7 @@ public final class HttpExporter<T extends Marshaler> {
       return CompletableResultCode.ofFailure();
     }
 
-    ExporterMetricsAdapter.Recording metricRecording =
+    ExporterInstrumentation.Recording metricRecording =
         exporterMetrics.startRecordingExport(numItems);
 
     CompletableResultCode result = new CompletableResultCode();
@@ -86,7 +86,7 @@ public final class HttpExporter<T extends Marshaler> {
 
   private void onResponse(
       CompletableResultCode result,
-      ExporterMetricsAdapter.Recording metricRecording,
+      ExporterInstrumentation.Recording metricRecording,
       HttpSender.Response httpResponse) {
     int statusCode = httpResponse.statusCode();
 
@@ -123,7 +123,7 @@ public final class HttpExporter<T extends Marshaler> {
   }
 
   private void onError(
-      CompletableResultCode result, ExporterMetricsAdapter.Recording metricRecording, Throwable e) {
+          CompletableResultCode result, ExporterInstrumentation.Recording metricRecording, Throwable e) {
     metricRecording.finishFailed(e, Attributes.empty());
     logger.log(
         Level.SEVERE,

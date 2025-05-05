@@ -11,7 +11,7 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
-import io.opentelemetry.exporter.internal.ExporterMetrics;
+import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
 import io.opentelemetry.exporter.internal.ServerAttributesUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.compression.Compressor;
@@ -53,7 +53,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   private static final Logger LOGGER = Logger.getLogger(GrpcExporterBuilder.class.getName());
 
   private final String legacyExporterName;
-  private final ExporterMetrics.Signal signal;
+  private final SemConvExporterMetrics.Signal signal;
   private final String componentType;
   private final String grpcEndpointPath;
   private final Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>>
@@ -78,7 +78,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
   public GrpcExporterBuilder(
       String legacyExporterName,
-      ExporterMetrics.Signal signal,
+      SemConvExporterMetrics.Signal signal,
       String componentType,
       long defaultTimeoutSecs,
       URI defaultEndpoint,

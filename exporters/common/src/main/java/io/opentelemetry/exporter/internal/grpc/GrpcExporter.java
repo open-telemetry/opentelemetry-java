@@ -10,8 +10,8 @@ import static io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil.GRPC_STAT
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.ExporterMetrics;
-import io.opentelemetry.exporter.internal.ExporterMetricsAdapter;
+import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
+import io.opentelemetry.exporter.internal.ExporterInstrumentation;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -43,11 +43,11 @@ public final class GrpcExporter<T extends Marshaler> {
 
   private final String type;
   private final GrpcSender<T> grpcSender;
-  private final ExporterMetricsAdapter exporterMetrics;
+  private final ExporterInstrumentation exporterMetrics;
 
   public GrpcExporter(
       String legacyExporterName,
-      ExporterMetrics.Signal type,
+      SemConvExporterMetrics.Signal type,
       GrpcSender<T> grpcSender,
       HealthMetricLevel healthMetricLevel,
       ComponentId componentId,
@@ -56,7 +56,7 @@ public final class GrpcExporter<T extends Marshaler> {
     this.type = type.toString();
     this.grpcSender = grpcSender;
     this.exporterMetrics =
-        new ExporterMetricsAdapter(
+        new ExporterInstrumentation(
             healthMetricLevel,
             meterProviderSupplier,
             type,
@@ -71,7 +71,7 @@ public final class GrpcExporter<T extends Marshaler> {
       return CompletableResultCode.ofFailure();
     }
 
-    ExporterMetricsAdapter.Recording metricRecording =
+    ExporterInstrumentation.Recording metricRecording =
         exporterMetrics.startRecordingExport(numItems);
 
     CompletableResultCode result = new CompletableResultCode();
@@ -86,7 +86,7 @@ public final class GrpcExporter<T extends Marshaler> {
 
   private void onResponse(
       CompletableResultCode result,
-      ExporterMetricsAdapter.Recording metricRecording,
+      ExporterInstrumentation.Recording metricRecording,
       GrpcResponse grpcResponse) {
     int statusCode = grpcResponse.grpcStatusValue();
 
@@ -132,7 +132,7 @@ public final class GrpcExporter<T extends Marshaler> {
   }
 
   private void onError(
-      CompletableResultCode result, ExporterMetricsAdapter.Recording metricRecording, Throwable e) {
+      CompletableResultCode result, ExporterInstrumentation.Recording metricRecording, Throwable e) {
     metricRecording.finishFailed(e, Attributes.empty());
     logger.log(
         Level.SEVERE,

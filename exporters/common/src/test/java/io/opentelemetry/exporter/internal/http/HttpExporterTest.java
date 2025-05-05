@@ -12,7 +12,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.exporter.internal.ExporterMetrics;
+import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.HealthMetricLevel;
 import io.opentelemetry.sdk.internal.ComponentId;
@@ -33,7 +33,7 @@ class HttpExporterTest {
     assertThatThrownBy(
             () ->
                 new HttpExporterBuilder<>(
-                        "name", ExporterMetrics.Signal.SPAN, "testing", "http://localhost")
+                        "name", SemConvExporterMetrics.Signal.SPAN, "testing", "http://localhost")
                     .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(
@@ -43,7 +43,7 @@ class HttpExporterTest {
 
   @ParameterizedTest
   @EnumSource
-  void testHealthMetrics(ExporterMetrics.Signal signal) {
+  void testHealthMetrics(SemConvExporterMetrics.Signal signal) {
     String signalMetricPrefix;
     String expectedUnit;
     switch (signal) {
@@ -220,7 +220,7 @@ class HttpExporterTest {
       HttpExporter<Marshaler> exporter =
           new HttpExporter<Marshaler>(
               "legacy_exporter",
-              ExporterMetrics.Signal.METRIC,
+              SemConvExporterMetrics.Signal.METRIC,
               id,
               mockSender,
               () -> meterProvider,

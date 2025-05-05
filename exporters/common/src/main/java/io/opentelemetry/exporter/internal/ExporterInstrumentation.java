@@ -14,22 +14,22 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
- * Adapter class delegating to {@link ExporterMetrics} and {@link LegacyExporterMetrics} depending
+ * Adapter class delegating to {@link SemConvExporterMetrics} and {@link LegacyExporterMetrics} depending
  * on the {@link io.opentelemetry.sdk.common.HealthMetricLevel} setting. This class mimics the
- * interface of {@link ExporterMetrics} to allow it to be easily removed later.
+ * interface of {@link SemConvExporterMetrics} to allow it to be easily removed later.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class ExporterMetricsAdapter {
+public class ExporterInstrumentation {
 
-  @Nullable private final ExporterMetrics exporterMetrics;
+  @Nullable private final SemConvExporterMetrics exporterMetrics;
   @Nullable private final LegacyExporterMetrics legacyExporterMetrics;
 
-  public ExporterMetricsAdapter(
+  public ExporterInstrumentation(
       HealthMetricLevel level,
       Supplier<MeterProvider> meterProviderSupplier,
-      ExporterMetrics.Signal signal,
+      SemConvExporterMetrics.Signal signal,
       ComponentId componentId,
       @Nullable Attributes additionalAttributes,
       String legacyExporterName,
@@ -45,13 +45,13 @@ public class ExporterMetricsAdapter {
               legacyTransportName);
     } else {
       exporterMetrics =
-          new ExporterMetrics(
+          new SemConvExporterMetrics(
               level, meterProviderSupplier, signal, componentId, additionalAttributes);
       legacyExporterMetrics = null;
     }
   }
 
-  private static String getLegacyType(ExporterMetrics.Signal signal) {
+  private static String getLegacyType(SemConvExporterMetrics.Signal signal) {
     switch (signal) {
       case SPAN:
         return "span";
@@ -75,7 +75,7 @@ public class ExporterMetricsAdapter {
     /** The number items (spans, log records or metric data points) being exported */
     private final int itemCount;
 
-    @Nullable private final ExporterMetrics.Recording delegate;
+    @Nullable private final SemConvExporterMetrics.Recording delegate;
 
     private Recording(int itemCount) {
       this.itemCount = itemCount;

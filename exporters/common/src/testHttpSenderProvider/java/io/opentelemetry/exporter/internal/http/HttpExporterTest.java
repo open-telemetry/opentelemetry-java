@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.netmikey.logunit.api.LogCapturer;
-import io.opentelemetry.exporter.internal.ExporterMetrics;
+import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
 import io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSender;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpHttpSender;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
@@ -30,7 +30,7 @@ class HttpExporterTest {
     Assertions.assertThatCode(
             () ->
                 new HttpExporterBuilder<>(
-                        "exporter", ExporterMetrics.Signal.SPAN, "testing", "http://localhost")
+                        "exporter", SemConvExporterMetrics.Signal.SPAN, "testing", "http://localhost")
                     .build())
         .doesNotThrowAnyException();
 
@@ -47,7 +47,7 @@ class HttpExporterTest {
   void build_multipleSendersWithJdk() {
     assertThat(
             new HttpExporterBuilder<>(
-                    "exporter", ExporterMetrics.Signal.SPAN, "testing", "http://localhost")
+                    "exporter", SemConvExporterMetrics.Signal.SPAN, "testing", "http://localhost")
                 .build())
         .extracting("httpSender")
         .isInstanceOf(JdkHttpSender.class);
@@ -62,7 +62,7 @@ class HttpExporterTest {
   void build_multipleSendersWithOkHttp() {
     assertThat(
             new HttpExporterBuilder<>(
-                    "exporter", ExporterMetrics.Signal.SPAN, "testing", "http://localhost")
+                    "exporter", SemConvExporterMetrics.Signal.SPAN, "testing", "http://localhost")
                 .build())
         .extracting("httpSender")
         .isInstanceOf(OkHttpHttpSender.class);
@@ -78,7 +78,7 @@ class HttpExporterTest {
     assertThatThrownBy(
             () ->
                 new HttpExporterBuilder<>(
-                        "exporter", ExporterMetrics.Signal.SPAN, "testing", "http://localhost")
+                        "exporter", SemConvExporterMetrics.Signal.SPAN, "testing", "http://localhost")
                     .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(

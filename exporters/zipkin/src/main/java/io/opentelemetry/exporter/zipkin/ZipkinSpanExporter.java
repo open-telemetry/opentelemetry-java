@@ -8,8 +8,8 @@ package io.opentelemetry.exporter.zipkin;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.ExporterMetrics;
-import io.opentelemetry.exporter.internal.ExporterMetricsAdapter;
+import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
+import io.opentelemetry.exporter.internal.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.HealthMetricLevel;
 import io.opentelemetry.sdk.internal.ComponentId;
@@ -45,7 +45,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   private final ZipkinSpanExporterBuilder builder;
   private final BytesEncoder<Span> encoder;
   private final BytesMessageSender sender;
-  private final ExporterMetricsAdapter exporterMetrics;
+  private final ExporterInstrumentation exporterMetrics;
 
   private final OtelToZipkinSpanTransformer transformer;
 
@@ -73,10 +73,10 @@ public final class ZipkinSpanExporter implements SpanExporter {
     }
     // TODO: add server address and port attributes
     this.exporterMetrics =
-        new ExporterMetricsAdapter(
+        new ExporterInstrumentation(
             healthMetricLevel,
             meterProviderSupplier,
-            ExporterMetrics.Signal.SPAN,
+            SemConvExporterMetrics.Signal.SPAN,
             ComponentId.generateLazy(componentType),
             additonalHealthAttributes,
             "zipkin",
@@ -90,7 +90,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
     }
 
     int numItems = spanDataList.size();
-    ExporterMetricsAdapter.Recording metricRecording =
+    ExporterInstrumentation.Recording metricRecording =
         exporterMetrics.startRecordingExport(numItems);
 
     List<byte[]> encodedSpans = new ArrayList<>(numItems);

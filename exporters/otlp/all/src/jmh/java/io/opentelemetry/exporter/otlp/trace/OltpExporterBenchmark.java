@@ -13,7 +13,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.ExporterMetrics;
+import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
@@ -87,7 +87,7 @@ public class OltpExporterBenchmark {
     upstreamGrpcExporter =
         new GrpcExporter<>(
             "otlp",
-            ExporterMetrics.Signal.SPAN,
+            SemConvExporterMetrics.Signal.SPAN,
             new UpstreamGrpcSender<>(
                 MarshalerTraceServiceGrpc.newFutureStub(defaultGrpcChannel, null),
                 /* shutdownChannel= */ false,
@@ -102,7 +102,7 @@ public class OltpExporterBenchmark {
     okhttpGrpcSender =
         new GrpcExporter<>(
             "otlp",
-            ExporterMetrics.Signal.SPAN,
+            SemConvExporterMetrics.Signal.SPAN,
             new OkHttpGrpcSender<>(
                 URI.create("http://localhost:" + server.activeLocalPort())
                     .resolve(OtlpGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH)
@@ -123,7 +123,7 @@ public class OltpExporterBenchmark {
     httpExporter =
         new HttpExporterBuilder<TraceRequestMarshaler>(
                 "otlp",
-                ExporterMetrics.Signal.SPAN,
+                SemConvExporterMetrics.Signal.SPAN,
                 "http_exporter",
                 "http://localhost:" + server.activeLocalPort() + "/v1/traces")
             .build();

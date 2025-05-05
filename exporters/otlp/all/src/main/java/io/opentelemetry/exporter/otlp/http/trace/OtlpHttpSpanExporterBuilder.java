@@ -10,7 +10,7 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.ExporterMetrics;
+import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
@@ -52,7 +52,7 @@ public final class OtlpHttpSpanExporterBuilder {
   OtlpHttpSpanExporterBuilder() {
     this(
         new HttpExporterBuilder<>(
-            "otlp", ExporterMetrics.Signal.SPAN, "otlp_http_span_exporter", DEFAULT_ENDPOINT),
+            "otlp", SemConvExporterMetrics.Signal.SPAN, "otlp_http_span_exporter", DEFAULT_ENDPOINT),
         DEFAULT_MEMORY_MODE);
   }
 

@@ -11,7 +11,7 @@ import static java.util.Objects.requireNonNull;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.ExporterMetrics;
+import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
@@ -58,7 +58,7 @@ public final class OtlpGrpcSpanExporterBuilder {
     this(
         new GrpcExporterBuilder<>(
             "otlp",
-            ExporterMetrics.Signal.SPAN,
+            SemConvExporterMetrics.Signal.SPAN,
             "otlp_grpc_span_exporter",
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,

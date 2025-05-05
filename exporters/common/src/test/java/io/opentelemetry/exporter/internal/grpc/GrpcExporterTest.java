@@ -11,7 +11,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.exporter.internal.ExporterMetrics;
+import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.HealthMetricLevel;
 import io.opentelemetry.sdk.internal.ComponentId;
@@ -35,7 +35,7 @@ class GrpcExporterTest {
             () ->
                 new GrpcExporterBuilder<>(
                         "exporter",
-                        ExporterMetrics.Signal.SPAN,
+                        SemConvExporterMetrics.Signal.SPAN,
                         "testing",
                         10,
                         new URI("http://localhost"),
@@ -51,7 +51,7 @@ class GrpcExporterTest {
   @ParameterizedTest
   @EnumSource
   @SuppressWarnings("unchecked")
-  void testHealthMetrics(ExporterMetrics.Signal signal) {
+  void testHealthMetrics(SemConvExporterMetrics.Signal signal) {
     String signalMetricPrefix;
     String expectedUnit;
     switch (signal) {
@@ -231,7 +231,7 @@ class GrpcExporterTest {
       GrpcExporter<Marshaler> exporter =
           new GrpcExporter<Marshaler>(
               "legacy_exporter",
-              ExporterMetrics.Signal.SPAN,
+              SemConvExporterMetrics.Signal.SPAN,
               mockSender,
               HealthMetricLevel.OFF,
               id,

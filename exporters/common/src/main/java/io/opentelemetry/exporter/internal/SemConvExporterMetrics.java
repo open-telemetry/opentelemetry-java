@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
  * any time.
  */
-public class ExporterMetrics {
+public class SemConvExporterMetrics {
 
   /**
    * This class is internal and is hence not for public use. Its APIs are unstable and can change at
@@ -62,7 +62,7 @@ public class ExporterMetrics {
   @Nullable private volatile DoubleHistogram duration = null;
   @Nullable private volatile Attributes allAttributes = null;
 
-  public ExporterMetrics(
+  public SemConvExporterMetrics(
       HealthMetricLevel level,
       Supplier<MeterProvider> meterProviderSupplier,
       Signal signal,
@@ -70,7 +70,7 @@ public class ExporterMetrics {
     this(level, meterProviderSupplier, signal, componentId, null);
   }
 
-  public ExporterMetrics(
+  public SemConvExporterMetrics(
       HealthMetricLevel level,
       Supplier<MeterProvider> meterProviderSupplier,
       Signal signal,

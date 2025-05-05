@@ -9,7 +9,7 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
-import io.opentelemetry.exporter.internal.ExporterMetrics;
+import io.opentelemetry.exporter.internal.SemConvExporterMetrics;
 import io.opentelemetry.exporter.internal.ServerAttributesUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.compression.Compressor;
@@ -50,7 +50,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private static final Logger LOGGER = Logger.getLogger(HttpExporterBuilder.class.getName());
 
   private final String exporterName;
-  private final ExporterMetrics.Signal signal;
+  private final SemConvExporterMetrics.Signal signal;
   private String componentType;
 
   private String endpoint;
@@ -72,7 +72,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
 
   public HttpExporterBuilder(
       String exporterName,
-      ExporterMetrics.Signal signal,
+      SemConvExporterMetrics.Signal signal,
       String componentType,
       String defaultEndpoint) {
     this.exporterName = exporterName;
