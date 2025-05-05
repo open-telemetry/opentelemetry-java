@@ -6,7 +6,8 @@
 package io.opentelemetry.sdk.common;
 
 public enum InternalTelemetrySchemaVersion {
-  OFF,
+  DISABLED,
   LEGACY,
-  ON
+  V1_33,
+  LATEST
 }

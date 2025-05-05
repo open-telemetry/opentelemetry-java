@@ -43,7 +43,7 @@ class HttpExporterTest {
 
   @ParameterizedTest
   @EnumSource
-  void testHealthMetrics(ExporterMetrics.Signal signal) {
+  void testInternalTelemetry(ExporterMetrics.Signal signal) {
     String signalMetricPrefix;
     String expectedUnit;
     switch (signal) {
@@ -86,7 +86,7 @@ class HttpExporterTest {
               id,
               mockSender,
               () -> meterProvider,
-              InternalTelemetrySchemaVersion.ON,
+              InternalTelemetrySchemaVersion.V1_33,
               false,
               Attributes.builder().put("foo", "bar").build());
 
@@ -208,7 +208,7 @@ class HttpExporterTest {
   }
 
   @Test
-  void testHealthMetricsDisabled() {
+  void testInternalTelemetryDisabled() {
     InMemoryMetricReader inMemoryMetrics = InMemoryMetricReader.create();
     try (SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {
@@ -224,7 +224,7 @@ class HttpExporterTest {
               id,
               mockSender,
               () -> meterProvider,
-              InternalTelemetrySchemaVersion.OFF,
+              InternalTelemetrySchemaVersion.DISABLED,
               false,
               Attributes.empty());
 

@@ -224,9 +224,9 @@ public final class OtlpHttpSpanExporterBuilder {
    *
    * @since 1.50.0
    */
-  public OtlpHttpSpanExporterBuilder setHealthMetricLevel(InternalTelemetrySchemaVersion level) {
-    requireNonNull(level, "level");
-    delegate.setHealthMetricLevel(level);
+  public OtlpHttpSpanExporterBuilder setInternalTelemetry(InternalTelemetrySchemaVersion schemaVersion) {
+    requireNonNull(schemaVersion, "schemaVersion");
+    delegate.setInternalTelemetry(schemaVersion);
     return this;
   }
 

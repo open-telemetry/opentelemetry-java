@@ -135,7 +135,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public HttpExporterBuilder<T> setHealthMetricLevel(
+  public HttpExporterBuilder<T> setInternalTelemetry(
       InternalTelemetrySchemaVersion internalTelemetrySchemaVersion) {
     this.internalTelemetrySchemaVersion = internalTelemetrySchemaVersion;
     return this;

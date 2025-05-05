@@ -94,7 +94,7 @@ public class OltpExporterBenchmark {
                 10,
                 Collections::emptyMap,
                 null),
-            InternalTelemetrySchemaVersion.OFF,
+            InternalTelemetrySchemaVersion.DISABLED,
             ComponentId.generateLazy("upstream_grpc_exporter"),
             MeterProvider::noop,
             Attributes.empty());
@@ -115,7 +115,7 @@ public class OltpExporterBenchmark {
                 null,
                 null,
                 null),
-            InternalTelemetrySchemaVersion.OFF,
+            InternalTelemetrySchemaVersion.DISABLED,
             ComponentId.generateLazy("okhttp_grpc_exporter"),
             MeterProvider::noop,
             Attributes.empty());

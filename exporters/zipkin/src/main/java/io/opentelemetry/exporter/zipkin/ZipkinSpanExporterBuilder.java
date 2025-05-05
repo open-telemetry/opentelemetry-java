@@ -195,7 +195,7 @@ public final class ZipkinSpanExporterBuilder {
    *
    * @since 1.50.0
    */
-  public ZipkinSpanExporterBuilder setHealthMetricLevel(InternalTelemetrySchemaVersion level) {
+  public ZipkinSpanExporterBuilder setInternalTelemetry(InternalTelemetrySchemaVersion level) {
     requireNonNull(level, "level");
     this.internalTelemetrySchemaVersion = level;
     return this;
@@ -209,7 +209,7 @@ public final class ZipkinSpanExporterBuilder {
     joiner.add("endpoint=" + endpoint);
     joiner.add("compressionEnabled=" + compressionEnabled);
     joiner.add("readTimeoutMillis=" + readTimeoutMillis);
-    joiner.add("healthMetricLevel=" + internalTelemetrySchemaVersion);
+    joiner.add("internalTelemetrySchemaVersion=" + internalTelemetrySchemaVersion);
     // Note: omit sender because we can't log the configuration in any readable way
     // Note: omit encoder because we can't log the configuration in any readable way
     // Note: omit localIpAddressSupplier because we can't log the configuration in any readable way

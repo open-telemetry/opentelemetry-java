@@ -159,7 +159,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public GrpcExporterBuilder<T> setHealthMetricLevel(
+  public GrpcExporterBuilder<T> setInternalTelemetry(
       InternalTelemetrySchemaVersion internalTelemetrySchemaVersion) {
     this.internalTelemetrySchemaVersion = internalTelemetrySchemaVersion;
     return this;

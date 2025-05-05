@@ -51,7 +51,7 @@ class GrpcExporterTest {
   @ParameterizedTest
   @EnumSource
   @SuppressWarnings("unchecked")
-  void testHealthMetrics(ExporterMetrics.Signal signal) {
+  void testInternalTelemetry(ExporterMetrics.Signal signal) {
     String signalMetricPrefix;
     String expectedUnit;
     switch (signal) {
@@ -92,7 +92,7 @@ class GrpcExporterTest {
               "legacy_exporter",
               signal,
               mockSender,
-              InternalTelemetrySchemaVersion.ON,
+              InternalTelemetrySchemaVersion.V1_33,
               id,
               () -> meterProvider,
               Attributes.builder().put("foo", "bar").build());
@@ -219,7 +219,7 @@ class GrpcExporterTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void testHealthMetricsDisabled() {
+  void testInternalTelemetryDisabled() {
     InMemoryMetricReader inMemoryMetrics = InMemoryMetricReader.create();
     try (SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {
@@ -233,7 +233,7 @@ class GrpcExporterTest {
               "legacy_exporter",
               ExporterMetrics.Signal.SPAN,
               mockSender,
-              InternalTelemetrySchemaVersion.OFF,
+              InternalTelemetrySchemaVersion.DISABLED,
               id,
               () -> meterProvider,
               Attributes.empty());

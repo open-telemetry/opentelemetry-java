@@ -62,7 +62,7 @@ class ZipkinSpanExporterTest {
             mockEncoder,
             mockSender,
             MeterProvider::noop,
-            InternalTelemetrySchemaVersion.OFF,
+            InternalTelemetrySchemaVersion.DISABLED,
             Attributes.empty(),
             mockTransformer);
 
@@ -93,7 +93,7 @@ class ZipkinSpanExporterTest {
             mockEncoder,
             mockSender,
             MeterProvider::noop,
-            InternalTelemetrySchemaVersion.OFF,
+            InternalTelemetrySchemaVersion.DISABLED,
             Attributes.empty(),
             mockTransformer);
 
@@ -282,7 +282,7 @@ class ZipkinSpanExporterTest {
             mockEncoder,
             suppressCatchingSender,
             MeterProvider::noop,
-            InternalTelemetrySchemaVersion.OFF,
+            InternalTelemetrySchemaVersion.DISABLED,
             Attributes.empty(),
             mockTransformer);
 

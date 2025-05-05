@@ -68,7 +68,7 @@ class ExporterInstrumentationTest {
 
     instrumentation.startRecordingExport(42).finishFailed("foo", Attributes.empty());
     instrumentation.startRecordingExport(42).finishSuccessful(Attributes.empty());
-    if (schemaVersion == InternalTelemetrySchemaVersion.OFF) {
+    if (schemaVersion == InternalTelemetrySchemaVersion.DISABLED) {
       verifyNoInteractions(meterProviderSupplier);
     } else {
       verify(meterProviderSupplier, atLeastOnce()).get();
@@ -83,7 +83,7 @@ class ExporterInstrumentationTest {
   @ParameterizedTest
   @EnumSource()
   void noopMeterProvider(InternalTelemetrySchemaVersion schemaVersion) {
-    if (schemaVersion == InternalTelemetrySchemaVersion.OFF) {
+    if (schemaVersion == InternalTelemetrySchemaVersion.DISABLED) {
       return; // Nothing to test for No-Op
     }
 

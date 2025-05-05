@@ -251,9 +251,9 @@ public final class OtlpHttpMetricExporterBuilder {
    *
    * @since 1.50.0
    */
-  public OtlpHttpMetricExporterBuilder setHealthMetricLevel(InternalTelemetrySchemaVersion level) {
-    requireNonNull(level, "level");
-    delegate.setHealthMetricLevel(level);
+  public OtlpHttpMetricExporterBuilder setInternalTelemetry(InternalTelemetrySchemaVersion schemaVersion) {
+    requireNonNull(schemaVersion, "schemaVersion");
+    delegate.setInternalTelemetry(schemaVersion);
     return this;
   }
 

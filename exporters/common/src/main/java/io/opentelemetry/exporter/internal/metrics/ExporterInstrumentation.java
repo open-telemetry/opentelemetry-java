@@ -21,7 +21,7 @@ public class ExporterInstrumentation implements ExporterMetrics {
   private final ExporterMetrics implementation;
 
   public ExporterInstrumentation(
-      InternalTelemetrySchemaVersion level,
+      InternalTelemetrySchemaVersion schema,
       Supplier<MeterProvider> meterProviderSupplier,
       ExporterMetrics.Signal signal,
       ComponentId componentId,
@@ -29,8 +29,8 @@ public class ExporterInstrumentation implements ExporterMetrics {
       String legacyExporterName,
       String legacyTransportName) {
 
-    switch (level) {
-      case OFF:
+    switch (schema) {
+      case DISABLED:
         implementation = NoopExporterMetrics.INSTANCE;
         break;
       case LEGACY:
@@ -41,11 +41,12 @@ public class ExporterInstrumentation implements ExporterMetrics {
                 signal,
                 legacyTransportName);
         break;
-      case ON:
+      case V1_33:
+      case LATEST:
         implementation = new SemConvExporterMetrics(meterProviderSupplier, signal, componentId, additionalAttributes);
         break;
       default:
-        throw new IllegalStateException("Unhandled case: " + level);
+        throw new IllegalStateException("Unhandled case: " + schema);
     }
   }
 

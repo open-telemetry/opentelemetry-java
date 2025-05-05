@@ -254,9 +254,9 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    *
    * @since 1.50.0
    */
-  public OtlpGrpcLogRecordExporterBuilder setHealthMetricLevel(InternalTelemetrySchemaVersion level) {
-    requireNonNull(level, "level");
-    delegate.setHealthMetricLevel(level);
+  public OtlpGrpcLogRecordExporterBuilder setInternalTelemetry(InternalTelemetrySchemaVersion schemaVersion) {
+    requireNonNull(schemaVersion, "schemaVersion");
+    delegate.setInternalTelemetry(schemaVersion);
     return this;
   }
 
