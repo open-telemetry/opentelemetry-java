@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLException;
 import org.assertj.core.api.InstanceOfAssertFactories;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,6 +47,8 @@ class JdkHttpSenderTest {
 
   @BeforeEach
   void setup() throws IOException, InterruptedException {
+    JdkHtttpUtil.setPropagateContextForTestingInDispatcher(true);
+
     // Can't directly spy on HttpClient for some reason, so create a real instance and a mock that
     // delegates to the real thing
     when(mockHttpClient.send(any(), any()))
@@ -64,6 +67,11 @@ class JdkHttpSenderTest {
             Collections::emptyMap,
             RetryPolicy.builder().setMaxAttempts(2).setInitialBackoff(Duration.ofMillis(1)).build(),
             null);
+  }
+
+  @AfterEach
+  void tearDown() {
+    JdkHtttpUtil.setPropagateContextForTestingInDispatcher(false);
   }
 
   @Test
