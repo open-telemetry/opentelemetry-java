@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.internal;
 import io.opentelemetry.api.common.AttributeKey;
 
 /**
- * Provides access to semantic convention attributes used within the SDK implementation. This avoid
+ * Provides access to semantic convention attributes used within the SDK implementation. This avoids
  * having to pull in semantic conventions as a dependency, which would easily collide and conflict
  * with user-provided dependencies.
  *
@@ -19,7 +19,6 @@ public class SemConvAttributes {
 
   private SemConvAttributes() {}
 
-  // TODO: add test all attributes against semconv dependency
   public static final AttributeKey<String> OTEL_COMPONENT_TYPE =
       AttributeKey.stringKey("otel.component.type");
   public static final AttributeKey<String> OTEL_COMPONENT_NAME =
