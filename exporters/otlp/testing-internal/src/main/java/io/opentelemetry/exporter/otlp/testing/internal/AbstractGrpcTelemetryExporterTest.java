@@ -1058,8 +1058,6 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       assertThat(telemetryExporter.unwrap().toString())
           .matches(
               "OtlpGrpc[a-zA-Z]*Exporter\\{"
-                  + "exporterName=otlp, "
-                  + "type=[a-zA_Z]*, "
                   + "endpoint=http://localhost:4317, "
                   + "endpointPath=.*, "
                   + "timeoutNanos="
@@ -1099,8 +1097,6 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       assertThat(telemetryExporter.unwrap().toString())
           .matches(
               "OtlpGrpc[a-zA-Z]*Exporter\\{"
-                  + "exporterName=otlp, "
-                  + "type=[a-zA_Z]*, "
                   + "endpoint=http://example:4317, "
                   + "endpointPath=.*, "
                   + "timeoutNanos="

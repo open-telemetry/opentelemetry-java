@@ -250,8 +250,6 @@ public class GrpcExporterBuilder<T extends Marshaler> {
         includePrefixAndSuffix
             ? new StringJoiner(", ", "GrpcExporterBuilder{", "}")
             : new StringJoiner(", ");
-    joiner.add("internalTelemetrySchemaVersion=" + internalTelemetrySchemaVersion);
-    joiner.add("exporterType=" + exporterType.toString());
     joiner.add("endpoint=" + endpoint.toString());
     joiner.add("endpointPath=" + grpcEndpointPath);
     joiner.add("timeoutNanos=" + timeoutNanos);
@@ -276,6 +274,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     if (executorService != null) {
       joiner.add("executorService=" + executorService);
     }
+    joiner.add("exporterType=" + exporterType.toString());
+    joiner.add("internalTelemetrySchemaVersion=" + internalTelemetrySchemaVersion);
     // Note: omit tlsConfigHelper because we can't log the configuration in any readable way
     // Note: omit meterProviderSupplier because we can't log the configuration in any readable way
     return joiner.toString();

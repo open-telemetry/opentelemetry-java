@@ -249,8 +249,6 @@ public final class HttpExporterBuilder<T extends Marshaler> {
         includePrefixAndSuffix
             ? new StringJoiner(", ", "HttpExporterBuilder{", "}")
             : new StringJoiner(", ");
-    joiner.add("internalTelemetrySchemaVersion=" + internalTelemetrySchemaVersion);
-    joiner.add("exporterType=" + exporterType);
     joiner.add("endpoint=" + endpoint);
     joiner.add("timeoutNanos=" + timeoutNanos);
     joiner.add("proxyOptions=" + proxyOptions);
@@ -273,6 +271,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     if (executorService != null) {
       joiner.add("executorService=" + executorService);
     }
+    joiner.add("exporterType=" + exporterType);
+    joiner.add("internalTelemetrySchemaVersion=" + internalTelemetrySchemaVersion);
     // Note: omit tlsConfigHelper because we can't log the configuration in any readable way
     // Note: omit meterProviderSupplier because we can't log the configuration in any readable way
     return joiner.toString();
