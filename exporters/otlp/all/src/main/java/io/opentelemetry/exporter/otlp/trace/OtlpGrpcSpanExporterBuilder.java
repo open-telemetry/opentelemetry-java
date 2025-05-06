@@ -57,8 +57,6 @@ public final class OtlpGrpcSpanExporterBuilder {
   OtlpGrpcSpanExporterBuilder() {
     this(
         new GrpcExporterBuilder<>(
-            "otlp",
-            ComponentId.StandardExporterType.Signal.SPAN,
             ComponentId.StandardExporterType.OTLP_GRPC_LOG_EXPORTER,
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,

@@ -63,7 +63,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
     ComponentId.StandardExporterType exporterType;
     if (sender.encoding() == Encoding.JSON) {
-      exporterType = ComponentId.StandardExporterType.ZIPKIN_HTTP_SPAN_EXPORTER;
+      exporterType = ComponentId.StandardExporterType.ZIPKIN_HTTP_JSON_SPAN_EXPORTER;
     } else {
       exporterType = ComponentId.StandardExporterType.ZIPKIN_HTTP_SPAN_EXPORTER;
     }
