@@ -14,12 +14,10 @@ class NoopExporterMetrics implements ExporterMetrics {
 
   @Override
   public Recording startRecordingExport(int itemCount) {
-    return NoopRecording.INSTANCE;
+    return new NoopRecording();
   }
 
   private static class NoopRecording extends Recording {
-
-    private static final NoopRecording INSTANCE = new NoopRecording();
 
     @Override
     protected void doFinish(@Nullable String errorType, Attributes requestAttributes) {}

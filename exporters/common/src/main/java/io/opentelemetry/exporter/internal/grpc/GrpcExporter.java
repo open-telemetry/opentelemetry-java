@@ -16,7 +16,6 @@ import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
-import io.opentelemetry.sdk.internal.SemConvAttributes;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -86,15 +85,15 @@ public final class GrpcExporter<T extends Marshaler> {
       GrpcResponse grpcResponse) {
     int statusCode = grpcResponse.grpcStatusValue();
 
-    Attributes requestAttributes = Attributes.of(SemConvAttributes.RPC_GRPC_STATUS_CODE, (long) statusCode);
+    metricRecording.setGrpcStatusCode(statusCode);
 
     if (statusCode == 0) {
-      metricRecording.finishSuccessful(requestAttributes);
+      metricRecording.finishSuccessful();
       result.succeed();
       return;
     }
 
-    metricRecording.finishFailed(String.valueOf(statusCode), requestAttributes);
+    metricRecording.finishFailed(String.valueOf(statusCode));
     switch (statusCode) {
       case GRPC_STATUS_UNIMPLEMENTED:
         if (loggedUnimplemented.compareAndSet(false, true)) {
@@ -130,7 +129,7 @@ public final class GrpcExporter<T extends Marshaler> {
       CompletableResultCode result,
       ExporterInstrumentation.Recording metricRecording,
       Throwable e) {
-    metricRecording.finishFailed(e, Attributes.empty());
+    metricRecording.finishFailed(e);
     logger.log(
         Level.SEVERE,
         "Failed to export "

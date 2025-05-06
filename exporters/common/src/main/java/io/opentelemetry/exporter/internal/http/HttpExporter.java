@@ -14,7 +14,6 @@ import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
-import io.opentelemetry.sdk.internal.SemConvAttributes;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -84,15 +83,15 @@ public final class HttpExporter<T extends Marshaler> {
       HttpSender.Response httpResponse) {
     int statusCode = httpResponse.statusCode();
 
-    Attributes requestAttributes = Attributes.of(SemConvAttributes.HTTP_RESPONSE_STATUS_CODE, (long) statusCode);
+    metricRecording.setHttpStatusCode(statusCode);
 
     if (statusCode >= 200 && statusCode < 300) {
-      metricRecording.finishSuccessful(requestAttributes);
+      metricRecording.finishSuccessful();
       result.succeed();
       return;
     }
 
-    metricRecording.finishFailed(String.valueOf(statusCode), requestAttributes);
+    metricRecording.finishFailed(String.valueOf(statusCode));
 
     byte[] body = null;
     try {
@@ -119,7 +118,7 @@ public final class HttpExporter<T extends Marshaler> {
       CompletableResultCode result,
       ExporterInstrumentation.Recording metricRecording,
       Throwable e) {
-    metricRecording.finishFailed(e, Attributes.empty());
+    metricRecording.finishFailed(e);
     logger.log(
         Level.SEVERE,
         "Failed to export "

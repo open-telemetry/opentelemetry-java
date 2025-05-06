@@ -67,7 +67,6 @@ public final class ZipkinSpanExporter implements SpanExporter {
     } else {
       exporterType = ComponentId.StandardExporterType.ZIPKIN_HTTP_SPAN_EXPORTER;
     }
-    // TODO: add server address and port attributes
     this.exporterMetrics =
         new ExporterInstrumentation(
             internalTelemetrySchemaVersion,
@@ -98,10 +97,10 @@ public final class ZipkinSpanExporter implements SpanExporter {
         () -> {
           try {
             sender.send(encodedSpans);
-            metricRecording.finishSuccessful(Attributes.empty());
+            metricRecording.finishSuccessful();
             resultCode.succeed();
           } catch (IOException | RuntimeException e) {
-            metricRecording.finishFailed(e, Attributes.empty());
+            metricRecording.finishFailed(e);
             logger.log(Level.WARNING, "Failed to export spans", e);
             resultCode.fail();
           }

@@ -26,22 +26,11 @@ public interface ExporterMetrics {
 
     protected Recording() {}
 
-    /**
-     * Callback to notify that the export was successful.
-     *
-     * @param requestAttributes additional attributes to add to request metrics
-     */
     public final void finishSuccessful(Attributes requestAttributes) {
       ensureEndedOnce();
       doFinish(null, requestAttributes);
     }
 
-    /**
-     * Callback to notify that the export has failed.
-     *
-     * @param errorType a failure reason suitable for the error.type attribute
-     * @param requestAttributes additional attributes to add to request metrics
-     */
     public final void finishFailed(String errorType, Attributes requestAttributes) {
       ensureEndedOnce();
       if (errorType == null || errorType.isEmpty()) {

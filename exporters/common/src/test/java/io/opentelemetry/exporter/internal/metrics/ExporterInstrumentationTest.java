@@ -12,7 +12,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
@@ -72,16 +71,16 @@ class ExporterInstrumentationTest {
 
     // Verify the supplier is only called once per underlying meter.
 
-    instrumentation.startRecordingExport(42).finishFailed("foo", Attributes.empty());
-    instrumentation.startRecordingExport(42).finishSuccessful(Attributes.empty());
+    instrumentation.startRecordingExport(42).finishFailed("foo");
+    instrumentation.startRecordingExport(42).finishSuccessful();
     if (schemaVersion == InternalTelemetrySchemaVersion.DISABLED) {
       verifyNoInteractions(meterProviderSupplier);
     } else {
       verify(meterProviderSupplier, atLeastOnce()).get();
     }
 
-    instrumentation.startRecordingExport(42).finishFailed("foo", Attributes.empty());
-    instrumentation.startRecordingExport(42).finishSuccessful(Attributes.empty());
+    instrumentation.startRecordingExport(42).finishFailed("foo");
+    instrumentation.startRecordingExport(42).finishSuccessful();
     verifyNoMoreInteractions(meterProviderSupplier);
   }
 
@@ -103,13 +102,13 @@ class ExporterInstrumentationTest {
     verifyNoInteractions(meterProviderSupplier); // Ensure lazy
 
     // Verify the supplier is invoked multiple times since it returns a noop meter.
-    instrumentation.startRecordingExport(42).finishFailed("foo", Attributes.empty());
-    instrumentation.startRecordingExport(42).finishSuccessful(Attributes.empty());
+    instrumentation.startRecordingExport(42).finishFailed("foo");
+    instrumentation.startRecordingExport(42).finishSuccessful();
     verify(meterProviderSupplier, atLeastOnce()).get();
 
     Mockito.clearInvocations((Object) meterProviderSupplier);
-    instrumentation.startRecordingExport(42).finishFailed("foo", Attributes.empty());
-    instrumentation.startRecordingExport(42).finishSuccessful(Attributes.empty());
+    instrumentation.startRecordingExport(42).finishFailed("foo");
+    instrumentation.startRecordingExport(42).finishSuccessful();
     verify(meterProviderSupplier, atLeastOnce()).get();
   }
 }
