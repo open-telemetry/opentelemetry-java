@@ -193,7 +193,6 @@ public final class ZipkinSpanExporterBuilder {
    * Sets the {@link InternalTelemetrySchemaVersion} defining which self-monitoring metrics this exporter
    * collects.
    *
-   * @since 1.50.0
    */
   public ZipkinSpanExporterBuilder setInternalTelemetry(InternalTelemetrySchemaVersion level) {
     requireNonNull(level, "level");

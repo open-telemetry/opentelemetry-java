@@ -43,7 +43,7 @@ public class ExporterInstrumentation implements ExporterMetrics {
         break;
       case V1_33:
       case LATEST:
-        implementation = new SemConvExporterMetrics(meterProviderSupplier, signal, componentId, additionalAttributes);
+        implementation = new SemConvExporterMetrics(meterProviderSupplier, signal, componentId, additionalAttributes == null ? Attributes.empty() : additionalAttributes);
         break;
       default:
         throw new IllegalStateException("Unhandled case: " + schema);

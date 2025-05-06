@@ -41,15 +41,11 @@ public class SemConvExporterMetrics implements ExporterMetrics {
       Supplier<MeterProvider> meterProviderSupplier,
       Signal signal,
       ComponentId componentId,
-      @Nullable Attributes additionalAttributes) {
+      Attributes additionalAttributes) {
     this.meterProviderSupplier = meterProviderSupplier;
     this.componentId = componentId;
     this.signal = signal;
-    if (additionalAttributes != null) {
-      this.additionalAttributes = additionalAttributes;
-    } else {
-      this.additionalAttributes = Attributes.empty();
-    }
+    this.additionalAttributes = additionalAttributes;
   }
 
   @Override
