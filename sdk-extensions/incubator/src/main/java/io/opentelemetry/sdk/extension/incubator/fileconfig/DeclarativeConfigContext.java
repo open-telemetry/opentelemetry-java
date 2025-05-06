@@ -40,7 +40,7 @@ class DeclarativeConfigContext {
   }
 
   /**
-   * Find a registered {@link ComponentProvider} which {@link ComponentProvider#getType()} matching
+   * Find a registered {@link ComponentProvider} with {@link ComponentProvider#getType()} matching
    * {@code type}, {@link ComponentProvider#getName()} matching {@code name}, and call {@link
    * ComponentProvider#create(DeclarativeConfigProperties)} with the given {@code model}.
    *
