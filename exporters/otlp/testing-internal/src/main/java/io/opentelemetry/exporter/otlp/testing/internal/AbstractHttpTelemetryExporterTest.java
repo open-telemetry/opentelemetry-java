@@ -941,8 +941,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
       assertThat(telemetryExporter.unwrap().toString())
           .matches(
               "OtlpHttp[a-zA-Z]*Exporter\\{"
-                  + "exporterName=otlp, "
-                  + "type=[a-zA_Z]*, "
                   + "endpoint=http://localhost:4318/v1/[a-zA-Z]*, "
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(10)
@@ -983,8 +981,6 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
       assertThat(telemetryExporter.unwrap().toString())
           .matches(
               "OtlpHttp[a-zA-Z]*Exporter\\{"
-                  + "exporterName=otlp, "
-                  + "type=[a-zA_Z]*, "
                   + "endpoint=http://example:4318/v1/[a-zA-Z]*, "
                   + "timeoutNanos="
                   + TimeUnit.SECONDS.toNanos(5)
