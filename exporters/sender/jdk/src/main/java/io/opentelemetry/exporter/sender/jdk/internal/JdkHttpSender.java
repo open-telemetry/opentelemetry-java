@@ -32,7 +32,6 @@ import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -101,7 +100,7 @@ public final class JdkHttpSender implements HttpSender {
             .map(RetryPolicy::getRetryExceptionPredicate)
             .orElse(JdkHttpSender::isRetryableException);
     if (executorService == null) {
-      this.executorService = Executors.newFixedThreadPool(5);
+      this.executorService = JdkHtttpUtil.newExecutor();
       this.managedExecutor = true;
     } else {
       this.executorService = executorService;
