@@ -249,6 +249,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
         includePrefixAndSuffix
             ? new StringJoiner(", ", "HttpExporterBuilder{", "}")
             : new StringJoiner(", ");
+    joiner.add("internalTelemetrySchemaVersion=" + internalTelemetrySchemaVersion);
     joiner.add("exporterType=" + exporterType);
     joiner.add("endpoint=" + endpoint);
     joiner.add("timeoutNanos=" + timeoutNanos);

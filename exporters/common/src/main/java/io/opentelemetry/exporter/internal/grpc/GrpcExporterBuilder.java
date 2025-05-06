@@ -250,6 +250,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
         includePrefixAndSuffix
             ? new StringJoiner(", ", "GrpcExporterBuilder{", "}")
             : new StringJoiner(", ");
+    joiner.add("internalTelemetrySchemaVersion=" + internalTelemetrySchemaVersion);
     joiner.add("exporterType=" + exporterType.toString());
     joiner.add("endpoint=" + endpoint.toString());
     joiner.add("endpointPath=" + grpcEndpointPath);

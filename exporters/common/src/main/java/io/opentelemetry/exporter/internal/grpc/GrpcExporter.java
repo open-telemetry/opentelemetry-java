@@ -86,8 +86,7 @@ public final class GrpcExporter<T extends Marshaler> {
       GrpcResponse grpcResponse) {
     int statusCode = grpcResponse.grpcStatusValue();
 
-    Attributes requestAttributes =
-        Attributes.builder().put(SemConvAttributes.RPC_GRPC_STATUS_CODE, statusCode).build();
+    Attributes requestAttributes = Attributes.of(SemConvAttributes.RPC_GRPC_STATUS_CODE, (long) statusCode);
 
     if (statusCode == 0) {
       metricRecording.finishSuccessful(requestAttributes);
@@ -95,7 +94,7 @@ public final class GrpcExporter<T extends Marshaler> {
       return;
     }
 
-    metricRecording.finishFailed("" + statusCode, requestAttributes);
+    metricRecording.finishFailed(String.valueOf(statusCode), requestAttributes);
     switch (statusCode) {
       case GRPC_STATUS_UNIMPLEMENTED:
         if (loggedUnimplemented.compareAndSet(false, true)) {

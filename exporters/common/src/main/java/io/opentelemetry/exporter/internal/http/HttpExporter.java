@@ -84,8 +84,7 @@ public final class HttpExporter<T extends Marshaler> {
       HttpSender.Response httpResponse) {
     int statusCode = httpResponse.statusCode();
 
-    Attributes requestAttributes =
-        Attributes.builder().put(SemConvAttributes.HTTP_RESPONSE_STATUS_CODE, statusCode).build();
+    Attributes requestAttributes = Attributes.of(SemConvAttributes.HTTP_RESPONSE_STATUS_CODE, (long) statusCode);
 
     if (statusCode >= 200 && statusCode < 300) {
       metricRecording.finishSuccessful(requestAttributes);
@@ -93,7 +92,7 @@ public final class HttpExporter<T extends Marshaler> {
       return;
     }
 
-    metricRecording.finishFailed("" + statusCode, requestAttributes);
+    metricRecording.finishFailed(String.valueOf(statusCode), requestAttributes);
 
     byte[] body = null;
     try {
