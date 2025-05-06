@@ -7,10 +7,10 @@ package io.opentelemetry.exporter.internal.http;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
@@ -56,8 +56,7 @@ public final class HttpExporter<T extends Marshaler> {
             meterProviderSupplier,
             componentId,
             exporterType,
-            healthMetricAttributes
-        );
+            healthMetricAttributes);
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {
@@ -118,7 +117,9 @@ public final class HttpExporter<T extends Marshaler> {
   }
 
   private void onError(
-          CompletableResultCode result, ExporterInstrumentation.Recording metricRecording, Throwable e) {
+      CompletableResultCode result,
+      ExporterInstrumentation.Recording metricRecording,
+      Throwable e) {
     metricRecording.finishFailed(e, Attributes.empty());
     logger.log(
         Level.SEVERE,

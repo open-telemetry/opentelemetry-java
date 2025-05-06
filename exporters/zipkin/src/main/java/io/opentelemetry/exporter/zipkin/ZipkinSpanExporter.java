@@ -74,8 +74,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
             meterProviderSupplier,
             ComponentId.generateLazy(exporterType),
             exporterType,
-            additonalHealthAttributes
-        );
+            additonalHealthAttributes);
   }
 
   @Override

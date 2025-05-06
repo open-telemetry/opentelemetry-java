@@ -9,8 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import java.net.URI;
 import io.opentelemetry.sdk.internal.ComponentId;
+import java.net.URI;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

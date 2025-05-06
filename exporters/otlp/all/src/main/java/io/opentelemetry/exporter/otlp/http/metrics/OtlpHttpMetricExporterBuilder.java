@@ -69,7 +69,8 @@ public final class OtlpHttpMetricExporterBuilder {
 
   OtlpHttpMetricExporterBuilder() {
     this(
-        new HttpExporterBuilder<>(ComponentId.StandardExporterType.OTLP_HTTP_METRIC_EXPORTER, DEFAULT_ENDPOINT),
+        new HttpExporterBuilder<>(
+            ComponentId.StandardExporterType.OTLP_HTTP_METRIC_EXPORTER, DEFAULT_ENDPOINT),
         DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR,
         DefaultAggregationSelector.getDefault(),
         DEFAULT_MEMORY_MODE);
@@ -246,10 +247,11 @@ public final class OtlpHttpMetricExporterBuilder {
   }
 
   /**
-   * Sets the {@link InternalTelemetrySchemaVersion} defining which self-monitoring metrics this exporter collects.
-   *
+   * Sets the {@link InternalTelemetrySchemaVersion} defining which self-monitoring metrics this
+   * exporter collects.
    */
-  public OtlpHttpMetricExporterBuilder setInternalTelemetry(InternalTelemetrySchemaVersion schemaVersion) {
+  public OtlpHttpMetricExporterBuilder setInternalTelemetry(
+      InternalTelemetrySchemaVersion schemaVersion) {
     requireNonNull(schemaVersion, "schemaVersion");
     delegate.setInternalTelemetry(schemaVersion);
     return this;

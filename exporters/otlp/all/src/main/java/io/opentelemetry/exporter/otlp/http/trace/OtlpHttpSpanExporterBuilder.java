@@ -51,7 +51,8 @@ public final class OtlpHttpSpanExporterBuilder {
 
   OtlpHttpSpanExporterBuilder() {
     this(
-        new HttpExporterBuilder<>(ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER, DEFAULT_ENDPOINT),
+        new HttpExporterBuilder<>(
+            ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER, DEFAULT_ENDPOINT),
         DEFAULT_MEMORY_MODE);
   }
 
@@ -218,11 +219,11 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /**
-   * Sets the {@link InternalTelemetrySchemaVersion} defining which self-monitoring metrics this exporter
-   * collects.
-   *
+   * Sets the {@link InternalTelemetrySchemaVersion} defining which self-monitoring metrics this
+   * exporter collects.
    */
-  public OtlpHttpSpanExporterBuilder setInternalTelemetry(InternalTelemetrySchemaVersion schemaVersion) {
+  public OtlpHttpSpanExporterBuilder setInternalTelemetry(
+      InternalTelemetrySchemaVersion schemaVersion) {
     requireNonNull(schemaVersion, "schemaVersion");
     delegate.setInternalTelemetry(schemaVersion);
     return this;

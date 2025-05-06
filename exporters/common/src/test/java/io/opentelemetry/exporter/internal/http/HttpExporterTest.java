@@ -31,7 +31,9 @@ class HttpExporterTest {
   void build_NoHttpSenderProvider() {
     assertThatThrownBy(
             () ->
-                new HttpExporterBuilder<>(ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER,"http://localhost")
+                new HttpExporterBuilder<>(
+                        ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER,
+                        "http://localhost")
                     .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(

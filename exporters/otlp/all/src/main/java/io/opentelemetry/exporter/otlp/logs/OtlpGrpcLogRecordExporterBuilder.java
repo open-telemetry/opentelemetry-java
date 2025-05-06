@@ -249,11 +249,11 @@ public final class OtlpGrpcLogRecordExporterBuilder {
   }
 
   /**
-   * Sets the {@link InternalTelemetrySchemaVersion} defining which self-monitoring metrics this exporter
-   * collects.
-   *
+   * Sets the {@link InternalTelemetrySchemaVersion} defining which self-monitoring metrics this
+   * exporter collects.
    */
-  public OtlpGrpcLogRecordExporterBuilder setInternalTelemetry(InternalTelemetrySchemaVersion schemaVersion) {
+  public OtlpGrpcLogRecordExporterBuilder setInternalTelemetry(
+      InternalTelemetrySchemaVersion schemaVersion) {
     requireNonNull(schemaVersion, "schemaVersion");
     delegate.setInternalTelemetry(schemaVersion);
     return this;

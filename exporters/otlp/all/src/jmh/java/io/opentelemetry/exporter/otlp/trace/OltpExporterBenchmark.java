@@ -119,7 +119,7 @@ public class OltpExporterBenchmark {
 
     httpExporter =
         new HttpExporterBuilder<TraceRequestMarshaler>(
-            ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER,
+                ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER,
                 "http://localhost:" + server.activeLocalPort() + "/v1/traces")
             .build();
   }

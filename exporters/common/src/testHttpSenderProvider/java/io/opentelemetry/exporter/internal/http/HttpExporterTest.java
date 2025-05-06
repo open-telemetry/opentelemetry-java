@@ -29,7 +29,9 @@ class HttpExporterTest {
   void build_multipleSendersNoConfiguration() {
     Assertions.assertThatCode(
             () ->
-                new HttpExporterBuilder<>(ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER, "http://localhost")
+                new HttpExporterBuilder<>(
+                        ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER,
+                        "http://localhost")
                     .build())
         .doesNotThrowAnyException();
 
@@ -45,7 +47,8 @@ class HttpExporterTest {
       value = "io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSenderProvider")
   void build_multipleSendersWithJdk() {
     assertThat(
-            new HttpExporterBuilder<>(ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER, "http://localhost")
+            new HttpExporterBuilder<>(
+                    ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER, "http://localhost")
                 .build())
         .extracting("httpSender")
         .isInstanceOf(JdkHttpSender.class);
@@ -59,7 +62,8 @@ class HttpExporterTest {
       value = "io.opentelemetry.exporter.sender.okhttp.internal.OkHttpHttpSenderProvider")
   void build_multipleSendersWithOkHttp() {
     assertThat(
-            new HttpExporterBuilder<>(ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER,"http://localhost")
+            new HttpExporterBuilder<>(
+                    ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER, "http://localhost")
                 .build())
         .extracting("httpSender")
         .isInstanceOf(OkHttpHttpSender.class);
@@ -74,7 +78,9 @@ class HttpExporterTest {
   void build_multipleSendersNoMatch() {
     assertThatThrownBy(
             () ->
-                new HttpExporterBuilder<>(ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER, "http://localhost")
+                new HttpExporterBuilder<>(
+                        ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER,
+                        "http://localhost")
                     .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(

@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.exporter.internal.metrics;
 
 import io.opentelemetry.api.common.Attributes;
@@ -55,7 +60,8 @@ public interface ExporterMetrics {
     /**
      * Invoked when the export has finished, either successfully or failed.
      *
-     * @param errorType null if the export was successful, otherwise a failure reason suitable for the error.type attribute
+     * @param errorType null if the export was successful, otherwise a failure reason suitable for
+     *     the error.type attribute
      * @param requestAttributes additional attributes to add to request metrics
      */
     protected abstract void doFinish(@Nullable String errorType, Attributes requestAttributes);

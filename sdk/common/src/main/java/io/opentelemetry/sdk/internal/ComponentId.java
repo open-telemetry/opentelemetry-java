@@ -15,26 +15,25 @@ import javax.annotation.Nullable;
 /**
  * The component id used for SDK health metrics. This corresponds to the otel.component.name and
  * otel.component.id semconv attributes.
- * <p> This class is internal and is hence not for public use. Its
- * APIs are unstable and can change at any time.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 public abstract class ComponentId {
 
   /**
-   * This class is internal and is hence not for public use. Its
-   * APIs are unstable and can change at any time.
+   * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+   * any time.
    */
   public interface StandardType {
-     String attributeValue();
+    String attributeValue();
   }
 
   /**
-   * This class is internal and is hence not for public use. Its
-   * APIs are unstable and can change at any time.
+   * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+   * any time.
    */
   public enum StandardExporterType implements StandardType {
-
-
     OTLP_GRPC_SPAN_EXPORTER("otlp_grpc_span_exporter", Signal.SPAN),
     OTLP_HTTP_SPAN_EXPORTER("otlp_http_span_exporter", Signal.SPAN),
     OTLP_HTTP_JSON_SPAN_EXPORTER("otlp_http_json_span_exporter", Signal.SPAN),
@@ -46,17 +45,19 @@ public abstract class ComponentId {
     OTLP_HTTP_JSON_METRIC_EXPORTER("otlp_http_json_metric_exporter", Signal.METRIC),
     ZIPKIN_HTTP_SPAN_EXPORTER("zipkin_http_span_exporter", Signal.SPAN),
     /**
-     * Has the same semconv attribute value as ZIPKIN_HTTP_SPAN_EXPORTER,
-     * but we still use a different enum value because they produce separate legacy metrics
+     * Has the same semconv attribute value as ZIPKIN_HTTP_SPAN_EXPORTER, but we still use a
+     * different enum value because they produce separate legacy metrics
      */
     ZIPKIN_HTTP_JSON_SPAN_EXPORTER("zipkin_http_span_exporter", Signal.SPAN);
 
     /**
-     * This class is internal and is hence not for public use. Its APIs are unstable and can change at
-     * any time.
+     * This class is internal and is hence not for public use. Its APIs are unstable and can change
+     * at any time.
      */
     public enum Signal {
-      SPAN, METRIC, LOG;
+      SPAN,
+      METRIC,
+      LOG;
 
       @Override
       public String toString() {
@@ -85,7 +86,6 @@ public abstract class ComponentId {
     public Signal signal() {
       return signal;
     }
-
   }
 
   private ComponentId() {}

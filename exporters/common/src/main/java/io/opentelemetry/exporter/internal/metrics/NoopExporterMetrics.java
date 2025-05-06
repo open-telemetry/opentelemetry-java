@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.exporter.internal.metrics;
 
 import io.opentelemetry.api.common.Attributes;
@@ -17,6 +22,6 @@ class NoopExporterMetrics implements ExporterMetrics {
     private static final NoopRecording INSTANCE = new NoopRecording();
 
     @Override
-    protected void doFinish(@Nullable String errorType, Attributes requestAttributes) { }
+    protected void doFinish(@Nullable String errorType, Attributes requestAttributes) {}
   }
 }

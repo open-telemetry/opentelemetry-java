@@ -13,8 +13,8 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
- * This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
  */
 public class ExporterInstrumentation implements ExporterMetrics {
 
@@ -32,11 +32,19 @@ public class ExporterInstrumentation implements ExporterMetrics {
         implementation = NoopExporterMetrics.INSTANCE;
         break;
       case LEGACY:
-        implementation = LegacyExporterMetrics.isSupportedType(exporterType) ? new LegacyExporterMetrics(meterProviderSupplier,exporterType) : NoopExporterMetrics.INSTANCE;
+        implementation =
+            LegacyExporterMetrics.isSupportedType(exporterType)
+                ? new LegacyExporterMetrics(meterProviderSupplier, exporterType)
+                : NoopExporterMetrics.INSTANCE;
         break;
       case V1_33:
       case LATEST:
-        implementation = new SemConvExporterMetrics(meterProviderSupplier, exporterType.signal(), componentId, additionalAttributes == null ? Attributes.empty() : additionalAttributes);
+        implementation =
+            new SemConvExporterMetrics(
+                meterProviderSupplier,
+                exporterType.signal(),
+                componentId,
+                additionalAttributes == null ? Attributes.empty() : additionalAttributes);
         break;
       default:
         throw new IllegalStateException("Unhandled case: " + schema);
@@ -49,8 +57,8 @@ public class ExporterInstrumentation implements ExporterMetrics {
   }
 
   /**
-   * This class is internal and is hence not for public use. Its APIs are unstable and can change
-   * at any time.
+   * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+   * any time.
    */
   public static class Recording extends ExporterMetrics.Recording {
 
@@ -61,7 +69,8 @@ public class ExporterInstrumentation implements ExporterMetrics {
     }
 
     /**
-     * Callback to notify that the export has failed with the given {@link Throwable} as failure cause.
+     * Callback to notify that the export has failed with the given {@link Throwable} as failure
+     * cause.
      *
      * @param failureCause the cause of the failure
      * @param requestAttributes additional attributes to add to request metrics

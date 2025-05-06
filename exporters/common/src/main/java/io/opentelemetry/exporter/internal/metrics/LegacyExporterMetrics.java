@@ -18,7 +18,8 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
- * Implements health metrics for exporters which were defined prior to the standardization in semantic conventions.
+ * Implements health metrics for exporters which were defined prior to the standardization in
+ * semantic conventions.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
@@ -43,12 +44,12 @@ public class LegacyExporterMetrics implements ExporterMetrics {
 
   LegacyExporterMetrics(
       Supplier<MeterProvider> meterProviderSupplier,
-      ComponentId.StandardExporterType exporterType
-    ) {
+      ComponentId.StandardExporterType exporterType) {
     this.meterProviderSupplier = meterProviderSupplier;
     this.exporterName = getExporterName(exporterType);
     this.transportName = getTransportName(exporterType);
-    this.seenAttrs = Attributes.builder().put(ATTRIBUTE_KEY_TYPE, getTypeString(exporterType.signal())).build();
+    this.seenAttrs =
+        Attributes.builder().put(ATTRIBUTE_KEY_TYPE, getTypeString(exporterType.signal())).build();
     this.successAttrs = this.seenAttrs.toBuilder().put(ATTRIBUTE_KEY_SUCCESS, true).build();
     this.failedAttrs = this.seenAttrs.toBuilder().put(ATTRIBUTE_KEY_SUCCESS, false).build();
   }

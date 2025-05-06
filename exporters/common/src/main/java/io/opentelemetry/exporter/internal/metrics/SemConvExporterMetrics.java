@@ -48,7 +48,6 @@ public class SemConvExporterMetrics implements ExporterMetrics {
     this.additionalAttributes = additionalAttributes;
   }
 
-
   @Override
   public ExporterMetrics.Recording startRecordingExport(int itemCount) {
     return new Recording(itemCount);
@@ -96,7 +95,6 @@ public class SemConvExporterMetrics implements ExporterMetrics {
     }
     return allAttributes;
   }
-
 
   private LongUpDownCounter inflight() {
     LongUpDownCounter inflight = this.inflight;

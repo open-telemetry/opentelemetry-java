@@ -63,13 +63,13 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
-  private InternalTelemetrySchemaVersion internalTelemetrySchemaVersion = InternalTelemetrySchemaVersion.LEGACY;
+  private InternalTelemetrySchemaVersion internalTelemetrySchemaVersion =
+      InternalTelemetrySchemaVersion.LEGACY;
   private ClassLoader serviceClassLoader = HttpExporterBuilder.class.getClassLoader();
   @Nullable private ExecutorService executorService;
 
   public HttpExporterBuilder(
-      ComponentId.StandardExporterType exporterType,
-      String defaultEndpoint) {
+      ComponentId.StandardExporterType exporterType, String defaultEndpoint) {
     this.exporterType = exporterType;
 
     endpoint = defaultEndpoint;
@@ -176,8 +176,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
 
   @SuppressWarnings("BuilderReturnThis")
   public HttpExporterBuilder<T> copy() {
-    HttpExporterBuilder<T> copy =
-        new HttpExporterBuilder<>(exporterType, endpoint);
+    HttpExporterBuilder<T> copy = new HttpExporterBuilder<>(exporterType, endpoint);
     copy.endpoint = endpoint;
     copy.timeoutNanos = timeoutNanos;
     copy.connectTimeoutNanos = connectTimeoutNanos;

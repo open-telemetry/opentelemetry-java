@@ -65,7 +65,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
-  private InternalTelemetrySchemaVersion internalTelemetrySchemaVersion = InternalTelemetrySchemaVersion.LEGACY;
+  private InternalTelemetrySchemaVersion internalTelemetrySchemaVersion =
+      InternalTelemetrySchemaVersion.LEGACY;
 
   private ClassLoader serviceClassLoader = GrpcExporterBuilder.class.getClassLoader();
   @Nullable private ExecutorService executorService;

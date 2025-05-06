@@ -35,7 +35,8 @@ public final class ZipkinSpanExporterBuilder {
   private boolean compressionEnabled = true;
   private int readTimeoutMillis = (int) TimeUnit.SECONDS.toMillis(10);
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
-  private InternalTelemetrySchemaVersion internalTelemetrySchemaVersion = InternalTelemetrySchemaVersion.LEGACY;
+  private InternalTelemetrySchemaVersion internalTelemetrySchemaVersion =
+      InternalTelemetrySchemaVersion.LEGACY;
 
   /**
    * Sets the Zipkin sender. Implements the client side of the span transport. An {@link
@@ -190,9 +191,8 @@ public final class ZipkinSpanExporterBuilder {
   }
 
   /**
-   * Sets the {@link InternalTelemetrySchemaVersion} defining which self-monitoring metrics this exporter
-   * collects.
-   *
+   * Sets the {@link InternalTelemetrySchemaVersion} defining which self-monitoring metrics this
+   * exporter collects.
    */
   public ZipkinSpanExporterBuilder setInternalTelemetry(InternalTelemetrySchemaVersion level) {
     requireNonNull(level, "level");
