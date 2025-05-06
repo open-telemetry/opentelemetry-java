@@ -7,10 +7,8 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PropagatorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TextMapPropagatorModel;
-import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,8 +27,7 @@ final class PropagatorFactory implements Factory<PropagatorModel, ContextPropaga
   }
 
   @Override
-  public ContextPropagators create(
-      PropagatorModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+  public ContextPropagators create(PropagatorModel model, DeclarativeConfigContext context) {
     List<TextMapPropagatorModel> textMapPropagatorModels = model.getComposite();
     Set<String> propagatorNames = new HashSet<>();
     List<TextMapPropagator> textMapPropagators = new ArrayList<>();
@@ -38,8 +35,7 @@ final class PropagatorFactory implements Factory<PropagatorModel, ContextPropaga
       textMapPropagatorModels.forEach(
           textMapPropagatorModel -> {
             TextMapPropagatorAndName propagatorAndName =
-                TextMapPropagatorFactory.getInstance()
-                    .create(textMapPropagatorModel, spiHelper, closeables);
+                TextMapPropagatorFactory.getInstance().create(textMapPropagatorModel, context);
             textMapPropagators.add(propagatorAndName.getTextMapPropagator());
             propagatorNames.add(propagatorAndName.getName());
           });
@@ -59,7 +55,7 @@ final class PropagatorFactory implements Factory<PropagatorModel, ContextPropaga
         // Only add entries which weren't already previously added
         if (propagatorNames.add(propagatorName)) {
           textMapPropagators.add(
-              TextMapPropagatorFactory.getPropagator(spiHelper, propagatorName)
+              TextMapPropagatorFactory.getPropagator(context, propagatorName)
                   .getTextMapPropagator());
         }
       }

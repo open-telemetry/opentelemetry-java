@@ -8,11 +8,8 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TextMapPropagatorModel;
-import java.io.Closeable;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 final class TextMapPropagatorFactory
@@ -28,35 +25,34 @@ final class TextMapPropagatorFactory
 
   @Override
   public TextMapPropagatorAndName create(
-      TextMapPropagatorModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+      TextMapPropagatorModel model, DeclarativeConfigContext context) {
     if (model.getTracecontext() != null) {
-      return getPropagator(spiHelper, "tracecontext");
+      return getPropagator(context, "tracecontext");
     }
     if (model.getBaggage() != null) {
-      return getPropagator(spiHelper, "baggage");
+      return getPropagator(context, "baggage");
     }
     if (model.getB3() != null) {
-      return getPropagator(spiHelper, "b3");
+      return getPropagator(context, "b3");
     }
     if (model.getB3multi() != null) {
-      return getPropagator(spiHelper, "b3multi");
+      return getPropagator(context, "b3multi");
     }
     if (model.getJaeger() != null) {
-      return getPropagator(spiHelper, "jaeger");
+      return getPropagator(context, "jaeger");
     }
     if (model.getOttrace() != null) {
-      return getPropagator(spiHelper, "ottrace");
+      return getPropagator(context, "ottrace");
     }
 
     Map.Entry<String, Object> keyValue =
         FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "propagator");
     TextMapPropagator propagator =
-        FileConfigUtil.loadComponent(
-            spiHelper, TextMapPropagator.class, keyValue.getKey(), keyValue.getValue());
+        context.loadComponent(TextMapPropagator.class, keyValue.getKey(), keyValue.getValue());
     return TextMapPropagatorAndName.create(propagator, keyValue.getKey());
   }
 
-  static TextMapPropagatorAndName getPropagator(SpiHelper spiHelper, String name) {
+  static TextMapPropagatorAndName getPropagator(DeclarativeConfigContext context, String name) {
     TextMapPropagator textMapPropagator;
     if (name.equals("tracecontext")) {
       textMapPropagator = W3CTraceContextPropagator.getInstance();
@@ -64,8 +60,7 @@ final class TextMapPropagatorFactory
       textMapPropagator = W3CBaggagePropagator.getInstance();
     } else {
       textMapPropagator =
-          FileConfigUtil.loadComponent(
-              spiHelper, TextMapPropagator.class, name, Collections.emptyMap());
+          context.loadComponent(TextMapPropagator.class, name, Collections.emptyMap());
     }
     return TextMapPropagatorAndName.create(textMapPropagator, name);
   }

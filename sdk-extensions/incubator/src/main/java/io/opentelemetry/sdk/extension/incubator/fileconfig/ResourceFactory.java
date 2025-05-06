@@ -9,7 +9,6 @@ import static io.opentelemetry.sdk.internal.GlobUtil.createGlobPatternPredicate;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.ResourceConfiguration;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalResourceDetectionModel;
@@ -18,7 +17,6 @@ import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Includ
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
-import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
@@ -35,7 +33,7 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
   }
 
   @Override
-  public Resource create(ResourceModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+  public Resource create(ResourceModel model, DeclarativeConfigContext context) {
     ResourceBuilder builder = Resource.getDefault().toBuilder();
 
     ExperimentalResourceDetectionModel detectionModel = model.getDetectionDevelopment();
@@ -46,7 +44,7 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
       if (detectorModels != null) {
         for (ExperimentalResourceDetectorModel detectorModel : detectorModels) {
           detectedResourceBuilder.putAll(
-              ResourceDetectorFactory.getInstance().create(detectorModel, spiHelper, closeables));
+              ResourceDetectorFactory.getInstance().create(detectorModel, context));
         }
       }
 
@@ -71,9 +69,7 @@ final class ResourceFactory implements Factory<ResourceModel, Resource> {
     List<AttributeNameValueModel> attributeNameValueModel = model.getAttributes();
     if (attributeNameValueModel != null) {
       builder
-          .putAll(
-              AttributeListFactory.getInstance()
-                  .create(attributeNameValueModel, spiHelper, closeables))
+          .putAll(AttributeListFactory.getInstance().create(attributeNameValueModel, context))
           .build();
     }
 

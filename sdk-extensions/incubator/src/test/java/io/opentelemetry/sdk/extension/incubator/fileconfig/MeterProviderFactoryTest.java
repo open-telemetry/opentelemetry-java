@@ -43,8 +43,9 @@ class MeterProviderFactoryTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
-  private final SpiHelper spiHelper =
-      SpiHelper.create(MeterProviderFactoryTest.class.getClassLoader());
+  private final DeclarativeConfigContext context =
+      new DeclarativeConfigContext(
+          SpiHelper.create(MeterProviderFactoryTest.class.getClassLoader()));
 
   @ParameterizedTest
   @MethodSource("createArguments")
@@ -52,8 +53,7 @@ class MeterProviderFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     cleanup.addCloseable(expectedProvider);
 
-    SdkMeterProvider provider =
-        MeterProviderFactory.getInstance().create(model, spiHelper, closeables).build();
+    SdkMeterProvider provider = MeterProviderFactory.getInstance().create(model, context).build();
     cleanup.addCloseable(provider);
     cleanup.addCloseables(closeables);
 

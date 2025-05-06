@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordProcessorModel;
@@ -15,9 +14,7 @@ import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessorBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
-import java.io.Closeable;
 import java.time.Duration;
-import java.util.List;
 import java.util.Map;
 
 final class LogRecordProcessorFactory
@@ -33,7 +30,7 @@ final class LogRecordProcessorFactory
 
   @Override
   public LogRecordProcessor create(
-      LogRecordProcessorModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+      LogRecordProcessorModel model, DeclarativeConfigContext context) {
     BatchLogRecordProcessorModel batchModel = model.getBatch();
     if (batchModel != null) {
       LogRecordExporterModel exporterModel =
@@ -41,7 +38,7 @@ final class LogRecordProcessorFactory
               batchModel.getExporter(), "batch log record processor exporter");
 
       LogRecordExporter logRecordExporter =
-          LogRecordExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
+          LogRecordExporterFactory.getInstance().create(exporterModel, context);
       BatchLogRecordProcessorBuilder builder = BatchLogRecordProcessor.builder(logRecordExporter);
       if (batchModel.getExportTimeout() != null) {
         builder.setExporterTimeout(Duration.ofMillis(batchModel.getExportTimeout()));
@@ -55,7 +52,8 @@ final class LogRecordProcessorFactory
       if (batchModel.getScheduleDelay() != null) {
         builder.setScheduleDelay(Duration.ofMillis(batchModel.getScheduleDelay()));
       }
-      return FileConfigUtil.addAndReturn(closeables, builder.build());
+
+      return context.addCloseable(builder.build());
     }
 
     SimpleLogRecordProcessorModel simpleModel = model.getSimple();
@@ -64,17 +62,15 @@ final class LogRecordProcessorFactory
           FileConfigUtil.requireNonNull(
               simpleModel.getExporter(), "simple log record processor exporter");
       LogRecordExporter logRecordExporter =
-          LogRecordExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
-      return FileConfigUtil.addAndReturn(
-          closeables, SimpleLogRecordProcessor.create(logRecordExporter));
+          LogRecordExporterFactory.getInstance().create(exporterModel, context);
+      return context.addCloseable(SimpleLogRecordProcessor.create(logRecordExporter));
     }
 
     Map.Entry<String, Object> keyValue =
         FileConfigUtil.getSingletonMapEntry(
             model.getAdditionalProperties(), "log record processor");
     LogRecordProcessor logRecordProcessor =
-        FileConfigUtil.loadComponent(
-            spiHelper, LogRecordProcessor.class, keyValue.getKey(), keyValue.getValue());
-    return FileConfigUtil.addAndReturn(closeables, logRecordProcessor);
+        context.loadComponent(LogRecordProcessor.class, keyValue.getKey(), keyValue.getValue());
+    return context.addCloseable(logRecordProcessor);
   }
 }

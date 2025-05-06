@@ -8,14 +8,12 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramAggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.IncludeExcludeModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewStreamModel;
 import io.opentelemetry.sdk.metrics.View;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import org.junit.jupiter.api.Test;
 
@@ -29,8 +27,7 @@ class ViewFactoryTest {
         ViewFactory.getInstance()
             .create(
                 new ViewStreamModel().withAttributeKeys(null),
-                mock(SpiHelper.class),
-                Collections.emptyList());
+                mock(DeclarativeConfigContext.class));
 
     assertThat(view.toString()).isEqualTo(expectedView.toString());
   }
@@ -60,8 +57,7 @@ class ViewFactoryTest {
                             .withExplicitBucketHistogram(
                                 new ExplicitBucketHistogramAggregationModel()
                                     .withBoundaries(Arrays.asList(1.0, 2.0)))),
-                mock(SpiHelper.class),
-                Collections.emptyList());
+                mock(DeclarativeConfigContext.class));
 
     assertThat(view.toString()).isEqualTo(expectedView.toString());
   }

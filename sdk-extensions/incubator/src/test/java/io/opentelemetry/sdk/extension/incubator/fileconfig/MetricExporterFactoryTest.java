@@ -70,6 +70,7 @@ class MetricExporterFactoryTest {
 
   private final SpiHelper spiHelper =
       spy(SpiHelper.create(SpanExporterFactoryTest.class.getClassLoader()));
+  private final DeclarativeConfigContext context = new DeclarativeConfigContext(spiHelper);
   private List<ComponentProvider<?>> loadedComponentProviders = Collections.emptyList();
 
   @BeforeEach
@@ -106,8 +107,7 @@ class MetricExporterFactoryTest {
         MetricExporterFactory.getInstance()
             .create(
                 new PushMetricExporterModel().withOtlpHttp(new OtlpHttpMetricExporterModel()),
-                spiHelper,
-                closeables);
+                context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -184,8 +184,7 @@ class MetricExporterFactoryTest {
                             .withDefaultHistogramAggregation(
                                 OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
                                     .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)),
-                spiHelper,
-                closeables);
+                context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -231,8 +230,7 @@ class MetricExporterFactoryTest {
         MetricExporterFactory.getInstance()
             .create(
                 new PushMetricExporterModel().withOtlpGrpc(new OtlpGrpcMetricExporterModel()),
-                spiHelper,
-                closeables);
+                context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -308,8 +306,7 @@ class MetricExporterFactoryTest {
                             .withDefaultHistogramAggregation(
                                 OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
                                     .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)),
-                spiHelper,
-                closeables);
+                context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -353,10 +350,7 @@ class MetricExporterFactoryTest {
 
     io.opentelemetry.sdk.metrics.export.MetricExporter exporter =
         MetricExporterFactory.getInstance()
-            .create(
-                new PushMetricExporterModel().withConsole(new ConsoleExporterModel()),
-                spiHelper,
-                closeables);
+            .create(new PushMetricExporterModel().withConsole(new ConsoleExporterModel()), context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -374,8 +368,7 @@ class MetricExporterFactoryTest {
             .create(
                 new PushMetricExporterModel()
                     .withOtlpFileDevelopment(new ExperimentalOtlpFileMetricExporterModel()),
-                spiHelper,
-                closeables);
+                context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -397,8 +390,7 @@ class MetricExporterFactoryTest {
                         new PushMetricExporterModel()
                             .withAdditionalProperty(
                                 "unknown_key", ImmutableMap.of("key1", "value1")),
-                        spiHelper,
-                        new ArrayList<>()))
+                        context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
             "No component provider detected for io.opentelemetry.sdk.metrics.export.MetricExporter with name \"unknown_key\".");
@@ -411,8 +403,7 @@ class MetricExporterFactoryTest {
             .create(
                 new PushMetricExporterModel()
                     .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
-                spiHelper,
-                new ArrayList<>());
+                context);
     assertThat(metricExporter)
         .isInstanceOf(MetricExporterComponentProvider.TestMetricExporter.class);
     assertThat(

@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNonNull;
 
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalTracerConfigModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalTracerConfiguratorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalTracerMatcherAndConfigModel;
@@ -21,7 +20,6 @@ import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import java.io.Closeable;
 import java.util.List;
 
 final class TracerProviderFactory
@@ -37,7 +35,7 @@ final class TracerProviderFactory
 
   @Override
   public SdkTracerProviderBuilder create(
-      TracerProviderAndAttributeLimits model, SpiHelper spiHelper, List<Closeable> closeables) {
+      TracerProviderAndAttributeLimits model, DeclarativeConfigContext context) {
     SdkTracerProviderBuilder builder = SdkTracerProvider.builder();
     TracerProviderModel tracerProviderModel = model.getTracerProvider();
     if (tracerProviderModel == null) {
@@ -49,14 +47,12 @@ final class TracerProviderFactory
             .create(
                 SpanLimitsAndAttributeLimits.create(
                     model.getAttributeLimits(), tracerProviderModel.getLimits()),
-                spiHelper,
-                closeables);
+                context);
     builder.setSpanLimits(spanLimits);
 
     if (tracerProviderModel.getSampler() != null) {
       Sampler sampler =
-          SamplerFactory.getInstance()
-              .create(tracerProviderModel.getSampler(), spiHelper, closeables);
+          SamplerFactory.getInstance().create(tracerProviderModel.getSampler(), context);
       builder.setSampler(sampler);
     }
 
@@ -65,7 +61,7 @@ final class TracerProviderFactory
       processors.forEach(
           processor ->
               builder.addSpanProcessor(
-                  SpanProcessorFactory.getInstance().create(processor, spiHelper, closeables)));
+                  SpanProcessorFactory.getInstance().create(processor, context)));
     }
 
     ExperimentalTracerConfiguratorModel tracerConfiguratorModel =
@@ -75,7 +71,7 @@ final class TracerProviderFactory
       ScopeConfiguratorBuilder<TracerConfig> configuratorBuilder = ScopeConfigurator.builder();
       if (defaultConfigModel != null) {
         configuratorBuilder.setDefault(
-            TracerConfigFactory.INSTANCE.create(defaultConfigModel, spiHelper, closeables));
+            TracerConfigFactory.INSTANCE.create(defaultConfigModel, context));
       }
       List<ExperimentalTracerMatcherAndConfigModel> tracerMatcherAndConfigs =
           tracerConfiguratorModel.getTracers();
@@ -89,7 +85,7 @@ final class TracerProviderFactory
           }
           configuratorBuilder.addCondition(
               ScopeConfiguratorBuilder.nameMatchesGlob(name),
-              TracerConfigFactory.INSTANCE.create(config, spiHelper, closeables));
+              TracerConfigFactory.INSTANCE.create(config, context));
         }
       }
       SdkTracerProviderUtil.setTracerConfigurator(builder, configuratorBuilder.build());
@@ -105,7 +101,7 @@ final class TracerProviderFactory
 
     @Override
     public TracerConfig create(
-        ExperimentalTracerConfigModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+        ExperimentalTracerConfigModel model, DeclarativeConfigContext context) {
       if (model.getDisabled() != null && model.getDisabled()) {
         return TracerConfig.disabled();
       }

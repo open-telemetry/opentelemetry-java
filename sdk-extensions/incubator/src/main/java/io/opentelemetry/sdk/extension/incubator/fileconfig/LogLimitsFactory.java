@@ -5,13 +5,10 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimitsModel;
 import io.opentelemetry.sdk.logs.LogLimits;
 import io.opentelemetry.sdk.logs.LogLimitsBuilder;
-import java.io.Closeable;
-import java.util.List;
 
 final class LogLimitsFactory implements Factory<LogRecordLimitsAndAttributeLimits, LogLimits> {
 
@@ -25,7 +22,7 @@ final class LogLimitsFactory implements Factory<LogRecordLimitsAndAttributeLimit
 
   @Override
   public LogLimits create(
-      LogRecordLimitsAndAttributeLimits model, SpiHelper spiHelper, List<Closeable> closeables) {
+      LogRecordLimitsAndAttributeLimits model, DeclarativeConfigContext context) {
     LogLimitsBuilder builder = LogLimits.builder();
 
     AttributeLimitsModel attributeLimitsModel = model.getAttributeLimits();

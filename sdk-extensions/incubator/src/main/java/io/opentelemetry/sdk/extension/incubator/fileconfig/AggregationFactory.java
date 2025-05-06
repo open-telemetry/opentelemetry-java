@@ -6,12 +6,10 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2ExponentialBucketHistogramAggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramAggregationModel;
 import io.opentelemetry.sdk.metrics.Aggregation;
-import java.io.Closeable;
 import java.util.List;
 
 final class AggregationFactory implements Factory<AggregationModel, Aggregation> {
@@ -25,8 +23,7 @@ final class AggregationFactory implements Factory<AggregationModel, Aggregation>
   }
 
   @Override
-  public Aggregation create(
-      AggregationModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+  public Aggregation create(AggregationModel model, DeclarativeConfigContext context) {
     if (model.getDrop() != null) {
       return Aggregation.drop();
     }

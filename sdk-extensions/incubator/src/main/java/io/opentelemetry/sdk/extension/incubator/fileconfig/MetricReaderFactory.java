@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNonNull;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalPrometheusMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.MetricReaderModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PeriodicMetricReaderModel;
@@ -20,9 +19,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
-import java.io.Closeable;
 import java.time.Duration;
-import java.util.List;
 
 final class MetricReaderFactory
     implements Factory<MetricReaderModel, MetricReaderAndCardinalityLimits> {
@@ -37,15 +34,15 @@ final class MetricReaderFactory
 
   @Override
   public MetricReaderAndCardinalityLimits create(
-      MetricReaderModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+      MetricReaderModel model, DeclarativeConfigContext context) {
     PeriodicMetricReaderModel periodicModel = model.getPeriodic();
     if (periodicModel != null) {
-      return PeriodicMetricReaderFactory.INSTANCE.create(periodicModel, spiHelper, closeables);
+      return PeriodicMetricReaderFactory.INSTANCE.create(periodicModel, context);
     }
 
     PullMetricReaderModel pullModel = model.getPull();
     if (pullModel != null) {
-      return PullMetricReaderFactory.INSTANCE.create(pullModel, spiHelper, closeables);
+      return PullMetricReaderFactory.INSTANCE.create(pullModel, context);
     }
 
     throw new DeclarativeConfigException("reader must be set");
@@ -60,14 +57,14 @@ final class MetricReaderFactory
 
     @Override
     public MetricReaderAndCardinalityLimits create(
-        PeriodicMetricReaderModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+        PeriodicMetricReaderModel model, DeclarativeConfigContext context) {
       PushMetricExporterModel exporterModel =
           requireNonNull(model.getExporter(), "periodic metric reader exporter");
       MetricExporter metricExporter =
-          MetricExporterFactory.getInstance().create(exporterModel, spiHelper, closeables);
+          MetricExporterFactory.getInstance().create(exporterModel, context);
 
       PeriodicMetricReaderBuilder builder =
-          PeriodicMetricReader.builder(FileConfigUtil.addAndReturn(closeables, metricExporter));
+          PeriodicMetricReader.builder(context.addCloseable(metricExporter));
 
       if (model.getInterval() != null) {
         builder.setInterval(Duration.ofMillis(model.getInterval()));
@@ -75,13 +72,11 @@ final class MetricReaderFactory
       CardinalityLimitSelector cardinalityLimitSelector = null;
       if (model.getCardinalityLimits() != null) {
         cardinalityLimitSelector =
-            CardinalityLimitsFactory.getInstance()
-                .create(model.getCardinalityLimits(), spiHelper, closeables);
+            CardinalityLimitsFactory.getInstance().create(model.getCardinalityLimits(), context);
       }
 
-      MetricReaderAndCardinalityLimits readerAndCardinalityLimits =
-          MetricReaderAndCardinalityLimits.create(builder.build(), cardinalityLimitSelector);
-      return FileConfigUtil.addAndReturn(closeables, readerAndCardinalityLimits);
+      MetricReader reader = context.addCloseable(builder.build());
+      return MetricReaderAndCardinalityLimits.create(reader, cardinalityLimitSelector);
     }
   }
 
@@ -94,7 +89,7 @@ final class MetricReaderFactory
 
     @Override
     public MetricReaderAndCardinalityLimits create(
-        PullMetricReaderModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+        PullMetricReaderModel model, DeclarativeConfigContext context) {
       PullMetricExporterModel exporterModel =
           requireNonNull(model.getExporter(), "pull metric reader exporter");
 
@@ -103,18 +98,15 @@ final class MetricReaderFactory
 
       if (prometheusModel != null) {
         MetricReader metricReader =
-            FileConfigUtil.loadComponent(
-                spiHelper, MetricReader.class, "prometheus", prometheusModel);
+            context.addCloseable(
+                context.loadComponent(MetricReader.class, "prometheus", prometheusModel));
         CardinalityLimitSelector cardinalityLimitSelector = null;
         if (model.getCardinalityLimits() != null) {
           cardinalityLimitSelector =
-              CardinalityLimitsFactory.getInstance()
-                  .create(model.getCardinalityLimits(), spiHelper, closeables);
+              CardinalityLimitsFactory.getInstance().create(model.getCardinalityLimits(), context);
         }
 
-        MetricReaderAndCardinalityLimits readerAndCardinalityLimits =
-            MetricReaderAndCardinalityLimits.create(metricReader, cardinalityLimitSelector);
-        return FileConfigUtil.addAndReturn(closeables, readerAndCardinalityLimits);
+        return MetricReaderAndCardinalityLimits.create(metricReader, cardinalityLimitSelector);
       }
 
       throw new DeclarativeConfigException(

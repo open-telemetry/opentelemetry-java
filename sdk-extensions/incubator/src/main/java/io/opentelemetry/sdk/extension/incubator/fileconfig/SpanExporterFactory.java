@@ -5,11 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.io.Closeable;
-import java.util.List;
 import java.util.Map;
 
 final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExporter> {
@@ -23,8 +20,7 @@ final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExport
   }
 
   @Override
-  public SpanExporter create(
-      SpanExporterModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+  public SpanExporter create(SpanExporterModel model, DeclarativeConfigContext context) {
 
     model.getAdditionalProperties().compute("otlp_http", (k, v) -> model.getOtlpHttp());
     model.getAdditionalProperties().compute("otlp_grpc", (k, v) -> model.getOtlpGrpc());
@@ -36,9 +32,8 @@ final class SpanExporterFactory implements Factory<SpanExporterModel, SpanExport
 
     Map.Entry<String, Object> keyValue =
         FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "span exporter");
-    SpanExporter metricExporter =
-        FileConfigUtil.loadComponent(
-            spiHelper, SpanExporter.class, keyValue.getKey(), keyValue.getValue());
-    return FileConfigUtil.addAndReturn(closeables, metricExporter);
+    SpanExporter spanExporter =
+        context.loadComponent(SpanExporter.class, keyValue.getKey(), keyValue.getValue());
+    return context.addCloseable(spanExporter);
   }
 }

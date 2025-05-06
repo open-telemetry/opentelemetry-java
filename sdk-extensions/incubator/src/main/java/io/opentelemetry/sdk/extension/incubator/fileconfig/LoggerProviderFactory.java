@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNonNull;
 
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLoggerConfigModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLoggerConfiguratorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalLoggerMatcherAndConfigModel;
@@ -20,7 +19,6 @@ import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.internal.LoggerConfig;
 import io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil;
-import java.io.Closeable;
 import java.util.List;
 
 final class LoggerProviderFactory
@@ -36,7 +34,7 @@ final class LoggerProviderFactory
 
   @Override
   public SdkLoggerProviderBuilder create(
-      LoggerProviderAndAttributeLimits model, SpiHelper spiHelper, List<Closeable> closeables) {
+      LoggerProviderAndAttributeLimits model, DeclarativeConfigContext context) {
     SdkLoggerProviderBuilder builder = SdkLoggerProvider.builder();
 
     LoggerProviderModel loggerProviderModel = model.getLoggerProvider();
@@ -49,8 +47,7 @@ final class LoggerProviderFactory
             .create(
                 LogRecordLimitsAndAttributeLimits.create(
                     model.getAttributeLimits(), loggerProviderModel.getLimits()),
-                spiHelper,
-                closeables);
+                context);
     builder.setLogLimits(() -> logLimits);
 
     List<LogRecordProcessorModel> processors = loggerProviderModel.getProcessors();
@@ -58,8 +55,7 @@ final class LoggerProviderFactory
       processors.forEach(
           processor ->
               builder.addLogRecordProcessor(
-                  LogRecordProcessorFactory.getInstance()
-                      .create(processor, spiHelper, closeables)));
+                  LogRecordProcessorFactory.getInstance().create(processor, context)));
     }
 
     ExperimentalLoggerConfiguratorModel loggerConfiguratorModel =
@@ -69,7 +65,7 @@ final class LoggerProviderFactory
       ScopeConfiguratorBuilder<LoggerConfig> configuratorBuilder = ScopeConfigurator.builder();
       if (defaultConfigModel != null) {
         configuratorBuilder.setDefault(
-            LoggerConfigFactory.INSTANCE.create(defaultConfigModel, spiHelper, closeables));
+            LoggerConfigFactory.INSTANCE.create(defaultConfigModel, context));
       }
       List<ExperimentalLoggerMatcherAndConfigModel> loggerMatcherAndConfigs =
           loggerConfiguratorModel.getLoggers();
@@ -83,8 +79,7 @@ final class LoggerProviderFactory
           }
           configuratorBuilder.addCondition(
               ScopeConfiguratorBuilder.nameMatchesGlob(name),
-              LoggerProviderFactory.LoggerConfigFactory.INSTANCE.create(
-                  config, spiHelper, closeables));
+              LoggerProviderFactory.LoggerConfigFactory.INSTANCE.create(config, context));
         }
       }
       SdkLoggerProviderUtil.setLoggerConfigurator(builder, configuratorBuilder.build());
@@ -101,7 +96,7 @@ final class LoggerProviderFactory
 
     @Override
     public LoggerConfig create(
-        ExperimentalLoggerConfigModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+        ExperimentalLoggerConfigModel model, DeclarativeConfigContext context) {
       if (model.getDisabled() != null && model.getDisabled()) {
         return LoggerConfig.disabled();
       }

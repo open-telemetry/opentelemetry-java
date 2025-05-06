@@ -5,14 +5,11 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBasedSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceIdRatioBasedSamplerModel;
 import io.opentelemetry.sdk.trace.samplers.ParentBasedSamplerBuilder;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import java.io.Closeable;
-import java.util.List;
 import java.util.Map;
 
 final class SamplerFactory implements Factory<SamplerModel, Sampler> {
@@ -26,7 +23,7 @@ final class SamplerFactory implements Factory<SamplerModel, Sampler> {
   }
 
   @Override
-  public Sampler create(SamplerModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+  public Sampler create(SamplerModel model, DeclarativeConfigContext context) {
     if (model.getAlwaysOn() != null) {
       return Sampler.alwaysOn();
     }
@@ -46,24 +43,22 @@ final class SamplerFactory implements Factory<SamplerModel, Sampler> {
       Sampler root =
           parentBasedModel.getRoot() == null
               ? Sampler.alwaysOn()
-              : create(parentBasedModel.getRoot(), spiHelper, closeables);
+              : create(parentBasedModel.getRoot(), context);
       ParentBasedSamplerBuilder builder = Sampler.parentBasedBuilder(root);
       if (parentBasedModel.getRemoteParentSampled() != null) {
-        Sampler sampler = create(parentBasedModel.getRemoteParentSampled(), spiHelper, closeables);
+        Sampler sampler = create(parentBasedModel.getRemoteParentSampled(), context);
         builder.setRemoteParentSampled(sampler);
       }
       if (parentBasedModel.getRemoteParentNotSampled() != null) {
-        Sampler sampler =
-            create(parentBasedModel.getRemoteParentNotSampled(), spiHelper, closeables);
+        Sampler sampler = create(parentBasedModel.getRemoteParentNotSampled(), context);
         builder.setRemoteParentNotSampled(sampler);
       }
       if (parentBasedModel.getLocalParentSampled() != null) {
-        Sampler sampler = create(parentBasedModel.getLocalParentSampled(), spiHelper, closeables);
+        Sampler sampler = create(parentBasedModel.getLocalParentSampled(), context);
         builder.setLocalParentSampled(sampler);
       }
       if (parentBasedModel.getLocalParentNotSampled() != null) {
-        Sampler sampler =
-            create(parentBasedModel.getLocalParentNotSampled(), spiHelper, closeables);
+        Sampler sampler = create(parentBasedModel.getLocalParentNotSampled(), context);
         builder.setLocalParentNotSampled(sampler);
       }
       return builder.build();
@@ -73,9 +68,6 @@ final class SamplerFactory implements Factory<SamplerModel, Sampler> {
 
     Map.Entry<String, Object> keyValue =
         FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "sampler");
-    Sampler sampler =
-        FileConfigUtil.loadComponent(
-            spiHelper, Sampler.class, keyValue.getKey(), keyValue.getValue());
-    return FileConfigUtil.addAndReturn(closeables, sampler);
+    return context.loadComponent(Sampler.class, keyValue.getKey(), keyValue.getValue());
   }
 }

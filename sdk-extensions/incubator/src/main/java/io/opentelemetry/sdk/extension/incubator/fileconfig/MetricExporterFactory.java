@@ -5,11 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import java.io.Closeable;
-import java.util.List;
 import java.util.Map;
 
 final class MetricExporterFactory implements Factory<PushMetricExporterModel, MetricExporter> {
@@ -23,8 +20,7 @@ final class MetricExporterFactory implements Factory<PushMetricExporterModel, Me
   }
 
   @Override
-  public MetricExporter create(
-      PushMetricExporterModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+  public MetricExporter create(PushMetricExporterModel model, DeclarativeConfigContext context) {
 
     model.getAdditionalProperties().compute("otlp_http", (k, v) -> model.getOtlpHttp());
     model.getAdditionalProperties().compute("otlp_grpc", (k, v) -> model.getOtlpGrpc());
@@ -36,8 +32,7 @@ final class MetricExporterFactory implements Factory<PushMetricExporterModel, Me
     Map.Entry<String, Object> keyValue =
         FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "metric exporter");
     MetricExporter metricExporter =
-        FileConfigUtil.loadComponent(
-            spiHelper, MetricExporter.class, keyValue.getKey(), keyValue.getValue());
-    return FileConfigUtil.addAndReturn(closeables, metricExporter);
+        context.loadComponent(MetricExporter.class, keyValue.getKey(), keyValue.getValue());
+    return context.addCloseable(metricExporter);
   }
 }
