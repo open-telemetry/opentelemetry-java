@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.List;
@@ -26,6 +27,7 @@ final class TracerSharedState {
   private final Supplier<SpanLimits> spanLimitsSupplier;
   private final Sampler sampler;
   private final SpanProcessor activeSpanProcessor;
+  private final ExceptionAttributeResolver exceptionAttributeResolver;
 
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
@@ -35,7 +37,8 @@ final class TracerSharedState {
       Resource resource,
       Supplier<SpanLimits> spanLimitsSupplier,
       Sampler sampler,
-      List<SpanProcessor> spanProcessors) {
+      List<SpanProcessor> spanProcessors,
+      ExceptionAttributeResolver exceptionAttributeResolver) {
     this.clock = clock;
     this.idGenerator = idGenerator;
     this.idGeneratorSafeToSkipIdValidation = idGenerator instanceof RandomIdGenerator;
@@ -43,6 +46,7 @@ final class TracerSharedState {
     this.spanLimitsSupplier = spanLimitsSupplier;
     this.sampler = sampler;
     this.activeSpanProcessor = SpanProcessor.composite(spanProcessors);
+    this.exceptionAttributeResolver = exceptionAttributeResolver;
   }
 
   Clock getClock() {
@@ -87,6 +91,11 @@ final class TracerSharedState {
    */
   boolean hasBeenShutdown() {
     return shutdownResult != null;
+  }
+
+  /** Return the {@link ExceptionAttributeResolver}. */
+  ExceptionAttributeResolver getExceptionAttributesResolver() {
+    return exceptionAttributeResolver;
   }
 
   /**

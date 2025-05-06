@@ -5,11 +5,13 @@
 
 package io.opentelemetry.sdk.internal;
 
+import static io.opentelemetry.sdk.internal.ExceptionAttributeResolver.EXCEPTION_MESSAGE;
+import static io.opentelemetry.sdk.internal.ExceptionAttributeResolver.EXCEPTION_STACKTRACE;
+import static io.opentelemetry.sdk.internal.ExceptionAttributeResolver.EXCEPTION_TYPE;
+
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,13 +23,6 @@ import java.util.function.Predicate;
  * any time.
  */
 public final class AttributeUtil {
-
-  private static final AttributeKey<String> EXCEPTION_TYPE =
-      AttributeKey.stringKey("exception.type");
-  private static final AttributeKey<String> EXCEPTION_MESSAGE =
-      AttributeKey.stringKey("exception.message");
-  private static final AttributeKey<String> EXCEPTION_STACKTRACE =
-      AttributeKey.stringKey("exception.stacktrace");
 
   private AttributeUtil() {}
 
@@ -107,22 +102,24 @@ public final class AttributeUtil {
   }
 
   public static void addExceptionAttributes(
-      Throwable exception, BiConsumer<AttributeKey<String>, String> attributeConsumer) {
-    String exceptionType = exception.getClass().getCanonicalName();
+      ExceptionAttributeResolver exceptionAttributeResolver,
+      int maxAttributeLength,
+      Throwable exception,
+      BiConsumer<AttributeKey<String>, String> attributeConsumer) {
+    String exceptionType =
+        exceptionAttributeResolver.getExceptionType(exception, maxAttributeLength);
     if (exceptionType != null) {
       attributeConsumer.accept(EXCEPTION_TYPE, exceptionType);
     }
 
-    String exceptionMessage = exception.getMessage();
+    String exceptionMessage =
+        exceptionAttributeResolver.getExceptionMessage(exception, maxAttributeLength);
     if (exceptionMessage != null) {
       attributeConsumer.accept(EXCEPTION_MESSAGE, exceptionMessage);
     }
 
-    StringWriter stringWriter = new StringWriter();
-    try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
-      exception.printStackTrace(printWriter);
-    }
-    String stackTrace = stringWriter.toString();
+    String stackTrace =
+        exceptionAttributeResolver.getExceptionStacktrace(exception, maxAttributeLength);
     if (stackTrace != null) {
       attributeConsumer.accept(EXCEPTION_STACKTRACE, stackTrace);
     }
