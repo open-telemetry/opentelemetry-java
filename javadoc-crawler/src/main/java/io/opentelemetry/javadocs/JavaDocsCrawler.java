@@ -15,9 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * The javadoc.io site relies on someone accessing the page for an artifact version in order to
@@ -26,7 +28,16 @@ import java.util.logging.Logger;
  * pages on the javadoc.io site to trigger updates.
  */
 public final class JavaDocsCrawler {
-  private static final String GROUP = "io.opentelemetry";
+  // Track list of groups and the minimum artifact versions that should be crawled. Update to the
+  // latest periodically to avoid crawling artifacts that stopped being published.
+  private static final Map<String, String> GROUPS_AND_MIN_VERSION =
+      Map.of(
+          "io.opentelemetry", "1.49.0",
+          "io.opentelemetry.instrumentation", "2.15.0",
+          "io.opentelemetry.contrib", "1.46.0",
+          "io.opentelemetry.semconv", "1.32.0",
+          "io.opentelemetry.proto", "1.3.2");
+
   private static final String MAVEN_CENTRAL_BASE_URL =
       "https://search.maven.org/solrsearch/select?q=g:";
   private static final String JAVA_DOCS_BASE_URL = "https://javadoc.io/doc/";
@@ -41,23 +52,34 @@ public final class JavaDocsCrawler {
 
   public static void main(String[] args) throws Exception {
     HttpClient client = HttpClient.newHttpClient();
-    List<Artifact> artifacts = getArtifacts(client);
-    if (artifacts.isEmpty()) {
-      logger.log(Level.SEVERE, "No artifacts found");
-      return;
-    }
-    logger.info(String.format(Locale.ROOT, "Found %d artifacts", artifacts.size()));
 
-    List<String> updated = crawlJavaDocs(client, artifacts);
-    if (updated.isEmpty()) {
-      logger.info("No updates were needed");
-      return;
-    }
+    for (Map.Entry<String, String> groupAndMinVersion : GROUPS_AND_MIN_VERSION.entrySet()) {
+      String group = groupAndMinVersion.getKey();
 
-    logger.info("Artifacts that triggered updates:\n" + String.join("\n", updated));
+      List<Artifact> artifacts = getArtifacts(client, group);
+      if (artifacts.isEmpty()) {
+        logger.log(Level.SEVERE, "No artifacts found for group " + group);
+        continue;
+      }
+      logger.info(
+          String.format(Locale.ROOT, "Found %d artifacts for group " + group, artifacts.size()));
+
+      List<Artifact> updated = crawlJavaDocs(client, groupAndMinVersion.getValue(), artifacts);
+      if (updated.isEmpty()) {
+        logger.info("No updates were needed for group " + group);
+        continue;
+      }
+
+      logger.info(
+          "Artifacts that triggered updates for group "
+              + group
+              + ":\n"
+              + updated.stream().map(Artifact::toString).collect(Collectors.joining("\n")));
+    }
   }
 
-  static List<Artifact> getArtifacts(HttpClient client) throws IOException, InterruptedException {
+  static List<Artifact> getArtifacts(HttpClient client, String group)
+      throws IOException, InterruptedException {
     int start = 0;
     Integer numFound;
     List<Artifact> result = new ArrayList<>();
@@ -67,7 +89,7 @@ public final class JavaDocsCrawler {
         Thread.sleep(THROTTLE_MS); // try not to DDoS the site, it gets knocked over easily
       }
 
-      Map<?, ?> map = queryMavenCentral(client, start);
+      Map<?, ?> map = queryMavenCentral(client, group, start);
 
       numFound =
           Optional.ofNullable(map)
@@ -93,18 +115,18 @@ public final class JavaDocsCrawler {
               List<Artifact> artifacts = new ArrayList<>();
               for (Object doc : docs) {
                 Map<?, ?> docMap = (Map<?, ?>) doc;
-                String artifact = (String) docMap.get("a");
-                String version = (String) docMap.get("latestVersion");
-                if (artifact != null && version != null) {
-                  artifacts.add(new Artifact(artifact, version));
-                }
+                String group = Objects.requireNonNull((String) docMap.get("g"), "g");
+                String artifact = Objects.requireNonNull((String) docMap.get("a"), "a");
+                String version =
+                    Objects.requireNonNull((String) docMap.get("latestVersion"), "latestVersion");
+                artifacts.add(new Artifact(Objects.requireNonNull(group), artifact, version));
               }
               return artifacts;
             })
         .orElseGet(ArrayList::new);
   }
 
-  private static Map<?, ?> queryMavenCentral(HttpClient client, int start)
+  private static Map<?, ?> queryMavenCentral(HttpClient client, String group, int start)
       throws IOException, InterruptedException {
     URI uri =
         URI.create(
@@ -112,7 +134,7 @@ public final class JavaDocsCrawler {
                 Locale.ROOT,
                 "%s%s&rows=%d&start=%d&wt=json",
                 MAVEN_CENTRAL_BASE_URL,
-                GROUP,
+                group,
                 PAGE_SIZE,
                 start));
 
@@ -122,21 +144,35 @@ public final class JavaDocsCrawler {
     if (response.statusCode() != 200) {
       logger.log(
           Level.SEVERE,
-          "Unexpected response code: " + response.statusCode() + ": " + response.body());
+          "Unexpected response code "
+              + response.statusCode()
+              + " for uri: "
+              + uri.toASCIIString()
+              + "\n"
+              + response.body());
       throw new IOException("Unable to pull Maven central artifacts list");
     }
     return objectMapper.readValue(response.body(), Map.class);
   }
 
-  static List<String> crawlJavaDocs(HttpClient client, List<Artifact> artifacts)
+  static List<Artifact> crawlJavaDocs(
+      HttpClient client, String minVersion, List<Artifact> artifacts)
       throws IOException, InterruptedException {
-    List<String> updatedArtifacts = new ArrayList<>();
+    List<Artifact> updatedArtifacts = new ArrayList<>();
 
     for (Artifact artifact : artifacts) {
+      if (artifact.getVersion().compareTo(minVersion) < 0) {
+        logger.info(
+            String.format(
+                "Skipping crawling %s due to version %s being less than minVersion %s",
+                artifact, artifact.getVersion(), minVersion));
+        continue;
+      }
+
       String[] parts = artifact.getName().split("-");
       StringBuilder path = new StringBuilder();
       path.append(JAVA_DOCS_BASE_URL)
-          .append(GROUP)
+          .append(artifact.getGroup())
           .append("/")
           .append(artifact.getName())
           .append("/")
@@ -146,6 +182,7 @@ public final class JavaDocsCrawler {
           .append("/package-summary.html");
 
       HttpRequest crawlRequest = HttpRequest.newBuilder(URI.create(path.toString())).GET().build();
+      logger.info(String.format("Crawling %s at: %s", artifact, path));
       HttpResponse<String> crawlResponse =
           client.send(crawlRequest, HttpResponse.BodyHandlers.ofString());
 
@@ -156,7 +193,7 @@ public final class JavaDocsCrawler {
             String.format(
                 Locale.ROOT,
                 "Crawl failed for %s with status code %d at URL %s\nResponse: %s",
-                artifact.getName(),
+                artifact,
                 crawlResponse.statusCode(),
                 path,
                 crawlResponse.body()));
@@ -164,7 +201,7 @@ public final class JavaDocsCrawler {
       }
 
       if (crawlResponse.body().contains(JAVA_DOC_DOWNLOADED_TEXT)) {
-        updatedArtifacts.add(artifact.getName());
+        updatedArtifacts.add(artifact);
       }
 
       Thread.sleep(THROTTLE_MS); // some light throttling
