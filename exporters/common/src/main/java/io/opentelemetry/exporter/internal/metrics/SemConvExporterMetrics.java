@@ -185,7 +185,7 @@ public class SemConvExporterMetrics implements ExporterMetrics {
   }
 
   private class Recording extends ExporterMetrics.Recording {
-    /** The number items (spans, log records or metric data points) being exported */
+
     private final int itemCount;
 
     private final long startNanoTime;

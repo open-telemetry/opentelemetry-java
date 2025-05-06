@@ -46,7 +46,7 @@ public abstract class ComponentId {
     ZIPKIN_HTTP_SPAN_EXPORTER("zipkin_http_span_exporter", Signal.SPAN),
     /**
      * Has the same semconv attribute value as ZIPKIN_HTTP_SPAN_EXPORTER, but we still use a
-     * different enum value because they produce separate legacy metrics
+     * different enum value for now because they produce separate legacy metrics.
      */
     ZIPKIN_HTTP_JSON_SPAN_EXPORTER("zipkin_http_span_exporter", Signal.SPAN);
 

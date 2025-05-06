@@ -257,7 +257,7 @@ class ZipkinSpanExporterTest {
     try (ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().build()) {
       assertThat(exporter.toString())
           .isEqualTo(
-              "ZipkinSpanExporter{endpoint=http://localhost:9411/api/v2/spans, compressionEnabled=true, readTimeoutMillis=10000}");
+              "ZipkinSpanExporter{endpoint=http://localhost:9411/api/v2/spans, compressionEnabled=true, readTimeoutMillis=10000, internalTelemetrySchemaVersion=LEGACY}");
     }
     try (ZipkinSpanExporter exporter =
         ZipkinSpanExporter.builder()
@@ -267,7 +267,7 @@ class ZipkinSpanExporterTest {
             .build()) {
       assertThat(exporter.toString())
           .isEqualTo(
-              "ZipkinSpanExporter{endpoint=http://zipkin:9411/api/v2/spans, compressionEnabled=false, readTimeoutMillis=15000}");
+              "ZipkinSpanExporter{endpoint=http://zipkin:9411/api/v2/spans, compressionEnabled=false, readTimeoutMillis=15000, internalTelemetrySchemaVersion=LEGACY}");
     }
   }
 

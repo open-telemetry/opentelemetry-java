@@ -40,9 +40,7 @@ class GrpcExporterTest {
     assertThatCode(
             () ->
                 new GrpcExporterBuilder<>(
-                        "exporter",
-                        ComponentId.StandardExporterType.Signal.SPAN,
-                        "testing",
+                        ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
                         10,
                         new URI("http://localhost"),
                         () -> DummyServiceFutureStub::newFutureStub,
@@ -65,9 +63,7 @@ class GrpcExporterTest {
   void build_multipleSendersWithUpstream() throws URISyntaxException {
     assertThat(
             new GrpcExporterBuilder<>(
-                    "exporter",
-                    ComponentId.StandardExporterType.Signal.SPAN,
-                    "testing",
+                    ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
                     10,
                     new URI("http://localhost"),
                     () -> DummyServiceFutureStub::newFutureStub,
@@ -87,9 +83,7 @@ class GrpcExporterTest {
   void build_multipleSendersWithOkHttp() throws URISyntaxException {
     assertThat(
             new GrpcExporterBuilder<>(
-                    "exporter",
-                    ComponentId.StandardExporterType.Signal.SPAN,
-                    "testing",
+                    ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
                     10,
                     new URI("http://localhost"),
                     () -> DummyServiceFutureStub::newFutureStub,
@@ -110,9 +104,7 @@ class GrpcExporterTest {
     assertThatThrownBy(
             () ->
                 new GrpcExporterBuilder<>(
-                        "exporter",
-                        ComponentId.StandardExporterType.Signal.SPAN,
-                        "testing",
+                        ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
                         10,
                         new URI("http://localhost"),
                         () -> DummyServiceFutureStub::newFutureStub,
