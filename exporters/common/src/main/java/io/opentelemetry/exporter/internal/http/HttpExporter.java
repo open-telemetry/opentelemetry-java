@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.internal.http;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
 import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
@@ -43,26 +42,22 @@ public final class HttpExporter<T extends Marshaler> {
   private final ExporterInstrumentation exporterMetrics;
 
   public HttpExporter(
-      String legacyExporterName,
-      ExporterMetrics.Signal type,
       ComponentId componentId,
       HttpSender httpSender,
       Supplier<MeterProvider> meterProviderSupplier,
       InternalTelemetrySchemaVersion internalTelemetrySchemaVersion,
-      boolean exportAsJson,
+      ComponentId.StandardExporterType exporterType,
       Attributes healthMetricAttributes) {
-    this.type = type.toString();
+    this.type = exporterType.signal().toString();
     this.httpSender = httpSender;
-    // TODO: extract server.address and server.port here
     this.exporterMetrics =
         new ExporterInstrumentation(
             internalTelemetrySchemaVersion,
             meterProviderSupplier,
-            type,
             componentId,
-            healthMetricAttributes,
-            legacyExporterName,
-            exportAsJson ? "http-json" : "http");
+            exporterType,
+            healthMetricAttributes
+        );
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {

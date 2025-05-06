@@ -13,6 +13,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.internal.ComponentId;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -42,18 +43,35 @@ public class LegacyExporterMetrics implements ExporterMetrics {
 
   LegacyExporterMetrics(
       Supplier<MeterProvider> meterProviderSupplier,
-      String exporterName,
-      Signal signal,
-      String transportName) {
+      ComponentId.StandardExporterType exporterType
+    ) {
     this.meterProviderSupplier = meterProviderSupplier;
-    this.exporterName = exporterName;
-    this.transportName = transportName;
-    this.seenAttrs = Attributes.builder().put(ATTRIBUTE_KEY_TYPE, getTypeString(signal)).build();
+    this.exporterName = getExporterName(exporterType);
+    this.transportName = getTransportName(exporterType);
+    this.seenAttrs = Attributes.builder().put(ATTRIBUTE_KEY_TYPE, getTypeString(exporterType.signal())).build();
     this.successAttrs = this.seenAttrs.toBuilder().put(ATTRIBUTE_KEY_SUCCESS, true).build();
     this.failedAttrs = this.seenAttrs.toBuilder().put(ATTRIBUTE_KEY_SUCCESS, false).build();
   }
 
-  private static String getTypeString(Signal signal) {
+  public static boolean isSupportedType(ComponentId.StandardExporterType exporterType) {
+    switch (exporterType) {
+      case OTLP_GRPC_SPAN_EXPORTER:
+      case OTLP_HTTP_SPAN_EXPORTER:
+      case OTLP_HTTP_JSON_SPAN_EXPORTER:
+      case ZIPKIN_HTTP_SPAN_EXPORTER:
+      case ZIPKIN_HTTP_JSON_SPAN_EXPORTER:
+      case OTLP_GRPC_LOG_EXPORTER:
+      case OTLP_HTTP_LOG_EXPORTER:
+      case OTLP_HTTP_JSON_LOG_EXPORTER:
+      case OTLP_GRPC_METRIC_EXPORTER:
+      case OTLP_HTTP_METRIC_EXPORTER:
+      case OTLP_HTTP_JSON_METRIC_EXPORTER:
+        return true;
+    }
+    return false;
+  }
+
+  private static String getTypeString(ComponentId.StandardExporterType.Signal signal) {
     switch (signal) {
       case SPAN:
         return "span";
@@ -62,7 +80,46 @@ public class LegacyExporterMetrics implements ExporterMetrics {
       case METRIC:
         return "metric";
     }
-    throw new IllegalArgumentException("Unhandled case: " + signal);
+    throw new IllegalArgumentException("Unhandled signal type: " + signal);
+  }
+
+  private static String getExporterName(ComponentId.StandardExporterType exporterType) {
+    switch (exporterType) {
+      case OTLP_GRPC_SPAN_EXPORTER:
+      case OTLP_HTTP_SPAN_EXPORTER:
+      case OTLP_HTTP_JSON_SPAN_EXPORTER:
+      case OTLP_GRPC_LOG_EXPORTER:
+      case OTLP_HTTP_LOG_EXPORTER:
+      case OTLP_HTTP_JSON_LOG_EXPORTER:
+      case OTLP_GRPC_METRIC_EXPORTER:
+      case OTLP_HTTP_METRIC_EXPORTER:
+      case OTLP_HTTP_JSON_METRIC_EXPORTER:
+        return "otlp";
+      case ZIPKIN_HTTP_SPAN_EXPORTER:
+      case ZIPKIN_HTTP_JSON_SPAN_EXPORTER:
+        return "zipkin";
+    }
+    throw new IllegalArgumentException("Not a supported exporter type: " + exporterType);
+  }
+
+  private static String getTransportName(ComponentId.StandardExporterType exporterType) {
+    switch (exporterType) {
+      case OTLP_GRPC_SPAN_EXPORTER:
+      case OTLP_GRPC_LOG_EXPORTER:
+      case OTLP_GRPC_METRIC_EXPORTER:
+        return "grpc";
+      case OTLP_HTTP_SPAN_EXPORTER:
+      case OTLP_HTTP_LOG_EXPORTER:
+      case OTLP_HTTP_METRIC_EXPORTER:
+      case ZIPKIN_HTTP_SPAN_EXPORTER:
+        return "http";
+      case OTLP_HTTP_JSON_SPAN_EXPORTER:
+      case OTLP_HTTP_JSON_LOG_EXPORTER:
+      case OTLP_HTTP_JSON_METRIC_EXPORTER:
+      case ZIPKIN_HTTP_JSON_SPAN_EXPORTER:
+        return "http-json";
+    }
+    throw new IllegalArgumentException("Not a supported exporter type: " + exporterType);
   }
 
   /** Record number of records seen. */

@@ -11,7 +11,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
@@ -34,9 +33,7 @@ class GrpcExporterTest {
     assertThatThrownBy(
             () ->
                 new GrpcExporterBuilder<>(
-                        "exporter",
-                        ExporterMetrics.Signal.SPAN,
-                        "testing",
+                        ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
                         10,
                         new URI("http://localhost"),
                         null,
@@ -51,10 +48,10 @@ class GrpcExporterTest {
   @ParameterizedTest
   @EnumSource
   @SuppressWarnings("unchecked")
-  void testInternalTelemetry(ExporterMetrics.Signal signal) {
+  void testInternalTelemetry(ComponentId.StandardExporterType exporterType) {
     String signalMetricPrefix;
     String expectedUnit;
-    switch (signal) {
+    switch (exporterType.signal()) {
       case SPAN:
         signalMetricPrefix = "otel.sdk.exporter.span.";
         expectedUnit = "{span}";
@@ -89,11 +86,10 @@ class GrpcExporterTest {
 
       GrpcExporter<Marshaler> exporter =
           new GrpcExporter<Marshaler>(
-              "legacy_exporter",
-              signal,
               mockSender,
               InternalTelemetrySchemaVersion.V1_33,
               id,
+              exporterType,
               () -> meterProvider,
               Attributes.builder().put("foo", "bar").build());
 
@@ -230,11 +226,10 @@ class GrpcExporterTest {
 
       GrpcExporter<Marshaler> exporter =
           new GrpcExporter<Marshaler>(
-              "legacy_exporter",
-              ExporterMetrics.Signal.SPAN,
               mockSender,
               InternalTelemetrySchemaVersion.DISABLED,
               id,
+              ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
               () -> meterProvider,
               Attributes.empty());
 

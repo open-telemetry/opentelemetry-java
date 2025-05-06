@@ -23,27 +23,20 @@ public class ExporterInstrumentation implements ExporterMetrics {
   public ExporterInstrumentation(
       InternalTelemetrySchemaVersion schema,
       Supplier<MeterProvider> meterProviderSupplier,
-      ExporterMetrics.Signal signal,
       ComponentId componentId,
-      @Nullable Attributes additionalAttributes,
-      String legacyExporterName,
-      String legacyTransportName) {
+      ComponentId.StandardExporterType exporterType,
+      @Nullable Attributes additionalAttributes) {
 
     switch (schema) {
       case DISABLED:
         implementation = NoopExporterMetrics.INSTANCE;
         break;
       case LEGACY:
-        implementation =
-            new LegacyExporterMetrics(
-                meterProviderSupplier,
-                legacyExporterName,
-                signal,
-                legacyTransportName);
+        implementation = LegacyExporterMetrics.isSupportedType(exporterType) ? new LegacyExporterMetrics(meterProviderSupplier,exporterType) : NoopExporterMetrics.INSTANCE;
         break;
       case V1_33:
       case LATEST:
-        implementation = new SemConvExporterMetrics(meterProviderSupplier, signal, componentId, additionalAttributes == null ? Attributes.empty() : additionalAttributes);
+        implementation = new SemConvExporterMetrics(meterProviderSupplier, exporterType.signal(), componentId, additionalAttributes == null ? Attributes.empty() : additionalAttributes);
         break;
       default:
         throw new IllegalStateException("Unhandled case: " + schema);

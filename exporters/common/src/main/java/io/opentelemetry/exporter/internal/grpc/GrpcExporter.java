@@ -10,7 +10,6 @@ import static io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil.GRPC_STAT
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
 import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
@@ -46,24 +45,22 @@ public final class GrpcExporter<T extends Marshaler> {
   private final ExporterInstrumentation exporterMetrics;
 
   public GrpcExporter(
-      String legacyExporterName,
-      ExporterMetrics.Signal type,
       GrpcSender<T> grpcSender,
       InternalTelemetrySchemaVersion internalTelemetrySchemaVersion,
       ComponentId componentId,
+      ComponentId.StandardExporterType exporterType,
       Supplier<MeterProvider> meterProviderSupplier,
       Attributes healthMetricAttributes) {
-    this.type = type.toString();
+    this.type = exporterType.signal().toString();
     this.grpcSender = grpcSender;
     this.exporterMetrics =
         new ExporterInstrumentation(
             internalTelemetrySchemaVersion,
             meterProviderSupplier,
-            type,
             componentId,
-            healthMetricAttributes,
-            legacyExporterName,
-            "grpc");
+            exporterType,
+            healthMetricAttributes
+        );
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {

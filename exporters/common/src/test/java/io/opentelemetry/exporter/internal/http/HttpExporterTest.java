@@ -12,7 +12,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
@@ -32,8 +31,7 @@ class HttpExporterTest {
   void build_NoHttpSenderProvider() {
     assertThatThrownBy(
             () ->
-                new HttpExporterBuilder<>(
-                        "name", ExporterMetrics.Signal.SPAN, "testing", "http://localhost")
+                new HttpExporterBuilder<>(ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER,"http://localhost")
                     .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessage(
@@ -43,10 +41,10 @@ class HttpExporterTest {
 
   @ParameterizedTest
   @EnumSource
-  void testInternalTelemetry(ExporterMetrics.Signal signal) {
+  void testInternalTelemetry(ComponentId.StandardExporterType exporterType) {
     String signalMetricPrefix;
     String expectedUnit;
-    switch (signal) {
+    switch (exporterType.signal()) {
       case SPAN:
         signalMetricPrefix = "otel.sdk.exporter.span.";
         expectedUnit = "{span}";
@@ -81,13 +79,11 @@ class HttpExporterTest {
 
       HttpExporter<Marshaler> exporter =
           new HttpExporter<Marshaler>(
-              "legacy_exporter",
-              signal,
               id,
               mockSender,
               () -> meterProvider,
               InternalTelemetrySchemaVersion.V1_33,
-              false,
+              exporterType,
               Attributes.builder().put("foo", "bar").build());
 
       doAnswer(
@@ -219,13 +215,11 @@ class HttpExporterTest {
 
       HttpExporter<Marshaler> exporter =
           new HttpExporter<Marshaler>(
-              "legacy_exporter",
-              ExporterMetrics.Signal.METRIC,
               id,
               mockSender,
               () -> meterProvider,
               InternalTelemetrySchemaVersion.DISABLED,
-              false,
+              ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER,
               Attributes.empty());
 
       doAnswer(

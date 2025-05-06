@@ -3,8 +3,8 @@ package io.opentelemetry.sdk.internal;
 
 import io.opentelemetry.semconv.ErrorAttributes;
 import io.opentelemetry.semconv.HttpAttributes;
-import io.opentelemetry.semconv.OtelAttributes;
 import io.opentelemetry.semconv.ServerAttributes;
+import io.opentelemetry.semconv.incubating.OtelIncubatingAttributes;
 import io.opentelemetry.semconv.incubating.RpcIncubatingAttributes;
 import org.junit.jupiter.api.Test;
 
@@ -14,9 +14,8 @@ class SemConvAttributesTest {
 
   @Test
   void testAttributeKeys() {
-    // TODO: after upgrading semconv to 1.33+, uncomment the following assertions
-    // assertThat(SemConvAttributes.OTEL_COMPONENT_NAME).isEqualTo(OtelAttributes.OTEL_COMPONENT_NAME);
-    // assertThat(SemConvAttributes.OTEL_COMPONENT_TYPE).isEqualTo(OtelAttributes.OTEL_COMPONENT_TYPE);
+    assertThat(SemConvAttributes.OTEL_COMPONENT_NAME).isEqualTo(OtelIncubatingAttributes.OTEL_COMPONENT_NAME);
+    assertThat(SemConvAttributes.OTEL_COMPONENT_TYPE).isEqualTo(OtelIncubatingAttributes.OTEL_COMPONENT_TYPE);
 
     assertThat(SemConvAttributes.ERROR_TYPE).isEqualTo(ErrorAttributes.ERROR_TYPE);
 

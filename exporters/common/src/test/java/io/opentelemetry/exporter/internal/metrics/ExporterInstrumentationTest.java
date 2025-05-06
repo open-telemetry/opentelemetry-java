@@ -61,7 +61,7 @@ class ExporterInstrumentationTest {
                       }
                     })
                 .build());
-    ExporterInstrumentation instrumentation = new ExporterInstrumentation(schemaVersion, meterProviderSupplier, ExporterMetrics.Signal.SPAN, ComponentId.generateLazy("test"), null, "test", "test");
+    ExporterInstrumentation instrumentation = new ExporterInstrumentation(schemaVersion, meterProviderSupplier, ComponentId.generateLazy("test"), ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER, null);
     verifyNoInteractions(meterProviderSupplier); // Ensure lazy
 
     // Verify the supplier is only called once per underlying meter.
@@ -88,7 +88,7 @@ class ExporterInstrumentationTest {
     }
 
     when(meterProviderSupplier.get()).thenReturn(MeterProvider.noop());
-    ExporterInstrumentation instrumentation = new ExporterInstrumentation(schemaVersion, meterProviderSupplier, ExporterMetrics.Signal.SPAN, ComponentId.generateLazy("test"), null, "test", "test");
+    ExporterInstrumentation instrumentation = new ExporterInstrumentation(schemaVersion, meterProviderSupplier, ComponentId.generateLazy("test"), ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER, null);
     verifyNoInteractions(meterProviderSupplier); // Ensure lazy
 
     // Verify the supplier is invoked multiple times since it returns a noop meter.

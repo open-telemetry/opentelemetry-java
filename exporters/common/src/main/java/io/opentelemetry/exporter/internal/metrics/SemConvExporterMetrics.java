@@ -28,7 +28,7 @@ public class SemConvExporterMetrics implements ExporterMetrics {
   private static final Clock CLOCK = Clock.getDefault();
 
   private final Supplier<MeterProvider> meterProviderSupplier;
-  private final Signal signal;
+  private final ComponentId.StandardExporterType.Signal signal;
   private final ComponentId componentId;
   private final Attributes additionalAttributes;
 
@@ -39,7 +39,7 @@ public class SemConvExporterMetrics implements ExporterMetrics {
 
   public SemConvExporterMetrics(
       Supplier<MeterProvider> meterProviderSupplier,
-      Signal signal,
+      ComponentId.StandardExporterType.Signal signal,
       ComponentId componentId,
       Attributes additionalAttributes) {
     this.meterProviderSupplier = meterProviderSupplier;
@@ -48,12 +48,13 @@ public class SemConvExporterMetrics implements ExporterMetrics {
     this.additionalAttributes = additionalAttributes;
   }
 
+
   @Override
   public ExporterMetrics.Recording startRecordingExport(int itemCount) {
     return new Recording(itemCount);
   }
 
-  private static String getNamespace(Signal signal) {
+  private static String getNamespace(ComponentId.StandardExporterType.Signal signal) {
     switch (signal) {
       case SPAN:
         return "otel.sdk.exporter.span";
@@ -65,7 +66,7 @@ public class SemConvExporterMetrics implements ExporterMetrics {
     throw new IllegalArgumentException("Unhandled signal: " + signal);
   }
 
-  private static String getUnit(Signal signal) {
+  private static String getUnit(ComponentId.StandardExporterType.Signal signal) {
     switch (signal) {
       case SPAN:
         return "span";

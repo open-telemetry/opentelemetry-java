@@ -13,7 +13,6 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporter;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
@@ -86,8 +85,6 @@ public class OltpExporterBenchmark {
             .build();
     upstreamGrpcExporter =
         new GrpcExporter<>(
-            "otlp",
-            ExporterMetrics.Signal.SPAN,
             new UpstreamGrpcSender<>(
                 MarshalerTraceServiceGrpc.newFutureStub(defaultGrpcChannel, null),
                 /* shutdownChannel= */ false,
@@ -96,13 +93,12 @@ public class OltpExporterBenchmark {
                 null),
             InternalTelemetrySchemaVersion.DISABLED,
             ComponentId.generateLazy("upstream_grpc_exporter"),
+            ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
             MeterProvider::noop,
             Attributes.empty());
 
     okhttpGrpcSender =
         new GrpcExporter<>(
-            "otlp",
-            ExporterMetrics.Signal.SPAN,
             new OkHttpGrpcSender<>(
                 URI.create("http://localhost:" + server.activeLocalPort())
                     .resolve(OtlpGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH)
@@ -117,14 +113,13 @@ public class OltpExporterBenchmark {
                 null),
             InternalTelemetrySchemaVersion.DISABLED,
             ComponentId.generateLazy("okhttp_grpc_exporter"),
+            ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
             MeterProvider::noop,
             Attributes.empty());
 
     httpExporter =
         new HttpExporterBuilder<TraceRequestMarshaler>(
-                "otlp",
-                ExporterMetrics.Signal.SPAN,
-                "http_exporter",
+            ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER,
                 "http://localhost:" + server.activeLocalPort() + "/v1/traces")
             .build();
   }

@@ -11,7 +11,6 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
-import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
 import io.opentelemetry.exporter.internal.ServerAttributesUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.compression.Compressor;
@@ -52,9 +51,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
   private static final Logger LOGGER = Logger.getLogger(GrpcExporterBuilder.class.getName());
 
-  private final String legacyExporterName;
-  private final ExporterMetrics.Signal signal;
-  private final String componentType;
+  private final ComponentId.StandardExporterType exporterType;
   private final String grpcEndpointPath;
   private final Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>>
       grpcStubFactory;
@@ -77,16 +74,12 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   @Nullable private Object grpcChannel;
 
   public GrpcExporterBuilder(
-      String legacyExporterName,
-      ExporterMetrics.Signal signal,
-      String componentType,
+      ComponentId.StandardExporterType exporterType,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> grpcStubFactory,
       String grpcEndpointPath) {
-    this.legacyExporterName = legacyExporterName;
-    this.signal = signal;
-    this.componentType = componentType;
+    this.exporterType = exporterType;
     this.grpcEndpointPath = grpcEndpointPath;
     timeoutNanos = TimeUnit.SECONDS.toNanos(defaultTimeoutSecs);
     endpoint = defaultEndpoint;
@@ -179,9 +172,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   public GrpcExporterBuilder<T> copy() {
     GrpcExporterBuilder<T> copy =
         new GrpcExporterBuilder<>(
-            legacyExporterName,
-            signal,
-            componentType,
+            exporterType,
             TimeUnit.NANOSECONDS.toSeconds(timeoutNanos),
             endpoint,
             grpcStubFactory,
@@ -245,11 +236,10 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     LOGGER.log(Level.FINE, "Using GrpcSender: " + grpcSender.getClass().getName());
 
     return new GrpcExporter<>(
-        legacyExporterName,
-        signal,
         grpcSender,
         internalTelemetrySchemaVersion,
-        ComponentId.generateLazy(componentType),
+        ComponentId.generateLazy(exporterType),
+        exporterType,
         meterProviderSupplier,
         ServerAttributesUtil.extractServerAttributes(endpoint));
   }
@@ -259,8 +249,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
         includePrefixAndSuffix
             ? new StringJoiner(", ", "GrpcExporterBuilder{", "}")
             : new StringJoiner(", ");
-    joiner.add("exporterName=" + legacyExporterName);
-    joiner.add("type=" + signal);
+    joiner.add("exporterType=" + exporterType.toString());
     joiner.add("endpoint=" + endpoint.toString());
     joiner.add("endpointPath=" + grpcEndpointPath);
     joiner.add("timeoutNanos=" + timeoutNanos);

@@ -10,7 +10,6 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.CompressorProvider;
 import io.opentelemetry.exporter.internal.compression.CompressorUtil;
@@ -21,6 +20,7 @@ import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.ComponentId;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -51,8 +51,7 @@ public final class OtlpHttpLogRecordExporterBuilder {
 
   OtlpHttpLogRecordExporterBuilder() {
     this(
-        new HttpExporterBuilder<>(
-            "otlp", ExporterMetrics.Signal.LOG, "otlp_http_log_exporter", DEFAULT_ENDPOINT),
+        new HttpExporterBuilder<>(ComponentId.StandardExporterType.OTLP_HTTP_LOG_EXPORTER, DEFAULT_ENDPOINT),
         DEFAULT_MEMORY_MODE);
   }
 

@@ -15,7 +15,6 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ManagedChannelBuilder;
-import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.sender.grpc.managedchannel.internal.UpstreamGrpcSender;
@@ -24,6 +23,7 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.annotation.Nullable;
+import io.opentelemetry.sdk.internal.ComponentId;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junitpioneer.jupiter.SetSystemProperty;
@@ -41,7 +41,7 @@ class GrpcExporterTest {
             () ->
                 new GrpcExporterBuilder<>(
                         "exporter",
-                        ExporterMetrics.Signal.SPAN,
+                        ComponentId.StandardExporterType.Signal.SPAN,
                         "testing",
                         10,
                         new URI("http://localhost"),
@@ -66,7 +66,7 @@ class GrpcExporterTest {
     assertThat(
             new GrpcExporterBuilder<>(
                     "exporter",
-                    ExporterMetrics.Signal.SPAN,
+                    ComponentId.StandardExporterType.Signal.SPAN,
                     "testing",
                     10,
                     new URI("http://localhost"),
@@ -88,7 +88,7 @@ class GrpcExporterTest {
     assertThat(
             new GrpcExporterBuilder<>(
                     "exporter",
-                    ExporterMetrics.Signal.SPAN,
+                    ComponentId.StandardExporterType.Signal.SPAN,
                     "testing",
                     10,
                     new URI("http://localhost"),
@@ -111,7 +111,7 @@ class GrpcExporterTest {
             () ->
                 new GrpcExporterBuilder<>(
                         "exporter",
-                        ExporterMetrics.Signal.SPAN,
+                        ComponentId.StandardExporterType.Signal.SPAN,
                         "testing",
                         10,
                         new URI("http://localhost"),

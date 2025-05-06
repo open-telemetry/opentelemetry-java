@@ -9,7 +9,6 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
-import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
 import io.opentelemetry.exporter.internal.ServerAttributesUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.compression.Compressor;
@@ -49,9 +48,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
 
   private static final Logger LOGGER = Logger.getLogger(HttpExporterBuilder.class.getName());
 
-  private final String exporterName;
-  private final ExporterMetrics.Signal signal;
-  private String componentType;
+  private ComponentId.StandardExporterType exporterType;
 
   private String endpoint;
 
@@ -71,13 +68,9 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   @Nullable private ExecutorService executorService;
 
   public HttpExporterBuilder(
-      String exporterName,
-      ExporterMetrics.Signal signal,
-      String componentType,
+      ComponentId.StandardExporterType exporterType,
       String defaultEndpoint) {
-    this.exporterName = exporterName;
-    this.signal = signal;
-    this.componentType = componentType;
+    this.exporterType = exporterType;
 
     endpoint = defaultEndpoint;
   }
@@ -141,11 +134,6 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public HttpExporterBuilder<T> setComponentType(String componentType) {
-    this.componentType = componentType;
-    return this;
-  }
-
   public HttpExporterBuilder<T> setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
     this.retryPolicy = retryPolicy;
     return this;
@@ -168,13 +156,28 @@ public final class HttpExporterBuilder<T extends Marshaler> {
 
   public HttpExporterBuilder<T> exportAsJson() {
     this.exportAsJson = true;
+    exporterType = mapToJsonTypeIfPossible(exporterType);
     return this;
+  }
+
+  private static ComponentId.StandardExporterType mapToJsonTypeIfPossible(
+      ComponentId.StandardExporterType componentType) {
+    switch (componentType) {
+      case OTLP_HTTP_SPAN_EXPORTER:
+        return ComponentId.StandardExporterType.OTLP_HTTP_JSON_SPAN_EXPORTER;
+      case OTLP_HTTP_LOG_EXPORTER:
+        return ComponentId.StandardExporterType.OTLP_HTTP_JSON_LOG_EXPORTER;
+      case OTLP_HTTP_METRIC_EXPORTER:
+        return ComponentId.StandardExporterType.OTLP_HTTP_JSON_METRIC_EXPORTER;
+      default:
+        return componentType;
+    }
   }
 
   @SuppressWarnings("BuilderReturnThis")
   public HttpExporterBuilder<T> copy() {
     HttpExporterBuilder<T> copy =
-        new HttpExporterBuilder<>(exporterName, signal, componentType, endpoint);
+        new HttpExporterBuilder<>(exporterType, endpoint);
     copy.endpoint = endpoint;
     copy.timeoutNanos = timeoutNanos;
     copy.connectTimeoutNanos = connectTimeoutNanos;
@@ -234,13 +237,11 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     LOGGER.log(Level.FINE, "Using HttpSender: " + httpSender.getClass().getName());
 
     return new HttpExporter<>(
-        exporterName,
-        signal,
-        ComponentId.generateLazy(componentType),
+        ComponentId.generateLazy(exporterType),
         httpSender,
         meterProviderSupplier,
         internalTelemetrySchemaVersion,
-        exportAsJson,
+        exporterType,
         ServerAttributesUtil.extractServerAttributes(endpoint));
   }
 
@@ -249,8 +250,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
         includePrefixAndSuffix
             ? new StringJoiner(", ", "HttpExporterBuilder{", "}")
             : new StringJoiner(", ");
-    joiner.add("exporterName=" + exporterName);
-    joiner.add("type=" + signal);
+    joiner.add("exporterType=" + exporterType);
     joiner.add("endpoint=" + endpoint);
     joiner.add("timeoutNanos=" + timeoutNanos);
     joiner.add("proxyOptions=" + proxyOptions);

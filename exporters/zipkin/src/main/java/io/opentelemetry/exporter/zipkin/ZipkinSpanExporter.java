@@ -8,7 +8,6 @@ package io.opentelemetry.exporter.zipkin;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
 import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
@@ -62,25 +61,21 @@ public final class ZipkinSpanExporter implements SpanExporter {
     this.sender = sender;
     this.transformer = transformer;
 
-    String transportName;
-    String componentType;
+    ComponentId.StandardExporterType exporterType;
     if (sender.encoding() == Encoding.JSON) {
-      transportName = "http-json";
-      componentType = "zipkin_http_json_exporter";
+      exporterType = ComponentId.StandardExporterType.ZIPKIN_HTTP_SPAN_EXPORTER;
     } else {
-      transportName = "http";
-      componentType = "zipkin_http_exporter";
+      exporterType = ComponentId.StandardExporterType.ZIPKIN_HTTP_SPAN_EXPORTER;
     }
     // TODO: add server address and port attributes
     this.exporterMetrics =
         new ExporterInstrumentation(
             internalTelemetrySchemaVersion,
             meterProviderSupplier,
-            ExporterMetrics.Signal.SPAN,
-            ComponentId.generateLazy(componentType),
-            additonalHealthAttributes,
-            "zipkin",
-            transportName);
+            ComponentId.generateLazy(exporterType),
+            exporterType,
+            additonalHealthAttributes
+        );
   }
 
   @Override

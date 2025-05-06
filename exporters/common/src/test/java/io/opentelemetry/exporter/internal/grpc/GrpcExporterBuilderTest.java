@@ -7,10 +7,10 @@ package io.opentelemetry.exporter.internal.grpc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.exporter.internal.metrics.ExporterMetrics;
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import java.net.URI;
+import io.opentelemetry.sdk.internal.ComponentId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -22,9 +22,7 @@ class GrpcExporterBuilderTest {
   void setUp() {
     builder =
         new GrpcExporterBuilder<>(
-            "otlp",
-            ExporterMetrics.Signal.SPAN,
-            "testing",
+            ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
             0,
             URI.create("http://localhost:4317"),
             null,
