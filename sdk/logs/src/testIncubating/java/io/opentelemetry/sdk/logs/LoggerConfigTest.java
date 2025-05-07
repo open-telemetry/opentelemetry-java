@@ -8,8 +8,6 @@ package io.opentelemetry.sdk.logs;
 import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameEquals;
 import static io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder.nameMatchesGlob;
 import static io.opentelemetry.sdk.logs.internal.LoggerConfig.defaultConfig;
-import static io.opentelemetry.sdk.logs.internal.LoggerConfig.disabled;
-import static io.opentelemetry.sdk.logs.internal.LoggerConfig.enabled;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.incubator.logs.ExtendedLogger;
@@ -38,7 +36,7 @@ class LoggerConfigTest {
         SdkLoggerProvider.builder()
             // Disable loggerB. Since loggers are enabled by default, loggerA and loggerC are
             // enabled.
-            .addLoggerConfiguratorCondition(nameEquals("loggerB"), disabled())
+            .addLoggerConfiguratorCondition(nameEquals("loggerB"), LoggerConfig.disabled())
             .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter))
             .build();
 
@@ -87,22 +85,24 @@ class LoggerConfigTest {
         LoggerConfig.configuratorBuilder().build();
     ScopeConfigurator<LoggerConfig> disableCat =
         LoggerConfig.configuratorBuilder()
-            .addCondition(nameEquals("cat"), disabled())
+            .addCondition(nameEquals("cat"), LoggerConfig.disabled())
             // Second matching rule for cat should be ignored
-            .addCondition(nameEquals("cat"), enabled())
+            .addCondition(nameEquals("cat"), LoggerConfig.enabled())
             .build();
     ScopeConfigurator<LoggerConfig> disableStartsWithD =
-        LoggerConfig.configuratorBuilder().addCondition(nameMatchesGlob("d*"), disabled()).build();
+        LoggerConfig.configuratorBuilder()
+            .addCondition(nameMatchesGlob("d*"), LoggerConfig.disabled())
+            .build();
     ScopeConfigurator<LoggerConfig> enableCat =
         LoggerConfig.configuratorBuilder()
-            .setDefault(disabled())
-            .addCondition(nameEquals("cat"), enabled())
+            .setDefault(LoggerConfig.disabled())
+            .addCondition(nameEquals("cat"), LoggerConfig.enabled())
             // Second matching rule for cat should be ignored
-            .addCondition(nameEquals("cat"), disabled())
+            .addCondition(nameEquals("cat"), LoggerConfig.disabled())
             .build();
     ScopeConfigurator<LoggerConfig> enableStartsWithD =
         LoggerConfig.configuratorBuilder()
-            .setDefault(disabled())
+            .setDefault(LoggerConfig.disabled())
             .addCondition(nameMatchesGlob("d*"), LoggerConfig.enabled())
             .build();
 
@@ -112,21 +112,21 @@ class LoggerConfigTest {
         Arguments.of(defaultConfigurator, scopeDog, defaultConfig()),
         Arguments.of(defaultConfigurator, scopeDuck, defaultConfig()),
         // default enabled, disable cat
-        Arguments.of(disableCat, scopeCat, disabled()),
-        Arguments.of(disableCat, scopeDog, enabled()),
-        Arguments.of(disableCat, scopeDuck, enabled()),
+        Arguments.of(disableCat, scopeCat, LoggerConfig.disabled()),
+        Arguments.of(disableCat, scopeDog, LoggerConfig.enabled()),
+        Arguments.of(disableCat, scopeDuck, LoggerConfig.enabled()),
         // default enabled, disable pattern
-        Arguments.of(disableStartsWithD, scopeCat, enabled()),
-        Arguments.of(disableStartsWithD, scopeDog, disabled()),
-        Arguments.of(disableStartsWithD, scopeDuck, disabled()),
+        Arguments.of(disableStartsWithD, scopeCat, LoggerConfig.enabled()),
+        Arguments.of(disableStartsWithD, scopeDog, LoggerConfig.disabled()),
+        Arguments.of(disableStartsWithD, scopeDuck, LoggerConfig.disabled()),
         // default disabled, enable cat
-        Arguments.of(enableCat, scopeCat, enabled()),
-        Arguments.of(enableCat, scopeDog, disabled()),
-        Arguments.of(enableCat, scopeDuck, disabled()),
+        Arguments.of(enableCat, scopeCat, LoggerConfig.enabled()),
+        Arguments.of(enableCat, scopeDog, LoggerConfig.disabled()),
+        Arguments.of(enableCat, scopeDuck, LoggerConfig.disabled()),
         // default disabled, enable pattern
-        Arguments.of(enableStartsWithD, scopeCat, disabled()),
-        Arguments.of(enableStartsWithD, scopeDog, enabled()),
-        Arguments.of(enableStartsWithD, scopeDuck, enabled()));
+        Arguments.of(enableStartsWithD, scopeCat, LoggerConfig.disabled()),
+        Arguments.of(enableStartsWithD, scopeDog, LoggerConfig.enabled()),
+        Arguments.of(enableStartsWithD, scopeDuck, LoggerConfig.enabled()));
   }
 
   @Test
@@ -135,7 +135,7 @@ class LoggerConfigTest {
     InMemoryLogRecordExporter exporter = InMemoryLogRecordExporter.create();
     SdkLoggerProvider loggerProvider =
         SdkLoggerProvider.builder()
-            .addLoggerConfiguratorCondition(nameEquals("loggerB"), disabled())
+            .addLoggerConfiguratorCondition(nameEquals("loggerB"), LoggerConfig.disabled())
             .addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter))
             .build();
 
@@ -175,7 +175,7 @@ class LoggerConfigTest {
     // 3. Update config to restore original
     loggerProvider.setLoggerConfigurator(
         ScopeConfigurator.<LoggerConfig>builder()
-            .addCondition(nameEquals("loggerB"), disabled())
+            .addCondition(nameEquals("loggerB"), LoggerConfig.disabled())
             .build());
 
     // verify isEnabled()
