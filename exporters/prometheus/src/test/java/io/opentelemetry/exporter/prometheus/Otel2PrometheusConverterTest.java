@@ -169,7 +169,7 @@ class Otel2PrometheusConverterTest {
         Attributes.builder()
             .put(
                 AttributeKey.stringArrayKey("stringKey"),
-                Arrays.asList("stringValue1", "stringValue2"))
+                Arrays.asList("stringValue1", "\\\\\\+\b+\f+\n+\r+\t+" + (char) 0))
             .put(AttributeKey.booleanArrayKey("booleanKey"), Arrays.asList(true, false))
             .put(AttributeKey.longArrayKey("longKey"), Arrays.asList(12345L, 6789L))
             .put(AttributeKey.doubleArrayKey("doubleKey"), Arrays.asList(0.12345, 0.6789))
@@ -180,7 +180,7 @@ class Otel2PrometheusConverterTest {
     MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
 
     assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("stringKey"))
-        .isEqualTo("[\"stringValue1\", \"stringValue2\"]");
+        .isEqualTo("[\"stringValue1\", \"\\\\\\\\\\\\+\\b+\\f+\\n+\\r+\\t+\\u0000\"]");
     assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("booleanKey"))
         .isEqualTo("[true, false]");
     assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("longKey"))
