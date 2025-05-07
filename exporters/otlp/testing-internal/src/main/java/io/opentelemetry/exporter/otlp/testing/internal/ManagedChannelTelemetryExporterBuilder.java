@@ -12,10 +12,12 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
 import io.netty.handler.ssl.SslContext;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.net.URI;
@@ -169,6 +171,20 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
   @Override
   public TelemetryExporterBuilder<T> setExecutorService(ExecutorService executorService) {
     delegate.setExecutorService(executorService);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<T> setMeterProvider(
+      Supplier<MeterProvider> meterProviderSupplier) {
+    delegate.setMeterProvider(meterProviderSupplier);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<T> setInternalTelemetry(
+      InternalTelemetrySchemaVersion schemaVersion) {
+    delegate.setInternalTelemetry(schemaVersion);
     return this;
   }
 

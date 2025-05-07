@@ -6,7 +6,9 @@
 package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.grpc.ManagedChannel;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
+import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -124,6 +126,20 @@ final class GrpcLogRecordExporterBuilderWrapper implements TelemetryExporterBuil
   public TelemetryExporterBuilder<LogRecordData> setExecutorService(
       ExecutorService executorService) {
     builder.setExecutorService(executorService);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<LogRecordData> setMeterProvider(
+      Supplier<MeterProvider> meterProviderSupplier) {
+    builder.setMeterProvider(meterProviderSupplier);
+    return this;
+  }
+
+  @Override
+  public TelemetryExporterBuilder<LogRecordData> setInternalTelemetry(
+      InternalTelemetrySchemaVersion schemaVersion) {
+    builder.setInternalTelemetry(schemaVersion);
     return this;
   }
 
