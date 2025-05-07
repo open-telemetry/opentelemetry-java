@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,8 +38,8 @@ class JavaDocsCrawlerTest {
               "response": {
                 "numFound": 40,
                 "docs": [
-                  {"a": "artifact1", "latestVersion": "1.0"},
-                  {"a": "artifact2", "latestVersion": "1.1"}
+                  {"g": "group", "a": "artifact1", "latestVersion": "1.0"},
+                  {"g": "group", "a": "artifact2", "latestVersion": "1.1"}
                 ]
               }
             }
@@ -51,7 +50,7 @@ class JavaDocsCrawlerTest {
               "response": {
                 "numFound": 40,
                 "docs": [
-                  {"a": "artifact3", "latestVersion": "2.0"}
+                  {"g": "group", "a": "artifact3", "latestVersion": "2.0"}
                 ]
               }
             }
@@ -66,7 +65,7 @@ class JavaDocsCrawlerTest {
         .thenReturn(mockMavenCentralRequest1)
         .thenReturn(mockMavenCentralRequest2);
 
-    List<Artifact> artifacts = JavaDocsCrawler.getArtifacts(mockClient);
+    List<Artifact> artifacts = JavaDocsCrawler.getArtifacts(mockClient, "io.opentelemetry");
 
     // 2 calls for the pagination
     verify(mockClient, times(2)).send(any(), any());
@@ -75,8 +74,7 @@ class JavaDocsCrawlerTest {
 
   @Test
   void testCrawler() throws IOException, InterruptedException {
-    List<Artifact> artifacts = new ArrayList<>();
-    artifacts.add(new Artifact("opentelemetry-context", "1.49.0"));
+    Artifact artifact = new Artifact("io.opentelemetry", "opentelemetry-context", "1.49.0");
     ArgumentCaptor<HttpRequest> requestCaptor = ArgumentCaptor.forClass(HttpRequest.class);
 
     when(mockJavaDocResponse.body()).thenReturn(JAVA_DOC_DOWNLOADED_TEXT);
@@ -84,13 +82,13 @@ class JavaDocsCrawlerTest {
 
     when(mockClient.send(any(), any())).thenReturn(mockJavaDocResponse);
 
-    List<String> updated = JavaDocsCrawler.crawlJavaDocs(mockClient, artifacts);
+    List<Artifact> updated = JavaDocsCrawler.crawlJavaDocs(mockClient, "1.49.0", List.of(artifact));
 
     verify(mockClient, times(1)).send(requestCaptor.capture(), any());
 
     assertThat(requestCaptor.getValue().uri().toString())
         .isEqualTo(
             "https://javadoc.io/doc/io.opentelemetry/opentelemetry-context/1.49.0/opentelemetry/context/package-summary.html");
-    assertThat(updated).containsExactly("opentelemetry-context");
+    assertThat(updated).containsExactly(artifact);
   }
 }

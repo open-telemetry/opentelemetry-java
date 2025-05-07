@@ -40,7 +40,8 @@ class SamplerFactoryTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
-  private final SpiHelper spiHelper = SpiHelper.create(SamplerFactoryTest.class.getClassLoader());
+  private final DeclarativeConfigContext context =
+      new DeclarativeConfigContext(SpiHelper.create(SamplerFactoryTest.class.getClassLoader()));
 
   @ParameterizedTest
   @MethodSource("createArguments")
@@ -53,7 +54,7 @@ class SamplerFactoryTest {
 
     List<Closeable> closeables = new ArrayList<>();
     io.opentelemetry.sdk.trace.samplers.Sampler sampler =
-        SamplerFactory.getInstance().create(model, spiHelper, closeables);
+        SamplerFactory.getInstance().create(model, context);
     cleanup.addCloseables(closeables);
 
     assertThat(sampler.toString()).isEqualTo(expectedSampler.toString());
@@ -139,8 +140,7 @@ class SamplerFactoryTest {
                         new SamplerModel()
                             .withAdditionalProperty(
                                 "unknown_key", ImmutableMap.of("key1", "value1")),
-                        spiHelper,
-                        new ArrayList<>()))
+                        context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
             "No component provider detected for io.opentelemetry.sdk.trace.samplers.Sampler with name \"unknown_key\".");
@@ -154,8 +154,7 @@ class SamplerFactoryTest {
             .create(
                 new SamplerModel()
                     .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
-                spiHelper,
-                new ArrayList<>());
+                context);
     assertThat(sampler).isInstanceOf(SamplerComponentProvider.TestSampler.class);
     assertThat(((SamplerComponentProvider.TestSampler) sampler).config.getString("key1"))
         .isEqualTo("value1");

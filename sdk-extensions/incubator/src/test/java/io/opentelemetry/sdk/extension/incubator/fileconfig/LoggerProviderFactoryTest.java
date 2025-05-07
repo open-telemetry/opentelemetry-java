@@ -40,8 +40,9 @@ class LoggerProviderFactoryTest {
 
   @RegisterExtension CleanupExtension cleanup = new CleanupExtension();
 
-  private final SpiHelper spiHelper =
-      SpiHelper.create(LoggerProviderFactoryTest.class.getClassLoader());
+  private final DeclarativeConfigContext context =
+      new DeclarativeConfigContext(
+          SpiHelper.create(LoggerProviderFactoryTest.class.getClassLoader()));
 
   @ParameterizedTest
   @MethodSource("createArguments")
@@ -49,8 +50,7 @@ class LoggerProviderFactoryTest {
     List<Closeable> closeables = new ArrayList<>();
     cleanup.addCloseable(expectedProvider);
 
-    SdkLoggerProvider provider =
-        LoggerProviderFactory.getInstance().create(model, spiHelper, closeables).build();
+    SdkLoggerProvider provider = LoggerProviderFactory.getInstance().create(model, context).build();
     cleanup.addCloseable(provider);
     cleanup.addCloseables(closeables);
 

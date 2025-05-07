@@ -64,6 +64,7 @@ class LogRecordExporterFactoryTest {
 
   private final SpiHelper spiHelper =
       spy(SpiHelper.create(SpanExporterFactoryTest.class.getClassLoader()));
+  private final DeclarativeConfigContext context = new DeclarativeConfigContext(spiHelper);
   private List<ComponentProvider<?>> loadedComponentProviders = Collections.emptyList();
 
   @BeforeEach
@@ -99,9 +100,7 @@ class LogRecordExporterFactoryTest {
     LogRecordExporter exporter =
         LogRecordExporterFactory.getInstance()
             .create(
-                new LogRecordExporterModel().withOtlpHttp(new OtlpHttpExporterModel()),
-                spiHelper,
-                closeables);
+                new LogRecordExporterModel().withOtlpHttp(new OtlpHttpExporterModel()), context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -169,8 +168,7 @@ class LogRecordExporterFactoryTest {
                             .withCertificateFile(certificatePath)
                             .withClientKeyFile(clientKeyPath)
                             .withClientCertificateFile(clientCertificatePath)),
-                spiHelper,
-                closeables);
+                context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -212,9 +210,7 @@ class LogRecordExporterFactoryTest {
     LogRecordExporter exporter =
         LogRecordExporterFactory.getInstance()
             .create(
-                new LogRecordExporterModel().withOtlpGrpc(new OtlpGrpcExporterModel()),
-                spiHelper,
-                closeables);
+                new LogRecordExporterModel().withOtlpGrpc(new OtlpGrpcExporterModel()), context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -281,8 +277,7 @@ class LogRecordExporterFactoryTest {
                             .withCertificateFile(certificatePath)
                             .withClientKeyFile(clientKeyPath)
                             .withClientCertificateFile(clientCertificatePath)),
-                spiHelper,
-                closeables);
+                context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -326,8 +321,7 @@ class LogRecordExporterFactoryTest {
             .create(
                 new LogRecordExporterModel()
                     .withOtlpFileDevelopment(new ExperimentalOtlpFileExporterModel()),
-                spiHelper,
-                closeables);
+                context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -351,8 +345,7 @@ class LogRecordExporterFactoryTest {
                         new LogRecordExporterModel()
                             .withAdditionalProperty(
                                 "unknown_key", ImmutableMap.of("key1", "value1")),
-                        spiHelper,
-                        new ArrayList<>()))
+                        context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
             "No component provider detected for io.opentelemetry.sdk.logs.export.LogRecordExporter with name \"unknown_key\".");
@@ -366,8 +359,7 @@ class LogRecordExporterFactoryTest {
             .create(
                 new LogRecordExporterModel()
                     .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
-                spiHelper,
-                new ArrayList<>());
+                context);
     assertThat(logRecordExporter)
         .isInstanceOf(LogRecordExporterComponentProvider.TestLogRecordExporter.class);
     assertThat(

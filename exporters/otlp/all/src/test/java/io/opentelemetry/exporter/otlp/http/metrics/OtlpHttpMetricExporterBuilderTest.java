@@ -12,11 +12,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import com.linecorp.armeria.common.HttpResponse;
+import com.linecorp.armeria.common.HttpStatus;
+import com.linecorp.armeria.server.ServerBuilder;
+import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -36,9 +41,13 @@ import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableGaugeData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mockito;
 
 class OtlpHttpMetricExporterBuilderTest {
@@ -53,10 +62,30 @@ class OtlpHttpMetricExporterBuilderTest {
               "test",
               ImmutableGaugeData.empty()));
 
+  @RegisterExtension
+  private static final ServerExtension server =
+      new ServerExtension() {
+        @Override
+        protected void configure(ServerBuilder sb) {
+          sb.service("/v1/metrics", (ctx, req) -> HttpResponse.of(HttpStatus.OK));
+          sb.http(0);
+        }
+      };
+
   private final SdkMeterProvider meterProvider = mock(SdkMeterProvider.class);
   private final Meter meter = mock(Meter.class);
   private final LongCounterBuilder counterBuilder = mock(LongCounterBuilder.class);
   private final LongCounter counter = mock(LongCounter.class);
+
+  @BeforeEach
+  void setup() {
+    GlobalOpenTelemetry.resetForTest();
+  }
+
+  @AfterEach
+  void cleanup() {
+    GlobalOpenTelemetry.resetForTest();
+  }
 
   @Test
   void setMeterProvider_null() {
@@ -74,25 +103,29 @@ class OtlpHttpMetricExporterBuilderTest {
   @Test
   void setMeterProvider() {
     when(meterProvider.get(any())).thenReturn(meter);
-    when(meter.counterBuilder(eq("otlp.exporter.seen"))).thenReturn(counterBuilder);
+    when(meter.counterBuilder(any())).thenReturn(counterBuilder);
     when(counterBuilder.build()).thenReturn(counter);
 
     try (OtlpHttpMetricExporter exporter =
-        OtlpHttpMetricExporter.builder().setMeterProvider(meterProvider).build()) {
+        OtlpHttpMetricExporter.builder()
+            .setMeterProvider(meterProvider)
+            .setEndpoint("http://localhost:" + server.httpPort() + "/v1/metrics")
+            .build()) {
       verifyNoInteractions(meterProvider, meter, counterBuilder, counter);
 
       // Collection before MeterProvider is initialized.
       when(meterProvider.get(any())).thenReturn(MeterProvider.noop().get("test"));
-      exporter.export(DATA_SET);
+      exporter.export(DATA_SET).join(10, TimeUnit.SECONDS);
 
       verifyNoInteractions(meter, counterBuilder, counter);
 
       // Collection after MeterProvider is initialized.
       when(meterProvider.get(any())).thenReturn(meter);
-      exporter.export(DATA_SET);
+      exporter.export(DATA_SET).join(10, TimeUnit.SECONDS);
 
-      verify(meter).counterBuilder(eq("otlp.exporter.seen"));
-      verify(counter).add(eq(1L), any());
+      verify(meter).counterBuilder("otlp.exporter.seen");
+      verify(meter).counterBuilder("otlp.exporter.exported");
+      verify(counter, times(2)).add(eq(1L), any());
       verifyNoMoreInteractions(meter, counter);
     }
   }
@@ -100,27 +133,31 @@ class OtlpHttpMetricExporterBuilderTest {
   @Test
   void setMeterProvider_supplier() {
     when(meterProvider.get(any())).thenReturn(meter);
-    when(meter.counterBuilder(eq("otlp.exporter.seen"))).thenReturn(counterBuilder);
+    when(meter.counterBuilder(any())).thenReturn(counterBuilder);
     when(counterBuilder.build()).thenReturn(counter);
 
     @SuppressWarnings("unchecked")
     Supplier<MeterProvider> provider = mock(Supplier.class);
     try (OtlpHttpMetricExporter exporter =
-        OtlpHttpMetricExporter.builder().setMeterProvider(provider).build()) {
+        OtlpHttpMetricExporter.builder()
+            .setMeterProvider(provider)
+            .setEndpoint("http://localhost:" + server.httpPort() + "/v1/metrics")
+            .build()) {
       verifyNoInteractions(provider, meterProvider, meter, counterBuilder, counter);
 
       // Collection before MeterProvider is initialized.
       when(provider.get()).thenReturn(MeterProvider.noop());
-      exporter.export(DATA_SET);
+      exporter.export(DATA_SET).join(10, TimeUnit.SECONDS);
 
       verifyNoInteractions(meterProvider, meter, counterBuilder, counter);
 
       // Collection after MeterProvider is initialized.
       when(provider.get()).thenReturn(meterProvider);
-      exporter.export(DATA_SET);
+      exporter.export(DATA_SET).join(10, TimeUnit.SECONDS);
 
-      verify(meter).counterBuilder(eq("otlp.exporter.seen"));
-      verify(counter).add(eq(1L), any());
+      verify(meter).counterBuilder("otlp.exporter.seen");
+      verify(meter).counterBuilder("otlp.exporter.exported");
+      verify(counter, times(2)).add(eq(1L), any());
       verifyNoMoreInteractions(meter, counter);
     }
   }
@@ -145,19 +182,21 @@ class OtlpHttpMetricExporterBuilderTest {
           }
         });
     when(meterProvider.get(any())).thenReturn(meter);
-    when(meter.counterBuilder(eq("otlp.exporter.seen"))).thenReturn(counterBuilder);
+    when(meter.counterBuilder(any())).thenReturn(counterBuilder);
     when(counterBuilder.build()).thenReturn(counter);
 
-    try (OtlpHttpMetricExporter exporter = OtlpHttpMetricExporter.builder().build()) {
+    try (OtlpHttpMetricExporter exporter =
+        OtlpHttpMetricExporter.builder()
+            .setEndpoint("http://localhost:" + server.httpPort() + "/v1/metrics")
+            .build()) {
       verifyNoInteractions(meterProvider, meter, counterBuilder, counter);
 
-      exporter.export(DATA_SET);
+      exporter.export(DATA_SET).join(10, TimeUnit.SECONDS);
 
-      verify(meter).counterBuilder(eq("otlp.exporter.seen"));
-      verify(counter).add(eq(1L), any());
+      verify(meter).counterBuilder("otlp.exporter.seen");
+      verify(meter).counterBuilder("otlp.exporter.exported");
+      verify(counter, times(2)).add(eq(1L), any());
       verifyNoMoreInteractions(meter, counter);
-    } finally {
-      GlobalOpenTelemetry.resetForTest();
     }
   }
 

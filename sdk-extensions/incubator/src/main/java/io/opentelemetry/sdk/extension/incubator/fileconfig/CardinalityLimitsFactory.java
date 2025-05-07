@@ -5,12 +5,9 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.CardinalityLimitsModel;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.internal.state.MetricStorage;
-import java.io.Closeable;
-import java.util.List;
 import javax.annotation.Nullable;
 
 final class CardinalityLimitsFactory
@@ -26,7 +23,7 @@ final class CardinalityLimitsFactory
 
   @Override
   public CardinalityLimitSelector create(
-      CardinalityLimitsModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+      CardinalityLimitsModel model, DeclarativeConfigContext context) {
     int defaultLimit = getOrDefault(model.getDefault(), MetricStorage.DEFAULT_MAX_CARDINALITY);
     int counterLimit = getOrDefault(model.getCounter(), defaultLimit);
     int gaugeLimit = getOrDefault(model.getGauge(), defaultLimit);

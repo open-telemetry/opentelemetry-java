@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.spy;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
@@ -29,11 +28,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class ResourceFactoryTest {
 
-  private SpiHelper spiHelper = SpiHelper.create(ResourceFactoryTest.class.getClassLoader());
+  private final DeclarativeConfigContext context =
+      new DeclarativeConfigContext(SpiHelper.create(ResourceFactoryTest.class.getClassLoader()));
 
   @Test
   void create() {
-    spiHelper = spy(spiHelper);
     assertThat(
             ResourceFactory.getInstance()
                 .create(
@@ -47,8 +46,7 @@ class ResourceFactoryTest {
                                 new AttributeNameValueModel()
                                     .withName("shape")
                                     .withValue("circle"))),
-                    spiHelper,
-                    Collections.emptyList()))
+                    context))
         .isEqualTo(
             Resource.getDefault().toBuilder()
                 .put("shape", "circle")
@@ -75,8 +73,7 @@ class ResourceFactoryTest {
                                 .withAdditionalProperty("shape_color", null)))
                     .withAttributes(
                         new IncludeExcludeModel().withIncluded(included).withExcluded(excluded)));
-    Resource resource =
-        ResourceFactory.getInstance().create(resourceModel, spiHelper, Collections.emptyList());
+    Resource resource = ResourceFactory.getInstance().create(resourceModel, context);
     assertThat(resource).isEqualTo(expectedResource);
   }
 
@@ -148,8 +145,7 @@ class ResourceFactoryTest {
   @ParameterizedTest
   @MethodSource("createInvalidDetectorsArgs")
   void createWithDetectors_Invalid(ResourceModel model, String expectedMessage) {
-    assertThatThrownBy(
-            () -> ResourceFactory.getInstance().create(model, spiHelper, Collections.emptyList()))
+    assertThatThrownBy(() -> ResourceFactory.getInstance().create(model, context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(expectedMessage);
   }

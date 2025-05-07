@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.extension.incubator.fileconfig.FileConfigUtil.requireNonNull;
 
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalMeterConfigModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalMeterConfiguratorModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalMeterMatcherAndConfigModel;
@@ -23,7 +22,6 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.CardinalityLimitSelector;
 import io.opentelemetry.sdk.metrics.internal.MeterConfig;
 import io.opentelemetry.sdk.metrics.internal.SdkMeterProviderUtil;
-import java.io.Closeable;
 import java.util.List;
 
 final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeterProviderBuilder> {
@@ -38,7 +36,7 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
 
   @Override
   public SdkMeterProviderBuilder create(
-      MeterProviderModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+      MeterProviderModel model, DeclarativeConfigContext context) {
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
 
     List<MetricReaderModel> readerModels = model.getReaders();
@@ -46,7 +44,7 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
       readerModels.forEach(
           readerModel -> {
             MetricReaderAndCardinalityLimits readerAndCardinalityLimits =
-                MetricReaderFactory.getInstance().create(readerModel, spiHelper, closeables);
+                MetricReaderFactory.getInstance().create(readerModel, context);
             CardinalityLimitSelector cardinalityLimits =
                 readerAndCardinalityLimits.getCardinalityLimitsSelector();
             if (cardinalityLimits == null) {
@@ -65,8 +63,8 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
             ViewSelectorModel selector = requireNonNull(viewModel.getSelector(), "view selector");
             ViewStreamModel stream = requireNonNull(viewModel.getStream(), "view stream");
             builder.registerView(
-                InstrumentSelectorFactory.getInstance().create(selector, spiHelper, closeables),
-                ViewFactory.getInstance().create(stream, spiHelper, closeables));
+                InstrumentSelectorFactory.getInstance().create(selector, context),
+                ViewFactory.getInstance().create(stream, context));
           });
     }
 
@@ -77,7 +75,7 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
       ScopeConfiguratorBuilder<MeterConfig> configuratorBuilder = ScopeConfigurator.builder();
       if (defaultConfigModel != null) {
         configuratorBuilder.setDefault(
-            MeterConfigFactory.INSTANCE.create(defaultConfigModel, spiHelper, closeables));
+            MeterConfigFactory.INSTANCE.create(defaultConfigModel, context));
       }
       List<ExperimentalMeterMatcherAndConfigModel> meterMatcherAndConfigs =
           meterConfiguratorModel.getMeters();
@@ -91,7 +89,7 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
           }
           configuratorBuilder.addCondition(
               ScopeConfiguratorBuilder.nameMatchesGlob(name),
-              MeterConfigFactory.INSTANCE.create(config, spiHelper, closeables));
+              MeterConfigFactory.INSTANCE.create(config, context));
         }
       }
       SdkMeterProviderUtil.setMeterConfigurator(builder, configuratorBuilder.build());
@@ -107,7 +105,7 @@ final class MeterProviderFactory implements Factory<MeterProviderModel, SdkMeter
 
     @Override
     public MeterConfig create(
-        ExperimentalMeterConfigModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+        ExperimentalMeterConfigModel model, DeclarativeConfigContext context) {
       if (model.getDisabled() != null && model.getDisabled()) {
         return MeterConfig.disabled();
       }

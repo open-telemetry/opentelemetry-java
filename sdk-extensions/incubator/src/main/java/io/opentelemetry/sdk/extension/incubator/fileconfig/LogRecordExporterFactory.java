@@ -5,11 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordExporterModel;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
-import java.io.Closeable;
-import java.util.List;
 import java.util.Map;
 
 final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, LogRecordExporter> {
@@ -23,8 +20,7 @@ final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, 
   }
 
   @Override
-  public LogRecordExporter create(
-      LogRecordExporterModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+  public LogRecordExporter create(LogRecordExporterModel model, DeclarativeConfigContext context) {
 
     model.getAdditionalProperties().compute("otlp_http", (k, v) -> model.getOtlpHttp());
     model.getAdditionalProperties().compute("otlp_grpc", (k, v) -> model.getOtlpGrpc());
@@ -36,8 +32,7 @@ final class LogRecordExporterFactory implements Factory<LogRecordExporterModel, 
     Map.Entry<String, Object> keyValue =
         FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "log record exporter");
     LogRecordExporter logRecordExporter =
-        FileConfigUtil.loadComponent(
-            spiHelper, LogRecordExporter.class, keyValue.getKey(), keyValue.getValue());
-    return FileConfigUtil.addAndReturn(closeables, logRecordExporter);
+        context.loadComponent(LogRecordExporter.class, keyValue.getKey(), keyValue.getValue());
+    return context.addCloseable(logRecordExporter);
   }
 }

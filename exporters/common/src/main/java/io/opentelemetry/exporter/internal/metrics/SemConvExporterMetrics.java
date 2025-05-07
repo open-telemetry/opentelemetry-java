@@ -78,9 +78,11 @@ public class SemConvExporterMetrics implements ExporterMetrics {
   }
 
   private Meter meter() {
-    return meterProviderSupplier
-        .get()
-        .get("io.opentelemetry.exporters." + componentId.getTypeName());
+    MeterProvider meterProvider = meterProviderSupplier.get();
+    if (meterProvider == null) {
+      meterProvider = MeterProvider.noop();
+    }
+    return meterProvider.get("io.opentelemetry.exporters." + componentId.getTypeName());
   }
 
   private Attributes allAttributes() {

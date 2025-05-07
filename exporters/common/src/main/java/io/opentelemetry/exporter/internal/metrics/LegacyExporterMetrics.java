@@ -157,9 +157,11 @@ public class LegacyExporterMetrics implements ExporterMetrics {
   }
 
   private Meter meter() {
-    return meterProviderSupplier
-        .get()
-        .get("io.opentelemetry.exporters." + exporterName + "-" + transportName);
+    MeterProvider meterProvider = meterProviderSupplier.get();
+    if (meterProvider == null) {
+      meterProvider = MeterProvider.noop();
+    }
+    return meterProvider.get("io.opentelemetry.exporters." + exporterName + "-" + transportName);
   }
 
   @Override

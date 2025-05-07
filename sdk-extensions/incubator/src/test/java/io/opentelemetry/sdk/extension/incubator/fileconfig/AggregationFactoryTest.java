@@ -8,14 +8,12 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.Base2ExponentialBucketHistogramAggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.DropAggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExplicitBucketHistogramAggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LastValueAggregationModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SumAggregationModel;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -28,7 +26,7 @@ class AggregationFactoryTest {
   @MethodSource("createTestCases")
   void create(AggregationModel model, io.opentelemetry.sdk.metrics.Aggregation expectedResult) {
     io.opentelemetry.sdk.metrics.Aggregation aggregation =
-        AggregationFactory.getInstance().create(model, mock(SpiHelper.class), new ArrayList<>());
+        AggregationFactory.getInstance().create(model, mock(DeclarativeConfigContext.class));
     assertThat(aggregation.toString()).isEqualTo(expectedResult.toString());
   }
 
