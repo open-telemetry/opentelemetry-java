@@ -10,20 +10,20 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import io.opentelemetry.sdk.internal.SemConvAttributes;
 import org.junit.jupiter.api.Test;
 
-public class ServerAttributesUtilTest {
+class ServerAttributesUtilTest {
 
   @Test
-  public void invalidUrl() {
+  void invalidUrl() {
     assertThat(ServerAttributesUtil.extractServerAttributes("^")).isEmpty();
   }
 
   @Test
-  public void emptyUrl() {
+  void emptyUrl() {
     assertThat(ServerAttributesUtil.extractServerAttributes("")).isEmpty();
   }
 
   @Test
-  public void testHttps() {
+  void testHttps() {
     assertThat(ServerAttributesUtil.extractServerAttributes("https://example.com/foo/bar?a=b"))
         .hasSize(2)
         .containsEntry(SemConvAttributes.SERVER_ADDRESS, "example.com")
@@ -36,7 +36,7 @@ public class ServerAttributesUtilTest {
   }
 
   @Test
-  public void testHttp() {
+  void testHttp() {
     assertThat(ServerAttributesUtil.extractServerAttributes("http://example.com/foo/bar?a=b"))
         .hasSize(2)
         .containsEntry(SemConvAttributes.SERVER_ADDRESS, "example.com")
@@ -49,7 +49,7 @@ public class ServerAttributesUtilTest {
   }
 
   @Test
-  public void unknownScheme() {
+  void unknownScheme() {
     assertThat(ServerAttributesUtil.extractServerAttributes("custom://foo"))
         .hasSize(1)
         .containsEntry(SemConvAttributes.SERVER_ADDRESS, "foo");
