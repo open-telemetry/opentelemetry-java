@@ -647,37 +647,33 @@ final class Otel2PrometheusConverter {
   }
 
   private static String toLabelValue(AttributeType type, Object attributeValue) {
-    if (AttributeType.STRING.equals(type)) {
-      return attributeValue.toString();
-    } else if (AttributeType.BOOLEAN.equals(type)) {
-      return attributeValue.toString();
-    } else if (AttributeType.LONG.equals(type)) {
-      return attributeValue.toString();
-    } else if (AttributeType.DOUBLE.equals(type)) {
-      return attributeValue.toString();
-    } else if (AttributeType.STRING_ARRAY.equals(type)) {
-      if (attributeValue instanceof List) {
-        return ((List<?>) attributeValue)
-            .stream()
-                .map(String.class::cast)
-                .map(Otel2PrometheusConverter::toJsonValidStr)
-                .collect(Collectors.toList())
-                .toString();
-      } else {
-        LOGGER.log(
-            Level.WARNING,
-            "Unexpected label value for AttributeType.STRING_ARRAY, toString() is being used as fallback value...");
+    switch (type) {
+      case STRING:
+      case BOOLEAN:
+      case LONG:
+      case DOUBLE:
+      case BOOLEAN_ARRAY:
+      case LONG_ARRAY:
+      case DOUBLE_ARRAY:
         return attributeValue.toString();
-      }
-    } else if (AttributeType.BOOLEAN_ARRAY.equals(type)) {
-      return attributeValue.toString();
-    } else if (AttributeType.LONG_ARRAY.equals(type)) {
-      return attributeValue.toString();
-    } else if (AttributeType.DOUBLE_ARRAY.equals(type)) {
-      return attributeValue.toString();
-    } else {
-      throw new IllegalStateException(("Unrecognized AttributeType: " + type));
+
+      case STRING_ARRAY:
+        if (attributeValue instanceof List) {
+          return ((List<?>) attributeValue)
+              .stream()
+                  .map(Object::toString)
+                  .map(Otel2PrometheusConverter::toJsonValidStr)
+                  .collect(Collectors.toList())
+                  .toString();
+        } else {
+          LOGGER.log(
+              Level.WARNING,
+              "Unexpected label value of {0} for AttributeType.STRING_ARRAY, toString() is being used as fallback value...",
+              attributeValue.getClass());
+          return attributeValue.toString();
+        }
     }
+    throw new IllegalStateException("Unrecognized AttributeType: " + type);
   }
 
   public static String toJsonValidStr(String str) {
