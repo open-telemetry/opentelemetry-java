@@ -21,6 +21,11 @@ final class ExtendedSdkLogger extends SdkLogger implements ExtendedLogger {
   }
 
   @Override
+  public boolean isEnabled() {
+    return super.isEnabled();
+  }
+
+  @Override
   public ExtendedLogRecordBuilder logRecordBuilder() {
     return (ExtendedLogRecordBuilder) super.logRecordBuilder();
   }
