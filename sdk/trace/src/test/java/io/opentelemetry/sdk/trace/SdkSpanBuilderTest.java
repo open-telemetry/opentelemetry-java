@@ -17,9 +17,11 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
@@ -28,18 +30,27 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
+import io.opentelemetry.semconv.incubating.OtelIncubatingAttributes;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
@@ -949,6 +960,218 @@ class SdkSpanBuilderTest {
     } finally {
       parent.end();
     }
+  }
+
+  @Test
+  void healthMetricsEnabled() {
+    AtomicReference<SamplingDecision> currentSamplingDecision = new AtomicReference<>();
+    Sampler sampler =
+        new Sampler() {
+          @Override
+          public SamplingResult shouldSample(
+              Context parentContext,
+              String traceId,
+              String name,
+              SpanKind spanKind,
+              Attributes attributes,
+              List<LinkData> parentLinks) {
+            return SamplingResult.create(currentSamplingDecision.get(), Attributes.empty());
+          }
+
+          @Override
+          public String getDescription() {
+            return "test";
+          }
+        };
+
+    InMemoryMetricReader inMemoryMetrics = InMemoryMetricReader.create();
+    try (SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {
+      Tracer tracer =
+          SdkTracerProvider.builder()
+              .setSampler(sampler)
+              .setMeterProvider(() -> meterProvider)
+              .setInternalTelemetry(InternalTelemetryVersion.LATEST)
+              .build()
+              .get("testing");
+
+      List<Span> spansToEnd = new ArrayList<>();
+
+      currentSamplingDecision.set(SamplingDecision.DROP);
+      spansToEnd.add(tracer.spanBuilder("dropped").startSpan());
+
+      currentSamplingDecision.set(SamplingDecision.RECORD_ONLY);
+      spansToEnd.add(tracer.spanBuilder("record_only1").startSpan());
+      spansToEnd.add(tracer.spanBuilder("record_only2").startSpan());
+
+      currentSamplingDecision.set(SamplingDecision.RECORD_AND_SAMPLE);
+      spansToEnd.add(tracer.spanBuilder("record_and_sample1").startSpan());
+      spansToEnd.add(tracer.spanBuilder("record_and_sample2").startSpan());
+      spansToEnd.add(tracer.spanBuilder("record_and_sample3").startSpan());
+
+      assertThat(inMemoryMetrics.collectAllMetrics())
+          .hasSize(1)
+          .anySatisfy(
+              metric ->
+                  OpenTelemetryAssertions.assertThat(metric)
+                      .hasName("otel.sdk.span.live")
+                      .hasUnit("{span}")
+                      .hasLongSumSatisfying(
+                          ma ->
+                              ma.hasPointsSatisfying(
+                                  pa ->
+                                      pa.hasAttributes(
+                                              Attributes.of(
+                                                  OtelIncubatingAttributes
+                                                      .OTEL_SPAN_SAMPLING_RESULT,
+                                                  OtelIncubatingAttributes
+                                                      .OtelSpanSamplingResultIncubatingValues.DROP))
+                                          .hasValue(1),
+                                  pa ->
+                                      pa.hasAttributes(
+                                              Attributes.of(
+                                                  OtelIncubatingAttributes
+                                                      .OTEL_SPAN_SAMPLING_RESULT,
+                                                  OtelIncubatingAttributes
+                                                      .OtelSpanSamplingResultIncubatingValues
+                                                      .RECORD_ONLY))
+                                          .hasValue(2),
+                                  pa ->
+                                      pa.hasAttributes(
+                                              Attributes.of(
+                                                  OtelIncubatingAttributes
+                                                      .OTEL_SPAN_SAMPLING_RESULT,
+                                                  OtelIncubatingAttributes
+                                                      .OtelSpanSamplingResultIncubatingValues
+                                                      .RECORD_AND_SAMPLE))
+                                          .hasValue(3))));
+
+      spansToEnd.forEach(Span::end);
+      Runnable endAssertions =
+          () ->
+              assertThat(inMemoryMetrics.collectAllMetrics())
+                  .hasSize(2)
+                  .anySatisfy(
+                      metric ->
+                          OpenTelemetryAssertions.assertThat(metric)
+                              .hasName("otel.sdk.span.live")
+                              .hasUnit("{span}")
+                              .hasLongSumSatisfying(
+                                  ma ->
+                                      ma.hasPointsSatisfying(
+                                          pa ->
+                                              pa.hasAttributes(
+                                                      Attributes.of(
+                                                          OtelIncubatingAttributes
+                                                              .OTEL_SPAN_SAMPLING_RESULT,
+                                                          OtelIncubatingAttributes
+                                                              .OtelSpanSamplingResultIncubatingValues
+                                                              .DROP))
+                                                  .hasValue(0),
+                                          pa ->
+                                              pa.hasAttributes(
+                                                      Attributes.of(
+                                                          OtelIncubatingAttributes
+                                                              .OTEL_SPAN_SAMPLING_RESULT,
+                                                          OtelIncubatingAttributes
+                                                              .OtelSpanSamplingResultIncubatingValues
+                                                              .RECORD_ONLY))
+                                                  .hasValue(0),
+                                          pa ->
+                                              pa.hasAttributes(
+                                                      Attributes.of(
+                                                          OtelIncubatingAttributes
+                                                              .OTEL_SPAN_SAMPLING_RESULT,
+                                                          OtelIncubatingAttributes
+                                                              .OtelSpanSamplingResultIncubatingValues
+                                                              .RECORD_AND_SAMPLE))
+                                                  .hasValue(0))))
+                  .anySatisfy(
+                      metric ->
+                          OpenTelemetryAssertions.assertThat(metric)
+                              .hasName("otel.sdk.span.ended")
+                              .hasUnit("{span}")
+                              .hasLongSumSatisfying(
+                                  ma ->
+                                      ma.hasPointsSatisfying(
+                                          pa ->
+                                              pa.hasAttributes(
+                                                      Attributes.of(
+                                                          OtelIncubatingAttributes
+                                                              .OTEL_SPAN_SAMPLING_RESULT,
+                                                          OtelIncubatingAttributes
+                                                              .OtelSpanSamplingResultIncubatingValues
+                                                              .DROP))
+                                                  .hasValue(1),
+                                          pa ->
+                                              pa.hasAttributes(
+                                                      Attributes.of(
+                                                          OtelIncubatingAttributes
+                                                              .OTEL_SPAN_SAMPLING_RESULT,
+                                                          OtelIncubatingAttributes
+                                                              .OtelSpanSamplingResultIncubatingValues
+                                                              .RECORD_ONLY))
+                                                  .hasValue(2),
+                                          pa ->
+                                              pa.hasAttributes(
+                                                      Attributes.of(
+                                                          OtelIncubatingAttributes
+                                                              .OTEL_SPAN_SAMPLING_RESULT,
+                                                          OtelIncubatingAttributes
+                                                              .OtelSpanSamplingResultIncubatingValues
+                                                              .RECORD_AND_SAMPLE))
+                                                  .hasValue(3))));
+      endAssertions.run();
+
+      // ensure double ending doesn't have any effect on the metrics
+      spansToEnd.forEach(Span::end);
+      endAssertions.run();
+    }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void healthMetricsDisabled() {
+    AtomicReference<SamplingDecision> currentSamplingDecision = new AtomicReference<>();
+    Sampler sampler =
+        new Sampler() {
+          @Override
+          public SamplingResult shouldSample(
+              Context parentContext,
+              String traceId,
+              String name,
+              SpanKind spanKind,
+              Attributes attributes,
+              List<LinkData> parentLinks) {
+            return SamplingResult.create(currentSamplingDecision.get(), Attributes.empty());
+          }
+
+          @Override
+          public String getDescription() {
+            return "test";
+          }
+        };
+
+    Supplier<MeterProvider> mockMeterProvider = Mockito.mock(Supplier.class);
+
+    Tracer tracer =
+        SdkTracerProvider.builder()
+            .setSampler(sampler)
+            .setMeterProvider(mockMeterProvider)
+            .setInternalTelemetry(InternalTelemetryVersion.DISABLED)
+            .build()
+            .get("testing");
+
+    currentSamplingDecision.set(SamplingDecision.DROP);
+    tracer.spanBuilder("dropped").startSpan().end();
+
+    currentSamplingDecision.set(SamplingDecision.RECORD_ONLY);
+    tracer.spanBuilder("record_only").startSpan().end();
+
+    currentSamplingDecision.set(SamplingDecision.RECORD_AND_SAMPLE);
+    tracer.spanBuilder("record_and_sample").startSpan().end();
+
+    verifyNoInteractions(mockMeterProvider);
   }
 
   @Test

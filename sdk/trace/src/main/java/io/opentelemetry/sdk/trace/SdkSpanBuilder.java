@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributeUtil;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.trace.data.LinkData;
+import io.opentelemetry.sdk.trace.internal.metrics.SpanMetrics;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.ArrayList;
@@ -204,8 +205,10 @@ class SdkSpanBuilder implements SpanBuilder {
             /* remote= */ false,
             tracerSharedState.isIdGeneratorSafeToSkipIdValidation());
 
+    SpanMetrics.Recording metricsRecording =
+        tracerSharedState.getSpanMetrics().recordSpanStart(samplingResult);
     if (!isRecording(samplingDecision)) {
-      return Span.wrap(spanContext);
+      return new NonRecordingSpan(spanContext, metricsRecording);
     }
     Attributes samplingAttributes = samplingResult.getAttributes();
     if (!samplingAttributes.isEmpty()) {
@@ -232,7 +235,8 @@ class SdkSpanBuilder implements SpanBuilder {
         recordedAttributes,
         currentLinks,
         totalNumberOfLinksAdded,
-        startEpochNanos);
+        startEpochNanos,
+        metricsRecording);
   }
 
   private AttributesMap attributes() {

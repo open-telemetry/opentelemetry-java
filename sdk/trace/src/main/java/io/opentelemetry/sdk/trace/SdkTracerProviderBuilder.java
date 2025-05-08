@@ -7,11 +7,14 @@ package io.opentelemetry.sdk.trace;
 
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.DefaultExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.resources.Resource;
@@ -35,6 +38,9 @@ public final class SdkTracerProviderBuilder {
   private Resource resource = Resource.getDefault();
   private Supplier<SpanLimits> spanLimitsSupplier = SpanLimits::getDefault;
   private Sampler sampler = DEFAULT_SAMPLER;
+  private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
+  private InternalTelemetryVersion internalTelemetryVersion =
+      InternalTelemetryVersion.DISABLED;
   private ScopeConfiguratorBuilder<TracerConfig> tracerConfiguratorBuilder =
       TracerConfig.configuratorBuilder();
   private ExceptionAttributeResolver exceptionAttributeResolver =
@@ -178,6 +184,27 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
+   * Sets the {@link MeterProvider} supplier used to collect self-monitoring metrics. If not set,
+   * uses {@link GlobalOpenTelemetry#getMeterProvider()}.
+   */
+  public SdkTracerProviderBuilder setMeterProvider(Supplier<MeterProvider> meterProviderSupplier) {
+    requireNonNull(meterProviderSupplier, "meterProviderSupplier");
+    this.meterProviderSupplier = meterProviderSupplier;
+    return this;
+  }
+
+  /**
+   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics the
+   * tracers originating from this provider collect.
+   */
+  public SdkTracerProviderBuilder setInternalTelemetry(
+      InternalTelemetryVersion internalTelemetryVersion) {
+    requireNonNull(internalTelemetryVersion, "internalTelemetryVersion");
+    this.internalTelemetryVersion = internalTelemetryVersion;
+    return this;
+  }
+
+  /**
    * Set the tracer configurator, which computes {@link TracerConfig} for each {@link
    * InstrumentationScopeInfo}.
    *
@@ -247,7 +274,9 @@ public final class SdkTracerProviderBuilder {
         sampler,
         spanProcessors,
         tracerConfiguratorBuilder.build(),
-        exceptionAttributeResolver);
+        exceptionAttributeResolver,
+        internalTelemetryVersion,
+        meterProviderSupplier);
   }
 
   SdkTracerProviderBuilder() {}
