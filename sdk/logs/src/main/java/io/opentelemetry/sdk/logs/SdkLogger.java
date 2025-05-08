@@ -69,7 +69,6 @@ class SdkLogger implements Logger {
     return instrumentationScopeInfo;
   }
 
-  // Visible for testing
   public boolean isEnabled() {
     return loggerEnabled;
   }
