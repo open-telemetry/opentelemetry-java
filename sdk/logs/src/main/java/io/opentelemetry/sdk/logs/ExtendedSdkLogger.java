@@ -21,6 +21,7 @@ final class ExtendedSdkLogger extends SdkLogger implements ExtendedLogger {
   }
 
   @Override
+  @SuppressWarnings("RedundantOverride")
   public boolean isEnabled() {
     return super.isEnabled();
   }
