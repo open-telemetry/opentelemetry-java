@@ -203,6 +203,8 @@ public interface LogRecordBuilder {
    *
    * <p>This name should uniquely identify the event structure (both attributes and body). A log
    * record with a non-empty event name is an Event.
+   *
+   * @since 1.50.0
    */
   default LogRecordBuilder setEventName(String eventName) {
     return this;

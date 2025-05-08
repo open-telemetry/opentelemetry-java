@@ -107,6 +107,7 @@ public final class SdkLoggerProviderBuilder {
    *
    * @param processor the log processor
    * @return this
+   * @since 1.50.0
    */
   public SdkLoggerProviderBuilder addLogRecordProcessorFirst(LogRecordProcessor processor) {
     requireNonNull(processor, "processor");

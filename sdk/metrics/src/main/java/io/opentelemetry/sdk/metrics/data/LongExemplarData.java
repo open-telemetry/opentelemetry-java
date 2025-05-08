@@ -18,6 +18,11 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface LongExemplarData extends ExemplarData {
 
+  /**
+   * Create a record.
+   *
+   * @since 1.50.0
+   */
   static LongExemplarData create(
       Attributes filteredAttributes, long recordTimeNanos, SpanContext spanContext, long value) {
     return ImmutableLongExemplarData.create(

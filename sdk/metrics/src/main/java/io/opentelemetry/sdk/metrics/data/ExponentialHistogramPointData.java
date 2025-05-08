@@ -26,6 +26,11 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface ExponentialHistogramPointData extends PointData {
 
+  /**
+   * Create a record.
+   *
+   * @since 1.50.0
+   */
   @SuppressWarnings("TooManyParameters")
   static ExponentialHistogramPointData create(
       int scale,
