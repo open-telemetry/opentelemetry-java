@@ -207,7 +207,7 @@ public final class SdkTracerProviderBuilder {
    * @see ScopeConfiguratorBuilder#nameEquals(String)
    * @see ScopeConfiguratorBuilder#nameMatchesGlob(String)
    */
-  SdkTracerProviderBuilder addTracerConfiguratorCondition(
+  public SdkTracerProviderBuilder addTracerConfiguratorCondition(
       Predicate<InstrumentationScopeInfo> scopeMatcher, TracerConfig tracerConfig) {
     this.tracerConfiguratorBuilder.addCondition(scopeMatcher, tracerConfig);
     return this;

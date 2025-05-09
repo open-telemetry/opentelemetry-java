@@ -192,7 +192,7 @@ public final class SdkMeterProviderBuilder {
    * @see ScopeConfiguratorBuilder#nameEquals(String)
    * @see ScopeConfiguratorBuilder#nameMatchesGlob(String)
    */
-  SdkMeterProviderBuilder addMeterConfiguratorCondition(
+  public SdkMeterProviderBuilder addMeterConfiguratorCondition(
       Predicate<InstrumentationScopeInfo> scopeMatcher, MeterConfig meterConfig) {
     this.meterConfiguratorBuilder.addCondition(scopeMatcher, meterConfig);
     return this;
