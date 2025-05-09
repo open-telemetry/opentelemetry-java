@@ -16,7 +16,7 @@ dependencies {
   implementation(project(":exporters:otlp:common"))
 
   implementation(project(":exporters:otlp:all"))
-  implementation("io.grpc:grpc-stub")
+  compileOnly("io.grpc:grpc-stub")
 
   annotationProcessor("com.google.auto.value:auto-value")
 
@@ -26,4 +26,5 @@ dependencies {
   testImplementation("io.opentelemetry.proto:opentelemetry-proto")
   testImplementation(project(":exporters:otlp:testing-internal"))
   testImplementation(project(":exporters:sender:okhttp"))
+  testImplementation("io.grpc:grpc-stub")
 }

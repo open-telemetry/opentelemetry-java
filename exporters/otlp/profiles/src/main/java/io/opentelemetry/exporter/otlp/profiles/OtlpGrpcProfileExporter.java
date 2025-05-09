@@ -15,20 +15,20 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** Exports profiles using OTLP via gRPC, using OpenTelemetry's protobuf model. */
 @ThreadSafe
-public class OtlpGrpcProfilesExporter implements ProfilesExporter {
+public class OtlpGrpcProfileExporter implements ProfileExporter {
 
   private final GrpcExporterBuilder<Marshaler> builder;
   private final GrpcExporter<Marshaler> delegate;
 
   /**
-   * Returns a new {@link OtlpGrpcProfilesExporter} using the default values.
+   * Returns a new {@link OtlpGrpcProfileExporter} using the default values.
    *
    * <p>To load configuration values from environment variables and system properties, use <a
    * href="https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure">opentelemetry-sdk-extension-autoconfigure</a>.
    *
-   * @return a new {@link OtlpGrpcProfilesExporter} instance.
+   * @return a new {@link OtlpGrpcProfileExporter} instance.
    */
-  public static OtlpGrpcProfilesExporter getDefault() {
+  public static OtlpGrpcProfileExporter getDefault() {
     return builder().build();
   }
 
@@ -41,7 +41,7 @@ public class OtlpGrpcProfilesExporter implements ProfilesExporter {
     return new OtlpGrpcProfilesExporterBuilder();
   }
 
-  OtlpGrpcProfilesExporter(
+  OtlpGrpcProfileExporter(
       GrpcExporterBuilder<Marshaler> builder, GrpcExporter<Marshaler> delegate) {
     this.builder = builder;
     this.delegate = delegate;

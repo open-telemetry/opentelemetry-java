@@ -8,16 +8,16 @@ package io.opentelemetry.exporter.otlp.profiles;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.Collection;
 
-final class NoopProfilesExporter implements ProfilesExporter {
+final class NoopProfileExporter implements ProfileExporter {
 
-  private static final ProfilesExporter INSTANCE = new NoopProfilesExporter();
+  private static final ProfileExporter INSTANCE = new NoopProfileExporter();
 
-  static ProfilesExporter getInstance() {
+  static ProfileExporter getInstance() {
     return INSTANCE;
   }
 
   @Override
-  public CompletableResultCode export(Collection<ProfileData> spans) {
+  public CompletableResultCode export(Collection<ProfileData> profiles) {
     return CompletableResultCode.ofSuccess();
   }
 

@@ -17,30 +17,29 @@ import java.io.Closeable;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public class OtlpGrpcProfilesExporterTest
+class OtlpGrpcProfileExporterTest
     extends AbstractGrpcTelemetryExporterTest<ProfileData, ResourceProfiles> {
 
-  OtlpGrpcProfilesExporterTest() {
+  OtlpGrpcProfileExporterTest() {
     super("profile", ResourceProfiles.getDefaultInstance());
   }
 
   @Test
   void usingOkHttp() throws Exception {
-    try (Closeable exporter = OtlpGrpcProfilesExporter.builder().build()) {
+    try (Closeable exporter = OtlpGrpcProfileExporter.builder().build()) {
       assertThat(exporter).extracting("delegate.grpcSender").isInstanceOf(OkHttpGrpcSender.class);
     }
   }
 
   @Override
   protected TelemetryExporterBuilder<ProfileData> exporterBuilder() {
-    return TelemetryExporterBuilder.wrap(OtlpGrpcProfilesExporter.builder());
+    return TelemetryExporterBuilder.wrap(OtlpGrpcProfileExporter.builder());
   }
 
   @Override
   protected TelemetryExporterBuilder<ProfileData> toBuilder(
       TelemetryExporter<ProfileData> exporter) {
-    return TelemetryExporterBuilder.wrap(
-        ((OtlpGrpcProfilesExporter) exporter.unwrap()).toBuilder());
+    return TelemetryExporterBuilder.wrap(((OtlpGrpcProfileExporter) exporter.unwrap()).toBuilder());
   }
 
   @Override
