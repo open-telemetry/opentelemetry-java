@@ -40,6 +40,8 @@ public final class OtlpGrpcProfilesExporterBuilder {
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
   private static final long DEFAULT_TIMEOUT_SECS = 10;
 
+  // TODO maybe make more efficient by adding support for MEMORY_MODE
+
   // Visible for testing
   final GrpcExporterBuilder<Marshaler> delegate;
 
@@ -227,7 +229,7 @@ public final class OtlpGrpcProfilesExporterBuilder {
    *
    * @return a new exporter's instance
    */
-  public OtlpGrpcProfilesExporter build() {
-    return new OtlpGrpcProfilesExporter(delegate, delegate.build());
+  public OtlpGrpcProfileExporter build() {
+    return new OtlpGrpcProfileExporter(delegate, delegate.build());
   }
 }

@@ -14,7 +14,7 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 
 // TODO eventually merge with io.opentelemetry.exporter.otlp.testing.internal.FakeTelemetryUtil
-public class FakeTelemetryUtil {
+class FakeTelemetryUtil {
 
   private FakeTelemetryUtil() {}
 
@@ -25,7 +25,7 @@ public class FakeTelemetryUtil {
           .build();
 
   /** Generate a fake {@link ProfileData}. */
-  public static ProfileData generateFakeProfileData() {
+  static ProfileData generateFakeProfileData() {
     String profileId = "0123456789abcdef0123456789abcdef";
     return ImmutableProfileData.create(
         Resource.create(Attributes.empty()),

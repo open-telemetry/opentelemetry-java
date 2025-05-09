@@ -9,10 +9,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-class NoopProfilesExporterTest {
+class NoopProfileExporterTest {
 
   @Test
   void stringRepresentation() {
-    assertThat(NoopProfilesExporter.getInstance()).hasToString("NoopProfilesExporter{}");
+    assertThat(NoopProfileExporter.getInstance()).hasToString("NoopProfilesExporter{}");
   }
 }
