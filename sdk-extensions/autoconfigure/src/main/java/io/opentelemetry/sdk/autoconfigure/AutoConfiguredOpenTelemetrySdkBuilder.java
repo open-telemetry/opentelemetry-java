@@ -639,8 +639,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
           } catch (NoClassDefFoundError e) {
             if (IS_MAVEN) {
               // logging deps might not be on the classpath at this point
-              System.out.printf(
-                  "%s Flush failed during shutdown: %s\n", Level.WARNING, e.getMessage());
+              System.out.printf("%s Flush failed during shutdown: %s%n", Level.WARNING, e);
               return;
             }
             throw e;
