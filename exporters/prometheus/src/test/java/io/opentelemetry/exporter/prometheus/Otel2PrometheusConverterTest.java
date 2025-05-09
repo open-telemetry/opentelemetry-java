@@ -9,6 +9,8 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
@@ -164,29 +166,41 @@ class Otel2PrometheusConverterTest {
   }
 
   @Test
-  void labelValueSerialization_NonPrimitives() {
+  void labelValueSerialization_NonPrimitives() throws JsonProcessingException {
+    List<String> stringArrayValue =
+        Arrays.asList("stringValue1", "\"+\\\\\\+\b+\f+\n+\r+\t+" + (char) 0);
+    List<Boolean> booleanArrayValue = Arrays.asList(true, false);
+    List<Long> longArrayValue = Arrays.asList(Long.MIN_VALUE, Long.MAX_VALUE);
+    List<Double> doubleArrayValue = Arrays.asList(Double.MIN_VALUE, Double.MAX_VALUE);
     Attributes attributes =
         Attributes.builder()
-            .put(
-                AttributeKey.stringArrayKey("stringKey"),
-                Arrays.asList("stringValue1", "\"+\\\\\\+\b+\f+\n+\r+\t+" + (char) 0))
-            .put(AttributeKey.booleanArrayKey("booleanKey"), Arrays.asList(true, false))
-            .put(AttributeKey.longArrayKey("longKey"), Arrays.asList(12345L, 6789L))
-            .put(AttributeKey.doubleArrayKey("doubleKey"), Arrays.asList(0.12345, 0.6789))
+            .put(AttributeKey.stringArrayKey("stringKey"), stringArrayValue)
+            .put(AttributeKey.booleanArrayKey("booleanKey"), booleanArrayValue)
+            .put(AttributeKey.longArrayKey("longKey"), longArrayValue)
+            .put(AttributeKey.doubleArrayKey("doubleKey"), doubleArrayValue)
             .build();
     MetricData metricData =
         createSampleMetricData("sample", "1", MetricDataType.LONG_SUM, attributes, null);
 
     MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
 
-    assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("stringKey"))
-        .isEqualTo("[\"stringValue1\", \"\\\"+\\\\\\\\\\\\+\\b+\\f+\\n+\\r+\\t+\\u0000\"]");
-    assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("booleanKey"))
-        .isEqualTo("[true, false]");
-    assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("longKey"))
-        .isEqualTo("[12345, 6789]");
-    assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("doubleKey"))
-        .isEqualTo("[0.12345, 0.6789]");
+    ObjectMapper objectMapper = new ObjectMapper();
+    assertThat(
+            objectMapper.readTree(
+                snapshots.get(0).getDataPoints().get(0).getLabels().get("stringKey")))
+        .isEqualTo(objectMapper.valueToTree(stringArrayValue));
+    assertThat(
+            objectMapper.readTree(
+                snapshots.get(0).getDataPoints().get(0).getLabels().get("booleanKey")))
+        .isEqualTo(objectMapper.valueToTree(booleanArrayValue));
+    assertThat(
+            objectMapper.readTree(
+                snapshots.get(0).getDataPoints().get(0).getLabels().get("longKey")))
+        .isEqualTo(objectMapper.valueToTree(longArrayValue));
+    assertThat(
+            objectMapper.readTree(
+                snapshots.get(0).getDataPoints().get(0).getLabels().get("doubleKey")))
+        .isEqualTo(objectMapper.valueToTree(doubleArrayValue));
   }
 
   @Test

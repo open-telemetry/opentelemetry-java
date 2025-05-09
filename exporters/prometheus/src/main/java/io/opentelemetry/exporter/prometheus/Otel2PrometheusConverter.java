@@ -652,24 +652,23 @@ final class Otel2PrometheusConverter {
       case BOOLEAN:
       case LONG:
       case DOUBLE:
+        return attributeValue.toString();
       case BOOLEAN_ARRAY:
       case LONG_ARRAY:
       case DOUBLE_ARRAY:
-        return attributeValue.toString();
-
       case STRING_ARRAY:
         if (attributeValue instanceof List) {
           return ((List<?>) attributeValue)
               .stream()
-                  .map(Object::toString)
-                  .map(Otel2PrometheusConverter::toJsonValidStr)
+                  .map(String::valueOf)
+                  .map(it -> AttributeType.STRING_ARRAY.equals(type) ? toJsonValidStr(it) : it)
                   .collect(Collectors.toList())
                   .toString();
         } else {
           LOGGER.log(
               Level.WARNING,
-              "Unexpected label value of {0} for AttributeType.STRING_ARRAY, toString() is being used as fallback value...",
-              attributeValue.getClass());
+              "Unexpected label value of {0} for {1}, toString() is being used as fallback value...",
+              new Object[] {attributeValue.getClass(), type.name()});
           return attributeValue.toString();
         }
     }
