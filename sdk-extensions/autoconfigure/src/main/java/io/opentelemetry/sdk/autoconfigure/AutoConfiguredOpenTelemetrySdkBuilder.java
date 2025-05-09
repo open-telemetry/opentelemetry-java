@@ -630,6 +630,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   // Visible for testing
+  @SuppressWarnings("SystemOut")
   Thread shutdownHook(OpenTelemetrySdk sdk) {
     return new Thread(
         () -> {
@@ -637,8 +638,9 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
             sdk.close();
           } catch (NoClassDefFoundError e) {
             if (IS_MAVEN) {
-              // do something useful
-              logger.log(Level.WARNING, "Flush failed during shutdown", e);
+              // logging deps might not be on the classpath at this point
+              System.out.printf(
+                  "%s Flush failed during shutdown: %s\n", Level.WARNING, e.getMessage());
               return;
             }
             throw e;

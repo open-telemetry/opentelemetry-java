@@ -10,6 +10,7 @@ import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -438,12 +439,15 @@ class AutoConfiguredOpenTelemetrySdkTest {
     OpenTelemetrySdk sdk = mock(OpenTelemetrySdk.class);
     doThrow(NoClassDefFoundError.class).when(sdk).close();
 
-    Thread thread = builder.shutdownHook(sdk);
-    thread.start();
-    thread.join();
+    try {
+      Thread thread = builder.shutdownHook(sdk);
+      thread.start();
+      thread.join();
+    } catch (NoClassDefFoundError e) {
+      fail("shutdownHook threw unexpected NoClassDefFoundError", e);
+    }
 
     verify(sdk).close();
-    logs.assertContains("Flush failed during shutdown");
   }
 
   private static Supplier<Map<String, String>> disableExportPropertySupplier() {
