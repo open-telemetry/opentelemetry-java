@@ -1,4 +1,4 @@
-Comparing source compatibility of opentelemetry-sdk-metrics-1.50.0-SNAPSHOT.jar against opentelemetry-sdk-metrics-1.49.0.jar
+Comparing source compatibility of opentelemetry-sdk-metrics-1.51.0-SNAPSHOT.jar against opentelemetry-sdk-metrics-1.49.0.jar
 +++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.metrics.data.DelegatingMetricData  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW INTERFACE: io.opentelemetry.sdk.metrics.data.MetricData
