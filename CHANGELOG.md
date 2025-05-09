@@ -30,7 +30,12 @@
 * Add addProcessorFirst to SdkTracerProviderBuilder, SdkLoggerProviderBuilder
   ([#7243](https://github.com/open-telemetry/opentelemetry-java/pull/7243))
 
-### Metrics
+#### Logs
+
+* Add `setLoggerConfigurator` support to `LoggerProvider`
+  ([#7332](https://github.com/open-telemetry/opentelemetry-java/pull/7332))
+
+#### Metrics
 
 * Add DelegatingMetricData
   ([#7229](https://github.com/open-telemetry/opentelemetry-java/pull/7229))
