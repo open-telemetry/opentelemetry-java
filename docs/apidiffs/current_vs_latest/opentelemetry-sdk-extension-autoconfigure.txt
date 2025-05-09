@@ -1,2 +1,2 @@
-Comparing source compatibility of opentelemetry-sdk-extension-autoconfigure-1.50.0-SNAPSHOT.jar against opentelemetry-sdk-extension-autoconfigure-1.49.0.jar
+Comparing source compatibility of opentelemetry-sdk-extension-autoconfigure-1.51.0.jar against opentelemetry-sdk-extension-autoconfigure-1.49.0.jar
 No changes.
