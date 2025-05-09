@@ -16,9 +16,11 @@ import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.ComponentId;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -48,7 +50,10 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   OtlpHttpSpanExporterBuilder() {
-    this(new HttpExporterBuilder<>("otlp", "span", DEFAULT_ENDPOINT), DEFAULT_MEMORY_MODE);
+    this(
+        new HttpExporterBuilder<>(
+            ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER, DEFAULT_ENDPOINT),
+        DEFAULT_MEMORY_MODE);
   }
 
   /**
@@ -210,6 +215,17 @@ public final class OtlpHttpSpanExporterBuilder {
       Supplier<MeterProvider> meterProviderSupplier) {
     requireNonNull(meterProviderSupplier, "meterProviderSupplier");
     delegate.setMeterProvider(meterProviderSupplier);
+    return this;
+  }
+
+  /**
+   * Sets the {@link InternalTelemetrySchemaVersion} defining which self-monitoring metrics this
+   * exporter collects.
+   */
+  public OtlpHttpSpanExporterBuilder setInternalTelemetry(
+      InternalTelemetrySchemaVersion schemaVersion) {
+    requireNonNull(schemaVersion, "schemaVersion");
+    delegate.setInternalTelemetry(schemaVersion);
     return this;
   }
 

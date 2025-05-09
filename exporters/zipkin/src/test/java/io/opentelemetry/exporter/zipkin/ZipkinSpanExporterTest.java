@@ -15,11 +15,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -60,6 +62,8 @@ class ZipkinSpanExporterTest {
             mockEncoder,
             mockSender,
             MeterProvider::noop,
+            InternalTelemetrySchemaVersion.DISABLED,
+            Attributes.empty(),
             mockTransformer);
 
     byte[] someBytes = new byte[0];
@@ -89,6 +93,8 @@ class ZipkinSpanExporterTest {
             mockEncoder,
             mockSender,
             MeterProvider::noop,
+            InternalTelemetrySchemaVersion.DISABLED,
+            Attributes.empty(),
             mockTransformer);
 
     byte[] someBytes = new byte[0];
@@ -251,7 +257,7 @@ class ZipkinSpanExporterTest {
     try (ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().build()) {
       assertThat(exporter.toString())
           .isEqualTo(
-              "ZipkinSpanExporter{endpoint=http://localhost:9411/api/v2/spans, compressionEnabled=true, readTimeoutMillis=10000}");
+              "ZipkinSpanExporter{endpoint=http://localhost:9411/api/v2/spans, compressionEnabled=true, readTimeoutMillis=10000, internalTelemetrySchemaVersion=LEGACY}");
     }
     try (ZipkinSpanExporter exporter =
         ZipkinSpanExporter.builder()
@@ -261,7 +267,7 @@ class ZipkinSpanExporterTest {
             .build()) {
       assertThat(exporter.toString())
           .isEqualTo(
-              "ZipkinSpanExporter{endpoint=http://zipkin:9411/api/v2/spans, compressionEnabled=false, readTimeoutMillis=15000}");
+              "ZipkinSpanExporter{endpoint=http://zipkin:9411/api/v2/spans, compressionEnabled=false, readTimeoutMillis=15000, internalTelemetrySchemaVersion=LEGACY}");
     }
   }
 
@@ -276,6 +282,8 @@ class ZipkinSpanExporterTest {
             mockEncoder,
             suppressCatchingSender,
             MeterProvider::noop,
+            InternalTelemetrySchemaVersion.DISABLED,
+            Attributes.empty(),
             mockTransformer);
 
     byte[] someBytes = new byte[0];

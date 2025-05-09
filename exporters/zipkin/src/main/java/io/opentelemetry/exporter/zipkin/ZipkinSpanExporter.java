@@ -5,10 +5,13 @@
 
 package io.opentelemetry.exporter.zipkin;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.ExporterMetrics;
+import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
+import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -41,7 +44,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   private final ZipkinSpanExporterBuilder builder;
   private final BytesEncoder<Span> encoder;
   private final BytesMessageSender sender;
-  private final ExporterMetrics exporterMetrics;
+  private final ExporterInstrumentation exporterMetrics;
 
   private final OtelToZipkinSpanTransformer transformer;
 
@@ -50,15 +53,27 @@ public final class ZipkinSpanExporter implements SpanExporter {
       BytesEncoder<Span> encoder,
       BytesMessageSender sender,
       Supplier<MeterProvider> meterProviderSupplier,
+      InternalTelemetrySchemaVersion internalTelemetrySchemaVersion,
+      Attributes additonalHealthAttributes,
       OtelToZipkinSpanTransformer transformer) {
     this.builder = builder;
     this.encoder = encoder;
     this.sender = sender;
-    this.exporterMetrics =
-        sender.encoding() == Encoding.JSON
-            ? ExporterMetrics.createHttpJson("zipkin", "span", meterProviderSupplier)
-            : ExporterMetrics.createHttpProtobuf("zipkin", "span", meterProviderSupplier);
     this.transformer = transformer;
+
+    ComponentId.StandardExporterType exporterType;
+    if (sender.encoding() == Encoding.JSON) {
+      exporterType = ComponentId.StandardExporterType.ZIPKIN_HTTP_JSON_SPAN_EXPORTER;
+    } else {
+      exporterType = ComponentId.StandardExporterType.ZIPKIN_HTTP_SPAN_EXPORTER;
+    }
+    this.exporterMetrics =
+        new ExporterInstrumentation(
+            internalTelemetrySchemaVersion,
+            meterProviderSupplier,
+            ComponentId.generateLazy(exporterType),
+            exporterType,
+            additonalHealthAttributes);
   }
 
   @Override
@@ -68,7 +83,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
     }
 
     int numItems = spanDataList.size();
-    exporterMetrics.addSeen(numItems);
+    ExporterInstrumentation.Recording metricRecording =
+        exporterMetrics.startRecordingExport(numItems);
 
     List<byte[]> encodedSpans = new ArrayList<>(numItems);
     for (SpanData spanData : spanDataList) {
@@ -81,10 +97,10 @@ public final class ZipkinSpanExporter implements SpanExporter {
         () -> {
           try {
             sender.send(encodedSpans);
-            exporterMetrics.addSuccess(numItems);
+            metricRecording.finishSuccessful();
             resultCode.succeed();
           } catch (IOException | RuntimeException e) {
-            exporterMetrics.addFailed(numItems);
+            metricRecording.finishFailed(e);
             logger.log(Level.WARNING, "Failed to export spans", e);
             resultCode.fail();
           }
