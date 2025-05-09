@@ -165,6 +165,7 @@ public final class SdkTracerProviderBuilder {
    *
    * @param spanProcessor the processor to be added to the beginning of the span pipeline.
    * @return this
+   * @since 1.50.0
    */
   public SdkTracerProviderBuilder addSpanProcessorFirst(SpanProcessor spanProcessor) {
     requireNonNull(spanProcessor, "spanProcessor");

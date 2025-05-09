@@ -52,7 +52,11 @@ public interface ReadWriteLogRecord {
   /** Return an immutable {@link LogRecordData} instance representing this log record. */
   LogRecordData toLogRecordData();
 
-  /** Returns the log record event name, or {@code null} if none is set. */
+  /**
+   * Returns the log record event name, or {@code null} if none is set.
+   *
+   * @since 1.50.0
+   */
   @Nullable
   default String getEventName() {
     return null;
