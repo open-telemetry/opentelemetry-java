@@ -60,6 +60,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   private static final Logger logger =
       Logger.getLogger(AutoConfiguredOpenTelemetrySdkBuilder.class.getName());
   private static final boolean INCUBATOR_AVAILABLE;
+  private static final Boolean IS_MAVEN;
 
   static {
     boolean incubatorAvailable = false;
@@ -73,6 +74,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       // Not available
     }
     INCUBATOR_AVAILABLE = incubatorAvailable;
+    IS_MAVEN = System.getProperty("maven.home") != null;
   }
 
   @Nullable private ConfigProperties config;
@@ -629,7 +631,19 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
   // Visible for testing
   Thread shutdownHook(OpenTelemetrySdk sdk) {
-    return new Thread(sdk::close);
+    return new Thread(
+        () -> {
+          try {
+            sdk.close();
+          } catch (NoClassDefFoundError e) {
+            if (IS_MAVEN) {
+              // do something useful
+              logger.log(Level.WARNING, "Flush failed during shutdown", e);
+              return;
+            }
+            throw e;
+          }
+        });
   }
 
   private static <I, O1, O2> BiFunction<I, ConfigProperties, O2> mergeCustomizer(
