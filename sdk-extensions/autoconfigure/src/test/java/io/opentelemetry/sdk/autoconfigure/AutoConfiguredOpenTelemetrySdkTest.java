@@ -73,6 +73,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junitpioneer.jupiter.SetSystemProperty;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -429,6 +430,20 @@ class AutoConfiguredOpenTelemetrySdkTest {
     builder.callAutoConfigureListeners(spiHelper, sdk);
 
     verify(listener).afterAutoConfigure(sdk);
+  }
+
+  @Test
+  @SetSystemProperty(key = "maven.home", value = "temp")
+  void builder_catchesException() throws InterruptedException {
+    OpenTelemetrySdk sdk = mock(OpenTelemetrySdk.class);
+    doThrow(NoClassDefFoundError.class).when(sdk).close();
+
+    Thread thread = builder.shutdownHook(sdk);
+    thread.start();
+    thread.join();
+
+    verify(sdk).close();
+    logs.assertContains("Flush failed during shutdown");
   }
 
   private static Supplier<Map<String, String>> disableExportPropertySupplier() {
