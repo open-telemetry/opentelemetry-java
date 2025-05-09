@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.50.0 (2025-05-09)
+
 ### API
 
 * Clarify that AttributesBuilder.put allows nulls
