@@ -53,7 +53,6 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   private final RegisteredReader registeredReader;
   private final MetricDescriptor metricDescriptor;
   private final AggregationTemporality aggregationTemporality;
-  private final Aggregator<T, U> aggregator;
   private final AttributesProcessor attributesProcessor;
   private final MemoryMode memoryMode;
 
@@ -71,15 +70,17 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
 
   // Only populated if memoryMode == REUSABLE_DATA
   private final ObjectPool<T> reusablePointsPool;
-  private final ObjectPool<AggregatorHandle<T, U>> reusableHandlesPool;
   private final Function<Attributes, AggregatorHandle<T, U>> handleBuilder;
-  private final BiConsumer<Attributes, AggregatorHandle<T, U>> handleReleaser;
   private final BiConsumer<Attributes, T> pointReleaser;
 
   private final List<T> reusablePointsList = new ArrayList<>();
   // If aggregationTemporality == DELTA, this reference and lastPoints will be swapped at every
   // collection
   private Map<Attributes, T> reusablePointsMap = new PooledHashMap<>();
+
+  // deliberately not volatile because of performance concerns
+  // - which means its eventually consistent
+  private AggregatorHolder aggregatorHolder;
 
   // Time information relative to recording of data in aggregatorHandles, set while calling
   // callbacks
@@ -99,14 +100,13 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
             .getReader()
             .getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
     this.memoryMode = registeredReader.getReader().getMemoryMode();
-    this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
     this.maxCardinality = maxCardinality - 1;
     this.reusablePointsPool = new ObjectPool<>(aggregator::createReusablePoint);
-    this.reusableHandlesPool = new ObjectPool<>(aggregator::createHandle);
-    this.handleBuilder = ignored -> reusableHandlesPool.borrowObject();
-    this.handleReleaser = (ignored, handle) -> reusableHandlesPool.returnObject(handle);
     this.pointReleaser = (ignored, point) -> reusablePointsPool.returnObject(point);
+
+    this.aggregatorHolder = new AggregatorHolder(aggregator);
+    this.handleBuilder = ignored -> aggregatorHolder.reusableHandlesPool.borrowObject();
 
     if (memoryMode == REUSABLE_DATA) {
       this.lastPoints = new PooledHashMap<>();
@@ -141,6 +141,10 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
         aggregator,
         registeredView.getViewAttributesProcessor(),
         registeredView.getCardinalityLimit());
+  }
+
+  void swapAggregator(Aggregator<T, U> aggregator) {
+    this.aggregatorHolder = new AggregatorHolder(aggregator);
   }
 
   /** Record callback measurement from {@link ObservableLongMeasurement}. */
@@ -198,20 +202,24 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
       InstrumentationScopeInfo instrumentationScopeInfo,
       long startEpochNanos,
       long epochNanos) {
+    AggregatorHolder localAggregatorHolder = aggregatorHolder;
+
     Collection<T> result =
         aggregationTemporality == AggregationTemporality.DELTA
             ? collectWithDeltaAggregationTemporality()
             : collectWithCumulativeAggregationTemporality();
 
     // collectWith*AggregationTemporality() methods are responsible for resetting the handle
-    aggregatorHandles.forEach(handleReleaser);
+    aggregatorHandles.forEach(localAggregatorHolder.handleReleaser);
     aggregatorHandles.clear();
 
-    return aggregator.toMetricData(
+    return localAggregatorHolder.aggregator.toMetricData(
         resource, instrumentationScopeInfo, metricDescriptor, result, aggregationTemporality);
   }
 
   private Collection<T> collectWithDeltaAggregationTemporality() {
+    AggregatorHolder localAggregatorHolder = aggregatorHolder;
+
     Map<Attributes, T> currentPoints;
     if (memoryMode == REUSABLE_DATA) {
       // deltaPoints computed in the previous collection can be released
@@ -234,7 +242,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
             // AggregatorHandle is going to modify the point eventually, but we must persist its
             // value to used it at the next collection (within lastPoints). Thus, we make a copy.
             pointForCurrentPoints = reusablePointsPool.borrowObject();
-            aggregator.copyPoint(point, pointForCurrentPoints);
+            localAggregatorHolder.aggregator.copyPoint(point, pointForCurrentPoints);
           } else {
             pointForCurrentPoints = point;
           }
@@ -253,16 +261,16 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
               // to make sure currentPoint can still be used within lastPoints during the next
               // collection.
               deltaPoint = reusablePointsPool.borrowObject();
-              aggregator.copyPoint(currentPoint, deltaPoint);
+              localAggregatorHolder.aggregator.copyPoint(currentPoint, deltaPoint);
             } else {
               deltaPoint = currentPoint;
             }
           } else {
             if (memoryMode == REUSABLE_DATA) {
-              aggregator.diffInPlace(lastPoint, currentPoint);
+              localAggregatorHolder.aggregator.diffInPlace(lastPoint, currentPoint);
               deltaPoint = lastPoint;
             } else {
-              deltaPoint = aggregator.diff(lastPoint, currentPoint);
+              deltaPoint = localAggregatorHolder.aggregator.diff(lastPoint, currentPoint);
             }
           }
           deltaPoints.add(deltaPoint);
@@ -311,6 +319,18 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
 
   @Override
   public boolean isEmpty() {
-    return aggregator == Aggregator.drop();
+    return aggregatorHolder.aggregator == Aggregator.drop();
+  }
+
+  private final class AggregatorHolder {
+    private final Aggregator<T, U> aggregator;
+    private final ObjectPool<AggregatorHandle<T, U>> reusableHandlesPool;
+    private final BiConsumer<Attributes, AggregatorHandle<T, U>> handleReleaser;
+
+    private AggregatorHolder(Aggregator<T, U> aggregator) {
+      this.aggregator = aggregator;
+      this.reusableHandlesPool = new ObjectPool<>(aggregator::createHandle);
+      this.handleReleaser = (ignored, handle) -> reusableHandlesPool.returnObject(handle);
+    }
   }
 }
