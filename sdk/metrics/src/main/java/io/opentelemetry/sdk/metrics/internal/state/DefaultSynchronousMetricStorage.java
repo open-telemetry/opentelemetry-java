@@ -148,7 +148,8 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
    */
   private AggregatorHolder<T, U> getHolderForRecord() {
     do {
-      AggregatorHolder<T, U> localAggregatorHolder = this.aggregatorHolder.get();
+      AggregatorHolder<T, U> localAggregatorHolder =
+          Objects.requireNonNull(this.aggregatorHolder.get());
       int recordsInProgress = localAggregatorHolder.activeRecordingThreads.addAndGet(2);
       if (recordsInProgress % 2 == 0) {
         return localAggregatorHolder;
@@ -211,7 +212,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
         aggregationTemporality == DELTA
             ? registeredReader.getLastCollectEpochNanos()
             : startEpochNanos;
-    AggregatorHolder<T, U> holder = this.aggregatorHolder.get();
+    AggregatorHolder<T, U> holder = Objects.requireNonNull(this.aggregatorHolder.get());
 
     ConcurrentHashMap<Attributes, AggregatorHandle<T, U>> aggregatorHandles;
     if (reset) {
