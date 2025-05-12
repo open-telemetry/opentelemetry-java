@@ -28,6 +28,19 @@ public final class GrpcExporterUtil {
   public static final int GRPC_STATUS_DATA_LOSS = 15;
 
   static void logUnimplemented(Logger logger, String type, @Nullable String fullErrorMessage) {
+
+    // hopefully temporary special handling for profile signal as it evolves towards stability.
+    if ("profile".equals(type)) {
+      logger.log(
+          Level.SEVERE,
+          "Failed to export profile. The profile signal type is still under development "
+              + "and the endpoint you are connecting to may not support it yet, "
+              + "or may support a different version. "
+              + "Full error message: "
+              + fullErrorMessage);
+      return;
+    }
+
     String envVar;
     switch (type) {
       case "span":
@@ -38,9 +51,6 @@ public final class GrpcExporterUtil {
         break;
       case "log":
         envVar = "OTEL_LOGS_EXPORTER";
-        break;
-      case "profile":
-        envVar = "OTEL_PROFILES_EXPORTER";
         break;
       default:
         throw new IllegalStateException(

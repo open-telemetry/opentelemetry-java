@@ -188,7 +188,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     }
   }
 
-  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(GrpcExporter.class);
+  @RegisterExtension
+  protected LogCapturer logs = LogCapturer.create().captureForType(GrpcExporter.class);
 
   private final String type;
   private final U resourceTelemetryInstance;
@@ -710,7 +711,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   @Test
   @SuppressLogger(GrpcExporter.class)
-  void testExport_Unimplemented() {
+  protected void testExport_Unimplemented() {
     addGrpcError(12, "UNIMPLEMENTED");
 
     TelemetryExporter<T> exporter = nonRetryingExporter();
@@ -1160,11 +1161,11 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         .collect(Collectors.toList());
   }
 
-  private TelemetryExporter<T> nonRetryingExporter() {
+  protected TelemetryExporter<T> nonRetryingExporter() {
     return exporterBuilder().setEndpoint(server.httpUri().toString()).setRetryPolicy(null).build();
   }
 
-  private static void addGrpcError(int code, @Nullable String message) {
+  protected static void addGrpcError(int code, @Nullable String message) {
     grpcErrors.add(new ArmeriaStatusException(code, message));
   }
 }
