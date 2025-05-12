@@ -94,13 +94,8 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
     this.memoryMode = registeredReader.getReader().getMemoryMode();
   }
 
-  @Override
-  public void setEnabled(boolean enabled) {
-    this.aggregatorHolder.set(
-        new AggregatorHolder<>(enabled ? originalAggregator : Aggregator.drop()));
-  }
-
   // Visible for testing
+
   Queue<AggregatorHandle<T, U>> getAggregatorHandlePool() {
     return aggregatorHandlePool;
   }
@@ -138,8 +133,14 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   }
 
   @Override
+  public void setEnabled(boolean enabled) {
+    this.aggregatorHolder.set(
+        new AggregatorHolder<>(enabled ? originalAggregator : Aggregator.drop()));
+  }
+
+  @Override
   public boolean isEnabled() {
-    return true;
+    return this.aggregatorHolder.get().aggregator == Aggregator.drop();
   }
 
   /**

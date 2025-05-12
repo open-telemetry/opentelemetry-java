@@ -145,12 +145,6 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
         registeredView.getCardinalityLimit());
   }
 
-  @Override
-  public void setEnabled(boolean enabled) {
-    this.aggregatorHolder =
-        new AggregatorHolder<>(enabled ? originalAggregator : Aggregator.drop());
-  }
-
   /** Record callback measurement from {@link ObservableLongMeasurement}. */
   void record(Attributes attributes, long value) {
     attributes = validateAndProcessAttributes(attributes);
@@ -322,11 +316,18 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   }
 
   @Override
+  public void setEnabled(boolean enabled) {
+    this.aggregatorHolder =
+        new AggregatorHolder<>(enabled ? originalAggregator : Aggregator.drop());
+  }
+
+  @Override
   public boolean isEmpty() {
     return aggregatorHolder.aggregator == Aggregator.drop();
   }
 
   private static final class AggregatorHolder<T extends PointData, U extends ExemplarData> {
+
     private final Aggregator<T, U> aggregator;
     private final ObjectPool<AggregatorHandle<T, U>> reusableHandlesPool;
     private final BiConsumer<Attributes, AggregatorHandle<T, U>> handleReleaser;
