@@ -56,15 +56,6 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
 
   private ScopeConfigurator<MeterConfig> meterConfigurator;
 
-  void setMeterConfigurator(ScopeConfigurator<MeterConfig> meterConfigurator) {
-    this.meterConfigurator = meterConfigurator;
-    this.registry
-        .getComponents()
-        .forEach(
-            sdkMeter ->
-                sdkMeter.updateMeterConfig(getMeterConfig(sdkMeter.getInstrumentationScopeInfo())));
-  }
-
   /** Returns a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}. */
   public static SdkMeterProviderBuilder builder() {
     return new SdkMeterProviderBuilder();
@@ -113,6 +104,15 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   private MeterConfig getMeterConfig(InstrumentationScopeInfo instrumentationScopeInfo) {
     MeterConfig meterConfig = meterConfigurator.apply(instrumentationScopeInfo);
     return meterConfig == null ? MeterConfig.defaultConfig() : meterConfig;
+  }
+
+  void setMeterConfigurator(ScopeConfigurator<MeterConfig> meterConfigurator) {
+    this.meterConfigurator = meterConfigurator;
+    this.registry
+        .getComponents()
+        .forEach(
+            sdkMeter ->
+                sdkMeter.updateMeterConfig(getMeterConfig(sdkMeter.getInstrumentationScopeInfo())));
   }
 
   @Override
