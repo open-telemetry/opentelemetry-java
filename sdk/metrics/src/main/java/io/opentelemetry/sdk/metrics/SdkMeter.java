@@ -106,6 +106,14 @@ final class SdkMeter implements Meter {
 
   void updateMeterConfig(MeterConfig meterConfig) {
     meterEnabled = meterConfig.isEnabled();
+
+    for (RegisteredReader registeredReader : readerStorageRegistries.keySet()) {
+      Collection<MetricStorage> storages =
+          Objects.requireNonNull(readerStorageRegistries.get(registeredReader)).getStorages();
+      for (MetricStorage storage : storages) {
+        storage.setEnabled(meterEnabled);
+      }
+    }
   }
 
   // Visible for testing
