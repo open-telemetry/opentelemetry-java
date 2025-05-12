@@ -162,7 +162,7 @@ public final class SdkLoggerProviderBuilder {
    * @see ScopeConfiguratorBuilder#nameEquals(String)
    * @see ScopeConfiguratorBuilder#nameMatchesGlob(String)
    */
-  SdkLoggerProviderBuilder addLoggerConfiguratorCondition(
+  public SdkLoggerProviderBuilder addLoggerConfiguratorCondition(
       Predicate<InstrumentationScopeInfo> scopeMatcher, LoggerConfig loggerConfig) {
     this.loggerConfiguratorBuilder.addCondition(scopeMatcher, loggerConfig);
     return this;
