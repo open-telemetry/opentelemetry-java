@@ -80,7 +80,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
 
   // deliberately not volatile because of performance concerns
   // - which means its eventually consistent
-  private AggregatorHolder aggregatorHolder;
+  private AggregatorHolder<T, U> aggregatorHolder;
 
   // Time information relative to recording of data in aggregatorHandles, set while calling
   // callbacks
@@ -105,7 +105,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     this.reusablePointsPool = new ObjectPool<>(aggregator::createReusablePoint);
     this.pointReleaser = (ignored, point) -> reusablePointsPool.returnObject(point);
 
-    this.aggregatorHolder = new AggregatorHolder(aggregator);
+    this.aggregatorHolder = new AggregatorHolder<>(aggregator);
     this.handleBuilder = ignored -> aggregatorHolder.reusableHandlesPool.borrowObject();
 
     if (memoryMode == REUSABLE_DATA) {
@@ -144,7 +144,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   }
 
   void swapAggregator(Aggregator<T, U> aggregator) {
-    this.aggregatorHolder = new AggregatorHolder(aggregator);
+    this.aggregatorHolder = new AggregatorHolder<>(aggregator);
   }
 
   /** Record callback measurement from {@link ObservableLongMeasurement}. */
@@ -202,7 +202,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
       InstrumentationScopeInfo instrumentationScopeInfo,
       long startEpochNanos,
       long epochNanos) {
-    AggregatorHolder localAggregatorHolder = aggregatorHolder;
+    AggregatorHolder<T, U> localAggregatorHolder = aggregatorHolder;
 
     Collection<T> result =
         aggregationTemporality == AggregationTemporality.DELTA
@@ -218,7 +218,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   }
 
   private Collection<T> collectWithDeltaAggregationTemporality() {
-    AggregatorHolder localAggregatorHolder = aggregatorHolder;
+    AggregatorHolder<T, U> localAggregatorHolder = aggregatorHolder;
 
     Map<Attributes, T> currentPoints;
     if (memoryMode == REUSABLE_DATA) {
@@ -322,7 +322,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     return aggregatorHolder.aggregator == Aggregator.drop();
   }
 
-  private final class AggregatorHolder {
+  private static final class AggregatorHolder<T extends PointData, U extends ExemplarData> {
     private final Aggregator<T, U> aggregator;
     private final ObjectPool<AggregatorHandle<T, U>> reusableHandlesPool;
     private final BiConsumer<Attributes, AggregatorHandle<T, U>> handleReleaser;
