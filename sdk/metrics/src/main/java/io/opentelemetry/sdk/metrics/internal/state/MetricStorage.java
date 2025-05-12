@@ -58,4 +58,6 @@ public interface MetricStorage {
   default boolean isEmpty() {
     return this == EmptyMetricStorage.INSTANCE;
   }
+
+  void setEnabled(boolean enabled);
 }

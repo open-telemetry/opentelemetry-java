@@ -81,6 +81,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   // deliberately not volatile because of performance concerns
   // - which means its eventually consistent
   private AggregatorHolder<T, U> aggregatorHolder;
+  private final Aggregator<T, U> originalAggregator;
 
   // Time information relative to recording of data in aggregatorHandles, set while calling
   // callbacks
@@ -106,6 +107,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     this.pointReleaser = (ignored, point) -> reusablePointsPool.returnObject(point);
 
     this.aggregatorHolder = new AggregatorHolder<>(aggregator);
+    this.originalAggregator = aggregator;
     this.handleBuilder = ignored -> aggregatorHolder.reusableHandlesPool.borrowObject();
 
     if (memoryMode == REUSABLE_DATA) {
@@ -143,8 +145,10 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
         registeredView.getCardinalityLimit());
   }
 
-  void swapAggregator(Aggregator<T, U> aggregator) {
-    this.aggregatorHolder = new AggregatorHolder<>(aggregator);
+  @Override
+  public void setEnabled(boolean enabled) {
+    this.aggregatorHolder =
+        new AggregatorHolder<>(enabled ? originalAggregator : Aggregator.drop());
   }
 
   /** Record callback measurement from {@link ObservableLongMeasurement}. */

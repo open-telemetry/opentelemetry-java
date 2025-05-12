@@ -53,6 +53,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   private final MetricDescriptor metricDescriptor;
   private final AggregationTemporality aggregationTemporality;
   private final AtomicReference<AggregatorHolder<T, U>> aggregatorHolder;
+  private final Aggregator<T, U> originalAggregator;
   private final AttributesProcessor attributesProcessor;
 
   private final MemoryMode memoryMode;
@@ -82,6 +83,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
       int maxCardinality) {
     this.registeredReader = registeredReader;
     this.metricDescriptor = metricDescriptor;
+    this.originalAggregator = aggregator;
     this.aggregatorHolder = new AtomicReference<>(new AggregatorHolder<>(aggregator));
     this.aggregationTemporality =
         registeredReader
@@ -92,8 +94,10 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
     this.memoryMode = registeredReader.getReader().getMemoryMode();
   }
 
-  void swapAggregator(Aggregator<T, U> aggregator) {
-    this.aggregatorHolder.set(new AggregatorHolder<>(aggregator));
+  @Override
+  public void setEnabled(boolean enabled) {
+    this.aggregatorHolder.set(
+        new AggregatorHolder<>(enabled ? originalAggregator : Aggregator.drop()));
   }
 
   // Visible for testing
