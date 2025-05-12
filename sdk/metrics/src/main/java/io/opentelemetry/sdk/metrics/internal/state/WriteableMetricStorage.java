@@ -28,6 +28,4 @@ public interface WriteableMetricStorage {
    * otherwise (i.e. noop / empty metric storage is installed).
    */
   boolean isEnabled();
-
-  void setEnabled(boolean enabled);
 }
