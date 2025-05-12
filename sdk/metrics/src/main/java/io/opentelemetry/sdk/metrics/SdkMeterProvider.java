@@ -52,8 +52,18 @@ public final class SdkMeterProvider implements MeterProvider, Closeable {
   private final List<MetricProducer> metricProducers;
   private final MeterProviderSharedState sharedState;
   private final ComponentRegistry<SdkMeter> registry;
-  private final ScopeConfigurator<MeterConfig> meterConfigurator;
   private final AtomicBoolean isClosed = new AtomicBoolean(false);
+
+  private ScopeConfigurator<MeterConfig> meterConfigurator;
+
+  void setMeterConfigurator(ScopeConfigurator<MeterConfig> meterConfigurator) {
+    this.meterConfigurator = meterConfigurator;
+    this.registry
+        .getComponents()
+        .forEach(
+            sdkMeter ->
+                sdkMeter.updateMeterConfig(getMeterConfig(sdkMeter.getInstrumentationScopeInfo())));
+  }
 
   /** Returns a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}. */
   public static SdkMeterProviderBuilder builder() {

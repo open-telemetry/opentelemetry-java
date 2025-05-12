@@ -88,7 +88,8 @@ final class SdkMeter implements Meter {
   private final MeterProviderSharedState meterProviderSharedState;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final Map<RegisteredReader, MetricStorageRegistry> readerStorageRegistries;
-  private final boolean meterEnabled;
+
+  private boolean meterEnabled;
 
   SdkMeter(
       MeterProviderSharedState meterProviderSharedState,
@@ -101,6 +102,10 @@ final class SdkMeter implements Meter {
         registeredReaders.stream()
             .collect(toMap(Function.identity(), unused -> new MetricStorageRegistry()));
     this.meterEnabled = meterConfig.isEnabled();
+  }
+
+  void updateMeterConfig(MeterConfig meterConfig) {
+    meterEnabled = meterConfig.isEnabled();
   }
 
   // Visible for testing
