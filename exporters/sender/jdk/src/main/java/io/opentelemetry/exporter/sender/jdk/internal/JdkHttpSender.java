@@ -13,6 +13,7 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -32,8 +33,9 @@ import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -101,7 +103,7 @@ public final class JdkHttpSender implements HttpSender {
             .map(RetryPolicy::getRetryExceptionPredicate)
             .orElse(JdkHttpSender::isRetryableException);
     if (executorService == null) {
-      this.executorService = Executors.newFixedThreadPool(5);
+      this.executorService = newExecutor();
       this.managedExecutor = true;
     } else {
       this.executorService = executorService;
@@ -131,6 +133,16 @@ public final class JdkHttpSender implements HttpSender {
         headerSupplier,
         retryPolicy,
         executorService);
+  }
+
+  private static ExecutorService newExecutor() {
+    return new ThreadPoolExecutor(
+        0,
+        Integer.MAX_VALUE,
+        60,
+        TimeUnit.SECONDS,
+        new SynchronousQueue<>(),
+        new DaemonThreadFactory("jdkhttp-executor"));
   }
 
   private static HttpClient configureClient(
@@ -224,7 +236,8 @@ public final class JdkHttpSender implements HttpSender {
           Thread.currentThread().interrupt();
           break; // Break out and return response or throw
         }
-        // If after sleeping we've exceeded timeoutNanos, break out and return response or throw
+        // If after sleeping we've exceeded timeoutNanos, break out and return
+        // response or throw
         if ((System.nanoTime() - startTimeNanos) >= timeoutNanos) {
           break;
         }
@@ -305,12 +318,15 @@ public final class JdkHttpSender implements HttpSender {
   }
 
   private static boolean isRetryableException(IOException throwable) {
-    // Almost all IOExceptions we've encountered are transient retryable, so we opt out of specific
+    // Almost all IOExceptions we've encountered are transient retryable, so we
+    // opt out of specific
     // IOExceptions that are unlikely to resolve rather than opting in.
-    // Known retryable IOException messages: "Connection reset", "/{remote ip}:{remote port} GOAWAY
+    // Known retryable IOException messages: "Connection reset", "/{remote
+    // ip}:{remote port} GOAWAY
     // received"
     // Known retryable HttpTimeoutException messages: "request timed out"
-    // Known retryable HttpConnectTimeoutException messages: "HTTP connect timed out"
+    // Known retryable HttpConnectTimeoutException messages: "HTTP connect timed
+    // out"
     return !(throwable instanceof SSLException);
   }
 
