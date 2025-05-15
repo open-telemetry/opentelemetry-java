@@ -35,7 +35,7 @@ val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.17"
 val opencensusVersion = "0.31.1"
 val prometheusClientVersion = "0.16.0"
-val prometheusServerVersion = "1.3.6"
+val prometheusServerVersion = "1.3.7"
 val armeriaVersion = "1.32.5"
 val junitVersion = "5.12.2"
 
