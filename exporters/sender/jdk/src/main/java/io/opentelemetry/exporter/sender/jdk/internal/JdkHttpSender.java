@@ -75,23 +75,6 @@ public final class JdkHttpSender implements HttpSender {
   @Nullable private final RetryPolicy retryPolicy;
   private final Predicate<IOException> retryExceptionPredicate;
 
-  /**
-   * Returns an {@link ExecutorService} using daemon threads.
-   *
-   * @param propagateContextForTesting For tests only. When enabled, the current thread's Context
-   *     will be passed over to the new threads, this is useful for validating scenarios where
-   *     context propagation is available through bytecode instrumentation.
-   */
-  public static ExecutorService newExecutor(boolean propagateContextForTesting) {
-    return new ThreadPoolExecutor(
-        0,
-        Integer.MAX_VALUE,
-        60,
-        TimeUnit.SECONDS,
-        new SynchronousQueue<>(),
-        new DaemonThreadFactory("jdkhttp-executor", propagateContextForTesting));
-  }
-
   // Visible for testing
   JdkHttpSender(
       HttpClient client,
@@ -102,8 +85,7 @@ public final class JdkHttpSender implements HttpSender {
       long timeoutNanos,
       Supplier<Map<String, List<String>>> headerSupplier,
       @Nullable RetryPolicy retryPolicy,
-      @Nullable ExecutorService executorService,
-      boolean propagateContextForTesting) {
+      @Nullable ExecutorService executorService) {
     this.client = client;
     try {
       this.uri = new URI(endpoint);
@@ -121,7 +103,7 @@ public final class JdkHttpSender implements HttpSender {
             .map(RetryPolicy::getRetryExceptionPredicate)
             .orElse(JdkHttpSender::isRetryableException);
     if (executorService == null) {
-      this.executorService = JdkHttpSender.newExecutor(propagateContextForTesting);
+      this.executorService = newExecutor();
       this.managedExecutor = true;
     } else {
       this.executorService = executorService;
@@ -150,8 +132,17 @@ public final class JdkHttpSender implements HttpSender {
         timeoutNanos,
         headerSupplier,
         retryPolicy,
-        executorService,
-        /* propagateContextForTesting= */ false);
+        executorService);
+  }
+
+  private static ExecutorService newExecutor() {
+    return new ThreadPoolExecutor(
+        0,
+        Integer.MAX_VALUE,
+        60,
+        TimeUnit.SECONDS,
+        new SynchronousQueue<>(),
+        new DaemonThreadFactory("jdkhttp-executor"));
   }
 
   private static HttpClient configureClient(
