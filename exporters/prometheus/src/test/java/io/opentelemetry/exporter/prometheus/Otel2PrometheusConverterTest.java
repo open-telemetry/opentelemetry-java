@@ -9,6 +9,10 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -135,6 +139,83 @@ class Otel2PrometheusConverterTest {
     metricData.add(underscoreName);
 
     assertThatCode(() -> converter.convert(metricData)).doesNotThrowAnyException();
+  }
+
+  @Test
+  void labelValueSerialization_Primitives() {
+    Attributes attributes =
+        Attributes.builder()
+            .put(AttributeKey.stringKey("stringKey"), "stringValue")
+            .put(AttributeKey.booleanKey("booleanKey"), true)
+            .put(AttributeKey.longKey("longKey"), Long.MAX_VALUE)
+            .put(AttributeKey.doubleKey("doubleKey"), 0.12345)
+            .build();
+    MetricData metricData =
+        createSampleMetricData("sample", "1", MetricDataType.LONG_SUM, attributes, null);
+
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+
+    assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("stringKey"))
+        .isEqualTo("stringValue");
+    assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("booleanKey"))
+        .isEqualTo("true");
+    assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("longKey"))
+        .isEqualTo("9223372036854775807");
+    assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("doubleKey"))
+        .isEqualTo("0.12345");
+  }
+
+  @Test
+  void labelValueSerialization_NonPrimitives() throws JsonProcessingException {
+    List<String> stringArrayValue =
+        Arrays.asList("stringValue1", "\"+\\\\\\+\b+\f+\n+\r+\t+" + (char) 0);
+    List<Boolean> booleanArrayValue = Arrays.asList(true, false);
+    List<Long> longArrayValue = Arrays.asList(Long.MIN_VALUE, Long.MAX_VALUE);
+    List<Double> doubleArrayValue = Arrays.asList(Double.MIN_VALUE, Double.MAX_VALUE);
+    Attributes attributes =
+        Attributes.builder()
+            .put(AttributeKey.stringArrayKey("stringKey"), stringArrayValue)
+            .put(AttributeKey.booleanArrayKey("booleanKey"), booleanArrayValue)
+            .put(AttributeKey.longArrayKey("longKey"), longArrayValue)
+            .put(AttributeKey.doubleArrayKey("doubleKey"), doubleArrayValue)
+            .build();
+    MetricData metricData =
+        createSampleMetricData("sample", "1", MetricDataType.LONG_SUM, attributes, null);
+
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    assertThat(
+            objectMapper.readTree(
+                snapshots.get(0).getDataPoints().get(0).getLabels().get("stringKey")))
+        .isEqualTo(objectMapper.valueToTree(stringArrayValue));
+    assertThat(
+            objectMapper.readTree(
+                snapshots.get(0).getDataPoints().get(0).getLabels().get("booleanKey")))
+        .isEqualTo(objectMapper.valueToTree(booleanArrayValue));
+    assertThat(
+            objectMapper.readTree(
+                snapshots.get(0).getDataPoints().get(0).getLabels().get("longKey")))
+        .isEqualTo(objectMapper.valueToTree(longArrayValue));
+    assertThat(
+            objectMapper.readTree(
+                snapshots.get(0).getDataPoints().get(0).getLabels().get("doubleKey")))
+        .isEqualTo(objectMapper.valueToTree(doubleArrayValue));
+  }
+
+  @Test
+  void labelValueSerialization_Should_Handle_All_AttributeTypes() {
+    assertThat(Stream.of(AttributeType.values()).map(Enum::name))
+        .isEqualTo(
+            Arrays.asList(
+                "STRING",
+                "BOOLEAN",
+                "LONG",
+                "DOUBLE",
+                "STRING_ARRAY",
+                "BOOLEAN_ARRAY",
+                "LONG_ARRAY",
+                "DOUBLE_ARRAY"));
   }
 
   private static Stream<Arguments> resourceAttributesAdditionArgs() {

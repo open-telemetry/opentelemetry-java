@@ -10,6 +10,7 @@ import static io.prometheus.metrics.model.snapshots.PrometheusNaming.sanitizeMet
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -472,7 +473,9 @@ final class Otel2PrometheusConverter {
 
     Map<String, String> labelNameToValue = new HashMap<>();
     attributes.forEach(
-        (key, value) -> labelNameToValue.put(sanitizeLabelName(key.getKey()), value.toString()));
+        (key, value) ->
+            labelNameToValue.put(
+                sanitizeLabelName(key.getKey()), toLabelValue(key.getType(), value)));
 
     for (int i = 0; i < additionalAttributes.length; i += 2) {
       labelNameToValue.putIfAbsent(
@@ -641,5 +644,74 @@ final class Otel2PrometheusConverter {
   private static String typeString(MetricSnapshot snapshot) {
     // Simple helper for a log message.
     return snapshot.getClass().getSimpleName().replace("Snapshot", "").toLowerCase(Locale.ENGLISH);
+  }
+
+  private static String toLabelValue(AttributeType type, Object attributeValue) {
+    switch (type) {
+      case STRING:
+      case BOOLEAN:
+      case LONG:
+      case DOUBLE:
+        return attributeValue.toString();
+      case BOOLEAN_ARRAY:
+      case LONG_ARRAY:
+      case DOUBLE_ARRAY:
+      case STRING_ARRAY:
+        if (attributeValue instanceof List) {
+          return ((List<?>) attributeValue)
+              .stream()
+                  .map(String::valueOf)
+                  .map(it -> AttributeType.STRING_ARRAY.equals(type) ? toJsonValidStr(it) : it)
+                  .collect(Collectors.toList())
+                  .toString();
+        } else {
+          LOGGER.log(
+              Level.WARNING,
+              "Unexpected label value of {0} for {1}, toString() is being used as fallback value...",
+              new Object[] {attributeValue.getClass(), type.name()});
+          return attributeValue.toString();
+        }
+    }
+    throw new IllegalStateException("Unrecognized AttributeType: " + type);
+  }
+
+  public static String toJsonValidStr(String str) {
+    StringBuilder sb = new StringBuilder();
+    sb.append('"');
+    for (int i = 0; i < str.length(); i++) {
+      char c = str.charAt(i);
+
+      switch (c) {
+        case '"':
+          sb.append("\\\"");
+          break;
+        case '\\':
+          sb.append("\\\\");
+          break;
+        case '\b':
+          sb.append("\\b");
+          break;
+        case '\f':
+          sb.append("\\f");
+          break;
+        case '\n':
+          sb.append("\\n");
+          break;
+        case '\r':
+          sb.append("\\r");
+          break;
+        case '\t':
+          sb.append("\\t");
+          break;
+        default:
+          if (c <= 0x1F) {
+            sb.append(String.format(Locale.ROOT, "\\u%04X", (int) c));
+          } else {
+            sb.append(c);
+          }
+      }
+    }
+    sb.append('"');
+    return sb.toString();
   }
 }
