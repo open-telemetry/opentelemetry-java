@@ -7,6 +7,8 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
+import io.opentelemetry.exporter.otlp.profiles.OtlpGrpcProfilesExporterBuilder;
+import io.opentelemetry.exporter.otlp.profiles.ProfileData;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -34,6 +36,10 @@ public interface TelemetryExporterBuilder<T> {
 
   static TelemetryExporterBuilder<LogRecordData> wrap(OtlpGrpcLogRecordExporterBuilder builder) {
     return new GrpcLogRecordExporterBuilderWrapper(builder);
+  }
+
+  static TelemetryExporterBuilder<ProfileData> wrap(OtlpGrpcProfilesExporterBuilder builder) {
+    return new GrpcProfilesExporterBuilderWrapper(builder);
   }
 
   TelemetryExporterBuilder<T> setEndpoint(String endpoint);
