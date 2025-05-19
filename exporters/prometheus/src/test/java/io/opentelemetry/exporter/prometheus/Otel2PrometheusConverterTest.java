@@ -5,13 +5,19 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import static io.opentelemetry.api.common.AttributeKey.booleanArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
+import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -32,6 +38,7 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.expositionformats.ExpositionFormats;
+import io.prometheus.metrics.model.snapshots.Labels;
 import io.prometheus.metrics.model.snapshots.MetricSnapshots;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -57,6 +64,7 @@ class Otel2PrometheusConverterTest {
   private static final Pattern PATTERN =
       Pattern.compile(
           "# HELP (?<help>.*)\n# TYPE (?<type>.*)\n(?<metricName>.*)\\{otel_scope_name=\"scope\"}(.|\\n)*");
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private final Otel2PrometheusConverter converter =
       new Otel2PrometheusConverter(true, /* allowedResourceAttributesFilter= */ null);
@@ -141,66 +149,28 @@ class Otel2PrometheusConverterTest {
     assertThatCode(() -> converter.convert(metricData)).doesNotThrowAnyException();
   }
 
-  @Test
-  void labelValueSerialization_Primitives() {
-    Attributes attributes =
-        Attributes.builder()
-            .put(AttributeKey.stringKey("stringKey"), "stringValue")
-            .put(AttributeKey.booleanKey("booleanKey"), true)
-            .put(AttributeKey.longKey("longKey"), Long.MAX_VALUE)
-            .put(AttributeKey.doubleKey("doubleKey"), 0.12345)
-            .build();
+  @ParameterizedTest
+  @MethodSource("labelValueSerializationArgs")
+  void labelValueSerialization(Attributes attributes) {
     MetricData metricData =
         createSampleMetricData("sample", "1", MetricDataType.LONG_SUM, attributes, null);
 
     MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
 
-    assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("stringKey"))
-        .isEqualTo("stringValue");
-    assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("booleanKey"))
-        .isEqualTo("true");
-    assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("longKey"))
-        .isEqualTo("9223372036854775807");
-    assertThat(snapshots.get(0).getDataPoints().get(0).getLabels().get("doubleKey"))
-        .isEqualTo("0.12345");
-  }
-
-  @Test
-  void labelValueSerialization_NonPrimitives() throws JsonProcessingException {
-    List<String> stringArrayValue =
-        Arrays.asList("stringValue1", "\"+\\\\\\+\b+\f+\n+\r+\t+" + (char) 0);
-    List<Boolean> booleanArrayValue = Arrays.asList(true, false);
-    List<Long> longArrayValue = Arrays.asList(Long.MIN_VALUE, Long.MAX_VALUE);
-    List<Double> doubleArrayValue = Arrays.asList(Double.MIN_VALUE, Double.MAX_VALUE);
-    Attributes attributes =
-        Attributes.builder()
-            .put(AttributeKey.stringArrayKey("stringKey"), stringArrayValue)
-            .put(AttributeKey.booleanArrayKey("booleanKey"), booleanArrayValue)
-            .put(AttributeKey.longArrayKey("longKey"), longArrayValue)
-            .put(AttributeKey.doubleArrayKey("doubleKey"), doubleArrayValue)
-            .build();
-    MetricData metricData =
-        createSampleMetricData("sample", "1", MetricDataType.LONG_SUM, attributes, null);
-
-    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
-
-    ObjectMapper objectMapper = new ObjectMapper();
-    assertThat(
-            objectMapper.readTree(
-                snapshots.get(0).getDataPoints().get(0).getLabels().get("stringKey")))
-        .isEqualTo(objectMapper.valueToTree(stringArrayValue));
-    assertThat(
-            objectMapper.readTree(
-                snapshots.get(0).getDataPoints().get(0).getLabels().get("booleanKey")))
-        .isEqualTo(objectMapper.valueToTree(booleanArrayValue));
-    assertThat(
-            objectMapper.readTree(
-                snapshots.get(0).getDataPoints().get(0).getLabels().get("longKey")))
-        .isEqualTo(objectMapper.valueToTree(longArrayValue));
-    assertThat(
-            objectMapper.readTree(
-                snapshots.get(0).getDataPoints().get(0).getLabels().get("doubleKey")))
-        .isEqualTo(objectMapper.valueToTree(doubleArrayValue));
+    Labels labels = snapshots.get(0).getDataPoints().get(0).getLabels();
+    attributes.forEach(
+        (key, value) -> {
+          String labelValue = labels.get(key.getKey());
+          try {
+            String expectedValue =
+                key.getType() == AttributeType.STRING
+                    ? (String) value
+                    : OBJECT_MAPPER.writeValueAsString(value);
+            assertThat(labelValue).isEqualTo(expectedValue);
+          } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+          }
+        });
   }
 
   @Test
@@ -373,6 +343,24 @@ class Otel2PrometheusConverterTest {
             "_metric_name_bytes summary",
             "_metric_name_bytes description",
             "_metric_name_bytes_count"));
+  }
+
+  private static Stream<Arguments> labelValueSerializationArgs() {
+    return Stream.of(
+        Arguments.of(Attributes.of(stringKey("key"), "stringValue")),
+        Arguments.of(Attributes.of(booleanKey("key"), true)),
+        Arguments.of(Attributes.of(longKey("key"), Long.MAX_VALUE)),
+        Arguments.of(Attributes.of(doubleKey("key"), 0.12345)),
+        Arguments.of(
+            Attributes.of(
+                stringArrayKey("key"),
+                Arrays.asList("stringValue1", "\"+\\\\\\+\b+\f+\n+\r+\t+" + (char) 0))),
+        Arguments.of(Attributes.of(booleanArrayKey("key"), Arrays.asList(true, false))),
+        Arguments.of(
+            Attributes.of(longArrayKey("key"), Arrays.asList(Long.MIN_VALUE, Long.MAX_VALUE))),
+        Arguments.of(
+            Attributes.of(
+                doubleArrayKey("key"), Arrays.asList(Double.MIN_VALUE, Double.MAX_VALUE))));
   }
 
   static MetricData createSampleMetricData(

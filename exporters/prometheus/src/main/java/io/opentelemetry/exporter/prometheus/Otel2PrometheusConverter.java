@@ -61,6 +61,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -658,21 +659,23 @@ final class Otel2PrometheusConverter {
       case DOUBLE_ARRAY:
       case STRING_ARRAY:
         if (attributeValue instanceof List) {
-          return ((List<?>) attributeValue)
-              .stream()
-                  .map(String::valueOf)
-                  .map(it -> AttributeType.STRING_ARRAY.equals(type) ? toJsonValidStr(it) : it)
-                  .collect(Collectors.toList())
-                  .toString();
+          return toJsonStr((List<?>) attributeValue);
         } else {
-          LOGGER.log(
-              Level.WARNING,
-              "Unexpected label value of {0} for {1}, toString() is being used as fallback value...",
-              new Object[] {attributeValue.getClass(), type.name()});
-          return attributeValue.toString();
+          throw new IllegalStateException(
+              String.format(
+                  "Unexpected label value of %s for %s",
+                  attributeValue.getClass().getName(), type.name()));
         }
     }
     throw new IllegalStateException("Unrecognized AttributeType: " + type);
+  }
+
+  public static String toJsonStr(List<?> attributeValue) {
+    StringJoiner joiner = new StringJoiner(",", "[", "]");
+    for (Object value : attributeValue) {
+      joiner.add(value instanceof String ? toJsonValidStr((String) value) : String.valueOf(value));
+    }
+    return joiner.toString();
   }
 
   public static String toJsonValidStr(String str) {
