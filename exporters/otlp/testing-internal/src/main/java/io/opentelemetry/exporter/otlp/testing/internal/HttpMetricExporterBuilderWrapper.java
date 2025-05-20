@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
-import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -135,9 +135,9 @@ public class HttpMetricExporterBuilderWrapper implements TelemetryExporterBuilde
   }
 
   @Override
-  public TelemetryExporterBuilder<MetricData> setInternalTelemetry(
-      InternalTelemetrySchemaVersion schemaVersion) {
-    builder.setInternalTelemetry(schemaVersion);
+  public TelemetryExporterBuilder<MetricData> setInternalTelemetryVersion(
+      InternalTelemetryVersion schemaVersion) {
+    builder.setInternalTelemetryVersion(schemaVersion);
     return this;
   }
 

@@ -14,7 +14,7 @@ import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.internal.ComponentId;
 import java.net.URI;
@@ -64,8 +64,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
-  private InternalTelemetrySchemaVersion internalTelemetrySchemaVersion =
-      InternalTelemetrySchemaVersion.LEGACY;
+  private InternalTelemetryVersion internalTelemetryVersion =
+      InternalTelemetryVersion.LEGACY;
 
   private ClassLoader serviceClassLoader = GrpcExporterBuilder.class.getClassLoader();
   @Nullable private ExecutorService executorService;
@@ -152,9 +152,9 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public GrpcExporterBuilder<T> setInternalTelemetry(
-      InternalTelemetrySchemaVersion internalTelemetrySchemaVersion) {
-    this.internalTelemetrySchemaVersion = internalTelemetrySchemaVersion;
+  public GrpcExporterBuilder<T> setInternalTelemetryVersion(
+      InternalTelemetryVersion internalTelemetryVersion) {
+    this.internalTelemetryVersion = internalTelemetryVersion;
     return this;
   }
 
@@ -189,7 +189,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
       copy.retryPolicy = retryPolicy.toBuilder().build();
     }
     copy.meterProviderSupplier = meterProviderSupplier;
-    copy.internalTelemetrySchemaVersion = internalTelemetrySchemaVersion;
+    copy.internalTelemetryVersion = internalTelemetryVersion;
     copy.grpcChannel = grpcChannel;
     return copy;
   }
@@ -237,7 +237,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
     return new GrpcExporter<>(
         grpcSender,
-        internalTelemetrySchemaVersion,
+        internalTelemetryVersion,
         ComponentId.generateLazy(exporterType),
         meterProviderSupplier,
         endpoint.toString());
@@ -273,7 +273,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
       joiner.add("executorService=" + executorService);
     }
     joiner.add("exporterType=" + exporterType.toString());
-    joiner.add("internalTelemetrySchemaVersion=" + internalTelemetrySchemaVersion);
+    joiner.add("internalTelemetrySchemaVersion=" + internalTelemetryVersion);
     // Note: omit tlsConfigHelper because we can't log the configuration in any readable way
     // Note: omit meterProviderSupplier because we can't log the configuration in any readable way
     return joiner.toString();

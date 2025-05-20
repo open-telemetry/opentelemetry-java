@@ -7,8 +7,7 @@ package io.opentelemetry.exporter.internal.metrics;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
-import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
 import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.util.function.Supplier;
@@ -23,7 +22,7 @@ public class ExporterInstrumentation {
   private final ExporterMetrics implementation;
 
   public ExporterInstrumentation(
-      InternalTelemetrySchemaVersion schema,
+      InternalTelemetryVersion schema,
       Supplier<MeterProvider> meterProviderSupplier,
       StandardComponentId componentId,
       String endpoint) {

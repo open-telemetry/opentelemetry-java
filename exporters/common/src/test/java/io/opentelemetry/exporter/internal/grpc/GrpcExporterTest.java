@@ -12,7 +12,7 @@ import static org.mockito.Mockito.doAnswer;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
 import io.opentelemetry.sdk.internal.StandardComponentId;
@@ -89,7 +89,7 @@ class GrpcExporterTest {
       GrpcExporter<Marshaler> exporter =
           new GrpcExporter<Marshaler>(
               mockSender,
-              InternalTelemetrySchemaVersion.V1_33,
+              InternalTelemetryVersion.V1_33,
               id,
               () -> meterProvider,
               "http://testing:1234");
@@ -228,7 +228,7 @@ class GrpcExporterTest {
       GrpcExporter<Marshaler> exporter =
           new GrpcExporter<Marshaler>(
               mockSender,
-              InternalTelemetrySchemaVersion.DISABLED,
+              InternalTelemetryVersion.DISABLED,
               id,
               () -> meterProvider,
               "http://testing");

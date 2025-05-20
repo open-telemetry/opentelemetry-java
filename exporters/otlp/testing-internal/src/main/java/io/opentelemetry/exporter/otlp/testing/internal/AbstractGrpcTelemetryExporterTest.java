@@ -46,7 +46,7 @@ import io.opentelemetry.proto.collector.profiles.v1development.ExportProfilesSer
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -1145,7 +1145,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           exporterBuilder()
               .setEndpoint(server.httpUri().toString())
               .setMeterProvider(() -> meterProvider)
-              .setInternalTelemetry(InternalTelemetrySchemaVersion.LATEST)
+              .setInternalTelemetryVersion(InternalTelemetryVersion.LATEST)
               .build();
 
       List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
@@ -1214,7 +1214,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           exporterBuilder()
               .setEndpoint(server.httpUri().toString())
               .setMeterProvider(() -> meterProvider)
-              .setInternalTelemetry(InternalTelemetrySchemaVersion.LEGACY)
+              .setInternalTelemetryVersion(InternalTelemetryVersion.LEGACY)
               .build();
 
       List<T> telemetry = Collections.singletonList(generateFakeTelemetry());

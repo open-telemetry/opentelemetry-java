@@ -9,7 +9,7 @@ import io.opentelemetry.api.internal.InstrumentationUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -52,7 +52,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
       BytesEncoder<Span> encoder,
       BytesMessageSender sender,
       Supplier<MeterProvider> meterProviderSupplier,
-      InternalTelemetrySchemaVersion internalTelemetrySchemaVersion,
+      InternalTelemetryVersion internalTelemetryVersion,
       String endpoint,
       OtelToZipkinSpanTransformer transformer) {
     this.builder = builder;
@@ -68,7 +68,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
     }
     this.exporterMetrics =
         new ExporterInstrumentation(
-            internalTelemetrySchemaVersion,
+            internalTelemetryVersion,
             meterProviderSupplier,
             ComponentId.generateLazy(exporterType),
             exporterType,

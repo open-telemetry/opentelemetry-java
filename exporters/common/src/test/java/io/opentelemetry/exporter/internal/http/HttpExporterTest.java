@@ -13,7 +13,7 @@ import static org.mockito.Mockito.doAnswer;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
 import io.opentelemetry.sdk.internal.StandardComponentId;
@@ -86,7 +86,7 @@ class HttpExporterTest {
               id,
               mockSender,
               () -> meterProvider,
-              InternalTelemetrySchemaVersion.V1_33,
+              InternalTelemetryVersion.V1_33,
               "http://testing:1234");
 
       doAnswer(
@@ -221,7 +221,7 @@ class HttpExporterTest {
               id,
               mockSender,
               () -> meterProvider,
-              InternalTelemetrySchemaVersion.DISABLED,
+              InternalTelemetryVersion.DISABLED,
               "http://testing:1234");
 
       doAnswer(

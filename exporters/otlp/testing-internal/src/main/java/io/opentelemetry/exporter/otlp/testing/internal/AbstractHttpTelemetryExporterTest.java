@@ -42,7 +42,7 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
@@ -1017,7 +1017,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
           exporterBuilder()
               .setEndpoint(server.httpUri() + path)
               .setMeterProvider(() -> meterProvider)
-              .setInternalTelemetry(InternalTelemetrySchemaVersion.LATEST)
+              .setInternalTelemetryVersion(InternalTelemetryVersion.LATEST)
               .build();
 
       List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
@@ -1086,7 +1086,7 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
           exporterBuilder()
               .setEndpoint(server.httpUri() + path)
               .setMeterProvider(() -> meterProvider)
-              .setInternalTelemetry(InternalTelemetrySchemaVersion.LEGACY)
+              .setInternalTelemetryVersion(InternalTelemetryVersion.LEGACY)
               .build();
 
       List<T> telemetry = Collections.singletonList(generateFakeTelemetry());

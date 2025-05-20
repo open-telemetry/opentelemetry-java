@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -33,7 +33,7 @@ class ExporterInstrumentationTest {
 
   @ParameterizedTest
   @EnumSource()
-  void validMeterProvider(InternalTelemetrySchemaVersion schemaVersion) {
+  void validMeterProvider(InternalTelemetryVersion schemaVersion) {
     when(meterProviderSupplier.get())
         .thenReturn(
             SdkMeterProvider.builder()
@@ -73,7 +73,7 @@ class ExporterInstrumentationTest {
 
     instrumentation.startRecordingExport(42).finishFailed("foo");
     instrumentation.startRecordingExport(42).finishSuccessful();
-    if (schemaVersion == InternalTelemetrySchemaVersion.DISABLED) {
+    if (schemaVersion == InternalTelemetryVersion.DISABLED) {
       verifyNoInteractions(meterProviderSupplier);
     } else {
       verify(meterProviderSupplier, atLeastOnce()).get();
@@ -86,8 +86,8 @@ class ExporterInstrumentationTest {
 
   @ParameterizedTest
   @EnumSource()
-  void noopMeterProvider(InternalTelemetrySchemaVersion schemaVersion) {
-    if (schemaVersion == InternalTelemetrySchemaVersion.DISABLED) {
+  void noopMeterProvider(InternalTelemetryVersion schemaVersion) {
+    if (schemaVersion == InternalTelemetryVersion.DISABLED) {
       return; // Nothing to test for No-Op
     }
 

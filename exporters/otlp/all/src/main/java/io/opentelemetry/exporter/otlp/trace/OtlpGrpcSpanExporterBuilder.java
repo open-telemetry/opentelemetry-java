@@ -17,7 +17,7 @@ import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
-import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.internal.ComponentId;
@@ -244,13 +244,13 @@ public final class OtlpGrpcSpanExporterBuilder {
   }
 
   /**
-   * Sets the {@link InternalTelemetrySchemaVersion} defining which self-monitoring metrics this
+   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this
    * exporter collects.
    */
-  public OtlpGrpcSpanExporterBuilder setInternalTelemetry(
-      InternalTelemetrySchemaVersion schemaVersion) {
+  public OtlpGrpcSpanExporterBuilder setInternalTelemetryVersion(
+      InternalTelemetryVersion schemaVersion) {
     requireNonNull(schemaVersion, "schemaVersion");
-    delegate.setInternalTelemetry(schemaVersion);
+    delegate.setInternalTelemetryVersion(schemaVersion);
     return this;
   }
 

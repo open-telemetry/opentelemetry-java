@@ -13,8 +13,7 @@ import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
-import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.StandardComponentId;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,7 +44,7 @@ public final class GrpcExporter<T extends Marshaler> {
 
   public GrpcExporter(
       GrpcSender<T> grpcSender,
-      InternalTelemetrySchemaVersion internalTelemetrySchemaVersion,
+      InternalTelemetryVersion internalTelemetryVersion,
       StandardComponentId componentId,
       Supplier<MeterProvider> meterProviderSupplier,
       String endpoint) {
@@ -53,7 +52,7 @@ public final class GrpcExporter<T extends Marshaler> {
     this.grpcSender = grpcSender;
     this.exporterMetrics =
         new ExporterInstrumentation(
-            internalTelemetrySchemaVersion,
+            internalTelemetryVersion,
             meterProviderSupplier,
             componentId,
             endpoint);

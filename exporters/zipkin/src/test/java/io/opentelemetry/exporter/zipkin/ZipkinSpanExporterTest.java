@@ -20,7 +20,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -61,7 +61,7 @@ class ZipkinSpanExporterTest {
             mockEncoder,
             mockSender,
             MeterProvider::noop,
-            InternalTelemetrySchemaVersion.DISABLED,
+            InternalTelemetryVersion.DISABLED,
             "http://testing:1234",
             mockTransformer);
 
@@ -92,7 +92,7 @@ class ZipkinSpanExporterTest {
             mockEncoder,
             mockSender,
             MeterProvider::noop,
-            InternalTelemetrySchemaVersion.DISABLED,
+            InternalTelemetryVersion.DISABLED,
             "http://testing:1234",
             mockTransformer);
 
@@ -281,7 +281,7 @@ class ZipkinSpanExporterTest {
             mockEncoder,
             suppressCatchingSender,
             MeterProvider::noop,
-            InternalTelemetrySchemaVersion.DISABLED,
+            InternalTelemetryVersion.DISABLED,
             "http://testing:1234",
             mockTransformer);
 

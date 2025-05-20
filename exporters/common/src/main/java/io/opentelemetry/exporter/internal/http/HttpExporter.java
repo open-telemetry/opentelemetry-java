@@ -11,8 +11,7 @@ import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
-import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.StandardComponentId;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
@@ -44,13 +43,13 @@ public final class HttpExporter<T extends Marshaler> {
       StandardComponentId componentId,
       HttpSender httpSender,
       Supplier<MeterProvider> meterProviderSupplier,
-      InternalTelemetrySchemaVersion internalTelemetrySchemaVersion,
+      InternalTelemetryVersion internalTelemetryVersion,
       String endpoint) {
     this.type = componentId.getStandardType().signal().toString();
     this.httpSender = httpSender;
     this.exporterMetrics =
         new ExporterInstrumentation(
-            internalTelemetrySchemaVersion,
+            internalTelemetryVersion,
             meterProviderSupplier,
             componentId,
             endpoint);

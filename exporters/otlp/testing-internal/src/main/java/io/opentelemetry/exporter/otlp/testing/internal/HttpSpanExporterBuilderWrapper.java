@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.otlp.testing.internal;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
-import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -134,9 +134,9 @@ public class HttpSpanExporterBuilderWrapper implements TelemetryExporterBuilder<
   }
 
   @Override
-  public TelemetryExporterBuilder<SpanData> setInternalTelemetry(
-      InternalTelemetrySchemaVersion schemaVersion) {
-    builder.setInternalTelemetry(schemaVersion);
+  public TelemetryExporterBuilder<SpanData> setInternalTelemetryVersion(
+      InternalTelemetryVersion schemaVersion) {
+    builder.setInternalTelemetryVersion(schemaVersion);
     return this;
   }
 

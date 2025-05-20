@@ -11,7 +11,7 @@ import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.profiles.OtlpGrpcProfilesExporterBuilder;
 import io.opentelemetry.exporter.otlp.profiles.ProfileData;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
-import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -78,7 +78,7 @@ public interface TelemetryExporterBuilder<T> {
 
   TelemetryExporterBuilder<T> setMeterProvider(Supplier<MeterProvider> meterProviderSupplier);
 
-  TelemetryExporterBuilder<T> setInternalTelemetry(InternalTelemetrySchemaVersion schemaVersion);
+  TelemetryExporterBuilder<T> setInternalTelemetryVersion(InternalTelemetryVersion schemaVersion);
 
   TelemetryExporter<T> build();
 }

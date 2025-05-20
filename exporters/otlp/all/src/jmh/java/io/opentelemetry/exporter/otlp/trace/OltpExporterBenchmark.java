@@ -23,7 +23,7 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
 import java.net.URI;
 import java.util.Collections;
@@ -90,7 +90,7 @@ public class OltpExporterBenchmark {
                 10,
                 Collections::emptyMap,
                 null),
-            InternalTelemetrySchemaVersion.DISABLED,
+            InternalTelemetryVersion.DISABLED,
             ComponentId.generateLazy(ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER),
             MeterProvider::noop,
             "http://localhost");
@@ -109,7 +109,7 @@ public class OltpExporterBenchmark {
                 null,
                 null,
                 null),
-            InternalTelemetrySchemaVersion.DISABLED,
+            InternalTelemetryVersion.DISABLED,
             ComponentId.generateLazy(ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER),
             MeterProvider::noop,
             "http://localhost");
