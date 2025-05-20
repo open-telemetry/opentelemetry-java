@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.internal;
 
-import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -64,11 +63,6 @@ public abstract class ComponentId {
   public abstract String getTypeName();
 
   public abstract String getComponentName();
-
-  public void put(AttributesBuilder attributes) {
-    attributes.put(SemConvAttributes.OTEL_COMPONENT_TYPE, getTypeName());
-    attributes.put(SemConvAttributes.OTEL_COMPONENT_NAME, getComponentName());
-  }
 
   private static class Lazy extends ComponentId {
 

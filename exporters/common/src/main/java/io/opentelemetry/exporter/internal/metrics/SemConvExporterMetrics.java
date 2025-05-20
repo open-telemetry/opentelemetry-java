@@ -67,7 +67,8 @@ public class SemConvExporterMetrics implements ExporterMetrics {
     Attributes allAttributes = this.allAttributes;
     if (allAttributes == null) {
       AttributesBuilder builder = Attributes.builder();
-      componentId.put(builder);
+      builder.put(SemConvAttributes.OTEL_COMPONENT_TYPE, componentId.getTypeName());
+      builder.put(SemConvAttributes.OTEL_COMPONENT_NAME, componentId.getComponentName());
       builder.putAll(additionalAttributes);
       allAttributes = builder.build();
       this.allAttributes = allAttributes;
