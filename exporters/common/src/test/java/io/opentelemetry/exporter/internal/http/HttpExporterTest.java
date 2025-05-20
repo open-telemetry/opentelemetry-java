@@ -205,46 +205,4 @@ class HttpExporterTest {
                                           .hasBucketCounts(1))));
     }
   }
-
-  @Test
-  void testInternalTelemetryDisabled() {
-    InMemoryMetricReader inMemoryMetrics = InMemoryMetricReader.create();
-    try (SdkMeterProvider meterProvider =
-        SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {
-
-      StandardComponentId id = ComponentId.generateLazy(ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER);
-      HttpSender mockSender = Mockito.mock(HttpSender.class);
-      Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
-
-      HttpExporter<Marshaler> exporter =
-          new HttpExporter<Marshaler>(
-              id,
-              mockSender,
-              () -> meterProvider,
-              InternalTelemetryVersion.DISABLED,
-              "http://testing:1234");
-
-      doAnswer(
-              invoc -> {
-                Consumer<HttpSender.Response> onResponse = invoc.getArgument(2);
-                onResponse.accept(new FakeHttpResponse(200, "Ok"));
-                return null;
-              })
-          .when(mockSender)
-          .send(any(), anyInt(), any(), any());
-      exporter.export(mockMarshaller, 42);
-
-      doAnswer(
-              invoc -> {
-                Consumer<HttpSender.Response> onResponse = invoc.getArgument(2);
-                onResponse.accept(new FakeHttpResponse(404, "not Found"));
-                return null;
-              })
-          .when(mockSender)
-          .send(any(), anyInt(), any(), any());
-      exporter.export(mockMarshaller, 42);
-
-      assertThat(inMemoryMetrics.collectAllMetrics()).isEmpty();
-    }
-  }
 }

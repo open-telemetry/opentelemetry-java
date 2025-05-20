@@ -28,9 +28,6 @@ public class ExporterInstrumentation {
       String endpoint) {
 
     switch (schema) {
-      case DISABLED:
-        implementation = NoopExporterMetrics.INSTANCE;
-        break;
       case LEGACY:
         implementation =
             LegacyExporterMetrics.isSupportedType(componentId.getStandardType())

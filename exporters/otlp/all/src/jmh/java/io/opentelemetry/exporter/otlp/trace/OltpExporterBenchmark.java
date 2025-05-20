@@ -90,7 +90,7 @@ public class OltpExporterBenchmark {
                 10,
                 Collections::emptyMap,
                 null),
-            InternalTelemetryVersion.DISABLED,
+            InternalTelemetryVersion.LATEST,
             ComponentId.generateLazy(ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER),
             MeterProvider::noop,
             "http://localhost");
@@ -109,7 +109,7 @@ public class OltpExporterBenchmark {
                 null,
                 null,
                 null),
-            InternalTelemetryVersion.DISABLED,
+            InternalTelemetryVersion.LATEST,
             ComponentId.generateLazy(ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER),
             MeterProvider::noop,
             "http://localhost");

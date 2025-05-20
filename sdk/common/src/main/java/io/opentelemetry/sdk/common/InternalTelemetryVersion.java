@@ -7,8 +7,6 @@ package io.opentelemetry.sdk.common;
 
 /** Defines the self-monitoring telemetry SDK components should capture. */
 public enum InternalTelemetryVersion {
-  /** No self-monitoring metrics will be captured. */
-  DISABLED,
   /**
    * Record self-monitoring metrics defined in the SDK prior the standardization in semantic
    * conventions.

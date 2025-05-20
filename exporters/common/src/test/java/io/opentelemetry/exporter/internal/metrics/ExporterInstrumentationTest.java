@@ -64,8 +64,7 @@ class ExporterInstrumentationTest {
         new ExporterInstrumentation(
             schemaVersion,
             meterProviderSupplier,
-            ComponentId.generateLazy("test"),
-            ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
+            ComponentId.generateLazy(ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER),
             "http://testing:1234");
     verifyNoInteractions(meterProviderSupplier); // Ensure lazy
 
@@ -73,11 +72,7 @@ class ExporterInstrumentationTest {
 
     instrumentation.startRecordingExport(42).finishFailed("foo");
     instrumentation.startRecordingExport(42).finishSuccessful();
-    if (schemaVersion == InternalTelemetryVersion.DISABLED) {
-      verifyNoInteractions(meterProviderSupplier);
-    } else {
-      verify(meterProviderSupplier, atLeastOnce()).get();
-    }
+    verify(meterProviderSupplier, atLeastOnce()).get();
 
     instrumentation.startRecordingExport(42).finishFailed("foo");
     instrumentation.startRecordingExport(42).finishSuccessful();
@@ -87,17 +82,13 @@ class ExporterInstrumentationTest {
   @ParameterizedTest
   @EnumSource()
   void noopMeterProvider(InternalTelemetryVersion schemaVersion) {
-    if (schemaVersion == InternalTelemetryVersion.DISABLED) {
-      return; // Nothing to test for No-Op
-    }
 
     when(meterProviderSupplier.get()).thenReturn(MeterProvider.noop());
     ExporterInstrumentation instrumentation =
         new ExporterInstrumentation(
             schemaVersion,
             meterProviderSupplier,
-            ComponentId.generateLazy("test"),
-            ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
+            ComponentId.generateLazy(ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER),
             "http://testing:1234");
     verifyNoInteractions(meterProviderSupplier); // Ensure lazy
 

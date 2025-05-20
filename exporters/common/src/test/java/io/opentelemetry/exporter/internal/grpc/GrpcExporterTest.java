@@ -213,48 +213,4 @@ class GrpcExporterTest {
                                           .hasBucketCounts(1))));
     }
   }
-
-  @Test
-  @SuppressWarnings("unchecked")
-  void testInternalTelemetryDisabled() {
-    InMemoryMetricReader inMemoryMetrics = InMemoryMetricReader.create();
-    try (SdkMeterProvider meterProvider =
-        SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {
-
-      StandardComponentId id = StandardComponentId.generateLazy(ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER);
-      GrpcSender<Marshaler> mockSender = Mockito.mock(GrpcSender.class);
-      Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
-
-      GrpcExporter<Marshaler> exporter =
-          new GrpcExporter<Marshaler>(
-              mockSender,
-              InternalTelemetryVersion.DISABLED,
-              id,
-              () -> meterProvider,
-              "http://testing");
-
-      doAnswer(
-              invoc -> {
-                Consumer<GrpcResponse> onResponse = invoc.getArgument(1);
-                onResponse.accept(GrpcResponse.create(0, null));
-                return null;
-              })
-          .when(mockSender)
-          .send(any(), any(), any());
-      exporter.export(mockMarshaller, 42);
-
-      doAnswer(
-              invoc -> {
-                Consumer<GrpcResponse> onResponse = invoc.getArgument(1);
-                onResponse.accept(
-                    GrpcResponse.create(GrpcExporterUtil.GRPC_STATUS_UNAVAILABLE, null));
-                return null;
-              })
-          .when(mockSender)
-          .send(any(), any(), any());
-      exporter.export(mockMarshaller, 42);
-
-      assertThat(inMemoryMetrics.collectAllMetrics()).isEmpty();
-    }
-  }
 }
