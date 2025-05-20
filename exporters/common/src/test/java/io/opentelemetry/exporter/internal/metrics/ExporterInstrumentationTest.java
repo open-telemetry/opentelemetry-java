@@ -16,6 +16,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -64,7 +65,7 @@ class ExporterInstrumentationTest {
         new ExporterInstrumentation(
             schemaVersion,
             meterProviderSupplier,
-            ComponentId.generateLazy(ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER),
+            ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER),
             "http://testing:1234");
     verifyNoInteractions(meterProviderSupplier); // Ensure lazy
 
@@ -88,7 +89,7 @@ class ExporterInstrumentationTest {
         new ExporterInstrumentation(
             schemaVersion,
             meterProviderSupplier,
-            ComponentId.generateLazy(ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER),
+            ComponentId.generateLazy(StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER),
             "http://testing:1234");
     verifyNoInteractions(meterProviderSupplier); // Ensure lazy
 

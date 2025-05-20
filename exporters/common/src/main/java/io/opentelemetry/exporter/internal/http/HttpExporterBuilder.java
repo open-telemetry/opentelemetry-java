@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,7 +48,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
 
   private static final Logger LOGGER = Logger.getLogger(HttpExporterBuilder.class.getName());
 
-  private ComponentId.StandardExporterType exporterType;
+  private StandardComponentId.ExporterType exporterType;
 
   private String endpoint;
 
@@ -62,13 +63,12 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
-  private InternalTelemetryVersion internalTelemetryVersion =
-      InternalTelemetryVersion.LEGACY;
+  private InternalTelemetryVersion internalTelemetryVersion = InternalTelemetryVersion.LEGACY;
   private ClassLoader serviceClassLoader = HttpExporterBuilder.class.getClassLoader();
   @Nullable private ExecutorService executorService;
 
   public HttpExporterBuilder(
-      ComponentId.StandardExporterType exporterType, String defaultEndpoint) {
+      StandardComponentId.ExporterType exporterType, String defaultEndpoint) {
     this.exporterType = exporterType;
 
     endpoint = defaultEndpoint;
@@ -159,15 +159,15 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  private static ComponentId.StandardExporterType mapToJsonTypeIfPossible(
-      ComponentId.StandardExporterType componentType) {
+  private static StandardComponentId.ExporterType mapToJsonTypeIfPossible(
+      StandardComponentId.ExporterType componentType) {
     switch (componentType) {
       case OTLP_HTTP_SPAN_EXPORTER:
-        return ComponentId.StandardExporterType.OTLP_HTTP_JSON_SPAN_EXPORTER;
+        return StandardComponentId.ExporterType.OTLP_HTTP_JSON_SPAN_EXPORTER;
       case OTLP_HTTP_LOG_EXPORTER:
-        return ComponentId.StandardExporterType.OTLP_HTTP_JSON_LOG_EXPORTER;
+        return StandardComponentId.ExporterType.OTLP_HTTP_JSON_LOG_EXPORTER;
       case OTLP_HTTP_METRIC_EXPORTER:
-        return ComponentId.StandardExporterType.OTLP_HTTP_JSON_METRIC_EXPORTER;
+        return StandardComponentId.ExporterType.OTLP_HTTP_JSON_METRIC_EXPORTER;
       default:
         return componentType;
     }

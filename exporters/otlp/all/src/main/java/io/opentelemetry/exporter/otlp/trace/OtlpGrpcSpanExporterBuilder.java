@@ -20,7 +20,7 @@ import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
@@ -57,7 +57,7 @@ public final class OtlpGrpcSpanExporterBuilder {
   OtlpGrpcSpanExporterBuilder() {
     this(
         new GrpcExporterBuilder<>(
-            ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
+            StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerTraceServiceGrpc::newFutureStub,
@@ -244,8 +244,8 @@ public final class OtlpGrpcSpanExporterBuilder {
   }
 
   /**
-   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this
-   * exporter collects.
+   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this exporter
+   * collects.
    */
   public OtlpGrpcSpanExporterBuilder setInternalTelemetryVersion(
       InternalTelemetryVersion schemaVersion) {

@@ -17,6 +17,7 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
   private static final Logger LOGGER = Logger.getLogger(GrpcExporterBuilder.class.getName());
 
-  private final ComponentId.StandardExporterType exporterType;
+  private final StandardComponentId.ExporterType exporterType;
   private final String grpcEndpointPath;
   private final Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>>
       grpcStubFactory;
@@ -64,8 +65,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
-  private InternalTelemetryVersion internalTelemetryVersion =
-      InternalTelemetryVersion.LEGACY;
+  private InternalTelemetryVersion internalTelemetryVersion = InternalTelemetryVersion.LEGACY;
 
   private ClassLoader serviceClassLoader = GrpcExporterBuilder.class.getClassLoader();
   @Nullable private ExecutorService executorService;
@@ -74,7 +74,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   @Nullable private Object grpcChannel;
 
   public GrpcExporterBuilder(
-      ComponentId.StandardExporterType exporterType,
+      StandardComponentId.ExporterType exporterType,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> grpcStubFactory,

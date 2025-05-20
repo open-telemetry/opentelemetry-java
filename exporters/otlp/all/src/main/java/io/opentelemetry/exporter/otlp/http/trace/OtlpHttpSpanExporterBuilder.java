@@ -20,7 +20,7 @@ import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -52,7 +52,7 @@ public final class OtlpHttpSpanExporterBuilder {
   OtlpHttpSpanExporterBuilder() {
     this(
         new HttpExporterBuilder<>(
-            ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER, DEFAULT_ENDPOINT),
+            StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER, DEFAULT_ENDPOINT),
         DEFAULT_MEMORY_MODE);
   }
 
@@ -219,8 +219,8 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /**
-   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this
-   * exporter collects.
+   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this exporter
+   * collects.
    */
   public OtlpHttpSpanExporterBuilder setInternalTelemetryVersion(
       InternalTelemetryVersion schemaVersion) {

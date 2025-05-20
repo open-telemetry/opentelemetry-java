@@ -52,10 +52,7 @@ public final class GrpcExporter<T extends Marshaler> {
     this.grpcSender = grpcSender;
     this.exporterMetrics =
         new ExporterInstrumentation(
-            internalTelemetryVersion,
-            meterProviderSupplier,
-            componentId,
-            endpoint);
+            internalTelemetryVersion, meterProviderSupplier, componentId, endpoint);
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {

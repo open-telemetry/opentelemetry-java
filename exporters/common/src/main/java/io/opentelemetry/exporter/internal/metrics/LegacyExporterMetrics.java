@@ -13,8 +13,8 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.Signal;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -45,7 +45,7 @@ public class LegacyExporterMetrics implements ExporterMetrics {
 
   LegacyExporterMetrics(
       Supplier<MeterProvider> meterProviderSupplier,
-      ComponentId.StandardExporterType exporterType) {
+      StandardComponentId.ExporterType exporterType) {
     this.meterProviderSupplier = meterProviderSupplier;
     this.exporterName = getExporterName(exporterType);
     this.transportName = getTransportName(exporterType);
@@ -55,7 +55,7 @@ public class LegacyExporterMetrics implements ExporterMetrics {
     this.failedAttrs = this.seenAttrs.toBuilder().put(ATTRIBUTE_KEY_SUCCESS, false).build();
   }
 
-  public static boolean isSupportedType(ComponentId.StandardExporterType exporterType) {
+  public static boolean isSupportedType(StandardComponentId.ExporterType exporterType) {
     switch (exporterType) {
       case OTLP_GRPC_SPAN_EXPORTER:
       case OTLP_HTTP_SPAN_EXPORTER:
@@ -85,7 +85,7 @@ public class LegacyExporterMetrics implements ExporterMetrics {
     throw new IllegalArgumentException("Unhandled signal type: " + signal);
   }
 
-  private static String getExporterName(ComponentId.StandardExporterType exporterType) {
+  private static String getExporterName(StandardComponentId.ExporterType exporterType) {
     switch (exporterType) {
       case OTLP_GRPC_SPAN_EXPORTER:
       case OTLP_HTTP_SPAN_EXPORTER:
@@ -104,7 +104,7 @@ public class LegacyExporterMetrics implements ExporterMetrics {
     throw new IllegalArgumentException("Not a supported exporter type: " + exporterType);
   }
 
-  private static String getTransportName(ComponentId.StandardExporterType exporterType) {
+  private static String getTransportName(StandardComponentId.ExporterType exporterType) {
     switch (exporterType) {
       case OTLP_GRPC_SPAN_EXPORTER:
       case OTLP_GRPC_LOG_EXPORTER:

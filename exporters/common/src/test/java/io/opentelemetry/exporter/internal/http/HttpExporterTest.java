@@ -33,7 +33,7 @@ class HttpExporterTest {
     assertThatThrownBy(
             () ->
                 new HttpExporterBuilder<>(
-                        ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER,
+                        StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER,
                         "http://localhost")
                     .build())
         .isInstanceOf(IllegalStateException.class)
@@ -44,7 +44,7 @@ class HttpExporterTest {
 
   @ParameterizedTest
   @EnumSource
-  void testInternalTelemetry(ComponentId.StandardExporterType exporterType) {
+  void testInternalTelemetry(StandardComponentId.ExporterType exporterType) {
     String signalMetricPrefix;
     String expectedUnit;
     switch (exporterType.signal()) {

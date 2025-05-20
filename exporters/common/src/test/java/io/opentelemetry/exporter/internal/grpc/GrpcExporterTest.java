@@ -34,7 +34,7 @@ class GrpcExporterTest {
     assertThatThrownBy(
             () ->
                 new GrpcExporterBuilder<>(
-                        ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
+                        StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
                         10,
                         new URI("http://localhost"),
                         null,
@@ -49,7 +49,7 @@ class GrpcExporterTest {
   @ParameterizedTest
   @EnumSource
   @SuppressWarnings("unchecked")
-  void testInternalTelemetry(ComponentId.StandardExporterType exporterType) {
+  void testInternalTelemetry(StandardComponentId.ExporterType exporterType) {
     String signalMetricPrefix;
     String expectedUnit;
     switch (exporterType.signal()) {

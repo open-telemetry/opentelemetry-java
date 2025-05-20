@@ -12,7 +12,7 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.exporter.sender.jdk.internal.JdkHttpSender;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpHttpSender;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
-import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -30,7 +30,7 @@ class HttpExporterTest {
     Assertions.assertThatCode(
             () ->
                 new HttpExporterBuilder<>(
-                        ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER,
+                        StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER,
                         "http://localhost")
                     .build())
         .doesNotThrowAnyException();
@@ -48,7 +48,7 @@ class HttpExporterTest {
   void build_multipleSendersWithJdk() {
     assertThat(
             new HttpExporterBuilder<>(
-                    ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER, "http://localhost")
+                    StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER, "http://localhost")
                 .build())
         .extracting("httpSender")
         .isInstanceOf(JdkHttpSender.class);
@@ -63,7 +63,7 @@ class HttpExporterTest {
   void build_multipleSendersWithOkHttp() {
     assertThat(
             new HttpExporterBuilder<>(
-                    ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER, "http://localhost")
+                    StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER, "http://localhost")
                 .build())
         .extracting("httpSender")
         .isInstanceOf(OkHttpHttpSender.class);
@@ -79,7 +79,7 @@ class HttpExporterTest {
     assertThatThrownBy(
             () ->
                 new HttpExporterBuilder<>(
-                        ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER,
+                        StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER,
                         "http://localhost")
                     .build())
         .isInstanceOf(IllegalStateException.class)

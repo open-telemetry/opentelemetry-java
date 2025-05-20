@@ -1,10 +1,15 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.internal;
 
 import java.util.Locale;
 
 /**
- * This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
  */
 public enum Signal {
   SPAN("otel.sdk.exporter.span", "span"),

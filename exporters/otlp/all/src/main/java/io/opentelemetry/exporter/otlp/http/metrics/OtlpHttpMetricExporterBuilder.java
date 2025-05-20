@@ -20,7 +20,7 @@ import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -70,7 +70,7 @@ public final class OtlpHttpMetricExporterBuilder {
   OtlpHttpMetricExporterBuilder() {
     this(
         new HttpExporterBuilder<>(
-            ComponentId.StandardExporterType.OTLP_HTTP_METRIC_EXPORTER, DEFAULT_ENDPOINT),
+            StandardComponentId.ExporterType.OTLP_HTTP_METRIC_EXPORTER, DEFAULT_ENDPOINT),
         DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR,
         DefaultAggregationSelector.getDefault(),
         DEFAULT_MEMORY_MODE);
@@ -247,8 +247,8 @@ public final class OtlpHttpMetricExporterBuilder {
   }
 
   /**
-   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this
-   * exporter collects.
+   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this exporter
+   * collects.
    */
   public OtlpHttpMetricExporterBuilder setInternalTelemetryVersion(
       InternalTelemetryVersion schemaVersion) {

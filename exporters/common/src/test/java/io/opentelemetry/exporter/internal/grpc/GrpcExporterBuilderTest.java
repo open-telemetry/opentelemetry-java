@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URI;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ class GrpcExporterBuilderTest {
   void setUp() {
     builder =
         new GrpcExporterBuilder<>(
-            ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
+            StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
             0,
             URI.create("http://localhost:4317"),
             null,

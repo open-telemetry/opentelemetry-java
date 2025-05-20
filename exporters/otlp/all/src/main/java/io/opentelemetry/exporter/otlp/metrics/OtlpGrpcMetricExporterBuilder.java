@@ -20,7 +20,7 @@ import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
-import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -78,7 +78,7 @@ public final class OtlpGrpcMetricExporterBuilder {
   OtlpGrpcMetricExporterBuilder() {
     this(
         new GrpcExporterBuilder<>(
-            ComponentId.StandardExporterType.OTLP_GRPC_METRIC_EXPORTER,
+            StandardComponentId.ExporterType.OTLP_GRPC_METRIC_EXPORTER,
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerMetricsServiceGrpc::newFutureStub,
@@ -275,8 +275,8 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
-   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this
-   * exporter collects.
+   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this exporter
+   * collects.
    */
   public OtlpGrpcMetricExporterBuilder setInternalTelemetryVersion(
       InternalTelemetryVersion schemaVersion) {

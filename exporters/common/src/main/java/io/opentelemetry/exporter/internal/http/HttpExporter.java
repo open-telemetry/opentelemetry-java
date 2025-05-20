@@ -49,10 +49,7 @@ public final class HttpExporter<T extends Marshaler> {
     this.httpSender = httpSender;
     this.exporterMetrics =
         new ExporterInstrumentation(
-            internalTelemetryVersion,
-            meterProviderSupplier,
-            componentId,
-            endpoint);
+            internalTelemetryVersion, meterProviderSupplier, componentId, endpoint);
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {

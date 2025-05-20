@@ -11,6 +11,7 @@ import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -60,11 +61,11 @@ public final class ZipkinSpanExporter implements SpanExporter {
     this.sender = sender;
     this.transformer = transformer;
 
-    ComponentId.StandardExporterType exporterType;
+    StandardComponentId.ExporterType exporterType;
     if (sender.encoding() == Encoding.JSON) {
-      exporterType = ComponentId.StandardExporterType.ZIPKIN_HTTP_JSON_SPAN_EXPORTER;
+      exporterType = StandardComponentId.ExporterType.ZIPKIN_HTTP_JSON_SPAN_EXPORTER;
     } else {
-      exporterType = ComponentId.StandardExporterType.ZIPKIN_HTTP_SPAN_EXPORTER;
+      exporterType = StandardComponentId.ExporterType.ZIPKIN_HTTP_SPAN_EXPORTER;
     }
     this.exporterMetrics =
         new ExporterInstrumentation(
