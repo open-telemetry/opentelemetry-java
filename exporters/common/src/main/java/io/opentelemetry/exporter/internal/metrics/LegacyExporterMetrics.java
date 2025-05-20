@@ -14,6 +14,7 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.Signal;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -72,7 +73,7 @@ public class LegacyExporterMetrics implements ExporterMetrics {
     return false;
   }
 
-  private static String getTypeString(ComponentId.Signal signal) {
+  private static String getTypeString(Signal signal) {
     switch (signal) {
       case SPAN:
         return "span";

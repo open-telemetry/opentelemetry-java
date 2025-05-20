@@ -15,6 +15,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
+import io.opentelemetry.sdk.internal.Signal;
 import java.util.Collections;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -28,7 +29,7 @@ public class SemConvExporterMetrics implements ExporterMetrics {
   private static final Clock CLOCK = Clock.getDefault();
 
   private final Supplier<MeterProvider> meterProviderSupplier;
-  private final ComponentId.Signal signal;
+  private final Signal signal;
   private final ComponentId componentId;
   private final Attributes additionalAttributes;
 
@@ -39,7 +40,7 @@ public class SemConvExporterMetrics implements ExporterMetrics {
 
   public SemConvExporterMetrics(
       Supplier<MeterProvider> meterProviderSupplier,
-      ComponentId.Signal signal,
+      Signal signal,
       ComponentId componentId,
       Attributes additionalAttributes) {
     this.meterProviderSupplier = meterProviderSupplier;
