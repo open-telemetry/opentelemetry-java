@@ -25,15 +25,7 @@ public abstract class ComponentId {
    * This class is internal and is hence not for public use. Its APIs are unstable and can change at
    * any time.
    */
-  public interface StandardType {
-    String attributeValue();
-  }
-
-  /**
-   * This class is internal and is hence not for public use. Its APIs are unstable and can change at
-   * any time.
-   */
-  public enum StandardExporterType implements StandardType {
+  public enum StandardExporterType {
     OTLP_GRPC_SPAN_EXPORTER("otlp_grpc_span_exporter", Signal.SPAN),
     OTLP_HTTP_SPAN_EXPORTER("otlp_http_span_exporter", Signal.SPAN),
     OTLP_HTTP_JSON_SPAN_EXPORTER("otlp_http_json_span_exporter", Signal.SPAN),
@@ -75,11 +67,6 @@ public abstract class ComponentId {
 
     @Override
     public String toString() {
-      return value;
-    }
-
-    @Override
-    public String attributeValue() {
       return value;
     }
 
@@ -136,7 +123,7 @@ public abstract class ComponentId {
     return new Lazy(componentType);
   }
 
-  public static ComponentId generateLazy(StandardType standardComponentType) {
-    return new Lazy(standardComponentType.attributeValue());
+  public static ComponentId generateLazy(StandardExporterType standardExporterType) {
+    return new Lazy(standardExporterType.value);
   }
 }
