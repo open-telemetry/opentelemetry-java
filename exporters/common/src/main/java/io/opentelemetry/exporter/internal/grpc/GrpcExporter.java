@@ -15,6 +15,7 @@ import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -45,18 +46,16 @@ public final class GrpcExporter<T extends Marshaler> {
   public GrpcExporter(
       GrpcSender<T> grpcSender,
       InternalTelemetrySchemaVersion internalTelemetrySchemaVersion,
-      ComponentId componentId,
-      ComponentId.StandardExporterType exporterType,
+      StandardComponentId componentId,
       Supplier<MeterProvider> meterProviderSupplier,
       String endpoint) {
-    this.type = exporterType.signal().toString();
+    this.type = componentId.getStandardType().signal().toString();
     this.grpcSender = grpcSender;
     this.exporterMetrics =
         new ExporterInstrumentation(
             internalTelemetrySchemaVersion,
             meterProviderSupplier,
             componentId,
-            exporterType,
             endpoint);
   }
 

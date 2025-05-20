@@ -13,6 +13,7 @@ import io.opentelemetry.exporter.internal.metrics.ExporterInstrumentation;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,20 +41,18 @@ public final class HttpExporter<T extends Marshaler> {
   private final ExporterInstrumentation exporterMetrics;
 
   public HttpExporter(
-      ComponentId componentId,
+      StandardComponentId componentId,
       HttpSender httpSender,
       Supplier<MeterProvider> meterProviderSupplier,
       InternalTelemetrySchemaVersion internalTelemetrySchemaVersion,
-      ComponentId.StandardExporterType exporterType,
       String endpoint) {
-    this.type = exporterType.signal().toString();
+    this.type = componentId.getStandardType().signal().toString();
     this.httpSender = httpSender;
     this.exporterMetrics =
         new ExporterInstrumentation(
             internalTelemetrySchemaVersion,
             meterProviderSupplier,
             componentId,
-            exporterType,
             endpoint);
   }
 

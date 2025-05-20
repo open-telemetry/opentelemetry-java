@@ -239,7 +239,6 @@ public final class HttpExporterBuilder<T extends Marshaler> {
         httpSender,
         meterProviderSupplier,
         internalTelemetrySchemaVersion,
-        exporterType,
         endpoint);
   }
 

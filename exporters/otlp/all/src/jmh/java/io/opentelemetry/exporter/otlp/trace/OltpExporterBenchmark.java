@@ -91,8 +91,7 @@ public class OltpExporterBenchmark {
                 Collections::emptyMap,
                 null),
             InternalTelemetrySchemaVersion.DISABLED,
-            ComponentId.generateLazy("upstream_grpc_exporter"),
-            ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
+            ComponentId.generateLazy(ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER),
             MeterProvider::noop,
             "http://localhost");
 
@@ -111,8 +110,7 @@ public class OltpExporterBenchmark {
                 null,
                 null),
             InternalTelemetrySchemaVersion.DISABLED,
-            ComponentId.generateLazy("okhttp_grpc_exporter"),
-            ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
+            ComponentId.generateLazy(ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER),
             MeterProvider::noop,
             "http://localhost");
 

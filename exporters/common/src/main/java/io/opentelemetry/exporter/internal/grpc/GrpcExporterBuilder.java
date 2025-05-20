@@ -239,7 +239,6 @@ public class GrpcExporterBuilder<T extends Marshaler> {
         grpcSender,
         internalTelemetrySchemaVersion,
         ComponentId.generateLazy(exporterType),
-        exporterType,
         meterProviderSupplier,
         endpoint.toString());
   }

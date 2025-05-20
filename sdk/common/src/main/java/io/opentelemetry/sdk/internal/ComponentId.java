@@ -40,7 +40,7 @@ public abstract class ComponentId {
      */
     ZIPKIN_HTTP_JSON_SPAN_EXPORTER("zipkin_http_span_exporter", Signal.SPAN);
 
-    private final String value;
+    final String value;
     private final Signal signal;
 
     StandardExporterType(String value, Signal signal) {
@@ -64,14 +64,14 @@ public abstract class ComponentId {
 
   public abstract String getComponentName();
 
-  private static class Lazy extends ComponentId {
+  static class Lazy extends ComponentId {
 
     private static final Map<String, AtomicInteger> nextIdCounters = new ConcurrentHashMap<>();
 
     private final String componentType;
     @Nullable private volatile String componentName = null;
 
-    private Lazy(String componentType) {
+    Lazy(String componentType) {
       this.componentType = componentType;
     }
 
@@ -101,7 +101,7 @@ public abstract class ComponentId {
     return new Lazy(componentType);
   }
 
-  public static ComponentId generateLazy(StandardExporterType standardExporterType) {
-    return new Lazy(standardExporterType.value);
+  public static StandardComponentId generateLazy(StandardExporterType standardExporterType) {
+    return new StandardComponentId(standardExporterType);
   }
 }

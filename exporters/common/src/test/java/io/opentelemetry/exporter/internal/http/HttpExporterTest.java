@@ -16,6 +16,7 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.IOException;
@@ -67,11 +68,11 @@ class HttpExporterTest {
     try (SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {
 
-      ComponentId id = ComponentId.generateLazy("test_exporter");
+      StandardComponentId id = ComponentId.generateLazy(exporterType);
 
       Attributes expectedAttributes =
           Attributes.builder()
-              .put(SemConvAttributes.OTEL_COMPONENT_TYPE, "test_exporter")
+              .put(SemConvAttributes.OTEL_COMPONENT_TYPE, id.getTypeName())
               .put(SemConvAttributes.OTEL_COMPONENT_NAME, id.getComponentName())
               .put(SemConvAttributes.SERVER_ADDRESS, "testing")
               .put(SemConvAttributes.SERVER_PORT, 1234)
@@ -86,7 +87,6 @@ class HttpExporterTest {
               mockSender,
               () -> meterProvider,
               InternalTelemetrySchemaVersion.V1_33,
-              exporterType,
               "http://testing:1234");
 
       doAnswer(
@@ -212,7 +212,7 @@ class HttpExporterTest {
     try (SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {
 
-      ComponentId id = ComponentId.generateLazy("test_exporter");
+      StandardComponentId id = ComponentId.generateLazy(ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER);
       HttpSender mockSender = Mockito.mock(HttpSender.class);
       Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
 
@@ -222,7 +222,6 @@ class HttpExporterTest {
               mockSender,
               () -> meterProvider,
               InternalTelemetrySchemaVersion.DISABLED,
-              ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER,
               "http://testing:1234");
 
       doAnswer(

@@ -15,6 +15,7 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
@@ -72,11 +73,11 @@ class GrpcExporterTest {
     try (SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {
 
-      ComponentId id = ComponentId.generateLazy("test_exporter");
+      StandardComponentId id = ComponentId.generateLazy(exporterType);
 
       Attributes expectedAttributes =
           Attributes.builder()
-              .put(SemConvAttributes.OTEL_COMPONENT_TYPE, "test_exporter")
+              .put(SemConvAttributes.OTEL_COMPONENT_TYPE, id.getTypeName())
               .put(SemConvAttributes.OTEL_COMPONENT_NAME, id.getComponentName())
               .put(SemConvAttributes.SERVER_ADDRESS, "testing")
               .put(SemConvAttributes.SERVER_PORT, 1234)
@@ -90,7 +91,6 @@ class GrpcExporterTest {
               mockSender,
               InternalTelemetrySchemaVersion.V1_33,
               id,
-              exporterType,
               () -> meterProvider,
               "http://testing:1234");
 
@@ -221,7 +221,7 @@ class GrpcExporterTest {
     try (SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {
 
-      ComponentId id = ComponentId.generateLazy("test_exporter");
+      StandardComponentId id = StandardComponentId.generateLazy(ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER);
       GrpcSender<Marshaler> mockSender = Mockito.mock(GrpcSender.class);
       Marshaler mockMarshaller = Mockito.mock(Marshaler.class);
 
@@ -230,7 +230,6 @@ class GrpcExporterTest {
               mockSender,
               InternalTelemetrySchemaVersion.DISABLED,
               id,
-              ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
               () -> meterProvider,
               "http://testing");
 

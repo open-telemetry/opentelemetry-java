@@ -10,6 +10,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -24,8 +25,7 @@ public class ExporterInstrumentation {
   public ExporterInstrumentation(
       InternalTelemetrySchemaVersion schema,
       Supplier<MeterProvider> meterProviderSupplier,
-      ComponentId componentId,
-      ComponentId.StandardExporterType exporterType,
+      StandardComponentId componentId,
       String endpoint) {
 
     switch (schema) {
@@ -34,8 +34,8 @@ public class ExporterInstrumentation {
         break;
       case LEGACY:
         implementation =
-            LegacyExporterMetrics.isSupportedType(exporterType)
-                ? new LegacyExporterMetrics(meterProviderSupplier, exporterType)
+            LegacyExporterMetrics.isSupportedType(componentId.getStandardType())
+                ? new LegacyExporterMetrics(meterProviderSupplier, componentId.getStandardType())
                 : NoopExporterMetrics.INSTANCE;
         break;
       case V1_33:
@@ -43,7 +43,7 @@ public class ExporterInstrumentation {
         implementation =
             new SemConvExporterMetrics(
                 meterProviderSupplier,
-                exporterType.signal(),
+                componentId.getStandardType().signal(),
                 componentId,
                 ServerAttributesUtil.extractServerAttributes(endpoint));
         break;
