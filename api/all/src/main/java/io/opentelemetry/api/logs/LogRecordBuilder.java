@@ -107,6 +107,8 @@ public interface LogRecordBuilder {
    * Sets an attribute on the {@code LogRecord}. If the {@code LogRecord} previously contained a
    * mapping for the key, the old value is replaced by the specified value.
    *
+   * <p>Note: Providing a null value is a no-op and will not remove previously set values.
+   *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
@@ -116,6 +118,8 @@ public interface LogRecordBuilder {
   /**
    * Sets a String attribute on the {@code LogRecord}. If the {@code LogRecord} previously contained
    * a mapping for the key, the old value is replaced by the specified value.
+   *
+   * <p>Note: Providing a null value is a no-op and will not remove previously set values.
    *
    * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
    * pre-allocate your keys, if possible.

@@ -35,11 +35,15 @@ public interface AttributesBuilder {
   // version.
   <T> AttributesBuilder put(AttributeKey<Long> key, int value);
 
-  /** Puts a {@link AttributeKey} with associated value into this. */
+  /**
+   * Puts an {@link AttributeKey} with an associated value into this if the value is non-null.
+   * Providing a null value does not remove or unset previously set values.
+   */
   <T> AttributesBuilder put(AttributeKey<T> key, T value);
 
   /**
-   * Puts a String attribute into this.
+   * Puts a String attribute into this if the value is non-null. Providing a null value does not
+   * remove or unset previously set values.
    *
    * <p>Note: It is strongly recommended to use {@link #put(AttributeKey, Object)}, and pre-allocate
    * your keys, if possible.

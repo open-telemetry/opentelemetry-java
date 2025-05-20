@@ -88,7 +88,9 @@ public interface Span extends ImplicitContextKeyed {
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
    *
-   * <p>Empty String "" and null are valid attribute {@code value}, but not valid keys.
+   * <p>Empty String "" and null are valid attribute {@code value}s, but not valid keys.
+   *
+   * <p>Note: Providing a null value is a no-op and will not remove previously set values.
    *
    * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
    * pre-allocate your keys, if possible.
@@ -150,7 +152,7 @@ public interface Span extends ImplicitContextKeyed {
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
    *
-   * <p>Note: the behavior of null values is undefined, and hence strongly discouraged.
+   * <p>Note: Providing a null value is a no-op.
    *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
