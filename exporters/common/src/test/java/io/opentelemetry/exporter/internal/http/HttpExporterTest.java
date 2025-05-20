@@ -73,7 +73,8 @@ class HttpExporterTest {
           Attributes.builder()
               .put(SemConvAttributes.OTEL_COMPONENT_TYPE, "test_exporter")
               .put(SemConvAttributes.OTEL_COMPONENT_NAME, id.getComponentName())
-              .put("foo", "bar")
+              .put(SemConvAttributes.SERVER_ADDRESS, "testing")
+              .put(SemConvAttributes.SERVER_PORT, 1234)
               .build();
 
       HttpSender mockSender = Mockito.mock(HttpSender.class);
@@ -86,7 +87,7 @@ class HttpExporterTest {
               () -> meterProvider,
               InternalTelemetrySchemaVersion.V1_33,
               exporterType,
-              Attributes.builder().put("foo", "bar").build());
+              "http://testing:1234");
 
       doAnswer(
               invoc -> {
@@ -222,7 +223,7 @@ class HttpExporterTest {
               () -> meterProvider,
               InternalTelemetrySchemaVersion.DISABLED,
               ComponentId.StandardExporterType.OTLP_HTTP_SPAN_EXPORTER,
-              Attributes.empty());
+              "http://testing:1234");
 
       doAnswer(
               invoc -> {

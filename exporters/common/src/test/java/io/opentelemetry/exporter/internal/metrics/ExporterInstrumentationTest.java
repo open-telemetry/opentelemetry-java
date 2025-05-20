@@ -66,7 +66,7 @@ class ExporterInstrumentationTest {
             meterProviderSupplier,
             ComponentId.generateLazy("test"),
             ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
-            null);
+            "http://testing:1234");
     verifyNoInteractions(meterProviderSupplier); // Ensure lazy
 
     // Verify the supplier is only called once per underlying meter.
@@ -98,7 +98,7 @@ class ExporterInstrumentationTest {
             meterProviderSupplier,
             ComponentId.generateLazy("test"),
             ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
-            null);
+            "http://testing:1234");
     verifyNoInteractions(meterProviderSupplier); // Ensure lazy
 
     // Verify the supplier is invoked multiple times since it returns a noop meter.

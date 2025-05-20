@@ -78,7 +78,8 @@ class GrpcExporterTest {
           Attributes.builder()
               .put(SemConvAttributes.OTEL_COMPONENT_TYPE, "test_exporter")
               .put(SemConvAttributes.OTEL_COMPONENT_NAME, id.getComponentName())
-              .put("foo", "bar")
+              .put(SemConvAttributes.SERVER_ADDRESS, "testing")
+              .put(SemConvAttributes.SERVER_PORT, 1234)
               .build();
 
       GrpcSender<Marshaler> mockSender = Mockito.mock(GrpcSender.class);
@@ -91,7 +92,7 @@ class GrpcExporterTest {
               id,
               exporterType,
               () -> meterProvider,
-              Attributes.builder().put("foo", "bar").build());
+              "http://testing:1234");
 
       doAnswer(
               invoc -> {
@@ -231,7 +232,7 @@ class GrpcExporterTest {
               id,
               ComponentId.StandardExporterType.OTLP_GRPC_SPAN_EXPORTER,
               () -> meterProvider,
-              Attributes.empty());
+              "http://testing");
 
       doAnswer(
               invoc -> {

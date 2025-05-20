@@ -26,7 +26,7 @@ public class ExporterInstrumentation {
       Supplier<MeterProvider> meterProviderSupplier,
       ComponentId componentId,
       ComponentId.StandardExporterType exporterType,
-      @Nullable Attributes additionalAttributes) {
+      String endpoint) {
 
     switch (schema) {
       case DISABLED:
@@ -45,7 +45,7 @@ public class ExporterInstrumentation {
                 meterProviderSupplier,
                 exporterType.signal(),
                 componentId,
-                additionalAttributes == null ? Attributes.empty() : additionalAttributes);
+                ServerAttributesUtil.extractServerAttributes(endpoint));
         break;
       default:
         throw new IllegalStateException("Unhandled case: " + schema);

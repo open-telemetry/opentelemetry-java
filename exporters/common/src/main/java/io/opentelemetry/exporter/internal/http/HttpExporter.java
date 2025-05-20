@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.internal.http;
 
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.FailedExportException;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterUtil;
@@ -46,7 +45,7 @@ public final class HttpExporter<T extends Marshaler> {
       Supplier<MeterProvider> meterProviderSupplier,
       InternalTelemetrySchemaVersion internalTelemetrySchemaVersion,
       ComponentId.StandardExporterType exporterType,
-      Attributes healthMetricAttributes) {
+      String endpoint) {
     this.type = exporterType.signal().toString();
     this.httpSender = httpSender;
     this.exporterMetrics =
@@ -55,7 +54,7 @@ public final class HttpExporter<T extends Marshaler> {
             meterProviderSupplier,
             componentId,
             exporterType,
-            healthMetricAttributes);
+            endpoint);
   }
 
   public CompletableResultCode export(T exportRequest, int numItems) {

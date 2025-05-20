@@ -10,7 +10,6 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.exporter.internal.ServerAttributesUtil;
 import io.opentelemetry.sdk.common.InternalTelemetrySchemaVersion;
 import java.net.InetAddress;
 import java.time.Duration;
@@ -239,7 +238,7 @@ public final class ZipkinSpanExporterBuilder {
         sender,
         meterProviderSupplier,
         internalTelemetrySchemaVersion,
-        ServerAttributesUtil.extractServerAttributes(endpoint),
+        endpoint,
         transformer);
   }
 }
