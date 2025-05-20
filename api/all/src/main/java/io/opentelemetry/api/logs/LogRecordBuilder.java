@@ -16,7 +16,6 @@ import io.opentelemetry.api.common.Value;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 
 /**
  * Used to construct and emit log records from a {@link Logger}.
@@ -108,19 +107,15 @@ public interface LogRecordBuilder {
    * Sets an attribute on the {@code LogRecord}. If the {@code LogRecord} previously contained a
    * mapping for the key, the old value is replaced by the specified value.
    *
-   * <p>Note: Providing a null value is a no-op and will not remove previously set values.
-   *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
    */
-  <T> LogRecordBuilder setAttribute(AttributeKey<T> key, @Nullable T value);
+  <T> LogRecordBuilder setAttribute(AttributeKey<T> key, T value);
 
   /**
    * Sets a String attribute on the {@code LogRecord}. If the {@code LogRecord} previously contained
    * a mapping for the key, the old value is replaced by the specified value.
-   *
-   * <p>Note: Providing a null value is a no-op and will not remove previously set values.
    *
    * <p>Note: It is strongly recommended to use {@link #setAttribute(AttributeKey, Object)}, and
    * pre-allocate your keys, if possible.
@@ -130,7 +125,7 @@ public interface LogRecordBuilder {
    * @return this.
    * @since 1.48.0
    */
-  default LogRecordBuilder setAttribute(String key, @Nullable String value) {
+  default LogRecordBuilder setAttribute(String key, String value) {
     return setAttribute(stringKey(key), value);
   }
 

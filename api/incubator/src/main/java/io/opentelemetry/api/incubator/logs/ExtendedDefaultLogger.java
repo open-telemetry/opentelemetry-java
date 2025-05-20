@@ -13,7 +13,6 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 
 class ExtendedDefaultLogger implements ExtendedLogger {
 
@@ -52,7 +51,7 @@ class ExtendedDefaultLogger implements ExtendedLogger {
     }
 
     @Override
-    public <T> ExtendedLogRecordBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
+    public <T> ExtendedLogRecordBuilder setAttribute(AttributeKey<T> key, T value) {
       return this;
     }
 

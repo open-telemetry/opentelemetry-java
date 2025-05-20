@@ -15,7 +15,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 
 /**
  * Delegates <i>all</i> {@link Span} methods to some underlying Span via {@link
@@ -53,12 +52,12 @@ interface DelegatingSpan extends Span {
   }
 
   @Override
-  default <T> Span setAttribute(AttributeKey<T> key, @Nullable T value) {
+  default <T> Span setAttribute(AttributeKey<T> key, T value) {
     return getDelegate().setAttribute(key, value);
   }
 
   @Override
-  default Span setAttribute(String key, @Nullable String value) {
+  default Span setAttribute(String key, String value) {
     return getDelegate().setAttribute(key, value);
   }
 

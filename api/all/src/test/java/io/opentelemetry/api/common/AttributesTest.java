@@ -26,7 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Attributes}s. */
@@ -566,7 +565,7 @@ class AttributesTest {
           }
 
           @Override
-          public <T> AttributesBuilder put(AttributeKey<T> key, @Nullable T value) {
+          public <T> AttributesBuilder put(AttributeKey<T> key, T value) {
             return null;
           }
 
