@@ -65,6 +65,8 @@ class GrpcExporterTest {
         signalMetricPrefix = "otel.sdk.exporter.metric_data_point.";
         expectedUnit = "{data_point}";
         break;
+      case PROFILE:
+        return; // Not yet supported
       default:
         throw new IllegalStateException();
     }

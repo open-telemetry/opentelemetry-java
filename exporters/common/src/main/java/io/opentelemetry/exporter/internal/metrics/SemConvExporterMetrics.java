@@ -83,7 +83,7 @@ public class SemConvExporterMetrics implements ExporterMetrics {
       inflight =
           meter()
               .upDownCounterBuilder(signal.getExporterMetricNamespace() + ".inflight")
-              .setUnit(unit)
+              .setUnit("{" + unit + "}")
               .setDescription(
                   "The number of "
                       + unit

@@ -72,7 +72,6 @@ public final class ZipkinSpanExporter implements SpanExporter {
             internalTelemetryVersion,
             meterProviderSupplier,
             ComponentId.generateLazy(exporterType),
-            exporterType,
             endpoint);
   }
 

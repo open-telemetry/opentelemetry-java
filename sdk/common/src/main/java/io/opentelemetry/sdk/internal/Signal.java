@@ -14,7 +14,8 @@ import java.util.Locale;
 public enum Signal {
   SPAN("otel.sdk.exporter.span", "span"),
   METRIC("otel.sdk.exporter.metric_data_point", "data_point"),
-  LOG("otel.sdk.exporter.log", "log_record");
+  LOG("otel.sdk.exporter.log", "log_record"),
+  PROFILE("TBD", "TBD");
 
   private final String exporterMetricNamespace;
   private final String metricUnit;

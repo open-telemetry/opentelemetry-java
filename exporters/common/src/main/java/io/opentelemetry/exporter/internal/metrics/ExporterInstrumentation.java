@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
+import io.opentelemetry.sdk.internal.Signal;
 import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -27,6 +28,7 @@ public class ExporterInstrumentation {
       StandardComponentId componentId,
       String endpoint) {
 
+    Signal signal = componentId.getStandardType().signal();
     switch (schema) {
       case LEGACY:
         implementation =
@@ -37,11 +39,13 @@ public class ExporterInstrumentation {
       case V1_33:
       case LATEST:
         implementation =
-            new SemConvExporterMetrics(
-                meterProviderSupplier,
-                componentId.getStandardType().signal(),
-                componentId,
-                ServerAttributesUtil.extractServerAttributes(endpoint));
+            signal == Signal.PROFILE
+                ? NoopExporterMetrics.INSTANCE
+                : new SemConvExporterMetrics(
+                    meterProviderSupplier,
+                    signal,
+                    componentId,
+                    ServerAttributesUtil.extractServerAttributes(endpoint));
         break;
       default:
         throw new IllegalStateException("Unhandled case: " + schema);

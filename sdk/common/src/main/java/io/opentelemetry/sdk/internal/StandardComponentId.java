@@ -32,7 +32,9 @@ public class StandardComponentId extends ComponentId.Lazy {
      * Has the same semconv attribute value as ZIPKIN_HTTP_SPAN_EXPORTER, but we still use a
      * different enum value for now because they produce separate legacy metrics.
      */
-    ZIPKIN_HTTP_JSON_SPAN_EXPORTER("zipkin_http_span_exporter", Signal.SPAN);
+    ZIPKIN_HTTP_JSON_SPAN_EXPORTER("zipkin_http_span_exporter", Signal.SPAN),
+
+    OTLP_GRPC_PROFILES_EXPORTER("TBD", Signal.PROFILE); // TODO: not yet standardized in semconv
 
     final String value;
     private final Signal signal;

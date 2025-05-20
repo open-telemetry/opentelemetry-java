@@ -1137,6 +1137,11 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   @Test
   void latestInternalTelemetry() {
+    if ("profile".equals(type)) {
+      // Profiles do not expose metrics yet, so skip
+      return;
+    }
+
     InMemoryMetricReader inMemoryMetrics = InMemoryMetricReader.create();
     try (SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {
@@ -1206,6 +1211,11 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   @Test
   void legacyInternalTelemetry() {
+    if ("profile".equals(type)) {
+      // Profiles do not expose legacy metrics, so skip
+      return;
+    }
+
     InMemoryMetricReader inMemoryMetrics = InMemoryMetricReader.create();
     try (SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {

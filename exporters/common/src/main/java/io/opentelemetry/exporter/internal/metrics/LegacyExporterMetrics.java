@@ -69,8 +69,9 @@ public class LegacyExporterMetrics implements ExporterMetrics {
       case OTLP_HTTP_METRIC_EXPORTER:
       case OTLP_HTTP_JSON_METRIC_EXPORTER:
         return true;
+      default:
+        return false;
     }
-    return false;
   }
 
   private static String getTypeString(Signal signal) {
@@ -81,6 +82,8 @@ public class LegacyExporterMetrics implements ExporterMetrics {
         return "log";
       case METRIC:
         return "metric";
+      case PROFILE:
+        throw new IllegalArgumentException("Profiles are not supported");
     }
     throw new IllegalArgumentException("Unhandled signal type: " + signal);
   }
@@ -100,6 +103,8 @@ public class LegacyExporterMetrics implements ExporterMetrics {
       case ZIPKIN_HTTP_SPAN_EXPORTER:
       case ZIPKIN_HTTP_JSON_SPAN_EXPORTER:
         return "zipkin";
+      case OTLP_GRPC_PROFILES_EXPORTER:
+        throw new IllegalArgumentException("Profiles are not supported");
     }
     throw new IllegalArgumentException("Not a supported exporter type: " + exporterType);
   }
@@ -120,6 +125,8 @@ public class LegacyExporterMetrics implements ExporterMetrics {
       case OTLP_HTTP_JSON_METRIC_EXPORTER:
       case ZIPKIN_HTTP_JSON_SPAN_EXPORTER:
         return "http-json";
+      case OTLP_GRPC_PROFILES_EXPORTER:
+        throw new IllegalArgumentException("Profiles are not supported");
     }
     throw new IllegalArgumentException("Not a supported exporter type: " + exporterType);
   }
