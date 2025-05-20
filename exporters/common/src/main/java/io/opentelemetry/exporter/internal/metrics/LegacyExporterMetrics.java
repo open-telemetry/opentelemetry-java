@@ -72,7 +72,7 @@ public class LegacyExporterMetrics implements ExporterMetrics {
     return false;
   }
 
-  private static String getTypeString(ComponentId.StandardExporterType.Signal signal) {
+  private static String getTypeString(ComponentId.Signal signal) {
     switch (signal) {
       case SPAN:
         return "span";
