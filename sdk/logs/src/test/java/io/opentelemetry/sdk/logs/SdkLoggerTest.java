@@ -133,4 +133,17 @@ class SdkLoggerTest {
 
     verify(logRecordProcessor, never()).onEmit(any(), any());
   }
+
+  @Test
+  void updateEnabled() {
+    LogRecordProcessor logRecordProcessor = mock(LogRecordProcessor.class);
+    SdkLoggerProvider loggerProvider =
+        SdkLoggerProvider.builder().addLogRecordProcessor(logRecordProcessor).build();
+    SdkLogger logger = (SdkLogger) loggerProvider.get("test");
+
+    logger.updateLoggerConfig(LoggerConfig.disabled());
+    assertThat(logger.isEnabled()).isFalse();
+    logger.updateLoggerConfig(LoggerConfig.enabled());
+    assertThat(logger.isEnabled()).isTrue();
+  }
 }

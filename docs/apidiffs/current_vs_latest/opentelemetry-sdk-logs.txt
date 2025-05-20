@@ -1,12 +1,2 @@
-Comparing source compatibility of opentelemetry-sdk-logs-1.50.0-SNAPSHOT.jar against opentelemetry-sdk-logs-1.49.0.jar
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.logs.data.LogRecordData  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) java.lang.String getEventName()
-		+++  NEW ANNOTATION: javax.annotation.Nullable
-***  MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.logs.ReadWriteLogRecord  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) java.lang.String getEventName()
-		+++  NEW ANNOTATION: javax.annotation.Nullable
-***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder addLogRecordProcessorFirst(io.opentelemetry.sdk.logs.LogRecordProcessor)
+Comparing source compatibility of opentelemetry-sdk-logs-1.51.0-SNAPSHOT.jar against opentelemetry-sdk-logs-1.50.0.jar
+No changes.

@@ -41,6 +41,8 @@ import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
+import io.opentelemetry.proto.collector.profiles.v1development.ExportProfilesServiceRequest;
+import io.opentelemetry.proto.collector.profiles.v1development.ExportProfilesServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -146,6 +148,12 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   ExportLogsServiceRequest::parseFrom,
                   ExportLogsServiceRequest::getResourceLogsList,
                   ExportLogsServiceResponse.getDefaultInstance().toByteArray()));
+          sb.service(
+              "/opentelemetry.proto.collector.profiles.v1development.ProfilesService/Export",
+              new CollectorService<>(
+                  ExportProfilesServiceRequest::parseFrom,
+                  ExportProfilesServiceRequest::getResourceProfilesList,
+                  ExportProfilesServiceResponse.getDefaultInstance().toByteArray()));
 
           sb.http(0);
           sb.https(0);
@@ -188,7 +196,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     }
   }
 
-  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(GrpcExporter.class);
+  @RegisterExtension
+  protected LogCapturer logs = LogCapturer.create().captureForType(GrpcExporter.class);
 
   private final String type;
   private final U resourceTelemetryInstance;
@@ -710,7 +719,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   @Test
   @SuppressLogger(GrpcExporter.class)
-  void testExport_Unimplemented() {
+  protected void testExport_Unimplemented() {
     addGrpcError(12, "UNIMPLEMENTED");
 
     TelemetryExporter<T> exporter = nonRetryingExporter();
@@ -732,6 +741,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           break;
         case "log":
           envVar = "OTEL_LOGS_EXPORTER";
+          break;
+        case "profile":
+          envVar = "OTEL_PROFILES_EXPORTER";
           break;
         default:
           throw new AssertionError();
@@ -1267,11 +1279,11 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         .collect(Collectors.toList());
   }
 
-  private TelemetryExporter<T> nonRetryingExporter() {
+  protected TelemetryExporter<T> nonRetryingExporter() {
     return exporterBuilder().setEndpoint(server.httpUri().toString()).setRetryPolicy(null).build();
   }
 
-  private static void addGrpcError(int code, @Nullable String message) {
+  protected static void addGrpcError(int code, @Nullable String message) {
     grpcErrors.add(new ArmeriaStatusException(code, message));
   }
 }

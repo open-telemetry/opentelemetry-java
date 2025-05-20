@@ -178,7 +178,11 @@ public abstract class TestLogRecordData implements LogRecordData {
     /** Set the total attribute count. */
     public abstract Builder setTotalAttributeCount(int totalAttributeCount);
 
-    /** Set the event name. */
+    /**
+     * Set the event name.
+     *
+     * @since 1.50.0
+     */
     public abstract Builder setEventName(String eventName);
   }
 }

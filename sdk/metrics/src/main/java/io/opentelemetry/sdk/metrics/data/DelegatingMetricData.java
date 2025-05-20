@@ -34,6 +34,8 @@ import io.opentelemetry.sdk.resources.Resource;
  * //   }
  * // }
  * }</pre>
+ *
+ * @since 1.50.0
  */
 public abstract class DelegatingMetricData implements MetricData {
 

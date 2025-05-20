@@ -18,6 +18,11 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface DoubleExemplarData extends ExemplarData {
 
+  /**
+   * Create a record.
+   *
+   * @since 1.50.0
+   */
   static DoubleExemplarData create(
       Attributes filteredAttributes, long recordTimeNanos, SpanContext spanContext, double value) {
     return ImmutableDoubleExemplarData.create(

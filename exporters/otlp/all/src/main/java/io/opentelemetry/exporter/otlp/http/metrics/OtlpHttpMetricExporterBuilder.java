@@ -260,6 +260,8 @@ public final class OtlpHttpMetricExporterBuilder {
   /**
    * Sets the {@link MeterProvider} to use to collect metrics related to export. If not set, uses
    * {@link GlobalOpenTelemetry#getMeterProvider()}.
+   *
+   * @since 1.50.0
    */
   public OtlpHttpMetricExporterBuilder setMeterProvider(MeterProvider meterProvider) {
     requireNonNull(meterProvider, "meterProvider");
@@ -270,6 +272,8 @@ public final class OtlpHttpMetricExporterBuilder {
   /**
    * Sets the {@link MeterProvider} supplier to use to collect metrics related to export. If not
    * set, uses {@link GlobalOpenTelemetry#getMeterProvider()}.
+   *
+   * @since 1.50.0
    */
   public OtlpHttpMetricExporterBuilder setMeterProvider(
       Supplier<MeterProvider> meterProviderSupplier) {
