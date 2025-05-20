@@ -76,13 +76,29 @@ public abstract class ComponentId {
    * at any time.
    */
   public enum Signal {
-    SPAN,
-    METRIC,
-    LOG;
+    SPAN("otel.sdk.exporter.span", "span"),
+    METRIC("otel.sdk.exporter.metric_data_point", "data_point"),
+    LOG("otel.sdk.exporter.log", "log_record");
+
+    private final String exporterMetricNamespace;
+    private final String metricUnit;
+
+    Signal(String exporterMetricNamespace, String metricUnit) {
+      this.exporterMetricNamespace = exporterMetricNamespace;
+      this.metricUnit = metricUnit;
+    }
 
     @Override
     public String toString() {
       return name().toLowerCase(Locale.ENGLISH);
+    }
+
+    public String getExporterMetricNamespace() {
+      return exporterMetricNamespace;
+    }
+
+    public String getMetricUnit() {
+      return metricUnit;
     }
   }
 

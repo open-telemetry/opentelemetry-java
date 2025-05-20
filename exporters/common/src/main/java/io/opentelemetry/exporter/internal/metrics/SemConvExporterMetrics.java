@@ -53,30 +53,6 @@ public class SemConvExporterMetrics implements ExporterMetrics {
     return new Recording(itemCount);
   }
 
-  private static String getNamespace(ComponentId.Signal signal) {
-    switch (signal) {
-      case SPAN:
-        return "otel.sdk.exporter.span";
-      case METRIC:
-        return "otel.sdk.exporter.metric_data_point";
-      case LOG:
-        return "otel.sdk.exporter.log";
-    }
-    throw new IllegalArgumentException("Unhandled signal: " + signal);
-  }
-
-  private static String getUnit(ComponentId.Signal signal) {
-    switch (signal) {
-      case SPAN:
-        return "span";
-      case METRIC:
-        return "data_point";
-      case LOG:
-        return "log_record";
-    }
-    throw new IllegalArgumentException("Unhandled signal: " + signal);
-  }
-
   private Meter meter() {
     MeterProvider meterProvider = meterProviderSupplier.get();
     if (meterProvider == null) {
@@ -101,11 +77,11 @@ public class SemConvExporterMetrics implements ExporterMetrics {
   private LongUpDownCounter inflight() {
     LongUpDownCounter inflight = this.inflight;
     if (inflight == null || isNoop(inflight)) {
-      String unit = getUnit(signal);
+      String unit = signal.getMetricUnit();
       inflight =
           meter()
-              .upDownCounterBuilder(getNamespace(signal) + ".inflight")
-              .setUnit("{" + unit + "}")
+              .upDownCounterBuilder(signal.getExporterMetricNamespace() + ".inflight")
+              .setUnit( unit)
               .setDescription(
                   "The number of "
                       + unit
@@ -119,10 +95,10 @@ public class SemConvExporterMetrics implements ExporterMetrics {
   private LongCounter exported() {
     LongCounter exported = this.exported;
     if (exported == null || isNoop(exported)) {
-      String unit = getUnit(signal);
+      String unit = signal.getMetricUnit();
       exported =
           meter()
-              .counterBuilder(getNamespace(signal) + ".exported")
+              .counterBuilder(signal.getExporterMetricNamespace() + ".exported")
               .setUnit("{" + unit + "}")
               .setDescription(
                   "The number of "
