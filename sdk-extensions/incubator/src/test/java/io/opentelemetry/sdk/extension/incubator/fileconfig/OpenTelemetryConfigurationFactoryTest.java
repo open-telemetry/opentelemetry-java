@@ -23,6 +23,9 @@ import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
+import io.opentelemetry.sdk.entities.Entity;
+import io.opentelemetry.sdk.entities.EntityProvider;
+import io.opentelemetry.sdk.entities.SdkEntityProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AlwaysOnSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeNameValueModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.BatchLogRecordProcessorModel;
@@ -149,6 +152,8 @@ class OpenTelemetryConfigurationFactoryTest {
             .put("shape", "square")
             .put("order", "second")
             .build();
+    EntityProvider entityProvider =
+        new SdkEntityProvider(Collections.singletonList(Entity.create(expectedResource)));
     OpenTelemetrySdk expectedSdk =
         OpenTelemetrySdk.builder()
             .setPropagators(
@@ -176,7 +181,7 @@ class OpenTelemetryConfigurationFactoryTest {
                     .build())
             .setTracerProvider(
                 SdkTracerProvider.builder()
-                    .setResource(expectedResource)
+                    .setEntityProvider(entityProvider)
                     .setSpanLimits(
                         SpanLimits.builder()
                             .setMaxNumberOfAttributes(1)

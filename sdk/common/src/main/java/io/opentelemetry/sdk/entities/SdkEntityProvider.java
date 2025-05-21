@@ -1,4 +1,11 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.entities;
+
+import static java.util.Collections.singletonList;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.GuardedBy;
@@ -14,8 +21,10 @@ public class SdkEntityProvider implements EntityProvider {
 
   private final Object lock = new Object();
   private final AtomicReference<Resource> resource = new AtomicReference<>(Resource.empty());
+
   @GuardedBy("lock")
-  private final LinkedHashMap<String,Entity> entities = new LinkedHashMap<>();
+  private final LinkedHashMap<String, Entity> entities = new LinkedHashMap<>();
+
   @GuardedBy("lock")
   private final List<EntityListener> listeners = new ArrayList<>();
 
@@ -30,6 +39,16 @@ public class SdkEntityProvider implements EntityProvider {
     rebuildResource();
   }
 
+  public static EntityProvider getDefault() {
+    Resource resource = Resource.getDefault();
+    Entity entity = Entity.create(resource);
+    return new SdkEntityProvider(singletonList(entity));
+  }
+
+  public static EntityProvider empty() {
+    return new SdkEntityProvider(singletonList(Entity.create(Resource.empty())));
+  }
+
   @Override
   public Resource getResource() {
     Resource result = resource.get();
@@ -38,7 +57,7 @@ public class SdkEntityProvider implements EntityProvider {
 
   @Override
   public void addListener(EntityListener listener) {
-    synchronized(lock){
+    synchronized (lock) {
       listeners.add(listener);
     }
   }
@@ -48,7 +67,7 @@ public class SdkEntityProvider implements EntityProvider {
     Entity entity = Entity.create(id, name, attributes);
     List<EntityListener> listeners;
     Resource resource;
-    synchronized(lock){
+    synchronized (lock) {
       entities.remove(id);
       entities.put(id, entity);
 
@@ -58,7 +77,6 @@ public class SdkEntityProvider implements EntityProvider {
     for (EntityListener listener : listeners) {
       listener.onEntityState(entity, resource);
     }
-    
   }
 
   @Override
@@ -66,9 +84,9 @@ public class SdkEntityProvider implements EntityProvider {
     List<EntityListener> listeners;
     Resource resource;
     Entity updatedEntity;
-    synchronized(lock){
+    synchronized (lock) {
       Entity entity = entities.get(id);
-      if(entity == null){
+      if (entity == null) {
         return;
       }
       updatedEntity = entity.withAttributes(attributes);
@@ -85,9 +103,9 @@ public class SdkEntityProvider implements EntityProvider {
   public void deleteEntity(String id) {
     Entity removedEntity;
     Resource resource;
-    synchronized(lock){
+    synchronized (lock) {
       removedEntity = entities.remove(id);
-      if(removedEntity == null){
+      if (removedEntity == null) {
         return;
       }
       resource = rebuildResource();
@@ -96,10 +114,6 @@ public class SdkEntityProvider implements EntityProvider {
       listener.onEntityDelete(removedEntity, resource);
     }
   }
-
-//  private void doMutationInsideLock(){
-//
-//  }
 
   private Resource rebuildResource() {
     Resource newResource = doRebuildResource();

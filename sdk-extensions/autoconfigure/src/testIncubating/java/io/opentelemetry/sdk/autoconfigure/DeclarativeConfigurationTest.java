@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -31,6 +32,8 @@ import io.opentelemetry.sdk.autoconfigure.internal.AutoConfigureUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.entities.Entity;
+import io.opentelemetry.sdk.entities.SdkEntityProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -120,8 +123,13 @@ class DeclarativeConfigurationTest {
         OpenTelemetrySdk.builder()
             .setTracerProvider(
                 SdkTracerProvider.builder()
-                    .setResource(
-                        Resource.getDefault().toBuilder().put("service.name", "test").build())
+                    .setEntityProvider(
+                        new SdkEntityProvider(
+                            singletonList(
+                                Entity.create(
+                                    Resource.getDefault().toBuilder()
+                                        .put("service.name", "test")
+                                        .build()))))
                     .addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter.create()))
                     .build())
             .build();

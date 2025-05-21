@@ -20,7 +20,7 @@ import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.entities.SdkEntityProvider;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -44,7 +44,7 @@ class ExtendedTraceApiUsageTest {
     SdkTracerProviderBuilder tracerProviderBuilder =
         SdkTracerProvider.builder()
             // Default resource used for demonstration purposes
-            .setResource(Resource.getDefault())
+            .setEntityProvider(SdkEntityProvider.getDefault())
             // In-memory exporter used for demonstration purposes
             .addSpanProcessor(SimpleSpanProcessor.create(exporter));
     // Disable tracerB
@@ -99,7 +99,7 @@ class ExtendedTraceApiUsageTest {
     SdkTracerProvider tracerProvider =
         SdkTracerProvider.builder()
             // Default resource used for demonstration purposes
-            .setResource(Resource.getDefault())
+            .setEntityProvider(SdkEntityProvider.getDefault())
             // SimpleSpanProcessor with InMemorySpanExporter used for demonstration purposes
             .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
             .build();
@@ -159,7 +159,7 @@ class ExtendedTraceApiUsageTest {
     SdkTracerProvider tracerProvider =
         SdkTracerProvider.builder()
             // Default resource used for demonstration purposes
-            .setResource(Resource.getDefault())
+            .setEntityProvider(SdkEntityProvider.getDefault())
             // SimpleSpanProcessor with InMemorySpanExporter used for demonstration purposes
             .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
             .build();

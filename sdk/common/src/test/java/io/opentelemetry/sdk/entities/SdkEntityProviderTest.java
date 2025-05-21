@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.entities;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
@@ -35,10 +40,7 @@ class SdkEntityProviderTest {
   void constructorGivesResource() {
     List<Entity> entities = Arrays.asList(e1, e2);
     Resource res = new SdkEntityProvider(entities).getResource();
-    assertThat(res.getAttributes().asMap()).containsOnly(
-        entry(k1, "boop"),
-        entry(k2, "bleep")
-    );
+    assertThat(res.getAttributes().asMap()).containsOnly(entry(k1, "boop"), entry(k2, "bleep"));
   }
 
   @Test
@@ -48,8 +50,7 @@ class SdkEntityProviderTest {
     List<Entity> entities = Arrays.asList(e1, e2);
 
     Resource res = new SdkEntityProvider(entities).getResource();
-    assertThat(res.getAttributes().asMap()).containsOnly(
-        entry(k2, "bleep"));
+    assertThat(res.getAttributes().asMap()).containsOnly(entry(k2, "bleep"));
   }
 
   @Test
@@ -68,10 +69,8 @@ class SdkEntityProviderTest {
 
     assertThat(entityCaptor.getValue().getId()).isEqualTo("new id");
     assertThat(entityCaptor.getValue().getName()).isEqualTo("new name");
-    assertThat(entityProvider.getResource().getAttributes().asMap()).containsOnly(
-        entry(k1, "boop"),
-        entry(stringKey("new key"), "newval")
-    );
+    assertThat(entityProvider.getResource().getAttributes().asMap())
+        .containsOnly(entry(k1, "boop"), entry(stringKey("new key"), "newval"));
   }
 
   @Test
@@ -92,9 +91,8 @@ class SdkEntityProviderTest {
     assertThat(entityCaptor.getValue().getId()).isEqualTo(e1.getId());
     assertThat(entityCaptor.getValue().getName()).isEqualTo("new name");
     assertThat(resourceCaptor.getValue()).isSameAs(entityProvider.getResource());
-    assertThat(entityProvider.getResource().getAttributes().asMap()).containsOnly(
-        entry(stringKey("jibro"), "newval")
-    );
+    assertThat(entityProvider.getResource().getAttributes().asMap())
+        .containsOnly(entry(stringKey("jibro"), "newval"));
   }
 
   @Test
@@ -129,9 +127,8 @@ class SdkEntityProviderTest {
     assertThat(entityCaptor.getValue().getName()).isEqualTo(e1.getName());
     assertThat(entityCaptor.getValue().getAttributes()).isEqualTo(newAttr);
     assertThat(entityProvider.getResource()).isSameAs(resourceCaptor.getValue());
-    assertThat(resourceCaptor.getValue().getAttributes().asMap()).containsOnly(
-        entry(newKey, "newval")
-    );
+    assertThat(resourceCaptor.getValue().getAttributes().asMap())
+        .containsOnly(entry(newKey, "newval"));
   }
 
   @Test
@@ -150,9 +147,7 @@ class SdkEntityProviderTest {
     assertThat(entityCaptor.getValue().getId()).isEqualTo(e1.getId());
     assertThat(entityCaptor.getValue().getName()).isEqualTo(e1.getName());
     assertThat(entityProvider.getResource()).isSameAs(resourceCaptor.getValue());
-    assertThat(resourceCaptor.getValue().getAttributes().asMap()).containsOnly(
-        entry(k2, "bleep")
-    );
+    assertThat(resourceCaptor.getValue().getAttributes().asMap()).containsOnly(entry(k2, "bleep"));
   }
 
   @Test
@@ -177,5 +172,4 @@ class SdkEntityProviderTest {
     assertThat(entityProvider.getResource().getAttributes().size()).isZero();
     assertThat(entityProvider.getResource()).isSameAs(Resource.empty());
   }
-
 }

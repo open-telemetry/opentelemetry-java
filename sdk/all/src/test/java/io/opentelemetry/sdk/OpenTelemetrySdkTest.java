@@ -22,6 +22,9 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.entities.Entity;
+import io.opentelemetry.sdk.entities.EntityProvider;
+import io.opentelemetry.sdk.entities.SdkEntityProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
@@ -40,6 +43,8 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -269,7 +274,7 @@ class OpenTelemetrySdkTest {
                 .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
                 .setClock(mock(Clock.class))
                 .setIdGenerator(mock(IdGenerator.class))
-                .setResource(Resource.empty())
+                .setEntityProvider(SdkEntityProvider.empty())
                 .setSpanLimits(SpanLimits.builder().setMaxNumberOfAttributes(512).build())
                 .build())
         .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))
@@ -379,11 +384,13 @@ class OpenTelemetrySdkTest {
     when(propagator.toString()).thenReturn("MockTextMapPropagator{}");
     Resource resource =
         Resource.builder().put(AttributeKey.stringKey("service.name"), "otel-test").build();
+    List<Entity> entities = Collections.singletonList(Entity.create(resource));
+    EntityProvider entityProvider = new SdkEntityProvider(entities);
     OpenTelemetrySdk sdk =
         OpenTelemetrySdk.builder()
             .setTracerProvider(
                 SdkTracerProvider.builder()
-                    .setResource(resource)
+                    .setEntityProvider(entityProvider)
                     .addSpanProcessor(
                         SimpleSpanProcessor.create(
                             SpanExporter.composite(spanExporter, spanExporter)))
