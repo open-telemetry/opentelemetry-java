@@ -148,7 +148,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
   @Override
   public boolean isEnabled() {
-    return Objects.requireNonNull(this.aggregatorHolder.get()).aggregator == Aggregator.drop();
+    return Objects.requireNonNull(this.aggregatorHolder.get()).aggregator != Aggregator.drop();
   }
 
   /**
