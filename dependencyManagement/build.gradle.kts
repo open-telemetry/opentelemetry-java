@@ -15,7 +15,7 @@ val DEPENDENCY_BOMS = listOf(
 
   "com.fasterxml.jackson:jackson-bom:2.19.0",
   "com.google.guava:guava-bom:33.4.8-jre",
-  "com.google.protobuf:protobuf-bom:4.30.2",
+  "com.google.protobuf:protobuf-bom:4.31.0",
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
   "com.squareup.okio:okio-bom:3.11.0", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.72.0",
@@ -35,7 +35,7 @@ val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.17"
 val opencensusVersion = "0.31.1"
 val prometheusClientVersion = "0.16.0"
-val prometheusServerVersion = "1.3.6"
+val prometheusServerVersion = "1.3.7"
 val armeriaVersion = "1.32.5"
 val junitVersion = "5.12.2"
 
@@ -73,7 +73,7 @@ val DEPENDENCIES = listOf(
   "io.prometheus:simpleclient_httpserver:${prometheusClientVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "com.google.api.grpc:proto-google-common-protos:2.56.0",
+  "com.google.api.grpc:proto-google-common-protos:2.57.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.guava:guava-beta-checker:1.0",
   "com.sun.net.httpserver:http:20070405",

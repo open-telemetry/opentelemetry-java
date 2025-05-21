@@ -59,7 +59,7 @@ jobs:
       - name: Use CLA approved github bot
         run: .github/scripts/use-cla-approved-github-bot.sh
 
-      - uses: actions/create-github-app-token@3ff1caaa28b64c9cc276ce0a02e2ff584f3900c5 # v2.0.2
+      - uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
         id: otelbot-token
         with:
           app-id: ${{ vars.OTELBOT_APP_ID }}
@@ -100,11 +100,11 @@ jobs:
             echo "unexpected version: $version"
             exit 1
           fi
-          echo "NEXT_VERSION=$next_version" >> $GITHUB_ENV
+          echo "NEXT_VERSION=${next_version}-SNAPSHOT" >> $GITHUB_ENV
           echo "VERSION=$version" >> $GITHUB_ENV
 
       - name: Update version
-        run: sed -Ei "s/[0-9]+\.[0-9]+\.[0-9]+/$NEXT_VERSION/" version.gradle.kts
+        run: .github/scripts/update-version.sh $NEXT_VERSION
 
       - name: Update the change log on main
         run: |
@@ -115,7 +115,7 @@ jobs:
       - name: Use CLA approved github bot
         run: .github/scripts/use-cla-approved-github-bot.sh
 
-      - uses: actions/create-github-app-token@3ff1caaa28b64c9cc276ce0a02e2ff584f3900c5 # v2.0.2
+      - uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
         id: otelbot-token
         with:
           app-id: ${{ vars.OTELBOT_APP_ID }}
