@@ -134,8 +134,16 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
 
   @Override
   public void setEnabled(boolean enabled) {
-    this.aggregatorHolder.set(
-        new AggregatorHolder<>(enabled ? originalAggregator : Aggregator.drop()));
+    if (enabled) {
+      AggregatorHolder<T, U> localAggregatorHolder = aggregatorHolder.get();
+      if (localAggregatorHolder.aggregator == Aggregator.drop()) {
+        AggregatorHolder<T, U> newHolder = new AggregatorHolder<>(originalAggregator);
+        // If this fails, another thread called `setEnabled` and we can discard the current call
+        aggregatorHolder.compareAndSet(localAggregatorHolder, newHolder);
+      }
+    } else {
+      aggregatorHolder.set(new AggregatorHolder<>(Aggregator.drop()));
+    }
   }
 
   @Override
