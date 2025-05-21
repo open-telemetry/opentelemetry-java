@@ -33,6 +33,7 @@ final class TracerSharedState {
       Clock clock,
       IdGenerator idGenerator,
       Resource resource,
+//      xxx entityprovider instead of resource here ??,
       Supplier<SpanLimits> spanLimitsSupplier,
       Sampler sampler,
       List<SpanProcessor> spanProcessors) {
