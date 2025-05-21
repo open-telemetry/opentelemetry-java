@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.trace;
 
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -84,27 +83,6 @@ public final class SdkTracerProviderBuilder {
     requireNonNull(entityProvider, "entityProvider");
     this.entityProvider = entityProvider;
     return this;
-  }
-
-  /**
-   * Merge an {@link Entity} into the EntityProvider.
-   *
-   * @since ??.??.??
-   */
-  public SdkTracerProviderBuilder addEntity(String id, String name, Attributes attributes) {
-    entityProvider.addEntity(id, name, attributes);
-    return this;
-  }
-
-  /**
-   * Merge an {@link Entity} into the EntityProvider.
-   *
-   * @param entity {@link Entity} to merge with current EntityProvider.
-   * @since ??.??.??
-   */
-  public SdkTracerProviderBuilder addEntity(Entity entity) {
-    Objects.requireNonNull(entity, "resource");
-    return addEntity(entity.getId(), entity.getName(), entity.getAttributes());
   }
 
   /**
