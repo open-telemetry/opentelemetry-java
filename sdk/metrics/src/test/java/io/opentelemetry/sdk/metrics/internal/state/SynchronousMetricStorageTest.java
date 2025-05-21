@@ -922,4 +922,30 @@ public class SynchronousMetricStorageTest {
                     sumData ->
                         assertThat(sumData.getPoints()).allMatch(point -> point.getValue() == 5d)));
   }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void collect_DeltaResetAfterDisabled(MemoryMode memoryMode) {
+    initialize(memoryMode);
+
+    DefaultSynchronousMetricStorage<?, ?> storage =
+        new DefaultSynchronousMetricStorage<>(
+            deltaReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor, CARDINALITY_LIMIT);
+
+    storage.recordDouble(5d, Attributes.empty(), Context.current());
+    storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10);
+    deltaReader.setLastCollectEpochNanos(10);
+
+    storage.setEnabled(false);
+    storage.setEnabled(true);
+
+    storage.recordDouble(4d, Attributes.empty(), Context.current());
+    MetricData metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 30);
+    assertThat(metricData)
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.satisfies(
+                    sumData ->
+                        assertThat(sumData.getPoints()).allMatch(point -> point.getValue() == 4d)));
+  }
 }
