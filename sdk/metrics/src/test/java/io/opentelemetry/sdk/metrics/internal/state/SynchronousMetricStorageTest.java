@@ -897,4 +897,29 @@ public class SynchronousMetricStorageTest {
 
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10).isEmpty()).isFalse();
   }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void disableDropsAggregatorState(MemoryMode memoryMode) {
+    initialize(memoryMode);
+
+    DefaultSynchronousMetricStorage<?, ?> storage =
+        new DefaultSynchronousMetricStorage<>(
+            deltaReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor, CARDINALITY_LIMIT);
+
+    storage.recordDouble(10d, Attributes.empty(), Context.current());
+
+    storage.setEnabled(false);
+    storage.setEnabled(true);
+
+    storage.recordDouble(5d, Attributes.empty(), Context.current());
+
+    MetricData metricData = storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10);
+    assertThat(metricData)
+        .hasDoubleSumSatisfying(
+            sum ->
+                sum.satisfies(
+                    sumData ->
+                        assertThat(sumData.getPoints()).allMatch(point -> point.getValue() == 5d)));
+  }
 }

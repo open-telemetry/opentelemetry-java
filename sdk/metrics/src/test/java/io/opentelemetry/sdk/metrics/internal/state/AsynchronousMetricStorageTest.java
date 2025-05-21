@@ -502,4 +502,25 @@ class AsynchronousMetricStorageTest {
 
     assertThat(longCounterStorage.collect(resource, scope, 0, 0).isEmpty()).isFalse();
   }
+
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void disableDropsAggregatorState(MemoryMode memoryMode) {
+    setup(memoryMode);
+
+    longCounterStorage.record(Attributes.empty(), 10);
+
+    longCounterStorage.setEnabled(false);
+    longCounterStorage.setEnabled(true);
+
+    longCounterStorage.record(Attributes.empty(), 5);
+
+    MetricData metricData = longCounterStorage.collect(resource, scope, 0, 0);
+    assertThat(metricData)
+        .hasLongSumSatisfying(
+            sum ->
+                sum.satisfies(
+                    sumData ->
+                        assertThat(sumData.getPoints()).allMatch(point -> point.getValue() == 5d)));
+  }
 }
