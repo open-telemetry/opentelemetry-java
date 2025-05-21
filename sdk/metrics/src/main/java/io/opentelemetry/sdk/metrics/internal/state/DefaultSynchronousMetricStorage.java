@@ -95,7 +95,6 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
   }
 
   // Visible for testing
-
   Queue<AggregatorHandle<T, U>> getAggregatorHandlePool() {
     return aggregatorHandlePool;
   }
