@@ -1,2 +1,38 @@
 Comparing source compatibility of opentelemetry-sdk-common-1.51.0-SNAPSHOT.jar against opentelemetry-sdk-common-1.50.0.jar
-No changes.
++++  NEW CLASS: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.entities.Entity  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW CONSTRUCTOR: PUBLIC(+) Entity()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.entities.Entity create(java.lang.String, java.lang.String, io.opentelemetry.api.common.Attributes)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.entities.Entity create(io.opentelemetry.sdk.resources.Resource)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.Attributes getAttributes()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getId()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getName()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.entities.Entity withAttributes(io.opentelemetry.api.common.Attributes)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.entities.EntityListener  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void onEntityDelete(io.opentelemetry.sdk.entities.Entity, io.opentelemetry.sdk.resources.Resource)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void onEntityState(io.opentelemetry.sdk.entities.Entity, io.opentelemetry.sdk.resources.Resource)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.entities.EntityProvider  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void addEntity(java.lang.String, java.lang.String, io.opentelemetry.api.common.Attributes)
+	+++  NEW METHOD: PUBLIC(+) void addEntity(io.opentelemetry.sdk.entities.Entity)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void addListener(io.opentelemetry.sdk.entities.EntityListener)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void deleteEntity(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.resources.Resource getResource()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void updateEntity(java.lang.String, io.opentelemetry.api.common.Attributes)
++++  NEW CLASS: PUBLIC(+) io.opentelemetry.sdk.entities.SdkEntityProvider  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: io.opentelemetry.sdk.entities.EntityProvider
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW CONSTRUCTOR: PUBLIC(+) SdkEntityProvider()
+	+++  NEW CONSTRUCTOR: PUBLIC(+) SdkEntityProvider(java.util.List<io.opentelemetry.sdk.entities.Entity>)
+	+++  NEW METHOD: PUBLIC(+) void addEntity(java.lang.String, java.lang.String, io.opentelemetry.api.common.Attributes)
+	+++  NEW METHOD: PUBLIC(+) void addListener(io.opentelemetry.sdk.entities.EntityListener)
+	+++  NEW METHOD: PUBLIC(+) void deleteEntity(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.entities.EntityProvider empty()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.entities.EntityProvider getDefault()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.Resource getResource()
+	+++  NEW METHOD: PUBLIC(+) void updateEntity(java.lang.String, io.opentelemetry.api.common.Attributes)

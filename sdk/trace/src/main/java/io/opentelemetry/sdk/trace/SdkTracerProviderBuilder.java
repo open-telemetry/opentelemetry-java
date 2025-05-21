@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -104,6 +105,18 @@ public final class SdkTracerProviderBuilder {
   public SdkTracerProviderBuilder addEntity(Entity entity) {
     Objects.requireNonNull(entity, "resource");
     return addEntity(entity.getId(), entity.getName(), entity.getAttributes());
+  }
+
+  /**
+   * Assign a {@link Resource} to be attached to all Spans created by Tracers.
+   *
+   * @param resource A Resource implementation.
+   * @return this
+   */
+  public SdkTracerProviderBuilder setResource(Resource resource) {
+    requireNonNull(resource, "resource");
+    this.entityProvider = new SdkEntityProvider(Collections.singletonList(Entity.create(resource)));
+    return this;
   }
 
   /**
