@@ -1038,7 +1038,7 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  void propagatesEnablementToLoggerDirectly() {
+  void propagatesEnablementToMeterDirectly() {
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().registerMetricReader(InMemoryMetricReader.create()).build();
     SdkMeter meter = (SdkMeter) meterProvider.get("test");
@@ -1050,7 +1050,7 @@ class SdkMeterProviderTest {
   }
 
   @Test
-  void propagatesEnablementToLoggerByUtil() {
+  void propagatesEnablementToMeterByUtil() {
     SdkMeterProvider sdkMeterProvider =
         SdkMeterProvider.builder().registerMetricReader(InMemoryMetricReader.create()).build();
     SdkMeter sdkMeter = (SdkMeter) sdkMeterProvider.get("test");
