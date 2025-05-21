@@ -64,6 +64,7 @@ class SdkTracerProviderTest {
     assertThat(tracerProvider).isNotNull();
     assertThat(tracerProvider)
         .extracting("sharedState")
+        .extracting("entityProvider")
         .hasFieldOrPropertyWithValue("resource", resourceWithDefaults);
   }
 
@@ -102,6 +103,7 @@ class SdkTracerProviderTest {
     assertThat(tracerProvider).isNotNull();
     assertThat(tracerProvider)
         .extracting("sharedState")
+        .extracting("entityProvider")
         .hasFieldOrPropertyWithValue("resource", resource);
   }
 
