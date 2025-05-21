@@ -178,8 +178,8 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
    * Called on the {@link AggregatorHolder} obtained from {@link #getHolderForRecord()} to indicate
    * that recording is complete, and it is safe to collect.
    */
-  private void releaseHolderForRecord(AggregatorHolder<T, U> localAggregatorHolder) {
-    localAggregatorHolder.activeRecordingThreads.addAndGet(-2);
+  private void releaseHolderForRecord(AggregatorHolder<T, U> aggregatorHolder) {
+    aggregatorHolder.activeRecordingThreads.addAndGet(-2);
   }
 
   private AggregatorHandle<T, U> getAggregatorHandle(

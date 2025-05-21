@@ -317,8 +317,13 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
 
   @Override
   public void setEnabled(boolean enabled) {
-    this.aggregatorHolder =
-        new AggregatorHolder<>(enabled ? originalAggregator : Aggregator.drop());
+    if (enabled) {
+      if (aggregatorHolder.aggregator == Aggregator.drop()) {
+        aggregatorHolder = new AggregatorHolder<>(originalAggregator);
+      }
+    } else {
+      aggregatorHolder = new AggregatorHolder<>(Aggregator.drop());
+    }
   }
 
   @Override
