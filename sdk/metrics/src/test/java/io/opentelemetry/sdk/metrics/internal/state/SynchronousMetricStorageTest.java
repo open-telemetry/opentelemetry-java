@@ -836,9 +836,10 @@ public class SynchronousMetricStorageTest {
     return argumentsList.stream();
   }
 
-  @Test
-  void enabledThenDisable_isEnabled() {
-    initialize(MemoryMode.REUSABLE_DATA);
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void enabledThenDisable_isEnabled(MemoryMode memoryMode) {
+    initialize(memoryMode);
 
     DefaultSynchronousMetricStorage<?, ?> storage =
         new DefaultSynchronousMetricStorage<>(
@@ -849,9 +850,10 @@ public class SynchronousMetricStorageTest {
     assertThat(storage.isEnabled()).isFalse();
   }
 
-  @Test
-  void enabledThenDisableThenEnable_isEnabled() {
-    initialize(MemoryMode.REUSABLE_DATA);
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void enabledThenDisableThenEnable_isEnabled(MemoryMode memoryMode) {
+    initialize(memoryMode);
 
     DefaultSynchronousMetricStorage<?, ?> storage =
         new DefaultSynchronousMetricStorage<>(
@@ -863,9 +865,10 @@ public class SynchronousMetricStorageTest {
     assertThat(storage.isEnabled()).isTrue();
   }
 
-  @Test
-  void enabledThenDisable_recordAndCollect() {
-    initialize(MemoryMode.REUSABLE_DATA);
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void enabledThenDisable_recordAndCollect(MemoryMode memoryMode) {
+    initialize(memoryMode);
 
     DefaultSynchronousMetricStorage<?, ?> storage =
         new DefaultSynchronousMetricStorage<>(
@@ -878,9 +881,10 @@ public class SynchronousMetricStorageTest {
     assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10).isEmpty()).isTrue();
   }
 
-  @Test
-  void enabledThenDisableThenEnable_recordAndCollect() {
-    initialize(MemoryMode.REUSABLE_DATA);
+  @ParameterizedTest
+  @EnumSource(MemoryMode.class)
+  void enabledThenDisableThenEnable_recordAndCollect(MemoryMode memoryMode) {
+    initialize(memoryMode);
 
     DefaultSynchronousMetricStorage<?, ?> storage =
         new DefaultSynchronousMetricStorage<>(
