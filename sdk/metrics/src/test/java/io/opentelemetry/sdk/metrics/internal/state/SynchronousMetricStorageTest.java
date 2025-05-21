@@ -835,4 +835,62 @@ public class SynchronousMetricStorageTest {
 
     return argumentsList.stream();
   }
+
+  @Test
+  void enabledThenDisable_isEnabled() {
+    initialize(MemoryMode.REUSABLE_DATA);
+
+    DefaultSynchronousMetricStorage<?, ?> storage =
+        new DefaultSynchronousMetricStorage<>(
+            deltaReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor, CARDINALITY_LIMIT);
+
+    storage.setEnabled(false);
+
+    assertThat(storage.isEnabled()).isFalse();
+  }
+
+  @Test
+  void enabledThenDisableThenEnable_isEnabled() {
+    initialize(MemoryMode.REUSABLE_DATA);
+
+    DefaultSynchronousMetricStorage<?, ?> storage =
+        new DefaultSynchronousMetricStorage<>(
+            deltaReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor, CARDINALITY_LIMIT);
+
+    storage.setEnabled(false);
+    storage.setEnabled(true);
+
+    assertThat(storage.isEnabled()).isTrue();
+  }
+
+  @Test
+  void enabledThenDisable_recordAndCollect() {
+    initialize(MemoryMode.REUSABLE_DATA);
+
+    DefaultSynchronousMetricStorage<?, ?> storage =
+        new DefaultSynchronousMetricStorage<>(
+            deltaReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor, CARDINALITY_LIMIT);
+
+    storage.setEnabled(false);
+
+    storage.recordDouble(10d, Attributes.empty(), Context.current());
+
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10).isEmpty()).isTrue();
+  }
+
+  @Test
+  void enabledThenDisableThenEnable_recordAndCollect() {
+    initialize(MemoryMode.REUSABLE_DATA);
+
+    DefaultSynchronousMetricStorage<?, ?> storage =
+        new DefaultSynchronousMetricStorage<>(
+            deltaReader, METRIC_DESCRIPTOR, aggregator, attributesProcessor, CARDINALITY_LIMIT);
+
+    storage.setEnabled(false);
+    storage.setEnabled(true);
+
+    storage.recordDouble(10d, Attributes.empty(), Context.current());
+
+    assertThat(storage.collect(RESOURCE, INSTRUMENTATION_SCOPE_INFO, 0, 10).isEmpty()).isFalse();
+  }
 }
