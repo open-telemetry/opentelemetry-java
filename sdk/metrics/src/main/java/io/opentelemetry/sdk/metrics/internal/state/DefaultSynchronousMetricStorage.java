@@ -233,7 +233,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
           (memoryMode == REUSABLE_DATA)
               ? new AggregatorHolder<>(holder.aggregator, previousCollectionAggregatorHandles)
               : new AggregatorHolder<>(holder.aggregator);
-      // Otherwise, swapAggregator was called and the update should be ignored
+      // If this fails, another thread called `setEnabled` and we can discard the current call
       aggregatorHolder.compareAndSet(holder, newHolder);
 
       // Increment recordsInProgress by 1, which produces an odd number acting as a signal that
