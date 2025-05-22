@@ -321,14 +321,6 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
     } else {
       aggregator = Aggregator.drop();
 
-      if (memoryMode == REUSABLE_DATA) {
-        aggregatorHandles.forEach(
-            (attributes, handle) -> {
-              handle.aggregateThenMaybeReset(0, 0, Attributes.empty(), /* reset= */ true);
-              reusableHandlesPool.returnObject(handle);
-            });
-        lastPoints.forEach(pointReleaser);
-      }
       aggregatorHandles.clear();
       lastPoints.clear();
     }
