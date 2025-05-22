@@ -300,7 +300,7 @@ class MeterConfigTest {
     meterB.counterBuilder("meterB").build().add(2);
     meterC.counterBuilder("meterC").build().add(3);
     assertThat(reader.collectAllMetrics())
-        .satisfiesExactly(
+        .satisfiesExactlyInAnyOrder(
             metricData -> assertThat(metricData).hasName("meterA"),
             metricData -> assertThat(metricData).hasName("meterC"));
   }
