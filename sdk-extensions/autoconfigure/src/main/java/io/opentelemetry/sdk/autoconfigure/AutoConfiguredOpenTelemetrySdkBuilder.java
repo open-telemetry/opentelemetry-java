@@ -36,6 +36,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -424,6 +425,10 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
    * the settings of this {@link AutoConfiguredOpenTelemetrySdkBuilder}.
    */
   public AutoConfiguredOpenTelemetrySdk build() {
+    return maybeRunWithGlobalOpenTelemetryLock(this::buildImpl);
+  }
+
+  private AutoConfiguredOpenTelemetrySdk buildImpl() {
     SpiHelper spiHelper = SpiHelper.create(componentLoader);
     if (!customized) {
       customized = true;
@@ -570,6 +575,34 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       return;
     }
     Runtime.getRuntime().addShutdownHook(shutdownHook(openTelemetrySdk));
+  }
+
+  @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
+  private <T> T maybeRunWithGlobalOpenTelemetryLock(Supplier<T> supplier) {
+    if (setResultAsGlobal) {
+      return supplier.get();
+    }
+
+    Object mutex = null;
+    try {
+      Field mutexField = GlobalOpenTelemetry.class.getDeclaredField("mutex");
+      mutexField.setAccessible(true);
+      mutex = mutexField.get(null);
+      if (mutex == null) {
+        logger.log(
+            Level.SEVERE,
+            "Found a null Global OpenTelemetry mutex, this is a bug in the opentelemetry-java SDK and should be reported");
+      }
+    } catch (Exception exception) {
+      logger.log(Level.WARNING, "Could not acquire Global OpenTelemetry mutex", exception);
+    }
+
+    if (mutex == null) {
+      return supplier.get();
+    }
+    synchronized (mutex) {
+      return supplier.get();
+    }
   }
 
   private void maybeSetAsGlobal(
