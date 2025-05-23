@@ -139,7 +139,7 @@ public final class DefaultSynchronousMetricStorage<T extends PointData, U extend
         AggregatorHolder<T, U> newHolder = new AggregatorHolder<>(originalAggregator);
         // If this fails, another thread called `setEnabled` and we can discard the current call
         if (aggregatorHolder.compareAndSet(localAggregatorHolder, newHolder)) {
-                previousCollectionAggregatorHandles.clear();
+          previousCollectionAggregatorHandles.clear();
         }
       }
     } else {
