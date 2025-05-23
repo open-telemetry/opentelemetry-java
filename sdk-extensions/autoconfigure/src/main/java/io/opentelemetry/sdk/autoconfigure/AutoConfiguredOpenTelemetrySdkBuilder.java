@@ -578,12 +578,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   private <T> T maybeRunWithGlobalOpenTelemetryLock(Supplier<T> supplier) {
-    if (setResultAsGlobal) {
-      return supplier.get();
-    }
-
-    Object mutex = getGlobalOpenTelemetryLock();
-    if (mutex == null) {
+    Object mutex;
+    if (!setResultAsGlobal || (mutex = getGlobalOpenTelemetryLock()) == null) {
       return supplier.get();
     }
     synchronized (mutex) {
