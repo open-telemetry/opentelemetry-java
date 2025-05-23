@@ -491,9 +491,7 @@ final class Otel2PrometheusConverter {
         labelNameToValue.putIfAbsent(OTEL_SCOPE_VERSION, scope.getVersion());
       }
       String schemaUrl = scope.getSchemaUrl();
-      if (schemaUrl != null) {
-        labelNameToValue.putIfAbsent(OTEL_SCOPE_SCHEMA_URL, schemaUrl);
-      }
+      labelNameToValue.putIfAbsent(OTEL_SCOPE_SCHEMA_URL, schemaUrl == null ? "" : schemaUrl);
       scope
           .getAttributes()
           .forEach(
