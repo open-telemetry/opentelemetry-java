@@ -577,12 +577,23 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     Runtime.getRuntime().addShutdownHook(shutdownHook(openTelemetrySdk));
   }
 
-  @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
   private <T> T maybeRunWithGlobalOpenTelemetryLock(Supplier<T> supplier) {
     if (setResultAsGlobal) {
       return supplier.get();
     }
 
+    Object mutex = getGlobalOpenTelemetryLock();
+    if (mutex == null) {
+      return supplier.get();
+    }
+    synchronized (mutex) {
+      return supplier.get();
+    }
+  }
+
+  // Visible for testing
+  @Nullable
+  static Object getGlobalOpenTelemetryLock() {
     Object mutex = null;
     try {
       Field mutexField = GlobalOpenTelemetry.class.getDeclaredField("mutex");
@@ -596,13 +607,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     } catch (Exception exception) {
       logger.log(Level.WARNING, "Could not acquire Global OpenTelemetry mutex", exception);
     }
-
-    if (mutex == null) {
-      return supplier.get();
-    }
-    synchronized (mutex) {
-      return supplier.get();
-    }
+    return mutex;
   }
 
   private void maybeSetAsGlobal(
