@@ -11,9 +11,9 @@ import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.entities.EntityProvider;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
-import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -48,14 +48,14 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
   SdkTracerProvider(
       Clock clock,
       IdGenerator idsGenerator,
-      Resource resource,
+      EntityProvider entityProvider,
       Supplier<SpanLimits> spanLimitsSupplier,
       Sampler sampler,
       List<SpanProcessor> spanProcessors,
       ScopeConfigurator<TracerConfig> tracerConfigurator) {
     this.sharedState =
         new TracerSharedState(
-            clock, idsGenerator, resource, spanLimitsSupplier, sampler, spanProcessors);
+            clock, idsGenerator, entityProvider, spanLimitsSupplier, sampler, spanProcessors);
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
             instrumentationScopeInfo ->

@@ -5,9 +5,14 @@
 
 package io.opentelemetry.sdk.trace;
 
+import static java.util.Collections.singletonList;
+
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.sdk.entities.Entity;
+import io.opentelemetry.sdk.entities.EntityProvider;
+import io.opentelemetry.sdk.entities.SdkEntityProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.concurrent.TimeUnit;
@@ -35,11 +40,14 @@ public class SpanBenchmark {
               .put("service.instance.id", "123ab456-a123-12ab-12ab-12340a1abc12")
               .build());
 
+  private final EntityProvider entityProvider =
+      new SdkEntityProvider(singletonList(Entity.create(serviceResource)));
+
   @Setup(Level.Trial)
   public final void setup() {
     SdkTracerProvider tracerProvider =
         SdkTracerProvider.builder()
-            .setResource(serviceResource)
+            .setEntityProvider(entityProvider)
             .setSampler(Sampler.alwaysOn())
             .build();
 

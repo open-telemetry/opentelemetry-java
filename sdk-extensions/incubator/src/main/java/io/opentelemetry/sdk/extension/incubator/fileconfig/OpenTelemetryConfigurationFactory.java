@@ -5,9 +5,14 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import static java.util.Collections.singletonList;
+
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
+import io.opentelemetry.sdk.entities.Entity;
+import io.opentelemetry.sdk.entities.EntityProvider;
+import io.opentelemetry.sdk.entities.SdkEntityProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Objects;
@@ -62,6 +67,7 @@ final class OpenTelemetryConfigurationFactory
     }
 
     if (model.getTracerProvider() != null) {
+      EntityProvider entityProvider = new SdkEntityProvider(singletonList(Entity.create(resource)));
       builder.setTracerProvider(
           context.addCloseable(
               TracerProviderFactory.getInstance()
@@ -69,7 +75,7 @@ final class OpenTelemetryConfigurationFactory
                       TracerProviderAndAttributeLimits.create(
                           model.getAttributeLimits(), model.getTracerProvider()),
                       context)
-                  .setResource(resource)
+                  .setEntityProvider(entityProvider)
                   .build()));
     }
 

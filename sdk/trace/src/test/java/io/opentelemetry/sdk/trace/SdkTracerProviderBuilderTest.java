@@ -28,6 +28,7 @@ public class SdkTracerProviderBuilderTest {
 
     assertThat(sdkTracerProvider)
         .extracting("sharedState")
+        .extracting("entityProvider")
         .hasFieldOrPropertyWithValue("resource", Resource.getDefault().merge(customResource));
   }
 

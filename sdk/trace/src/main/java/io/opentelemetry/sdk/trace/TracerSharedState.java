@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.entities.EntityProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.List;
@@ -21,8 +22,8 @@ final class TracerSharedState {
   private final IdGenerator idGenerator;
   // tracks whether it is safe to skip id validation on ids from the above generator
   private final boolean idGeneratorSafeToSkipIdValidation;
-  private final Resource resource;
 
+  private final EntityProvider entityProvider;
   private final Supplier<SpanLimits> spanLimitsSupplier;
   private final Sampler sampler;
   private final SpanProcessor activeSpanProcessor;
@@ -32,14 +33,14 @@ final class TracerSharedState {
   TracerSharedState(
       Clock clock,
       IdGenerator idGenerator,
-      Resource resource,
+      EntityProvider entityProvider,
       Supplier<SpanLimits> spanLimitsSupplier,
       Sampler sampler,
       List<SpanProcessor> spanProcessors) {
     this.clock = clock;
     this.idGenerator = idGenerator;
     this.idGeneratorSafeToSkipIdValidation = idGenerator instanceof RandomIdGenerator;
-    this.resource = resource;
+    this.entityProvider = entityProvider;
     this.spanLimitsSupplier = spanLimitsSupplier;
     this.sampler = sampler;
     this.activeSpanProcessor = SpanProcessor.composite(spanProcessors);
@@ -58,7 +59,7 @@ final class TracerSharedState {
   }
 
   Resource getResource() {
-    return resource;
+    return entityProvider.getResource();
   }
 
   /** Returns the current {@link SpanLimits}. */

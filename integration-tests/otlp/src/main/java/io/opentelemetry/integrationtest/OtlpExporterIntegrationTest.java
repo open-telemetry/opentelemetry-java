@@ -6,6 +6,7 @@
 package io.opentelemetry.integrationtest;
 
 import static io.opentelemetry.api.common.Value.of;
+import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -62,6 +63,9 @@ import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span.Link;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.entities.Entity;
+import io.opentelemetry.sdk.entities.EntityProvider;
+import io.opentelemetry.sdk.entities.SdkEntityProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
@@ -80,7 +84,6 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
@@ -291,10 +294,12 @@ abstract class OtlpExporterIntegrationTest {
   }
 
   private static void testTraceExport(SpanExporter spanExporter) {
+
+    EntityProvider entityProvider = new SdkEntityProvider(singletonList(Entity.create(RESOURCE)));
     SdkTracerProvider tracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
-            .setResource(RESOURCE)
+            .setEntityProvider(entityProvider)
             .build();
 
     SpanContext linkContext =
@@ -344,7 +349,7 @@ abstract class OtlpExporterIntegrationTest {
     assertThat(protoSpan.getName()).isEqualTo("my span name");
     assertThat(protoSpan.getAttributesList())
         .isEqualTo(
-            Collections.singletonList(
+            singletonList(
                 io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                     .setKey("key")
                     .setValue(AnyValue.newBuilder().setStringValue("value").build())
@@ -515,7 +520,7 @@ abstract class OtlpExporterIntegrationTest {
     assertThat(dataPoint.getAsInt()).isEqualTo(100);
     assertThat(dataPoint.getAttributesList())
         .isEqualTo(
-            Collections.singletonList(
+            singletonList(
                 io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                     .setKey("key")
                     .setValue(AnyValue.newBuilder().setStringValue("value").build())
@@ -792,7 +797,7 @@ abstract class OtlpExporterIntegrationTest {
                 .build());
     assertThat(protoLog1.getAttributesList())
         .isEqualTo(
-            Collections.singletonList(
+            singletonList(
                 io.opentelemetry.proto.common.v1.KeyValue.newBuilder()
                     .setKey("key")
                     .setValue(AnyValue.newBuilder().setStringValue("value").build())
