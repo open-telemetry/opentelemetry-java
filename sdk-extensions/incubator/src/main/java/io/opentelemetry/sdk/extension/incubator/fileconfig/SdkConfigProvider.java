@@ -18,7 +18,7 @@ public final class SdkConfigProvider implements ConfigProvider {
   private SdkConfigProvider(OpenTelemetryConfigurationModel model) {
     DeclarativeConfigProperties configProperties =
         DeclarativeConfiguration.toConfigProperties(model);
-    this.instrumentationConfig = configProperties.getStructured("instrumentation");
+    this.instrumentationConfig = configProperties.getStructured("instrumentation/development");
   }
 
   /**

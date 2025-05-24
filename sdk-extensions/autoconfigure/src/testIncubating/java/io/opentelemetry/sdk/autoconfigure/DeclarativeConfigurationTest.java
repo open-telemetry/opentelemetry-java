@@ -72,7 +72,7 @@ class DeclarativeConfigurationTest {
             + "    - simple:\n"
             + "        exporter:\n"
             + "          console: {}\n"
-            + "instrumentation:\n"
+            + "instrumentation/development:\n"
             + "  general:\n"
             + "    http:\n"
             + "      client:\n"
