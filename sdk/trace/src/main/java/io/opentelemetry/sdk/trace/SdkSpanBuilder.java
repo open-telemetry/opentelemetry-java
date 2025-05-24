@@ -226,6 +226,7 @@ class SdkSpanBuilder implements SpanBuilder {
         parentContext,
         spanLimits,
         tracerSharedState.getActiveSpanProcessor(),
+        tracerSharedState.getExceptionAttributesResolver(),
         tracerSharedState.getClock(),
         tracerSharedState.getResource(),
         recordedAttributes,
