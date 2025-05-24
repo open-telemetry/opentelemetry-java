@@ -10,6 +10,7 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import java.net.InetAddress;
 import java.time.Duration;
 import java.util.StringJoiner;
@@ -33,6 +34,7 @@ public final class ZipkinSpanExporterBuilder {
   private boolean compressionEnabled = true;
   private int readTimeoutMillis = (int) TimeUnit.SECONDS.toMillis(10);
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
+  private InternalTelemetryVersion internalTelemetryVersion = InternalTelemetryVersion.LEGACY;
 
   /**
    * Sets the Zipkin sender. Implements the client side of the span transport. An {@link
@@ -186,6 +188,16 @@ public final class ZipkinSpanExporterBuilder {
     return this;
   }
 
+  /**
+   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this exporter
+   * collects.
+   */
+  public ZipkinSpanExporterBuilder setInternalTelemetryVersion(InternalTelemetryVersion level) {
+    requireNonNull(level, "level");
+    this.internalTelemetryVersion = level;
+    return this;
+  }
+
   String toString(boolean includePrefixAndSuffix) {
     StringJoiner joiner =
         includePrefixAndSuffix
@@ -194,6 +206,7 @@ public final class ZipkinSpanExporterBuilder {
     joiner.add("endpoint=" + endpoint);
     joiner.add("compressionEnabled=" + compressionEnabled);
     joiner.add("readTimeoutMillis=" + readTimeoutMillis);
+    joiner.add("internalTelemetrySchemaVersion=" + internalTelemetryVersion);
     // Note: omit sender because we can't log the configuration in any readable way
     // Note: omit encoder because we can't log the configuration in any readable way
     // Note: omit localIpAddressSupplier because we can't log the configuration in any readable way
@@ -218,6 +231,13 @@ public final class ZipkinSpanExporterBuilder {
     }
     OtelToZipkinSpanTransformer transformer =
         OtelToZipkinSpanTransformer.create(localIpAddressSupplier);
-    return new ZipkinSpanExporter(this, encoder, sender, meterProviderSupplier, transformer);
+    return new ZipkinSpanExporter(
+        this,
+        encoder,
+        sender,
+        meterProviderSupplier,
+        internalTelemetryVersion,
+        endpoint,
+        transformer);
   }
 }
