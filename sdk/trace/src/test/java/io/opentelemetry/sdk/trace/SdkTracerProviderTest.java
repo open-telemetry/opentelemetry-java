@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.trace;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -18,6 +19,9 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.entities.Entity;
+import io.opentelemetry.sdk.entities.EntityProvider;
+import io.opentelemetry.sdk.entities.SdkEntityProvider;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
@@ -60,6 +64,7 @@ class SdkTracerProviderTest {
     assertThat(tracerProvider).isNotNull();
     assertThat(tracerProvider)
         .extracting("sharedState")
+        .extracting("entityProvider")
         .hasFieldOrPropertyWithValue("resource", resourceWithDefaults);
   }
 
@@ -87,16 +92,18 @@ class SdkTracerProviderTest {
     Resource resource =
         Resource.create(Attributes.of(stringKey("service.name"), "mySpecialService"));
 
+    EntityProvider entityProvider = new SdkEntityProvider(singletonList(Entity.create(resource)));
     SdkTracerProvider tracerProvider =
         SdkTracerProvider.builder()
             .setClock(mock(Clock.class))
-            .setResource(resource)
+            .setEntityProvider(entityProvider)
             .setIdGenerator(mock(IdGenerator.class))
             .build();
 
     assertThat(tracerProvider).isNotNull();
     assertThat(tracerProvider)
         .extracting("sharedState")
+        .extracting("entityProvider")
         .hasFieldOrPropertyWithValue("resource", resource);
   }
 
@@ -122,10 +129,10 @@ class SdkTracerProviderTest {
   }
 
   @Test
-  void builder_NullResource() {
-    assertThatThrownBy(() -> SdkTracerProvider.builder().setResource(null))
+  void builder_NullEntityProvider() {
+    assertThatThrownBy(() -> SdkTracerProvider.builder().setEntityProvider(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("resource");
+        .hasMessage("entityProvider");
   }
 
   @Test

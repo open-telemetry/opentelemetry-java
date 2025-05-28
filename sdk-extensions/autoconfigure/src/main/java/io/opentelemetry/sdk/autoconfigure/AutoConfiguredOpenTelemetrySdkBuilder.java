@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
@@ -20,6 +21,9 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
+import io.opentelemetry.sdk.entities.Entity;
+import io.opentelemetry.sdk.entities.EntityProvider;
+import io.opentelemetry.sdk.entities.SdkEntityProvider;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
@@ -512,7 +516,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     closeables.add(meterProvider);
 
     SdkTracerProviderBuilder tracerProviderBuilder = SdkTracerProvider.builder();
-    tracerProviderBuilder.setResource(resource);
+    EntityProvider entityProvider = new SdkEntityProvider(singletonList(Entity.create(resource)));
+    tracerProviderBuilder.setEntityProvider(entityProvider);
     TracerProviderConfiguration.configureTracerProvider(
         tracerProviderBuilder,
         config,

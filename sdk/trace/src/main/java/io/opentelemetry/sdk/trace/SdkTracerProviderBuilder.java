@@ -10,6 +10,9 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.entities.Entity;
+import io.opentelemetry.sdk.entities.EntityProvider;
+import io.opentelemetry.sdk.entities.SdkEntityProvider;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.resources.Resource;
@@ -17,6 +20,7 @@ import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -30,7 +34,7 @@ public final class SdkTracerProviderBuilder {
 
   private Clock clock = Clock.getDefault();
   private IdGenerator idsGenerator = IdGenerator.random();
-  private Resource resource = Resource.getDefault();
+  private EntityProvider entityProvider = SdkEntityProvider.getDefault();
   private Supplier<SpanLimits> spanLimitsSupplier = SpanLimits::getDefault;
   private Sampler sampler = DEFAULT_SAMPLER;
   private ScopeConfiguratorBuilder<TracerConfig> tracerConfiguratorBuilder =
@@ -69,6 +73,19 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
+   * Assign an {@link EntityProvider} which can generate a Resource to be attached to all Spans
+   * created by Tracers.
+   *
+   * @param entityProvider An EntityProvider implementation.
+   * @return this
+   */
+  public SdkTracerProviderBuilder setEntityProvider(EntityProvider entityProvider) {
+    requireNonNull(entityProvider, "entityProvider");
+    this.entityProvider = entityProvider;
+    return this;
+  }
+
+  /**
    * Assign a {@link Resource} to be attached to all Spans created by Tracers.
    *
    * @param resource A Resource implementation.
@@ -76,19 +93,19 @@ public final class SdkTracerProviderBuilder {
    */
   public SdkTracerProviderBuilder setResource(Resource resource) {
     requireNonNull(resource, "resource");
-    this.resource = resource;
+    this.entityProvider = new SdkEntityProvider(Collections.singletonList(Entity.create(resource)));
     return this;
   }
 
   /**
-   * Merge a {@link Resource} with the current.
+   * Creates an Entity from a {@link Resource} and merges it into the current EntityProvider.
    *
    * @param resource {@link Resource} to merge with current.
    * @since 1.29.0
    */
   public SdkTracerProviderBuilder addResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
-    this.resource = this.resource.merge(resource);
+    entityProvider.addEntity(Entity.create(resource));
     return this;
   }
 
@@ -223,7 +240,7 @@ public final class SdkTracerProviderBuilder {
     return new SdkTracerProvider(
         clock,
         idsGenerator,
-        resource,
+        entityProvider,
         spanLimitsSupplier,
         sampler,
         spanProcessors,

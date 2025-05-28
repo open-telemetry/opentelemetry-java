@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.otlp.trace;
 
+import static java.util.Collections.singletonList;
+
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
@@ -15,6 +17,9 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
+import io.opentelemetry.sdk.entities.Entity;
+import io.opentelemetry.sdk.entities.EntityProvider;
+import io.opentelemetry.sdk.entities.SdkEntityProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -75,9 +80,10 @@ class SpanPipelineOtlpBenchmark {
 
   @BeforeEach
   public void setUp() {
+    EntityProvider entityProvider = new SdkEntityProvider(singletonList(Entity.create(RESOURCE)));
     tracerProvider =
         SdkTracerProvider.builder()
-            .setResource(RESOURCE)
+            .setEntityProvider(entityProvider)
             .addSpanProcessor(
                 BatchSpanProcessor.builder(
                         OtlpGrpcSpanExporter.builder()
