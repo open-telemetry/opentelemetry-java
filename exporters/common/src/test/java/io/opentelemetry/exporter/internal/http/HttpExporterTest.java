@@ -13,6 +13,7 @@ import static org.mockito.Mockito.doAnswer;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
@@ -206,6 +207,32 @@ class HttpExporterTest {
                                                       "java.io.IOException")
                                                   .build())
                                           .hasBucketCounts(1))));
+    }
+  }
+
+  private static class FakeHttpResponse implements HttpSender.Response {
+
+    final int statusCode;
+    final String statusMessage;
+
+    FakeHttpResponse(int statusCode, String statusMessage) {
+      this.statusCode = statusCode;
+      this.statusMessage = statusMessage;
+    }
+
+    @Override
+    public int statusCode() {
+      return statusCode;
+    }
+
+    @Override
+    public String statusMessage() {
+      return statusMessage;
+    }
+
+    @Override
+    public byte[] responseBody() throws IOException {
+      return new byte[0];
     }
   }
 }

@@ -6,11 +6,14 @@
 package io.opentelemetry.exporter.internal.metrics;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
 import io.opentelemetry.sdk.internal.Signal;
 import io.opentelemetry.sdk.internal.StandardComponentId;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -42,13 +45,37 @@ public class ExporterInstrumentation {
             signal == Signal.PROFILE
                 ? NoopExporterMetrics.INSTANCE
                 : new SemConvExporterMetrics(
-                    meterProviderSupplier,
-                    signal,
-                    componentId,
-                    ServerAttributesUtil.extractServerAttributes(endpoint));
+                    meterProviderSupplier, signal, componentId, extractServerAttributes(endpoint));
         break;
       default:
         throw new IllegalStateException("Unhandled case: " + schema);
+    }
+  }
+
+  // visible for testing
+  static Attributes extractServerAttributes(String httpEndpoint) {
+    try {
+      URI parsed = new URI(httpEndpoint);
+      AttributesBuilder builder = Attributes.builder();
+      String host = parsed.getHost();
+      if (host != null) {
+        builder.put(SemConvAttributes.SERVER_ADDRESS, host);
+      }
+      int port = parsed.getPort();
+      if (port == -1) {
+        String scheme = parsed.getScheme();
+        if ("https".equals(scheme)) {
+          port = 443;
+        } else if ("http".equals(scheme)) {
+          port = 80;
+        }
+      }
+      if (port != -1) {
+        builder.put(SemConvAttributes.SERVER_PORT, port);
+      }
+      return builder.build();
+    } catch (URISyntaxException e) {
+      return Attributes.empty();
     }
   }
 

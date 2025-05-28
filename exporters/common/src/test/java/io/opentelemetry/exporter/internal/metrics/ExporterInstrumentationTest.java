@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.internal.metrics;
 
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -16,6 +17,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.SemConvAttributes;
 import io.opentelemetry.sdk.internal.StandardComponentId;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -23,6 +25,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.util.function.Supplier;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
@@ -102,5 +105,55 @@ class ExporterInstrumentationTest {
     instrumentation.startRecordingExport(42).finishFailed("foo");
     instrumentation.startRecordingExport(42).finishSuccessful();
     verify(meterProviderSupplier, atLeastOnce()).get();
+  }
+
+  @Test
+  void serverAttributesInvalidUrl() {
+    assertThat(ExporterInstrumentation.extractServerAttributes("^")).isEmpty();
+  }
+
+  @Test
+  void serverAttributesEmptyUrl() {
+    assertThat(ExporterInstrumentation.extractServerAttributes("")).isEmpty();
+  }
+
+  @Test
+  void serverAttributesHttps() {
+    assertThat(ExporterInstrumentation.extractServerAttributes("https://example.com/foo/bar?a=b"))
+        .hasSize(2)
+        .containsEntry(SemConvAttributes.SERVER_ADDRESS, "example.com")
+        .containsEntry(SemConvAttributes.SERVER_PORT, 443);
+
+    assertThat(
+            ExporterInstrumentation.extractServerAttributes("https://example.com:1234/foo/bar?a=b"))
+        .hasSize(2)
+        .containsEntry(SemConvAttributes.SERVER_ADDRESS, "example.com")
+        .containsEntry(SemConvAttributes.SERVER_PORT, 1234);
+  }
+
+  @Test
+  void serverAttributesHttp() {
+    assertThat(ExporterInstrumentation.extractServerAttributes("http://example.com/foo/bar?a=b"))
+        .hasSize(2)
+        .containsEntry(SemConvAttributes.SERVER_ADDRESS, "example.com")
+        .containsEntry(SemConvAttributes.SERVER_PORT, 80);
+
+    assertThat(
+            ExporterInstrumentation.extractServerAttributes("http://example.com:1234/foo/bar?a=b"))
+        .hasSize(2)
+        .containsEntry(SemConvAttributes.SERVER_ADDRESS, "example.com")
+        .containsEntry(SemConvAttributes.SERVER_PORT, 1234);
+  }
+
+  @Test
+  void serverAttributesUnknownScheme() {
+    assertThat(ExporterInstrumentation.extractServerAttributes("custom://foo"))
+        .hasSize(1)
+        .containsEntry(SemConvAttributes.SERVER_ADDRESS, "foo");
+
+    assertThat(ExporterInstrumentation.extractServerAttributes("custom://foo:1234"))
+        .hasSize(2)
+        .containsEntry(SemConvAttributes.SERVER_ADDRESS, "foo")
+        .containsEntry(SemConvAttributes.SERVER_PORT, 1234);
   }
 }
