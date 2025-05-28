@@ -44,6 +44,7 @@ class HttpExporterTest {
 
   @ParameterizedTest
   @EnumSource
+  @SuppressLogger(HttpExporter.class)
   void testInternalTelemetry(StandardComponentId.ExporterType exporterType) {
     String signalMetricPrefix;
     String expectedUnit;
