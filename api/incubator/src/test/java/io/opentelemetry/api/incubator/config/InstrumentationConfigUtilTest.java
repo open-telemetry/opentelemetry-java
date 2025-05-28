@@ -24,7 +24,7 @@ class InstrumentationConfigUtilTest {
    * href="https://github.com/open-telemetry/opentelemetry-configuration/blob/main/examples/kitchen-sink.yaml">kitchen-sink.yaml</a>.
    */
   private static final String kitchenSinkInstrumentationConfig =
-      "instrumentation:\n"
+      "instrumentation/development:\n"
           + "  general:\n"
           + "    peer:\n"
           + "      service_mapping:\n"
@@ -54,11 +54,11 @@ class InstrumentationConfigUtilTest {
   private static final ConfigProvider kitchenSinkConfigProvider =
       toConfigProvider(kitchenSinkInstrumentationConfig);
   private static final ConfigProvider emptyInstrumentationConfigProvider =
-      toConfigProvider("instrumentation:\n");
+      toConfigProvider("instrumentation/development:\n");
   private static final ConfigProvider emptyGeneralConfigProvider =
-      toConfigProvider("instrumentation:\n  general:\n");
+      toConfigProvider("instrumentation/development:\n  general:\n");
   private static final ConfigProvider emptyHttpConfigProvider =
-      toConfigProvider("instrumentation:\n  general:\n    http:\n");
+      toConfigProvider("instrumentation/development:\n  general:\n    http:\n");
 
   private static ConfigProvider toConfigProvider(String configYaml) {
     OpenTelemetryConfigurationModel configuration =
