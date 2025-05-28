@@ -49,6 +49,7 @@ class GrpcExporterTest {
   @ParameterizedTest
   @EnumSource
   @SuppressWarnings("unchecked")
+  @SuppressLogger(GrpcExporter.class)
   void testInternalTelemetry(StandardComponentId.ExporterType exporterType) {
     String signalMetricPrefix;
     String expectedUnit;
