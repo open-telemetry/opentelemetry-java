@@ -44,11 +44,6 @@ public class StandardComponentId extends ComponentId.Lazy {
       this.signal = signal;
     }
 
-    @Override
-    public String toString() {
-      return value;
-    }
-
     public Signal signal() {
       return signal;
     }
