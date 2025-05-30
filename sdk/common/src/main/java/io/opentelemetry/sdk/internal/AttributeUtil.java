@@ -8,12 +8,9 @@ package io.opentelemetry.sdk.internal;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 /**
@@ -21,13 +18,6 @@ import java.util.function.Predicate;
  * any time.
  */
 public final class AttributeUtil {
-
-  private static final AttributeKey<String> EXCEPTION_TYPE =
-      AttributeKey.stringKey("exception.type");
-  private static final AttributeKey<String> EXCEPTION_MESSAGE =
-      AttributeKey.stringKey("exception.message");
-  private static final AttributeKey<String> EXCEPTION_STACKTRACE =
-      AttributeKey.stringKey("exception.stacktrace");
 
   private AttributeUtil() {}
 
@@ -104,27 +94,5 @@ public final class AttributeUtil {
       return str.length() < lengthLimit ? value : str.substring(0, lengthLimit);
     }
     return value;
-  }
-
-  public static void addExceptionAttributes(
-      Throwable exception, BiConsumer<AttributeKey<String>, String> attributeConsumer) {
-    String exceptionType = exception.getClass().getCanonicalName();
-    if (exceptionType != null) {
-      attributeConsumer.accept(EXCEPTION_TYPE, exceptionType);
-    }
-
-    String exceptionMessage = exception.getMessage();
-    if (exceptionMessage != null) {
-      attributeConsumer.accept(EXCEPTION_MESSAGE, exceptionMessage);
-    }
-
-    StringWriter stringWriter = new StringWriter();
-    try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
-      exception.printStackTrace(printWriter);
-    }
-    String stackTrace = stringWriter.toString();
-    if (stackTrace != null) {
-      attributeConsumer.accept(EXCEPTION_STACKTRACE, stackTrace);
-    }
   }
 }
