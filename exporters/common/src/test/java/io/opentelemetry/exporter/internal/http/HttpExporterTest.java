@@ -90,7 +90,7 @@ class HttpExporterTest {
               id,
               mockSender,
               () -> meterProvider,
-              InternalTelemetryVersion.V1_33,
+              InternalTelemetryVersion.LATEST,
               "http://testing:1234");
 
       doAnswer(

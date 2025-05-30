@@ -12,8 +12,6 @@ public enum InternalTelemetryVersion {
    * conventions.
    */
   LEGACY,
-  /** Record self-monitoring metrics defined in the the semantic conventions version 1.33. */
-  V1_33,
-  /** Record self-monitoring metrics defined in the latest semantic conventions version. */
+  /** Record self-monitoring metrics defined in the latest semantic conventions version supported by this SDK version. */
   LATEST
 }

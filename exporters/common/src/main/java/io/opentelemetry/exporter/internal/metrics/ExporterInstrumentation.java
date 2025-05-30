@@ -39,7 +39,6 @@ public class ExporterInstrumentation {
                 ? new LegacyExporterMetrics(meterProviderSupplier, componentId.getStandardType())
                 : NoopExporterMetrics.INSTANCE;
         break;
-      case V1_33:
       case LATEST:
         implementation =
             signal == Signal.PROFILE

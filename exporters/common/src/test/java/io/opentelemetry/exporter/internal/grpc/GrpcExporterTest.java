@@ -93,7 +93,7 @@ class GrpcExporterTest {
       GrpcExporter<Marshaler> exporter =
           new GrpcExporter<Marshaler>(
               mockSender,
-              InternalTelemetryVersion.V1_33,
+              InternalTelemetryVersion.LATEST,
               id,
               () -> meterProvider,
               "http://testing:1234");
