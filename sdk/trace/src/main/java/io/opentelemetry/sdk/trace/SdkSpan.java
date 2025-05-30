@@ -336,7 +336,7 @@ final class SdkSpan implements ReadWriteSpan {
                 spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
       }
 
-      attributes.putIfCapacity(key, value);
+      attributes.put(key, value);
     }
     return this;
   }
@@ -464,7 +464,6 @@ final class SdkSpan implements ReadWriteSpan {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public ReadWriteSpan recordException(Throwable exception, Attributes additionalAttributes) {
     if (exception == null) {
       return this;

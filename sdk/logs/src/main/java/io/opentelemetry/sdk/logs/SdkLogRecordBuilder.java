@@ -111,7 +111,7 @@ class SdkLogRecordBuilder implements LogRecordBuilder {
           AttributesMap.create(
               logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
     }
-    this.attributes.putIfCapacity(key, value);
+    this.attributes.put(key, value);
     return this;
   }
 

@@ -115,7 +115,7 @@ final class ExtendedSdkLogRecordBuilder extends SdkLogRecordBuilder
           ExtendedAttributesMap.create(
               logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
     }
-    this.extendedAttributes.putIfCapacity(key, value);
+    this.extendedAttributes.put(key, value);
     return this;
   }
 
