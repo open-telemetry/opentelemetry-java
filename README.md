@@ -304,5 +304,5 @@ Made with [contrib.rocks](https://contrib.rocks).
 [codecov-image]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/main/graph/badge.svg
 [codecov-url]: https://app.codecov.io/gh/open-telemetry/opentelemetry-java/branch/main/
 [dependencies-and-boms]: https://opentelemetry.io/docs/languages/java/intro/#dependencies-and-boms
-[maven-image]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry/opentelemetry-api/badge.svg
-[maven-url]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry/opentelemetry-api
+[maven-image]: https://maven-badges.sml.io/maven-central/io.opentelemetry/opentelemetry-api/badge.svg
+[maven-url]: https://maven-badges.sml.io/maven-central/io.opentelemetry/opentelemetry-api

@@ -37,8 +37,11 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
 
   private final LoggerSharedState sharedState;
   private final ComponentRegistry<SdkLogger> loggerComponentRegistry;
-  private final ScopeConfigurator<LoggerConfig> loggerConfigurator;
   private final boolean isNoopLogRecordProcessor;
+
+  // deliberately not volatile because of performance concerns
+  // - which means its eventually consistent
+  private ScopeConfigurator<LoggerConfig> loggerConfigurator;
 
   /**
    * Returns a new {@link SdkLoggerProviderBuilder} for {@link SdkLoggerProvider}.
@@ -100,6 +103,26 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
   }
 
   /**
+   * Updates the logger configurator, which computes {@link LoggerConfig} for each {@link
+   * InstrumentationScopeInfo}.
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil#setLoggerConfigurator(SdkLoggerProvider,
+   * ScopeConfigurator)}.
+   *
+   * @see LoggerConfig#configuratorBuilder()
+   */
+  void setLoggerConfigurator(ScopeConfigurator<LoggerConfig> loggerConfigurator) {
+    this.loggerConfigurator = loggerConfigurator;
+    this.loggerComponentRegistry
+        .getComponents()
+        .forEach(
+            sdkLogger ->
+                sdkLogger.updateLoggerConfig(
+                    getLoggerConfig(sdkLogger.getInstrumentationScopeInfo())));
+  }
+
+  /**
    * Request the active log processor to process all logs that have not yet been processed.
    *
    * @return a {@link CompletableResultCode} which is completed when the flush is finished
@@ -138,6 +161,8 @@ public final class SdkLoggerProvider implements LoggerProvider, Closeable {
         + sharedState.getLogLimits()
         + ", logRecordProcessor="
         + sharedState.getLogRecordProcessor()
+        + ", loggerConfigurator="
+        + loggerConfigurator
         + '}';
   }
 }

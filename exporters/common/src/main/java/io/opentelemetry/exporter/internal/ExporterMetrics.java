@@ -70,7 +70,7 @@ public class ExporterMetrics {
 
   private LongCounter seen() {
     LongCounter seen = this.seen;
-    if (seen == null) {
+    if (seen == null || isNoop(seen)) {
       seen = meter().counterBuilder(exporterName + ".exporter.seen").build();
       this.seen = seen;
     }
@@ -79,7 +79,7 @@ public class ExporterMetrics {
 
   private LongCounter exported() {
     LongCounter exported = this.exported;
-    if (exported == null) {
+    if (exported == null || isNoop(exported)) {
       exported = meter().counterBuilder(exporterName + ".exporter.exported").build();
       this.exported = exported;
     }
@@ -87,9 +87,17 @@ public class ExporterMetrics {
   }
 
   private Meter meter() {
-    return meterProviderSupplier
-        .get()
-        .get("io.opentelemetry.exporters." + exporterName + "-" + transportName);
+    MeterProvider meterProvider = meterProviderSupplier.get();
+    if (meterProvider == null) {
+      meterProvider = MeterProvider.noop();
+    }
+    return meterProvider.get("io.opentelemetry.exporters." + exporterName + "-" + transportName);
+  }
+
+  private static boolean isNoop(LongCounter counter) {
+    // This is a poor way to identify a Noop implementation, but the API doesn't provide a better
+    // way. Perhaps we could add a common "Noop" interface to allow for an instanceof check?
+    return counter.getClass().getSimpleName().startsWith("Noop");
   }
 
   /**

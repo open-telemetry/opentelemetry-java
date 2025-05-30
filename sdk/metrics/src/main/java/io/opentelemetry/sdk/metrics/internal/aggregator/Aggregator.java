@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.state.Measurement;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import javax.annotation.concurrent.Immutable;
@@ -66,24 +65,6 @@ public interface Aggregator<T extends PointData, U extends ExemplarData> {
    */
   default void diffInPlace(T previousCumulativeReusable, T currentCumulative) {
     throw new UnsupportedOperationException("This aggregator does not support diffInPlace.");
-  }
-
-  /**
-   * Return a new point representing the measurement.
-   *
-   * <p>Aggregators MUST implement diff if it can be used with asynchronous instruments.
-   */
-  default T toPoint(Measurement measurement) {
-    throw new UnsupportedOperationException("This aggregator does not support toPoint.");
-  }
-
-  /**
-   * Resets {@code reusablePoint} to represent the {@code measurement}.
-   *
-   * <p>Aggregators MUST implement diff if it can be used with asynchronous instruments.
-   */
-  default void toPoint(Measurement measurement, T reusablePoint) {
-    throw new UnsupportedOperationException("This aggregator does not support toPoint.");
   }
 
   /** Creates a new reusable point. */

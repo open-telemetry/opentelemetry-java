@@ -54,7 +54,7 @@ dependencies {
   implementation("com.google.auto.value:auto-value-annotations:1.11.0")
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:7.0.3")
-  implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:4.0")
+  implementation("com.gradle.develocity:com.gradle.develocity.gradle.plugin:4.0.2")
   implementation("com.squareup:javapoet:1.13.0")
   implementation("com.squareup.wire:wire-compiler")
   implementation("com.squareup.wire:wire-gradle-plugin")
@@ -62,11 +62,11 @@ dependencies {
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.6")
   implementation("me.champeau.gradle:japicmp-gradle-plugin:0.4.6")
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.3")
-  implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.1.0")
+  implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.2.0")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.2.0")
-  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20")
+  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.21")
   implementation("org.owasp:dependency-check-gradle:12.1.1")
-  implementation("ru.vyarus:gradle-animalsniffer-plugin:2.0.0")
+  implementation("ru.vyarus:gradle-animalsniffer-plugin:2.0.1")
 }
 
 // We can't apply conventions to this build so include important ones such as the Java compilation

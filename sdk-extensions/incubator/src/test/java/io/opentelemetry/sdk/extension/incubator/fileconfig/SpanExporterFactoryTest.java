@@ -17,16 +17,21 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
+import io.opentelemetry.exporter.logging.otlp.internal.traces.OtlpStdoutSpanExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.SpanExporterComponentProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.NameStringValuePairModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ZipkinModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpGrpcExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SpanExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ZipkinSpanExporterModel;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
 import java.io.IOException;
@@ -63,6 +68,7 @@ class SpanExporterFactoryTest {
 
   private final SpiHelper spiHelper =
       spy(SpiHelper.create(SpanExporterFactoryTest.class.getClassLoader()));
+  private final DeclarativeConfigContext context = new DeclarativeConfigContext(spiHelper);
   private List<ComponentProvider<?>> loadedComponentProviders = Collections.emptyList();
 
   @BeforeEach
@@ -90,19 +96,14 @@ class SpanExporterFactoryTest {
   }
 
   @Test
-  void create_OtlpDefaults() {
+  void create_OtlpHttpDefaults() {
     List<Closeable> closeables = new ArrayList<>();
     OtlpHttpSpanExporter expectedExporter = OtlpHttpSpanExporter.getDefault();
     cleanup.addCloseable(expectedExporter);
 
     SpanExporter exporter =
         SpanExporterFactory.getInstance()
-            .create(
-                new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .SpanExporterModel()
-                    .withOtlp(new OtlpModel()),
-                spiHelper,
-                closeables);
+            .create(new SpanExporterModel().withOtlpHttp(new OtlpHttpExporterModel()), context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -110,7 +111,7 @@ class SpanExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider = getComponentProvider("otlp", SpanExporter.class);
+    ComponentProvider<?> componentProvider = getComponentProvider("otlp_http", SpanExporter.class);
     verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("protocol")).isNull();
@@ -118,13 +119,13 @@ class SpanExporterFactoryTest {
     assertThat(configProperties.getStructured("headers")).isNull();
     assertThat(configProperties.getString("compression")).isNull();
     assertThat(configProperties.getInt("timeout")).isNull();
-    assertThat(configProperties.getString("certificate")).isNull();
-    assertThat(configProperties.getString("client_key")).isNull();
-    assertThat(configProperties.getString("client_certificate")).isNull();
+    assertThat(configProperties.getString("certificate_file")).isNull();
+    assertThat(configProperties.getString("client_key_file")).isNull();
+    assertThat(configProperties.getString("client_certificate_file")).isNull();
   }
 
   @Test
-  void create_OtlpConfigured(@TempDir Path tempDir)
+  void create_OtlpHttpConfigured(@TempDir Path tempDir)
       throws CertificateEncodingException, IOException {
     List<Closeable> closeables = new ArrayList<>();
     OtlpHttpSpanExporter expectedExporter =
@@ -150,11 +151,9 @@ class SpanExporterFactoryTest {
     SpanExporter exporter =
         SpanExporterFactory.getInstance()
             .create(
-                new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .SpanExporterModel()
-                    .withOtlp(
-                        new OtlpModel()
-                            .withProtocol("http/protobuf")
+                new SpanExporterModel()
+                    .withOtlpHttp(
+                        new OtlpHttpExporterModel()
                             .withEndpoint("http://example:4318/v1/traces")
                             .withHeaders(
                                 Arrays.asList(
@@ -166,11 +165,10 @@ class SpanExporterFactoryTest {
                                         .withValue("value2")))
                             .withCompression("gzip")
                             .withTimeout(15_000)
-                            .withCertificate(certificatePath)
-                            .withClientKey(clientKeyPath)
-                            .withClientCertificate(clientCertificatePath)),
-                spiHelper,
-                closeables);
+                            .withCertificateFile(certificatePath)
+                            .withClientKeyFile(clientKeyPath)
+                            .withClientCertificateFile(clientCertificatePath)),
+                context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -178,10 +176,9 @@ class SpanExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider = getComponentProvider("otlp", SpanExporter.class);
+    ComponentProvider<?> componentProvider = getComponentProvider("otlp_http", SpanExporter.class);
     verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
-    assertThat(configProperties.getString("protocol")).isEqualTo("http/protobuf");
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318/v1/traces");
     List<DeclarativeConfigProperties> headers = configProperties.getStructuredList("headers");
     assertThat(headers)
@@ -197,9 +194,114 @@ class SpanExporterFactoryTest {
             });
     assertThat(configProperties.getString("compression")).isEqualTo("gzip");
     assertThat(configProperties.getInt("timeout")).isEqualTo(Duration.ofSeconds(15).toMillis());
-    assertThat(configProperties.getString("certificate")).isEqualTo(certificatePath);
-    assertThat(configProperties.getString("client_key")).isEqualTo(clientKeyPath);
-    assertThat(configProperties.getString("client_certificate")).isEqualTo(clientCertificatePath);
+    assertThat(configProperties.getString("certificate_file")).isEqualTo(certificatePath);
+    assertThat(configProperties.getString("client_key_file")).isEqualTo(clientKeyPath);
+    assertThat(configProperties.getString("client_certificate_file"))
+        .isEqualTo(clientCertificatePath);
+  }
+
+  @Test
+  void create_OtlpGrpcDefaults() {
+    List<Closeable> closeables = new ArrayList<>();
+    OtlpGrpcSpanExporter expectedExporter = OtlpGrpcSpanExporter.getDefault();
+    cleanup.addCloseable(expectedExporter);
+
+    SpanExporter exporter =
+        SpanExporterFactory.getInstance()
+            .create(new SpanExporterModel().withOtlpGrpc(new OtlpGrpcExporterModel()), context);
+    cleanup.addCloseable(exporter);
+    cleanup.addCloseables(closeables);
+
+    assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
+
+    ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
+        ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
+    ComponentProvider<?> componentProvider = getComponentProvider("otlp_grpc", SpanExporter.class);
+    verify(componentProvider).create(configCaptor.capture());
+    DeclarativeConfigProperties configProperties = configCaptor.getValue();
+    assertThat(configProperties.getString("endpoint")).isNull();
+    assertThat(configProperties.getStructured("headers")).isNull();
+    assertThat(configProperties.getString("compression")).isNull();
+    assertThat(configProperties.getInt("timeout")).isNull();
+    assertThat(configProperties.getString("certificate_file")).isNull();
+    assertThat(configProperties.getString("client_key_file")).isNull();
+    assertThat(configProperties.getString("client_certificate_file")).isNull();
+  }
+
+  @Test
+  void create_OtlpGrpcConfigured(@TempDir Path tempDir)
+      throws CertificateEncodingException, IOException {
+    List<Closeable> closeables = new ArrayList<>();
+    OtlpGrpcSpanExporter expectedExporter =
+        OtlpGrpcSpanExporter.builder()
+            .setEndpoint("http://example:4317")
+            .addHeader("key1", "value1")
+            .addHeader("key2", "value2")
+            .setTimeout(Duration.ofSeconds(15))
+            .setCompression("gzip")
+            .build();
+    cleanup.addCloseable(expectedExporter);
+
+    // Write certificates to temp files
+    String certificatePath =
+        createTempFileWithContent(
+            tempDir, "certificate.cert", serverTls.certificate().getEncoded());
+    String clientKeyPath =
+        createTempFileWithContent(tempDir, "clientKey.key", clientTls.privateKey().getEncoded());
+    String clientCertificatePath =
+        createTempFileWithContent(
+            tempDir, "clientCertificate.cert", clientTls.certificate().getEncoded());
+
+    SpanExporter exporter =
+        SpanExporterFactory.getInstance()
+            .create(
+                new SpanExporterModel()
+                    .withOtlpGrpc(
+                        new OtlpGrpcExporterModel()
+                            .withEndpoint("http://example:4317")
+                            .withHeaders(
+                                Arrays.asList(
+                                    new NameStringValuePairModel()
+                                        .withName("key1")
+                                        .withValue("value1"),
+                                    new NameStringValuePairModel()
+                                        .withName("key2")
+                                        .withValue("value2")))
+                            .withCompression("gzip")
+                            .withTimeout(15_000)
+                            .withCertificateFile(certificatePath)
+                            .withClientKeyFile(clientKeyPath)
+                            .withClientCertificateFile(clientCertificatePath)),
+                context);
+    cleanup.addCloseable(exporter);
+    cleanup.addCloseables(closeables);
+
+    assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
+
+    ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
+        ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
+    ComponentProvider<?> componentProvider = getComponentProvider("otlp_grpc", SpanExporter.class);
+    verify(componentProvider).create(configCaptor.capture());
+    DeclarativeConfigProperties configProperties = configCaptor.getValue();
+    assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4317");
+    List<DeclarativeConfigProperties> headers = configProperties.getStructuredList("headers");
+    assertThat(headers)
+        .isNotNull()
+        .satisfiesExactly(
+            header -> {
+              assertThat(header.getString("name")).isEqualTo("key1");
+              assertThat(header.getString("value")).isEqualTo("value1");
+            },
+            header -> {
+              assertThat(header.getString("name")).isEqualTo("key2");
+              assertThat(header.getString("value")).isEqualTo("value2");
+            });
+    assertThat(configProperties.getString("compression")).isEqualTo("gzip");
+    assertThat(configProperties.getInt("timeout")).isEqualTo(Duration.ofSeconds(15).toMillis());
+    assertThat(configProperties.getString("certificate_file")).isEqualTo(certificatePath);
+    assertThat(configProperties.getString("client_key_file")).isEqualTo(clientKeyPath);
+    assertThat(configProperties.getString("client_certificate_file"))
+        .isEqualTo(clientCertificatePath);
   }
 
   @Test
@@ -210,12 +312,7 @@ class SpanExporterFactoryTest {
 
     SpanExporter exporter =
         SpanExporterFactory.getInstance()
-            .create(
-                new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .SpanExporterModel()
-                    .withConsole(new ConsoleModel()),
-                spiHelper,
-                closeables);
+            .create(new SpanExporterModel().withConsole(new ConsoleExporterModel()), context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -231,12 +328,7 @@ class SpanExporterFactoryTest {
 
     SpanExporter exporter =
         SpanExporterFactory.getInstance()
-            .create(
-                new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .SpanExporterModel()
-                    .withZipkin(new ZipkinModel()),
-                spiHelper,
-                closeables);
+            .create(new SpanExporterModel().withZipkin(new ZipkinSpanExporterModel()), context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -264,14 +356,12 @@ class SpanExporterFactoryTest {
     SpanExporter exporter =
         SpanExporterFactory.getInstance()
             .create(
-                new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .SpanExporterModel()
+                new SpanExporterModel()
                     .withZipkin(
-                        new ZipkinModel()
+                        new ZipkinSpanExporterModel()
                             .withEndpoint("http://zipkin:9411/v1/v2/spans")
                             .withTimeout(15_000)),
-                spiHelper,
-                closeables);
+                context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -287,6 +377,30 @@ class SpanExporterFactoryTest {
   }
 
   @Test
+  void create_OtlpFile() {
+    List<Closeable> closeables = new ArrayList<>();
+    OtlpStdoutSpanExporter expectedExporter = OtlpStdoutSpanExporter.builder().build();
+    cleanup.addCloseable(expectedExporter);
+
+    SpanExporter exporter =
+        SpanExporterFactory.getInstance()
+            .create(
+                new SpanExporterModel()
+                    .withOtlpFileDevelopment(new ExperimentalOtlpFileExporterModel()),
+                context);
+    cleanup.addCloseable(exporter);
+    cleanup.addCloseables(closeables);
+
+    assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
+
+    ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
+        ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
+    ComponentProvider<?> componentProvider =
+        getComponentProvider("otlp_file/development", SpanExporter.class);
+    verify(componentProvider).create(configCaptor.capture());
+  }
+
+  @Test
   void create_SpiExporter_Unknown() {
     List<Closeable> closeables = new ArrayList<>();
 
@@ -294,12 +408,10 @@ class SpanExporterFactoryTest {
             () ->
                 SpanExporterFactory.getInstance()
                     .create(
-                        new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                                .SpanExporterModel()
+                        new SpanExporterModel()
                             .withAdditionalProperty(
                                 "unknown_key", ImmutableMap.of("key1", "value1")),
-                        spiHelper,
-                        new ArrayList<>()))
+                        context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
             "No component provider detected for io.opentelemetry.sdk.trace.export.SpanExporter with name \"unknown_key\".");
@@ -311,11 +423,9 @@ class SpanExporterFactoryTest {
     SpanExporter spanExporter =
         SpanExporterFactory.getInstance()
             .create(
-                new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .SpanExporterModel()
+                new SpanExporterModel()
                     .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
-                spiHelper,
-                new ArrayList<>());
+                context);
     assertThat(spanExporter).isInstanceOf(SpanExporterComponentProvider.TestSpanExporter.class);
     assertThat(
             ((SpanExporterComponentProvider.TestSpanExporter) spanExporter)

@@ -101,6 +101,25 @@ public final class SdkLoggerProviderBuilder {
   }
 
   /**
+   * Add a log processor as first. {@link LogRecordProcessor#onEmit(Context, ReadWriteLogRecord)}
+   * will be called each time a log is emitted by {@link Logger} instances obtained from the {@link
+   * SdkLoggerProvider}.
+   *
+   * <p>Compared to {@link SdkLoggerProviderBuilder#addLogRecordProcessor(LogRecordProcessor)}, this
+   * method adds the processor to the beginning of the processor pipeline. So the {@code processor}
+   * given will be executed before than the other processors already added.
+   *
+   * @param processor the log processor
+   * @return this
+   * @since 1.50.0
+   */
+  public SdkLoggerProviderBuilder addLogRecordProcessorFirst(LogRecordProcessor processor) {
+    requireNonNull(processor, "processor");
+    logRecordProcessors.add(0, processor);
+    return this;
+  }
+
+  /**
    * Assign a {@link Clock}.
    *
    * @param clock The clock to use for all temporal needs.

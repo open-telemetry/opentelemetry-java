@@ -32,8 +32,10 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
 
   private final HttpExporterBuilder<Marshaler> builder;
   private final HttpExporter<Marshaler> delegate;
-  private final AggregationTemporalitySelector aggregationTemporalitySelector;
-  private final DefaultAggregationSelector defaultAggregationSelector;
+  // Visible for testing
+  final AggregationTemporalitySelector aggregationTemporalitySelector;
+  // Visible for testing
+  final DefaultAggregationSelector defaultAggregationSelector;
   private final MetricReusableDataMarshaler marshaler;
 
   OtlpHttpMetricExporter(
@@ -78,7 +80,11 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
    * @since 1.29.0
    */
   public OtlpHttpMetricExporterBuilder toBuilder() {
-    return new OtlpHttpMetricExporterBuilder(builder.copy(), marshaler.getMemoryMode());
+    return new OtlpHttpMetricExporterBuilder(
+        builder.copy(),
+        aggregationTemporalitySelector,
+        defaultAggregationSelector,
+        marshaler.getMemoryMode());
   }
 
   @Override

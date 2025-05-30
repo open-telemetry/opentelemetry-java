@@ -5,18 +5,11 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
-import static java.util.stream.Collectors.joining;
-
-import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.JaegerRemoteModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBasedModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ParentBasedSamplerModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceIdRatioBasedModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.TraceIdRatioBasedSamplerModel;
 import io.opentelemetry.sdk.trace.samplers.ParentBasedSamplerBuilder;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import java.io.Closeable;
-import java.util.List;
 import java.util.Map;
 
 final class SamplerFactory implements Factory<SamplerModel, Sampler> {
@@ -30,14 +23,14 @@ final class SamplerFactory implements Factory<SamplerModel, Sampler> {
   }
 
   @Override
-  public Sampler create(SamplerModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+  public Sampler create(SamplerModel model, DeclarativeConfigContext context) {
     if (model.getAlwaysOn() != null) {
       return Sampler.alwaysOn();
     }
     if (model.getAlwaysOff() != null) {
       return Sampler.alwaysOff();
     }
-    TraceIdRatioBasedModel traceIdRatioBasedModel = model.getTraceIdRatioBased();
+    TraceIdRatioBasedSamplerModel traceIdRatioBasedModel = model.getTraceIdRatioBased();
     if (traceIdRatioBasedModel != null) {
       Double ratio = traceIdRatioBasedModel.getRatio();
       if (ratio == null) {
@@ -45,57 +38,36 @@ final class SamplerFactory implements Factory<SamplerModel, Sampler> {
       }
       return Sampler.traceIdRatioBased(ratio);
     }
-    ParentBasedModel parentBasedModel = model.getParentBased();
+    ParentBasedSamplerModel parentBasedModel = model.getParentBased();
     if (parentBasedModel != null) {
       Sampler root =
           parentBasedModel.getRoot() == null
               ? Sampler.alwaysOn()
-              : create(parentBasedModel.getRoot(), spiHelper, closeables);
+              : create(parentBasedModel.getRoot(), context);
       ParentBasedSamplerBuilder builder = Sampler.parentBasedBuilder(root);
       if (parentBasedModel.getRemoteParentSampled() != null) {
-        Sampler sampler = create(parentBasedModel.getRemoteParentSampled(), spiHelper, closeables);
+        Sampler sampler = create(parentBasedModel.getRemoteParentSampled(), context);
         builder.setRemoteParentSampled(sampler);
       }
       if (parentBasedModel.getRemoteParentNotSampled() != null) {
-        Sampler sampler =
-            create(parentBasedModel.getRemoteParentNotSampled(), spiHelper, closeables);
+        Sampler sampler = create(parentBasedModel.getRemoteParentNotSampled(), context);
         builder.setRemoteParentNotSampled(sampler);
       }
       if (parentBasedModel.getLocalParentSampled() != null) {
-        Sampler sampler = create(parentBasedModel.getLocalParentSampled(), spiHelper, closeables);
+        Sampler sampler = create(parentBasedModel.getLocalParentSampled(), context);
         builder.setLocalParentSampled(sampler);
       }
       if (parentBasedModel.getLocalParentNotSampled() != null) {
-        Sampler sampler =
-            create(parentBasedModel.getLocalParentNotSampled(), spiHelper, closeables);
+        Sampler sampler = create(parentBasedModel.getLocalParentNotSampled(), context);
         builder.setLocalParentNotSampled(sampler);
       }
       return builder.build();
     }
 
-    JaegerRemoteModel jaegerRemoteModel = model.getJaegerRemote();
-    if (jaegerRemoteModel != null) {
-      model.getAdditionalProperties().put("jaeger_remote", jaegerRemoteModel);
-    }
+    model.getAdditionalProperties().compute("jaeger_remote", (k, v) -> model.getJaegerRemote());
 
-    if (!model.getAdditionalProperties().isEmpty()) {
-      Map<String, Object> additionalProperties = model.getAdditionalProperties();
-      if (additionalProperties.size() > 1) {
-        throw new DeclarativeConfigException(
-            "Invalid configuration - multiple samplers exporters set: "
-                + additionalProperties.keySet().stream().collect(joining(",", "[", "]")));
-      }
-      Map.Entry<String, Object> exporterKeyValue =
-          additionalProperties.entrySet().stream()
-              .findFirst()
-              .orElseThrow(
-                  () -> new IllegalStateException("Missing sampler. This is a programming error."));
-      Sampler sampler =
-          FileConfigUtil.loadComponent(
-              spiHelper, Sampler.class, exporterKeyValue.getKey(), exporterKeyValue.getValue());
-      return FileConfigUtil.addAndReturn(closeables, sampler);
-    } else {
-      throw new DeclarativeConfigException("sampler must be set");
-    }
+    Map.Entry<String, Object> keyValue =
+        FileConfigUtil.getSingletonMapEntry(model.getAdditionalProperties(), "sampler");
+    return context.loadComponent(Sampler.class, keyValue.getKey(), keyValue.getValue());
   }
 }

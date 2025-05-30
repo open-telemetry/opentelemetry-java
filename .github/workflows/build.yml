@@ -82,10 +82,10 @@ jobs:
           RUN_JMH_BASED_TESTS: ${{ matrix.jmh-based-tests }}
 
       - name: Check for diff
-        # The jApiCmp diff compares current to latest, which isn't appropriate for release branches, or for bot-generated PRs
+        # The jApiCmp diff compares current to latest, which isn't appropriate for release branches
         # this fails on windows because of the bash-specific if/then/else syntax, but that's ok
         # because we only need to run this validation once (on any platform)
-        if: ${{ matrix.os != 'windows-latest' && !startsWith(github.ref_name, 'release/') && !startsWith(github.base_ref, 'release/') && (github.actor != 'opentelemetrybot') }}
+        if: ${{ matrix.os != 'windows-latest' && !startsWith(github.ref_name, 'release/') && !startsWith(github.base_ref, 'release/') }}
         run: |
           # need to "git add" in case any generated files did not already exist
           git add docs/apidiffs
@@ -99,7 +99,7 @@ jobs:
             exit 1
           fi
 
-      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
+      - uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
         if: ${{ matrix.coverage }}
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

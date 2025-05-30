@@ -18,11 +18,11 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.MutableDoublePointData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.exemplar.ExemplarReservoir;
-import io.opentelemetry.sdk.metrics.internal.state.Measurement;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -67,25 +67,6 @@ public final class DoubleLastValueAggregator
   }
 
   @Override
-  public DoublePointData toPoint(Measurement measurement) {
-    return ImmutableDoublePointData.create(
-        measurement.startEpochNanos(),
-        measurement.epochNanos(),
-        measurement.attributes(),
-        measurement.doubleValue());
-  }
-
-  @Override
-  public void toPoint(Measurement measurement, DoublePointData reusablePoint) {
-    ((MutableDoublePointData) reusablePoint)
-        .set(
-            measurement.startEpochNanos(),
-            measurement.epochNanos(),
-            measurement.attributes(),
-            measurement.doubleValue());
-  }
-
-  @Override
   public DoublePointData createReusablePoint() {
     return new MutableDoublePointData();
   }
@@ -114,8 +95,8 @@ public final class DoubleLastValueAggregator
   }
 
   static final class Handle extends AggregatorHandle<DoublePointData, DoubleExemplarData> {
-    @Nullable private static final Double DEFAULT_VALUE = null;
-    private final AtomicReference<Double> current = new AtomicReference<>(DEFAULT_VALUE);
+    private final AtomicReference<AtomicLong> current = new AtomicReference<>(null);
+    private final AtomicLong valueBits = new AtomicLong();
 
     // Only used when memoryMode is REUSABLE_DATA
     @Nullable private final MutableDoublePointData reusablePoint;
@@ -136,20 +117,22 @@ public final class DoubleLastValueAggregator
         Attributes attributes,
         List<DoubleExemplarData> exemplars,
         boolean reset) {
-      Double value = reset ? this.current.getAndSet(DEFAULT_VALUE) : this.current.get();
+      AtomicLong valueBits =
+          Objects.requireNonNull(reset ? this.current.getAndSet(null) : this.current.get());
+      double value = Double.longBitsToDouble(valueBits.get());
       if (reusablePoint != null) {
-        reusablePoint.set(
-            startEpochNanos, epochNanos, attributes, Objects.requireNonNull(value), exemplars);
+        reusablePoint.set(startEpochNanos, epochNanos, attributes, value, exemplars);
         return reusablePoint;
       } else {
         return ImmutableDoublePointData.create(
-            startEpochNanos, epochNanos, attributes, Objects.requireNonNull(value), exemplars);
+            startEpochNanos, epochNanos, attributes, value, exemplars);
       }
     }
 
     @Override
     protected void doRecordDouble(double value) {
-      current.set(value);
+      valueBits.set(Double.doubleToLongBits(value));
+      current.compareAndSet(null, valueBits);
     }
   }
 }

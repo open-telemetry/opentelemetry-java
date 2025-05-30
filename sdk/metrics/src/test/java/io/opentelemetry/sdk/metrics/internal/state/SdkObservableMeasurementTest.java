@@ -6,15 +6,16 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.metrics.data.AggregationTemporality.CUMULATIVE;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import io.github.netmikey.logunit.api.LogCapturer;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
@@ -28,7 +29,6 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.mockito.ArgumentCaptor;
 import org.slf4j.event.Level;
 
 @SuppressWarnings("rawtypes")
@@ -39,11 +39,10 @@ class SdkObservableMeasurementTest {
       LogCapturer.create().captureForLogger(SdkObservableMeasurement.class.getName(), Level.DEBUG);
 
   private AsynchronousMetricStorage mockAsyncStorage1;
+  private AsynchronousMetricStorage mockAsyncStorage2;
   private RegisteredReader registeredReader1;
   private SdkObservableMeasurement sdkObservableMeasurement;
-  private ArgumentCaptor<Measurement> measurementArgumentCaptor;
 
-  @SuppressWarnings("unchecked")
   private void setup(MemoryMode memoryMode) {
     InstrumentationScopeInfo instrumentationScopeInfo =
         InstrumentationScopeInfo.builder("test-scope").build();
@@ -66,10 +65,9 @@ class SdkObservableMeasurementTest {
     InMemoryMetricReader reader2 = InMemoryMetricReader.builder().setMemoryMode(memoryMode).build();
     RegisteredReader registeredReader2 = RegisteredReader.create(reader2, ViewRegistry.create());
 
-    measurementArgumentCaptor = ArgumentCaptor.forClass(Measurement.class);
     mockAsyncStorage1 = mock(AsynchronousMetricStorage.class);
     when(mockAsyncStorage1.getRegisteredReader()).thenReturn(registeredReader1);
-    AsynchronousMetricStorage mockAsyncStorage2 = mock(AsynchronousMetricStorage.class);
+    mockAsyncStorage2 = mock(AsynchronousMetricStorage.class);
     when(mockAsyncStorage2.getRegisteredReader()).thenReturn(registeredReader2);
 
     sdkObservableMeasurement =
@@ -79,21 +77,29 @@ class SdkObservableMeasurementTest {
             Arrays.asList(mockAsyncStorage1, mockAsyncStorage2));
   }
 
+  void setupAndSetActiveReader(MemoryMode memoryMode) {
+    setup(memoryMode);
+    sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
+  }
+
   @Test
-  void recordLong_ImmutableData() {
+  void setActiveReader_SetsEpochInformation() {
     setup(MemoryMode.IMMUTABLE_DATA);
 
     sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
 
+    verify(mockAsyncStorage1).setEpochInformation(0, 10);
+    verify(mockAsyncStorage2).getRegisteredReader();
+    verifyNoMoreInteractions(mockAsyncStorage2);
+  }
+
+  @Test
+  void recordLong_ImmutableData() {
+    setupAndSetActiveReader(MemoryMode.IMMUTABLE_DATA);
+
     try {
       sdkObservableMeasurement.record(5);
-
-      verify(mockAsyncStorage1).record(measurementArgumentCaptor.capture());
-      Measurement passedMeasurement = measurementArgumentCaptor.getValue();
-      assertThat(passedMeasurement).isInstanceOf(ImmutableMeasurement.class);
-      assertThat(passedMeasurement.longValue()).isEqualTo(5);
-      assertThat(passedMeasurement.startEpochNanos()).isEqualTo(0);
-      assertThat(passedMeasurement.epochNanos()).isEqualTo(10);
+      verify(mockAsyncStorage1).record(Attributes.empty(), 5);
     } finally {
       sdkObservableMeasurement.unsetActiveReader();
     }
@@ -101,19 +107,11 @@ class SdkObservableMeasurementTest {
 
   @Test
   void recordDouble_ImmutableData() {
-    setup(MemoryMode.IMMUTABLE_DATA);
-
-    sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
+    setupAndSetActiveReader(MemoryMode.IMMUTABLE_DATA);
 
     try {
       sdkObservableMeasurement.record(4.3);
-
-      verify(mockAsyncStorage1).record(measurementArgumentCaptor.capture());
-      Measurement passedMeasurement = measurementArgumentCaptor.getValue();
-      assertThat(passedMeasurement).isInstanceOf(ImmutableMeasurement.class);
-      assertThat(passedMeasurement.doubleValue()).isEqualTo(4.3);
-      assertThat(passedMeasurement.startEpochNanos()).isEqualTo(0);
-      assertThat(passedMeasurement.epochNanos()).isEqualTo(10);
+      verify(mockAsyncStorage1).record(Attributes.empty(), 4.3);
     } finally {
       sdkObservableMeasurement.unsetActiveReader();
     }
@@ -121,31 +119,14 @@ class SdkObservableMeasurementTest {
 
   @Test
   void recordDouble_ReusableData() {
-    setup(MemoryMode.REUSABLE_DATA);
-
-    sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
+    setupAndSetActiveReader(MemoryMode.REUSABLE_DATA);
 
     try {
       sdkObservableMeasurement.record(4.3);
-
-      verify(mockAsyncStorage1).record(measurementArgumentCaptor.capture());
-      Measurement firstMeasurement = measurementArgumentCaptor.getValue();
-      assertThat(firstMeasurement).isInstanceOf(MutableMeasurement.class);
-      assertThat(firstMeasurement.doubleValue()).isEqualTo(4.3);
-      assertThat(firstMeasurement.startEpochNanos()).isEqualTo(0);
-      assertThat(firstMeasurement.epochNanos()).isEqualTo(10);
+      verify(mockAsyncStorage1).record(Attributes.empty(), 4.3);
 
       sdkObservableMeasurement.record(5.3);
-
-      verify(mockAsyncStorage1, times(2)).record(measurementArgumentCaptor.capture());
-      Measurement secondMeasurement = measurementArgumentCaptor.getValue();
-      assertThat(secondMeasurement).isInstanceOf(MutableMeasurement.class);
-      assertThat(secondMeasurement.doubleValue()).isEqualTo(5.3);
-      assertThat(secondMeasurement.startEpochNanos()).isEqualTo(0);
-      assertThat(secondMeasurement.epochNanos()).isEqualTo(10);
-
-      // LeasedMeasurement should be re-used
-      assertThat(secondMeasurement).isSameAs(firstMeasurement);
+      verify(mockAsyncStorage1).record(Attributes.empty(), 5.3);
     } finally {
       sdkObservableMeasurement.unsetActiveReader();
     }
@@ -153,31 +134,14 @@ class SdkObservableMeasurementTest {
 
   @Test
   void recordLong_ReusableData() {
-    setup(MemoryMode.REUSABLE_DATA);
-
-    sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
+    setupAndSetActiveReader(MemoryMode.REUSABLE_DATA);
 
     try {
       sdkObservableMeasurement.record(2);
-
-      verify(mockAsyncStorage1).record(measurementArgumentCaptor.capture());
-      Measurement firstMeasurement = measurementArgumentCaptor.getValue();
-      assertThat(firstMeasurement).isInstanceOf(MutableMeasurement.class);
-      assertThat(firstMeasurement.longValue()).isEqualTo(2);
-      assertThat(firstMeasurement.startEpochNanos()).isEqualTo(0);
-      assertThat(firstMeasurement.epochNanos()).isEqualTo(10);
+      verify(mockAsyncStorage1).record(Attributes.empty(), 2);
 
       sdkObservableMeasurement.record(6);
-
-      verify(mockAsyncStorage1, times(2)).record(measurementArgumentCaptor.capture());
-      Measurement secondMeasurement = measurementArgumentCaptor.getValue();
-      assertThat(secondMeasurement).isInstanceOf(MutableMeasurement.class);
-      assertThat(secondMeasurement.longValue()).isEqualTo(6);
-      assertThat(secondMeasurement.startEpochNanos()).isEqualTo(0);
-      assertThat(secondMeasurement.epochNanos()).isEqualTo(10);
-
-      // LeasedMeasurement should be re-used
-      assertThat(secondMeasurement).isSameAs(firstMeasurement);
+      verify(mockAsyncStorage1).record(Attributes.empty(), 6);
     } finally {
       sdkObservableMeasurement.unsetActiveReader();
     }
@@ -186,11 +150,10 @@ class SdkObservableMeasurementTest {
   @Test
   @SuppressLogger(SdkObservableMeasurement.class)
   void recordDouble_NaN() {
-    setup(MemoryMode.REUSABLE_DATA);
-    sdkObservableMeasurement.setActiveReader(registeredReader1, 0, 10);
-    sdkObservableMeasurement.record(Double.NaN);
+    setupAndSetActiveReader(MemoryMode.REUSABLE_DATA);
 
-    verify(mockAsyncStorage1, never()).record(any());
+    sdkObservableMeasurement.record(Double.NaN);
+    verify(mockAsyncStorage1, never()).record(any(), anyDouble());
     logs.assertContains(
         "Instrument testCounter has recorded measurement Not-a-Number (NaN) value with attributes {}. Dropping measurement.");
   }

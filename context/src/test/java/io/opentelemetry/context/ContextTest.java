@@ -7,6 +7,7 @@ package io.opentelemetry.context;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
@@ -106,6 +107,12 @@ class ContextTest {
       assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
     }
     assertThat(Context.current().get(ANIMAL)).isNull();
+  }
+
+  @Test
+  void keyEqualityIsInstanceCheck() {
+    Context context = Context.current().with(ContextKey.named("animal"), "cat");
+    assertNull(context.get(ContextKey.named("animal"))); // yup
   }
 
   @Test

@@ -29,7 +29,6 @@ import javax.annotation.concurrent.Immutable;
  *
  * @since 1.27.0
  */
-// TODO (trask) delete this class once event name stabilizes
 @Immutable
 @AutoValue
 @AutoValue.CopyAnnotations
@@ -67,6 +66,10 @@ public abstract class TestExtendedLogRecordData implements ExtendedLogRecordData
   @Nullable
   public abstract Value<?> getBodyValue();
 
+  @Override
+  @Nullable
+  public abstract String getEventName();
+
   TestExtendedLogRecordData() {}
 
   /**
@@ -93,6 +96,7 @@ public abstract class TestExtendedLogRecordData implements ExtendedLogRecordData
     public abstract Builder setInstrumentationScopeInfo(
         InstrumentationScopeInfo instrumentationScopeInfo);
 
+    /** Sets the event name. */
     public abstract Builder setEventName(String eventName);
 
     /**

@@ -15,6 +15,7 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 /** Extended {@link LogRecordBuilder} with experimental APIs. */
 public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
@@ -59,6 +60,15 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
     setBody(body.asString());
     return this;
   }
+
+  /**
+   * Sets the event name, which identifies the class / type of the Event.
+   *
+   * <p>This name should uniquely identify the event structure (both attributes and body). A log
+   * record with a non-empty event name is an Event.
+   */
+  @Override
+  ExtendedLogRecordBuilder setEventName(String eventName);
 
   /**
    * {@inheritDoc}
@@ -110,7 +120,7 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
    * attribute APIs.
    */
   @Override
-  <T> ExtendedLogRecordBuilder setAttribute(AttributeKey<T> key, T value);
+  <T> ExtendedLogRecordBuilder setAttribute(AttributeKey<T> key, @Nullable T value);
 
   /**
    * Set an attribute.
@@ -122,14 +132,6 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
    * attribute APIs.
    */
   <T> ExtendedLogRecordBuilder setAttribute(ExtendedAttributeKey<T> key, T value);
-
-  /**
-   * Sets the event name, which identifies the class / type of the Event.
-   *
-   * <p>This name should uniquely identify the event structure (both attributes and body). A log
-   * record with a non-empty event name is an Event.
-   */
-  ExtendedLogRecordBuilder setEventName(String eventName);
 
   /** Set standard {@code exception.*} attributes based on the {@code throwable}. */
   ExtendedLogRecordBuilder setException(Throwable throwable);
