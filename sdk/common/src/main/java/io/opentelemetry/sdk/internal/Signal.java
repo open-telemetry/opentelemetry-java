@@ -25,8 +25,7 @@ public enum Signal {
     this.metricUnit = metricUnit;
   }
 
-  @Override
-  public String toString() {
+  public String logFriendlyName() {
     return name().toLowerCase(Locale.ENGLISH);
   }
 

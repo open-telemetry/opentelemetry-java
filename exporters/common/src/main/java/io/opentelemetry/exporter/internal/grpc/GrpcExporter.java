@@ -48,7 +48,7 @@ public final class GrpcExporter<T extends Marshaler> {
       StandardComponentId componentId,
       Supplier<MeterProvider> meterProviderSupplier,
       String endpoint) {
-    this.type = componentId.getStandardType().signal().toString();
+    this.type = componentId.getStandardType().signal().logFriendlyName();
     this.grpcSender = grpcSender;
     this.exporterMetrics =
         new ExporterInstrumentation(

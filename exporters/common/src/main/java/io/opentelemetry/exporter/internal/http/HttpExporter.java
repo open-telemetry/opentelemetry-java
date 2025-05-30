@@ -45,7 +45,7 @@ public final class HttpExporter<T extends Marshaler> {
       Supplier<MeterProvider> meterProviderSupplier,
       InternalTelemetryVersion internalTelemetryVersion,
       String endpoint) {
-    this.type = componentId.getStandardType().signal().toString();
+    this.type = componentId.getStandardType().signal().logFriendlyName();
     this.httpSender = httpSender;
     this.exporterMetrics =
         new ExporterInstrumentation(
