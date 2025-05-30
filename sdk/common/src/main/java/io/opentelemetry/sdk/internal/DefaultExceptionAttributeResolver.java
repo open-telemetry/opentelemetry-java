@@ -27,17 +27,24 @@ public final class DefaultExceptionAttributeResolver implements ExceptionAttribu
   @Override
   public void setExceptionAttributes(
       AttributeSetter attributeSetter, Throwable throwable, int maxAttributeLength) {
-    attributeSetter.setAttribute(
-        ExceptionAttributeResolver.EXCEPTION_TYPE, throwable.getClass().getCanonicalName());
-    String message = throwable.getMessage();
-    if (message != null) {
-      attributeSetter.setAttribute(ExceptionAttributeResolver.EXCEPTION_MESSAGE, message);
+    String exceptionType = throwable.getClass().getCanonicalName();
+    if (exceptionType != null) {
+      attributeSetter.setAttribute(ExceptionAttributeResolver.EXCEPTION_TYPE, exceptionType);
     }
+
+    String exceptionMessage = throwable.getMessage();
+    if (exceptionMessage != null) {
+      attributeSetter.setAttribute(ExceptionAttributeResolver.EXCEPTION_MESSAGE, exceptionMessage);
+    }
+
     StringWriter stringWriter = new StringWriter();
     try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
       throwable.printStackTrace(printWriter);
     }
-    attributeSetter.setAttribute(
-        ExceptionAttributeResolver.EXCEPTION_STACKTRACE, stringWriter.toString());
+    String exceptionStacktrace = stringWriter.toString();
+    if (exceptionStacktrace != null) {
+      attributeSetter.setAttribute(
+          ExceptionAttributeResolver.EXCEPTION_STACKTRACE, exceptionStacktrace);
+    }
   }
 }
