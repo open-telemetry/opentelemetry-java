@@ -1303,19 +1303,11 @@ class SdkSpanTest {
     ExceptionAttributeResolver exceptionAttributeResolver =
         new ExceptionAttributeResolver() {
           @Override
-          public String getExceptionType(Throwable throwable, int maxAttributeLength) {
-            return "type";
-          }
-
-          @Nullable
-          @Override
-          public String getExceptionMessage(Throwable throwable, int maxAttributeLength) {
-            return null;
-          }
-
-          @Override
-          public String getExceptionStacktrace(Throwable throwable, int maxAttributeLength) {
-            return "stacktrace";
+          public void setExceptionAttributes(
+              AttributeSetter attributeSetter, Throwable throwable, int maxAttributeLength) {
+            attributeSetter.setAttribute(ExceptionAttributeResolver.EXCEPTION_TYPE, "type");
+            attributeSetter.setAttribute(
+                ExceptionAttributeResolver.EXCEPTION_STACKTRACE, "stacktrace");
           }
         };
 
@@ -1466,7 +1458,7 @@ class SdkSpanTest {
     AttributesMap attributesMap =
         AttributesMap.create(
             spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
-    attributes.forEach(attributesMap::put);
+    attributes.forEach(attributesMap::putIfCapacity);
     return createTestSpan(
         SpanKind.INTERNAL,
         SpanLimits.getDefault(),

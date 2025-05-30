@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.internal;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import javax.annotation.Nullable;
 
 /**
  * This class is internal and experimental. Its APIs are unstable and can change at any time. Its
@@ -26,24 +25,19 @@ public final class DefaultExceptionAttributeResolver implements ExceptionAttribu
   }
 
   @Override
-  @Nullable
-  public String getExceptionType(Throwable throwable, int maxAttributeLength) {
-    return throwable.getClass().getCanonicalName();
-  }
-
-  @Override
-  @Nullable
-  public String getExceptionMessage(Throwable throwable, int maxAttributeLength) {
-    return throwable.getMessage();
-  }
-
-  @Override
-  @Nullable
-  public String getExceptionStacktrace(Throwable throwable, int maxAttributeLength) {
+  public void setExceptionAttributes(
+      AttributeSetter attributeSetter, Throwable throwable, int maxAttributeLength) {
+    attributeSetter.setAttribute(
+        ExceptionAttributeResolver.EXCEPTION_TYPE, throwable.getClass().getCanonicalName());
+    String message = throwable.getMessage();
+    if (message != null) {
+      attributeSetter.setAttribute(ExceptionAttributeResolver.EXCEPTION_MESSAGE, message);
+    }
     StringWriter stringWriter = new StringWriter();
     try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
       throwable.printStackTrace(printWriter);
     }
-    return stringWriter.toString();
+    attributeSetter.setAttribute(
+        ExceptionAttributeResolver.EXCEPTION_STACKTRACE, stringWriter.toString());
   }
 }

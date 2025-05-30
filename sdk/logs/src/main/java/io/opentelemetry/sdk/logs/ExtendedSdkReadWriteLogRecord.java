@@ -105,7 +105,7 @@ class ExtendedSdkReadWriteLogRecord extends SdkReadWriteLogRecord
             ExtendedAttributesMap.create(
                 logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
       }
-      extendedAttributes.put(key, value);
+      extendedAttributes.putIfCapacity(key, value);
     }
     return this;
   }

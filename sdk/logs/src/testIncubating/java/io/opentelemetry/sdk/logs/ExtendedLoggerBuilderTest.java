@@ -18,7 +18,6 @@ import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 import io.opentelemetry.sdk.logs.internal.SdkLoggerProviderUtil;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
-import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
 class ExtendedLoggerBuilderTest {
@@ -55,19 +54,11 @@ class ExtendedLoggerBuilderTest {
         loggerProviderBuilder,
         new ExceptionAttributeResolver() {
           @Override
-          public String getExceptionType(Throwable throwable, int maxAttributeLength) {
-            return "type";
-          }
-
-          @Nullable
-          @Override
-          public String getExceptionMessage(Throwable throwable, int maxAttributeLength) {
-            return null;
-          }
-
-          @Override
-          public String getExceptionStacktrace(Throwable throwable, int maxAttributeLength) {
-            return "stacktrace";
+          public void setExceptionAttributes(
+              AttributeSetter attributeSetter, Throwable throwable, int maxAttributeLength) {
+            attributeSetter.setAttribute(ExceptionAttributeResolver.EXCEPTION_TYPE, "type");
+            attributeSetter.setAttribute(
+                ExceptionAttributeResolver.EXCEPTION_STACKTRACE, "stacktrace");
           }
         });
 

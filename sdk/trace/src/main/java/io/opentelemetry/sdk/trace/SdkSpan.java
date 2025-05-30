@@ -336,7 +336,7 @@ final class SdkSpan implements ReadWriteSpan {
                 spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
       }
 
-      attributes.put(key, value);
+      attributes.putIfCapacity(key, value);
     }
     return this;
   }
@@ -464,6 +464,7 @@ final class SdkSpan implements ReadWriteSpan {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public ReadWriteSpan recordException(Throwable exception, Attributes additionalAttributes) {
     if (exception == null) {
       return this;
@@ -477,8 +478,8 @@ final class SdkSpan implements ReadWriteSpan {
         AttributesMap.create(
             spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
 
-    AttributeUtil.addExceptionAttributes(
-        exceptionAttributeResolver, maxAttributeLength, exception, attributes::put);
+    exceptionAttributeResolver.setExceptionAttributes(
+        attributes::putIfCapacity, exception, maxAttributeLength);
 
     additionalAttributes.forEach(attributes::put);
 

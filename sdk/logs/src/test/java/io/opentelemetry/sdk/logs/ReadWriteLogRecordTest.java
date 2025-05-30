@@ -51,8 +51,8 @@ class ReadWriteLogRecordTest {
   SdkReadWriteLogRecord buildLogRecord() {
     Value<?> body = Value.of("bod");
     AttributesMap initialAttributes = AttributesMap.create(100, 200);
-    initialAttributes.put(stringKey("foo"), "aaiosjfjioasdiojfjioasojifja");
-    initialAttributes.put(stringKey("untouched"), "yes");
+    initialAttributes.putIfCapacity(stringKey("foo"), "aaiosjfjioasdiojfjioasojifja");
+    initialAttributes.putIfCapacity(stringKey("untouched"), "yes");
     LogLimits limits = LogLimits.getDefault();
     Resource resource = Resource.empty();
     InstrumentationScopeInfo scope = InstrumentationScopeInfo.create("test");

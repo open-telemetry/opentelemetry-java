@@ -150,7 +150,7 @@ class SdkSpanBuilder implements SpanBuilder {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
-    attributes().put(key, value);
+    attributes().putIfCapacity(key, value);
     return this;
   }
 
@@ -209,7 +209,8 @@ class SdkSpanBuilder implements SpanBuilder {
     }
     Attributes samplingAttributes = samplingResult.getAttributes();
     if (!samplingAttributes.isEmpty()) {
-      samplingAttributes.forEach((key, value) -> attributes().put((AttributeKey) key, value));
+      samplingAttributes.forEach(
+          (key, value) -> attributes().putIfCapacity((AttributeKey) key, value));
     }
 
     // Avoid any possibility to modify the attributes by adding attributes to the Builder after the

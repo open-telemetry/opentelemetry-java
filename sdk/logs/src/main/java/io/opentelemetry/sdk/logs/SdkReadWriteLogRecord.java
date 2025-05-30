@@ -100,7 +100,7 @@ class SdkReadWriteLogRecord implements ReadWriteLogRecord {
             AttributesMap.create(
                 logLimits.getMaxNumberOfAttributes(), logLimits.getMaxAttributeValueLength());
       }
-      attributes.put(key, value);
+      attributes.putIfCapacity(key, value);
     }
     return this;
   }

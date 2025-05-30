@@ -16,8 +16,8 @@ class AttributesMapTest {
   @Test
   void asMap() {
     AttributesMap attributesMap = AttributesMap.create(2, Integer.MAX_VALUE);
-    attributesMap.put(longKey("one"), 1L);
-    attributesMap.put(longKey("two"), 2L);
+    attributesMap.putIfCapacity(longKey("one"), 1L);
+    attributesMap.putIfCapacity(longKey("two"), 2L);
 
     assertThat(attributesMap.asMap())
         .containsOnly(entry(longKey("one"), 1L), entry(longKey("two"), 2L));

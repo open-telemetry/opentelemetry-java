@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.trace;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -302,8 +304,6 @@ class SdkTracerProviderTest {
     Exception exception = new Exception("error");
     builder.build().get("tracer").spanBuilder("span").startSpan().recordException(exception).end();
 
-    verify(exceptionAttributeResolver).getExceptionType(exception, maxAttributeLength);
-    verify(exceptionAttributeResolver).getExceptionMessage(exception, maxAttributeLength);
-    verify(exceptionAttributeResolver).getExceptionStacktrace(exception, maxAttributeLength);
+    verify(exceptionAttributeResolver).setExceptionAttributes(any(), any(), anyInt());
   }
 }
