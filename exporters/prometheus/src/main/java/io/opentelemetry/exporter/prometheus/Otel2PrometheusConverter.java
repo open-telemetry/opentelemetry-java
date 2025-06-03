@@ -672,7 +672,8 @@ final class Otel2PrometheusConverter {
 
   public static String toJsonStr(List<?> attributeValue) {
     StringJoiner joiner = new StringJoiner(",", "[", "]");
-    for (Object value : attributeValue) {
+    for (int i = 0; i < attributeValue.size(); i++) {
+      Object value = attributeValue.get(i);
       joiner.add(value instanceof String ? toJsonValidStr((String) value) : String.valueOf(value));
     }
     return joiner.toString();

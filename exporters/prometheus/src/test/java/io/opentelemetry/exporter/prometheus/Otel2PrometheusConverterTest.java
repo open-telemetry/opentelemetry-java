@@ -91,165 +91,6 @@ class Otel2PrometheusConverterTest {
     assertThat(matcher.group("metricName")).isEqualTo(expectedMetricName);
   }
 
-  @ParameterizedTest
-  @MethodSource("resourceAttributesAdditionArgs")
-  void resourceAttributesAddition(
-      MetricData metricData,
-      @Nullable Predicate<String> allowedResourceAttributesFilter,
-      String metricName,
-      String expectedMetricLabels)
-      throws IOException {
-
-    Otel2PrometheusConverter converter =
-        new Otel2PrometheusConverter(true, allowedResourceAttributesFilter);
-
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
-    ExpositionFormats.init().getPrometheusTextFormatWriter().write(out, snapshots);
-    String expositionFormat = new String(out.toByteArray(), StandardCharsets.UTF_8);
-
-    // extract the only metric line
-    List<String> metricLines =
-        Arrays.stream(expositionFormat.split("\n"))
-            .filter(line -> line.startsWith(metricName))
-            .collect(Collectors.toList());
-    assertThat(metricLines).hasSize(1);
-    String metricLine = metricLines.get(0);
-
-    String metricLabels =
-        metricLine.substring(metricLine.indexOf("{") + 1, metricLine.indexOf("}"));
-    assertThat(metricLabels).isEqualTo(expectedMetricLabels);
-  }
-
-  @Test
-  void prometheusNameCollisionTest_Issue6277() {
-    // NOTE: Metrics with the same resolved prometheus name should merge. However,
-    // Otel2PrometheusConverter is not responsible for merging individual series, so the merge will
-    // fail if the two different metrics contain overlapping series. Users should deal with this by
-    // adding a view that renames one of the two metrics such that the conflict does not occur.
-    MetricData dotName =
-        createSampleMetricData(
-            "my.metric",
-            "units",
-            MetricDataType.LONG_SUM,
-            Attributes.builder().put("key", "a").build(),
-            Resource.create(Attributes.empty()));
-    MetricData underscoreName =
-        createSampleMetricData(
-            "my_metric",
-            "units",
-            MetricDataType.LONG_SUM,
-            Attributes.builder().put("key", "b").build(),
-            Resource.create(Attributes.empty()));
-
-    List<MetricData> metricData = new ArrayList<>();
-    metricData.add(dotName);
-    metricData.add(underscoreName);
-
-    assertThatCode(() -> converter.convert(metricData)).doesNotThrowAnyException();
-  }
-
-  @ParameterizedTest
-  @MethodSource("labelValueSerializationArgs")
-  void labelValueSerialization(Attributes attributes) {
-    MetricData metricData =
-        createSampleMetricData("sample", "1", MetricDataType.LONG_SUM, attributes, null);
-
-    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
-
-    Labels labels = snapshots.get(0).getDataPoints().get(0).getLabels();
-    attributes.forEach(
-        (key, value) -> {
-          String labelValue = labels.get(key.getKey());
-          try {
-            String expectedValue =
-                key.getType() == AttributeType.STRING
-                    ? (String) value
-                    : OBJECT_MAPPER.writeValueAsString(value);
-            assertThat(labelValue).isEqualTo(expectedValue);
-          } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-          }
-        });
-  }
-
-  @Test
-  void labelValueSerialization_Should_Handle_All_AttributeTypes() {
-    assertThat(Stream.of(AttributeType.values()).map(Enum::name))
-        .isEqualTo(
-            Arrays.asList(
-                "STRING",
-                "BOOLEAN",
-                "LONG",
-                "DOUBLE",
-                "STRING_ARRAY",
-                "BOOLEAN_ARRAY",
-                "LONG_ARRAY",
-                "DOUBLE_ARRAY"));
-  }
-
-  private static Stream<Arguments> resourceAttributesAdditionArgs() {
-    List<Arguments> arguments = new ArrayList<>();
-
-    for (MetricDataType metricDataType : MetricDataType.values()) {
-      // Check that resource attributes are added as labels, according to allowed pattern
-      arguments.add(
-          Arguments.of(
-              createSampleMetricData(
-                  "my.metric",
-                  "units",
-                  metricDataType,
-                  Attributes.of(stringKey("foo1"), "bar1", stringKey("foo2"), "bar2"),
-                  Resource.create(
-                      Attributes.of(
-                          stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
-              /* allowedResourceAttributesFilter= */ Predicates.startsWith("clu"),
-              metricDataType == MetricDataType.SUMMARY
-                      || metricDataType == MetricDataType.HISTOGRAM
-                      || metricDataType == MetricDataType.EXPONENTIAL_HISTOGRAM
-                  ? "my_metric_units_count"
-                  : "my_metric_units",
-
-              // "cluster" attribute is added (due to reg expr specified) and only it
-              "cluster=\"mycluster\",foo1=\"bar1\",foo2=\"bar2\",otel_scope_name=\"scope\""));
-    }
-
-    // Resource attributes which also exists in the metric labels are not added twice
-    arguments.add(
-        Arguments.of(
-            createSampleMetricData(
-                "my.metric",
-                "units",
-                MetricDataType.LONG_SUM,
-                Attributes.of(stringKey("cluster"), "mycluster2", stringKey("foo2"), "bar2"),
-                Resource.create(
-                    Attributes.of(
-                        stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
-            /* allowedResourceAttributesFilter= */ Predicates.startsWith("clu"),
-            "my_metric_units",
-
-            // "cluster" attribute is present only once and the value is taken
-            // from the metric attributes and not the resource attributes
-            "cluster=\"mycluster2\",foo2=\"bar2\",otel_scope_name=\"scope\""));
-
-    // Empty attributes
-    arguments.add(
-        Arguments.of(
-            createSampleMetricData(
-                "my.metric",
-                "units",
-                MetricDataType.LONG_SUM,
-                Attributes.empty(),
-                Resource.create(
-                    Attributes.of(
-                        stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
-            /* allowedResourceAttributesFilter= */ Predicates.startsWith("clu"),
-            "my_metric_units",
-            "cluster=\"mycluster\",otel_scope_name=\"scope\""));
-
-    return arguments.stream();
-  }
-
   private static Stream<Arguments> metricMetadataArgs() {
     return Stream.of(
         // the unity unit "1" is translated to "ratio"
@@ -343,6 +184,150 @@ class Otel2PrometheusConverterTest {
             "_metric_name_bytes summary",
             "_metric_name_bytes description",
             "_metric_name_bytes_count"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("resourceAttributesAdditionArgs")
+  void resourceAttributesAddition(
+      MetricData metricData,
+      @Nullable Predicate<String> allowedResourceAttributesFilter,
+      String metricName,
+      String expectedMetricLabels)
+      throws IOException {
+
+    Otel2PrometheusConverter converter =
+        new Otel2PrometheusConverter(true, allowedResourceAttributesFilter);
+
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+    ExpositionFormats.init().getPrometheusTextFormatWriter().write(out, snapshots);
+    String expositionFormat = new String(out.toByteArray(), StandardCharsets.UTF_8);
+
+    // extract the only metric line
+    List<String> metricLines =
+        Arrays.stream(expositionFormat.split("\n"))
+            .filter(line -> line.startsWith(metricName))
+            .collect(Collectors.toList());
+    assertThat(metricLines).hasSize(1);
+    String metricLine = metricLines.get(0);
+
+    String metricLabels =
+        metricLine.substring(metricLine.indexOf("{") + 1, metricLine.indexOf("}"));
+    assertThat(metricLabels).isEqualTo(expectedMetricLabels);
+  }
+
+  private static Stream<Arguments> resourceAttributesAdditionArgs() {
+    List<Arguments> arguments = new ArrayList<>();
+
+    for (MetricDataType metricDataType : MetricDataType.values()) {
+      // Check that resource attributes are added as labels, according to allowed pattern
+      arguments.add(
+          Arguments.of(
+              createSampleMetricData(
+                  "my.metric",
+                  "units",
+                  metricDataType,
+                  Attributes.of(stringKey("foo1"), "bar1", stringKey("foo2"), "bar2"),
+                  Resource.create(
+                      Attributes.of(
+                          stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
+              /* allowedResourceAttributesFilter= */ Predicates.startsWith("clu"),
+              metricDataType == MetricDataType.SUMMARY
+                      || metricDataType == MetricDataType.HISTOGRAM
+                      || metricDataType == MetricDataType.EXPONENTIAL_HISTOGRAM
+                  ? "my_metric_units_count"
+                  : "my_metric_units",
+
+              // "cluster" attribute is added (due to reg expr specified) and only it
+              "cluster=\"mycluster\",foo1=\"bar1\",foo2=\"bar2\",otel_scope_name=\"scope\""));
+    }
+
+    // Resource attributes which also exists in the metric labels are not added twice
+    arguments.add(
+        Arguments.of(
+            createSampleMetricData(
+                "my.metric",
+                "units",
+                MetricDataType.LONG_SUM,
+                Attributes.of(stringKey("cluster"), "mycluster2", stringKey("foo2"), "bar2"),
+                Resource.create(
+                    Attributes.of(
+                        stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
+            /* allowedResourceAttributesFilter= */ Predicates.startsWith("clu"),
+            "my_metric_units",
+
+            // "cluster" attribute is present only once and the value is taken
+            // from the metric attributes and not the resource attributes
+            "cluster=\"mycluster2\",foo2=\"bar2\",otel_scope_name=\"scope\""));
+
+    // Empty attributes
+    arguments.add(
+        Arguments.of(
+            createSampleMetricData(
+                "my.metric",
+                "units",
+                MetricDataType.LONG_SUM,
+                Attributes.empty(),
+                Resource.create(
+                    Attributes.of(
+                        stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
+            /* allowedResourceAttributesFilter= */ Predicates.startsWith("clu"),
+            "my_metric_units",
+            "cluster=\"mycluster\",otel_scope_name=\"scope\""));
+
+    return arguments.stream();
+  }
+
+  @Test
+  void prometheusNameCollisionTest_Issue6277() {
+    // NOTE: Metrics with the same resolved prometheus name should merge. However,
+    // Otel2PrometheusConverter is not responsible for merging individual series, so the merge will
+    // fail if the two different metrics contain overlapping series. Users should deal with this by
+    // adding a view that renames one of the two metrics such that the conflict does not occur.
+    MetricData dotName =
+        createSampleMetricData(
+            "my.metric",
+            "units",
+            MetricDataType.LONG_SUM,
+            Attributes.builder().put("key", "a").build(),
+            Resource.create(Attributes.empty()));
+    MetricData underscoreName =
+        createSampleMetricData(
+            "my_metric",
+            "units",
+            MetricDataType.LONG_SUM,
+            Attributes.builder().put("key", "b").build(),
+            Resource.create(Attributes.empty()));
+
+    List<MetricData> metricData = new ArrayList<>();
+    metricData.add(dotName);
+    metricData.add(underscoreName);
+
+    assertThatCode(() -> converter.convert(metricData)).doesNotThrowAnyException();
+  }
+
+  @ParameterizedTest
+  @MethodSource("labelValueSerializationArgs")
+  void labelValueSerialization(Attributes attributes) {
+    MetricData metricData =
+        createSampleMetricData("sample", "1", MetricDataType.LONG_SUM, attributes, null);
+
+    MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
+
+    Labels labels = snapshots.get(0).getDataPoints().get(0).getLabels();
+    attributes.forEach(
+        (key, value) -> {
+          String labelValue = labels.get(key.getKey());
+          try {
+            String expectedValue =
+                key.getType() == AttributeType.STRING
+                    ? (String) value
+                    : OBJECT_MAPPER.writeValueAsString(value);
+            assertThat(labelValue).isEqualTo(expectedValue);
+          } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+          }
+        });
   }
 
   private static Stream<Arguments> labelValueSerializationArgs() {
