@@ -15,7 +15,7 @@ val DEPENDENCY_BOMS = listOf(
 
   "com.fasterxml.jackson:jackson-bom:2.19.0",
   "com.google.guava:guava-bom:33.4.8-jre",
-  "com.google.protobuf:protobuf-bom:4.31.0",
+  "com.google.protobuf:protobuf-bom:4.31.1",
   "com.squareup.okhttp3:okhttp-bom:4.12.0",
   "com.squareup.okio:okio-bom:3.11.0", // applies to transitive dependencies of okhttp
   "io.grpc:grpc-bom:1.73.0",
