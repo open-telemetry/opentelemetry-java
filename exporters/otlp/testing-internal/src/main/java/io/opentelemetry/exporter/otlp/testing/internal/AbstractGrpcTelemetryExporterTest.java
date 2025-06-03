@@ -91,12 +91,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
-import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
@@ -462,7 +460,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   }
 
   @ParameterizedTest
-  @ArgumentsSource(ClientPrivateKeyProvider.class)
+  @MethodSource("clientPrivateKeyArgs")
   void clientTls(byte[] privateKey) throws Exception {
     TelemetryExporter<T> exporter =
         exporterBuilder()
@@ -480,14 +478,10 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     }
   }
 
-  private static class ClientPrivateKeyProvider implements ArgumentsProvider {
-    @Override
-    @SuppressWarnings("PrimitiveArrayPassedToVarargsMethod")
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
-      return Stream.of(
-          arguments(named("PEM", Files.readAllBytes(clientCertificate.privateKeyFile().toPath()))),
-          arguments(named("DER", clientCertificate.privateKey().getEncoded())));
-    }
+  private static Stream<Arguments> clientPrivateKeyArgs() throws Exception {
+    return Stream.of(
+        arguments(named("PEM", Files.readAllBytes(clientCertificate.privateKeyFile().toPath()))),
+        arguments(named("DER", clientCertificate.privateKey().getEncoded())));
   }
 
   @Test

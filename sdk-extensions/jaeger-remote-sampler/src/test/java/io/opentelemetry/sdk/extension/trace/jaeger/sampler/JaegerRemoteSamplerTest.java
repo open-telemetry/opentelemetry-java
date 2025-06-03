@@ -45,12 +45,10 @@ import org.awaitility.core.ThrowingRunnable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
-import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
 
@@ -169,7 +167,7 @@ class JaegerRemoteSamplerTest {
   }
 
   @ParameterizedTest
-  @ArgumentsSource(ClientPrivateKeyProvider.class)
+  @MethodSource("clientPrivateKeyArgs")
   void clientTlsConnectionWorks(byte[] privateKey) throws IOException {
     try (JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
@@ -189,14 +187,10 @@ class JaegerRemoteSamplerTest {
     }
   }
 
-  private static class ClientPrivateKeyProvider implements ArgumentsProvider {
-    @Override
-    @SuppressWarnings("PrimitiveArrayPassedToVarargsMethod")
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
-      return Stream.of(
-          arguments(named("PEM", Files.readAllBytes(clientCertificate.privateKeyFile().toPath()))),
-          arguments(named("DER", clientCertificate.privateKey().getEncoded())));
-    }
+  private static Stream<Arguments> clientPrivateKeyArgs() throws IOException {
+    return Stream.of(
+        arguments(named("PEM", Files.readAllBytes(clientCertificate.privateKeyFile().toPath()))),
+        arguments(named("DER", clientCertificate.privateKey().getEncoded())));
   }
 
   @Test

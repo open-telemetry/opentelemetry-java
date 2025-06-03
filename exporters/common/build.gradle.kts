@@ -66,6 +66,16 @@ testing {
 
         implementation("io.grpc:grpc-stub")
         implementation("io.grpc:grpc-netty")
+
+        // NOTE: this is a strange dependency. junit reflectively analyzes classes as part of its test discovery process, eventually encounters to jackson-databind classes, and fails with a NoClassDefFoundError:
+        // JUnit Jupiter > initializationError FAILED
+        //    org.junit.platform.launcher.core.DiscoveryIssueException: TestEngine with ID 'junit-jupiter' encountered a critical issue during test discovery:
+        //
+        //    (1) [ERROR] ClassSelector [className = 'io.opentelemetry.exporter.internal.grpc.GrpcExporterTest$DummyMarshaler', classLoader = jdk.internal.loader.ClassLoaders$AppClassLoader@2aae9190] resolution failed
+        //        Source: ClassSource [className = 'io.opentelemetry.exporter.internal.grpc.GrpcExporterTest$DummyMarshaler', filePosition = null]
+        //                at io.opentelemetry.exporter.internal.grpc.GrpcExporterTest$DummyMarshaler.<no-method>(SourceFile:0)
+        //        Cause: java.lang.NoClassDefFoundError: com/fasterxml/jackson/core/JsonGenerator
+        implementation("com.fasterxml.jackson.core:jackson-databind")
       }
     }
   }

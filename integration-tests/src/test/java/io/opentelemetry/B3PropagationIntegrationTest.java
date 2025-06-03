@@ -38,12 +38,10 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
-import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /** Integration tests for the B3 propagators, in various configurations. */
 class B3PropagationIntegrationTest {
@@ -160,7 +158,7 @@ class B3PropagationIntegrationTest {
   }
 
   @ParameterizedTest
-  @ArgumentsSource(WebClientArgumentSupplier.class)
+  @MethodSource("webClientArgs")
   void propagation(String testType, WebClient client) throws IOException {
     OpenTelemetrySdk clientSdk = setupClient();
 
@@ -181,7 +179,7 @@ class B3PropagationIntegrationTest {
   }
 
   @ParameterizedTest
-  @ArgumentsSource(WebClientArgumentSupplier.class)
+  @MethodSource("webClientArgs")
   void noClientTracing(String testType, WebClient client) throws IOException {
     assertThat(client.get("/frontend").aggregate().join().contentUtf8()).isEqualTo("OK");
 
@@ -192,6 +190,11 @@ class B3PropagationIntegrationTest {
 
     assertThat(finishedSpanItems)
         .allSatisfy(spanData -> assertThat(spanData.getTraceId()).isEqualTo(traceId));
+  }
+
+  private static Stream<Arguments> webClientArgs() {
+    return Stream.of(
+        Arguments.of("b3multi", b3MultiClient), Arguments.of("b3single", b3SingleClient));
   }
 
   private static WebClient createPropagatingClient(URI uri, TextMapPropagator propagator) {
@@ -233,13 +236,5 @@ class B3PropagationIntegrationTest {
                 return carrier.headers().get(key);
               }
             });
-  }
-
-  public static class WebClientArgumentSupplier implements ArgumentsProvider {
-    @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
-      return Stream.of(
-          Arguments.of("b3multi", b3MultiClient), Arguments.of("b3single", b3SingleClient));
-    }
   }
 }
