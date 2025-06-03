@@ -37,7 +37,7 @@ val opencensusVersion = "0.31.1"
 val prometheusClientVersion = "0.16.0"
 val prometheusServerVersion = "1.3.7"
 val armeriaVersion = "1.32.5"
-val junitVersion = "5.12.2"
+val junitVersion = "5.13.0"
 
 val DEPENDENCIES = listOf(
   "org.junit.jupiter:junit-jupiter-api:${junitVersion}",
