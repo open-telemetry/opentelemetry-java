@@ -20,6 +20,7 @@ import io.opentelemetry.exporter.otlp.internal.data.ImmutableLinkData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableLocationData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableMappingData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfileData;
+import io.opentelemetry.exporter.otlp.internal.data.ImmutableProfileDictionaryData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableSampleData;
 import io.opentelemetry.exporter.otlp.internal.data.ImmutableValueTypeData;
 import io.opentelemetry.proto.common.v1.InstrumentationScope;
@@ -145,16 +146,17 @@ public class ProfilesRequestMarshalerTest {
         ImmutableProfileData.create(
             Resource.create(Attributes.empty()),
             InstrumentationScopeInfo.create("testscope"),
-            Collections.emptyList(),
-            Collections.emptyList(),
+            ImmutableProfileDictionaryData.create(
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList()),
             Collections.emptyList(),
             Collections.emptyList(),
             listOf(1, 2),
-            Collections.emptyList(),
-            Collections.emptyList(),
-            Collections.emptyList(),
-            Collections.emptyList(),
-            Collections.emptyList(),
             5L,
             6L,
             ImmutableValueTypeData.create(1, 2, AggregationTemporality.CUMULATIVE),
