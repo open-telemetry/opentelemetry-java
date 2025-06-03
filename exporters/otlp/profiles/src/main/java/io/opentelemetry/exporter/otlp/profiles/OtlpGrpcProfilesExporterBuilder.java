@@ -17,6 +17,7 @@ import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
@@ -54,8 +55,7 @@ public final class OtlpGrpcProfilesExporterBuilder {
   OtlpGrpcProfilesExporterBuilder() {
     this(
         new GrpcExporterBuilder<>(
-            "otlp",
-            "profile",
+            StandardComponentId.ExporterType.OTLP_GRPC_PROFILES_EXPORTER,
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerProfilesServiceGrpc::newFutureStub,
