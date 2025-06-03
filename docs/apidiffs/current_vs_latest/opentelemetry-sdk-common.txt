@@ -6,7 +6,6 @@ Comparing source compatibility of opentelemetry-sdk-common-1.51.0-SNAPSHOT.jar a
 	+++  NEW INTERFACE: java.io.Serializable
 	+++  NEW SUPERCLASS: java.lang.Enum
 	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.common.InternalTelemetryVersion LEGACY
-	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.common.InternalTelemetryVersion V1_33
 	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) io.opentelemetry.sdk.common.InternalTelemetryVersion LATEST
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.InternalTelemetryVersion valueOf(java.lang.String)
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.InternalTelemetryVersion[] values()
