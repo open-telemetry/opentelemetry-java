@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -9,7 +14,8 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collection;
 
 /**
- * A {@link MetricReader} implementation that only exports metrics when {@link #forceFlush()} is called.
+ * A {@link MetricReader} implementation that only exports metrics when {@link #forceFlush()} is
+ * called.
  */
 public final class OnDemandMetricReader implements MetricReader {
   private final MetricExporter exporter;
