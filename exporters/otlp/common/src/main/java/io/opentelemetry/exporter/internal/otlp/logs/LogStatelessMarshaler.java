@@ -27,18 +27,6 @@ final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
 
   private static final String INVALID_TRACE_ID = TraceId.getInvalid();
   private static final String INVALID_SPAN_ID = SpanId.getInvalid();
-  private static final boolean INCUBATOR_AVAILABLE;
-
-  static {
-    boolean incubatorAvailable = false;
-    try {
-      Class.forName("io.opentelemetry.api.incubator.common.ExtendedAttributes");
-      incubatorAvailable = true;
-    } catch (ClassNotFoundException e) {
-      // Not available
-    }
-    INCUBATOR_AVAILABLE = incubatorAvailable;
-  }
 
   static final LogStatelessMarshaler INSTANCE = new LogStatelessMarshaler();
 
@@ -56,7 +44,7 @@ final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
     }
 
     int droppedAttributesCount;
-    if (INCUBATOR_AVAILABLE) {
+    if (IncubatingUtil.isExtendedLogRecordData(log)) {
       IncubatingUtil.serializeExtendedAttributes(output, log, context);
       droppedAttributesCount =
           log.getTotalAttributeCount() - IncubatingUtil.extendedAttributesSize(log);
