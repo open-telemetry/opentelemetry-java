@@ -263,13 +263,15 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         .extracting("delegate.grpcSender")
         .matches(sender -> sender.getClass().getSimpleName().equals("UpstreamGrpcSender"));
     // When no channel is explicitly set, should fall back to a minimally configured managed channel
-    TelemetryExporter<?> exporter = exporterBuilder().build();
-    assertThat(exporter.shutdown().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-    assertThat(exporter.unwrap())
-        .extracting(
-            "delegate.grpcSender.stub",
-            as(InstanceOfAssertFactories.type(MarshalerServiceStub.class)))
-        .satisfies(stub -> assertThat(((ManagedChannel) stub.getChannel()).isShutdown()).isTrue());
+    try (TelemetryExporter<?> exporter = exporterBuilder().build()) {
+      assertThat(exporter.shutdown().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(exporter.unwrap())
+          .extracting(
+              "delegate.grpcSender.stub",
+              as(InstanceOfAssertFactories.type(MarshalerServiceStub.class)))
+          .satisfies(
+              stub -> assertThat(((ManagedChannel) stub.getChannel()).isShutdown()).isTrue());
+    }
   }
 
   @Test
@@ -301,24 +303,20 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   @Test
   void compressionWithNone() {
-    TelemetryExporter<T> exporter =
-        exporterBuilder().setEndpoint(server.httpUri().toString()).setCompression("none").build();
-    try {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpUri().toString()).setCompression("none").build()) {
       // UpstreamGrpcSender doesn't support compression, so we skip the assertion
       assumeThat(exporter.unwrap())
           .extracting("delegate.grpcSender")
           .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpGrpcSender"));
       assertThat(exporter.unwrap()).extracting("delegate.grpcSender.compressor").isNull();
-    } finally {
-      exporter.shutdown();
     }
   }
 
   @Test
   void compressionWithGzip() {
-    TelemetryExporter<T> exporter =
-        exporterBuilder().setEndpoint(server.httpUri().toString()).setCompression("gzip").build();
-    try {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpUri().toString()).setCompression("gzip").build()) {
       // UpstreamGrpcSender doesn't support compression, so we skip the assertion
       assumeThat(exporter.unwrap())
           .extracting("delegate.grpcSender")
@@ -326,16 +324,16 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       assertThat(exporter.unwrap())
           .extracting("delegate.grpcSender.compressor")
           .isEqualTo(GzipCompressor.getInstance());
-    } finally {
-      exporter.shutdown();
     }
   }
 
   @Test
   void compressionWithSpiCompressor() {
-    TelemetryExporter<T> exporter =
-        exporterBuilder().setEndpoint(server.httpUri().toString()).setCompression("base64").build();
-    try {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder()
+            .setEndpoint(server.httpUri().toString())
+            .setCompression("base64")
+            .build()) {
       // UpstreamGrpcSender doesn't support compression, so we skip the assertion
       assumeThat(exporter.unwrap())
           .extracting("delegate.grpcSender")
@@ -343,34 +341,28 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       assertThat(exporter.unwrap())
           .extracting("delegate.grpcSender.compressor")
           .isEqualTo(Base64Compressor.getInstance());
-    } finally {
-      exporter.shutdown();
     }
   }
 
   @Test
   void authorityWithAuth() {
-    TelemetryExporter<T> exporter =
-        exporterBuilder().setEndpoint("http://foo:bar@localhost:" + server.httpPort()).build();
-    try {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint("http://foo:bar@localhost:" + server.httpPort()).build()) {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-    } finally {
-      exporter.shutdown();
     }
   }
 
   @Test
   void withHeaders() {
     AtomicInteger count = new AtomicInteger();
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setEndpoint(server.httpUri().toString())
             .addHeader("key1", "value1")
             .setHeaders(() -> Collections.singletonMap("key2", "value" + count.incrementAndGet()))
-            .build();
-    try {
+            .build()) {
       // Export twice to ensure header supplier gets invoked twice
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
@@ -388,26 +380,21 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                 assertThat(req.headers().get("key1")).isEqualTo("value1");
                 assertThat(req.headers().get("key2")).isEqualTo("value" + count.get());
               });
-    } finally {
-      exporter.shutdown();
     }
   }
 
   @Test
   void tls() throws Exception {
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
             .setClientTls(
                 certificate.privateKey().getEncoded(), certificate.certificate().getEncoded())
             .setEndpoint(server.httpsUri().toString())
-            .build();
-    try {
+            .build()) {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-    } finally {
-      exporter.shutdown();
     }
   }
 
@@ -422,31 +409,25 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     SSLContext sslContext = SSLContext.getInstance("TLS");
     sslContext.init(new KeyManager[] {keyManager}, new TrustManager[] {trustManager}, null);
 
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setSslContext(sslContext, trustManager)
             .setEndpoint(server.httpsUri().toString())
-            .build();
-    try {
+            .build()) {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-    } finally {
-      exporter.shutdown();
     }
   }
 
   @Test
   @SuppressLogger(GrpcExporter.class)
   void tls_untrusted() {
-    TelemetryExporter<T> exporter =
-        exporterBuilder().setEndpoint(server.httpsUri().toString()).build();
-    try {
+    try (TelemetryExporter<T> exporter =
+        exporterBuilder().setEndpoint(server.httpsUri().toString()).build()) {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
-    } finally {
-      exporter.shutdown();
     }
   }
 
@@ -464,19 +445,16 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @ParameterizedTest
   @ArgumentsSource(ClientPrivateKeyProvider.class)
   void clientTls(byte[] privateKey) throws Exception {
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setEndpoint(server.httpsUri().toString())
             .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
             .setClientTls(
                 privateKey, Files.readAllBytes(clientCertificate.certificateFile().toPath()))
-            .build();
-    try {
+            .build()) {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-    } finally {
-      exporter.shutdown();
     }
   }
 
@@ -498,14 +476,13 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         .extracting("delegate.grpcSender")
         .matches(sender -> sender.getClass().getSimpleName().equals("OkHttpGrpcSender"));
 
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             // Connecting to a non-routable IP address to trigger connection error
             .setEndpoint("http://10.255.255.1")
             .setConnectTimeout(Duration.ofMillis(1))
             .setRetryPolicy(null)
-            .build();
-    try {
+            .build()) {
       long startTimeMillis = System.currentTimeMillis();
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
@@ -525,25 +502,20 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       // Assert that the export request fails well before the default connect timeout of 10s
       assertThat(System.currentTimeMillis() - startTimeMillis)
           .isLessThan(TimeUnit.SECONDS.toMillis(1));
-    } finally {
-      exporter.shutdown();
     }
   }
 
   @Test
   void deadlineSetPerExport() throws InterruptedException {
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setEndpoint(server.httpUri().toString())
             .setTimeout(Duration.ofMillis(1500))
-            .build();
-    try {
+            .build()) {
       TimeUnit.MILLISECONDS.sleep(2000);
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-    } finally {
-      exporter.shutdown();
     }
   }
 
@@ -579,9 +551,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     int statusCode = 13;
     addGrpcError(statusCode, null);
 
-    TelemetryExporter<T> exporter = nonRetryingExporter();
-
-    try {
+    try (TelemetryExporter<T> exporter = nonRetryingExporter()) {
       CompletableResultCode result =
           exporter
               .export(Collections.singletonList(generateFakeTelemetry()))
@@ -609,8 +579,6 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + type
                   + "s. Server responded with gRPC status code 13. Error message:");
       assertThat(log.getLevel()).isEqualTo(Level.WARN);
-    } finally {
-      exporter.shutdown();
     }
   }
 
@@ -619,9 +587,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   void errorWithUnknownError() {
     addGrpcError(2, null);
 
-    TelemetryExporter<T> exporter = nonRetryingExporter();
-
-    try {
+    try (TelemetryExporter<T> exporter = nonRetryingExporter()) {
       assertThat(
               exporter
                   .export(Collections.singletonList(generateFakeTelemetry()))
@@ -636,8 +602,6 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
                 assertThat(ex.getCause()).isNull();
               });
-    } finally {
-      exporter.shutdown();
     }
   }
 
@@ -646,9 +610,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   void errorWithMessage() {
     addGrpcError(8, "out of quota");
 
-    TelemetryExporter<T> exporter = nonRetryingExporter();
-
-    try {
+    try (TelemetryExporter<T> exporter = nonRetryingExporter()) {
       assertThat(
               exporter
                   .export(Collections.singletonList(generateFakeTelemetry()))
@@ -661,8 +623,6 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + type
                   + "s. Server responded with gRPC status code 8. Error message: out of quota");
       assertThat(log.getLevel()).isEqualTo(Level.WARN);
-    } finally {
-      exporter.shutdown();
     }
   }
 
@@ -671,9 +631,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   void errorWithEscapedMessage() {
     addGrpcError(5, "クマ🐻");
 
-    TelemetryExporter<T> exporter = nonRetryingExporter();
-
-    try {
+    try (TelemetryExporter<T> exporter = nonRetryingExporter()) {
       assertThat(
               exporter
                   .export(Collections.singletonList(generateFakeTelemetry()))
@@ -686,8 +644,6 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + type
                   + "s. Server responded with gRPC status code 5. Error message: クマ🐻");
       assertThat(log.getLevel()).isEqualTo(Level.WARN);
-    } finally {
-      exporter.shutdown();
     }
   }
 
@@ -696,9 +652,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   void testExport_Unavailable() {
     addGrpcError(14, null);
 
-    TelemetryExporter<T> exporter = nonRetryingExporter();
-
-    try {
+    try (TelemetryExporter<T> exporter = nonRetryingExporter()) {
       assertThat(
               exporter
                   .export(Collections.singletonList(generateFakeTelemetry()))
@@ -712,8 +666,6 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + "s. Server is UNAVAILABLE. "
                   + "Make sure your collector is running and reachable from this network.");
       assertThat(log.getLevel()).isEqualTo(Level.ERROR);
-    } finally {
-      exporter.shutdown();
     }
   }
 
@@ -722,9 +674,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   protected void testExport_Unimplemented() {
     addGrpcError(12, "UNIMPLEMENTED");
 
-    TelemetryExporter<T> exporter = nonRetryingExporter();
-
-    try {
+    try (TelemetryExporter<T> exporter = nonRetryingExporter()) {
       assertThat(
               exporter
                   .export(Collections.singletonList(generateFakeTelemetry()))
@@ -761,8 +711,6 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + "=none. "
                   + "Full error message: UNIMPLEMENTED");
       assertThat(log.getLevel()).isEqualTo(Level.ERROR);
-    } finally {
-      exporter.shutdown();
     }
   }
 
@@ -817,15 +765,12 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
   @Test
   void overrideHost() {
     List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setEndpoint(server.httpUri().toString())
             .addHeader("host", "opentelemetry")
-            .build();
-    try {
+            .build()) {
       assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-    } finally {
-      exporter.shutdown();
     }
     List<U> expectedResourceTelemetry = toProto(telemetry);
     assertThat(exportedResourceTelemetry).containsExactlyElementsOf(expectedResourceTelemetry);
@@ -840,20 +785,17 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     ExecutorServiceSpy executorService =
         new ExecutorServiceSpy(Executors.newSingleThreadExecutor());
 
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setEndpoint(server.httpUri().toString())
             .setExecutorService(executorService)
-            .build();
-
-    try {
+            .build()) {
       CompletableResultCode result =
           exporter.export(Collections.singletonList(generateFakeTelemetry()));
 
       assertThat(result.join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
       assertThat(executorService.getTaskCount()).isPositive();
     } finally {
-      exporter.shutdown();
       // If setting executor, the user is responsible for calling shutdown
       assertThat(executorService.isShutdown()).isFalse();
       executorService.shutdown();
@@ -925,18 +867,16 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     ClassLoaderSpy classLoaderSpy =
         new ClassLoaderSpy(AbstractHttpTelemetryExporterTest.class.getClassLoader());
 
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setServiceClassLoader(classLoaderSpy)
             .setEndpoint(server.httpUri().toString())
-            .build();
-
-    assertThat(classLoaderSpy.getResourcesNames)
-        .isEqualTo(
-            Collections.singletonList(
-                "META-INF/services/io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider"));
-
-    exporter.shutdown();
+            .build()) {
+      assertThat(classLoaderSpy.getResourcesNames)
+          .isEqualTo(
+              Collections.singletonList(
+                  "META-INF/services/io.opentelemetry.exporter.internal.grpc.GrpcSenderProvider"));
+    }
   }
 
   private static class ClassLoaderSpy extends ClassLoader {
@@ -1018,7 +958,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           IOException,
           NoSuchFieldException,
           IllegalAccessException {
-    TelemetryExporter<T> exporter =
+    try (TelemetryExporter<T> exporter =
         exporterBuilder()
             .setTimeout(Duration.ofSeconds(5))
             .setEndpoint("http://localhost:4317")
@@ -1035,13 +975,11 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                     .setInitialBackoff(Duration.ofMillis(50))
                     .setBackoffMultiplier(1.3)
                     .build())
-            .build();
+            .build()) {
+      Object unwrapped = exporter.unwrap();
+      Field builderField = unwrapped.getClass().getDeclaredField("builder");
+      builderField.setAccessible(true);
 
-    Object unwrapped = exporter.unwrap();
-    Field builderField = unwrapped.getClass().getDeclaredField("builder");
-    builderField.setAccessible(true);
-
-    try {
       // Builder copy should be equal to original when unchanged
       TelemetryExporter<T> copy = toBuilder(exporter).build();
       try {
@@ -1065,16 +1003,13 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       } finally {
         copy.shutdown();
       }
-    } finally {
-      exporter.shutdown();
     }
   }
 
   @Test
   void stringRepresentation() throws IOException, CertificateEncodingException {
-    TelemetryExporter<T> telemetryExporter =
-        exporterBuilder().setEndpoint("http://localhost:4317").build();
-    try {
+    try (TelemetryExporter<T> telemetryExporter =
+        exporterBuilder().setEndpoint("http://localhost:4317").build()) {
       assertThat(telemetryExporter.unwrap().toString())
           .matches(
               "OtlpGrpc[a-zA-Z]*Exporter\\{"
@@ -1090,11 +1025,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + "headers=Headers\\{User-Agent=OBFUSCATED\\}"
                   + ".*" // Maybe additional grpcChannel field, signal specific fields
                   + "\\}");
-    } finally {
-      telemetryExporter.shutdown();
     }
 
-    telemetryExporter =
+    try (TelemetryExporter<T> telemetryExporter =
         exporterBuilder()
             .setTimeout(Duration.ofSeconds(5))
             .setConnectTimeout(Duration.ofSeconds(4))
@@ -1112,8 +1045,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                     .setInitialBackoff(Duration.ofMillis(50))
                     .setBackoffMultiplier(1.3)
                     .build())
-            .build();
-    try {
+            .build(); ) {
       assertThat(telemetryExporter.unwrap().toString())
           .matches(
               "OtlpGrpc[a-zA-Z]*Exporter\\{"
@@ -1130,8 +1062,6 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + "retryPolicy=RetryPolicy\\{maxAttempts=2, initialBackoff=PT0\\.05S, maxBackoff=PT3S, backoffMultiplier=1\\.3, retryExceptionPredicate=null\\}"
                   + ".*" // Maybe additional grpcChannel field, signal specific fields
                   + "\\}");
-    } finally {
-      telemetryExporter.shutdown();
     }
   }
 
@@ -1142,14 +1072,13 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
     InMemoryMetricReader inMemoryMetrics = InMemoryMetricReader.create();
     try (SdkMeterProvider meterProvider =
-        SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {
-
-      TelemetryExporter<T> exporter =
-          exporterBuilder()
-              .setEndpoint(server.httpUri().toString())
-              .setMeterProvider(() -> meterProvider)
-              .setInternalTelemetryVersion(InternalTelemetryVersion.LATEST)
-              .build();
+            SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build();
+        TelemetryExporter<T> exporter =
+            exporterBuilder()
+                .setEndpoint(server.httpUri().toString())
+                .setMeterProvider(() -> meterProvider)
+                .setInternalTelemetryVersion(InternalTelemetryVersion.LATEST)
+                .build()) {
 
       List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
       assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
@@ -1214,14 +1143,13 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
     InMemoryMetricReader inMemoryMetrics = InMemoryMetricReader.create();
     try (SdkMeterProvider meterProvider =
-        SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {
-
-      TelemetryExporter<T> exporter =
-          exporterBuilder()
-              .setEndpoint(server.httpUri().toString())
-              .setMeterProvider(() -> meterProvider)
-              .setInternalTelemetryVersion(InternalTelemetryVersion.LEGACY)
-              .build();
+            SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build();
+        TelemetryExporter<T> exporter =
+            exporterBuilder()
+                .setEndpoint(server.httpUri().toString())
+                .setMeterProvider(() -> meterProvider)
+                .setInternalTelemetryVersion(InternalTelemetryVersion.LEGACY)
+                .build()) {
 
       List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
       assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
