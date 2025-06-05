@@ -87,7 +87,7 @@ final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
           StatelessMarshalerUtil.sizeMessageWithContext(
               LogRecord.BODY, log.getBodyValue(), AnyValueStatelessMarshaler.INSTANCE, context);
     }
-    if (INCUBATOR_AVAILABLE) {
+    if (IncubatingUtil.isExtendedLogRecordData(log)) {
       size += IncubatingUtil.sizeExtendedAttributes(log, context);
 
       int droppedAttributesCount =
