@@ -2,6 +2,36 @@
 
 ## Unreleased
 
+### API
+
+#### Context
+
+* Fix context storage provider property name in log message
+  ([#7342](https://github.com/open-telemetry/opentelemetry-java/pull/7342))
+
+### SDK
+
+* Experimental configurable exception.* attribute resolution for SdkTracerProvider,
+  SdkLoggerProvider
+  ([#7266](https://github.com/open-telemetry/opentelemetry-java/pull/7266))
+
+#### Exporters
+
+* All exporters: implement new SemConv exporter health metrics, with configuration API for selecting
+  schema version
+  ([#7265](https://github.com/open-telemetry/opentelemetry-java/pull/7265))
+* OTLP: Add gRPC export for profiles signal type.
+  ([#7301](https://github.com/open-telemetry/opentelemetry-java/pull/7301))
+* OTLP: Run JDK HTTP sender on non-daemon threads.
+  ([#7322](https://github.com/open-telemetry/opentelemetry-java/pull/7322))
+* Prometheus: fix serialization of arrays
+  ([#7291](https://github.com/open-telemetry/opentelemetry-java/pull/7291))
+
+#### Extensions
+
+* Declarative config: Handle instrumentation node changes in yaml config file format 0.4
+  ([#7357](https://github.com/open-telemetry/opentelemetry-java/pull/7357))
+
 ## Version 1.50.0 (2025-05-09)
 
 ### API
