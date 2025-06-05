@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributeUtil;
 import io.opentelemetry.sdk.internal.AttributesMap;
+import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.InstrumentationScopeUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -48,6 +49,8 @@ final class SdkSpan implements ReadWriteSpan {
   private final SpanContext parentSpanContext;
   // Handler called when the span starts and ends.
   private final SpanProcessor spanProcessor;
+  // Resolves exception.* when an recordException is called
+  private final ExceptionAttributeResolver exceptionAttributeResolver;
   // The kind of the span.
   private final SpanKind kind;
   // The clock used to get the time.
@@ -123,6 +126,7 @@ final class SdkSpan implements ReadWriteSpan {
       SpanContext parentSpanContext,
       SpanLimits spanLimits,
       SpanProcessor spanProcessor,
+      ExceptionAttributeResolver exceptionAttributeResolver,
       AnchoredClock clock,
       Resource resource,
       @Nullable AttributesMap attributes,
@@ -137,6 +141,7 @@ final class SdkSpan implements ReadWriteSpan {
     this.name = name;
     this.kind = kind;
     this.spanProcessor = spanProcessor;
+    this.exceptionAttributeResolver = exceptionAttributeResolver;
     this.resource = resource;
     this.hasEnded = EndState.NOT_ENDED;
     this.clock = clock;
@@ -169,6 +174,7 @@ final class SdkSpan implements ReadWriteSpan {
       Context parentContext,
       SpanLimits spanLimits,
       SpanProcessor spanProcessor,
+      ExceptionAttributeResolver exceptionAttributeResolver,
       Clock tracerClock,
       Resource resource,
       @Nullable AttributesMap attributes,
@@ -207,6 +213,7 @@ final class SdkSpan implements ReadWriteSpan {
             parentSpan.getSpanContext(),
             spanLimits,
             spanProcessor,
+            exceptionAttributeResolver,
             clock,
             resource,
             attributes,
@@ -465,11 +472,13 @@ final class SdkSpan implements ReadWriteSpan {
       additionalAttributes = Attributes.empty();
     }
 
+    int maxAttributeLength = spanLimits.getMaxAttributeValueLength();
     AttributesMap attributes =
         AttributesMap.create(
             spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
 
-    AttributeUtil.addExceptionAttributes(exception, attributes::put);
+    exceptionAttributeResolver.setExceptionAttributes(
+        attributes::putIfCapacity, exception, maxAttributeLength);
 
     additionalAttributes.forEach(attributes::put);
 
