@@ -38,7 +38,9 @@ import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSummaryPointData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.metrics.expositionformats.ExpositionFormats;
+import io.prometheus.metrics.model.snapshots.CounterSnapshot;
 import io.prometheus.metrics.model.snapshots.Labels;
+import io.prometheus.metrics.model.snapshots.MetricSnapshot;
 import io.prometheus.metrics.model.snapshots.MetricSnapshots;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -47,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -241,7 +244,7 @@ class Otel2PrometheusConverterTest {
                   : "my_metric_units",
 
               // "cluster" attribute is added (due to reg expr specified) and only it
-              "cluster=\"mycluster\",foo1=\"bar1\",foo2=\"bar2\",otel_scope_name=\"scope\""));
+              "cluster=\"mycluster\",foo1=\"bar1\",foo2=\"bar2\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
     }
 
     // Resource attributes which also exists in the metric labels are not added twice
@@ -260,7 +263,7 @@ class Otel2PrometheusConverterTest {
 
             // "cluster" attribute is present only once and the value is taken
             // from the metric attributes and not the resource attributes
-            "cluster=\"mycluster2\",foo2=\"bar2\",otel_scope_name=\"scope\""));
+            "cluster=\"mycluster2\",foo2=\"bar2\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
 
     // Empty attributes
     arguments.add(
@@ -275,7 +278,7 @@ class Otel2PrometheusConverterTest {
                         stringKey("host"), "localhost", stringKey("cluster"), "mycluster"))),
             /* allowedResourceAttributesFilter= */ Predicates.startsWith("clu"),
             "my_metric_units",
-            "cluster=\"mycluster\",otel_scope_name=\"scope\""));
+            "cluster=\"mycluster\",otel_scope_foo=\"bar\",otel_scope_name=\"scope\",otel_scope_schema_url=\"schemaUrl\",otel_scope_version=\"version\""));
 
     return arguments.stream();
   }
@@ -316,7 +319,11 @@ class Otel2PrometheusConverterTest {
 
     MetricSnapshots snapshots = converter.convert(Collections.singletonList(metricData));
 
-    Labels labels = snapshots.get(0).getDataPoints().get(0).getLabels();
+    Optional<MetricSnapshot> metricSnapshot =
+        snapshots.stream().filter(snapshot -> snapshot instanceof CounterSnapshot).findFirst();
+    assertThat(metricSnapshot).isPresent();
+
+    Labels labels = metricSnapshot.get().getDataPoints().get(0).getLabels();
     attributes.forEach(
         (key, value) -> {
           String labelValue = labels.get(key.getKey());
