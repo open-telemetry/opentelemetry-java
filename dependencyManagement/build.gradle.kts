@@ -34,7 +34,6 @@ val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.17"
 val opencensusVersion = "0.31.1"
-val prometheusClientVersion = "0.16.0"
 val prometheusServerVersion = "1.3.7"
 val armeriaVersion = "1.32.5"
 val junitVersion = "5.12.2"
@@ -65,12 +64,8 @@ val DEPENDENCIES = listOf(
   "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
   "org.slf4j:slf4j-simple:${slf4jVersion}",
   "org.slf4j:jul-to-slf4j:${slf4jVersion}",
-  "io.prometheus:prometheus-metrics-shaded-protobuf:1.3.1",
   "io.prometheus:prometheus-metrics-exporter-httpserver:${prometheusServerVersion}",
-  "io.prometheus:prometheus-metrics-exposition-formats:${prometheusServerVersion}",
-  "io.prometheus:simpleclient:${prometheusClientVersion}",
-  "io.prometheus:simpleclient_common:${prometheusClientVersion}",
-  "io.prometheus:simpleclient_httpserver:${prometheusClientVersion}",
+  "io.prometheus:prometheus-metrics-exposition-formats-no-protobuf:${prometheusServerVersion}",
   "javax.annotation:javax.annotation-api:1.3.2",
   "com.github.stefanbirkner:system-rules:1.19.0",
   "com.google.api.grpc:proto-google-common-protos:2.58.0",
