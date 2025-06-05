@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -73,9 +74,26 @@ class JdkHttpSenderTest {
       minVersion = 21,
       disabledReason = "HttpClient#close has been added in Java 21")
   void testShutdown() throws Exception {
-    sender.shutdown();
+    CompletableResultCode result = sender.shutdown();
+    result.join(1, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isTrue();
     Method close = HttpClient.class.getMethod("close");
     close.invoke(verify(mockHttpClient));
+  }
+
+  @Test
+  @EnabledForJreRange(
+      minVersion = 21,
+      disabledReason = "HttpClient#close has been added in Java 21")
+  void testShutdownException() throws Exception {
+    Method close = HttpClient.class.getMethod("close");
+    close.invoke(doThrow(new RuntimeException("testShutdownException")).when(mockHttpClient));
+
+    CompletableResultCode result = sender.shutdown();
+    result.join(1, TimeUnit.SECONDS);
+    assertThat(result.isSuccess()).isFalse();
+    assertThat(result.getFailureThrowable()).isInstanceOf(RuntimeException.class);
+    assertThat(result.getFailureThrowable().getMessage()).isEqualTo("testShutdownException");
   }
 
   @Test
