@@ -249,6 +249,8 @@ public final class OtlpHttpMetricExporterBuilder {
   /**
    * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this exporter
    * collects.
+   *
+   * @since 1.51.0
    */
   public OtlpHttpMetricExporterBuilder setInternalTelemetryVersion(
       InternalTelemetryVersion schemaVersion) {
