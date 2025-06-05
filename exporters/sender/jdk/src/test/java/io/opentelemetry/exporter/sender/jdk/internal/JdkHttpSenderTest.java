@@ -18,6 +18,7 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.net.http.HttpClient;
@@ -29,6 +30,7 @@ import javax.net.ssl.SSLException;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -64,6 +66,16 @@ class JdkHttpSenderTest {
             Collections::emptyMap,
             RetryPolicy.builder().setMaxAttempts(2).setInitialBackoff(Duration.ofMillis(1)).build(),
             null);
+  }
+
+  @Test
+  @EnabledForJreRange(
+      minVersion = 21,
+      disabledReason = "HttpClient#close has been added in Java 21")
+  void testShutdown() throws Exception {
+    sender.shutdown();
+    Method close = HttpClient.class.getMethod("close");
+    close.invoke(verify(mockHttpClient));
   }
 
   @Test
