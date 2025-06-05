@@ -10,6 +10,8 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.internal.DefaultExceptionAttributeResolver;
+import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.resources.Resource;
@@ -35,6 +37,8 @@ public final class SdkTracerProviderBuilder {
   private Sampler sampler = DEFAULT_SAMPLER;
   private ScopeConfiguratorBuilder<TracerConfig> tracerConfiguratorBuilder =
       TracerConfig.configuratorBuilder();
+  private ExceptionAttributeResolver exceptionAttributeResolver =
+      DefaultExceptionAttributeResolver.getInstance();
 
   /**
    * Assign a {@link Clock}. {@link Clock} will be used each time a {@link Span} is started, ended
@@ -151,7 +155,25 @@ public final class SdkTracerProviderBuilder {
    * @return this
    */
   public SdkTracerProviderBuilder addSpanProcessor(SpanProcessor spanProcessor) {
+    requireNonNull(spanProcessor, "spanProcessor");
     spanProcessors.add(spanProcessor);
+    return this;
+  }
+
+  /**
+   * Add a SpanProcessor to the beginning of the span pipeline that will be built. {@link
+   * SpanProcessor} will be called each time a {@link Span} is started or ended.
+   *
+   * <p>The {@code spanProcessor} must be thread-safe and return immediately (no remote calls, as
+   * contention free as possible).
+   *
+   * @param spanProcessor the processor to be added to the beginning of the span pipeline.
+   * @return this
+   * @since 1.50.0
+   */
+  public SdkTracerProviderBuilder addSpanProcessorFirst(SpanProcessor spanProcessor) {
+    requireNonNull(spanProcessor, "spanProcessor");
+    spanProcessors.add(0, spanProcessor);
     return this;
   }
 
@@ -197,6 +219,21 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
+   * Set the exception attribute resolver, which resolves {@code exception.*} attributes when {@link
+   * Span#recordException(Throwable)}
+   *
+   * <p>This method is experimental so not public. You may reflectively call it using {@link
+   * SdkTracerProviderUtil#setExceptionAttributeResolver(SdkTracerProviderBuilder,
+   * ExceptionAttributeResolver)}.
+   */
+  SdkTracerProviderBuilder setExceptionAttributeResolver(
+      ExceptionAttributeResolver exceptionAttributeResolver) {
+    requireNonNull(exceptionAttributeResolver, "exceptionAttributeResolver");
+    this.exceptionAttributeResolver = exceptionAttributeResolver;
+    return this;
+  }
+
+  /**
    * Create a new {@link SdkTracerProvider} instance with the configuration.
    *
    * @return The instance.
@@ -209,7 +246,8 @@ public final class SdkTracerProviderBuilder {
         spanLimitsSupplier,
         sampler,
         spanProcessors,
-        tracerConfiguratorBuilder.build());
+        tracerConfiguratorBuilder.build(),
+        exceptionAttributeResolver);
   }
 
   SdkTracerProviderBuilder() {}

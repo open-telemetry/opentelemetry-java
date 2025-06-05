@@ -20,7 +20,6 @@ import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
 import io.opentelemetry.proto.logs.v1.internal.LogRecord;
 import io.opentelemetry.proto.logs.v1.internal.SeverityNumber;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
 import java.io.IOException;
 import javax.annotation.Nullable;
 
@@ -40,7 +39,6 @@ final class LogMarshaler extends MarshalerWithSize {
 
   private static final String INVALID_TRACE_ID = TraceId.getInvalid();
   private static final String INVALID_SPAN_ID = SpanId.getInvalid();
-  private static final byte[] EMPTY_BYTES = new byte[0];
 
   private final long timeUnixNano;
   private final long observedTimeUnixNano;
@@ -82,9 +80,7 @@ final class LogMarshaler extends MarshalerWithSize {
         spanContext.getTraceFlags(),
         spanContext.getTraceId().equals(INVALID_TRACE_ID) ? null : spanContext.getTraceId(),
         spanContext.getSpanId().equals(INVALID_SPAN_ID) ? null : spanContext.getSpanId(),
-        logRecordData instanceof ExtendedLogRecordData
-            ? MarshalerUtil.toBytes(((ExtendedLogRecordData) logRecordData).getEventName())
-            : EMPTY_BYTES);
+        MarshalerUtil.toBytes(logRecordData.getEventName()));
   }
 
   private LogMarshaler(

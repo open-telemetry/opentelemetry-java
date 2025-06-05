@@ -21,6 +21,7 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
   testImplementation("com.google.guava:guava-testlib")
+  testImplementation("io.opentelemetry.semconv:opentelemetry-semconv-incubating")
 }
 
 tasks {

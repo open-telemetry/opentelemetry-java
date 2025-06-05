@@ -17,11 +17,20 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface GaugeData<T extends PointData> extends Data<T> {
 
-  // For double gauges
+  /**
+   * Create a record.
+   *
+   * @since 1.50.0
+   */
   static GaugeData<DoublePointData> createDoubleGaugeData(Collection<DoublePointData> points) {
     return ImmutableGaugeData.create(points);
   }
 
+  /**
+   * Create a record.
+   *
+   * @since 1.50.0
+   */
   static GaugeData<LongPointData> createLongGaugeData(Collection<LongPointData> points) {
     return ImmutableGaugeData.create(points);
   }

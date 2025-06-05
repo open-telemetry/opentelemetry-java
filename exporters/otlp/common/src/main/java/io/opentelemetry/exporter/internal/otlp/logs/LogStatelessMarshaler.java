@@ -20,7 +20,6 @@ import io.opentelemetry.exporter.internal.otlp.AttributeKeyValueStatelessMarshal
 import io.opentelemetry.exporter.internal.otlp.IncubatingUtil;
 import io.opentelemetry.proto.logs.v1.internal.LogRecord;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.logs.data.internal.ExtendedLogRecordData;
 import java.io.IOException;
 
 /** See {@link LogMarshaler}. */
@@ -79,10 +78,7 @@ final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
     if (!spanContext.getSpanId().equals(INVALID_SPAN_ID)) {
       output.serializeSpanId(LogRecord.SPAN_ID, spanContext.getSpanId(), context);
     }
-    if (log instanceof ExtendedLogRecordData) {
-      output.serializeStringWithContext(
-          LogRecord.EVENT_NAME, ((ExtendedLogRecordData) log).getEventName(), context);
-    }
+    output.serializeStringWithContext(LogRecord.EVENT_NAME, log.getEventName(), context);
   }
 
   @Override
@@ -130,11 +126,9 @@ final class LogStatelessMarshaler implements StatelessMarshaler<LogRecordData> {
       size += MarshalerUtil.sizeSpanId(LogRecord.SPAN_ID, spanContext.getSpanId());
     }
 
-    if (log instanceof ExtendedLogRecordData) {
-      size +=
-          StatelessMarshalerUtil.sizeStringWithContext(
-              LogRecord.EVENT_NAME, ((ExtendedLogRecordData) log).getEventName(), context);
-    }
+    size +=
+        StatelessMarshalerUtil.sizeStringWithContext(
+            LogRecord.EVENT_NAME, log.getEventName(), context);
 
     return size;
   }

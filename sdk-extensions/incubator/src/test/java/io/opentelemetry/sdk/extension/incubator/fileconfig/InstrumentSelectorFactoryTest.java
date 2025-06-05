@@ -10,11 +10,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SelectorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewSelectorModel;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentType;
-import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class InstrumentSelectorFactoryTest {
@@ -24,7 +22,7 @@ class InstrumentSelectorFactoryTest {
     assertThatThrownBy(
             () ->
                 InstrumentSelectorFactory.getInstance()
-                    .create(new SelectorModel(), mock(SpiHelper.class), Collections.emptyList()))
+                    .create(new ViewSelectorModel(), mock(DeclarativeConfigContext.class)))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage("Invalid selector");
   }
@@ -34,14 +32,13 @@ class InstrumentSelectorFactoryTest {
     assertThat(
             InstrumentSelectorFactory.getInstance()
                 .create(
-                    new SelectorModel()
+                    new ViewSelectorModel()
                         .withInstrumentName("instrument-name")
-                        .withInstrumentType(SelectorModel.InstrumentType.COUNTER)
+                        .withInstrumentType(ViewSelectorModel.InstrumentType.COUNTER)
                         .withMeterName("meter-name")
                         .withMeterSchemaUrl("https://opentelemetry.io/schemas/1.16.0")
                         .withMeterVersion("1.0.0"),
-                    mock(SpiHelper.class),
-                    Collections.emptyList()))
+                    mock(DeclarativeConfigContext.class)))
         .isEqualTo(
             InstrumentSelector.builder()
                 .setName("instrument-name")

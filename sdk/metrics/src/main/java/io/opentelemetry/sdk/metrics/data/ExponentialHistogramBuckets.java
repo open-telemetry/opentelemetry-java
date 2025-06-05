@@ -26,6 +26,11 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface ExponentialHistogramBuckets {
 
+  /**
+   * Create a record.
+   *
+   * @since 1.50.0
+   */
   static ExponentialHistogramBuckets create(int scale, int offset, List<Long> bucketCounts) {
     return ImmutableExponentialHistogramBuckets.create(scale, offset, bucketCounts);
   }

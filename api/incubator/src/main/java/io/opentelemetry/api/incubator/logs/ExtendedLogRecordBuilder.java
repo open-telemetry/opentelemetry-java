@@ -62,6 +62,15 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
   }
 
   /**
+   * Sets the event name, which identifies the class / type of the Event.
+   *
+   * <p>This name should uniquely identify the event structure (both attributes and body). A log
+   * record with a non-empty event name is an Event.
+   */
+  @Override
+  ExtendedLogRecordBuilder setEventName(String eventName);
+
+  /**
    * {@inheritDoc}
    *
    * <p>NOTE: all standard {@link AttributeKey}-value pairs can also be represented as {@link
@@ -123,14 +132,6 @@ public interface ExtendedLogRecordBuilder extends LogRecordBuilder {
    * attribute APIs.
    */
   <T> ExtendedLogRecordBuilder setAttribute(ExtendedAttributeKey<T> key, T value);
-
-  /**
-   * Sets the event name, which identifies the class / type of the Event.
-   *
-   * <p>This name should uniquely identify the event structure (both attributes and body). A log
-   * record with a non-empty event name is an Event.
-   */
-  ExtendedLogRecordBuilder setEventName(String eventName);
 
   /** Set standard {@code exception.*} attributes based on the {@code throwable}. */
   ExtendedLogRecordBuilder setException(Throwable throwable);

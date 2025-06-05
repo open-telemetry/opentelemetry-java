@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.otlp.testing.internal;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.satisfies;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -39,10 +41,18 @@ import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
+import io.opentelemetry.proto.collector.profiles.v1development.ExportProfilesServiceRequest;
+import io.opentelemetry.proto.collector.profiles.v1development.ExportProfilesServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.SemConvAttributes;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.testing.assertj.AttributeAssertion;
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -138,6 +148,12 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   ExportLogsServiceRequest::parseFrom,
                   ExportLogsServiceRequest::getResourceLogsList,
                   ExportLogsServiceResponse.getDefaultInstance().toByteArray()));
+          sb.service(
+              "/opentelemetry.proto.collector.profiles.v1development.ProfilesService/Export",
+              new CollectorService<>(
+                  ExportProfilesServiceRequest::parseFrom,
+                  ExportProfilesServiceRequest::getResourceProfilesList,
+                  ExportProfilesServiceResponse.getDefaultInstance().toByteArray()));
 
           sb.http(0);
           sb.https(0);
@@ -180,7 +196,8 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
     }
   }
 
-  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(GrpcExporter.class);
+  @RegisterExtension
+  protected LogCapturer logs = LogCapturer.create().captureForType(GrpcExporter.class);
 
   private final String type;
   private final U resourceTelemetryInstance;
@@ -702,7 +719,7 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
 
   @Test
   @SuppressLogger(GrpcExporter.class)
-  void testExport_Unimplemented() {
+  protected void testExport_Unimplemented() {
     addGrpcError(12, "UNIMPLEMENTED");
 
     TelemetryExporter<T> exporter = nonRetryingExporter();
@@ -724,6 +741,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
           break;
         case "log":
           envVar = "OTEL_LOGS_EXPORTER";
+          break;
+        case "profile":
+          envVar = "OTEL_PROFILES_EXPORTER";
           break;
         default:
           throw new AssertionError();
@@ -1058,8 +1078,6 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       assertThat(telemetryExporter.unwrap().toString())
           .matches(
               "OtlpGrpc[a-zA-Z]*Exporter\\{"
-                  + "exporterName=otlp, "
-                  + "type=[a-zA_Z]*, "
                   + "endpoint=http://localhost:4317, "
                   + "endpointPath=.*, "
                   + "timeoutNanos="
@@ -1099,8 +1117,6 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
       assertThat(telemetryExporter.unwrap().toString())
           .matches(
               "OtlpGrpc[a-zA-Z]*Exporter\\{"
-                  + "exporterName=otlp, "
-                  + "type=[a-zA_Z]*, "
                   + "endpoint=http://example:4317, "
                   + "endpointPath=.*, "
                   + "timeoutNanos="
@@ -1116,6 +1132,126 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   + "\\}");
     } finally {
       telemetryExporter.shutdown();
+    }
+  }
+
+  @Test
+  void latestInternalTelemetry() {
+    // Profiles do not expose metrics yet, so skip
+    assumeThat(type).isNotEqualTo("profile");
+
+    InMemoryMetricReader inMemoryMetrics = InMemoryMetricReader.create();
+    try (SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {
+
+      TelemetryExporter<T> exporter =
+          exporterBuilder()
+              .setEndpoint(server.httpUri().toString())
+              .setMeterProvider(() -> meterProvider)
+              .setInternalTelemetryVersion(InternalTelemetryVersion.LATEST)
+              .build();
+
+      List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
+      assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+
+      List<AttributeAssertion> expectedAttributes =
+          Arrays.asList(
+              satisfies(
+                  SemConvAttributes.OTEL_COMPONENT_TYPE,
+                  str -> str.matches("otlp_grpc_(log|metric|span)_exporter")),
+              satisfies(
+                  SemConvAttributes.OTEL_COMPONENT_NAME,
+                  str -> str.matches("otlp_grpc_(log|metric|span)_exporter/\\d+")),
+              satisfies(
+                  SemConvAttributes.SERVER_PORT, str -> str.isEqualTo(server.httpUri().getPort())),
+              satisfies(
+                  SemConvAttributes.SERVER_ADDRESS,
+                  str -> str.isEqualTo(server.httpUri().getHost())));
+
+      assertThat(inMemoryMetrics.collectAllMetrics())
+          .hasSize(3)
+          .anySatisfy(
+              metric ->
+                  OpenTelemetryAssertions.assertThat(metric)
+                      .satisfies(
+                          m ->
+                              assertThat(m.getName())
+                                  .matches(
+                                      "otel.sdk.exporter.(span|metric_data_point|log).inflight"))
+                      .hasLongSumSatisfying(
+                          ma ->
+                              ma.hasPointsSatisfying(
+                                  pa -> pa.hasAttributesSatisfying(expectedAttributes))))
+          .anySatisfy(
+              metric ->
+                  OpenTelemetryAssertions.assertThat(metric)
+                      .satisfies(
+                          m ->
+                              assertThat(m.getName())
+                                  .matches(
+                                      "otel.sdk.exporter.(span|metric_data_point|log).exported"))
+                      .hasLongSumSatisfying(
+                          ma ->
+                              ma.hasPointsSatisfying(
+                                  pa -> pa.hasAttributesSatisfying(expectedAttributes))))
+          .anySatisfy(
+              metric ->
+                  OpenTelemetryAssertions.assertThat(metric)
+                      .hasName("otel.sdk.exporter.operation.duration")
+                      .hasHistogramSatisfying(
+                          ma ->
+                              ma.hasPointsSatisfying(
+                                  pa ->
+                                      pa.hasAttributesSatisfying(expectedAttributes)
+                                          .hasBucketCounts(1))));
+    }
+  }
+
+  @Test
+  void legacyInternalTelemetry() {
+    // Profiles do not expose metrics yet, so skip
+    assumeThat(type).isNotEqualTo("profile");
+
+    InMemoryMetricReader inMemoryMetrics = InMemoryMetricReader.create();
+    try (SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {
+
+      TelemetryExporter<T> exporter =
+          exporterBuilder()
+              .setEndpoint(server.httpUri().toString())
+              .setMeterProvider(() -> meterProvider)
+              .setInternalTelemetryVersion(InternalTelemetryVersion.LEGACY)
+              .build();
+
+      List<T> telemetry = Collections.singletonList(generateFakeTelemetry());
+      assertThat(exporter.export(telemetry).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+
+      assertThat(inMemoryMetrics.collectAllMetrics())
+          .hasSize(2)
+          .anySatisfy(
+              metric ->
+                  OpenTelemetryAssertions.assertThat(metric)
+                      .hasName("otlp.exporter.seen")
+                      .hasLongSumSatisfying(
+                          ma ->
+                              ma.hasPointsSatisfying(
+                                  pa ->
+                                      pa.hasAttributesSatisfying(
+                                          satisfies(
+                                              stringKey("type"),
+                                              str -> str.matches("log|span|metric"))))))
+          .anySatisfy(
+              metric ->
+                  OpenTelemetryAssertions.assertThat(metric)
+                      .hasName("otlp.exporter.exported")
+                      .hasLongSumSatisfying(
+                          ma ->
+                              ma.hasPointsSatisfying(
+                                  pa ->
+                                      pa.hasAttributesSatisfying(
+                                          satisfies(
+                                              stringKey("type"),
+                                              str -> str.matches("log|span|metric"))))));
     }
   }
 
@@ -1149,11 +1285,11 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         .collect(Collectors.toList());
   }
 
-  private TelemetryExporter<T> nonRetryingExporter() {
+  protected TelemetryExporter<T> nonRetryingExporter() {
     return exporterBuilder().setEndpoint(server.httpUri().toString()).setRetryPolicy(null).build();
   }
 
-  private static void addGrpcError(int code, @Nullable String message) {
+  protected static void addGrpcError(int code, @Nullable String message) {
     grpcErrors.add(new ArmeriaStatusException(code, message));
   }
 }

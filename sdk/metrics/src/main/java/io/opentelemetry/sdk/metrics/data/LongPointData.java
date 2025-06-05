@@ -17,6 +17,11 @@ import java.util.List;
  */
 public interface LongPointData extends PointData {
 
+  /**
+   * Create a record.
+   *
+   * @since 1.50.0
+   */
   static LongPointData create(
       long startEpochNanos, long epochNanos, Attributes attributes, long value) {
     return ImmutableLongPointData.create(

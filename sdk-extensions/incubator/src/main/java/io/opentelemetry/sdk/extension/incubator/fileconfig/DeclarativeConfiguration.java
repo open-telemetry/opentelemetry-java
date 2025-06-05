@@ -21,7 +21,6 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -221,12 +220,12 @@ public final class DeclarativeConfiguration {
   }
 
   static <M, R> R createAndMaybeCleanup(Factory<M, R> factory, SpiHelper spiHelper, M model) {
-    List<Closeable> closeables = new ArrayList<>();
+    DeclarativeConfigContext context = new DeclarativeConfigContext(spiHelper);
     try {
-      return factory.create(model, spiHelper, closeables);
+      return factory.create(model, context);
     } catch (RuntimeException e) {
       logger.info("Error encountered interpreting model. Closing partially configured components.");
-      for (Closeable closeable : closeables) {
+      for (Closeable closeable : context.getCloseables()) {
         try {
           logger.fine("Closing " + closeable.getClass().getName());
           closeable.close();

@@ -17,14 +17,19 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
+import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
+import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.component.MetricExporterComponentProvider;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ConsoleExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ExperimentalOtlpFileMetricExporterModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.NameStringValuePairModel;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpMetricModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpGrpcMetricExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OtlpHttpMetricExporterModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.PushMetricExporterModel;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -65,6 +70,7 @@ class MetricExporterFactoryTest {
 
   private final SpiHelper spiHelper =
       spy(SpiHelper.create(SpanExporterFactoryTest.class.getClassLoader()));
+  private final DeclarativeConfigContext context = new DeclarativeConfigContext(spiHelper);
   private List<ComponentProvider<?>> loadedComponentProviders = Collections.emptyList();
 
   @BeforeEach
@@ -92,7 +98,7 @@ class MetricExporterFactoryTest {
   }
 
   @Test
-  void create_OtlpDefaults() {
+  void create_OtlpHttpDefaults() {
     List<Closeable> closeables = new ArrayList<>();
     OtlpHttpMetricExporter expectedExporter = OtlpHttpMetricExporter.getDefault();
     cleanup.addCloseable(expectedExporter);
@@ -100,11 +106,8 @@ class MetricExporterFactoryTest {
     MetricExporter exporter =
         MetricExporterFactory.getInstance()
             .create(
-                new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .PushMetricExporterModel()
-                    .withOtlp(new OtlpMetricModel()),
-                spiHelper,
-                closeables);
+                new PushMetricExporterModel().withOtlpHttp(new OtlpHttpMetricExporterModel()),
+                context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -112,7 +115,8 @@ class MetricExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider = getComponentProvider("otlp", MetricExporter.class);
+    ComponentProvider<?> componentProvider =
+        getComponentProvider("otlp_http", MetricExporter.class);
     verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
     assertThat(configProperties.getString("protocol")).isNull();
@@ -120,15 +124,15 @@ class MetricExporterFactoryTest {
     assertThat(configProperties.getStructured("headers")).isNull();
     assertThat(configProperties.getString("compression")).isNull();
     assertThat(configProperties.getInt("timeout")).isNull();
-    assertThat(configProperties.getString("certificate")).isNull();
-    assertThat(configProperties.getString("client_key")).isNull();
-    assertThat(configProperties.getString("client_certificate")).isNull();
+    assertThat(configProperties.getString("certificate_file")).isNull();
+    assertThat(configProperties.getString("client_key_file")).isNull();
+    assertThat(configProperties.getString("client_certificate_file")).isNull();
     assertThat(configProperties.getString("temporality_preference")).isNull();
     assertThat(configProperties.getString("default_histogram_aggregation")).isNull();
   }
 
   @Test
-  void create_OtlpConfigured(@TempDir Path tempDir)
+  void create_OtlpHttpConfigured(@TempDir Path tempDir)
       throws CertificateEncodingException, IOException {
     List<Closeable> closeables = new ArrayList<>();
     OtlpHttpMetricExporter expectedExporter =
@@ -158,11 +162,9 @@ class MetricExporterFactoryTest {
     MetricExporter exporter =
         MetricExporterFactory.getInstance()
             .create(
-                new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .PushMetricExporterModel()
-                    .withOtlp(
-                        new OtlpMetricModel()
-                            .withProtocol("http/protobuf")
+                new PushMetricExporterModel()
+                    .withOtlpHttp(
+                        new OtlpHttpMetricExporterModel()
                             .withEndpoint("http://example:4318/v1/metrics")
                             .withHeaders(
                                 Arrays.asList(
@@ -174,15 +176,15 @@ class MetricExporterFactoryTest {
                                         .withValue("value2")))
                             .withCompression("gzip")
                             .withTimeout(15_000)
-                            .withCertificate(certificatePath)
-                            .withClientKey(clientKeyPath)
-                            .withClientCertificate(clientCertificatePath)
-                            .withTemporalityPreference("delta")
+                            .withCertificateFile(certificatePath)
+                            .withClientKeyFile(clientKeyPath)
+                            .withClientCertificateFile(clientCertificatePath)
+                            .withTemporalityPreference(
+                                OtlpHttpMetricExporterModel.ExporterTemporalityPreference.DELTA)
                             .withDefaultHistogramAggregation(
-                                OtlpMetricModel.DefaultHistogramAggregation
+                                OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
                                     .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)),
-                spiHelper,
-                closeables);
+                context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
@@ -190,10 +192,10 @@ class MetricExporterFactoryTest {
 
     ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
         ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
-    ComponentProvider<?> componentProvider = getComponentProvider("otlp", MetricExporter.class);
+    ComponentProvider<?> componentProvider =
+        getComponentProvider("otlp_http", MetricExporter.class);
     verify(componentProvider).create(configCaptor.capture());
     DeclarativeConfigProperties configProperties = configCaptor.getValue();
-    assertThat(configProperties.getString("protocol")).isEqualTo("http/protobuf");
     assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4318/v1/metrics");
     List<DeclarativeConfigProperties> headers = configProperties.getStructuredList("headers");
     assertThat(headers)
@@ -209,9 +211,132 @@ class MetricExporterFactoryTest {
             });
     assertThat(configProperties.getString("compression")).isEqualTo("gzip");
     assertThat(configProperties.getInt("timeout")).isEqualTo(Duration.ofSeconds(15).toMillis());
-    assertThat(configProperties.getString("certificate")).isEqualTo(certificatePath);
-    assertThat(configProperties.getString("client_key")).isEqualTo(clientKeyPath);
-    assertThat(configProperties.getString("client_certificate")).isEqualTo(clientCertificatePath);
+    assertThat(configProperties.getString("certificate_file")).isEqualTo(certificatePath);
+    assertThat(configProperties.getString("client_key_file")).isEqualTo(clientKeyPath);
+    assertThat(configProperties.getString("client_certificate_file"))
+        .isEqualTo(clientCertificatePath);
+    assertThat(configProperties.getString("temporality_preference")).isEqualTo("delta");
+    assertThat(configProperties.getString("default_histogram_aggregation"))
+        .isEqualTo("base2_exponential_bucket_histogram");
+  }
+
+  @Test
+  void create_OtlpGrpcDefaults() {
+    List<Closeable> closeables = new ArrayList<>();
+    OtlpGrpcMetricExporter expectedExporter = OtlpGrpcMetricExporter.getDefault();
+    cleanup.addCloseable(expectedExporter);
+
+    MetricExporter exporter =
+        MetricExporterFactory.getInstance()
+            .create(
+                new PushMetricExporterModel().withOtlpGrpc(new OtlpGrpcMetricExporterModel()),
+                context);
+    cleanup.addCloseable(exporter);
+    cleanup.addCloseables(closeables);
+
+    assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
+
+    ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
+        ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
+    ComponentProvider<?> componentProvider =
+        getComponentProvider("otlp_grpc", MetricExporter.class);
+    verify(componentProvider).create(configCaptor.capture());
+    DeclarativeConfigProperties configProperties = configCaptor.getValue();
+    assertThat(configProperties.getString("endpoint")).isNull();
+    assertThat(configProperties.getStructured("headers")).isNull();
+    assertThat(configProperties.getString("compression")).isNull();
+    assertThat(configProperties.getInt("timeout")).isNull();
+    assertThat(configProperties.getString("certificate_file")).isNull();
+    assertThat(configProperties.getString("client_key_file")).isNull();
+    assertThat(configProperties.getString("client_certificate_file")).isNull();
+    assertThat(configProperties.getString("temporality_preference")).isNull();
+    assertThat(configProperties.getString("default_histogram_aggregation")).isNull();
+  }
+
+  @Test
+  void create_OtlpGrpcConfigured(@TempDir Path tempDir)
+      throws CertificateEncodingException, IOException {
+    List<Closeable> closeables = new ArrayList<>();
+    OtlpGrpcMetricExporter expectedExporter =
+        OtlpGrpcMetricExporter.builder()
+            .setEndpoint("http://example:4317")
+            .addHeader("key1", "value1")
+            .addHeader("key2", "value2")
+            .setTimeout(Duration.ofSeconds(15))
+            .setCompression("gzip")
+            .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred())
+            .setDefaultAggregationSelector(
+                DefaultAggregationSelector.getDefault()
+                    .with(InstrumentType.HISTOGRAM, Aggregation.base2ExponentialBucketHistogram()))
+            .build();
+    cleanup.addCloseable(expectedExporter);
+
+    // Write certificates to temp files
+    String certificatePath =
+        createTempFileWithContent(
+            tempDir, "certificate.cert", serverTls.certificate().getEncoded());
+    String clientKeyPath =
+        createTempFileWithContent(tempDir, "clientKey.key", clientTls.privateKey().getEncoded());
+    String clientCertificatePath =
+        createTempFileWithContent(
+            tempDir, "clientCertificate.cert", clientTls.certificate().getEncoded());
+
+    MetricExporter exporter =
+        MetricExporterFactory.getInstance()
+            .create(
+                new PushMetricExporterModel()
+                    .withOtlpGrpc(
+                        new OtlpGrpcMetricExporterModel()
+                            .withEndpoint("http://example:4317")
+                            .withHeaders(
+                                Arrays.asList(
+                                    new NameStringValuePairModel()
+                                        .withName("key1")
+                                        .withValue("value1"),
+                                    new NameStringValuePairModel()
+                                        .withName("key2")
+                                        .withValue("value2")))
+                            .withCompression("gzip")
+                            .withTimeout(15_000)
+                            .withCertificateFile(certificatePath)
+                            .withClientKeyFile(clientKeyPath)
+                            .withClientCertificateFile(clientCertificatePath)
+                            .withTemporalityPreference(
+                                OtlpHttpMetricExporterModel.ExporterTemporalityPreference.DELTA)
+                            .withDefaultHistogramAggregation(
+                                OtlpHttpMetricExporterModel.ExporterDefaultHistogramAggregation
+                                    .BASE_2_EXPONENTIAL_BUCKET_HISTOGRAM)),
+                context);
+    cleanup.addCloseable(exporter);
+    cleanup.addCloseables(closeables);
+
+    assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
+
+    ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
+        ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
+    ComponentProvider<?> componentProvider =
+        getComponentProvider("otlp_grpc", MetricExporter.class);
+    verify(componentProvider).create(configCaptor.capture());
+    DeclarativeConfigProperties configProperties = configCaptor.getValue();
+    assertThat(configProperties.getString("endpoint")).isEqualTo("http://example:4317");
+    List<DeclarativeConfigProperties> headers = configProperties.getStructuredList("headers");
+    assertThat(headers)
+        .isNotNull()
+        .satisfiesExactly(
+            header -> {
+              assertThat(header.getString("name")).isEqualTo("key1");
+              assertThat(header.getString("value")).isEqualTo("value1");
+            },
+            header -> {
+              assertThat(header.getString("name")).isEqualTo("key2");
+              assertThat(header.getString("value")).isEqualTo("value2");
+            });
+    assertThat(configProperties.getString("compression")).isEqualTo("gzip");
+    assertThat(configProperties.getInt("timeout")).isEqualTo(Duration.ofSeconds(15).toMillis());
+    assertThat(configProperties.getString("certificate_file")).isEqualTo(certificatePath);
+    assertThat(configProperties.getString("client_key_file")).isEqualTo(clientKeyPath);
+    assertThat(configProperties.getString("client_certificate_file"))
+        .isEqualTo(clientCertificatePath);
     assertThat(configProperties.getString("temporality_preference")).isEqualTo("delta");
     assertThat(configProperties.getString("default_histogram_aggregation"))
         .isEqualTo("base2_exponential_bucket_histogram");
@@ -225,16 +350,35 @@ class MetricExporterFactoryTest {
 
     io.opentelemetry.sdk.metrics.export.MetricExporter exporter =
         MetricExporterFactory.getInstance()
-            .create(
-                new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .PushMetricExporterModel()
-                    .withConsole(new ConsoleModel()),
-                spiHelper,
-                closeables);
+            .create(new PushMetricExporterModel().withConsole(new ConsoleExporterModel()), context);
     cleanup.addCloseable(exporter);
     cleanup.addCloseables(closeables);
 
     assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
+  }
+
+  @Test
+  void create_OtlpFile() {
+    List<Closeable> closeables = new ArrayList<>();
+    OtlpStdoutMetricExporter expectedExporter = OtlpStdoutMetricExporter.builder().build();
+    cleanup.addCloseable(expectedExporter);
+
+    MetricExporter exporter =
+        MetricExporterFactory.getInstance()
+            .create(
+                new PushMetricExporterModel()
+                    .withOtlpFileDevelopment(new ExperimentalOtlpFileMetricExporterModel()),
+                context);
+    cleanup.addCloseable(exporter);
+    cleanup.addCloseables(closeables);
+
+    assertThat(exporter.toString()).isEqualTo(expectedExporter.toString());
+
+    ArgumentCaptor<DeclarativeConfigProperties> configCaptor =
+        ArgumentCaptor.forClass(DeclarativeConfigProperties.class);
+    ComponentProvider<?> componentProvider =
+        getComponentProvider("otlp_file/development", MetricExporter.class);
+    verify(componentProvider).create(configCaptor.capture());
   }
 
   @Test
@@ -243,12 +387,10 @@ class MetricExporterFactoryTest {
             () ->
                 MetricExporterFactory.getInstance()
                     .create(
-                        new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                                .PushMetricExporterModel()
+                        new PushMetricExporterModel()
                             .withAdditionalProperty(
                                 "unknown_key", ImmutableMap.of("key1", "value1")),
-                        spiHelper,
-                        new ArrayList<>()))
+                        context))
         .isInstanceOf(DeclarativeConfigException.class)
         .hasMessage(
             "No component provider detected for io.opentelemetry.sdk.metrics.export.MetricExporter with name \"unknown_key\".");
@@ -259,11 +401,9 @@ class MetricExporterFactoryTest {
     MetricExporter metricExporter =
         MetricExporterFactory.getInstance()
             .create(
-                new io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model
-                        .PushMetricExporterModel()
+                new PushMetricExporterModel()
                     .withAdditionalProperty("test", ImmutableMap.of("key1", "value1")),
-                spiHelper,
-                new ArrayList<>());
+                context);
     assertThat(metricExporter)
         .isInstanceOf(MetricExporterComponentProvider.TestMetricExporter.class);
     assertThat(

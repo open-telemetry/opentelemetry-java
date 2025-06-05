@@ -6,15 +6,12 @@
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
-import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SelectorModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ViewSelectorModel;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.InstrumentSelectorBuilder;
 import io.opentelemetry.sdk.metrics.InstrumentType;
-import java.io.Closeable;
-import java.util.List;
 
-final class InstrumentSelectorFactory implements Factory<SelectorModel, InstrumentSelector> {
+final class InstrumentSelectorFactory implements Factory<ViewSelectorModel, InstrumentSelector> {
 
   private static final InstrumentSelectorFactory INSTANCE = new InstrumentSelectorFactory();
 
@@ -25,8 +22,7 @@ final class InstrumentSelectorFactory implements Factory<SelectorModel, Instrume
   }
 
   @Override
-  public InstrumentSelector create(
-      SelectorModel model, SpiHelper spiHelper, List<Closeable> closeables) {
+  public InstrumentSelector create(ViewSelectorModel model, DeclarativeConfigContext context) {
     InstrumentSelectorBuilder builder = InstrumentSelector.builder();
     if (model.getInstrumentName() != null) {
       builder.setName(model.getInstrumentName());

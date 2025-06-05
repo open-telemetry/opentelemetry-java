@@ -8,11 +8,9 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.AttributeLimitsModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.LogRecordLimitsModel;
 import io.opentelemetry.sdk.logs.LogLimits;
-import java.util.Collections;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -23,9 +21,7 @@ class LogLimitsFactoryTest {
   @ParameterizedTest
   @MethodSource("createArguments")
   void create(LogRecordLimitsAndAttributeLimits model, LogLimits expectedLogLimits) {
-    assertThat(
-            LogLimitsFactory.getInstance()
-                .create(model, mock(SpiHelper.class), Collections.emptyList()))
+    assertThat(LogLimitsFactory.getInstance().create(model, mock(DeclarativeConfigContext.class)))
         .isEqualTo(expectedLogLimits);
   }
 

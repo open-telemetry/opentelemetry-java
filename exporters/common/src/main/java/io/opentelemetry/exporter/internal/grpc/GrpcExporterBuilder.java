@@ -14,7 +14,10 @@ import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -48,8 +51,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
 
   private static final Logger LOGGER = Logger.getLogger(GrpcExporterBuilder.class.getName());
 
-  private final String exporterName;
-  private final String type;
+  private final StandardComponentId.ExporterType exporterType;
   private final String grpcEndpointPath;
   private final Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>>
       grpcStubFactory;
@@ -63,6 +65,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   private TlsConfigHelper tlsConfigHelper = new TlsConfigHelper();
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
+  private InternalTelemetryVersion internalTelemetryVersion = InternalTelemetryVersion.LEGACY;
+
   private ClassLoader serviceClassLoader = GrpcExporterBuilder.class.getClassLoader();
   @Nullable private ExecutorService executorService;
 
@@ -70,14 +74,12 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   @Nullable private Object grpcChannel;
 
   public GrpcExporterBuilder(
-      String exporterName,
-      String type,
+      StandardComponentId.ExporterType exporterType,
       long defaultTimeoutSecs,
       URI defaultEndpoint,
       Supplier<BiFunction<Channel, String, MarshalerServiceStub<T, ?, ?>>> grpcStubFactory,
       String grpcEndpointPath) {
-    this.exporterName = exporterName;
-    this.type = type;
+    this.exporterType = exporterType;
     this.grpcEndpointPath = grpcEndpointPath;
     timeoutNanos = TimeUnit.SECONDS.toNanos(defaultTimeoutSecs);
     endpoint = defaultEndpoint;
@@ -150,6 +152,12 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  public GrpcExporterBuilder<T> setInternalTelemetryVersion(
+      InternalTelemetryVersion internalTelemetryVersion) {
+    this.internalTelemetryVersion = internalTelemetryVersion;
+    return this;
+  }
+
   public GrpcExporterBuilder<T> setServiceClassLoader(ClassLoader servieClassLoader) {
     this.serviceClassLoader = servieClassLoader;
     return this;
@@ -164,8 +172,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
   public GrpcExporterBuilder<T> copy() {
     GrpcExporterBuilder<T> copy =
         new GrpcExporterBuilder<>(
-            exporterName,
-            type,
+            exporterType,
             TimeUnit.NANOSECONDS.toSeconds(timeoutNanos),
             endpoint,
             grpcStubFactory,
@@ -182,6 +189,7 @@ public class GrpcExporterBuilder<T extends Marshaler> {
       copy.retryPolicy = retryPolicy.toBuilder().build();
     }
     copy.meterProviderSupplier = meterProviderSupplier;
+    copy.internalTelemetryVersion = internalTelemetryVersion;
     copy.grpcChannel = grpcChannel;
     return copy;
   }
@@ -227,7 +235,12 @@ public class GrpcExporterBuilder<T extends Marshaler> {
                 executorService));
     LOGGER.log(Level.FINE, "Using GrpcSender: " + grpcSender.getClass().getName());
 
-    return new GrpcExporter<>(exporterName, type, grpcSender, meterProviderSupplier);
+    return new GrpcExporter<>(
+        grpcSender,
+        internalTelemetryVersion,
+        ComponentId.generateLazy(exporterType),
+        meterProviderSupplier,
+        endpoint.toString());
   }
 
   public String toString(boolean includePrefixAndSuffix) {
@@ -235,8 +248,6 @@ public class GrpcExporterBuilder<T extends Marshaler> {
         includePrefixAndSuffix
             ? new StringJoiner(", ", "GrpcExporterBuilder{", "}")
             : new StringJoiner(", ");
-    joiner.add("exporterName=" + exporterName);
-    joiner.add("type=" + type);
     joiner.add("endpoint=" + endpoint.toString());
     joiner.add("endpointPath=" + grpcEndpointPath);
     joiner.add("timeoutNanos=" + timeoutNanos);
@@ -261,6 +272,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     if (executorService != null) {
       joiner.add("executorService=" + executorService);
     }
+    joiner.add("exporterType=" + exporterType.toString());
+    joiner.add("internalTelemetrySchemaVersion=" + internalTelemetryVersion);
     // Note: omit tlsConfigHelper because we can't log the configuration in any readable way
     // Note: omit meterProviderSupplier because we can't log the configuration in any readable way
     return joiner.toString();
