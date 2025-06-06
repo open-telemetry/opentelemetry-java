@@ -8,7 +8,6 @@ package io.opentelemetry.api.trace;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -43,7 +42,7 @@ final class PropagatedSpan implements Span {
   }
 
   @Override
-  public Span setAttribute(String key, @Nullable String value) {
+  public Span setAttribute(String key, String value) {
     return this;
   }
 
@@ -63,7 +62,7 @@ final class PropagatedSpan implements Span {
   }
 
   @Override
-  public <T> Span setAttribute(AttributeKey<T> key, @Nullable T value) {
+  public <T> Span setAttribute(AttributeKey<T> key, T value) {
     return this;
   }
 
