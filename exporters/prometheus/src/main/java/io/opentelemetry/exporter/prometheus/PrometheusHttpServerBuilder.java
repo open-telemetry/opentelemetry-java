@@ -30,7 +30,7 @@ public final class PrometheusHttpServerBuilder {
   private String host = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
   private PrometheusRegistry prometheusRegistry = new PrometheusRegistry();
-  private boolean otelScopeEnabled = true;
+  private OtelScopeMode otelScopeMode = OtelScopeMode.LABELS_AND_SCOPE_INFO;
   @Nullable private Predicate<String> allowedResourceAttributesFilter;
   @Nullable private ExecutorService executor;
   private MemoryMode memoryMode = DEFAULT_MEMORY_MODE;
@@ -45,7 +45,7 @@ public final class PrometheusHttpServerBuilder {
     this.host = builder.host;
     this.port = builder.port;
     this.prometheusRegistry = builder.prometheusRegistry;
-    this.otelScopeEnabled = builder.otelScopeEnabled;
+    this.otelScopeMode = builder.otelScopeMode;
     this.allowedResourceAttributesFilter = builder.allowedResourceAttributesFilter;
     this.executor = builder.executor;
     this.memoryMode = builder.memoryMode;
@@ -85,8 +85,8 @@ public final class PrometheusHttpServerBuilder {
 
   /** Set if the {@code otel_scope_*} attributes are generated. Default is {@code true}. */
   @SuppressWarnings("UnusedReturnValue")
-  public PrometheusHttpServerBuilder setOtelScopeEnabled(boolean otelScopeEnabled) {
-    this.otelScopeEnabled = otelScopeEnabled;
+  public PrometheusHttpServerBuilder setOtelScopeMode(OtelScopeMode otelScopeMode) {
+    this.otelScopeMode = otelScopeMode;
     return this;
   }
 
@@ -176,7 +176,7 @@ public final class PrometheusHttpServerBuilder {
         port,
         executor,
         prometheusRegistry,
-        otelScopeEnabled,
+        otelScopeMode,
         allowedResourceAttributesFilter,
         memoryMode,
         defaultHandler,
