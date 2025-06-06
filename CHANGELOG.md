@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 1.51.0 (2025-06-06)
+
 ### API
 
 #### Context
