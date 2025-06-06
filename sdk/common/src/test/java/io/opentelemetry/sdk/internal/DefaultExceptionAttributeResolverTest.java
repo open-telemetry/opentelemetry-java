@@ -28,8 +28,8 @@ class DefaultExceptionAttributeResolverTest {
       String expectedMessage,
       String expectedType,
       Predicate<String> validStacktrace) {
-    DefaultExceptionAttributeResolver resolver =
-        new DefaultExceptionAttributeResolver(jvmStacktraceEnabled);
+    ExceptionAttributeResolver resolver =
+        ExceptionAttributeResolver.getDefault(jvmStacktraceEnabled);
     Map<String, Object> attributes = new HashMap<>();
 
     resolver.setExceptionAttributes(

@@ -5,33 +5,28 @@
 
 package io.opentelemetry.sdk.internal;
 
-import io.opentelemetry.api.internal.ConfigUtil;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 /**
- * This class is internal and experimental. Its APIs are unstable and can change at any time. Its
+ * The default {@link ExceptionAttributeResolver}, populating standard {@code exception.*} as
+ * defined by the semantic conventions.
+ *
+ * <p>This class is internal and experimental. Its APIs are unstable and can change at any time. Its
  * APIs (or a version of them) may be promoted to the public stable API in the future, but no
  * guarantees are made.
+ *
+ * @see ExceptionAttributeResolver#getDefault()
+ * @see ExceptionAttributeResolver#getDefault(boolean) ()
  */
-public final class DefaultExceptionAttributeResolver implements ExceptionAttributeResolver {
+final class DefaultExceptionAttributeResolver implements ExceptionAttributeResolver {
 
-  private static final String ENABLE_JVM_STACKTRACE_PROPERTY =
-      "otel.experimental.sdk.jvm_stacktrace";
-
-  private static final DefaultExceptionAttributeResolver INSTANCE =
-      new DefaultExceptionAttributeResolver(
-          Boolean.parseBoolean(ConfigUtil.getString(ENABLE_JVM_STACKTRACE_PROPERTY, "false")));
+  static final String ENABLE_JVM_STACKTRACE_PROPERTY = "otel.experimental.sdk.jvm_stacktrace";
 
   private final boolean jvmStacktraceEnabled;
 
-  // Visible for testing
   DefaultExceptionAttributeResolver(boolean jvmStacktraceEnabled) {
     this.jvmStacktraceEnabled = jvmStacktraceEnabled;
-  }
-
-  public static ExceptionAttributeResolver getInstance() {
-    return INSTANCE;
   }
 
   @Override
