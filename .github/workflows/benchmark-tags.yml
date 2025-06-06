@@ -11,7 +11,7 @@ jobs:
     permissions:
       contents: write # for git push to benchmarks branch
     name: Benchmark SDK
-    runs-on: self-hosted
+    runs-on: github-benchmark-runner
     timeout-minutes: 10
     strategy:
       fail-fast: false
