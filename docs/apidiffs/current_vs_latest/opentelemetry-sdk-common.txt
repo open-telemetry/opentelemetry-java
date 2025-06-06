@@ -1,4 +1,4 @@
-Comparing source compatibility of opentelemetry-sdk-common-1.51.0-SNAPSHOT.jar against opentelemetry-sdk-common-1.50.0.jar
+Comparing source compatibility of opentelemetry-sdk-common-1.52.0-SNAPSHOT.jar against opentelemetry-sdk-common-1.50.0.jar
 +++  NEW ENUM: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.common.InternalTelemetryVersion  (compatible)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW INTERFACE: java.lang.constant.Constable
