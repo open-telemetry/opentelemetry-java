@@ -249,6 +249,8 @@ public final class OtlpGrpcLogRecordExporterBuilder {
   /**
    * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this exporter
    * collects.
+   *
+   * @since 1.51.0
    */
   public OtlpGrpcLogRecordExporterBuilder setInternalTelemetryVersion(
       InternalTelemetryVersion schemaVersion) {
