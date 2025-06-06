@@ -24,19 +24,6 @@ import java.io.IOException;
 import javax.annotation.Nullable;
 
 final class LogMarshaler extends MarshalerWithSize {
-  private static final boolean INCUBATOR_AVAILABLE;
-
-  static {
-    boolean incubatorAvailable = false;
-    try {
-      Class.forName("io.opentelemetry.api.incubator.common.ExtendedAttributes");
-      incubatorAvailable = true;
-    } catch (ClassNotFoundException e) {
-      // Not available
-    }
-    INCUBATOR_AVAILABLE = incubatorAvailable;
-  }
-
   private static final String INVALID_TRACE_ID = TraceId.getInvalid();
   private static final String INVALID_SPAN_ID = SpanId.getInvalid();
 
@@ -54,12 +41,12 @@ final class LogMarshaler extends MarshalerWithSize {
 
   static LogMarshaler create(LogRecordData logRecordData) {
     KeyValueMarshaler[] attributeMarshalers =
-        INCUBATOR_AVAILABLE
+        IncubatingUtil.isExtendedLogRecordData(logRecordData)
             ? IncubatingUtil.createdExtendedAttributesMarhsalers(logRecordData)
             : KeyValueMarshaler.createForAttributes(logRecordData.getAttributes());
 
     int attributeSize =
-        INCUBATOR_AVAILABLE
+        IncubatingUtil.isExtendedLogRecordData(logRecordData)
             ? IncubatingUtil.extendedAttributesSize(logRecordData)
             : logRecordData.getAttributes().size();
 
