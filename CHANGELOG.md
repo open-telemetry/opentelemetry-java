@@ -26,6 +26,8 @@
   ([#7322](https://github.com/open-telemetry/opentelemetry-java/pull/7322))
 * Prometheus: fix serialization of arrays
   ([#7291](https://github.com/open-telemetry/opentelemetry-java/pull/7291))
+* OTLP: exporter tolerates instances of LogRecordData when incubator is present
+  ([#7393](https://github.com/open-telemetry/opentelemetry-java/pull/7393))
 
 #### Extensions
 
