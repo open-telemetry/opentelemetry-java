@@ -28,10 +28,27 @@ import java.util.function.BiConsumer;
  */
 public class IncubatingUtil {
 
+  private static final boolean INCUBATOR_AVAILABLE;
+
+  static {
+    boolean incubatorAvailable = false;
+    try {
+      Class.forName("io.opentelemetry.api.incubator.common.ExtendedAttributes");
+      incubatorAvailable = true;
+    } catch (ClassNotFoundException e) {
+      // Not available
+    }
+    INCUBATOR_AVAILABLE = incubatorAvailable;
+  }
+
   private static final byte[] EMPTY_BYTES = new byte[0];
   private static final KeyValueMarshaler[] EMPTY_REPEATED = new KeyValueMarshaler[0];
 
   private IncubatingUtil() {}
+
+  public static boolean isExtendedLogRecordData(LogRecordData logRecordData) {
+    return INCUBATOR_AVAILABLE && logRecordData instanceof ExtendedLogRecordData;
+  }
 
   @SuppressWarnings("AvoidObjectArrays")
   public static KeyValueMarshaler[] createdExtendedAttributesMarhsalers(
