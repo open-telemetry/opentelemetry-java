@@ -390,6 +390,13 @@ public final class JdkHttpSender implements HttpSender {
     if (managedExecutor) {
       executorService.shutdown();
     }
+    if (AutoCloseable.class.isInstance(client)) {
+      try {
+        AutoCloseable.class.cast(client).close();
+      } catch (Exception e) {
+        return CompletableResultCode.ofExceptionalFailure(e);
+      }
+    }
     return CompletableResultCode.ofSuccess();
   }
 }
