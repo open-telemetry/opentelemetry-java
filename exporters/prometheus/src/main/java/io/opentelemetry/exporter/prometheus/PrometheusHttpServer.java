@@ -67,7 +67,7 @@ public final class PrometheusHttpServer implements MetricReader {
       int port,
       @Nullable ExecutorService executor,
       PrometheusRegistry prometheusRegistry,
-      boolean otelScopeEnabled,
+      OtelScopeMode otelScopeMode,
       @Nullable Predicate<String> allowedResourceAttributesFilter,
       MemoryMode memoryMode,
       @Nullable HttpHandler defaultHandler,
@@ -75,7 +75,7 @@ public final class PrometheusHttpServer implements MetricReader {
       @Nullable Authenticator authenticator) {
     this.builder = builder;
     this.prometheusMetricReader =
-        new PrometheusMetricReader(otelScopeEnabled, allowedResourceAttributesFilter);
+        new PrometheusMetricReader(otelScopeMode, allowedResourceAttributesFilter);
     this.host = host;
     this.memoryMode = memoryMode;
     this.prometheusRegistry = prometheusRegistry;

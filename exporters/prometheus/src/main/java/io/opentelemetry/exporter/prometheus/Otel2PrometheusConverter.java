@@ -82,7 +82,7 @@ final class Otel2PrometheusConverter {
   private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
   static final int MAX_CACHE_SIZE = 10;
 
-  private final boolean otelScopeEnabled;
+  private final OtelScopeMode otelScopeMode;
   @Nullable private final Predicate<String> allowedResourceAttributesFilter;
 
   /**
@@ -94,14 +94,14 @@ final class Otel2PrometheusConverter {
   /**
    * Constructor with feature flag parameter.
    *
-   * @param otelScopeEnabled enable generation of the OpenTelemetry instrumentation scope info
+   * @param otelScopeMode enable generation of the OpenTelemetry instrumentation scope info
    *     metric and labels.
    * @param allowedResourceAttributesFilter if not {@code null}, resource attributes with keys
    *     matching this predicate will be added as labels on each exported metric
    */
   Otel2PrometheusConverter(
-      boolean otelScopeEnabled, @Nullable Predicate<String> allowedResourceAttributesFilter) {
-    this.otelScopeEnabled = otelScopeEnabled;
+      OtelScopeMode otelScopeMode, @Nullable Predicate<String> allowedResourceAttributesFilter) {
+    this.otelScopeMode = otelScopeMode;
     this.allowedResourceAttributesFilter = allowedResourceAttributesFilter;
     this.resourceAttributesToAllowedKeysCache =
         allowedResourceAttributesFilter != null
@@ -125,14 +125,14 @@ final class Otel2PrometheusConverter {
       if (resource == null) {
         resource = metricData.getResource();
       }
-      if (otelScopeEnabled && !metricData.getInstrumentationScopeInfo().getAttributes().isEmpty()) {
+      if (otelScopeMode.isEnabled() && !metricData.getInstrumentationScopeInfo().getAttributes().isEmpty()) {
         scopes.add(metricData.getInstrumentationScopeInfo());
       }
     }
     if (resource != null) {
       putOrMerge(snapshotsByName, makeTargetInfo(resource));
     }
-    if (otelScopeEnabled && !scopes.isEmpty()) {
+    if (otelScopeMode.isScopeInfoEnabled() && !scopes.isEmpty()) {
       putOrMerge(snapshotsByName, makeScopeInfo(scopes));
     }
     return new MetricSnapshots(snapshotsByName.values());
@@ -457,8 +457,8 @@ final class Otel2PrometheusConverter {
    * Convert OpenTelemetry attributes to Prometheus labels.
    *
    * @param resource optional resource (attributes) to be converted.
-   * @param scope will be converted to {@code otel_scope_*} labels if {@code otelScopeEnabled} is
-   *     {@code true}.
+   * @param scope will be converted to {@code otel_scope_*} labels if {@code otelScopeMode} is
+   *     {@link  OtelScopeMode#isEnabled()}.
    * @param attributes the attributes to be converted.
    * @param additionalAttributes optional list of key/value pairs, may be empty.
    */
@@ -485,7 +485,7 @@ final class Otel2PrometheusConverter {
           requireNonNull(additionalAttributes[i]), additionalAttributes[i + 1]);
     }
 
-    if (otelScopeEnabled && scope != null) {
+    if (otelScopeMode.isEnabled() && scope != null) {
       labelNameToValue.putIfAbsent(OTEL_SCOPE_NAME, scope.getName());
       if (scope.getVersion() != null) {
         labelNameToValue.putIfAbsent(OTEL_SCOPE_VERSION, scope.getVersion());
