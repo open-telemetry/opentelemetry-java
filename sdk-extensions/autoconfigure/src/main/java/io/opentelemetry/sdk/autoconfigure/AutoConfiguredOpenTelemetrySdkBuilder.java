@@ -427,7 +427,9 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     if (!setResultAsGlobal) {
       return buildImpl();
     }
-    AutoConfiguredOpenTelemetrySdk sdk = GlobalOpenTelemetry.set(this::buildImpl);
+    AutoConfiguredOpenTelemetrySdk sdk =
+        GlobalOpenTelemetry.set(
+            this::buildImpl, AutoConfiguredOpenTelemetrySdk::getOpenTelemetrySdk);
     logger.log(Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", sdk);
     return sdk;
   }

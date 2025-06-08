@@ -374,7 +374,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
   @Test
   void builder_setResultAsGlobalTrue() {
-    OpenTelemetry openTelemetry = builder.setResultAsGlobal().build();
+    OpenTelemetrySdk openTelemetry = builder.setResultAsGlobal().build().getOpenTelemetrySdk();
 
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(openTelemetry);
   }

@@ -17,6 +17,7 @@ import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -117,11 +118,18 @@ public final class GlobalOpenTelemetry {
     }
   }
 
-  public static <T extends OpenTelemetry> T set(Supplier<T> supplier) {
+  /**
+   * Sets the {@link OpenTelemetry} that should be the global instance.
+   *
+   * <p>This method calls the given {@code supplier}, converts the output to an {@link
+   * OpenTelemetry} object, and finally calls {@link #set(OpenTelemetry)}, all while holding the
+   * {@link GlobalOpenTelemetry} mutex.
+   */
+  public static <T> T set(Supplier<T> supplier, Function<T, OpenTelemetry> converter) {
     synchronized (mutex) {
-      T openTelemetry = supplier.get();
-      set(openTelemetry);
-      return openTelemetry;
+      T output = supplier.get();
+      set(converter.apply(output));
+      return output;
     }
   }
 
