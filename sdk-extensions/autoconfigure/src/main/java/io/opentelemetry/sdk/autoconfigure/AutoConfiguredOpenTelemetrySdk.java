@@ -9,6 +9,10 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.incubator.config.ConfigProvider;
+import io.opentelemetry.api.logs.LoggerProvider;
+import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.trace.TracerProvider;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.AutoConfigureUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -25,7 +29,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-public abstract class AutoConfiguredOpenTelemetrySdk {
+public abstract class AutoConfiguredOpenTelemetrySdk implements OpenTelemetry {
 
   /**
    * Returns an {@link AutoConfiguredOpenTelemetrySdk} automatically initialized through recognized
@@ -90,4 +94,24 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
   abstract Object getConfigProvider();
 
   AutoConfiguredOpenTelemetrySdk() {}
+
+  @Override
+  public TracerProvider getTracerProvider() {
+    return getOpenTelemetrySdk().getTracerProvider();
+  }
+
+  @Override
+  public MeterProvider getMeterProvider() {
+    return getOpenTelemetrySdk().getMeterProvider();
+  }
+
+  @Override
+  public LoggerProvider getLogsBridge() {
+    return getOpenTelemetrySdk().getLogsBridge();
+  }
+
+  @Override
+  public ContextPropagators getPropagators() {
+    return getOpenTelemetrySdk().getPropagators();
+  }
 }

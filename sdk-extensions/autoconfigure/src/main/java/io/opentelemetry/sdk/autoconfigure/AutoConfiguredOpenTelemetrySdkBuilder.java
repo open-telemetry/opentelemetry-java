@@ -36,7 +36,6 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -425,7 +424,12 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
    * the settings of this {@link AutoConfiguredOpenTelemetrySdkBuilder}.
    */
   public AutoConfiguredOpenTelemetrySdk build() {
-    return maybeRunWithGlobalOpenTelemetryLock(this::buildImpl);
+    if (!setResultAsGlobal) {
+      return buildImpl();
+    }
+    AutoConfiguredOpenTelemetrySdk sdk = GlobalOpenTelemetry.set(this::buildImpl);
+    logger.log(Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", sdk);
+    return sdk;
   }
 
   private AutoConfiguredOpenTelemetrySdk buildImpl() {
@@ -445,8 +449,10 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
         maybeConfigureFromFile(config, componentLoader);
     if (fromFileConfiguration != null) {
       maybeRegisterShutdownHook(fromFileConfiguration.getOpenTelemetrySdk());
-      maybeSetAsGlobal(
-          fromFileConfiguration.getOpenTelemetrySdk(), fromFileConfiguration.getConfigProvider());
+      Object configProvider = fromFileConfiguration.getConfigProvider();
+      if (setResultAsGlobal && INCUBATOR_AVAILABLE && configProvider != null) {
+        IncubatingUtil.setGlobalConfigProvider(configProvider);
+      }
       return fromFileConfiguration;
     }
 
@@ -472,7 +478,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
 
       OpenTelemetrySdk openTelemetrySdk = sdkBuilder.build();
       maybeRegisterShutdownHook(openTelemetrySdk);
-      maybeSetAsGlobal(openTelemetrySdk, null);
       callAutoConfigureListeners(spiHelper, openTelemetrySdk);
 
       return AutoConfiguredOpenTelemetrySdk.create(openTelemetrySdk, resource, config, null);
@@ -575,48 +580,6 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       return;
     }
     Runtime.getRuntime().addShutdownHook(shutdownHook(openTelemetrySdk));
-  }
-
-  private <T> T maybeRunWithGlobalOpenTelemetryLock(Supplier<T> supplier) {
-    Object mutex;
-    if (!setResultAsGlobal || (mutex = getGlobalOpenTelemetryLock()) == null) {
-      return supplier.get();
-    }
-    synchronized (mutex) {
-      return supplier.get();
-    }
-  }
-
-  // Visible for testing
-  @Nullable
-  static Object getGlobalOpenTelemetryLock() {
-    Object mutex = null;
-    try {
-      Field mutexField = GlobalOpenTelemetry.class.getDeclaredField("mutex");
-      mutexField.setAccessible(true);
-      mutex = mutexField.get(null);
-      if (mutex == null) {
-        logger.log(
-            Level.SEVERE,
-            "Found a null Global OpenTelemetry mutex, this is a bug in the opentelemetry-java SDK and should be reported");
-      }
-    } catch (Exception exception) {
-      logger.log(Level.WARNING, "Could not acquire Global OpenTelemetry mutex", exception);
-    }
-    return mutex;
-  }
-
-  private void maybeSetAsGlobal(
-      OpenTelemetrySdk openTelemetrySdk, @Nullable Object configProvider) {
-    if (!setResultAsGlobal) {
-      return;
-    }
-    GlobalOpenTelemetry.set(openTelemetrySdk);
-    if (INCUBATOR_AVAILABLE && configProvider != null) {
-      IncubatingUtil.setGlobalConfigProvider(configProvider);
-    }
-    logger.log(
-        Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", openTelemetrySdk);
   }
 
   // Visible for testing

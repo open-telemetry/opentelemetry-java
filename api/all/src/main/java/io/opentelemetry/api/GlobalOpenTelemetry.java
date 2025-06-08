@@ -17,6 +17,7 @@ import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -113,6 +114,14 @@ public final class GlobalOpenTelemetry {
       }
       globalOpenTelemetry = new ObfuscatedOpenTelemetry(openTelemetry);
       setGlobalCaller = new Throwable();
+    }
+  }
+
+  public static <T extends OpenTelemetry> T set(Supplier<T> supplier) {
+    synchronized (mutex) {
+      T openTelemetry = supplier.get();
+      set(openTelemetry);
+      return openTelemetry;
     }
   }
 
