@@ -436,7 +436,12 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
           autoConfiguredRef.set(sdk);
           return sdk.getOpenTelemetrySdk();
         });
-    return Objects.requireNonNull(autoConfiguredRef.get());
+    AutoConfiguredOpenTelemetrySdk sdk = Objects.requireNonNull(autoConfiguredRef.get());
+    logger.log(
+        Level.FINE,
+        "Global OpenTelemetry set to {0} by autoconfiguration",
+        sdk.getOpenTelemetrySdk());
+    return sdk;
   }
 
   private AutoConfiguredOpenTelemetrySdk buildImpl() {
