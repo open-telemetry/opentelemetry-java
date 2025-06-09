@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -427,11 +428,12 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
     if (!setResultAsGlobal) {
       return buildImpl();
     }
-    AutoConfiguredOpenTelemetrySdk sdk =
-        GlobalOpenTelemetry.set(
-            this::buildImpl, AutoConfiguredOpenTelemetrySdk::getOpenTelemetrySdk);
-    logger.log(Level.FINE, "Global OpenTelemetry set to {0} by autoconfiguration", sdk);
-    return sdk;
+    AtomicReference<AutoConfiguredOpenTelemetrySdk> autoConfiguredRef = new AtomicReference<>();
+    GlobalOpenTelemetry.set(() -> {
+      autoConfiguredRef.set(buildImpl());
+      return autoConfiguredRef.get().getOpenTelemetrySdk();
+    });
+    return autoConfiguredRef.get();
   }
 
   private AutoConfiguredOpenTelemetrySdk buildImpl() {

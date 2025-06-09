@@ -121,15 +121,13 @@ public final class GlobalOpenTelemetry {
   /**
    * Sets the {@link OpenTelemetry} that should be the global instance.
    *
-   * <p>This method calls the given {@code supplier}, converts the output to an {@link
-   * OpenTelemetry} object, and finally calls {@link #set(OpenTelemetry)}, all while holding the
+   * <p>This method calls the given {@code supplier} and calls {@link #set(OpenTelemetry)}, all while holding the
    * {@link GlobalOpenTelemetry} mutex.
    */
-  public static <T> T set(Supplier<T> supplier, Function<T, OpenTelemetry> converter) {
+  public static void set(Supplier<OpenTelemetry> supplier) {
     synchronized (mutex) {
-      T output = supplier.get();
-      set(converter.apply(output));
-      return output;
+      OpenTelemetry openTelemetry = supplier.get();
+      set(openTelemetry);
     }
   }
 
