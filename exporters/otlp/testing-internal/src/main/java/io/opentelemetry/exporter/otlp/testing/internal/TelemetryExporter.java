@@ -15,8 +15,9 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
-public interface TelemetryExporter<T> {
+public interface TelemetryExporter<T> extends AutoCloseable {
 
   /** Wraps a SpanExporter. */
   static TelemetryExporter<SpanData> wrap(SpanExporter exporter) {
@@ -103,4 +104,9 @@ public interface TelemetryExporter<T> {
   CompletableResultCode export(Collection<T> items);
 
   CompletableResultCode shutdown();
+
+  @Override
+  default void close() {
+    shutdown().join(10, TimeUnit.SECONDS);
+  }
 }
