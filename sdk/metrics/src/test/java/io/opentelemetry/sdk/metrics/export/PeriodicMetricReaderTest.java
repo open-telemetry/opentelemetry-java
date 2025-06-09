@@ -155,6 +155,28 @@ class PeriodicMetricReaderTest {
   }
 
   @Test
+  void forceflush_callsFlush() {
+    MetricExporter metricExporter = mock(MetricExporter.class);
+    when(metricExporter.export(any())).thenReturn(CompletableResultCode.ofSuccess());
+    when(metricExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(metricExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    PeriodicMetricReader reader =
+        PeriodicMetricReader.builder(metricExporter)
+            .setInterval(Duration.ofNanos(Long.MAX_VALUE))
+            .build();
+
+    reader.register(collectionRegistration);
+    assertThat(reader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+
+    try {
+      verify(metricExporter).flush();
+    } finally {
+      reader.shutdown();
+    }
+  }
+
+  @Test
   @Timeout(2)
   @SuppressLogger(PeriodicMetricReader.class)
   public void intervalExport_exporterThrowsException() throws Exception {
