@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -429,11 +430,13 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
       return buildImpl();
     }
     AtomicReference<AutoConfiguredOpenTelemetrySdk> autoConfiguredRef = new AtomicReference<>();
-    GlobalOpenTelemetry.set(() -> {
-      autoConfiguredRef.set(buildImpl());
-      return autoConfiguredRef.get().getOpenTelemetrySdk();
-    });
-    return autoConfiguredRef.get();
+    GlobalOpenTelemetry.set(
+        () -> {
+          AutoConfiguredOpenTelemetrySdk sdk = buildImpl();
+          autoConfiguredRef.set(sdk);
+          return sdk.getOpenTelemetrySdk();
+        });
+    return Objects.requireNonNull(autoConfiguredRef.get());
   }
 
   private AutoConfiguredOpenTelemetrySdk buildImpl() {
