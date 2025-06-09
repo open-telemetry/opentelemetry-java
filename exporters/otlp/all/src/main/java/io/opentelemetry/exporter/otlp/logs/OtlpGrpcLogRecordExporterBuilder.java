@@ -17,8 +17,10 @@ import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.grpc.GrpcExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
@@ -59,8 +61,7 @@ public final class OtlpGrpcLogRecordExporterBuilder {
   OtlpGrpcLogRecordExporterBuilder() {
     this(
         new GrpcExporterBuilder<>(
-            "otlp",
-            "log",
+            StandardComponentId.ExporterType.OTLP_GRPC_LOG_EXPORTER,
             DEFAULT_TIMEOUT_SECS,
             DEFAULT_ENDPOINT,
             () -> MarshalerLogsServiceGrpc::newFutureStub,
@@ -242,6 +243,19 @@ public final class OtlpGrpcLogRecordExporterBuilder {
       Supplier<MeterProvider> meterProviderSupplier) {
     requireNonNull(meterProviderSupplier, "meterProviderSupplier");
     delegate.setMeterProvider(meterProviderSupplier);
+    return this;
+  }
+
+  /**
+   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this exporter
+   * collects.
+   *
+   * @since 1.51.0
+   */
+  public OtlpGrpcLogRecordExporterBuilder setInternalTelemetryVersion(
+      InternalTelemetryVersion schemaVersion) {
+    requireNonNull(schemaVersion, "schemaVersion");
+    delegate.setInternalTelemetryVersion(schemaVersion);
     return this;
   }
 

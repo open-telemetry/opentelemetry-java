@@ -16,9 +16,11 @@ import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -67,7 +69,8 @@ public final class OtlpHttpMetricExporterBuilder {
 
   OtlpHttpMetricExporterBuilder() {
     this(
-        new HttpExporterBuilder<>("otlp", "metric", DEFAULT_ENDPOINT),
+        new HttpExporterBuilder<>(
+            StandardComponentId.ExporterType.OTLP_HTTP_METRIC_EXPORTER, DEFAULT_ENDPOINT),
         DEFAULT_AGGREGATION_TEMPORALITY_SELECTOR,
         DefaultAggregationSelector.getDefault(),
         DEFAULT_MEMORY_MODE);
@@ -240,6 +243,19 @@ public final class OtlpHttpMetricExporterBuilder {
   public OtlpHttpMetricExporterBuilder setProxyOptions(ProxyOptions proxyOptions) {
     requireNonNull(proxyOptions, "proxyOptions");
     delegate.setProxyOptions(proxyOptions);
+    return this;
+  }
+
+  /**
+   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this exporter
+   * collects.
+   *
+   * @since 1.51.0
+   */
+  public OtlpHttpMetricExporterBuilder setInternalTelemetryVersion(
+      InternalTelemetryVersion schemaVersion) {
+    requireNonNull(schemaVersion, "schemaVersion");
+    delegate.setInternalTelemetryVersion(schemaVersion);
     return this;
   }
 

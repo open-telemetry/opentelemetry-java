@@ -39,8 +39,8 @@ class SdkDoubleGauge extends AbstractInstrument implements DoubleGauge {
   }
 
   @Override
-  public void set(double increment) {
-    set(increment, Attributes.empty());
+  public void set(double value) {
+    set(value, Attributes.empty());
   }
 
   static class SdkDoubleGaugeBuilder implements DoubleGaugeBuilder {

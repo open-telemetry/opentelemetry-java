@@ -29,6 +29,7 @@ dependencies {
   compileOnly("io.grpc:grpc-stub")
 
   testImplementation(project(":sdk:common"))
+  testImplementation(project(":sdk:testing"))
 
   testImplementation("com.google.protobuf:protobuf-java-util")
   testImplementation("com.linecorp.armeria:armeria-junit5")

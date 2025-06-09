@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.internal.otlp.logs;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -34,6 +35,7 @@ import io.opentelemetry.proto.logs.v1.ScopeLogs;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
 import io.opentelemetry.sdk.testing.logs.internal.TestExtendedLogRecordData;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -55,6 +57,20 @@ class LogsRequestMarshalerIncubatingTest {
   private static final String SPAN_ID = SpanId.fromBytes(SPAN_ID_BYTES);
   private static final String EVENT_NAME = "hello";
   private static final String BODY = "Hello world from this log...";
+
+  // Marshalers should not throw if the incubator is on the class path, but are called with
+  // LogRecordData instances which are not ExtendedLogRecordData.
+  // See: https://github.com/open-telemetry/opentelemetry-java/issues/7363
+  @ParameterizedTest
+  @EnumSource(MarshalerSource.class)
+  void toProtoLogRecord_NotExtendedLogRecordData_DoesNotThrow(MarshalerSource marshalerSource) {
+    assertThatCode(
+            () ->
+                parse(
+                    LogRecord.getDefaultInstance(),
+                    marshalerSource.create(TestLogRecordData.builder().build())))
+        .doesNotThrowAnyException();
+  }
 
   @ParameterizedTest
   @EnumSource(MarshalerSource.class)

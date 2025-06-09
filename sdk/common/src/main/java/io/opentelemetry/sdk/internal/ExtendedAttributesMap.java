@@ -49,14 +49,23 @@ public final class ExtendedAttributesMap extends HashMap<ExtendedAttributeKey<?>
   }
 
   /** Add the attribute key value pair, applying capacity and length limits. */
-  public <T> void put(ExtendedAttributeKey<T> key, T value) {
+  @Override
+  @Nullable
+  public Object put(ExtendedAttributeKey<?> key, @Nullable Object value) {
+    if (value == null) {
+      return null;
+    }
     totalAddedValues++;
-    // TODO(jack-berg): apply capcity to nested entries
+    // TODO(jack-berg): apply capacity to nested entries
     if (size() >= capacity && !containsKey(key)) {
-      return;
+      return null;
     }
     // TODO(jack-berg): apply limits to nested entries
-    super.put(key, AttributeUtil.applyAttributeLengthLimit(value, lengthLimit));
+    return super.put(key, AttributeUtil.applyAttributeLengthLimit(value, lengthLimit));
+  }
+
+  public <T> void putIfCapacity(ExtendedAttributeKey<T> key, @Nullable T value) {
+    put(key, value);
   }
 
   /**

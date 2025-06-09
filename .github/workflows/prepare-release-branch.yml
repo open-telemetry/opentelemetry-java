@@ -100,7 +100,7 @@ jobs:
             echo "unexpected version: $version"
             exit 1
           fi
-          echo "NEXT_VERSION=${next_version}-SNAPSHOT" >> $GITHUB_ENV
+          echo "NEXT_VERSION=${next_version}" >> $GITHUB_ENV
           echo "VERSION=$version" >> $GITHUB_ENV
 
       - name: Update version
