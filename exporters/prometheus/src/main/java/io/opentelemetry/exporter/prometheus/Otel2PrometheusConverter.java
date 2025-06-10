@@ -94,8 +94,8 @@ final class Otel2PrometheusConverter {
   /**
    * Constructor with feature flag parameter.
    *
-   * @param otelScopeMode enable generation of the OpenTelemetry instrumentation scope info
-   *     metric and labels.
+   * @param otelScopeMode enable generation of the OpenTelemetry instrumentation scope info metric
+   *     and labels.
    * @param allowedResourceAttributesFilter if not {@code null}, resource attributes with keys
    *     matching this predicate will be added as labels on each exported metric
    */
@@ -125,7 +125,8 @@ final class Otel2PrometheusConverter {
       if (resource == null) {
         resource = metricData.getResource();
       }
-      if (otelScopeMode.isEnabled() && !metricData.getInstrumentationScopeInfo().getAttributes().isEmpty()) {
+      if (otelScopeMode.isEnabled()
+          && !metricData.getInstrumentationScopeInfo().getAttributes().isEmpty()) {
         scopes.add(metricData.getInstrumentationScopeInfo());
       }
     }
@@ -458,7 +459,7 @@ final class Otel2PrometheusConverter {
    *
    * @param resource optional resource (attributes) to be converted.
    * @param scope will be converted to {@code otel_scope_*} labels if {@code otelScopeMode} is
-   *     {@link  OtelScopeMode#isEnabled()}.
+   *     {@link OtelScopeMode#isEnabled()}.
    * @param attributes the attributes to be converted.
    * @param additionalAttributes optional list of key/value pairs, may be empty.
    */
