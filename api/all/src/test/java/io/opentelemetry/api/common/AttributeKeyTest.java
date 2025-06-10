@@ -10,12 +10,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.internal.InternalAttributeKeyImpl;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
 
 class AttributeKeyTest {
 
   @Test
-  @DisabledForJreRange(minVersion = 17, disabledReason = "EqualsVerifier requires Java 17+")
+  @EnabledForJreRange(minVersion = 17, disabledReason = "EqualsVerifier requires Java 17+")
   void equalsVerifier() {
     EqualsVerifier.forClass(InternalAttributeKeyImpl.class)
         .withIgnoredFields("keyUtf8")

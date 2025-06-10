@@ -15,12 +15,12 @@ import java.util.List;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
 
 class AttributeKeyValueTest {
 
   @Test
-  @DisabledForJreRange(minVersion = 17, disabledReason = "EqualsVerifier requires Java 17+")
+  @EnabledForJreRange(minVersion = 17, disabledReason = "EqualsVerifier requires Java 17+")
   void equalsVerifier() {
     EqualsVerifier.forClass(AttributeKeyValue.class).verify();
   }
