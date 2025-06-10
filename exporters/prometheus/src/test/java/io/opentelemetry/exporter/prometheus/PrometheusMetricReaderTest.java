@@ -61,7 +61,9 @@ class PrometheusMetricReaderTest {
   void setUp() {
     this.testClock.setTime(Instant.ofEpochMilli((System.currentTimeMillis() / 100) * 100));
     this.createdTimestamp = convertTimestamp(testClock.now());
-    this.reader = new PrometheusMetricReader(OtelScopeMode.LABELS_AND_SCOPE_INFO, /* allowedResourceAttributesFilter= */ null);
+    this.reader =
+        new PrometheusMetricReader(
+            OtelScopeMode.LABELS_AND_SCOPE_INFO, /* allowedResourceAttributesFilter= */ null);
     this.meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
@@ -776,7 +778,8 @@ class PrometheusMetricReaderTest {
       int otelScale = random.nextInt(24) - 4;
       int prometheusScale = Math.min(otelScale, 8);
       PrometheusMetricReader reader =
-          new PrometheusMetricReader(OtelScopeMode.LABELS_AND_SCOPE_INFO, /* allowedResourceAttributesFilter= */ null);
+          new PrometheusMetricReader(
+              OtelScopeMode.LABELS_AND_SCOPE_INFO, /* allowedResourceAttributesFilter= */ null);
       Meter meter =
           SdkMeterProvider.builder()
               .registerMetricReader(reader)
@@ -1029,7 +1032,8 @@ class PrometheusMetricReaderTest {
   @Test
   void otelScopeDisabled() throws IOException {
     PrometheusMetricReader reader =
-        new PrometheusMetricReader(OtelScopeMode.DISABLED, /* allowedResourceAttributesFilter= */ null);
+        new PrometheusMetricReader(
+            OtelScopeMode.DISABLED, /* allowedResourceAttributesFilter= */ null);
     Meter meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
@@ -1060,7 +1064,8 @@ class PrometheusMetricReaderTest {
   void addResourceAttributesWorks() throws IOException {
     PrometheusMetricReader reader =
         new PrometheusMetricReader(
-            OtelScopeMode.LABELS_AND_SCOPE_INFO, /* allowedResourceAttributesFilter= */ Predicates.is("cluster"));
+            OtelScopeMode.LABELS_AND_SCOPE_INFO,
+            /* allowedResourceAttributesFilter= */ Predicates.is("cluster"));
     Meter meter =
         SdkMeterProvider.builder()
             .setClock(testClock)
