@@ -157,8 +157,14 @@ class PeriodicMetricReaderTest {
   @Test
   void forceflush_callsFlush() {
     MetricExporter metricExporter = mock(MetricExporter.class);
-    when(metricExporter.export(any())).thenReturn(CompletableResultCode.ofSuccess());
-    when(metricExporter.flush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(metricExporter.export(any()))
+        .thenReturn(CompletableResultCode.ofSuccess())
+        .thenReturn(CompletableResultCode.ofSuccess())
+        .thenThrow(new RuntimeException("Export Failed!"));
+    when(metricExporter.flush())
+        .thenReturn(CompletableResultCode.ofSuccess())
+        .thenReturn(CompletableResultCode.ofFailure())
+        .thenReturn(CompletableResultCode.ofSuccess());
     when(metricExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
 
     PeriodicMetricReader reader =
@@ -166,14 +172,15 @@ class PeriodicMetricReaderTest {
             .setInterval(Duration.ofNanos(Long.MAX_VALUE))
             .build();
 
-    reader.register(collectionRegistration);
-    assertThat(reader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-
     try {
-      verify(metricExporter).flush();
+      reader.register(collectionRegistration);
+      assertThat(reader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+      assertThat(reader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+      assertThat(reader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
     } finally {
       reader.shutdown();
     }
+    verify(metricExporter, times(3)).flush();
   }
 
   @Test

@@ -82,19 +82,19 @@ public final class PeriodicMetricReader implements MetricReader {
   @Override
   public CompletableResultCode forceFlush() {
     CompletableResultCode result = new CompletableResultCode();
-    CompletableResultCode flushResult = scheduled.doRun();
-    flushResult.whenComplete(
-        () ->
-            exporter
-                .flush()
-                .whenComplete(
-                    () -> {
-                      if (!flushResult.isSuccess()) {
-                        result.fail();
-                      } else {
-                        result.succeed();
-                      }
-                    }));
+    CompletableResultCode doRunResult = scheduled.doRun();
+    doRunResult.whenComplete(
+        () -> {
+          CompletableResultCode flushResult = exporter.flush();
+          flushResult.whenComplete(
+              () -> {
+                if (doRunResult.isSuccess() && flushResult.isSuccess()) {
+                  result.succeed();
+                } else {
+                  result.fail();
+                }
+              });
+        });
     return result;
   }
 
