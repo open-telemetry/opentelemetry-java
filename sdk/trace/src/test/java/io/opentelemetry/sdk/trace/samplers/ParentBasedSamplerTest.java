@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.trace.IdGenerator;
 import java.util.Collections;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
 
 class ParentBasedSamplerTest {
   private static final String SPAN_NAME = "MySpanName";
@@ -409,6 +410,7 @@ class ParentBasedSamplerTest {
   }
 
   @Test
+  @DisabledForJreRange(minVersion = 17, disabledReason = "EqualsVerifier requires Java 17+")
   void equals() {
     EqualsVerifier.forClass(ParentBasedSampler.class)
         .withNonnullFields(
