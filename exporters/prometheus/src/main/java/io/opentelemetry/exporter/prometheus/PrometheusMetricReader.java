@@ -32,8 +32,7 @@ public class PrometheusMetricReader implements MetricReader, MultiCollector {
   /** See {@link Otel2PrometheusConverter#Otel2PrometheusConverter(OtelScopeMode, Predicate)}. */
   public PrometheusMetricReader(
       OtelScopeMode otelScopeMode, @Nullable Predicate<String> allowedResourceAttributesFilter) {
-    this.converter =
-        new Otel2PrometheusConverter(otelScopeMode, allowedResourceAttributesFilter);
+    this.converter = new Otel2PrometheusConverter(otelScopeMode, allowedResourceAttributesFilter);
   }
 
   @Override
