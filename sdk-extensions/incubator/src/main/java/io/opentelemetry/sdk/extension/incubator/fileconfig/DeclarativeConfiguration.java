@@ -111,20 +111,7 @@ public final class DeclarativeConfiguration {
   public static OpenTelemetrySdk create(
       OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
     SpiHelper spiHelper = SpiHelper.create(componentLoader);
-    return create(configurationModel, spiHelper);
-  }
 
-  /**
-   * Interpret the {@code configurationModel} to create {@link OpenTelemetrySdk} instance
-   * corresponding to the configuration.
-   *
-   * @param configurationModel the configuration model
-   * @param spiHelper the component loader used to load {@link ComponentProvider} implementations
-   * @return the {@link OpenTelemetrySdk}
-   * @throws DeclarativeConfigException if unable to interpret
-   */
-  public static OpenTelemetrySdk create(
-      OpenTelemetryConfigurationModel configurationModel, SpiHelper spiHelper) {
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
 
     for (DeclarativeConfigurationCustomizerProvider provider :
@@ -222,8 +209,7 @@ public final class DeclarativeConfiguration {
 
   /** Create a {@link Resource} from the {@code resourceModel} representing the resource config. */
   public static Resource createResource(
-      OpenTelemetryConfigurationModel model, ComponentLoader componentLoader) {
-    ResourceModel resourceModel = model.getResource();
+      ResourceModel resourceModel, ComponentLoader componentLoader) {
     if (resourceModel == null) {
       return Resource.getDefault();
     }

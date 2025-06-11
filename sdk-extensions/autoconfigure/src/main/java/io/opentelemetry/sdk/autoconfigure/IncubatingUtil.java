@@ -83,17 +83,23 @@ final class IncubatingUtil {
           InvocationTargetException,
           IllegalAccessException,
           ClassNotFoundException {
-    Class<?> declarativeConfigurationClass =
-        Class.forName(
-            "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration");
     Class<?> configurationModelClass =
         Class.forName(
             "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel");
+    Method getResource = configurationModelClass.getMethod("getResource");
+    Object resourceModel = getResource.invoke(openTelemetryConfigurationModel);
 
+    Class<?> resourceModelClass =
+        Class.forName(
+            "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel");
+    Class<?> declarativeConfigurationClass =
+        Class.forName(
+            "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration");
     Method createResource =
         declarativeConfigurationClass.getMethod(
-            "createResource", configurationModelClass, ComponentLoader.class);
-    return (Resource) createResource.invoke(null, openTelemetryConfigurationModel, componentLoader);
+            "createResource", resourceModelClass, ComponentLoader.class);
+
+    return (Resource) createResource.invoke(null, resourceModel, componentLoader);
   }
 
   private static ConfigurationException toConfigurationException(
