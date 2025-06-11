@@ -16,7 +16,9 @@ import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.io.IOException;
@@ -109,7 +111,20 @@ public final class DeclarativeConfiguration {
   public static OpenTelemetrySdk create(
       OpenTelemetryConfigurationModel configurationModel, ComponentLoader componentLoader) {
     SpiHelper spiHelper = SpiHelper.create(componentLoader);
+    return create(configurationModel, spiHelper);
+  }
 
+  /**
+   * Interpret the {@code configurationModel} to create {@link OpenTelemetrySdk} instance
+   * corresponding to the configuration.
+   *
+   * @param configurationModel the configuration model
+   * @param spiHelper the component loader used to load {@link ComponentProvider} implementations
+   * @return the {@link OpenTelemetrySdk}
+   * @throws DeclarativeConfigException if unable to interpret
+   */
+  public static OpenTelemetrySdk create(
+      OpenTelemetryConfigurationModel configurationModel, SpiHelper spiHelper) {
     DeclarativeConfigurationBuilder builder = new DeclarativeConfigurationBuilder();
 
     for (DeclarativeConfigurationCustomizerProvider provider :
@@ -203,6 +218,17 @@ public final class DeclarativeConfiguration {
         SamplerFactory.getInstance(),
         SpiHelper.create(yamlDeclarativeConfigProperties.getComponentLoader()),
         samplerModel);
+  }
+
+  /** Create a {@link Resource} from the {@code resourceModel} representing the resource config. */
+  public static Resource createResource(
+      OpenTelemetryConfigurationModel model, ComponentLoader componentLoader) {
+    ResourceModel resourceModel = model.getResource();
+    if (resourceModel == null) {
+      return Resource.getDefault();
+    }
+    return createAndMaybeCleanup(
+        ResourceFactory.getInstance(), SpiHelper.create(componentLoader), resourceModel);
   }
 
   private static YamlDeclarativeConfigProperties requireYamlDeclarativeConfigProperties(

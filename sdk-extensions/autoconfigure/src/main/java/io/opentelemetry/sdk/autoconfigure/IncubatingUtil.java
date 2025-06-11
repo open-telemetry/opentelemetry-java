@@ -48,15 +48,16 @@ final class IncubatingUtil {
           declarativeConfiguration.getMethod(
               "create", openTelemetryConfiguration, ComponentLoader.class);
       OpenTelemetrySdk sdk = (OpenTelemetrySdk) create.invoke(null, model, componentLoader);
+
       Class<?> sdkConfigProvider =
           Class.forName("io.opentelemetry.sdk.extension.incubator.fileconfig.SdkConfigProvider");
       Method createFileConfigProvider =
           sdkConfigProvider.getMethod("create", openTelemetryConfiguration);
       ConfigProvider configProvider = (ConfigProvider) createFileConfigProvider.invoke(null, model);
-      // Note: can't access file configuration resource without reflection so setting a dummy
-      // resource
-      return AutoConfiguredOpenTelemetrySdk.create(
-          sdk, Resource.getDefault(), null, configProvider);
+
+      Resource configuredResource = createResourceFromModel(model, componentLoader);
+
+      return AutoConfiguredOpenTelemetrySdk.create(sdk, configuredResource, null, configProvider);
     } catch (FileNotFoundException e) {
       throw new ConfigurationException("Configuration file not found", e);
     } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
@@ -74,6 +75,25 @@ final class IncubatingUtil {
       // above by FileInputStream.close()
       throw new ConfigurationException("Error closing file", e);
     }
+  }
+
+  private static Resource createResourceFromModel(
+      Object openTelemetryConfigurationModel, ComponentLoader componentLoader)
+      throws NoSuchMethodException,
+          InvocationTargetException,
+          IllegalAccessException,
+          ClassNotFoundException {
+    Class<?> declarativeConfigurationClass =
+        Class.forName(
+            "io.opentelemetry.sdk.extension.incubator.fileconfig.DeclarativeConfiguration");
+    Class<?> configurationModelClass =
+        Class.forName(
+            "io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel");
+
+    Method createResource =
+        declarativeConfigurationClass.getMethod(
+            "createResource", configurationModelClass, ComponentLoader.class);
+    return (Resource) createResource.invoke(null, openTelemetryConfigurationModel, componentLoader);
   }
 
   private static ConfigurationException toConfigurationException(
