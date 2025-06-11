@@ -113,7 +113,8 @@ class DeclarativeConfigurationTest {
 
   @Test
   void configFile_Valid() {
-    Resource expectedResource = Resource.getDefault().toBuilder().put("service.name", "test").build();
+    Resource expectedResource =
+        Resource.getDefault().toBuilder().put("service.name", "test").build();
     ConfigProperties config =
         DefaultConfigProperties.createFromMap(
             Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
@@ -136,8 +137,7 @@ class DeclarativeConfigurationTest {
 
     Assertions.assertThat(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().toString())
         .isEqualTo(expectedSdk.toString());
-    Assertions.assertThat(autoConfiguredOpenTelemetrySdk.getResource())
-        .isEqualTo(expectedResource);
+    Assertions.assertThat(autoConfiguredOpenTelemetrySdk.getResource()).isEqualTo(expectedResource);
     verify(builder, times(1)).shutdownHook(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
     Assertions.assertThat(Runtime.getRuntime().removeShutdownHook(thread)).isTrue();
     logCapturer.assertContains("Autoconfiguring from configuration file: " + configFilePath);
