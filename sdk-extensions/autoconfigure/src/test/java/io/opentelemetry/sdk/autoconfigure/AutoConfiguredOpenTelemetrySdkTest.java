@@ -65,6 +65,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -74,6 +77,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -673,5 +677,37 @@ class AutoConfiguredOpenTelemetrySdkTest {
     verify(meterProvider).close();
 
     logs.assertContains("Error closing io.opentelemetry.sdk.trace.SdkTracerProvider: Error!");
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void test() throws Exception {
+    AutoConfiguredOpenTelemetrySdkBuilder globalBuilder = builder.setResultAsGlobal();
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    OpenTelemetry gotGetOutput;
+    AutoConfiguredOpenTelemetrySdk autoConfiguredSdk;
+    try (MockedStatic<GlobalOpenTelemetry> mockGot =
+        Mockito.mockStatic(GlobalOpenTelemetry.class)) {
+      mockGot.when(GlobalOpenTelemetry::get).thenCallRealMethod();
+      mockGot.when(() -> GlobalOpenTelemetry.set(any(Supplier.class))).thenCallRealMethod();
+      mockGot
+          .when(() -> GlobalOpenTelemetry.set(any(OpenTelemetry.class)))
+          .then(
+              invocation -> {
+                Thread.sleep(1000);
+                return invocation.callRealMethod();
+              });
+
+      Future<AutoConfiguredOpenTelemetrySdk> autoConfiguredSdkFuture =
+          executor.submit(globalBuilder::build);
+      gotGetOutput = GlobalOpenTelemetry.get();
+      autoConfiguredSdk = autoConfiguredSdkFuture.get();
+    }
+    assertThat(gotGetOutput)
+        .extracting("delegate")
+        .isSameAs(autoConfiguredSdk.getOpenTelemetrySdk());
+
+    executor.shutdown();
   }
 }
