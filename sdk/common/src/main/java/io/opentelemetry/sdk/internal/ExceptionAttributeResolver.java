@@ -5,7 +5,10 @@
 
 package io.opentelemetry.sdk.internal;
 
+import static io.opentelemetry.sdk.internal.DefaultExceptionAttributeResolver.ENABLE_JVM_STACKTRACE_PROPERTY;
+
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.internal.ConfigUtil;
 import javax.annotation.Nullable;
 
 /**
@@ -23,6 +26,26 @@ public interface ExceptionAttributeResolver {
 
   void setExceptionAttributes(
       AttributeSetter attributeSetter, Throwable throwable, int maxAttributeLength);
+
+  /**
+   * Return the default exception attribute resolver, setting {@code jvmStacktraceEnabled} based on
+   * {@link DefaultExceptionAttributeResolver#ENABLE_JVM_STACKTRACE_PROPERTY}.
+   */
+  static ExceptionAttributeResolver getDefault() {
+    return getDefault(
+        Boolean.parseBoolean(ConfigUtil.getString(ENABLE_JVM_STACKTRACE_PROPERTY, "false")));
+  }
+
+  /**
+   * Return the default exception attribute resolver.
+   *
+   * @param jvmStacktraceEnabled if true, resolve stacktrace using the stacktrace renderer built
+   *     into the JVM. This built in JVM renderer is not attribute limits aware, and may utilize
+   *     more CPU / memory than is needed. Most users will prefer to set this to {@code false}.
+   */
+  static ExceptionAttributeResolver getDefault(boolean jvmStacktraceEnabled) {
+    return new DefaultExceptionAttributeResolver(jvmStacktraceEnabled);
+  }
 
   /**
    * This class is internal and experimental. Its APIs are unstable and can change at any time. Its
