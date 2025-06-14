@@ -16,7 +16,9 @@ import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
+import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.ResourceModel;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.SamplerModel;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.io.IOException;
@@ -203,6 +205,16 @@ public final class DeclarativeConfiguration {
         SamplerFactory.getInstance(),
         SpiHelper.create(yamlDeclarativeConfigProperties.getComponentLoader()),
         samplerModel);
+  }
+
+  /** Create a {@link Resource} from the {@code resourceModel} representing the resource config. */
+  public static Resource createResource(
+      ResourceModel resourceModel, ComponentLoader componentLoader) {
+    if (resourceModel == null) {
+      return Resource.getDefault();
+    }
+    return createAndMaybeCleanup(
+        ResourceFactory.getInstance(), SpiHelper.create(componentLoader), resourceModel);
   }
 
   private static YamlDeclarativeConfigProperties requireYamlDeclarativeConfigProperties(
