@@ -74,5 +74,12 @@
         'com.diffplug.spotless{/,}**',
       ],
     },
+    {
+      // equals verifier v4+ requires java 17+
+      groupName: 'nl.jqno.equalsverifier',
+      matchPackageNames: [ 'equalsverifier'],
+      matchUpdateTypes: [ 'major' ],
+      enabled: false
+    }
   ],
 }
