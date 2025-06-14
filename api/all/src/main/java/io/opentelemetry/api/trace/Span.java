@@ -99,7 +99,7 @@ public interface Span extends ImplicitContextKeyed {
    * @param value the value for this attribute.
    * @return this.
    */
-  default Span setAttribute(String key, @Nullable String value) {
+  default Span setAttribute(String key, String value) {
     return setAttribute(AttributeKey.stringKey(key), value);
   }
 
@@ -158,7 +158,7 @@ public interface Span extends ImplicitContextKeyed {
    * @param value the value for this attribute.
    * @return this.
    */
-  <T> Span setAttribute(AttributeKey<T> key, @Nullable T value);
+  <T> Span setAttribute(AttributeKey<T> key, T value);
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
