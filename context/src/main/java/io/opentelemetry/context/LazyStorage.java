@@ -104,7 +104,8 @@ final class LazyStorage {
     }
 
     List<ContextStorageProvider> providers = new ArrayList<>();
-    for (ContextStorageProvider provider : ServiceLoader.load(ContextStorageProvider.class)) {
+    for (ContextStorageProvider provider :
+        ServiceLoader.load(ContextStorageProvider.class, LazyStorage.class.getClassLoader())) {
       if (provider
           .getClass()
           .getName()
