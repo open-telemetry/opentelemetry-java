@@ -123,21 +123,22 @@ final class SdkMeter implements Meter {
 
   /** Collect all metrics for the meter. */
   Collection<MetricData> collectAll(RegisteredReader registeredReader, long epochNanos) {
-    // Short circuit collection process if meter is disabled
-    if (!meterEnabled) {
-      return Collections.emptyList();
-    }
     List<CallbackRegistration> currentRegisteredCallbacks;
     synchronized (callbackLock) {
       currentRegisteredCallbacks = new ArrayList<>(callbackRegistrations);
     }
     // Collections across all readers are sequential
     synchronized (collectLock) {
-      for (CallbackRegistration callbackRegistration : currentRegisteredCallbacks) {
-        callbackRegistration.invokeCallback(
-            registeredReader, meterProviderSharedState.getStartEpochNanos(), epochNanos);
+      // Only invoke callbacks if meter is enabled
+      if (meterEnabled) {
+        for (CallbackRegistration callbackRegistration : currentRegisteredCallbacks) {
+          callbackRegistration.invokeCallback(
+              registeredReader, meterProviderSharedState.getStartEpochNanos(), epochNanos);
+        }
       }
 
+      // Collect even if meter is disabled. Storage is responsible for managing state and returning
+      // empty metric if disabled.
       Collection<MetricStorage> storages =
           Objects.requireNonNull(readerStorageRegistries.get(registeredReader)).getStorages();
       List<MetricData> result = new ArrayList<>(storages.size());
@@ -288,7 +289,8 @@ final class SdkMeter implements Meter {
                     reader,
                     registeredView,
                     instrument,
-                    meterProviderSharedState.getExemplarFilter())));
+                    meterProviderSharedState.getExemplarFilter(),
+                    meterEnabled)));
       }
     }
 
@@ -314,7 +316,8 @@ final class SdkMeter implements Meter {
         }
         registeredStorages.add(
             registry.register(
-                AsynchronousMetricStorage.create(reader, registeredView, instrumentDescriptor)));
+                AsynchronousMetricStorage.create(
+                    reader, registeredView, instrumentDescriptor, meterEnabled)));
       }
     }
 

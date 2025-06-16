@@ -55,11 +55,6 @@ public interface ExemplarReservoir<T extends ExemplarData> {
     return NoopExemplarReservoir.LONG_INSTANCE;
   }
 
-  /** An exemplar reservoir that stores no exemplars. */
-  static ExemplarReservoir<ExemplarData> anyNoSamples() {
-    return NoopExemplarReservoir.ANY_INSTANCE;
-  }
-
   /**
    * A double reservoir with fixed size that stores the given number of exemplars.
    *

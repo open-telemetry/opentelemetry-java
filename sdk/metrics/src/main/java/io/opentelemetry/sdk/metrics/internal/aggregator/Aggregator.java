@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
@@ -26,9 +27,8 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface Aggregator<T extends PointData, U extends ExemplarData> {
   /** Returns the drop aggregator, an aggregator that drops measurements. */
-  @SuppressWarnings("unchecked")
-  static <T extends PointData, U extends ExemplarData> Aggregator<T, U> drop() {
-    return (Aggregator<T, U>) DropAggregator.INSTANCE;
+  static Aggregator<?, DoubleExemplarData> drop() {
+    return DropAggregator.INSTANCE;
   }
 
   /**

@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
@@ -24,7 +25,7 @@ import java.util.List;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class DropAggregator implements Aggregator<PointData, ExemplarData> {
+public final class DropAggregator implements Aggregator<PointData, DoubleExemplarData> {
 
   private static final PointData POINT_DATA =
       new PointData() {
@@ -49,16 +50,16 @@ public final class DropAggregator implements Aggregator<PointData, ExemplarData>
         }
       };
 
-  public static final Aggregator<PointData, ExemplarData> INSTANCE = new DropAggregator();
+  public static final Aggregator<PointData, DoubleExemplarData> INSTANCE = new DropAggregator();
 
-  private static final AggregatorHandle<PointData, ExemplarData> HANDLE =
-      new AggregatorHandle<PointData, ExemplarData>(ExemplarReservoir.anyNoSamples()) {
+  private static final AggregatorHandle<PointData, DoubleExemplarData> HANDLE =
+      new AggregatorHandle<PointData, DoubleExemplarData>(ExemplarReservoir.doubleNoSamples()) {
         @Override
         protected PointData doAggregateThenMaybeReset(
             long startEpochNanos,
             long epochNanos,
             Attributes attributes,
-            List<ExemplarData> exemplars,
+            List<DoubleExemplarData> exemplars,
             boolean reset) {
           return POINT_DATA;
         }
@@ -73,7 +74,7 @@ public final class DropAggregator implements Aggregator<PointData, ExemplarData>
   private DropAggregator() {}
 
   @Override
-  public AggregatorHandle<PointData, ExemplarData> createHandle() {
+  public AggregatorHandle<PointData, DoubleExemplarData> createHandle() {
     return HANDLE;
   }
 
