@@ -714,6 +714,8 @@ class AutoConfiguredOpenTelemetrySdkTest {
                           }
                           return null;
                         });
+                // Give Thread 2 some time to try obtaining the mutex and getting blocked
+                Thread.sleep(500);
                 return invocation.callRealMethod();
               });
 
