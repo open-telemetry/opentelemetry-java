@@ -65,13 +65,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -680,13 +680,17 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "FutureReturnValueIgnored"})
   void test() throws Exception {
-    AutoConfiguredOpenTelemetrySdkBuilder globalBuilder = builder.setResultAsGlobal();
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+    // Idea of the test:
+    // 1. Thread 1 calls AutoConfiguredOpenTelemetrySdkBuilder#build
+    // 2. It acquires the mutex in GlobalOpenTelemetry.set(Supplier<OpenTelemetry>)
+    // 3. While holding the mutex before the call to GlobalOpenTelemetry.set(OpenTelemetry),
+    //    it spawns Thread 2 which calls GlobalOpenTelemetry.get
+    // 4. We test that Thread 2 does not fail, and that its result is the same OpenTelemetry
+    //    instance embedded in the AutoConfiguredOpenTelemetrySdk
+    SynchronousQueue<OpenTelemetry> gotGetResult = new SynchronousQueue<>();
 
-    OpenTelemetry gotGetOutput;
-    AutoConfiguredOpenTelemetrySdk autoConfiguredSdk;
     try (MockedStatic<GlobalOpenTelemetry> mockGot =
         Mockito.mockStatic(GlobalOpenTelemetry.class)) {
       mockGot.when(GlobalOpenTelemetry::get).thenCallRealMethod();
@@ -695,19 +699,30 @@ class AutoConfiguredOpenTelemetrySdkTest {
           .when(() -> GlobalOpenTelemetry.set(any(OpenTelemetry.class)))
           .then(
               invocation -> {
-                Thread.sleep(1000);
+                CompletableFuture.supplyAsync(GlobalOpenTelemetry::get)
+                    .handle(
+                        (sdk, exc) -> {
+                          if (exc != null) {
+                            Assertions.fail(exc);
+                          } else {
+                            try {
+                              gotGetResult.put(sdk);
+                            } catch (InterruptedException exception) {
+                              Thread.currentThread().interrupt();
+                              Assertions.fail(exception);
+                            }
+                          }
+                          return null;
+                        });
                 return invocation.callRealMethod();
               });
 
-      Future<AutoConfiguredOpenTelemetrySdk> autoConfiguredSdkFuture =
-          executor.submit(globalBuilder::build);
-      gotGetOutput = GlobalOpenTelemetry.get();
-      autoConfiguredSdk = autoConfiguredSdkFuture.get();
-    }
-    assertThat(gotGetOutput)
-        .extracting("delegate")
-        .isSameAs(autoConfiguredSdk.getOpenTelemetrySdk());
+      AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
+          builder.setResultAsGlobal().build();
 
-    executor.shutdown();
+      assertThat(gotGetResult.poll(3, TimeUnit.SECONDS))
+          .extracting("delegate")
+          .isSameAs(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
+    }
   }
 }
