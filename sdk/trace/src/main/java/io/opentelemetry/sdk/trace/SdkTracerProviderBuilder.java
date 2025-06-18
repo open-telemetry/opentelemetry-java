@@ -12,9 +12,9 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.DefaultExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
-import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
 import io.opentelemetry.sdk.resources.Resource;
@@ -39,8 +39,7 @@ public final class SdkTracerProviderBuilder {
   private Supplier<SpanLimits> spanLimitsSupplier = SpanLimits::getDefault;
   private Sampler sampler = DEFAULT_SAMPLER;
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
-  private InternalTelemetryVersion internalTelemetryVersion =
-      InternalTelemetryVersion.DISABLED;
+  private InternalTelemetryVersion internalTelemetryVersion = InternalTelemetryVersion.LEGACY;
   private ScopeConfiguratorBuilder<TracerConfig> tracerConfiguratorBuilder =
       TracerConfig.configuratorBuilder();
   private ExceptionAttributeResolver exceptionAttributeResolver =
@@ -194,8 +193,8 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
-   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics the
-   * tracers originating from this provider collect.
+   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics the tracers
+   * originating from this provider collect.
    */
   public SdkTracerProviderBuilder setInternalTelemetry(
       InternalTelemetryVersion internalTelemetryVersion) {

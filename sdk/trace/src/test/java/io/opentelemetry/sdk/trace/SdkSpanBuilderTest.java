@@ -1131,7 +1131,7 @@ class SdkSpanBuilderTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void healthMetricsDisabled() {
+  void healthMetricsDisabledForLegacy() {
     AtomicReference<SamplingDecision> currentSamplingDecision = new AtomicReference<>();
     Sampler sampler =
         new Sampler() {
@@ -1158,7 +1158,7 @@ class SdkSpanBuilderTest {
         SdkTracerProvider.builder()
             .setSampler(sampler)
             .setMeterProvider(mockMeterProvider)
-            .setInternalTelemetry(InternalTelemetryVersion.DISABLED)
+            .setInternalTelemetry(InternalTelemetryVersion.LEGACY)
             .build()
             .get("testing");
 

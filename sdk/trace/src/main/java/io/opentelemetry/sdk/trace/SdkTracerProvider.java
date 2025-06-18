@@ -86,9 +86,7 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
       Supplier<MeterProvider> meterProviderSupplier) {
     switch (internalTelemetryVersion) {
       case LEGACY:
-      case DISABLED:
         return SpanMetrics.noop();
-      case V1_33:
       case LATEST:
         return new SemConvSpanMetrics(meterProviderSupplier);
     }
