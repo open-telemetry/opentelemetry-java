@@ -40,6 +40,7 @@ public final class OtlpGrpcProfilesExporterBuilder {
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
   private static final long DEFAULT_TIMEOUT_SECS = 10;
+  private ClassLoader serviceClassLoader = OtlpGrpcProfilesExporterBuilder.class.getClassLoader();
 
   // TODO maybe make more efficient by adding support for MEMORY_MODE
 
@@ -139,7 +140,8 @@ public final class OtlpGrpcProfilesExporterBuilder {
    */
   public OtlpGrpcProfilesExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
-    Compressor compressor = CompressorUtil.validateAndResolveCompressor(compressionMethod);
+    Compressor compressor =
+        CompressorUtil.validateAndResolveCompressor(compressionMethod, serviceClassLoader);
     delegate.setCompression(compressor);
     return this;
   }
@@ -207,6 +209,7 @@ public final class OtlpGrpcProfilesExporterBuilder {
   /** Set the {@link ClassLoader} used to load the sender API. */
   public OtlpGrpcProfilesExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
     requireNonNull(serviceClassLoader, "serviceClassLoader");
+    this.serviceClassLoader = serviceClassLoader;
     delegate.setServiceClassLoader(serviceClassLoader);
     return this;
   }

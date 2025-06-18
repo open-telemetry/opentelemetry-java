@@ -47,6 +47,7 @@ public final class OtlpGrpcSpanExporterBuilder {
   // Visible for testing
   final GrpcExporterBuilder<Marshaler> delegate;
   private MemoryMode memoryMode;
+  private ClassLoader serviceClassLoader = OtlpGrpcSpanExporterBuilder.class.getClassLoader();
 
   OtlpGrpcSpanExporterBuilder(GrpcExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
@@ -146,7 +147,8 @@ public final class OtlpGrpcSpanExporterBuilder {
    */
   public OtlpGrpcSpanExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
-    Compressor compressor = CompressorUtil.validateAndResolveCompressor(compressionMethod);
+    Compressor compressor =
+        CompressorUtil.validateAndResolveCompressor(compressionMethod, serviceClassLoader);
     delegate.setCompression(compressor);
     return this;
   }
@@ -277,6 +279,7 @@ public final class OtlpGrpcSpanExporterBuilder {
    */
   public OtlpGrpcSpanExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
     requireNonNull(serviceClassLoader, "serviceClassLoader");
+    this.serviceClassLoader = serviceClassLoader;
     delegate.setServiceClassLoader(serviceClassLoader);
     return this;
   }

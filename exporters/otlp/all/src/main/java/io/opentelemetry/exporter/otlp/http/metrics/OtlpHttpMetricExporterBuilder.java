@@ -54,6 +54,7 @@ public final class OtlpHttpMetricExporterBuilder {
   private AggregationTemporalitySelector aggregationTemporalitySelector;
   private DefaultAggregationSelector defaultAggregationSelector;
   private MemoryMode memoryMode;
+  private ClassLoader serviceClassLoader = OtlpHttpMetricExporterBuilder.class.getClassLoader();
 
   OtlpHttpMetricExporterBuilder(
       HttpExporterBuilder<Marshaler> delegate,
@@ -137,7 +138,8 @@ public final class OtlpHttpMetricExporterBuilder {
    */
   public OtlpHttpMetricExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
-    Compressor compressor = CompressorUtil.validateAndResolveCompressor(compressionMethod);
+    Compressor compressor =
+        CompressorUtil.validateAndResolveCompressor(compressionMethod, serviceClassLoader);
     delegate.setCompression(compressor);
     return this;
   }
@@ -310,6 +312,7 @@ public final class OtlpHttpMetricExporterBuilder {
    */
   public OtlpHttpMetricExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
     requireNonNull(serviceClassLoader, "serviceClassLoader");
+    this.serviceClassLoader = serviceClassLoader;
     delegate.setServiceClassLoader(serviceClassLoader);
     return this;
   }
