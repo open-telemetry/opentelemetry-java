@@ -93,7 +93,7 @@ class NonRecordingSpanTest {
   }
 
   @Test
-  void defaultSpan_ToString() {
+  void verifyToString() {
     Span span = new NonRecordingSpan(DUMMY_CONTEXT, mockRecording);
     assertThat(span.toString())
         .isEqualTo(
