@@ -37,7 +37,9 @@ public final class ResourceMarshaler extends MarshalerWithSize {
 
       RealResourceMarshaler realMarshaler =
           new RealResourceMarshaler(
-              KeyValueMarshaler.createForAttributes(resource.getAttributes()));
+              KeyValueMarshaler.createForAttributes(resource.getAttributes()),
+              // TODO(jsuereth): This will support EntityRef in the future.
+              new EntityRefMarshaler[] {});
 
       ByteArrayOutputStream binaryBos =
           new ByteArrayOutputStream(realMarshaler.getBinarySerializedSize());
@@ -70,19 +72,26 @@ public final class ResourceMarshaler extends MarshalerWithSize {
 
   private static final class RealResourceMarshaler extends MarshalerWithSize {
     private final KeyValueMarshaler[] attributes;
+    private final MarshalerWithSize[] entityRefs;
 
-    private RealResourceMarshaler(KeyValueMarshaler[] attributes) {
-      super(calculateSize(attributes));
+    private RealResourceMarshaler(KeyValueMarshaler[] attributes, MarshalerWithSize[] entityRefs) {
+      super(calculateSize(attributes, entityRefs));
       this.attributes = attributes;
+      this.entityRefs = entityRefs;
     }
 
     @Override
     protected void writeTo(Serializer output) throws IOException {
       output.serializeRepeatedMessage(Resource.ATTRIBUTES, attributes);
+      output.serializeRepeatedMessage(Resource.ENTITY_REFS, entityRefs);
     }
 
-    private static int calculateSize(KeyValueMarshaler[] attributeMarshalers) {
-      return MarshalerUtil.sizeRepeatedMessage(Resource.ATTRIBUTES, attributeMarshalers);
+    private static int calculateSize(
+        KeyValueMarshaler[] attributeMarshalers, MarshalerWithSize[] entityRefs) {
+      int size = 0;
+      size += MarshalerUtil.sizeRepeatedMessage(Resource.ATTRIBUTES, attributeMarshalers);
+      size += size += MarshalerUtil.sizeRepeatedMessage(Resource.ENTITY_REFS, entityRefs);
+      return size;
     }
   }
 }
