@@ -9,9 +9,8 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.internal.StringUtils;
-import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.sdk.common.internal.OtelVersion;
+import io.opentelemetry.sdk.resources.internal.AttributeCheckUtil;
 import java.util.Objects;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -34,13 +33,6 @@ public abstract class Resource {
   private static final AttributeKey<String> TELEMETRY_SDK_VERSION =
       AttributeKey.stringKey("telemetry.sdk.version");
 
-  private static final int MAX_LENGTH = 255;
-  private static final String ERROR_MESSAGE_INVALID_CHARS =
-      " should be a ASCII string with a length greater than 0 and not exceed "
-          + MAX_LENGTH
-          + " characters.";
-  private static final String ERROR_MESSAGE_INVALID_VALUE =
-      " should be a ASCII string with a length not exceed " + MAX_LENGTH + " characters.";
   private static final Resource EMPTY = create(Attributes.empty());
   private static final Resource TELEMETRY_SDK;
 
@@ -91,7 +83,7 @@ public abstract class Resource {
    * @return a {@code Resource}.
    * @throws NullPointerException if {@code attributes} is null.
    * @throws IllegalArgumentException if attribute key or attribute value is not a valid printable
-   *     ASCII string or exceed {@link #MAX_LENGTH} characters.
+   *     ASCII string or exceed {@link AttributeCheckUtil#MAX_LENGTH} characters.
    */
   public static Resource create(Attributes attributes) {
     return create(attributes, null);
@@ -105,10 +97,10 @@ public abstract class Resource {
    * @return a {@code Resource}.
    * @throws NullPointerException if {@code attributes} is null.
    * @throws IllegalArgumentException if attribute key or attribute value is not a valid printable
-   *     ASCII string or exceed {@link #MAX_LENGTH} characters.
+   *     ASCII string or exceed {@link AttributeCheckUtil#MAX_LENGTH} characters.
    */
   public static Resource create(Attributes attributes, @Nullable String schemaUrl) {
-    checkAttributes(Objects.requireNonNull(attributes, "attributes"));
+    AttributeCheckUtil.checkAttributes(Objects.requireNonNull(attributes, "attributes"));
     return new AutoValue_Resource(schemaUrl, attributes);
   }
 
@@ -172,37 +164,6 @@ public abstract class Resource {
       return create(attrBuilder.build(), null);
     }
     return create(attrBuilder.build(), getSchemaUrl());
-  }
-
-  private static void checkAttributes(Attributes attributes) {
-    attributes.forEach(
-        (key, value) -> {
-          Utils.checkArgument(
-              isValidAndNotEmpty(key), "Attribute key" + ERROR_MESSAGE_INVALID_CHARS);
-          Objects.requireNonNull(value, "Attribute value" + ERROR_MESSAGE_INVALID_VALUE);
-        });
-  }
-
-  /**
-   * Determines whether the given {@code String} is a valid printable ASCII string with a length not
-   * exceed {@link #MAX_LENGTH} characters.
-   *
-   * @param name the name to be validated.
-   * @return whether the name is valid.
-   */
-  private static boolean isValid(String name) {
-    return name.length() <= MAX_LENGTH && StringUtils.isPrintableString(name);
-  }
-
-  /**
-   * Determines whether the given {@code String} is a valid printable ASCII string with a length
-   * greater than 0 and not exceed {@link #MAX_LENGTH} characters.
-   *
-   * @param name the name to be validated.
-   * @return whether the name is valid.
-   */
-  private static boolean isValidAndNotEmpty(AttributeKey<?> name) {
-    return !name.getKey().isEmpty() && isValid(name.getKey());
   }
 
   /**

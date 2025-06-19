@@ -25,8 +25,8 @@ class EntityRefMarshalerTest {
     Entity e =
         Entity.builder("test")
             .setSchemaUrl("test-url")
-            .withDescriptive(attr -> attr.put("desc.key", "desc.value"))
-            .withIdentifying(attr -> attr.put("id.key", "id.value"))
+            .withDescription(attr -> attr.put("desc.key", "desc.value"))
+            .withId(attr -> attr.put("id.key", "id.value"))
             .build();
     EntityRef proto = parse(EntityRef.getDefaultInstance(), EntityRefMarshaler.createForEntity(e));
     assertThat(proto.getType()).isEqualTo("test");
