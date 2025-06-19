@@ -140,19 +140,19 @@ class CollectorIntegrationTest {
             // Resource attributes from the metric SDK resource translated to target_info
             stringKeyValue(
                 "service_name",
-                Objects.requireNonNull(resource.getAttributes().get(stringKey("service.name")))),
+                Objects.requireNonNull(resource.getDescription().get(stringKey("service.name")))),
             stringKeyValue(
                 "telemetry_sdk_name",
                 Objects.requireNonNull(
-                    resource.getAttributes().get(stringKey("telemetry.sdk.name")))),
+                    resource.getDescription().get(stringKey("telemetry.sdk.name")))),
             stringKeyValue(
                 "telemetry_sdk_language",
                 Objects.requireNonNull(
-                    resource.getAttributes().get(stringKey("telemetry.sdk.language")))),
+                    resource.getDescription().get(stringKey("telemetry.sdk.language")))),
             stringKeyValue(
                 "telemetry_sdk_version",
                 Objects.requireNonNull(
-                    resource.getAttributes().get(stringKey("telemetry.sdk.version")))));
+                    resource.getDescription().get(stringKey("telemetry.sdk.version")))));
 
     assertThat(resourceMetrics.getScopeMetricsCount()).isEqualTo(2);
     ScopeMetrics testScopeMetrics =
