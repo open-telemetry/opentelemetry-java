@@ -123,7 +123,8 @@ final class Otel2PrometheusConverter {
       if (resource == null) {
         resource = metricData.getResource();
       }
-      if (otelScopeEnabled && !metricData.getInstrumentationScopeInfo().getAttributes().isEmpty()) {
+      if (otelScopeEnabled
+          && !metricData.getInstrumentationScopeInfo().getDescription().isEmpty()) {
         scopes.add(metricData.getInstrumentationScopeInfo());
       }
     }
@@ -207,7 +208,7 @@ final class Otel2PrometheusConverter {
       data.add(
           new GaugeDataPointSnapshot(
               (double) longData.getValue(),
-              convertAttributes(resource, scope, longData.getAttributes()),
+              convertAttributes(resource, scope, longData.getDescription()),
               convertLongExemplar(longData.getExemplars())));
     }
     return new GaugeSnapshot(metadata, data);
@@ -223,7 +224,7 @@ final class Otel2PrometheusConverter {
       data.add(
           new CounterDataPointSnapshot(
               (double) longData.getValue(),
-              convertAttributes(resource, scope, longData.getAttributes()),
+              convertAttributes(resource, scope, longData.getDescription()),
               convertLongExemplar(longData.getExemplars()),
               longData.getStartEpochNanos() / NANOS_PER_MILLISECOND));
     }
@@ -240,7 +241,7 @@ final class Otel2PrometheusConverter {
       data.add(
           new GaugeDataPointSnapshot(
               doubleData.getValue(),
-              convertAttributes(resource, scope, doubleData.getAttributes()),
+              convertAttributes(resource, scope, doubleData.getDescription()),
               convertDoubleExemplar(doubleData.getExemplars())));
     }
     return new GaugeSnapshot(metadata, data);
@@ -256,7 +257,7 @@ final class Otel2PrometheusConverter {
       data.add(
           new CounterDataPointSnapshot(
               doubleData.getValue(),
-              convertAttributes(resource, scope, doubleData.getAttributes()),
+              convertAttributes(resource, scope, doubleData.getDescription()),
               convertDoubleExemplar(doubleData.getExemplars()),
               doubleData.getStartEpochNanos() / NANOS_PER_MILLISECOND));
     }
@@ -277,7 +278,7 @@ final class Otel2PrometheusConverter {
           new HistogramDataPointSnapshot(
               ClassicHistogramBuckets.of(boundaries, histogramData.getCounts()),
               histogramData.getSum(),
-              convertAttributes(resource, scope, histogramData.getAttributes()),
+              convertAttributes(resource, scope, histogramData.getDescription()),
               convertDoubleExemplars(histogramData.getExemplars()),
               histogramData.getStartEpochNanos() / NANOS_PER_MILLISECOND));
     }
@@ -299,7 +300,7 @@ final class Otel2PrometheusConverter {
             "Dropping histogram "
                 + metadata.getName()
                 + " with attributes "
-                + histogramData.getAttributes()
+                + histogramData.getDescription()
                 + " because it has scale < -4 which is unsupported in Prometheus");
         return null;
       }
@@ -313,7 +314,7 @@ final class Otel2PrometheusConverter {
               convertExponentialHistogramBuckets(histogramData.getPositiveBuckets(), scaleDown),
               convertExponentialHistogramBuckets(histogramData.getNegativeBuckets(), scaleDown),
               histogramData.getSum(),
-              convertAttributes(resource, scope, histogramData.getAttributes()),
+              convertAttributes(resource, scope, histogramData.getDescription()),
               convertDoubleExemplars(histogramData.getExemplars()),
               histogramData.getStartEpochNanos() / NANOS_PER_MILLISECOND));
     }
@@ -357,7 +358,7 @@ final class Otel2PrometheusConverter {
               summaryData.getCount(),
               summaryData.getSum(),
               convertQuantiles(summaryData.getValues()),
-              convertAttributes(resource, scope, summaryData.getAttributes()),
+              convertAttributes(resource, scope, summaryData.getDescription()),
               Exemplars.EMPTY, // Exemplars for Summaries not implemented yet.
               summaryData.getStartEpochNanos() / NANOS_PER_MILLISECOND));
     }
@@ -435,7 +436,7 @@ final class Otel2PrometheusConverter {
                 convertAttributes(
                     null, // resource attributes are only copied for point's attributes
                     null, // scope attributes are only needed for point's attributes
-                    resource.getAttributes()))));
+                    resource.getDescription()))));
   }
 
   private InfoSnapshot makeScopeInfo(Set<InstrumentationScopeInfo> scopes) {
@@ -446,7 +447,7 @@ final class Otel2PrometheusConverter {
               convertAttributes(
                   null, // resource attributes are only copied for point's attributes
                   scope,
-                  scope.getAttributes())));
+                  scope.getDescription())));
     }
     return new InfoSnapshot(new MetricMetadata("otel_scope"), prometheusScopeInfos);
   }
@@ -491,7 +492,7 @@ final class Otel2PrometheusConverter {
     }
 
     if (resource != null) {
-      Attributes resourceAttributes = resource.getAttributes();
+      Attributes resourceAttributes = resource.getDescription();
       for (AttributeKey attributeKey : allowedAttributeKeys) {
         Object attributeValue = resourceAttributes.get(attributeKey);
         if (attributeValue != null) {
@@ -524,7 +525,7 @@ final class Otel2PrometheusConverter {
 
     List<AttributeKey<?>> allowedAttributeKeys =
         resourceAttributesToAllowedKeysCache.computeIfAbsent(
-            resource.getAttributes(),
+            resource.getDescription(),
             resourceAttributes ->
                 resourceAttributes.asMap().keySet().stream()
                     .filter(o -> allowedResourceAttributesFilter.test(o.getKey()))

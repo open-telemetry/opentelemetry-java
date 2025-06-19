@@ -17,23 +17,23 @@ import javax.annotation.Nullable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class EntityBuilder {
+public final class EntityBuilder {
   private final String entityType;
-  private final AttributesBuilder attributesBuilder;
-  private final AttributesBuilder identifyingBuilder;
+  private final AttributesBuilder descriptionBuilder;
+  private final AttributesBuilder idBuilder;
   @Nullable private String schemaUrl;
 
   EntityBuilder(String entityType) {
     this.entityType = entityType;
-    this.attributesBuilder = Attributes.builder();
-    this.identifyingBuilder = Attributes.builder();
+    this.descriptionBuilder = Attributes.builder();
+    this.idBuilder = Attributes.builder();
   }
 
   EntityBuilder(Entity seed) {
     this.entityType = seed.getType();
     this.schemaUrl = seed.getSchemaUrl();
-    this.identifyingBuilder = seed.getIdentifyingAttributes().toBuilder();
-    this.attributesBuilder = seed.getAttributes().toBuilder();
+    this.idBuilder = seed.getId().toBuilder();
+    this.descriptionBuilder = seed.getDescription().toBuilder();
   }
 
   /**
@@ -53,8 +53,8 @@ public class EntityBuilder {
    * @param f A thunk which manipulates descriptive attributes.
    * @return this
    */
-  public EntityBuilder withDescriptive(Consumer<AttributesBuilder> f) {
-    f.accept(this.attributesBuilder);
+  public EntityBuilder withDescription(Consumer<AttributesBuilder> f) {
+    f.accept(this.descriptionBuilder);
     return this;
   }
 
@@ -64,15 +64,13 @@ public class EntityBuilder {
    * @param f A thunk which manipulates identifying attributes.
    * @return this
    */
-  public EntityBuilder withIdentifying(Consumer<AttributesBuilder> f) {
-    f.accept(this.identifyingBuilder);
+  public EntityBuilder withId(Consumer<AttributesBuilder> f) {
+    f.accept(this.idBuilder);
     return this;
   }
 
   /** Create the {@link Entity} from this. */
   public Entity build() {
-    // TODO - Better Checks, e.g. identifying attributes are non-zero.
-    return Entity.create(
-        entityType, identifyingBuilder.build(), attributesBuilder.build(), schemaUrl);
+    return Entity.create(entityType, idBuilder.build(), descriptionBuilder.build(), schemaUrl);
   }
 }

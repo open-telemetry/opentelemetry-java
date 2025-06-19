@@ -46,10 +46,10 @@ public final class EntityRefMarshaler extends MarshalerWithSize {
     return new EntityRefMarshaler(
         schemaUrlUtf8,
         e.getType().getBytes(StandardCharsets.UTF_8),
-        e.getIdentifyingAttributes().asMap().keySet().stream()
+        e.getId().asMap().keySet().stream()
             .map(key -> key.getKey().getBytes(StandardCharsets.UTF_8))
             .toArray(byte[][]::new),
-        e.getAttributes().asMap().keySet().stream()
+        e.getDescription().asMap().keySet().stream()
             .map(key -> key.getKey().getBytes(StandardCharsets.UTF_8))
             .toArray(byte[][]::new));
   }
