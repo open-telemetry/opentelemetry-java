@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.resources.internal;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.common.Attributes;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -211,5 +212,38 @@ class EntityUtilTest {
             "one",
             "one");
     assertThat(result).isEqualTo(null);
+  }
+
+  @Test
+  void testRawAttributeMerge_no_entities() {
+    // When no entities are present all attributes are merged.
+    RawAttributeMergeResult result =
+        EntityUtil.mergeRawAttributes(
+            Attributes.builder().put("a", 1).put("b", 1).build(),
+            Attributes.builder().put("b", 2).put("c", 2).build(),
+            Collections.emptyList());
+    assertThat(result.getConflicts()).isEmpty();
+    assertThat(result.getAttributes())
+        .hasSize(3)
+        .containsEntry("a", 1)
+        .containsEntry("b", 2)
+        .containsEntry("c", 2);
+  }
+
+  @Test
+  void testRawAttributeMerge_entity_with_conflict() {
+    // When an entity conflicts with incoming raw attributes, we need to call out that conflict
+    // so resource merge logic can remove the entity from resource.
+    RawAttributeMergeResult result =
+        EntityUtil.mergeRawAttributes(
+            Attributes.builder().put("a", 1).put("b", 1).build(),
+            Attributes.builder().put("b", 2).put("c", 2).build(),
+            Arrays.asList(Entity.builder("c").withId(id -> id.put("c", 1)).build()));
+    assertThat(result.getConflicts()).satisfiesExactly(e -> assertThat(e).hasType("c"));
+    assertThat(result.getAttributes())
+        .hasSize(3)
+        .containsEntry("a", 1)
+        .containsEntry("b", 2)
+        .containsEntry("c", 2);
   }
 }
