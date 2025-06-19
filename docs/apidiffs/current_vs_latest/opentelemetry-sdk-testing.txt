@@ -1,2 +1,10 @@
 Comparing source compatibility of opentelemetry-sdk-testing-1.52.0-SNAPSHOT.jar against opentelemetry-sdk-testing-1.51.0.jar
-No changes.
++++  NEW CLASS: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.EntityAssert  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.EntityAssert hasDescriptionSatisfying(org.assertj.core.api.ThrowingConsumer<io.opentelemetry.api.common.Attributes>)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.EntityAssert hasIdSatisfying(org.assertj.core.api.ThrowingConsumer<io.opentelemetry.api.common.Attributes>)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.EntityAssert hasSchemaUrl(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.EntityAssert hasType(java.lang.String)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.assertj.EntityAssert assertThat(io.opentelemetry.sdk.resources.internal.Entity)

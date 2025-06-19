@@ -1,12 +1,2 @@
 Comparing source compatibility of opentelemetry-sdk-common-1.52.0-SNAPSHOT.jar against opentelemetry-sdk-common-1.51.0.jar
-***! MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.resources.Resource  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW INTERFACE: io.opentelemetry.sdk.resources.internal.Resource
-	---! REMOVED METHOD: PUBLIC(-) java.lang.Object getAttribute(io.opentelemetry.api.common.AttributeKey<T>)
-		---  REMOVED ANNOTATION: javax.annotation.Nullable
-		GENERIC TEMPLATES: --- T:java.lang.Object
-	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.resources.Resource merge(io.opentelemetry.sdk.resources.Resource)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.Resource merge(io.opentelemetry.sdk.resources.internal.Resource)
-***  MODIFIED CLASS: PUBLIC io.opentelemetry.sdk.resources.ResourceBuilder  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW INTERFACE: io.opentelemetry.sdk.resources.internal.ResourceBuilder
+No changes.
