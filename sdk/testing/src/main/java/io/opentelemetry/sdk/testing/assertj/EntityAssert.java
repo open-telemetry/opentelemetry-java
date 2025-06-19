@@ -25,13 +25,13 @@ public class EntityAssert extends AbstractAssert<EntityAssert, Entity> {
     return this;
   }
 
-  /** Asserts that the entity id satisfies the given asserts */
+  /** Asserts that the entity id satisfies the given asserts. */
   public EntityAssert hasIdSatisfying(ThrowingConsumer<Attributes> asserts) {
     asserts.accept(actual.getId());
     return this;
   }
 
-  /** Asserts that the entity description satisfies the given asserts */
+  /** Asserts that the entity description satisfies the given asserts. */
   public EntityAssert hasDescriptionSatisfying(ThrowingConsumer<Attributes> asserts) {
     asserts.accept(actual.getDescription());
     return this;
