@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link EntityUtil} */
+/** Unit tests for {@link EntityUtil}. */
 class EntityUtilTest {
   @Test
   void testMerge_entities_same_types_and_id() {
