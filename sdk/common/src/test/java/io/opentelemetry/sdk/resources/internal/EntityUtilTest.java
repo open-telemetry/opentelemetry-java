@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link EntityUtil} */
@@ -159,5 +160,56 @@ class EntityUtilTest {
     assertThat(merged)
         .satisfiesExactlyInAnyOrder(
             a -> assertThat(a).hasType("a"), b -> assertThat(b).hasType("b"));
+  }
+
+  @Test
+  void testSchemaUrlMerge_no_entities_differentUrls() {
+    // If the we find conflicting schema URLs in resource we must drop schema url (set to null).
+    String result = EntityUtil.mergeResourceSchemaUrl(Collections.emptyList(), "one", "two");
+    assertThat(result).isNull();
+  }
+
+  @Test
+  void testSchemaUrlMerge_no_entities_base_null() {
+    // If the our resource had no schema url it abides by, we use the incoming schema url.
+    String result = EntityUtil.mergeResourceSchemaUrl(Collections.emptyList(), null, "two");
+    assertThat(result).isEqualTo("two");
+  }
+
+  @Test
+  void testSchemaUrlMerge_no_entities_next_null() {
+    // If the new resource had no schema url it abides by, we preserve ours.
+    // NOTE: this is by specification, but seems problematic if conflicts in merge
+    // cause violation of SchemaURL.
+    String result = EntityUtil.mergeResourceSchemaUrl(Collections.emptyList(), "one", null);
+    assertThat(result).isEqualTo("one");
+  }
+
+  @Test
+  void testSchemaUrlMerge_entities_same_url() {
+    // If the new resource had no schema url it abides by, we preserve ours.
+    // NOTE: this is by specification, but seems problematic if conflicts in merge
+    // cause violation of SchemaURL.
+    String result =
+        EntityUtil.mergeResourceSchemaUrl(
+            Arrays.asList(
+                Entity.builder("t").setSchemaUrl("one").withId(id -> id.put("id", 1)).build()),
+            "one",
+            null);
+    assertThat(result).isEqualTo("one");
+  }
+
+  @Test
+  void testSchemaUrlMerge_entities_different_url() {
+    // When entities have conflciting schema urls, we cannot fill out resource schema url,
+    // no matter what.
+    String result =
+        EntityUtil.mergeResourceSchemaUrl(
+            Arrays.asList(
+                Entity.builder("t").setSchemaUrl("one").withId(id -> id.put("id", 1)).build(),
+                Entity.builder("t2").setSchemaUrl("two").withId(id -> id.put("id2", 1)).build()),
+            "one",
+            "one");
+    assertThat(result).isEqualTo(null);
   }
 }

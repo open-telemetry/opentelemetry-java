@@ -32,21 +32,21 @@ public interface Entity {
    *
    * @return the entity type.
    */
-  public abstract String getType();
+  String getType();
 
   /**
    * Returns a map of attributes that identify the entity.
    *
    * @return a map of attributes.
    */
-  public abstract Attributes getId();
+  Attributes getId();
 
   /**
    * Returns a map of attributes that describe the entity.
    *
    * @return a map of attributes.
    */
-  public abstract Attributes getDescription();
+  Attributes getDescription();
 
   /**
    * Returns the URL of the OpenTelemetry schema used by this resource. May be null if this entity
@@ -56,7 +56,7 @@ public interface Entity {
    * @since 1.4.0
    */
   @Nullable
-  public abstract String getSchemaUrl();
+  String getSchemaUrl();
 
   /**
    * Returns a new {@link EntityBuilder} instance populated with the data of this {@link Entity}.
