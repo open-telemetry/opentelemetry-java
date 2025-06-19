@@ -5,10 +5,17 @@
 
 package io.opentelemetry.sdk.resources.internal;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 /**
  * Helper class for dealing with Entities.
@@ -20,6 +27,88 @@ public final class EntityUtil {
   private static final Logger logger = Logger.getLogger(EntityUtil.class.getName());
 
   private EntityUtil() {}
+
+  /** Returns true if any entity in the collection has the attribute key, in id or description. */
+  static final <T> boolean hasAttributeKey(Collection<Entity> entities, AttributeKey<T> key) {
+    return entities.stream()
+        .anyMatch(
+            e -> e.getId().asMap().containsKey(key) || e.getDescription().asMap().containsKey(key));
+  }
+
+  /** Decides on a final SchemaURL for OTLP Resource based on entities chosen. */
+  @Nullable
+  static final String mergeResourceSchemaUrl(
+      Collection<Entity> entities, @Nullable String baseUrl, @Nullable String nextUrl) {
+    // Check if entities all share the same URL.
+    Set<String> entitySchemas =
+        entities.stream().map(Entity::getSchemaUrl).collect(Collectors.toSet());
+    // If we have no entities, we preserve previous schema url behavior.
+    String result = baseUrl;
+    if (entitySchemas.size() == 1) {
+      // Updated Entities use same schema, we can preserve it.
+      result = entitySchemas.iterator().next();
+    } else if (entitySchemas.size() > 1) {
+      // Entities use different schemas, resource must treat this as no schema_url.
+      result = null;
+    }
+
+    // If schema url of merging resource is null, we use our current result.
+    if (nextUrl == null) {
+      return result;
+    }
+    // When there are no entities, we use old schema url merge behavior
+    if (result == null && entities.isEmpty()) {
+      return nextUrl;
+    }
+    if (!nextUrl.equals(result)) {
+      logger.info(
+          "Attempting to merge Resources with different schemaUrls. "
+              + "The resulting Resource will have no schemaUrl assigned. Schema 1: "
+              + baseUrl
+              + " Schema 2: "
+              + nextUrl);
+      return null;
+    }
+    return result;
+  }
+
+  /**
+   * Merges "loose" attributes on resource, removing those which conflict with the set of entities.
+   *
+   * @param base loose attributes from base resource
+   * @param additional additional attributes to add to the resource.
+   * @param entities the set of entites on the resource.
+   * @return the new set of raw attributes for Resource and the set of conflicting entities that
+   *     MUST NOT be reported on OTLP resource.
+   */
+  @SuppressWarnings("unchecked")
+  static final RawAttributeMergeResult mergeRawAttributes(
+      Attributes base, Attributes additional, Collection<Entity> entities) {
+    AttributesBuilder result = base.toBuilder();
+    // We know attribute conflicts were handled perviously on the resource, so
+    // This needs to account for entity merge of new entities, and remove raw
+    // attributes that would have been removed with new entities.
+    result.removeIf(key -> hasAttributeKey(entities, key));
+    // For every "raw" attribute on the other resource, we merge into the
+    // resource, but check for entity conflicts from previous entities.
+    ArrayList<Entity> conflicts = new ArrayList<>();
+    if (!additional.isEmpty()) {
+      additional.forEach(
+          (key, value) -> {
+            for (Entity e : entities) {
+              if (e.getId().asMap().keySet().contains(key)
+                  || e.getDescription().asMap().keySet().contains(key)) {
+                // Remove the entity and push all attributes as raw,
+                // we have an override.
+                conflicts.add(e);
+                result.putAll(e.getId()).putAll(e.getDescription());
+              }
+            }
+            result.put((AttributeKey<Object>) key, value);
+          });
+    }
+    return RawAttributeMergeResult.create(result.build(), conflicts);
+  }
 
   /**
    * Merges entities according to specification rules.
