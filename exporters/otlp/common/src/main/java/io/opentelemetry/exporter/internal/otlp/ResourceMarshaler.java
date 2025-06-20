@@ -38,8 +38,9 @@ public final class ResourceMarshaler extends MarshalerWithSize {
       RealResourceMarshaler realMarshaler =
           new RealResourceMarshaler(
               KeyValueMarshaler.createForAttributes(resource.getAttributes()),
-              // TODO(jsuereth): This will support EntityRef in the future.
-              new EntityRefMarshaler[] {});
+              resource.getEntities().stream()
+                  .map(EntityRefMarshaler::createForEntity)
+                  .toArray(MarshalerWithSize[]::new));
 
       ByteArrayOutputStream binaryBos =
           new ByteArrayOutputStream(realMarshaler.getBinarySerializedSize());

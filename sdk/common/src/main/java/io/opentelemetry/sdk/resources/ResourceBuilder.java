@@ -8,7 +8,14 @@ package io.opentelemetry.sdk.resources;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.resources.internal.Entity;
+import io.opentelemetry.sdk.resources.internal.EntityUtil;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /**
@@ -20,6 +27,7 @@ import javax.annotation.Nullable;
 public class ResourceBuilder {
 
   private final AttributesBuilder attributesBuilder = Attributes.builder();
+  private final List<Entity> entities = new ArrayList<>();
   @Nullable private String schemaUrl;
 
   /**
@@ -194,6 +202,32 @@ public class ResourceBuilder {
 
   /** Create the {@link Resource} from this. */
   public Resource build() {
-    return Resource.create(attributesBuilder.build(), schemaUrl);
+    // What checks should we do on "real" resource here?
+    // Derive schemaUrl from entitiy, if able.
+    if (schemaUrl == null) {
+      Set<String> entitySchemas =
+          entities.stream().map(Entity::getSchemaUrl).collect(Collectors.toSet());
+      if (entitySchemas.size() == 1) {
+        // Updated Entities use same schema, we can preserve it.
+        schemaUrl = entitySchemas.iterator().next();
+      }
+    }
+
+    // TODO - here we deal with conflicts between entities and raw attributes.
+    // When adding an entity, we remove any raw attributes it may conflict with.
+    this.attributesBuilder.removeIf(key -> EntityUtil.hasAttributeKey(this.entities, key));
+    return Resource.create(attributesBuilder.build(), schemaUrl, entities);
+  }
+
+  /** Appends a new entity on to the end of the list of entities. */
+  public ResourceBuilder add(Entity e) {
+    this.entities.add(e);
+    return this;
+  }
+
+  /** Appends a new collection of entities on to the end of the list of entities. */
+  public ResourceBuilder addAll(Collection<Entity> entities) {
+    this.entities.addAll(entities);
+    return this;
   }
 }

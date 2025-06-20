@@ -18,7 +18,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-public abstract class SdkEntity implements Entity {
+abstract class SdkEntity implements Entity {
   /**
    * Returns a {@link Entity}.
    *

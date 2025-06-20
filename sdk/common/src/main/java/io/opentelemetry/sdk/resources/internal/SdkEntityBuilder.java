@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class SdkEntityBuilder implements EntityBuilder {
+final class SdkEntityBuilder implements EntityBuilder {
   private final String entityType;
   private final AttributesBuilder descriptionBuilder;
   private final AttributesBuilder idBuilder;

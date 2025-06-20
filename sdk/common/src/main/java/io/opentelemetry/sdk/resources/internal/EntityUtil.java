@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.resources.internal;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,7 +30,8 @@ public final class EntityUtil {
   private EntityUtil() {}
 
   /** Returns true if any entity in the collection has the attribute key, in id or description. */
-  static final <T> boolean hasAttributeKey(Collection<Entity> entities, AttributeKey<T> key) {
+  public static final <T> boolean hasAttributeKey(
+      Collection<Entity> entities, AttributeKey<T> key) {
     return entities.stream()
         .anyMatch(
             e -> e.getId().asMap().containsKey(key) || e.getDescription().asMap().containsKey(key));
@@ -177,5 +179,31 @@ public final class EntityUtil {
       }
     }
     return entities.values();
+  }
+
+  /**
+   * Returns a new, merged {@link Resource} by merging the {@code base} {@code Resource} with the
+   * {@code next} {@code Resource}. In case of a collision, the "next" {@code Resource} takes
+   * precedence.
+   *
+   * @param base the {@code Resource} into which we merge new values.
+   * @param next the {@code Resource} that will be merged with {@code base}.
+   * @return the newly merged {@code Resource}.
+   */
+  public static Resource merge(Resource base, @Nullable Resource next) {
+    if (next == null || next == Resource.empty()) {
+      return base;
+    }
+    // Merge Algorithm from
+    // https://github.com/open-telemetry/opentelemetry-specification/blob/main/oteps/entities/0264-resource-and-entities.md#entity-merging-and-resource
+    Collection<Entity> entities = EntityUtil.mergeEntities(base.getEntities(), next.getEntities());
+    RawAttributeMergeResult attributeResult =
+        EntityUtil.mergeRawAttributes(base.getRawAttributes(), next.getRawAttributes(), entities);
+    // Remove entiites that are conflicting with raw attributes, and therefore in an unknown state.
+    entities.removeAll(attributeResult.getConflicts());
+    // Now figure out schema url for overall resource.
+    String schemaUrl =
+        EntityUtil.mergeResourceSchemaUrl(entities, base.getSchemaUrl(), next.getSchemaUrl());
+    return Resource.create(attributeResult.getAttributes(), schemaUrl, entities);
   }
 }
