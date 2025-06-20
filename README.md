@@ -176,7 +176,7 @@ Snapshots of the `main` branch are available as follows:
 
 ```groovy
 repositories {
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url 'https://central.sonatype.com/repository/maven-snapshots/' }
 }
 
 dependencies {
@@ -193,8 +193,8 @@ dependencies {
   <project>
     <repositories>
       <repository>
-        <id>oss.sonatype.org-snapshot</id>
-        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        <id>sonatype-snapshot-repository</id>
+        <url>https://central.sonatype.com/repository/maven-snapshots/</url>
       </repository>
     </repositories>
     <dependencyManagement>
