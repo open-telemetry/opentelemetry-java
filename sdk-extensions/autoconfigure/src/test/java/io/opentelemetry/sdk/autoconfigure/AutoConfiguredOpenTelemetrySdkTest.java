@@ -680,51 +680,64 @@ class AutoConfiguredOpenTelemetrySdkTest {
   }
 
   @Test
-  @SuppressWarnings({"unchecked", "FutureReturnValueIgnored"})
-  void test() throws Exception {
-    // Idea of the test:
-    // 1. Thread 1 calls AutoConfiguredOpenTelemetrySdkBuilder#build
-    // 2. It acquires the mutex in GlobalOpenTelemetry.set(Supplier<OpenTelemetry>)
-    // 3. While holding the mutex before the call to GlobalOpenTelemetry.set(OpenTelemetry),
-    //    it spawns Thread 2 which calls GlobalOpenTelemetry.get
-    // 4. We test that Thread 2 does not fail, and that its result is the same OpenTelemetry
-    //    instance embedded in the AutoConfiguredOpenTelemetrySdk
-    SynchronousQueue<OpenTelemetry> gotGetResult = new SynchronousQueue<>();
+  void globalOpenTelemetryLock() throws InterruptedException, ExecutionException, TimeoutException {
+    CountDownLatch autoconfigStarted = new CountDownLatch(1);
+    CountDownLatch completeAutoconfig = new CountDownLatch(1);
+    ExecutorService executorService = Executors.newFixedThreadPool(2);
 
-    try (MockedStatic<GlobalOpenTelemetry> mockGot =
-        Mockito.mockStatic(GlobalOpenTelemetry.class)) {
-      mockGot.when(GlobalOpenTelemetry::get).thenCallRealMethod();
-      mockGot.when(() -> GlobalOpenTelemetry.set(any(Supplier.class))).thenCallRealMethod();
-      mockGot
-          .when(() -> GlobalOpenTelemetry.set(any(OpenTelemetry.class)))
-          .then(
-              invocation -> {
-                CompletableFuture.supplyAsync(GlobalOpenTelemetry::get)
-                    .handle(
-                        (sdk, exc) -> {
-                          if (exc != null) {
-                            Assertions.fail(exc);
-                          } else {
-                            try {
-                              gotGetResult.put(sdk);
-                            } catch (InterruptedException exception) {
-                              Thread.currentThread().interrupt();
-                              Assertions.fail(exception);
-                            }
+    // Submit a future to autoconfigure the SDK and set the result as global. Add a customization
+    // hook which blocks until we say so.
+    CompletableFuture<OpenTelemetrySdk> autoConfiguredOpenTelemetryFuture =
+        CompletableFuture.supplyAsync(
+            () ->
+                builder
+                    .addLoggerProviderCustomizer(
+                        (sdkLoggerProviderBuilder, configProperties) -> {
+                          autoconfigStarted.countDown();
+                          try {
+                            completeAutoconfig.await();
+                          } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
                           }
-                          return null;
-                        });
-                // Give Thread 2 some time to try obtaining the mutex and getting blocked
-                Thread.sleep(500);
-                return invocation.callRealMethod();
-              });
+                          return sdkLoggerProviderBuilder;
+                        })
+                    .setResultAsGlobal()
+                    .build()
+                    .getOpenTelemetrySdk(),
+            executorService);
 
-      AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
-          builder.setResultAsGlobal().build();
+    // Wait for autoconfiguration to enter our callback, then try to get an instance of
+    // GlobalOpenTelemetry. GlobalOpenTelemetry.get() should block until we release the
+    // completeAutoconfig latch and allow autoconfiguration to complete.
+    autoconfigStarted.await();
+    CompletableFuture<OpenTelemetry> globalOpenTelemetryFuture =
+        CompletableFuture.supplyAsync(GlobalOpenTelemetry::get, executorService);
+    Thread.sleep(10);
+    assertThat(globalOpenTelemetryFuture.isDone()).isFalse();
+    assertThat(autoConfiguredOpenTelemetryFuture.isDone()).isFalse();
 
-      assertThat(gotGetResult.poll(3, TimeUnit.SECONDS))
-          .extracting("delegate")
-          .isSameAs(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
+    // Release the latch, allowing autoconfiguration to complete. Confirm that our
+    // GlobalOpenTelemetry.get() future resolved to the same instance as autoconfiguration.
+    completeAutoconfig.countDown();
+    assertThat(unobfuscate(globalOpenTelemetryFuture.get(10, TimeUnit.SECONDS)))
+        .isSameAs(autoConfiguredOpenTelemetryFuture.get(10, TimeUnit.SECONDS));
+
+    // Cleanup
+    executorService.shutdown();
+    autoConfiguredOpenTelemetryFuture.get().shutdown().join(10, TimeUnit.SECONDS);
+    GlobalOpenTelemetry.resetForTest();
+  }
+
+  private static OpenTelemetry unobfuscate(OpenTelemetry openTelemetry) {
+    try {
+      Field delegateField =
+          Class.forName("io.opentelemetry.api.GlobalOpenTelemetry$ObfuscatedOpenTelemetry")
+              .getDeclaredField("delegate");
+      delegateField.setAccessible(true);
+      Object delegate = delegateField.get(openTelemetry);
+      return (OpenTelemetry) delegate;
+    } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException e) {
+      throw new IllegalStateException("Error unobfuscating OpenTelemetry", e);
     }
   }
 }
