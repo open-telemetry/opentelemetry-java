@@ -53,9 +53,11 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
   private final RegisteredReader registeredReader;
   private final MetricDescriptor metricDescriptor;
   private final AggregationTemporality aggregationTemporality;
-  private final Aggregator<T, U> aggregator;
   private final AttributesProcessor attributesProcessor;
   private final MemoryMode memoryMode;
+  private final Aggregator<T, U> originalAggregator;
+
+  private Aggregator<T, U> aggregator;
 
   /**
    * This field is set to 1 less than the actual intended cardinality limit, allowing the last slot
@@ -100,6 +102,7 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
             .getAggregationTemporality(metricDescriptor.getSourceInstrument().getType());
     this.memoryMode = registeredReader.getReader().getMemoryMode();
     this.aggregator = aggregator;
+    this.originalAggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
     this.maxCardinality = maxCardinality - 1;
     this.reusablePointsPool = new ObjectPool<>(aggregator::createReusablePoint);
@@ -307,6 +310,20 @@ public final class AsynchronousMetricStorage<T extends PointData, U extends Exem
           currentPoints.add(value);
         });
     return currentPoints;
+  }
+
+  @Override
+  public void setEnabled(boolean enabled) {
+    if (enabled) {
+      if (aggregator == Aggregator.drop()) {
+        aggregator = originalAggregator;
+      }
+    } else {
+      aggregator = Aggregator.drop();
+
+      aggregatorHandles.clear();
+      lastPoints.clear();
+    }
   }
 
   @Override
