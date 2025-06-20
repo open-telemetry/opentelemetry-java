@@ -191,4 +191,16 @@ class DeclarativeConfigurationCreateTest {
     assertThat(resource.getAttributes().get(AttributeKey.stringKey("service.name")))
         .isEqualTo("TestService");
   }
+
+  @Test
+  void create_defaultResource() {
+    ComponentLoader componentLoader =
+        SpiHelper.serviceComponentLoader(DeclarativeConfigurationCreateTest.class.getClassLoader());
+
+    Resource resource = DeclarativeConfiguration.createResource(null, componentLoader);
+
+    assertThat(resource).isNotNull();
+    assertThat(resource.getAttributes().get(AttributeKey.stringKey("service.name")))
+        .isEqualTo("unknown_service:java");
+  }
 }
