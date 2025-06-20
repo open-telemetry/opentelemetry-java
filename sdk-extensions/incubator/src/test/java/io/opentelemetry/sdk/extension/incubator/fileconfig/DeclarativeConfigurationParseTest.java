@@ -113,7 +113,7 @@ class DeclarativeConfigurationParseTest {
   void parse_KitchenSinkExampleFile() throws IOException {
     OpenTelemetryConfigurationModel expected = new OpenTelemetryConfigurationModel();
 
-    expected.withFileFormat("0.4");
+    expected.withFileFormat("1.0-rc.1");
     expected.withDisabled(false);
     expected.withLogLevel("info");
 
@@ -171,9 +171,9 @@ class DeclarativeConfigurationParseTest {
                             new ExperimentalResourceDetectorModel()
                                 .withAdditionalProperty("host", null),
                             new ExperimentalResourceDetectorModel()
-                                .withAdditionalProperty("os", null),
+                                .withAdditionalProperty("process", null),
                             new ExperimentalResourceDetectorModel()
-                                .withAdditionalProperty("process", null))))
+                                .withAdditionalProperty("service", null))))
             .withSchemaUrl("https://opentelemetry.io/schemas/1.16.0");
     expected.withResource(resource);
 
@@ -705,7 +705,7 @@ class DeclarativeConfigurationParseTest {
       OpenTelemetryConfigurationModel config = DeclarativeConfiguration.parse(configExampleFile);
 
       // General config
-      assertThat(config.getFileFormat()).isEqualTo("0.4");
+      assertThat(config.getFileFormat()).isEqualTo("1.0-rc.1");
       assertThat(config.getResource()).isEqualTo(resource);
       assertThat(config.getAttributeLimits()).isEqualTo(attributeLimits);
       assertThat(config.getPropagator()).isEqualTo(propagator);
@@ -770,7 +770,7 @@ class DeclarativeConfigurationParseTest {
   @Test
   void parse_nullValuesParsedToEmptyObjects() {
     String objectPlaceholderString =
-        "file_format: \"0.4\"\n"
+        "file_format: \"1.0-rc.1\"\n"
             + "tracer_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -788,7 +788,7 @@ class DeclarativeConfigurationParseTest {
             new ByteArrayInputStream(objectPlaceholderString.getBytes(StandardCharsets.UTF_8)));
 
     String noOjbectPlaceholderString =
-        "file_format: \"0.4\"\n"
+        "file_format: \"1.0-rc.1\"\n"
             + "tracer_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -986,7 +986,7 @@ class DeclarativeConfigurationParseTest {
   @Test
   void read_WithEnvironmentVariables() {
     String yaml =
-        "file_format: \"0.4\"\n"
+        "file_format: \"1.0-rc.1\"\n"
             + "tracer_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -1005,7 +1005,7 @@ class DeclarativeConfigurationParseTest {
     assertThat(model)
         .isEqualTo(
             new OpenTelemetryConfigurationModel()
-                .withFileFormat("0.4")
+                .withFileFormat("1.0-rc.1")
                 .withTracerProvider(
                     new TracerProviderModel()
                         .withProcessors(
