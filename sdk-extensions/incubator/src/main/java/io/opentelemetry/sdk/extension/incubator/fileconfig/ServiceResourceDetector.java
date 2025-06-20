@@ -10,7 +10,9 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
 import java.util.Collections;
+import java.util.UUID;
 
 public class ServiceResourceDetector implements ComponentProvider<Resource> {
   @Override
@@ -25,11 +27,16 @@ public class ServiceResourceDetector implements ComponentProvider<Resource> {
 
   @Override
   public Resource create(DeclarativeConfigProperties config) {
+    ResourceBuilder builder = Resource.builder();
+
     ConfigProperties properties = DefaultConfigProperties.create(Collections.emptyMap());
     String serviceName = properties.getString("otel.service.name");
     if (serviceName != null) {
-      return Resource.builder().put("service.name", serviceName).build();
+      builder.put("service.name", serviceName).build();
     }
-    return Resource.empty();
+
+    builder.put("service.instance.id", UUID.randomUUID().toString());
+
+    return builder.build();
   }
 }
