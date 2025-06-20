@@ -1,11 +1,5 @@
 Comparing source compatibility of opentelemetry-sdk-common-1.52.0-SNAPSHOT.jar against opentelemetry-sdk-common-1.51.0.jar
-**** MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.resources.Resource  (not serializable)
+***  MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.resources.Resource  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.resources.Resource create(io.opentelemetry.api.common.Attributes, java.lang.String, java.util.Collection<io.opentelemetry.sdk.resources.internal.Entity>)
 	***  MODIFIED METHOD: PUBLIC NON_ABSTRACT (<- ABSTRACT) io.opentelemetry.api.common.Attributes getAttributes()
-	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.Collection<io.opentelemetry.sdk.resources.internal.Entity> getEntities()
-	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.common.Attributes getRawAttributes()
-***  MODIFIED CLASS: PUBLIC io.opentelemetry.sdk.resources.ResourceBuilder  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder add(io.opentelemetry.sdk.resources.internal.Entity)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder addAll(java.util.Collection<io.opentelemetry.sdk.resources.internal.Entity>)

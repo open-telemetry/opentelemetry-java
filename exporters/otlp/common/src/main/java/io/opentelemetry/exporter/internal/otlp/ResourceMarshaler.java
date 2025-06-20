@@ -10,6 +10,7 @@ import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.resource.v1.internal.Resource;
+import io.opentelemetry.sdk.resources.internal.EntityUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -38,7 +39,7 @@ public final class ResourceMarshaler extends MarshalerWithSize {
       RealResourceMarshaler realMarshaler =
           new RealResourceMarshaler(
               KeyValueMarshaler.createForAttributes(resource.getAttributes()),
-              resource.getEntities().stream()
+              EntityUtil.getEntities(resource).stream()
                   .map(EntityRefMarshaler::createForEntity)
                   .toArray(MarshalerWithSize[]::new));
 
