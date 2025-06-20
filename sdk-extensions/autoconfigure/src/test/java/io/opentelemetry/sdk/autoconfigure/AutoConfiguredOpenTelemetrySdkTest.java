@@ -58,6 +58,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collections;
@@ -65,7 +66,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -673,5 +680,67 @@ class AutoConfiguredOpenTelemetrySdkTest {
     verify(meterProvider).close();
 
     logs.assertContains("Error closing io.opentelemetry.sdk.trace.SdkTracerProvider: Error!");
+  }
+
+  @Test
+  void globalOpenTelemetryLock() throws InterruptedException, ExecutionException, TimeoutException {
+    CountDownLatch autoconfigStarted = new CountDownLatch(1);
+    CountDownLatch completeAutoconfig = new CountDownLatch(1);
+    ExecutorService executorService = Executors.newFixedThreadPool(2);
+
+    // Submit a future to autoconfigure the SDK and set the result as global. Add a customization
+    // hook which blocks until we say so.
+    CompletableFuture<OpenTelemetrySdk> autoConfiguredOpenTelemetryFuture =
+        CompletableFuture.supplyAsync(
+            () ->
+                builder
+                    .addLoggerProviderCustomizer(
+                        (sdkLoggerProviderBuilder, configProperties) -> {
+                          autoconfigStarted.countDown();
+                          try {
+                            completeAutoconfig.await();
+                          } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                          }
+                          return sdkLoggerProviderBuilder;
+                        })
+                    .setResultAsGlobal()
+                    .build()
+                    .getOpenTelemetrySdk(),
+            executorService);
+
+    // Wait for autoconfiguration to enter our callback, then try to get an instance of
+    // GlobalOpenTelemetry. GlobalOpenTelemetry.get() should block until we release the
+    // completeAutoconfig latch and allow autoconfiguration to complete.
+    autoconfigStarted.await();
+    CompletableFuture<OpenTelemetry> globalOpenTelemetryFuture =
+        CompletableFuture.supplyAsync(GlobalOpenTelemetry::get, executorService);
+    Thread.sleep(10);
+    assertThat(globalOpenTelemetryFuture.isDone()).isFalse();
+    assertThat(autoConfiguredOpenTelemetryFuture.isDone()).isFalse();
+
+    // Release the latch, allowing autoconfiguration to complete. Confirm that our
+    // GlobalOpenTelemetry.get() future resolved to the same instance as autoconfiguration.
+    completeAutoconfig.countDown();
+    assertThat(unobfuscate(globalOpenTelemetryFuture.get(10, TimeUnit.SECONDS)))
+        .isSameAs(autoConfiguredOpenTelemetryFuture.get(10, TimeUnit.SECONDS));
+
+    // Cleanup
+    executorService.shutdown();
+    autoConfiguredOpenTelemetryFuture.get().shutdown().join(10, TimeUnit.SECONDS);
+    GlobalOpenTelemetry.resetForTest();
+  }
+
+  private static OpenTelemetry unobfuscate(OpenTelemetry openTelemetry) {
+    try {
+      Field delegateField =
+          Class.forName("io.opentelemetry.api.GlobalOpenTelemetry$ObfuscatedOpenTelemetry")
+              .getDeclaredField("delegate");
+      delegateField.setAccessible(true);
+      Object delegate = delegateField.get(openTelemetry);
+      return (OpenTelemetry) delegate;
+    } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException e) {
+      throw new IllegalStateException("Error unobfuscating OpenTelemetry", e);
+    }
   }
 }
