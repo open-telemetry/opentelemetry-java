@@ -9,11 +9,16 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -28,6 +33,87 @@ public final class EntityUtil {
   private static final Logger logger = Logger.getLogger(EntityUtil.class.getName());
 
   private EntityUtil() {}
+
+  /** Appends a new entity on to the end of the list of entities. */
+  public static final ResourceBuilder addEntity(ResourceBuilder rb, Entity e) {
+    try {
+      Method method = Resource.class.getDeclaredMethod("add", Entity.class);
+      if (method != null) {
+        method.setAccessible(true);
+        method.invoke(rb, e);
+      }
+    } catch (NoSuchMethodException nme) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", nme);
+    } catch (IllegalAccessException iae) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", iae);
+    } catch (InvocationTargetException ite) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", ite);
+    }
+    return rb;
+  }
+
+  /** Appends a new collection of entities on to the end of the list of entities. */
+  public static final ResourceBuilder addAllEntity(ResourceBuilder rb, Collection<Entity> e) {
+    try {
+      Method method = Resource.class.getDeclaredMethod("addAll", Collection.class);
+      if (method != null) {
+        method.setAccessible(true);
+        method.invoke(rb, e);
+      }
+    } catch (NoSuchMethodException nme) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", nme);
+    } catch (IllegalAccessException iae) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", iae);
+    } catch (InvocationTargetException ite) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", ite);
+    }
+    return rb;
+  }
+
+  /**
+   * Returns a collectoion of associated entities.
+   *
+   * @return a collection of entities.
+   */
+  @SuppressWarnings("unchecked")
+  public static final Collection<Entity> getEntities(Resource r) {
+    try {
+      Method method = Resource.class.getDeclaredMethod("getEntities");
+      if (method != null) {
+        method.setAccessible(true);
+        return (Collection<Entity>) method.invoke(r);
+      }
+    } catch (NoSuchMethodException nme) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", nme);
+    } catch (IllegalAccessException iae) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", iae);
+    } catch (InvocationTargetException ite) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", ite);
+    }
+    return Collections.emptyList();
+  }
+
+  /**
+   * Returns a map of attributes that describe the resource, not associated with entites.
+   *
+   * @return a map of attributes.
+   */
+  public static final Attributes getRawAttributes(Resource r) {
+    try {
+      Method method = Resource.class.getDeclaredMethod("getRawAttributes");
+      if (method != null) {
+        method.setAccessible(true);
+        return (Attributes) method.invoke(r);
+      }
+    } catch (NoSuchMethodException nme) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", nme);
+    } catch (IllegalAccessException iae) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", iae);
+    } catch (InvocationTargetException ite) {
+      logger.log(Level.WARNING, "Attempting to use entities with unsupported resource", ite);
+    }
+    return Attributes.empty();
+  }
 
   /** Returns true if any entity in the collection has the attribute key, in id or description. */
   public static final <T> boolean hasAttributeKey(
@@ -196,9 +282,9 @@ public final class EntityUtil {
     }
     // Merge Algorithm from
     // https://github.com/open-telemetry/opentelemetry-specification/blob/main/oteps/entities/0264-resource-and-entities.md#entity-merging-and-resource
-    Collection<Entity> entities = EntityUtil.mergeEntities(base.getEntities(), next.getEntities());
+    Collection<Entity> entities = EntityUtil.mergeEntities(getEntities(base), getEntities(next));
     RawAttributeMergeResult attributeResult =
-        EntityUtil.mergeRawAttributes(base.getRawAttributes(), next.getRawAttributes(), entities);
+        EntityUtil.mergeRawAttributes(getRawAttributes(base), getRawAttributes(next), entities);
     // Remove entiites that are conflicting with raw attributes, and therefore in an unknown state.
     entities.removeAll(attributeResult.getConflicts());
     // Now figure out schema url for overall resource.
