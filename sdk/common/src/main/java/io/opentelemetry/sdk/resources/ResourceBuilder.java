@@ -220,13 +220,13 @@ public class ResourceBuilder {
   }
 
   /** Appends a new entity on to the end of the list of entities. */
-  public ResourceBuilder add(Entity e) {
+  ResourceBuilder add(Entity e) {
     this.entities.add(e);
     return this;
   }
 
   /** Appends a new collection of entities on to the end of the list of entities. */
-  public ResourceBuilder addAll(Collection<Entity> entities) {
+  ResourceBuilder addAll(Collection<Entity> entities) {
     this.entities.addAll(entities);
     return this;
   }

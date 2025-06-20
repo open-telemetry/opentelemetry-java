@@ -135,14 +135,14 @@ public abstract class Resource {
    *
    * @return a map of attributes.
    */
-  public abstract Attributes getRawAttributes();
+  abstract Attributes getRawAttributes();
 
   /**
    * Returns a collectoion of associated entities.
    *
    * @return a collection of entities.
    */
-  public abstract Collection<Entity> getEntities();
+  abstract Collection<Entity> getEntities();
 
   /**
    * Returns a map of attributes that describe the resource.
