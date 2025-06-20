@@ -202,7 +202,7 @@ class EntityUtilTest {
 
   @Test
   void testSchemaUrlMerge_entities_different_url() {
-    // When entities have conflciting schema urls, we cannot fill out resource schema url,
+    // When entities have conflicting schema urls, we cannot fill out resource schema url,
     // no matter what.
     String result =
         EntityUtil.mergeResourceSchemaUrl(
