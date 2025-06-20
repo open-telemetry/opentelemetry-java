@@ -11,8 +11,11 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.common.internal.OtelVersion;
 import io.opentelemetry.sdk.resources.internal.AttributeCheckUtil;
+import io.opentelemetry.sdk.resources.internal.Entity;
+import io.opentelemetry.sdk.resources.internal.EntityUtil;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -23,8 +26,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 public abstract class Resource {
-  private static final Logger logger = Logger.getLogger(Resource.class.getName());
-
   private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
   private static final AttributeKey<String> TELEMETRY_SDK_LANGUAGE =
       AttributeKey.stringKey("telemetry.sdk.language");
@@ -100,8 +101,24 @@ public abstract class Resource {
    *     ASCII string or exceed {@link AttributeCheckUtil#MAX_LENGTH} characters.
    */
   public static Resource create(Attributes attributes, @Nullable String schemaUrl) {
+    return create(attributes, schemaUrl, Collections.emptyList());
+  }
+
+  /**
+   * Returns a {@link Resource}.
+   *
+   * @param attributes a map of {@link Attributes} that describe the resource.
+   * @param schemaUrl The URL of the OpenTelemetry schema used to create this Resource.
+   * @param entities The set of detected {@link Entity}s that participate in this resource.
+   * @return a {@code Resource}.
+   * @throws NullPointerException if {@code attributes} is null.
+   * @throws IllegalArgumentException if attribute key or attribute value is not a valid printable
+   *     ASCII string or exceed {@link AttributeCheckUtil#MAX_LENGTH} characters.
+   */
+  public static Resource create(
+      Attributes attributes, @Nullable String schemaUrl, Collection<Entity> entities) {
     AttributeCheckUtil.checkAttributes(Objects.requireNonNull(attributes, "attributes"));
-    return new AutoValue_Resource(schemaUrl, attributes);
+    return new AutoValue_Resource(schemaUrl, attributes, entities);
   }
 
   /**
@@ -114,11 +131,37 @@ public abstract class Resource {
   public abstract String getSchemaUrl();
 
   /**
+   * Returns a map of attributes that describe the resource, not associated with entites.
+   *
+   * @return a map of attributes.
+   */
+  public abstract Attributes getRawAttributes();
+
+  /**
+   * Returns a collectoion of associated entities.
+   *
+   * @return a collection of entities.
+   */
+  public abstract Collection<Entity> getEntities();
+
+  /**
    * Returns a map of attributes that describe the resource.
    *
    * @return a map of attributes.
    */
-  public abstract Attributes getAttributes();
+  // @Memoized - This breaks nullaway.
+  public Attributes getAttributes() {
+    AttributesBuilder result = Attributes.builder();
+    getEntities()
+        .forEach(
+            e -> {
+              result.putAll(e.getId());
+              result.putAll(e.getDescription());
+            });
+    // In merge rules, raw comes last, so we return these last.
+    result.putAll(getRawAttributes());
+    return result.build();
+  }
 
   /**
    * Returns the value for a given resource attribute key.
@@ -138,32 +181,7 @@ public abstract class Resource {
    * @return the newly merged {@code Resource}.
    */
   public Resource merge(@Nullable Resource other) {
-    if (other == null || other == EMPTY) {
-      return this;
-    }
-
-    AttributesBuilder attrBuilder = Attributes.builder();
-    attrBuilder.putAll(this.getAttributes());
-    attrBuilder.putAll(other.getAttributes());
-
-    if (other.getSchemaUrl() == null) {
-      return create(attrBuilder.build(), getSchemaUrl());
-    }
-    if (getSchemaUrl() == null) {
-      return create(attrBuilder.build(), other.getSchemaUrl());
-    }
-    if (!other.getSchemaUrl().equals(getSchemaUrl())) {
-      logger.info(
-          "Attempting to merge Resources with different schemaUrls. "
-              + "The resulting Resource will have no schemaUrl assigned. Schema 1: "
-              + getSchemaUrl()
-              + " Schema 2: "
-              + other.getSchemaUrl());
-      // currently, behavior is undefined if schema URLs don't match. In the future, we may
-      // apply schema transformations if possible.
-      return create(attrBuilder.build(), null);
-    }
-    return create(attrBuilder.build(), getSchemaUrl());
+    return EntityUtil.merge(this, other);
   }
 
   /**
