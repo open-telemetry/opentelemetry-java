@@ -9,6 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -245,5 +246,29 @@ class EntityUtilTest {
         .containsEntry("a", 1)
         .containsEntry("b", 2)
         .containsEntry("c", 2);
+  }
+
+  @Test
+  void testAddEntity_reflection() {
+    Resource result =
+        EntityUtil.addEntity(
+                Resource.builder(), Entity.builder("a").withId(id -> id.put("a", 1)).build())
+            .build();
+    assertThat(EntityUtil.getEntities(result))
+        .satisfiesExactlyInAnyOrder(e -> assertThat(e).hasType("a"));
+  }
+
+  @Test
+  void testAddAllEntity_reflection() {
+    Resource result =
+        EntityUtil.addAllEntity(
+                Resource.builder(),
+                Arrays.asList(
+                    Entity.builder("a").withId(id -> id.put("a", 1)).build(),
+                    Entity.builder("b").withId(id -> id.put("b", 1)).build()))
+            .build();
+    assertThat(EntityUtil.getEntities(result))
+        .satisfiesExactlyInAnyOrder(
+            e -> assertThat(e).hasType("a"), e -> assertThat(e).hasType("b"));
   }
 }
