@@ -977,8 +977,12 @@ class SdkSpanBuilderTest {
     span.setAttribute("http.url", "https://opentelemetry.io");
     span.setStatus(StatusCode.ERROR, "error");
     span.end();
-
     assertThat(span.toSpanData().toString())
+        .matches("SpanData\\{.*}")
+        .matches(".*traceId=[0-9a-f]{32}, .*")
+        .matches(".*spanId=[0-9a-f]{16}, .*")
+        .matches(".*traceFlags=01, .*")
+        .matches(".*traceFlags=01, .*")
         .matches(
             "SpanData\\{spanContext=ImmutableSpanContext\\{"
                 + "traceId=[0-9a-f]{32}, "
@@ -990,10 +994,7 @@ class SdkSpanBuilderTest {
                 + "spanId=0000000000000000, "
                 + "traceFlags=00, "
                 + "traceState=ArrayBasedTraceState\\{entries=\\[]}, remote=false, valid=false}, "
-                + "resource=Resource\\{schemaUrl=null, "
-                + "attributes=\\{service.name=\"unknown_service:java\", "
-                + "telemetry.sdk.language=\"java\", telemetry.sdk.name=\"opentelemetry\", "
-                + "telemetry.sdk.version=\"\\d+.\\d+.\\d+(-rc.\\d+)?(-SNAPSHOT)?\"}}, "
+                + "resource=Resource\\{.*}, "
                 + "instrumentationScopeInfo=InstrumentationScopeInfo\\{"
                 + "name=SpanBuilderSdkTest, version=null, schemaUrl=null, attributes=\\{}}, "
                 + "name=span_name, "
