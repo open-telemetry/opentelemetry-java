@@ -22,7 +22,6 @@ import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.DefaultExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.resources.Resource;
@@ -298,7 +297,7 @@ class SdkTracerProviderTest {
             .setSpanLimits(
                 SpanLimits.builder().setMaxAttributeValueLength(maxAttributeLength).build());
     ExceptionAttributeResolver exceptionAttributeResolver =
-        spy(DefaultExceptionAttributeResolver.getInstance());
+        spy(ExceptionAttributeResolver.getDefault());
     SdkTracerProviderUtil.setExceptionAttributeResolver(builder, exceptionAttributeResolver);
 
     Exception exception = new Exception("error");
