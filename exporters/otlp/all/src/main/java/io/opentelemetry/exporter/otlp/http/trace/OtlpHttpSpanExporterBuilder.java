@@ -42,6 +42,7 @@ public final class OtlpHttpSpanExporterBuilder {
 
   private final HttpExporterBuilder<Marshaler> delegate;
   private MemoryMode memoryMode;
+  private ClassLoader serviceClassLoader = OtlpHttpSpanExporterBuilder.class.getClassLoader();
 
   OtlpHttpSpanExporterBuilder(HttpExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
@@ -117,7 +118,8 @@ public final class OtlpHttpSpanExporterBuilder {
    */
   public OtlpHttpSpanExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
-    Compressor compressor = CompressorUtil.validateAndResolveCompressor(compressionMethod);
+    Compressor compressor =
+        CompressorUtil.validateAndResolveCompressor(compressionMethod, serviceClassLoader);
     delegate.setCompression(compressor);
     return this;
   }
@@ -252,6 +254,7 @@ public final class OtlpHttpSpanExporterBuilder {
    */
   public OtlpHttpSpanExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
     requireNonNull(serviceClassLoader, "serviceClassLoader");
+    this.serviceClassLoader = serviceClassLoader;
     delegate.setServiceClassLoader(serviceClassLoader);
     return this;
   }

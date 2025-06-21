@@ -51,6 +51,7 @@ public final class OtlpGrpcLogRecordExporterBuilder {
   // Visible for testing
   final GrpcExporterBuilder<Marshaler> delegate;
   private MemoryMode memoryMode;
+  private ClassLoader serviceClassLoader = OtlpGrpcLogRecordExporterBuilder.class.getClassLoader();
 
   OtlpGrpcLogRecordExporterBuilder(GrpcExporterBuilder<Marshaler> delegate, MemoryMode memoryMode) {
     this.delegate = delegate;
@@ -150,7 +151,8 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    */
   public OtlpGrpcLogRecordExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
-    Compressor compressor = CompressorUtil.validateAndResolveCompressor(compressionMethod);
+    Compressor compressor =
+        CompressorUtil.validateAndResolveCompressor(compressionMethod, serviceClassLoader);
     delegate.setCompression(compressor);
     return this;
   }
@@ -280,6 +282,7 @@ public final class OtlpGrpcLogRecordExporterBuilder {
    */
   public OtlpGrpcLogRecordExporterBuilder setServiceClassLoader(ClassLoader serviceClassLoader) {
     requireNonNull(serviceClassLoader, "serviceClassLoader");
+    this.serviceClassLoader = serviceClassLoader;
     delegate.setServiceClassLoader(serviceClassLoader);
     return this;
   }

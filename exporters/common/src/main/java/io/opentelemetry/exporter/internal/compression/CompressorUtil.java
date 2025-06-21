@@ -24,7 +24,8 @@ import javax.annotation.Nullable;
  */
 public final class CompressorUtil {
 
-  private static final Map<String, Compressor> compressorRegistry = buildCompressorRegistry();
+  private static final Map<String, Compressor> compressorRegistry =
+      buildCompressorRegistry(CompressorUtil.class.getClassLoader());
 
   private CompressorUtil() {}
 
@@ -36,8 +37,26 @@ public final class CompressorUtil {
    */
   @Nullable
   public static Compressor validateAndResolveCompressor(String compressionMethod) {
-    Set<String> supportedEncodings = compressorRegistry.keySet();
-    Compressor compressor = compressorRegistry.get(compressionMethod);
+    return validateAndResolveCompressor(compressionMethod, null);
+  }
+
+  /**
+   * Validate that the {@code compressionMethod} is "none" or matches a registered compressor.
+   *
+   * @param compressionMethod the compression method to validate and resolve
+   * @param classLoader the class loader to use for loading SPI implementations, or null to use the
+   *     default
+   * @return {@code null} if {@code compressionMethod} is "none" or the registered compressor
+   * @throws IllegalArgumentException if no match is found
+   */
+  @Nullable
+  public static Compressor validateAndResolveCompressor(
+      String compressionMethod, @Nullable ClassLoader classLoader) {
+    Map<String, Compressor> registry =
+        classLoader == null ? compressorRegistry : buildCompressorRegistry(classLoader);
+
+    Set<String> supportedEncodings = registry.keySet();
+    Compressor compressor = registry.get(compressionMethod);
     checkArgument(
         "none".equals(compressionMethod) || compressor != null,
         "Unsupported compressionMethod. Compression method must be \"none\" or one of: "
@@ -45,10 +64,9 @@ public final class CompressorUtil {
     return compressor;
   }
 
-  private static Map<String, Compressor> buildCompressorRegistry() {
+  private static Map<String, Compressor> buildCompressorRegistry(ClassLoader classLoader) {
     Map<String, Compressor> compressors = new HashMap<>();
-    for (CompressorProvider spi :
-        ServiceLoader.load(CompressorProvider.class, CompressorUtil.class.getClassLoader())) {
+    for (CompressorProvider spi : ServiceLoader.load(CompressorProvider.class, classLoader)) {
       Compressor compressor = spi.getInstance();
       compressors.put(compressor.getEncoding(), compressor);
     }
