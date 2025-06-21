@@ -20,7 +20,7 @@ import java.util.Collections;
  * entity</a>
  */
 public class TelemetrySdkDetector implements EntityDetector {
-  private static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.28.0";
+  private static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.34.0";
   private static final String ENTITY_TYPE = "telemetry.sdk";
   private static final AttributeKey<String> TELEMETRY_SDK_LANGUAGE =
       AttributeKey.stringKey("telemetry.sdk.language");

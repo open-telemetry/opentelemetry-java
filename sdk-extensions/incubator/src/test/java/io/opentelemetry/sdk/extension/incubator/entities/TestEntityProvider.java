@@ -23,7 +23,7 @@ class TestEntityProvider {
         .containsKey("telemetry.sdk.name")
         .containsKey("telemetry.sdk.version");
     assertThat(provider.getResource().getSchemaUrl())
-        .isEqualTo("https://opentelemetry.io/schemas/1.28.0");
+        .isEqualTo("https://opentelemetry.io/schemas/1.34.0");
 
     assertThat(EntityUtil.getEntities(provider.getResource()))
         .satisfiesExactlyInAnyOrder(
