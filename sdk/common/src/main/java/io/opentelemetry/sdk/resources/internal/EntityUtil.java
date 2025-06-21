@@ -37,7 +37,7 @@ public final class EntityUtil {
   /** Appends a new entity on to the end of the list of entities. */
   public static final ResourceBuilder addEntity(ResourceBuilder rb, Entity e) {
     try {
-      Method method = Resource.class.getDeclaredMethod("add", Entity.class);
+      Method method = ResourceBuilder.class.getDeclaredMethod("add", Entity.class);
       if (method != null) {
         method.setAccessible(true);
         method.invoke(rb, e);
@@ -55,7 +55,7 @@ public final class EntityUtil {
   /** Appends a new collection of entities on to the end of the list of entities. */
   public static final ResourceBuilder addAllEntity(ResourceBuilder rb, Collection<Entity> e) {
     try {
-      Method method = Resource.class.getDeclaredMethod("addAll", Collection.class);
+      Method method = ResourceBuilder.class.getDeclaredMethod("addAll", Collection.class);
       if (method != null) {
         method.setAccessible(true);
         method.invoke(rb, e);
