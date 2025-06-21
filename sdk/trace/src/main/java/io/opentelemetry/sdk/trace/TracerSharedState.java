@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.internal.metrics.SpanMetrics;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.List;
 import java.util.function.Supplier;
@@ -28,6 +29,7 @@ final class TracerSharedState {
   private final Sampler sampler;
   private final SpanProcessor activeSpanProcessor;
   private final ExceptionAttributeResolver exceptionAttributeResolver;
+  private final SpanMetrics spanMetrics;
 
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
@@ -38,7 +40,8 @@ final class TracerSharedState {
       Supplier<SpanLimits> spanLimitsSupplier,
       Sampler sampler,
       List<SpanProcessor> spanProcessors,
-      ExceptionAttributeResolver exceptionAttributeResolver) {
+      ExceptionAttributeResolver exceptionAttributeResolver,
+      SpanMetrics spanMetrics) {
     this.clock = clock;
     this.idGenerator = idGenerator;
     this.idGeneratorSafeToSkipIdValidation = idGenerator instanceof RandomIdGenerator;
@@ -47,6 +50,7 @@ final class TracerSharedState {
     this.sampler = sampler;
     this.activeSpanProcessor = SpanProcessor.composite(spanProcessors);
     this.exceptionAttributeResolver = exceptionAttributeResolver;
+    this.spanMetrics = spanMetrics;
   }
 
   Clock getClock() {
@@ -82,6 +86,10 @@ final class TracerSharedState {
    */
   SpanProcessor getActiveSpanProcessor() {
     return activeSpanProcessor;
+  }
+
+  SpanMetrics getSpanMetrics() {
+    return spanMetrics;
   }
 
   /**

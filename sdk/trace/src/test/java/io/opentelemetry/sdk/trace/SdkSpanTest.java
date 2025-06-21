@@ -49,6 +49,7 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.internal.ExtendedSpanProcessor;
+import io.opentelemetry.sdk.trace.internal.metrics.SpanMetrics;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Duration;
@@ -104,6 +105,7 @@ class SdkSpanTest {
   private Attributes expectedAttributes;
   private final LinkData link = LinkData.create(spanContext);
   @Mock private ExtendedSpanProcessor spanProcessor;
+  @Mock private SpanMetrics.Recording metricsRecording;
 
   private TestClock testClock;
 
@@ -1042,7 +1044,8 @@ class SdkSpanTest {
             null,
             null, // exercises the fault-in path
             0,
-            0);
+            0,
+            metricsRecording);
     SdkSpan linkedSpan = createTestSpan(SpanKind.INTERNAL);
     span.addLink(linkedSpan.getSpanContext());
 
@@ -1388,7 +1391,8 @@ class SdkSpanTest {
                 spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength()),
             Collections.emptyList(),
             1,
-            0);
+            0,
+            metricsRecording);
     verify(spanProcessor, never()).onStart(any(), any());
 
     span.end();
@@ -1526,7 +1530,8 @@ class SdkSpanTest {
             attributes,
             linksCopy,
             linksCopy.size(),
-            0);
+            0,
+            metricsRecording);
     Mockito.verify(spanProcessor, Mockito.times(1)).onStart(Context.root(), span);
     return span;
   }
@@ -1614,7 +1619,8 @@ class SdkSpanTest {
             attributesWithCapacity,
             Collections.singletonList(link1),
             1,
-            0);
+            0,
+            metricsRecording);
     long startEpochNanos = clock.now();
     clock.advance(Duration.ofMillis(4));
     long firstEventEpochNanos = clock.now();

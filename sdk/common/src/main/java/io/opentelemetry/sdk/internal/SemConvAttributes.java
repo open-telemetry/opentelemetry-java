@@ -25,6 +25,9 @@ public class SemConvAttributes {
       AttributeKey.stringKey("otel.component.name");
   public static final AttributeKey<String> ERROR_TYPE = AttributeKey.stringKey("error.type");
 
+  public static final AttributeKey<String> OTEL_SPAN_SAMPLING_RESULT =
+      AttributeKey.stringKey("otel.span.sampling_result");
+
   public static final AttributeKey<String> SERVER_ADDRESS =
       AttributeKey.stringKey("server.address");
   public static final AttributeKey<Long> SERVER_PORT = AttributeKey.longKey("server.port");

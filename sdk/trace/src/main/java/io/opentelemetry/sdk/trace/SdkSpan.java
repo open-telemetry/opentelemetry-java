@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.internal.ExtendedSpanProcessor;
+import io.opentelemetry.sdk.trace.internal.metrics.SpanMetrics;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -99,6 +100,8 @@ final class SdkSpan implements ReadWriteSpan {
   @GuardedBy("lock")
   private long endEpochNanos;
 
+  private final SpanMetrics.Recording metricRecording;
+
   private enum EndState {
     NOT_ENDED,
     ENDING,
@@ -132,7 +135,8 @@ final class SdkSpan implements ReadWriteSpan {
       @Nullable AttributesMap attributes,
       @Nullable List<LinkData> links,
       int totalRecordedLinks,
-      long startEpochNanos) {
+      long startEpochNanos,
+      SpanMetrics.Recording metricRecording) {
     this.context = context;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.parentSpanContext = parentSpanContext;
@@ -143,6 +147,7 @@ final class SdkSpan implements ReadWriteSpan {
     this.spanProcessor = spanProcessor;
     this.exceptionAttributeResolver = exceptionAttributeResolver;
     this.resource = resource;
+    this.metricRecording = metricRecording;
     this.hasEnded = EndState.NOT_ENDED;
     this.clock = clock;
     this.startEpochNanos = startEpochNanos;
@@ -180,7 +185,8 @@ final class SdkSpan implements ReadWriteSpan {
       @Nullable AttributesMap attributes,
       @Nullable List<LinkData> links,
       int totalRecordedLinks,
-      long userStartEpochNanos) {
+      long userStartEpochNanos,
+      SpanMetrics.Recording metricsRecording) {
     boolean createdAnchoredClock;
     AnchoredClock clock;
     if (parentSpan instanceof SdkSpan) {
@@ -219,7 +225,8 @@ final class SdkSpan implements ReadWriteSpan {
             attributes,
             links,
             totalRecordedLinks,
-            startEpochNanos);
+            startEpochNanos,
+            metricsRecording);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
     if (spanProcessor.isStartRequired()) {
@@ -557,6 +564,7 @@ final class SdkSpan implements ReadWriteSpan {
       spanEndingThread = Thread.currentThread();
       hasEnded = EndState.ENDING;
     }
+    metricRecording.recordSpanEnd();
     if (spanProcessor instanceof ExtendedSpanProcessor) {
       ExtendedSpanProcessor extendedSpanProcessor = (ExtendedSpanProcessor) spanProcessor;
       if (extendedSpanProcessor.isOnEndingRequired()) {
