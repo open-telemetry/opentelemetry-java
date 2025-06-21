@@ -92,6 +92,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -855,6 +856,27 @@ class DeclarativeConfigurationParseTest {
                                 .withTraceIdRatioBased(new TraceIdRatioBasedSamplerModel()))));
   }
 
+  @Test
+  void parse_quotedInput() {
+    String yaml =
+        "resource:\n"
+            + "  attributes:\n"
+            + "    - name: single_quote\n"
+            + "      value: '\"single\"'\n"
+            + "    - name: double_quote\n"
+            + "      value: \"\\\"double\\\"\"";
+
+    OpenTelemetryConfigurationModel model =
+        DeclarativeConfiguration.parse(
+            new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
+
+    Assertions.assertNotNull(model.getResource());
+    assertThat(model.getResource().getAttributes())
+        .containsExactly(
+            new AttributeNameValueModel().withName("single_quote").withValue("\"single\""),
+            new AttributeNameValueModel().withName("double_quote").withValue("\"double\""));
+  }
+
   @ParameterizedTest
   @MethodSource("coreSchemaValuesArgs")
   void coreSchemaValues(String rawYaml, Object expectedYamlResult) {
@@ -928,7 +950,7 @@ class DeclarativeConfigurationParseTest {
         // Undefined / empty environment variable
         Arguments.of("key1: ${EMPTY_STR}\n", mapOf(entry("key1", null))),
         Arguments.of("key1: ${STR_3}\n", mapOf(entry("key1", null))),
-        Arguments.of("key1: ${STR_1} ${STR_3}\n", mapOf(entry("key1", "value1"))),
+        Arguments.of("key1: ${STR_1} ${STR_3}\n", mapOf(entry("key1", "value1 "))),
         // Environment variable keys must match pattern: [a-zA-Z_]+[a-zA-Z0-9_]*
         Arguments.of("key1: ${VAR&}\n", mapOf(entry("key1", "${VAR&}"))),
         // Environment variable substitution only takes place in scalar values of maps
@@ -938,13 +960,23 @@ class DeclarativeConfigurationParseTest {
             mapOf(entry("key1", mapOf(entry("${STR_1}", "value1"))))),
         Arguments.of(
             "key1:\n - ${STR_1}\n", mapOf(entry("key1", Collections.singletonList("${STR_1}")))),
-        // Quoted environment variables
+        // Double-quoted environment variables
         Arguments.of("key1: \"${HEX}\"\n", mapOf(entry("key1", "0xdeadbeef"))),
         Arguments.of("key1: \"${STR_1}\"\n", mapOf(entry("key1", "value1"))),
         Arguments.of("key1: \"${EMPTY_STR}\"\n", mapOf(entry("key1", ""))),
         Arguments.of("key1: \"${BOOL}\"\n", mapOf(entry("key1", "true"))),
         Arguments.of("key1: \"${INT}\"\n", mapOf(entry("key1", "1"))),
         Arguments.of("key1: \"${FLOAT}\"\n", mapOf(entry("key1", "1.1"))),
+        Arguments.of(
+            "key1: \"${HEX} ${BOOL} ${INT}\"\n", mapOf(entry("key1", "0xdeadbeef true 1"))),
+        // Single-quoted environment variables
+        Arguments.of("key1: '${HEX}'\n", mapOf(entry("key1", "0xdeadbeef"))),
+        Arguments.of("key1: '${STR_1}'\n", mapOf(entry("key1", "value1"))),
+        Arguments.of("key1: '${EMPTY_STR}'\n", mapOf(entry("key1", ""))),
+        Arguments.of("key1: '${BOOL}'\n", mapOf(entry("key1", "true"))),
+        Arguments.of("key1: '${INT}'\n", mapOf(entry("key1", "1"))),
+        Arguments.of("key1: '${FLOAT}'\n", mapOf(entry("key1", "1.1"))),
+        Arguments.of("key1: '${HEX} ${BOOL} ${INT}'\n", mapOf(entry("key1", "0xdeadbeef true 1"))),
         // Escaped
         Arguments.of("key1: ${FOO}\n", mapOf(entry("key1", "BAR"))),
         Arguments.of("key1: $${FOO}\n", mapOf(entry("key1", "${FOO}"))),
