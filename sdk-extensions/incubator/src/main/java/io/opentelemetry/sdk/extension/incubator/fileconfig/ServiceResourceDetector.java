@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
@@ -15,6 +16,14 @@ import java.util.Collections;
 import java.util.UUID;
 
 public class ServiceResourceDetector implements ComponentProvider<Resource> {
+
+  private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
+  private static final AttributeKey<String> SERVICE_INSTANCE_ID =
+      AttributeKey.stringKey("service.instance.id");
+
+  // multiple calls to this resource provider should return the same value
+  private static final String RANDOM_SERVICE_INSTANCE_ID = UUID.randomUUID().toString();
+
   @Override
   public Class<Resource> getType() {
     return Resource.class;
@@ -32,10 +41,10 @@ public class ServiceResourceDetector implements ComponentProvider<Resource> {
     ConfigProperties properties = DefaultConfigProperties.create(Collections.emptyMap());
     String serviceName = properties.getString("otel.service.name");
     if (serviceName != null) {
-      builder.put("service.name", serviceName).build();
+      builder.put(SERVICE_NAME, serviceName).build();
     }
 
-    builder.put("service.instance.id", UUID.randomUUID().toString());
+    builder.put(SERVICE_INSTANCE_ID, RANDOM_SERVICE_INSTANCE_ID);
 
     return builder.build();
   }

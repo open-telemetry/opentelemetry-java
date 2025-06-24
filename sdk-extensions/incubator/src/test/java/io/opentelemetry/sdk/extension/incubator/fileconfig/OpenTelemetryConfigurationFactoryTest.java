@@ -105,6 +105,8 @@ class OpenTelemetryConfigurationFactoryTest {
         Arguments.of("0.4a", false),
         Arguments.of("foo", false),
         Arguments.of("1.0-rc.a", false),
+        Arguments.of("1.0.0", false),
+        Arguments.of("1.0.3", false),
         // Valid file formats
         Arguments.of("0.4", true),
         Arguments.of("1.0-rc.1", true),

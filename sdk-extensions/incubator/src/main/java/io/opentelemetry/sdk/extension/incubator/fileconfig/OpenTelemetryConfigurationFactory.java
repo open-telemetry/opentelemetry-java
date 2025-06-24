@@ -36,6 +36,8 @@ final class OpenTelemetryConfigurationFactory
       throw new DeclarativeConfigException(
           "Unsupported file format. Supported formats include 0.4, 1.0*");
     }
+    // TODO(jack-berg): log warning if version is not exact match, which may result in unexpected
+    // behavior for experimental properties.
 
     if (Objects.equals(Boolean.TRUE, model.getDisabled())) {
       return builder.build();
