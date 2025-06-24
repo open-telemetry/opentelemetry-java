@@ -39,15 +39,14 @@ final class LinkMarshaler extends MarshalerWithSize {
 
     LinkMarshaler[] linkMarshalers = new LinkMarshaler[items.size()];
     items.forEach(
-        item ->
-            new Consumer<LinkData>() {
-              int index = 0;
+        new Consumer<LinkData>() {
+          int index = 0;
 
-              @Override
-              public void accept(LinkData linkData) {
-                linkMarshalers[index++] = LinkMarshaler.create(linkData);
-              }
-            });
+          @Override
+          public void accept(LinkData linkData) {
+            linkMarshalers[index++] = LinkMarshaler.create(linkData);
+          }
+        });
     return linkMarshalers;
   }
 
