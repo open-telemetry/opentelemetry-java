@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.trace.export.metrics;
+package io.opentelemetry.sdk.trace.internal.metrics;
 
 import java.util.function.LongSupplier;
 import javax.annotation.Nullable;

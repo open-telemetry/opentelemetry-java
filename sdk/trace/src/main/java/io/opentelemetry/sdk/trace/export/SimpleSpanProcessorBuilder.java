@@ -10,7 +10,7 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
-import io.opentelemetry.sdk.trace.export.metrics.SpanProcessorMetrics;
+import io.opentelemetry.sdk.trace.internal.metrics.SpanProcessorMetrics;
 import java.util.function.Supplier;
 
 /**

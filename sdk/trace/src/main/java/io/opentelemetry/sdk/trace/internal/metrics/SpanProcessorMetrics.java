@@ -3,27 +3,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.trace.export.metrics;
+package io.opentelemetry.sdk.trace.internal.metrics;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.StandardComponentId;
-import io.opentelemetry.sdk.trace.SpanProcessor;
-
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
- * This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
  */
 public interface SpanProcessorMetrics extends AutoCloseable {
 
-  /**
-   * This value is defined in the semantic conventions.
-   */
+  /** This value is defined in the semantic conventions. */
   String QUEUE_FULL_DROPPED_ERROR_TYPE = "queue_full";
 
   static SpanProcessorMetrics noop() {
@@ -60,7 +56,10 @@ public interface SpanProcessorMetrics extends AutoCloseable {
 
   void recordSpansExportedSuccessfully(long count);
 
-  /** Can be called multiple times and concurrently, but only the first invocation will have an effect. */
+  /**
+   * Can be called multiple times and concurrently, but only the first invocation will have an
+   * effect.
+   */
   void startRecordingQueueMetrics(
       LongSupplier queueSizeSupplier, LongSupplier queueCapacitySupplier);
 
