@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
@@ -63,8 +64,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class OpenTelemetryConfigurationFactoryTest {
 
@@ -74,21 +79,39 @@ class OpenTelemetryConfigurationFactoryTest {
       new DeclarativeConfigContext(
           SpiHelper.create(OpenTelemetryConfigurationFactoryTest.class.getClassLoader()));
 
-  @Test
-  void create_InvalidFileFormat() {
-    List<OpenTelemetryConfigurationModel> testCases =
-        Arrays.asList(
-            new OpenTelemetryConfigurationModel(),
-            new OpenTelemetryConfigurationModel().withFileFormat("1"));
+  @ParameterizedTest
+  @MethodSource("fileFormatArgs")
+  void create_FileFormat(String fileFormat, boolean isValid) {
+    OpenTelemetryConfigurationModel model =
+        new OpenTelemetryConfigurationModel().withFileFormat(fileFormat);
 
-    List<Closeable> closeables = new ArrayList<>();
-    for (OpenTelemetryConfigurationModel testCase : testCases) {
+    if (isValid) {
+      assertThatCode(() -> OpenTelemetryConfigurationFactory.getInstance().create(model, context))
+          .doesNotThrowAnyException();
+    } else {
       assertThatThrownBy(
-              () -> OpenTelemetryConfigurationFactory.getInstance().create(testCase, context))
+              () -> OpenTelemetryConfigurationFactory.getInstance().create(model, context))
           .isInstanceOf(DeclarativeConfigException.class)
-          .hasMessage("Unsupported file format. Supported formats include: 0.4");
-      cleanup.addCloseables(closeables);
+          .hasMessage("Unsupported file format. Supported formats include 0.4, 1.0*");
     }
+  }
+
+  private static Stream<Arguments> fileFormatArgs() {
+    return Stream.of(
+        // Invalid file formats
+        Arguments.of(null, false),
+        Arguments.of("0.3", false),
+        Arguments.of("a0.4", false),
+        Arguments.of("0.4a", false),
+        Arguments.of("foo", false),
+        Arguments.of("1.0-rc.a", false),
+        Arguments.of("1.0.0", false),
+        Arguments.of("1.0.3", false),
+        // Valid file formats
+        Arguments.of("0.4", true),
+        Arguments.of("1.0-rc.1", true),
+        Arguments.of("1.0-rc.2", true),
+        Arguments.of("1.0", true));
   }
 
   @Test
@@ -99,7 +122,7 @@ class OpenTelemetryConfigurationFactoryTest {
 
     OpenTelemetrySdk sdk =
         OpenTelemetryConfigurationFactory.getInstance()
-            .create(new OpenTelemetryConfigurationModel().withFileFormat("0.4"), context);
+            .create(new OpenTelemetryConfigurationModel().withFileFormat("1.0-rc.1"), context);
     cleanup.addCloseable(sdk);
     cleanup.addCloseables(closeables);
 
@@ -116,7 +139,7 @@ class OpenTelemetryConfigurationFactoryTest {
         OpenTelemetryConfigurationFactory.getInstance()
             .create(
                 new OpenTelemetryConfigurationModel()
-                    .withFileFormat("0.4")
+                    .withFileFormat("1.0-rc.1")
                     .withDisabled(true)
                     // Logger provider configuration should be ignored since SDK is disabled
                     .withLoggerProvider(
@@ -210,7 +233,7 @@ class OpenTelemetryConfigurationFactoryTest {
         OpenTelemetryConfigurationFactory.getInstance()
             .create(
                 new OpenTelemetryConfigurationModel()
-                    .withFileFormat("0.4")
+                    .withFileFormat("1.0-rc.1")
                     .withPropagator(
                         new PropagatorModel()
                             .withCompositeList("tracecontext,baggage,ottrace,b3multi,b3,jaeger"))
