@@ -225,7 +225,5 @@ public interface DeclarativeConfigProperties {
   Set<String> getPropertyKeys();
 
   /** Return a {@link ComponentLoader} that should be used to load SPIs. */
-  default ComponentLoader getComponentLoader() {
-    return ComponentLoader.forClassLoader(DeclarativeConfigProperties.class.getClassLoader());
-  }
+  ComponentLoader getComponentLoader();
 }
