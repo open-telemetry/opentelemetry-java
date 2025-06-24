@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.export.metrics.SpanProcessorMetrics;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +37,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
   private static final Logger logger = Logger.getLogger(SimpleSpanProcessor.class.getName());
 
   private final SpanExporter spanExporter;
+  private final SpanProcessorMetrics metrics;
   private final boolean exportUnsampledSpans;
   private final Set<CompletableResultCode> pendingExports =
       Collections.newSetFromMap(new ConcurrentHashMap<>());
@@ -68,8 +70,10 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     return new SimpleSpanProcessorBuilder(exporter);
   }
 
-  SimpleSpanProcessor(SpanExporter spanExporter, boolean exportUnsampledSpans) {
+  SimpleSpanProcessor(
+      SpanExporter spanExporter, SpanProcessorMetrics metrics, boolean exportUnsampledSpans) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
+    this.metrics = metrics;
     this.exportUnsampledSpans = exportUnsampledSpans;
   }
 
@@ -88,6 +92,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     if (span != null && (exportUnsampledSpans || span.getSpanContext().isSampled())) {
       try {
         List<SpanData> spans = Collections.singletonList(span.toSpanData());
+        metrics.recordSpansProcessed(1, null);
         CompletableResultCode result;
 
         synchronized (exporterLock) {

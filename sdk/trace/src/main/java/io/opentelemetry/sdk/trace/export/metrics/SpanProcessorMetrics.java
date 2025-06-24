@@ -34,6 +34,19 @@ public interface SpanProcessorMetrics extends AutoCloseable {
     throw new IllegalStateException("Unhandled case: " + version);
   }
 
+  static SpanProcessorMetrics createForSimpleProcessor(
+      InternalTelemetryVersion version, Supplier<MeterProvider> meterProvider) {
+    switch (version) {
+      case LEGACY:
+        return SpanProcessorMetrics.noop(); // no legacy metrics for simple span processor
+      case LATEST:
+        return new SemConvSpanProcessorMetrics(
+            meterProvider,
+            ComponentId.generateLazy(StandardComponentId.SpanProcessorType.SIMPLE_SPAN_PROCESSOR));
+    }
+    throw new IllegalStateException("Unhandled case: " + version);
+  }
+
   void recordSpansProcessed(long count, @Nullable String errorType);
 
   void recordSpansExportedSuccessfully(long count);

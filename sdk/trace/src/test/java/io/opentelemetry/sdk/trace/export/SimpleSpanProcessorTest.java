@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -25,6 +26,11 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.internal.SemConvAttributes;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -36,10 +42,12 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -280,5 +288,77 @@ class SimpleSpanProcessorTest {
   void getSpanExporter() {
     assertThat(((SimpleSpanProcessor) SimpleSpanProcessor.create(spanExporter)).getSpanExporter())
         .isSameAs(spanExporter);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void verifyMetricsDisabledByDefault() {
+    Supplier<MeterProvider> mockSupplier = Mockito.mock(Supplier.class);
+
+    when(spanExporter.export(any())).thenReturn(CompletableResultCode.ofSuccess());
+
+    SpanData spanData = TestUtils.makeBasicSpan();
+    when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.toSpanData()).thenReturn(spanData);
+
+    SimpleSpanProcessor processor =
+        SimpleSpanProcessor.builder(spanExporter).setMeterProvider(mockSupplier).build();
+
+    processor.onEnd(readableSpan);
+
+    verifyNoInteractions(mockSupplier);
+  }
+
+  @Test
+  void verifySemConvMetrics() {
+    InMemoryMetricReader metricReader = InMemoryMetricReader.create();
+
+    try (SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().registerMetricReader(metricReader).build()) {
+
+      SpanData spanData = TestUtils.makeBasicSpan();
+      when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
+      when(readableSpan.toSpanData()).thenReturn(spanData);
+
+      SimpleSpanProcessor processor =
+          SimpleSpanProcessor.builder(spanExporter)
+              .setMeterProvider(() -> meterProvider)
+              .setInternalTelemetryVersion(InternalTelemetryVersion.LATEST)
+              .build();
+
+      CompletableResultCode blockedResultCode = new CompletableResultCode();
+      when(spanExporter.export(any())).thenReturn(blockedResultCode);
+
+      processor.onEnd(readableSpan);
+
+      assertThat(metricReader.collectAllMetrics())
+          .hasSize(1)
+          .anySatisfy(
+              metric ->
+                  OpenTelemetryAssertions.assertThat(metric)
+                      .hasName("otel.sdk.processor.span.processed")
+                      .hasLongSumSatisfying(
+                          size ->
+                              size.hasPointsSatisfying(
+                                  point ->
+                                      point
+                                          .hasValue(1)
+                                          .hasAttributesSatisfying(
+                                              attribs -> {
+                                                assertThat(attribs.size()).isEqualTo(2);
+                                                assertThat(
+                                                        attribs.get(
+                                                            SemConvAttributes.OTEL_COMPONENT_TYPE))
+                                                    .isEqualTo("simple_span_processor");
+                                                String componentName =
+                                                    attribs.get(
+                                                        SemConvAttributes.OTEL_COMPONENT_NAME);
+                                                assertThat(componentName)
+                                                    .matches("simple_span_processor/\\d+");
+                                              }))));
+
+      // Stop blocking to allow a fast termination of the test case
+      blockedResultCode.succeed();
+    }
   }
 }
