@@ -194,7 +194,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     private void addSpan(ReadableSpan span) {
       if (!queue.offer(span)) {
-        metrics.recordSpansProcessed(1L, SpanProcessorMetrics.QUEUE_FULL_DROPPED_REASON);
+        metrics.recordSpansProcessed(1L, SpanProcessorMetrics.QUEUE_FULL_DROPPED_ERROR_TYPE);
       } else {
         if (queueSize.incrementAndGet() >= spansNeeded.get()) {
           signal.offer(true);

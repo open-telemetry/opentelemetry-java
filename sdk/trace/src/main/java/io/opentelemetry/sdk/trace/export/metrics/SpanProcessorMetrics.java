@@ -9,16 +9,25 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.internal.ComponentId;
 import io.opentelemetry.sdk.internal.StandardComponentId;
+import io.opentelemetry.sdk.trace.SpanProcessor;
+
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
+/**
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public interface SpanProcessorMetrics extends AutoCloseable {
 
-  String QUEUE_FULL_DROPPED_REASON = "queue_full";
+  /**
+   * This value is defined in the semantic conventions.
+   */
+  String QUEUE_FULL_DROPPED_ERROR_TYPE = "queue_full";
 
   static SpanProcessorMetrics noop() {
-    return new NoopSpanProcessorMetrics();
+    return NoopSpanProcessorMetrics.INSTANCE;
   }
 
   static SpanProcessorMetrics createForBatchProcessor(
@@ -51,7 +60,7 @@ public interface SpanProcessorMetrics extends AutoCloseable {
 
   void recordSpansExportedSuccessfully(long count);
 
-  /** Must be called at most once. */
+  /** Can be called multiple times and concurrently, but only the first invocation will have an effect. */
   void startRecordingQueueMetrics(
       LongSupplier queueSizeSupplier, LongSupplier queueCapacitySupplier);
 

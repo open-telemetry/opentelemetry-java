@@ -16,7 +16,7 @@ import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
-public class LegacyBatchSpanProcessorMetrics implements SpanProcessorMetrics {
+class LegacyBatchSpanProcessorMetrics implements SpanProcessorMetrics {
 
   public static final AttributeKey<String> SPAN_PROCESSOR_TYPE_LABEL =
       AttributeKey.stringKey("processorType");

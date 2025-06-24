@@ -17,7 +17,7 @@ import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
-public class SemConvSpanProcessorMetrics implements SpanProcessorMetrics {
+class SemConvSpanProcessorMetrics implements SpanProcessorMetrics {
 
   private volatile boolean queueMetricsStarted = false;
 
