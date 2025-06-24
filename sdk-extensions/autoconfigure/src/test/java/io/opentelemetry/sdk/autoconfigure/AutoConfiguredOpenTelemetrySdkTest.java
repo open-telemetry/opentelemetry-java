@@ -28,6 +28,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.ComponentLoader;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.propagation.TextMapGetter;
@@ -35,7 +36,6 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.internal.AutoConfigureUtil;
-import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -255,8 +255,8 @@ class AutoConfiguredOpenTelemetrySdkTest {
     SpiHelper spiHelper =
         SpiHelper.create(AutoConfiguredOpenTelemetrySdkBuilder.class.getClassLoader());
 
-    AutoConfigureUtil.setComponentLoader(
-            builder,
+    builder
+        .setComponentLoader(
             new ComponentLoader() {
               @SuppressWarnings("unchecked")
               @Override

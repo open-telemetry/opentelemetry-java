@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -27,31 +26,26 @@ import java.util.function.Supplier;
  */
 public final class SpiHelper {
 
-  private final ComponentLoader componentLoader;
+  private final io.opentelemetry.context.ComponentLoader componentLoader;
   private final Set<AutoConfigureListener> listeners =
       Collections.newSetFromMap(new IdentityHashMap<>());
 
-  private SpiHelper(ComponentLoader componentLoader) {
+  private SpiHelper(io.opentelemetry.context.ComponentLoader componentLoader) {
     this.componentLoader = componentLoader;
   }
 
   /** Create a {@link SpiHelper} which loads SPIs using the {@code classLoader}. */
   public static SpiHelper create(ClassLoader classLoader) {
-    return new SpiHelper(serviceComponentLoader(classLoader));
+    return new SpiHelper(io.opentelemetry.context.ComponentLoader.forClassLoader(classLoader));
   }
 
   /** Create a {@link SpiHelper} which loads SPIs using the {@code componentLoader}. */
-  public static SpiHelper create(ComponentLoader componentLoader) {
+  public static SpiHelper create(io.opentelemetry.context.ComponentLoader componentLoader) {
     return new SpiHelper(componentLoader);
   }
 
-  /** Create a {@link ComponentLoader} which loads using the {@code classLoader}. */
-  public static ComponentLoader serviceComponentLoader(ClassLoader classLoader) {
-    return new ServiceLoaderComponentLoader(classLoader);
-  }
-
-  /** Return the backing underlying {@link ComponentLoader}. */
-  public ComponentLoader getComponentLoader() {
+  /** Return the backing underlying {@link io.opentelemetry.context.ComponentLoader}. */
+  public io.opentelemetry.context.ComponentLoader getComponentLoader() {
     return componentLoader;
   }
 
@@ -124,18 +118,5 @@ public final class SpiHelper {
   /** Return the set of SPIs loaded which implement {@link AutoConfigureListener}. */
   public Set<AutoConfigureListener> getListeners() {
     return Collections.unmodifiableSet(listeners);
-  }
-
-  private static class ServiceLoaderComponentLoader implements ComponentLoader {
-    private final ClassLoader classLoader;
-
-    private ServiceLoaderComponentLoader(ClassLoader classLoader) {
-      this.classLoader = classLoader;
-    }
-
-    @Override
-    public <T> Iterable<T> load(Class<T> spiClass) {
-      return ServiceLoader.load(spiClass, classLoader);
-    }
   }
 }

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.incubator.config;
 
+import io.opentelemetry.context.ComponentLoader;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -15,6 +16,8 @@ final class EmptyDeclarativeConfigProperties implements DeclarativeConfigPropert
 
   private static final EmptyDeclarativeConfigProperties INSTANCE =
       new EmptyDeclarativeConfigProperties();
+  private static final ComponentLoader COMPONENT_LOADER =
+      ComponentLoader.forClassLoader(EmptyDeclarativeConfigProperties.class.getClassLoader());
 
   private EmptyDeclarativeConfigProperties() {}
 
@@ -73,5 +76,10 @@ final class EmptyDeclarativeConfigProperties implements DeclarativeConfigPropert
   @Override
   public Set<String> getPropertyKeys() {
     return Collections.emptySet();
+  }
+
+  @Override
+  public ComponentLoader getComponentLoader() {
+    return COMPONENT_LOADER;
   }
 }

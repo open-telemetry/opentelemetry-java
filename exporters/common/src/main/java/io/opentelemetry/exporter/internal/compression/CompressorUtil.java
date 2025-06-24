@@ -8,9 +8,9 @@ package io.opentelemetry.exporter.internal.compression;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.stream.Collectors.joining;
 
+import io.opentelemetry.context.ComponentLoader;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Set;
 import javax.annotation.Nullable;
 
@@ -48,7 +48,8 @@ public final class CompressorUtil {
   private static Map<String, Compressor> buildCompressorRegistry() {
     Map<String, Compressor> compressors = new HashMap<>();
     for (CompressorProvider spi :
-        ServiceLoader.load(CompressorProvider.class, CompressorUtil.class.getClassLoader())) {
+        ComponentLoader.forClassLoader(CompressorUtil.class.getClassLoader())
+            .load(CompressorProvider.class)) {
       Compressor compressor = spi.getInstance();
       compressors.put(compressor.getEncoding(), compressor);
     }

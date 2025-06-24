@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.internal.http;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.internal.ConfigUtil;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.context.ComponentLoader;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.compression.Compressor;
@@ -24,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -64,7 +64,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   @Nullable private RetryPolicy retryPolicy = RetryPolicy.getDefault();
   private Supplier<MeterProvider> meterProviderSupplier = GlobalOpenTelemetry::getMeterProvider;
   private InternalTelemetryVersion internalTelemetryVersion = InternalTelemetryVersion.LEGACY;
-  private ClassLoader serviceClassLoader = HttpExporterBuilder.class.getClassLoader();
+  private ComponentLoader componentLoader =
+      ComponentLoader.forClassLoader(HttpExporterBuilder.class.getClassLoader());
   @Nullable private ExecutorService executorService;
 
   public HttpExporterBuilder(
@@ -143,8 +144,8 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public HttpExporterBuilder<T> setServiceClassLoader(ClassLoader servieClassLoader) {
-    this.serviceClassLoader = servieClassLoader;
+  public HttpExporterBuilder<T> setComponentLoader(ComponentLoader componentLoader) {
+    this.componentLoader = componentLoader;
     return this;
   }
 
@@ -265,7 +266,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
     if (retryPolicy != null) {
       joiner.add("retryPolicy=" + retryPolicy);
     }
-    joiner.add("serviceClassLoader=" + serviceClassLoader);
+    joiner.add("componentLoader=" + componentLoader);
     if (executorService != null) {
       joiner.add("executorService=" + executorService);
     }
@@ -299,8 +300,7 @@ public final class HttpExporterBuilder<T extends Marshaler> {
    */
   private HttpSenderProvider resolveHttpSenderProvider() {
     Map<String, HttpSenderProvider> httpSenderProviders = new HashMap<>();
-    for (HttpSenderProvider spi :
-        ServiceLoader.load(HttpSenderProvider.class, serviceClassLoader)) {
+    for (HttpSenderProvider spi : componentLoader.load(HttpSenderProvider.class)) {
       httpSenderProviders.put(spi.getClass().getName(), spi);
     }
 

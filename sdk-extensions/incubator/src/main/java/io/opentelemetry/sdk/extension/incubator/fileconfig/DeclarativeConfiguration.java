@@ -11,8 +11,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigException;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.context.ComponentLoader;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentProvider;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
@@ -55,7 +55,7 @@ public final class DeclarativeConfiguration {
   private static final Pattern ENV_VARIABLE_REFERENCE =
       Pattern.compile("\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)(:-([^\n}]*))?}");
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
-      SpiHelper.serviceComponentLoader(DeclarativeConfiguration.class.getClassLoader());
+      ComponentLoader.forClassLoader(DeclarativeConfigProperties.class.getClassLoader());
 
   private static final ObjectMapper MAPPER;
 

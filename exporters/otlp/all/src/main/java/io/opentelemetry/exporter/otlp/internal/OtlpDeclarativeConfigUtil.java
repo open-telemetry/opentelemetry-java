@@ -11,6 +11,7 @@ import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.readFileByt
 import static io.opentelemetry.exporter.otlp.internal.OtlpConfigUtil.validateEndpoint;
 
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.context.ComponentLoader;
 import io.opentelemetry.exporter.internal.IncubatingExporterBuilderUtil;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -47,6 +48,7 @@ public final class OtlpDeclarativeConfigUtil {
   public static void configureOtlpExporterBuilder(
       String dataType,
       DeclarativeConfigProperties config,
+      Consumer<ComponentLoader> setComponentLoader,
       Consumer<String> setEndpoint,
       BiConsumer<String, String> addHeader,
       Consumer<String> setCompression,
@@ -56,6 +58,8 @@ public final class OtlpDeclarativeConfigUtil {
       Consumer<RetryPolicy> setRetryPolicy,
       Consumer<MemoryMode> setMemoryMode,
       boolean isHttpProtobuf) {
+    setComponentLoader.accept(config.getComponentLoader());
+
     URL endpoint = validateEndpoint(config.getString("endpoint"), isHttpProtobuf);
     if (endpoint != null) {
       setEndpoint.accept(endpoint.toString());
