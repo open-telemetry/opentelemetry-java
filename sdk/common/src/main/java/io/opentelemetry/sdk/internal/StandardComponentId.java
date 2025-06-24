@@ -69,7 +69,7 @@ public class StandardComponentId<T extends StandardComponentId.StandardType>
    */
   public enum SpanProcessorType implements StandardType {
     BATCH_SPAN_PROCESSOR("batching_span_processor"),
-    SIMPLE_SPAN_PROCESSOR("simple_span_processor"); // TODO: semconv tests
+    SIMPLE_SPAN_PROCESSOR("simple_span_processor");
 
     final String value;
 
