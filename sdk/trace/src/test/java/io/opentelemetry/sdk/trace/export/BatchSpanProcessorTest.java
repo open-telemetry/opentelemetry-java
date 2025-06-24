@@ -27,7 +27,10 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.internal.SemConvAttributes;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -42,6 +45,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
@@ -706,6 +710,122 @@ class BatchSpanProcessorTest {
     verifyNoInteractions(mockSupplier);
 
     batchSpanProcessor.shutdown();
+  }
+
+  @Test
+  void verifySemConvMetrics() {
+    InMemoryMetricReader metricReader = InMemoryMetricReader.create();
+
+    try (SdkMeterProvider meterProvider =
+            SdkMeterProvider.builder().registerMetricReader(metricReader).build();
+        BatchSpanProcessor batchSpanProcessor =
+            BatchSpanProcessor.builder(mockSpanExporter)
+                .setScheduleDelay(
+                    1, TimeUnit.HOURS) // don't use scheduled exporting to not mess with the test
+                .setMaxExportBatchSize(3)
+                .setMaxQueueSize(4)
+                .setInternalTelemetryVersion(InternalTelemetryVersion.LATEST)
+                .setMeterProvider(meterProvider)
+                .build()) {
+
+      sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(batchSpanProcessor).build();
+
+      CompletableResultCode blockedResultCode = new CompletableResultCode();
+      when(mockSpanExporter.export(any())).thenReturn(blockedResultCode);
+
+      createEndedSpan("span1");
+      createEndedSpan("span2");
+
+      AtomicReference<String> componentNameHolder = new AtomicReference<>();
+
+      Collection<MetricData> metricData = metricReader.collectAllMetrics();
+      assertThat(metricData)
+          .hasSize(2)
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName("otel.sdk.processor.span.queue.size")
+                      .hasLongSumSatisfying(
+                          size ->
+                              size.hasPointsSatisfying(
+                                  point ->
+                                      point
+                                          .hasValue(2)
+                                          .hasAttributesSatisfying(
+                                              attribs -> {
+                                                assertThat(attribs.size()).isEqualTo(2);
+                                                assertThat(
+                                                        attribs.get(
+                                                            SemConvAttributes.OTEL_COMPONENT_TYPE))
+                                                    .isEqualTo("batching_span_processor");
+                                                String componentName =
+                                                    attribs.get(
+                                                        SemConvAttributes.OTEL_COMPONENT_NAME);
+                                                assertThat(componentName)
+                                                    .matches("batching_span_processor/\\d+");
+                                                componentNameHolder.set(componentName);
+                                              }))));
+
+      Attributes expectedAttribs =
+          Attributes.builder()
+              .put(SemConvAttributes.OTEL_COMPONENT_TYPE, "batching_span_processor")
+              .put(SemConvAttributes.OTEL_COMPONENT_NAME, componentNameHolder.get())
+              .build();
+
+      assertThat(metricData)
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName("otel.sdk.processor.span.queue.capacity")
+                      .hasLongSumSatisfying(
+                          capacity ->
+                              capacity.hasPointsSatisfying(
+                                  point -> point.hasValue(4).hasAttributes(expectedAttribs))));
+
+      createEndedSpan("span3"); // triggers export, queue is empty afterwards
+      createEndedSpan("span4");
+      createEndedSpan("span5");
+      createEndedSpan("span6");
+      createEndedSpan("span7");
+      createEndedSpan("span8"); // dropped due to full queue
+
+      assertThat(metricReader.collectAllMetrics())
+          .hasSize(3)
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName("otel.sdk.processor.span.queue.capacity")
+                      .hasLongSumSatisfying(
+                          capacity ->
+                              capacity.hasPointsSatisfying(
+                                  point -> point.hasValue(4).hasAttributes(expectedAttribs))))
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName("otel.sdk.processor.span.queue.size")
+                      .hasLongSumSatisfying(
+                          capacity ->
+                              capacity.hasPointsSatisfying(
+                                  point -> point.hasValue(4).hasAttributes(expectedAttribs))))
+          .anySatisfy(
+              metric ->
+                  assertThat(metric)
+                      .hasName("otel.sdk.processor.span.processed")
+                      .hasLongSumSatisfying(
+                          processed ->
+                              processed.hasPointsSatisfying(
+                                  point -> point.hasValue(3).hasAttributes(expectedAttribs),
+                                  point ->
+                                      point
+                                          .hasValue(1)
+                                          .hasAttributes(
+                                              expectedAttribs.toBuilder()
+                                                  .put(SemConvAttributes.ERROR_TYPE, "queue_full")
+                                                  .build()))));
+
+      // Stop blocking to allow a fast termination of the test case
+      blockedResultCode.succeed();
+    }
   }
 
   @Test

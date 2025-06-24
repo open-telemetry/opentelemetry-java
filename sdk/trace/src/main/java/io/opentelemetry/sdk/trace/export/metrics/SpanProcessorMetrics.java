@@ -6,6 +6,9 @@
 package io.opentelemetry.sdk.trace.export.metrics;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
+import io.opentelemetry.sdk.internal.ComponentId;
+import io.opentelemetry.sdk.internal.StandardComponentId;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -18,8 +21,17 @@ public interface SpanProcessorMetrics extends AutoCloseable {
     return new NoopSpanProcessorMetrics();
   }
 
-  static SpanProcessorMetrics legacyBatchProcessorMetrics(Supplier<MeterProvider> meterProvider) {
-    return new LegacyBatchSpanProcessorMetrics(meterProvider);
+  static SpanProcessorMetrics createForBatchProcessor(
+      InternalTelemetryVersion version, Supplier<MeterProvider> meterProvider) {
+    switch (version) {
+      case LEGACY:
+        return new LegacyBatchSpanProcessorMetrics(meterProvider);
+      case LATEST:
+        return new SemConvSpanProcessorMetrics(
+            meterProvider,
+            ComponentId.generateLazy(StandardComponentId.SpanProcessorType.BATCH_SPAN_PROCESSOR));
+    }
+    throw new IllegalStateException("Unhandled case: " + version);
   }
 
   void recordSpansProcessed(long count, @Nullable String errorType);

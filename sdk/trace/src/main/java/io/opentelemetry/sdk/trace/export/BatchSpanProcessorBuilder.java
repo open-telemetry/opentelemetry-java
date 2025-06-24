@@ -9,6 +9,7 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.trace.export.metrics.SpanProcessorMetrics;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +37,7 @@ public final class BatchSpanProcessorBuilder {
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
   private Supplier<MeterProvider> meterProviderSupplier = MeterProvider::noop;
+  private InternalTelemetryVersion internalTelemetryVersion = InternalTelemetryVersion.LEGACY;
 
   BatchSpanProcessorBuilder(SpanExporter spanExporter) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
@@ -142,6 +144,17 @@ public final class BatchSpanProcessorBuilder {
   }
 
   /**
+   * Sets the {@link InternalTelemetryVersion} defining which self-monitoring metrics this processor
+   * collects.
+   */
+  public BatchSpanProcessorBuilder setInternalTelemetryVersion(
+      InternalTelemetryVersion internalTelemetryVersion) {
+    requireNonNull(internalTelemetryVersion, "internalTelemetryVersion");
+    this.internalTelemetryVersion = internalTelemetryVersion;
+    return this;
+  }
+
+  /**
    * Sets the {@link MeterProvider} to use to collect metrics related to batch export. If not set,
    * metrics will not be collected.
    */
@@ -183,7 +196,8 @@ public final class BatchSpanProcessorBuilder {
     return new BatchSpanProcessor(
         spanExporter,
         exportUnsampledSpans,
-        SpanProcessorMetrics.legacyBatchProcessorMetrics(meterProviderSupplier),
+        SpanProcessorMetrics.createForBatchProcessor(
+            internalTelemetryVersion, meterProviderSupplier),
         scheduleDelayNanos,
         maxQueueSize,
         maxExportBatchSize,

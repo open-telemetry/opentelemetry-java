@@ -11,13 +11,22 @@ package io.opentelemetry.sdk.internal;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class StandardComponentId extends ComponentId.Lazy {
+public class StandardComponentId<T extends StandardComponentId.StandardType>
+    extends ComponentId.Lazy {
 
   /**
    * This class is internal and is hence not for public use. Its APIs are unstable and can change at
    * any time.
    */
-  public enum ExporterType {
+  public interface StandardType {
+    String typeName();
+  }
+
+  /**
+   * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+   * any time.
+   */
+  public enum ExporterType implements StandardType {
     OTLP_GRPC_SPAN_EXPORTER("otlp_grpc_span_exporter", Signal.SPAN),
     OTLP_HTTP_SPAN_EXPORTER("otlp_http_span_exporter", Signal.SPAN),
     OTLP_HTTP_JSON_SPAN_EXPORTER("otlp_http_json_span_exporter", Signal.SPAN),
@@ -47,16 +56,41 @@ public class StandardComponentId extends ComponentId.Lazy {
     public Signal signal() {
       return signal;
     }
+
+    @Override
+    public String typeName() {
+      return value;
+    }
   }
 
-  private final ExporterType standardType;
+  /**
+   * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+   * any time.
+   */
+  public enum SpanProcessorType implements StandardType {
+    BATCH_SPAN_PROCESSOR("batching_span_processor"),
+    SIMPLE_SPAN_PROCESSOR("simple_span_processor"); // TODO: semconv tests
 
-  StandardComponentId(ExporterType standardType) {
-    super(standardType.value);
+    final String value;
+
+    SpanProcessorType(String value) {
+      this.value = value;
+    }
+
+    @Override
+    public String typeName() {
+      return value;
+    }
+  }
+
+  private final T standardType;
+
+  StandardComponentId(T standardType) {
+    super(standardType.typeName());
     this.standardType = standardType;
   }
 
-  public ExporterType getStandardType() {
+  public T getStandardType() {
     return standardType;
   }
 }
