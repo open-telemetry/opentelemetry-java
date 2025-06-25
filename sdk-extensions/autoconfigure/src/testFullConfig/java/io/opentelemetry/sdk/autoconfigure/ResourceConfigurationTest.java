@@ -9,6 +9,7 @@ import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.asser
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.ComponentLoader;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
 import io.opentelemetry.sdk.autoconfigure.internal.SpiHelper;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
@@ -29,14 +30,15 @@ import org.junit.jupiter.params.provider.MethodSource;
 @SuppressLogger(ResourceConfiguration.class)
 class ResourceConfigurationTest {
 
-  private final SpiHelper spiHelper =
-      SpiHelper.create(ResourceConfigurationTest.class.getClassLoader());
+  private final ComponentLoader componentLoader =
+      ComponentLoader.forClassLoader(ResourceConfigurationTest.class.getClassLoader());
+  private final SpiHelper spiHelper = SpiHelper.create(componentLoader);
 
   @Test
   void configureResource_EmptyClassLoader() {
     Attributes attributes =
         ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(Collections.emptyMap()),
+                DefaultConfigProperties.create(Collections.emptyMap(), componentLoader),
                 SpiHelper.create(new URLClassLoader(new URL[0], null)),
                 (r, c) -> r)
             .getAttributes();
@@ -66,7 +68,7 @@ class ResourceConfigurationTest {
     }
     Attributes attributes =
         ResourceConfiguration.configureResource(
-                DefaultConfigProperties.create(config), spiHelper, (r, c) -> r)
+                DefaultConfigProperties.create(config, componentLoader), spiHelper, (r, c) -> r)
             .getAttributes();
 
     attributeAssertion.accept(assertThat(attributes));

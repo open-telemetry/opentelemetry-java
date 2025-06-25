@@ -628,7 +628,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigur
   }
 
   private ConfigProperties computeConfigProperties() {
-    DefaultConfigProperties properties = DefaultConfigProperties.create(propertiesSupplier.get());
+    DefaultConfigProperties properties =
+        DefaultConfigProperties.create(propertiesSupplier.get(), componentLoader);
     for (Function<ConfigProperties, Map<String, String>> customizer : propertiesCustomizers) {
       Map<String, String> overrides = customizer.apply(properties);
       properties = properties.withOverrides(overrides);

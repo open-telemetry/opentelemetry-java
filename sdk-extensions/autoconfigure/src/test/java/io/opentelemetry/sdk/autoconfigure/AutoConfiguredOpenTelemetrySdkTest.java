@@ -65,6 +65,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -255,22 +256,28 @@ class AutoConfiguredOpenTelemetrySdkTest {
     SpiHelper spiHelper =
         SpiHelper.create(AutoConfiguredOpenTelemetrySdkBuilder.class.getClassLoader());
 
-    builder
-        .setComponentLoader(
-            new ComponentLoader() {
-              @SuppressWarnings("unchecked")
-              @Override
-              public <T> Iterable<T> load(Class<T> spiClass) {
-                if (spiClass.equals(AutoConfigurationCustomizerProvider.class)) {
-                  return Collections.singletonList((T) customizerProvider);
-                }
-                return spiHelper.load(spiClass);
-              }
-            })
-        .build();
+    ComponentLoader componentLoader =
+        new ComponentLoader() {
+          @SuppressWarnings("unchecked")
+          @Override
+          public <T> Iterable<T> load(Class<T> spiClass) {
+            if (spiClass.equals(AutoConfigurationCustomizerProvider.class)) {
+              return Collections.singletonList((T) customizerProvider);
+            }
+            return spiHelper.load(spiClass);
+          }
+        };
 
+    AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
+        builder.setComponentLoader(componentLoader).build();
+
+    assertThat(
+            Objects.requireNonNull(autoConfiguredOpenTelemetrySdk.getConfig()).getComponentLoader())
+        .isSameAs(componentLoader);
     verify(customizerProvider).customize(any());
     verifyNoMoreInteractions(customizerProvider);
+
+    autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().shutdown().join(10, TimeUnit.SECONDS);
   }
 
   @Test

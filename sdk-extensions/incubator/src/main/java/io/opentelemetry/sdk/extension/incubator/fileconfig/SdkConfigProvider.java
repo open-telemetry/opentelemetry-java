@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.fileconfig;
 
 import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
+import io.opentelemetry.context.ComponentLoader;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import javax.annotation.Nullable;
 
@@ -15,9 +16,10 @@ public final class SdkConfigProvider implements ConfigProvider {
 
   @Nullable private final DeclarativeConfigProperties instrumentationConfig;
 
-  private SdkConfigProvider(OpenTelemetryConfigurationModel model) {
+  private SdkConfigProvider(
+      OpenTelemetryConfigurationModel model, ComponentLoader componentLoader) {
     DeclarativeConfigProperties configProperties =
-        DeclarativeConfiguration.toConfigProperties(model);
+        DeclarativeConfiguration.toConfigProperties(model, componentLoader);
     this.instrumentationConfig = configProperties.getStructured("instrumentation/development");
   }
 
@@ -28,7 +30,19 @@ public final class SdkConfigProvider implements ConfigProvider {
    * @return the {@link SdkConfigProvider}
    */
   public static SdkConfigProvider create(OpenTelemetryConfigurationModel model) {
-    return new SdkConfigProvider(model);
+    return create(model, ComponentLoader.forClassLoader(SdkConfigProvider.class.getClassLoader()));
+  }
+
+  /**
+   * Create a {@link SdkConfigProvider} from the {@code model}.
+   *
+   * @param model the configuration model
+   * @param componentLoader the component loader used to load SPIs
+   * @return the {@link SdkConfigProvider}
+   */
+  public static SdkConfigProvider create(
+      OpenTelemetryConfigurationModel model, ComponentLoader componentLoader) {
+    return new SdkConfigProvider(model, componentLoader);
   }
 
   @Nullable
