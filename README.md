@@ -256,33 +256,35 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 ### Code owners
 
-Triagers:
+#### Maintainers
 
-- [Gregor Zeitlinger](https://github.com/zeitlinger), Grafana Labs
+- [Jack Berg](https://github.com/jack-berg), New Relic
+- [John Watson](https://github.com/jkwatson), Verta.ai
 
-*Find more about the triager role in [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#triager).*
+For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md#maintainer).
 
-Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemetry/teams/java-approvers)):
+#### Approvers
 
 - [Jason Plumb](https://github.com/breedx-splk), Splunk
 - [Josh Suereth](https://github.com/jsuereth), Google
 - [Lauri Tulmin](https://github.com/laurit), Splunk
 - [Trask Stalnaker](https://github.com/trask), Microsoft
 
-*Find more about the approver role in [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).*
+For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md#approver).
 
-Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-telemetry/teams/java-maintainers)):
+#### Triagers
 
-- [Jack Berg](https://github.com/jack-berg), New Relic
-- [John Watson](https://github.com/jkwatson), Verta.ai
+- [Gregor Zeitlinger](https://github.com/zeitlinger), Grafana Labs
 
-Emeritus:
+For more information about the triager role, see the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md#triagers).
+
+#### Emeritus
 
 - Maintainer [Bogdan Drutu](https://github.com/BogdanDrutu)
 - Maintainer [Carlos Alberto](https://github.com/carlosalberto)
 - Approver [Mateusz Rzeszutek](https://github.com/mateuszrzeszutek)
 
-*Find more about the maintainer role in [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).*
+For more information about the emeritus role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#emeritus-maintainerapprovertriager).
 
 ### Help wanted
 
@@ -293,13 +295,11 @@ We are currently resource constrained and are actively seeking new contributors 
 - Issues labeled [help wanted](https://github.com/open-telemetry/opentelemetry-java/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) are project priorities. Code contributions (or pull request reviews when a PR is linked) for these issues are particularly important.
 - Triaging / responding to new issues and discussions is a great way to engage with the project.
 
-### Thanks to all the people who have contributed
+### Thanks to all of our contributors!
 
 <a href="https://github.com/open-telemetry/opentelemetry-java/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=open-telemetry/opentelemetry-java" />
+  <img alt="Repo contributors" src="https://contrib.rocks/image?repo=open-telemetry/opentelemetry-java" />
 </a>
-
-Made with [contrib.rocks](https://contrib.rocks).
 
 [codecov-image]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/main/graph/badge.svg
 [codecov-url]: https://app.codecov.io/gh/open-telemetry/opentelemetry-java/branch/main/
