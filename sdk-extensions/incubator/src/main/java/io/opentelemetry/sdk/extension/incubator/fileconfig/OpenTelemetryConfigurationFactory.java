@@ -11,11 +11,12 @@ import io.opentelemetry.sdk.OpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 final class OpenTelemetryConfigurationFactory
     implements Factory<OpenTelemetryConfigurationModel, OpenTelemetrySdk> {
 
-  private static final String CURRENT_SUPPORTED_FILE_FORMAT = "0.4";
+  private static final Pattern SUPPORTED_FILE_FORMATS = Pattern.compile("^(0.4)|(1.0(-rc.\\d*)?)$");
 
   private static final OpenTelemetryConfigurationFactory INSTANCE =
       new OpenTelemetryConfigurationFactory();
@@ -30,10 +31,13 @@ final class OpenTelemetryConfigurationFactory
   public OpenTelemetrySdk create(
       OpenTelemetryConfigurationModel model, DeclarativeConfigContext context) {
     OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
-    if (!CURRENT_SUPPORTED_FILE_FORMAT.equals(model.getFileFormat())) {
+    String fileFormat = model.getFileFormat();
+    if (fileFormat == null || !SUPPORTED_FILE_FORMATS.matcher(fileFormat).matches()) {
       throw new DeclarativeConfigException(
-          "Unsupported file format. Supported formats include: " + CURRENT_SUPPORTED_FILE_FORMAT);
+          "Unsupported file format. Supported formats include 0.4, 1.0*");
     }
+    // TODO(jack-berg): log warning if version is not exact match, which may result in unexpected
+    // behavior for experimental properties.
 
     if (Objects.equals(Boolean.TRUE, model.getDisabled())) {
       return builder.build();
