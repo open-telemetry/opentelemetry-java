@@ -261,7 +261,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 - [Jack Berg](https://github.com/jack-berg), New Relic
 - [John Watson](https://github.com/jkwatson), Verta.ai
 
-For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md#maintainer).
+For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).
 
 #### Approvers
 
@@ -270,13 +270,13 @@ For more information about the maintainer role, see the [community repository](h
 - [Lauri Tulmin](https://github.com/laurit), Splunk
 - [Trask Stalnaker](https://github.com/trask), Microsoft
 
-For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md#approver).
+For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
 
 #### Triagers
 
 - [Gregor Zeitlinger](https://github.com/zeitlinger), Grafana Labs
 
-For more information about the triager role, see the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md#triagers).
+For more information about the triager role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#triager).
 
 #### Emeritus
 
