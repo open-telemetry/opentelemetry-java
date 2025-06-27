@@ -49,7 +49,8 @@ class OtlpJsonLoggingMetricExporterTest {
 
   @Test
   void getAggregationTemporalityWithWrapperJsonObject() {
-    // Test that the new create method with wrapperJsonObject parameter maintains correct aggregation temporality
+    // Test that the new create method with wrapperJsonObject parameter maintains correct
+    // aggregation temporality
     assertThat(
             OtlpJsonLoggingMetricExporter.create(AggregationTemporality.CUMULATIVE, false)
                 .getAggregationTemporality(InstrumentType.COUNTER))
@@ -84,7 +85,8 @@ class OtlpJsonLoggingMetricExporterTest {
   @Test
   void logWithWrapperJsonObjectFalse() throws Exception {
     // Test that wrapperJsonObject=false produces the same output as the default create()
-    MetricExporter exporterWithoutWrapper = OtlpJsonLoggingMetricExporter.create(AggregationTemporality.CUMULATIVE, false);
+    MetricExporter exporterWithoutWrapper =
+        OtlpJsonLoggingMetricExporter.create(AggregationTemporality.CUMULATIVE, false);
     testDataExporter.export(exporterWithoutWrapper);
 
     assertThat(logs.getEvents())
@@ -99,7 +101,8 @@ class OtlpJsonLoggingMetricExporterTest {
   @Test
   void logWithWrapperJsonObjectTrue() throws Exception {
     // Test that wrapperJsonObject=true produces wrapper format (enables low allocation)
-    MetricExporter exporterWithWrapper = OtlpJsonLoggingMetricExporter.create(AggregationTemporality.CUMULATIVE, true);
+    MetricExporter exporterWithWrapper =
+        OtlpJsonLoggingMetricExporter.create(AggregationTemporality.CUMULATIVE, true);
     testDataExporter.export(exporterWithWrapper);
 
     assertThat(logs.getEvents())
@@ -114,7 +117,8 @@ class OtlpJsonLoggingMetricExporterTest {
   @Test
   void logWithWrapperJsonObjectTrueAndDeltaTemporality() throws Exception {
     // Test that wrapperJsonObject=true works with DELTA temporality too
-    MetricExporter exporterWithWrapper = OtlpJsonLoggingMetricExporter.create(AggregationTemporality.DELTA, true);
+    MetricExporter exporterWithWrapper =
+        OtlpJsonLoggingMetricExporter.create(AggregationTemporality.DELTA, true);
     testDataExporter.export(exporterWithWrapper);
 
     assertThat(logs.getEvents())
