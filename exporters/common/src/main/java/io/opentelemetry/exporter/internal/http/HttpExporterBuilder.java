@@ -12,6 +12,8 @@ import io.opentelemetry.context.ComponentLoader;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.compression.Compressor;
+import io.opentelemetry.exporter.internal.compression.CompressorProvider;
+import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.ProxyOptions;
@@ -94,6 +96,17 @@ public final class HttpExporterBuilder<T extends Marshaler> {
   public HttpExporterBuilder<T> setCompression(@Nullable Compressor compressor) {
     this.compressor = compressor;
     return this;
+  }
+
+  /**
+   * Sets the method used to compress payloads. If unset, compression is disabled. Compression
+   * method "gzip" and "none" are supported out of the box. Support for additional compression
+   * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
+   */
+  public HttpExporterBuilder<T> setCompression(String compressionMethod) {
+    Compressor compressor =
+        CompressorUtil.validateAndResolveCompressor(compressionMethod, componentLoader);
+    return setCompression(compressor);
   }
 
   public HttpExporterBuilder<T> addConstantHeaders(String key, String value) {

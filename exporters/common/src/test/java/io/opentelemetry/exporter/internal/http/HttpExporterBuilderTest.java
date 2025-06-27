@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.internal.grpc;
+package io.opentelemetry.exporter.internal.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -13,25 +13,20 @@ import io.opentelemetry.exporter.internal.compression.Compressor;
 import io.opentelemetry.exporter.internal.compression.GzipCompressor;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.internal.StandardComponentId;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class GrpcExporterBuilderTest {
+class HttpExporterBuilderTest {
 
-  private GrpcExporterBuilder<Marshaler> builder;
+  private HttpExporterBuilder<Marshaler> builder;
 
   @BeforeEach
   void setUp() {
     builder =
-        new GrpcExporterBuilder<>(
-            StandardComponentId.ExporterType.OTLP_GRPC_SPAN_EXPORTER,
-            0,
-            URI.create("http://localhost:4317"),
-            null,
-            "/test");
+        new HttpExporterBuilder<>(
+            StandardComponentId.ExporterType.OTLP_HTTP_SPAN_EXPORTER, "http://localhost:4318");
   }
 
   @Test
