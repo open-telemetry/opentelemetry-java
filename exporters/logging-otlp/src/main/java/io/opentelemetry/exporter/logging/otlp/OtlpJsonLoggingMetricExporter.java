@@ -75,8 +75,8 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
   }
 
   @Override
-  public CompletableResultCode export(Collection<MetricData> metrics) {
-    return delegate.export(metrics);
+  public CompletableResultCode export(Collection<MetricData> logs) {
+    return delegate.export(logs);
   }
 
   @Override
