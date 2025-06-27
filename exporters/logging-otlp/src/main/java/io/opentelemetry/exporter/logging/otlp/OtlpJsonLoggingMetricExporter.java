@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.logging.otlp;
 import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.metrics.OtlpStdoutMetricExporterBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -46,6 +47,27 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
     return new OtlpJsonLoggingMetricExporter(delegate, aggregationTemporality);
   }
 
+  /**
+   * Returns a new {@link OtlpJsonLoggingMetricExporter} with the given {@code
+   * aggregationTemporality}.
+   *
+   * @param aggregationTemporality the aggregation temporality to use
+   * @param wrapperJsonObject whether to wrap the JSON object in an outer JSON "resourceMetrics"
+   *     object. When {@code true}, uses low allocation OTLP marshalers with {@link
+   *     MemoryMode#REUSABLE_DATA}. When {@code false}, uses {@link MemoryMode#IMMUTABLE_DATA}.
+   */
+  public static MetricExporter create(
+      AggregationTemporality aggregationTemporality, boolean wrapperJsonObject) {
+    MemoryMode memoryMode =
+        wrapperJsonObject ? MemoryMode.REUSABLE_DATA : MemoryMode.IMMUTABLE_DATA;
+    OtlpStdoutMetricExporter delegate =
+        new OtlpStdoutMetricExporterBuilder(logger)
+            .setWrapperJsonObject(wrapperJsonObject)
+            .setMemoryMode(memoryMode)
+            .build();
+    return new OtlpJsonLoggingMetricExporter(delegate, aggregationTemporality);
+  }
+
   OtlpJsonLoggingMetricExporter(
       OtlpStdoutMetricExporter delegate, AggregationTemporality aggregationTemporality) {
     this.delegate = delegate;
@@ -53,8 +75,8 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
   }
 
   @Override
-  public CompletableResultCode export(Collection<MetricData> logs) {
-    return delegate.export(logs);
+  public CompletableResultCode export(Collection<MetricData> metrics) {
+    return delegate.export(metrics);
   }
 
   @Override
