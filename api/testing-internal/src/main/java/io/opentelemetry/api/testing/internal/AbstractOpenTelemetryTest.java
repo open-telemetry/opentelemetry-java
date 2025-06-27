@@ -115,4 +115,11 @@ public abstract class AbstractOpenTelemetryTest {
                 + "propagators=DefaultContextPropagators{textMapPropagator=NoopTextMapPropagator}"
                 + "}");
   }
+
+  @Test
+  void neverReturnsObfuscatedNoop() {
+    assertThat(GlobalOpenTelemetry.get()).isSameAs(OpenTelemetry.noop());
+    // ensure sequential calls of GlobalOpenTelemetry.get() return same object
+    assertThat(GlobalOpenTelemetry.get()).isSameAs(OpenTelemetry.noop());
+  }
 }

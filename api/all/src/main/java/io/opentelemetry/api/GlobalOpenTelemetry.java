@@ -72,7 +72,7 @@ public final class GlobalOpenTelemetry {
    *     interface FQCN but the specified provider cannot be found.
    */
   public static OpenTelemetry get() {
-    OpenTelemetry openTelemetry = globalOpenTelemetry;
+    ObfuscatedOpenTelemetry openTelemetry = globalOpenTelemetry;
     if (openTelemetry == null) {
       synchronized (mutex) {
         openTelemetry = globalOpenTelemetry;
@@ -88,7 +88,7 @@ public final class GlobalOpenTelemetry {
         }
       }
     }
-    return openTelemetry;
+    return openTelemetry.delegate == OpenTelemetry.noop() ? OpenTelemetry.noop() : openTelemetry;
   }
 
   /**
