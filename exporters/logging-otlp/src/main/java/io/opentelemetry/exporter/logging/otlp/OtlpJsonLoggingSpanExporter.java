@@ -55,8 +55,8 @@ public final class OtlpJsonLoggingSpanExporter implements SpanExporter {
   }
 
   @Override
-  public CompletableResultCode export(Collection<SpanData> spans) {
-    return delegate.export(spans);
+  public CompletableResultCode export(Collection<SpanData> logs) {
+    return delegate.export(logs);
   }
 
   @Override
