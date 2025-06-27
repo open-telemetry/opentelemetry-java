@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.logging.otlp;
 import io.opentelemetry.exporter.logging.otlp.internal.traces.OtlpStdoutSpanExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.traces.OtlpStdoutSpanExporterBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
@@ -31,13 +32,31 @@ public final class OtlpJsonLoggingSpanExporter implements SpanExporter {
     return new OtlpJsonLoggingSpanExporter(delegate);
   }
 
+  /**
+   * Returns a new {@link OtlpJsonLoggingSpanExporter}.
+   *
+   * @param wrapperJsonObject whether to wrap the JSON object in an outer JSON "resourceSpans"
+   *     object. When {@code true}, uses low allocation OTLP marshalers with {@link
+   *     MemoryMode#REUSABLE_DATA}. When {@code false}, uses {@link MemoryMode#IMMUTABLE_DATA}.
+   */
+  public static SpanExporter create(boolean wrapperJsonObject) {
+    MemoryMode memoryMode =
+        wrapperJsonObject ? MemoryMode.REUSABLE_DATA : MemoryMode.IMMUTABLE_DATA;
+    OtlpStdoutSpanExporter delegate =
+        new OtlpStdoutSpanExporterBuilder(logger)
+            .setWrapperJsonObject(wrapperJsonObject)
+            .setMemoryMode(memoryMode)
+            .build();
+    return new OtlpJsonLoggingSpanExporter(delegate);
+  }
+
   OtlpJsonLoggingSpanExporter(OtlpStdoutSpanExporter delegate) {
     this.delegate = delegate;
   }
 
   @Override
-  public CompletableResultCode export(Collection<SpanData> logs) {
-    return delegate.export(logs);
+  public CompletableResultCode export(Collection<SpanData> spans) {
+    return delegate.export(spans);
   }
 
   @Override

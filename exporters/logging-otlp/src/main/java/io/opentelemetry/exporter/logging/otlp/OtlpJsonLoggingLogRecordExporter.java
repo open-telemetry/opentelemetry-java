@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.logging.otlp;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporter;
 import io.opentelemetry.exporter.logging.otlp.internal.logs.OtlpStdoutLogRecordExporterBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.Collection;
@@ -30,6 +31,24 @@ public final class OtlpJsonLoggingLogRecordExporter implements LogRecordExporter
   public static LogRecordExporter create() {
     OtlpStdoutLogRecordExporter delegate =
         new OtlpStdoutLogRecordExporterBuilder(logger).setWrapperJsonObject(false).build();
+    return new OtlpJsonLoggingLogRecordExporter(delegate);
+  }
+
+  /**
+   * Returns a new {@link OtlpJsonLoggingLogRecordExporter}.
+   *
+   * @param wrapperJsonObject whether to wrap the JSON object in an outer JSON "resourceLogs"
+   *     object. When {@code true}, uses low allocation OTLP marshalers with {@link
+   *     MemoryMode#REUSABLE_DATA}. When {@code false}, uses {@link MemoryMode#IMMUTABLE_DATA}.
+   */
+  public static LogRecordExporter create(boolean wrapperJsonObject) {
+    MemoryMode memoryMode =
+        wrapperJsonObject ? MemoryMode.REUSABLE_DATA : MemoryMode.IMMUTABLE_DATA;
+    OtlpStdoutLogRecordExporter delegate =
+        new OtlpStdoutLogRecordExporterBuilder(logger)
+            .setWrapperJsonObject(wrapperJsonObject)
+            .setMemoryMode(memoryMode)
+            .build();
     return new OtlpJsonLoggingLogRecordExporter(delegate);
   }
 
