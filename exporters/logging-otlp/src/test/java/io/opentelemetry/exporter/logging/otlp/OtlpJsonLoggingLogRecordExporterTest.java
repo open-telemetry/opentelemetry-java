@@ -46,6 +46,36 @@ class OtlpJsonLoggingLogRecordExporterTest {
   }
 
   @Test
+  void logWithWrapperJsonObjectFalse() throws Exception {
+    // Test that wrapperJsonObject=false produces the same output as the default create()
+    LogRecordExporter exporterWithoutWrapper = OtlpJsonLoggingLogRecordExporter.create(false);
+    testDataExporter.export(exporterWithoutWrapper);
+
+    assertThat(logs.getEvents())
+        .hasSize(1)
+        .allSatisfy(log -> assertThat(log.getLevel()).isEqualTo(Level.INFO));
+    String message = logs.getEvents().get(0).getMessage();
+    String expectedJson = testDataExporter.getExpectedJson(false);
+    JSONAssert.assertEquals("Got \n" + message, expectedJson, message, /* strict= */ false);
+    assertThat(message).doesNotContain("\n");
+  }
+
+  @Test
+  void logWithWrapperJsonObjectTrue() throws Exception {
+    // Test that wrapperJsonObject=true produces wrapper format (enables low allocation)
+    LogRecordExporter exporterWithWrapper = OtlpJsonLoggingLogRecordExporter.create(true);
+    testDataExporter.export(exporterWithWrapper);
+
+    assertThat(logs.getEvents())
+        .hasSize(1)
+        .allSatisfy(log -> assertThat(log.getLevel()).isEqualTo(Level.INFO));
+    String message = logs.getEvents().get(0).getMessage();
+    String expectedJson = testDataExporter.getExpectedJson(true);
+    JSONAssert.assertEquals("Got \n" + message, expectedJson, message, /* strict= */ false);
+    assertThat(message).doesNotContain("\n");
+  }
+
+  @Test
   void shutdown() {
     assertThat(exporter.shutdown().isSuccess()).isTrue();
     assertThat(testDataExporter.export(exporter).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
