@@ -8,6 +8,7 @@ package io.opentelemetry.api.incubator.config;
 import static io.opentelemetry.api.internal.ConfigUtil.defaultIfNull;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 
@@ -34,6 +35,11 @@ public interface DeclarativeConfigProperties {
    */
   static DeclarativeConfigProperties empty() {
     return EmptyDeclarativeConfigProperties.getInstance();
+  }
+
+  /** Return a map representation of the {@code declarativeConfigProperties}. */
+  static Map<String, Object> toMap(DeclarativeConfigProperties declarativeConfigProperties) {
+    return DeclarativeConfigPropertyUtil.toMap(declarativeConfigProperties);
   }
 
   /**
