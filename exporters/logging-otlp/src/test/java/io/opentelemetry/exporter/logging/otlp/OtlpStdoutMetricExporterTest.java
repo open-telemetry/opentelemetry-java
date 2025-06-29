@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.logging.otlp;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
@@ -81,7 +81,7 @@ class OtlpStdoutMetricExporterTest
 
   @Test
   void componentProviderMetricConfig() {
-    DeclarativeConfigProperties properties = mock(DeclarativeConfigProperties.class);
+    DeclarativeConfigProperties properties = spy(DeclarativeConfigProperties.empty());
     when(properties.getString("temporality_preference")).thenReturn("DELTA");
     when(properties.getString("default_histogram_aggregation"))
         .thenReturn("BASE2_EXPONENTIAL_BUCKET_HISTOGRAM");

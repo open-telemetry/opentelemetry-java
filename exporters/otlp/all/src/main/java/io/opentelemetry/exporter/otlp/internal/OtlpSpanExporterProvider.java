@@ -44,6 +44,7 @@ public class OtlpSpanExporterProvider
       OtlpConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_TRACES,
           config,
+          builder::setComponentLoader,
           builder::setEndpoint,
           builder::addHeader,
           builder::setCompression,
@@ -61,6 +62,7 @@ public class OtlpSpanExporterProvider
       OtlpConfigUtil.configureOtlpExporterBuilder(
           DATA_TYPE_TRACES,
           config,
+          builder::setComponentLoader,
           builder::setEndpoint,
           builder::addHeader,
           builder::setCompression,
