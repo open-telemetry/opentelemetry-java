@@ -59,7 +59,8 @@ public final class DeclarativeConfiguration {
   private static final ComponentLoader DEFAULT_COMPONENT_LOADER =
       SpiHelper.serviceComponentLoader(DeclarativeConfiguration.class.getClassLoader());
 
-  private static final ObjectMapper MAPPER;
+  // Visible for testing
+  static final ObjectMapper MAPPER;
 
   static {
     MAPPER =
@@ -162,8 +163,7 @@ public final class DeclarativeConfiguration {
    * @param model the configuration model
    * @return a generic {@link DeclarativeConfigProperties} representation of the model
    */
-  public static DeclarativeConfigProperties toConfigProperties(
-      OpenTelemetryConfigurationModel model) {
+  public static DeclarativeConfigProperties toConfigProperties(Object model) {
     return toConfigProperties(model, DEFAULT_COMPONENT_LOADER);
   }
 
@@ -217,9 +217,18 @@ public final class DeclarativeConfiguration {
     return (YamlDeclarativeConfigProperties) declarativeConfigProperties;
   }
 
-  static <T> T convertToModel(
-      YamlDeclarativeConfigProperties yamlDeclarativeConfigProperties, Class<T> modelType) {
-    return MAPPER.convertValue(yamlDeclarativeConfigProperties.toMap(), modelType);
+  /**
+   * Convert the {@code declarativeConfigProperties} to an instance of a given {@code modelType}.
+   *
+   * <p>Wrapper around {@link ObjectMapper#convertValue(Object, Class)}. See {@link ObjectMapper}
+   * for full details. If the {@link ObjectMapper} we use doesn't match your requirements, configure
+   * your own instance and call {@link ObjectMapper#convertValue(Object, Class)} using it.
+   */
+  public static <T> T convertToModel(
+      DeclarativeConfigProperties declarativeConfigProperties, Class<T> modelType) {
+    Map<String, Object> configPropertiesMap =
+        DeclarativeConfigProperties.toMap(declarativeConfigProperties);
+    return MAPPER.convertValue(configPropertiesMap, modelType);
   }
 
   static <M, R> R createAndMaybeCleanup(Factory<M, R> factory, SpiHelper spiHelper, M model) {
