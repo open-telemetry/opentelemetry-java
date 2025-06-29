@@ -40,7 +40,7 @@ public final class HttpExporter<T extends Marshaler> {
   private final ExporterInstrumentation exporterMetrics;
 
   public HttpExporter(
-      StandardComponentId componentId,
+      StandardComponentId<StandardComponentId.ExporterType> componentId,
       HttpSender httpSender,
       Supplier<MeterProvider> meterProviderSupplier,
       InternalTelemetryVersion internalTelemetryVersion,

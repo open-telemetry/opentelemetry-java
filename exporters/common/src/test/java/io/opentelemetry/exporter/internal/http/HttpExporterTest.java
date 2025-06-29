@@ -72,7 +72,8 @@ class HttpExporterTest {
     try (SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {
 
-      StandardComponentId id = ComponentId.generateLazy(exporterType);
+      StandardComponentId<StandardComponentId.ExporterType> id =
+          ComponentId.generateLazy(exporterType);
 
       Attributes expectedAttributes =
           Attributes.builder()
