@@ -254,16 +254,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 * Keys to successful PRs
 * Guide to using gradle composite builds
 
-### Code owners
-
-#### Maintainers
+### Maintainers
 
 - [Jack Berg](https://github.com/jack-berg), New Relic
 - [John Watson](https://github.com/jkwatson), Verta.ai
 
 For more information about the maintainer role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer).
 
-#### Approvers
+### Approvers
 
 - [Jason Plumb](https://github.com/breedx-splk), Splunk
 - [Josh Suereth](https://github.com/jsuereth), Google
@@ -272,13 +270,13 @@ For more information about the maintainer role, see the [community repository](h
 
 For more information about the approver role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver).
 
-#### Triagers
+### Triagers
 
 - [Gregor Zeitlinger](https://github.com/zeitlinger), Grafana Labs
 
 For more information about the triager role, see the [community repository](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#triager).
 
-#### Emeritus
+### Emeritus
 
 - Maintainer [Bogdan Drutu](https://github.com/BogdanDrutu)
 - Maintainer [Carlos Alberto](https://github.com/carlosalberto)
