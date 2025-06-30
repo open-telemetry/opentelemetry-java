@@ -17,8 +17,8 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * Span implementation used from {@link io.opentelemetry.sdk.trace.SdkTracer} when starting a span
- * which is not recording. All operations are noop, except for {@link #end()}, which ensures health
- * metrics are still collected.
+ * which is not recording. This span implementation behaves exactly like one returned from {@link Span#wrap(SpanContext)}
+ * with the addition that {@link #end()} collects health metrics.
  */
 @Immutable
 final class NonRecordingSpan implements Span {
