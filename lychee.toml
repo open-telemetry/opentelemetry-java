@@ -1,0 +1,17 @@
+timeout = 30
+retry_wait_time = 10
+max_retries = 6
+max_concurrency = 4
+
+# Stealth
+user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:128.0) Gecko/20100101 Firefox/128.0"
+
+# Check fragments in links
+include_fragments = true
+
+# excluding links to pull requests and issues is done for performance
+exclude = [
+  "^https://github.com/open-telemetry/opentelemetry-java/(issues|pull)/\\d+$"
+]
+
+
