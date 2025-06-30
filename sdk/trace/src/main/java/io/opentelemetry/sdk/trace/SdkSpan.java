@@ -26,7 +26,7 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.internal.ExtendedSpanProcessor;
-import io.opentelemetry.sdk.trace.internal.metrics.SpanMetrics;
+import io.opentelemetry.sdk.trace.internal.metrics.SpanInstrumentation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -100,7 +100,7 @@ final class SdkSpan implements ReadWriteSpan {
   @GuardedBy("lock")
   private long endEpochNanos;
 
-  private final SpanMetrics.Recording metricRecording;
+  private final SpanInstrumentation.Recording metricRecording;
 
   private enum EndState {
     NOT_ENDED,
@@ -136,7 +136,7 @@ final class SdkSpan implements ReadWriteSpan {
       @Nullable List<LinkData> links,
       int totalRecordedLinks,
       long startEpochNanos,
-      SpanMetrics.Recording metricRecording) {
+      SpanInstrumentation.Recording metricRecording) {
     this.context = context;
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.parentSpanContext = parentSpanContext;
@@ -186,7 +186,7 @@ final class SdkSpan implements ReadWriteSpan {
       @Nullable List<LinkData> links,
       int totalRecordedLinks,
       long userStartEpochNanos,
-      SpanMetrics.Recording metricsRecording) {
+      SpanInstrumentation.Recording metricsRecording) {
     boolean createdAnchoredClock;
     AnchoredClock clock;
     if (parentSpan instanceof SdkSpan) {

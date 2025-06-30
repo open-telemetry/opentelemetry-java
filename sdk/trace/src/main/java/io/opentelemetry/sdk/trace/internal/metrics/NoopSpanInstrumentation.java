@@ -7,16 +7,16 @@ package io.opentelemetry.sdk.trace.internal.metrics;
 
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 
-class NoopSpanMetrics implements SpanMetrics {
+class NoopSpanInstrumentation implements SpanInstrumentation {
 
-  static final NoopSpanMetrics INSTANCE = new NoopSpanMetrics();
+  static final NoopSpanInstrumentation INSTANCE = new NoopSpanInstrumentation();
 
   @Override
-  public SpanMetrics.Recording recordSpanStart(SamplingResult samplingResult) {
+  public SpanInstrumentation.Recording recordSpanStart(SamplingResult samplingResult) {
     return NoopRecording.INSTANCE;
   }
 
-  private static class NoopRecording implements SpanMetrics.Recording {
+  private static class NoopRecording implements SpanInstrumentation.Recording {
 
     private static final NoopRecording INSTANCE = new NoopRecording();
 

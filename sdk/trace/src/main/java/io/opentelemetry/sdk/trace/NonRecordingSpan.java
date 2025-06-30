@@ -10,23 +10,23 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.sdk.trace.internal.metrics.SpanMetrics;
+import io.opentelemetry.sdk.trace.internal.metrics.SpanInstrumentation;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
  * Span implementation used from {@link io.opentelemetry.sdk.trace.SdkTracer} when starting a span
- * which is not recording. This span implementation behaves exactly like one returned from {@link Span#wrap(SpanContext)}
- * with the addition that {@link #end()} collects health metrics.
+ * which is not recording. This span implementation behaves exactly like one returned from {@link
+ * Span#wrap(SpanContext)} with the addition that {@link #end()} collects health metrics.
  */
 @Immutable
 final class NonRecordingSpan implements Span {
 
   private final SpanContext spanContext;
-  private final SpanMetrics.Recording metricRecording;
+  private final SpanInstrumentation.Recording metricRecording;
 
-  NonRecordingSpan(SpanContext spanContext, SpanMetrics.Recording metricRecording) {
+  NonRecordingSpan(SpanContext spanContext, SpanInstrumentation.Recording metricRecording) {
     this.spanContext = spanContext;
     this.metricRecording = metricRecording;
   }

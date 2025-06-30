@@ -19,8 +19,7 @@ import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.internal.SdkTracerProviderUtil;
 import io.opentelemetry.sdk.trace.internal.TracerConfig;
-import io.opentelemetry.sdk.trace.internal.metrics.SemConvSpanMetrics;
-import io.opentelemetry.sdk.trace.internal.metrics.SpanMetrics;
+import io.opentelemetry.sdk.trace.internal.metrics.SpanInstrumentation;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.util.List;
@@ -70,7 +69,7 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
             sampler,
             spanProcessors,
             exceptionAttributeResolver,
-            createSpanMetrics(internalTelemetryVersion, meterProviderSupplier));
+            SpanInstrumentation.create(internalTelemetryVersion, meterProviderSupplier));
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
             instrumentationScopeInfo ->
@@ -79,19 +78,6 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
                     instrumentationScopeInfo,
                     getTracerConfig(instrumentationScopeInfo)));
     this.tracerConfigurator = tracerConfigurator;
-  }
-
-  private static SpanMetrics createSpanMetrics(
-      InternalTelemetryVersion internalTelemetryVersion,
-      Supplier<MeterProvider> meterProviderSupplier) {
-    switch (internalTelemetryVersion) {
-      case LEGACY:
-        return SpanMetrics.noop();
-      case LATEST:
-        return new SemConvSpanMetrics(meterProviderSupplier);
-    }
-    throw new IllegalStateException(
-        "Unhandled telemetry schema version: " + internalTelemetryVersion);
   }
 
   private TracerConfig getTracerConfig(InstrumentationScopeInfo instrumentationScopeInfo) {

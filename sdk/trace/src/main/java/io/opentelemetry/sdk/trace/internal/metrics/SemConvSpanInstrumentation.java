@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
  * any time.
  */
-public class SemConvSpanMetrics implements SpanMetrics {
+public class SemConvSpanInstrumentation implements SpanInstrumentation {
 
   private final Supplier<MeterProvider> meterProviderSupplier;
 
@@ -34,11 +34,7 @@ public class SemConvSpanMetrics implements SpanMetrics {
   @Nullable private volatile LongUpDownCounter live = null;
   @Nullable private volatile LongCounter ended = null;
 
-  /**
-   * This class is internal and is hence not for public use. Its APIs are unstable and can change at
-   * any time.
-   */
-  public SemConvSpanMetrics(Supplier<MeterProvider> meterProviderSupplier) {
+  public SemConvSpanInstrumentation(Supplier<MeterProvider> meterProviderSupplier) {
     this.meterProviderSupplier = meterProviderSupplier;
   }
 
@@ -92,13 +88,13 @@ public class SemConvSpanMetrics implements SpanMetrics {
   }
 
   @Override
-  public SpanMetrics.Recording recordSpanStart(SamplingResult samplingResult) {
+  public SpanInstrumentation.Recording recordSpanStart(SamplingResult samplingResult) {
     Attributes attribs = getAttributesForSamplingDecisions(samplingResult.getDecision());
     live().add(1, attribs);
     return new Recording(attribs);
   }
 
-  private class Recording implements SpanMetrics.Recording {
+  private class Recording implements SpanInstrumentation.Recording {
 
     private final Attributes attributes;
     private boolean endAlreadyReported = false;

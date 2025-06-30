@@ -22,7 +22,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.sdk.trace.internal.metrics.SpanMetrics;
+import io.opentelemetry.sdk.trace.internal.metrics.SpanInstrumentation;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,7 @@ class NonRecordingSpanTest {
           TraceFlags.getDefault(),
           TraceState.getDefault());
 
-  @Mock SpanMetrics.Recording mockRecording;
+  @Mock SpanInstrumentation.Recording mockRecording;
 
   @Test
   void notRecording() {

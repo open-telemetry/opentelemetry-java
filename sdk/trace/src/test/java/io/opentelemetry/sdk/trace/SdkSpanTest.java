@@ -49,7 +49,7 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.internal.ExtendedSpanProcessor;
-import io.opentelemetry.sdk.trace.internal.metrics.SpanMetrics;
+import io.opentelemetry.sdk.trace.internal.metrics.SpanInstrumentation;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Duration;
@@ -105,7 +105,7 @@ class SdkSpanTest {
   private Attributes expectedAttributes;
   private final LinkData link = LinkData.create(spanContext);
   @Mock private ExtendedSpanProcessor spanProcessor;
-  @Mock private SpanMetrics.Recording metricsRecording;
+  @Mock private SpanInstrumentation.Recording metricsRecording;
 
   private TestClock testClock;
 

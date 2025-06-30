@@ -11,25 +11,27 @@ import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.semconv.incubating.OtelIncubatingAttributes;
 import org.junit.jupiter.api.Test;
 
-class SemConvSpanMetricsTest {
+class SemConvSpanInstrumentationTest {
 
   @Test
   void verifyAttributesSemConvCompliant() {
-    assertThat(SemConvSpanMetrics.getAttributesForSamplingDecisions(SamplingDecision.DROP))
+    assertThat(SemConvSpanInstrumentation.getAttributesForSamplingDecisions(SamplingDecision.DROP))
         .hasSize(1)
         .containsEntry(
             OtelIncubatingAttributes.OTEL_SPAN_SAMPLING_RESULT,
             OtelIncubatingAttributes.OtelSpanSamplingResultIncubatingValues.DROP);
 
     assertThat(
-            SemConvSpanMetrics.getAttributesForSamplingDecisions(
+            SemConvSpanInstrumentation.getAttributesForSamplingDecisions(
                 SamplingDecision.RECORD_AND_SAMPLE))
         .hasSize(1)
         .containsEntry(
             OtelIncubatingAttributes.OTEL_SPAN_SAMPLING_RESULT,
             OtelIncubatingAttributes.OtelSpanSamplingResultIncubatingValues.RECORD_AND_SAMPLE);
 
-    assertThat(SemConvSpanMetrics.getAttributesForSamplingDecisions(SamplingDecision.RECORD_ONLY))
+    assertThat(
+            SemConvSpanInstrumentation.getAttributesForSamplingDecisions(
+                SamplingDecision.RECORD_ONLY))
         .hasSize(1)
         .containsEntry(
             OtelIncubatingAttributes.OTEL_SPAN_SAMPLING_RESULT,
