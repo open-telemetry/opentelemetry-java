@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.trace.internal.metrics;
+package io.opentelemetry.sdk.trace.internal;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
@@ -16,11 +17,7 @@ import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
-/**
- * This class is internal and is hence not for public use. Its APIs are unstable and can change at
- * any time.
- */
-public class SemConvSpanInstrumentation implements SpanInstrumentation {
+class SemConvSpanInstrumentation implements SpanInstrumentation {
 
   private final Supplier<MeterProvider> meterProviderSupplier;
 
@@ -34,7 +31,7 @@ public class SemConvSpanInstrumentation implements SpanInstrumentation {
   @Nullable private volatile LongUpDownCounter live = null;
   @Nullable private volatile LongCounter ended = null;
 
-  public SemConvSpanInstrumentation(Supplier<MeterProvider> meterProviderSupplier) {
+  SemConvSpanInstrumentation(Supplier<MeterProvider> meterProviderSupplier) {
     this.meterProviderSupplier = meterProviderSupplier;
   }
 
@@ -97,6 +94,8 @@ public class SemConvSpanInstrumentation implements SpanInstrumentation {
   private class Recording implements SpanInstrumentation.Recording {
 
     private final Attributes attributes;
+
+    @GuardedBy("this")
     private boolean endAlreadyReported = false;
 
     private Recording(Attributes attributes) {

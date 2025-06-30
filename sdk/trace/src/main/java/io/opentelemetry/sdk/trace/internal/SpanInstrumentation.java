@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.trace.internal.metrics;
+package io.opentelemetry.sdk.trace.internal;
 
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
@@ -16,16 +16,12 @@ import java.util.function.Supplier;
  */
 public interface SpanInstrumentation {
 
-  static SpanInstrumentation noop() {
-    return NoopSpanInstrumentation.INSTANCE;
-  }
-
   static SpanInstrumentation create(
       InternalTelemetryVersion internalTelemetryVersion,
       Supplier<MeterProvider> meterProviderSupplier) {
     switch (internalTelemetryVersion) {
       case LEGACY:
-        return SpanInstrumentation.noop();
+        return NoopSpanInstrumentation.INSTANCE;
       case LATEST:
         return new SemConvSpanInstrumentation(meterProviderSupplier);
     }

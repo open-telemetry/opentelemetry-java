@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.trace.internal.metrics;
+package io.opentelemetry.sdk.trace.internal;
 
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 

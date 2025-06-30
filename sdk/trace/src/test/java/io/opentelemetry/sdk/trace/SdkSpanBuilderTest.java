@@ -13,6 +13,10 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.semconv.incubating.OtelIncubatingAttributes.OTEL_SPAN_SAMPLING_RESULT;
+import static io.opentelemetry.semconv.incubating.OtelIncubatingAttributes.OtelSpanSamplingResultIncubatingValues.DROP;
+import static io.opentelemetry.semconv.incubating.OtelIncubatingAttributes.OtelSpanSamplingResultIncubatingValues.RECORD_AND_SAMPLE;
+import static io.opentelemetry.semconv.incubating.OtelIncubatingAttributes.OtelSpanSamplingResultIncubatingValues.RECORD_ONLY;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,7 +48,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
-import io.opentelemetry.semconv.incubating.OtelIncubatingAttributes;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1026,29 +1029,16 @@ class SdkSpanBuilderTest {
                               ma.hasPointsSatisfying(
                                   pa ->
                                       pa.hasAttributes(
-                                              Attributes.of(
-                                                  OtelIncubatingAttributes
-                                                      .OTEL_SPAN_SAMPLING_RESULT,
-                                                  OtelIncubatingAttributes
-                                                      .OtelSpanSamplingResultIncubatingValues.DROP))
+                                              Attributes.of(OTEL_SPAN_SAMPLING_RESULT, DROP))
                                           .hasValue(1),
                                   pa ->
                                       pa.hasAttributes(
-                                              Attributes.of(
-                                                  OtelIncubatingAttributes
-                                                      .OTEL_SPAN_SAMPLING_RESULT,
-                                                  OtelIncubatingAttributes
-                                                      .OtelSpanSamplingResultIncubatingValues
-                                                      .RECORD_ONLY))
+                                              Attributes.of(OTEL_SPAN_SAMPLING_RESULT, RECORD_ONLY))
                                           .hasValue(2),
                                   pa ->
                                       pa.hasAttributes(
                                               Attributes.of(
-                                                  OtelIncubatingAttributes
-                                                      .OTEL_SPAN_SAMPLING_RESULT,
-                                                  OtelIncubatingAttributes
-                                                      .OtelSpanSamplingResultIncubatingValues
-                                                      .RECORD_AND_SAMPLE))
+                                                  OTEL_SPAN_SAMPLING_RESULT, RECORD_AND_SAMPLE))
                                           .hasValue(3))));
 
       spansToEnd.forEach(Span::end);
@@ -1067,29 +1057,18 @@ class SdkSpanBuilderTest {
                                           pa ->
                                               pa.hasAttributes(
                                                       Attributes.of(
-                                                          OtelIncubatingAttributes
-                                                              .OTEL_SPAN_SAMPLING_RESULT,
-                                                          OtelIncubatingAttributes
-                                                              .OtelSpanSamplingResultIncubatingValues
-                                                              .DROP))
+                                                          OTEL_SPAN_SAMPLING_RESULT, DROP))
                                                   .hasValue(0),
                                           pa ->
                                               pa.hasAttributes(
                                                       Attributes.of(
-                                                          OtelIncubatingAttributes
-                                                              .OTEL_SPAN_SAMPLING_RESULT,
-                                                          OtelIncubatingAttributes
-                                                              .OtelSpanSamplingResultIncubatingValues
-                                                              .RECORD_ONLY))
+                                                          OTEL_SPAN_SAMPLING_RESULT, RECORD_ONLY))
                                                   .hasValue(0),
                                           pa ->
                                               pa.hasAttributes(
                                                       Attributes.of(
-                                                          OtelIncubatingAttributes
-                                                              .OTEL_SPAN_SAMPLING_RESULT,
-                                                          OtelIncubatingAttributes
-                                                              .OtelSpanSamplingResultIncubatingValues
-                                                              .RECORD_AND_SAMPLE))
+                                                          OTEL_SPAN_SAMPLING_RESULT,
+                                                          RECORD_AND_SAMPLE))
                                                   .hasValue(0))))
                   .anySatisfy(
                       metric ->
@@ -1102,29 +1081,18 @@ class SdkSpanBuilderTest {
                                           pa ->
                                               pa.hasAttributes(
                                                       Attributes.of(
-                                                          OtelIncubatingAttributes
-                                                              .OTEL_SPAN_SAMPLING_RESULT,
-                                                          OtelIncubatingAttributes
-                                                              .OtelSpanSamplingResultIncubatingValues
-                                                              .DROP))
+                                                          OTEL_SPAN_SAMPLING_RESULT, DROP))
                                                   .hasValue(1),
                                           pa ->
                                               pa.hasAttributes(
                                                       Attributes.of(
-                                                          OtelIncubatingAttributes
-                                                              .OTEL_SPAN_SAMPLING_RESULT,
-                                                          OtelIncubatingAttributes
-                                                              .OtelSpanSamplingResultIncubatingValues
-                                                              .RECORD_ONLY))
+                                                          OTEL_SPAN_SAMPLING_RESULT, RECORD_ONLY))
                                                   .hasValue(2),
                                           pa ->
                                               pa.hasAttributes(
                                                       Attributes.of(
-                                                          OtelIncubatingAttributes
-                                                              .OTEL_SPAN_SAMPLING_RESULT,
-                                                          OtelIncubatingAttributes
-                                                              .OtelSpanSamplingResultIncubatingValues
-                                                              .RECORD_AND_SAMPLE))
+                                                          OTEL_SPAN_SAMPLING_RESULT,
+                                                          RECORD_AND_SAMPLE))
                                                   .hasValue(3))));
       endAssertions.run();
 

@@ -49,7 +49,7 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.internal.ExtendedSpanProcessor;
-import io.opentelemetry.sdk.trace.internal.metrics.SpanInstrumentation;
+import io.opentelemetry.sdk.trace.internal.SpanInstrumentation;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Duration;

@@ -10,7 +10,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.sdk.trace.internal.metrics.SpanInstrumentation;
+import io.opentelemetry.sdk.trace.internal.SpanInstrumentation;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
