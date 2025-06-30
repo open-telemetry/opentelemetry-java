@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.trace;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.common.Clock;
@@ -183,12 +184,13 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
-   * Sets the {@link MeterProvider} supplier used to collect self-monitoring metrics. If not set,
-   * uses {@link GlobalOpenTelemetry#getMeterProvider()}.
+   * Sets the {@link OpenTelemetry} supplier used to collect self-monitoring telemetry. If not set,
+   * uses {@link GlobalOpenTelemetry#get()}.
    */
-  public SdkTracerProviderBuilder setMeterProvider(Supplier<MeterProvider> meterProviderSupplier) {
-    requireNonNull(meterProviderSupplier, "meterProviderSupplier");
-    this.meterProviderSupplier = meterProviderSupplier;
+  public SdkTracerProviderBuilder setInternalTelemetryOpenTelemetry(
+      Supplier<OpenTelemetry> openTelemetrySupplier) {
+    requireNonNull(openTelemetrySupplier, "openTelemetrySupplier");
+    this.meterProviderSupplier = () -> openTelemetrySupplier.get().getMeterProvider();
     return this;
   }
 

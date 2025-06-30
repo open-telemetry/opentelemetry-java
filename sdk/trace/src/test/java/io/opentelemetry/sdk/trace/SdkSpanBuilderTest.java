@@ -19,9 +19,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
@@ -34,6 +34,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
@@ -987,10 +988,14 @@ class SdkSpanBuilderTest {
     InMemoryMetricReader inMemoryMetrics = InMemoryMetricReader.create();
     try (SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {
+
+      OpenTelemetrySdk telemetrySdk =
+          OpenTelemetrySdk.builder().setMeterProvider(meterProvider).build();
+
       Tracer tracer =
           SdkTracerProvider.builder()
               .setSampler(sampler)
-              .setMeterProvider(() -> meterProvider)
+              .setInternalTelemetryOpenTelemetry(() -> telemetrySdk)
               .setInternalTelemetry(InternalTelemetryVersion.LATEST)
               .build()
               .get("testing");
@@ -1152,12 +1157,12 @@ class SdkSpanBuilderTest {
           }
         };
 
-    Supplier<MeterProvider> mockMeterProvider = Mockito.mock(Supplier.class);
+    Supplier<OpenTelemetry> mockTelemetryProvider = Mockito.mock(Supplier.class);
 
     Tracer tracer =
         SdkTracerProvider.builder()
             .setSampler(sampler)
-            .setMeterProvider(mockMeterProvider)
+            .setInternalTelemetryOpenTelemetry(mockTelemetryProvider)
             .setInternalTelemetry(InternalTelemetryVersion.LEGACY)
             .build()
             .get("testing");
@@ -1171,7 +1176,7 @@ class SdkSpanBuilderTest {
     currentSamplingDecision.set(SamplingDecision.RECORD_AND_SAMPLE);
     tracer.spanBuilder("record_and_sample").startSpan().end();
 
-    verifyNoInteractions(mockMeterProvider);
+    verifyNoInteractions(mockTelemetryProvider);
   }
 
   @Test
