@@ -372,7 +372,7 @@ class AutoConfiguredOpenTelemetrySdkTest {
 
   @Test
   void builder_setResultAsGlobalFalse() {
-    GlobalOpenTelemetry.set(OpenTelemetry.noop());
+    GlobalOpenTelemetry.set(mock(OpenTelemetry.class));
 
     OpenTelemetrySdk openTelemetry = builder.build().getOpenTelemetrySdk();
 
