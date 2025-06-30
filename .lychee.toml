@@ -3,9 +3,6 @@ retry_wait_time = 10
 max_retries = 6
 max_concurrency = 4
 
-# Stealth
-user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:128.0) Gecko/20100101 Firefox/128.0"
-
 # Check fragments in links
 include_fragments = true
 
