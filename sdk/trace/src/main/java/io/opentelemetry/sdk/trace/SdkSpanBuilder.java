@@ -206,9 +206,13 @@ class SdkSpanBuilder implements SpanBuilder {
             tracerSharedState.isIdGeneratorSafeToSkipIdValidation());
 
     SpanInstrumentation.Recording metricsRecording =
-        tracerSharedState.getSpanMetrics().recordSpanStart(samplingResult);
+        tracerSharedState.getSpanMetrics().recordSpanStart(samplingResult, parentSpanContext);
     if (!isRecording(samplingDecision)) {
-      return new NonRecordingSpan(spanContext, metricsRecording);
+      if (!metricsRecording.isNoop()) {
+        throw new IllegalStateException(
+            "instrumentation ending is not supported for non-recording spans.");
+      }
+      return Span.wrap(spanContext);
     }
     Attributes samplingAttributes = samplingResult.getAttributes();
     if (!samplingAttributes.isEmpty()) {

@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.trace.internal;
 
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.function.Supplier;
@@ -29,13 +30,15 @@ public interface SpanInstrumentation {
         "Unhandled telemetry schema version: " + internalTelemetryVersion);
   }
 
-  Recording recordSpanStart(SamplingResult samplingResult);
+  Recording recordSpanStart(SamplingResult samplingResult, SpanContext parentSpanContext);
 
   /**
    * This class is internal and is hence not for public use. Its APIs are unstable and can change at
    * any time.
    */
   interface Recording {
+
+    boolean isNoop();
 
     void recordSpanEnd();
   }

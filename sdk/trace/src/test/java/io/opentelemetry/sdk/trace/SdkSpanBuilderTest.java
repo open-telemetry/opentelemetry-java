@@ -988,6 +988,16 @@ class SdkSpanBuilderTest {
           }
         };
 
+    SpanContext remoteSpanContext =
+        SpanContext.createFromRemoteParent(
+            "12345678876543211234567887654321",
+            "8765432112345678",
+            TraceFlags.getSampled(),
+            TraceState.getDefault());
+
+    Context remoteContext = Context.root().with(Span.wrap(remoteSpanContext));
+    Context localContext = Context.root().with(Span.wrap(sampledSpanContext));
+
     InMemoryMetricReader inMemoryMetrics = InMemoryMetricReader.create();
     try (SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().registerMetricReader(inMemoryMetrics).build()) {
@@ -1005,20 +1015,49 @@ class SdkSpanBuilderTest {
 
       List<Span> spansToEnd = new ArrayList<>();
 
-      currentSamplingDecision.set(SamplingDecision.DROP);
+      currentSamplingDecision.set(SamplingDecision.RECORD_AND_SAMPLE);
       spansToEnd.add(tracer.spanBuilder("dropped").startSpan());
 
       currentSamplingDecision.set(SamplingDecision.RECORD_ONLY);
-      spansToEnd.add(tracer.spanBuilder("record_only1").startSpan());
-      spansToEnd.add(tracer.spanBuilder("record_only2").startSpan());
+      spansToEnd.add(tracer.spanBuilder("record_only1").setParent(remoteContext).startSpan());
+      spansToEnd.add(tracer.spanBuilder("record_only2").setParent(remoteContext).startSpan());
 
-      currentSamplingDecision.set(SamplingDecision.RECORD_AND_SAMPLE);
-      spansToEnd.add(tracer.spanBuilder("record_and_sample1").startSpan());
-      spansToEnd.add(tracer.spanBuilder("record_and_sample2").startSpan());
-      spansToEnd.add(tracer.spanBuilder("record_and_sample3").startSpan());
+      currentSamplingDecision.set(SamplingDecision.DROP);
+      spansToEnd.add(tracer.spanBuilder("record_and_sample1").setParent(localContext).startSpan());
+      spansToEnd.add(tracer.spanBuilder("record_and_sample2").setParent(localContext).startSpan());
+      spansToEnd.add(tracer.spanBuilder("record_and_sample3").setParent(localContext).startSpan());
 
       assertThat(inMemoryMetrics.collectAllMetrics())
-          .hasSize(1)
+          .hasSize(2)
+          .anySatisfy(
+              metric ->
+                  OpenTelemetryAssertions.assertThat(metric)
+                      .hasName("otel.sdk.span.started")
+                      .hasUnit("{span}")
+                      .hasLongSumSatisfying(
+                          ma ->
+                              ma.hasPointsSatisfying(
+                                  pa ->
+                                      pa.hasAttributes(
+                                              Attributes.builder()
+                                                  .put(OTEL_SPAN_SAMPLING_RESULT, RECORD_AND_SAMPLE)
+                                                  .put("otel.span.parent.origin", "none")
+                                                  .build())
+                                          .hasValue(1),
+                                  pa ->
+                                      pa.hasAttributes(
+                                              Attributes.builder()
+                                                  .put(OTEL_SPAN_SAMPLING_RESULT, RECORD_ONLY)
+                                                  .put("otel.span.parent.origin", "remote")
+                                                  .build())
+                                          .hasValue(2),
+                                  pa ->
+                                      pa.hasAttributes(
+                                              Attributes.builder()
+                                                  .put(OTEL_SPAN_SAMPLING_RESULT, DROP)
+                                                  .put("otel.span.parent.origin", "local")
+                                                  .build())
+                                          .hasValue(3))))
           .anySatisfy(
               metric ->
                   OpenTelemetryAssertions.assertThat(metric)
@@ -1029,23 +1068,52 @@ class SdkSpanBuilderTest {
                               ma.hasPointsSatisfying(
                                   pa ->
                                       pa.hasAttributes(
-                                              Attributes.of(OTEL_SPAN_SAMPLING_RESULT, DROP))
+                                              Attributes.of(
+                                                  OTEL_SPAN_SAMPLING_RESULT, RECORD_AND_SAMPLE))
                                           .hasValue(1),
                                   pa ->
                                       pa.hasAttributes(
                                               Attributes.of(OTEL_SPAN_SAMPLING_RESULT, RECORD_ONLY))
-                                          .hasValue(2),
-                                  pa ->
-                                      pa.hasAttributes(
-                                              Attributes.of(
-                                                  OTEL_SPAN_SAMPLING_RESULT, RECORD_AND_SAMPLE))
-                                          .hasValue(3))));
+                                          .hasValue(2))));
 
       spansToEnd.forEach(Span::end);
       Runnable endAssertions =
           () ->
               assertThat(inMemoryMetrics.collectAllMetrics())
                   .hasSize(2)
+                  .anySatisfy(
+                      metric ->
+                          OpenTelemetryAssertions.assertThat(metric)
+                              .hasName("otel.sdk.span.started")
+                              .hasUnit("{span}")
+                              .hasLongSumSatisfying(
+                                  ma ->
+                                      ma.hasPointsSatisfying(
+                                          pa ->
+                                              pa.hasAttributes(
+                                                      Attributes.builder()
+                                                          .put(
+                                                              OTEL_SPAN_SAMPLING_RESULT,
+                                                              RECORD_AND_SAMPLE)
+                                                          .put("otel.span.parent.origin", "none")
+                                                          .build())
+                                                  .hasValue(1),
+                                          pa ->
+                                              pa.hasAttributes(
+                                                      Attributes.builder()
+                                                          .put(
+                                                              OTEL_SPAN_SAMPLING_RESULT,
+                                                              RECORD_ONLY)
+                                                          .put("otel.span.parent.origin", "remote")
+                                                          .build())
+                                                  .hasValue(2),
+                                          pa ->
+                                              pa.hasAttributes(
+                                                      Attributes.builder()
+                                                          .put(OTEL_SPAN_SAMPLING_RESULT, DROP)
+                                                          .put("otel.span.parent.origin", "local")
+                                                          .build())
+                                                  .hasValue(3))))
                   .anySatisfy(
                       metric ->
                           OpenTelemetryAssertions.assertThat(metric)
@@ -1057,43 +1125,14 @@ class SdkSpanBuilderTest {
                                           pa ->
                                               pa.hasAttributes(
                                                       Attributes.of(
-                                                          OTEL_SPAN_SAMPLING_RESULT, DROP))
+                                                          OTEL_SPAN_SAMPLING_RESULT,
+                                                          RECORD_AND_SAMPLE))
                                                   .hasValue(0),
                                           pa ->
                                               pa.hasAttributes(
                                                       Attributes.of(
                                                           OTEL_SPAN_SAMPLING_RESULT, RECORD_ONLY))
-                                                  .hasValue(0),
-                                          pa ->
-                                              pa.hasAttributes(
-                                                      Attributes.of(
-                                                          OTEL_SPAN_SAMPLING_RESULT,
-                                                          RECORD_AND_SAMPLE))
-                                                  .hasValue(0))))
-                  .anySatisfy(
-                      metric ->
-                          OpenTelemetryAssertions.assertThat(metric)
-                              .hasName("otel.sdk.span.ended")
-                              .hasUnit("{span}")
-                              .hasLongSumSatisfying(
-                                  ma ->
-                                      ma.hasPointsSatisfying(
-                                          pa ->
-                                              pa.hasAttributes(
-                                                      Attributes.of(
-                                                          OTEL_SPAN_SAMPLING_RESULT, DROP))
-                                                  .hasValue(1),
-                                          pa ->
-                                              pa.hasAttributes(
-                                                      Attributes.of(
-                                                          OTEL_SPAN_SAMPLING_RESULT, RECORD_ONLY))
-                                                  .hasValue(2),
-                                          pa ->
-                                              pa.hasAttributes(
-                                                      Attributes.of(
-                                                          OTEL_SPAN_SAMPLING_RESULT,
-                                                          RECORD_AND_SAMPLE))
-                                                  .hasValue(3))));
+                                                  .hasValue(0))));
       endAssertions.run();
 
       // ensure double ending doesn't have any effect on the metrics

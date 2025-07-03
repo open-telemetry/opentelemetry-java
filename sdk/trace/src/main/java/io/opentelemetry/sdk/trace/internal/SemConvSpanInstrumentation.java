@@ -11,6 +11,7 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.internal.SemConvAttributes;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -29,7 +30,7 @@ class SemConvSpanInstrumentation implements SpanInstrumentation {
       Attributes.of(SemConvAttributes.OTEL_SPAN_SAMPLING_RESULT, "RECORD_AND_SAMPLE");
 
   @Nullable private volatile LongUpDownCounter live = null;
-  @Nullable private volatile LongCounter ended = null;
+  @Nullable private volatile LongCounter started = null;
 
   SemConvSpanInstrumentation(Supplier<MeterProvider> meterProviderSupplier) {
     this.meterProviderSupplier = meterProviderSupplier;
@@ -58,18 +59,18 @@ class SemConvSpanInstrumentation implements SpanInstrumentation {
     return live;
   }
 
-  private LongCounter ended() {
-    LongCounter ended = this.ended;
-    if (ended == null) {
-      ended =
+  private LongCounter started() {
+    LongCounter started = this.started;
+    if (started == null) {
+      started =
           meter()
-              .counterBuilder("otel.sdk.span.ended")
+              .counterBuilder("otel.sdk.span.started")
               .setUnit("{span}")
-              .setDescription("The number of created spans for which the end operation was called")
+              .setDescription("The number of created spans")
               .build();
-      this.ended = ended;
+      this.started = started;
     }
-    return ended;
+    return started;
   }
 
   static Attributes getAttributesForSamplingDecisions(SamplingDecision decision) {
@@ -84,11 +85,35 @@ class SemConvSpanInstrumentation implements SpanInstrumentation {
     throw new IllegalStateException("Unhandled SamplingDecision case: " + decision);
   }
 
+  // TODO: Add test verifying attribute values when released in semantic conventions
+  static String getParentOriginAttributeValue(SpanContext parentSpanContext) {
+    if (!parentSpanContext.isValid()) {
+      return "none";
+    } else if (parentSpanContext.isRemote()) {
+      return "remote";
+    } else {
+      return "local";
+    }
+  }
+
   @Override
-  public SpanInstrumentation.Recording recordSpanStart(SamplingResult samplingResult) {
-    Attributes attribs = getAttributesForSamplingDecisions(samplingResult.getDecision());
-    live().add(1, attribs);
-    return new Recording(attribs);
+  public SpanInstrumentation.Recording recordSpanStart(
+      SamplingResult samplingResult, SpanContext parentSpanContext) {
+    Attributes samplingResultAttribs =
+        getAttributesForSamplingDecisions(samplingResult.getDecision());
+    Attributes startAttributes =
+        samplingResultAttribs.toBuilder()
+            .put(
+                SemConvAttributes.OTEL_SPAN_PARENT_ORIGIN,
+                getParentOriginAttributeValue(parentSpanContext))
+            .build();
+    started().add(1L, startAttributes);
+    if (samplingResult.getDecision() == SamplingDecision.DROP) {
+      // Per semconv, otel.sdk.span.live is NOT collected for non-recording spans
+      return NoopSpanInstrumentation.RECORDING_INSTANCE;
+    }
+    live().add(1, samplingResultAttribs);
+    return new Recording(samplingResultAttribs);
   }
 
   private class Recording implements SpanInstrumentation.Recording {
@@ -103,13 +128,17 @@ class SemConvSpanInstrumentation implements SpanInstrumentation {
     }
 
     @Override
+    public boolean isNoop() {
+      return false;
+    }
+
+    @Override
     public synchronized void recordSpanEnd() {
       if (endAlreadyReported) {
         return;
       }
       endAlreadyReported = true;
       live().add(-1, attributes);
-      ended().add(1, attributes);
     }
   }
 }

@@ -28,6 +28,10 @@ public class SemConvAttributes {
   public static final AttributeKey<String> OTEL_SPAN_SAMPLING_RESULT =
       AttributeKey.stringKey("otel.span.sampling_result");
 
+  // TODO: Add tests verifying correctness when included in the semconv-incubating release
+  public static final AttributeKey<String> OTEL_SPAN_PARENT_ORIGIN =
+      AttributeKey.stringKey("otel.span.parent.origin");
+
   public static final AttributeKey<String> SERVER_ADDRESS =
       AttributeKey.stringKey("server.address");
   public static final AttributeKey<Long> SERVER_PORT = AttributeKey.longKey("server.port");
