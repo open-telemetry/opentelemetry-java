@@ -92,6 +92,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -113,7 +114,7 @@ class DeclarativeConfigurationParseTest {
   void parse_KitchenSinkExampleFile() throws IOException {
     OpenTelemetryConfigurationModel expected = new OpenTelemetryConfigurationModel();
 
-    expected.withFileFormat("0.4");
+    expected.withFileFormat("1.0-rc.1");
     expected.withDisabled(false);
     expected.withLogLevel("info");
 
@@ -171,9 +172,9 @@ class DeclarativeConfigurationParseTest {
                             new ExperimentalResourceDetectorModel()
                                 .withAdditionalProperty("host", null),
                             new ExperimentalResourceDetectorModel()
-                                .withAdditionalProperty("os", null),
+                                .withAdditionalProperty("process", null),
                             new ExperimentalResourceDetectorModel()
-                                .withAdditionalProperty("process", null))))
+                                .withAdditionalProperty("service", null))))
             .withSchemaUrl("https://opentelemetry.io/schemas/1.16.0");
     expected.withResource(resource);
 
@@ -705,7 +706,7 @@ class DeclarativeConfigurationParseTest {
       OpenTelemetryConfigurationModel config = DeclarativeConfiguration.parse(configExampleFile);
 
       // General config
-      assertThat(config.getFileFormat()).isEqualTo("0.4");
+      assertThat(config.getFileFormat()).isEqualTo("1.0-rc.1");
       assertThat(config.getResource()).isEqualTo(resource);
       assertThat(config.getAttributeLimits()).isEqualTo(attributeLimits);
       assertThat(config.getPropagator()).isEqualTo(propagator);
@@ -770,7 +771,7 @@ class DeclarativeConfigurationParseTest {
   @Test
   void parse_nullValuesParsedToEmptyObjects() {
     String objectPlaceholderString =
-        "file_format: \"0.4\"\n"
+        "file_format: \"1.0-rc.1\"\n"
             + "tracer_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -788,7 +789,7 @@ class DeclarativeConfigurationParseTest {
             new ByteArrayInputStream(objectPlaceholderString.getBytes(StandardCharsets.UTF_8)));
 
     String noOjbectPlaceholderString =
-        "file_format: \"0.4\"\n"
+        "file_format: \"1.0-rc.1\"\n"
             + "tracer_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -853,6 +854,27 @@ class DeclarativeConfigurationParseTest {
                         .withSampler(
                             new SamplerModel()
                                 .withTraceIdRatioBased(new TraceIdRatioBasedSamplerModel()))));
+  }
+
+  @Test
+  void parse_quotedInput() {
+    String yaml =
+        "resource:\n"
+            + "  attributes:\n"
+            + "    - name: single_quote\n"
+            + "      value: '\"single\"'\n"
+            + "    - name: double_quote\n"
+            + "      value: \"\\\"double\\\"\"";
+
+    OpenTelemetryConfigurationModel model =
+        DeclarativeConfiguration.parse(
+            new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
+
+    Assertions.assertNotNull(model.getResource());
+    assertThat(model.getResource().getAttributes())
+        .containsExactly(
+            new AttributeNameValueModel().withName("single_quote").withValue("\"single\""),
+            new AttributeNameValueModel().withName("double_quote").withValue("\"double\""));
   }
 
   @ParameterizedTest
@@ -928,7 +950,7 @@ class DeclarativeConfigurationParseTest {
         // Undefined / empty environment variable
         Arguments.of("key1: ${EMPTY_STR}\n", mapOf(entry("key1", null))),
         Arguments.of("key1: ${STR_3}\n", mapOf(entry("key1", null))),
-        Arguments.of("key1: ${STR_1} ${STR_3}\n", mapOf(entry("key1", "value1"))),
+        Arguments.of("key1: ${STR_1} ${STR_3}\n", mapOf(entry("key1", "value1 "))),
         // Environment variable keys must match pattern: [a-zA-Z_]+[a-zA-Z0-9_]*
         Arguments.of("key1: ${VAR&}\n", mapOf(entry("key1", "${VAR&}"))),
         // Environment variable substitution only takes place in scalar values of maps
@@ -938,13 +960,23 @@ class DeclarativeConfigurationParseTest {
             mapOf(entry("key1", mapOf(entry("${STR_1}", "value1"))))),
         Arguments.of(
             "key1:\n - ${STR_1}\n", mapOf(entry("key1", Collections.singletonList("${STR_1}")))),
-        // Quoted environment variables
+        // Double-quoted environment variables
         Arguments.of("key1: \"${HEX}\"\n", mapOf(entry("key1", "0xdeadbeef"))),
         Arguments.of("key1: \"${STR_1}\"\n", mapOf(entry("key1", "value1"))),
         Arguments.of("key1: \"${EMPTY_STR}\"\n", mapOf(entry("key1", ""))),
         Arguments.of("key1: \"${BOOL}\"\n", mapOf(entry("key1", "true"))),
         Arguments.of("key1: \"${INT}\"\n", mapOf(entry("key1", "1"))),
         Arguments.of("key1: \"${FLOAT}\"\n", mapOf(entry("key1", "1.1"))),
+        Arguments.of(
+            "key1: \"${HEX} ${BOOL} ${INT}\"\n", mapOf(entry("key1", "0xdeadbeef true 1"))),
+        // Single-quoted environment variables
+        Arguments.of("key1: '${HEX}'\n", mapOf(entry("key1", "0xdeadbeef"))),
+        Arguments.of("key1: '${STR_1}'\n", mapOf(entry("key1", "value1"))),
+        Arguments.of("key1: '${EMPTY_STR}'\n", mapOf(entry("key1", ""))),
+        Arguments.of("key1: '${BOOL}'\n", mapOf(entry("key1", "true"))),
+        Arguments.of("key1: '${INT}'\n", mapOf(entry("key1", "1"))),
+        Arguments.of("key1: '${FLOAT}'\n", mapOf(entry("key1", "1.1"))),
+        Arguments.of("key1: '${HEX} ${BOOL} ${INT}'\n", mapOf(entry("key1", "0xdeadbeef true 1"))),
         // Escaped
         Arguments.of("key1: ${FOO}\n", mapOf(entry("key1", "BAR"))),
         Arguments.of("key1: $${FOO}\n", mapOf(entry("key1", "${FOO}"))),
@@ -986,7 +1018,7 @@ class DeclarativeConfigurationParseTest {
   @Test
   void read_WithEnvironmentVariables() {
     String yaml =
-        "file_format: \"0.4\"\n"
+        "file_format: \"1.0-rc.1\"\n"
             + "tracer_provider:\n"
             + "  processors:\n"
             + "    - batch:\n"
@@ -1005,7 +1037,7 @@ class DeclarativeConfigurationParseTest {
     assertThat(model)
         .isEqualTo(
             new OpenTelemetryConfigurationModel()
-                .withFileFormat("0.4")
+                .withFileFormat("1.0-rc.1")
                 .withTracerProvider(
                     new TracerProviderModel()
                         .withProcessors(

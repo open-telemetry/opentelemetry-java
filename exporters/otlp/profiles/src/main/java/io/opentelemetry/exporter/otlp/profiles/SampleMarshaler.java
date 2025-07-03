@@ -43,15 +43,14 @@ final class SampleMarshaler extends MarshalerWithSize {
 
     SampleMarshaler[] sampleMarshalers = new SampleMarshaler[items.size()];
     items.forEach(
-        item ->
-            new Consumer<SampleData>() {
-              int index = 0;
+        new Consumer<SampleData>() {
+          int index = 0;
 
-              @Override
-              public void accept(SampleData sampleData) {
-                sampleMarshalers[index++] = SampleMarshaler.create(sampleData);
-              }
-            });
+          @Override
+          public void accept(SampleData sampleData) {
+            sampleMarshalers[index++] = SampleMarshaler.create(sampleData);
+          }
+        });
     return sampleMarshalers;
   }
 

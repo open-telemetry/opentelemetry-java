@@ -37,15 +37,14 @@ final class FunctionMarshaler extends MarshalerWithSize {
 
     FunctionMarshaler[] functionMarshalers = new FunctionMarshaler[items.size()];
     items.forEach(
-        item ->
-            new Consumer<FunctionData>() {
-              int index = 0;
+        new Consumer<FunctionData>() {
+          int index = 0;
 
-              @Override
-              public void accept(FunctionData functionData) {
-                functionMarshalers[index++] = FunctionMarshaler.create(functionData);
-              }
-            });
+          @Override
+          public void accept(FunctionData functionData) {
+            functionMarshalers[index++] = FunctionMarshaler.create(functionData);
+          }
+        });
     return functionMarshalers;
   }
 

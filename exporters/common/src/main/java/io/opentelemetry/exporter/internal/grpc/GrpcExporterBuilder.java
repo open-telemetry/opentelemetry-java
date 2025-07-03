@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.internal.grpc;
 
+import static java.util.Objects.requireNonNull;
+
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.GlobalOpenTelemetry;
@@ -13,6 +15,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.ExporterBuilderUtil;
 import io.opentelemetry.exporter.internal.TlsConfigHelper;
 import io.opentelemetry.exporter.internal.compression.Compressor;
+import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.sdk.common.InternalTelemetryVersion;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
@@ -115,6 +118,18 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
+  /**
+   * Sets the method used to compress payloads. If unset, compression is disabled. Compression
+   * method "gzip" and "none" are supported out of the box. Support for additional compression
+   * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
+   */
+  public GrpcExporterBuilder<T> setCompression(String compressionMethod) {
+    requireNonNull(compressionMethod, "compressionMethod");
+    Compressor compressor =
+        CompressorUtil.validateAndResolveCompressor(compressionMethod, serviceClassLoader);
+    return setCompression(compressor);
+  }
+
   public GrpcExporterBuilder<T> setTrustManagerFromCerts(byte[] trustedCertificatesPem) {
     tlsConfigHelper.setTrustManagerFromCerts(trustedCertificatesPem);
     return this;
@@ -158,8 +173,8 @@ public class GrpcExporterBuilder<T extends Marshaler> {
     return this;
   }
 
-  public GrpcExporterBuilder<T> setServiceClassLoader(ClassLoader servieClassLoader) {
-    this.serviceClassLoader = servieClassLoader;
+  public GrpcExporterBuilder<T> setServiceClassLoader(ClassLoader serviceClassLoader) {
+    this.serviceClassLoader = serviceClassLoader;
     return this;
   }
 

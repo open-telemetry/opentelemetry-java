@@ -11,8 +11,6 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.internal.compression.Compressor;
-import io.opentelemetry.exporter.internal.compression.CompressorProvider;
-import io.opentelemetry.exporter.internal.compression.CompressorUtil;
 import io.opentelemetry.exporter.internal.http.HttpExporterBuilder;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.OtlpUserAgent;
@@ -112,13 +110,11 @@ public final class OtlpHttpLogRecordExporterBuilder {
 
   /**
    * Sets the method used to compress payloads. If unset, compression is disabled. Compression
-   * method "gzip" and "none" are supported out of the box. Support for additional compression
-   * methods is available by implementing {@link Compressor} and {@link CompressorProvider}.
+   * method "gzip" and "none" are supported out of the box. Additional compression methods can be
+   * supported by providing custom {@link Compressor} implementations via the service loader.
    */
   public OtlpHttpLogRecordExporterBuilder setCompression(String compressionMethod) {
-    requireNonNull(compressionMethod, "compressionMethod");
-    Compressor compressor = CompressorUtil.validateAndResolveCompressor(compressionMethod);
-    delegate.setCompression(compressor);
+    delegate.setCompression(compressionMethod);
     return this;
   }
 
