@@ -129,12 +129,12 @@ final class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
     Boolean hasRemoteParent = null;
     if (ocRemoteParentSpanContext != null && ocRemoteParentSpanContext.isValid()) {
       ocParentContext = ocRemoteParentSpanContext;
-      hasRemoteParent = Boolean.TRUE;
+      hasRemoteParent = true;
       ocTraceId = ocParentContext.getTraceId();
       ocTracestate = ocParentContext.getTracestate();
     } else if (ocParent != null && ocParent.getContext().isValid()) {
       ocParentContext = ocParent.getContext();
-      hasRemoteParent = Boolean.FALSE;
+      hasRemoteParent = false;
       ocTraceId = ocParentContext.getTraceId();
       ocTracestate = ocParentContext.getTracestate();
     } else {
