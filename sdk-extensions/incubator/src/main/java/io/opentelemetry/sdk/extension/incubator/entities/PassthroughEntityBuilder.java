@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.extension.incubator.entities;
 
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.incubator.entities.Entity;
+import io.opentelemetry.api.incubator.entities.EntityBuilder;
 import java.util.function.Consumer;
 
 final class PassthroughEntityBuilder implements EntityBuilder {
