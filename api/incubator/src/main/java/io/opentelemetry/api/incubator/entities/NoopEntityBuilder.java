@@ -25,7 +25,5 @@ final class NoopEntityBuilder implements EntityBuilder {
   }
 
   @Override
-  public Entity build() {
-    return new NoopEntity();
-  }
+  public void emit() {}
 }
