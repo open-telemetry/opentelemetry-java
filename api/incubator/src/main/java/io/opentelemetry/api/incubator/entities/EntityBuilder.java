@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.extension.incubator.entities;
+package io.opentelemetry.api.incubator.entities;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -25,7 +25,7 @@ public interface EntityBuilder {
   /**
    * Modify the descriptive attributes of this Entity.
    *
-   * @param f A thunk which manipulates descriptive attributes.
+   * @param f A {@link Consumer} which builds the descriptive attributes.
    * @return this
    */
   EntityBuilder withDescription(Consumer<AttributesBuilder> f);
@@ -33,7 +33,7 @@ public interface EntityBuilder {
   /**
    * Modify the identifying attributes of this Entity.
    *
-   * @param f A thunk which manipulates identifying attributes.
+   * @param f A {@link Consumer} which builds the identifying attributes.
    * @return this
    */
   EntityBuilder withId(Consumer<AttributesBuilder> f);

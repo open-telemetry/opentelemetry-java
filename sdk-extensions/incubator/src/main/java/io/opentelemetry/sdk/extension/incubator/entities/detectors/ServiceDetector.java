@@ -6,10 +6,8 @@
 package io.opentelemetry.sdk.extension.incubator.entities.detectors;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.sdk.extension.incubator.entities.Entity;
-import io.opentelemetry.sdk.extension.incubator.entities.EntityDetector;
-import java.util.Collection;
-import java.util.Collections;
+import io.opentelemetry.api.incubator.entities.Resource;
+import io.opentelemetry.sdk.extension.incubator.entities.ResourceDetector;
 import java.util.UUID;
 
 /**
@@ -18,7 +16,7 @@ import java.util.UUID;
  * <p>See: <a href="https://opentelemetry.io/docs/specs/semconv/resource/#service">service
  * entity</a>
  */
-public final class ServiceDetector implements EntityDetector {
+public final class ServiceDetector implements ResourceDetector {
   private static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.34.0";
   private static final String ENTITY_TYPE = "service";
   private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
@@ -36,9 +34,11 @@ public final class ServiceDetector implements EntityDetector {
   }
 
   @Override
-  public Collection<Entity> detect() {
-    return Collections.singletonList(
-        Entity.builder(ENTITY_TYPE)
+  public void configure(Resource resource) {
+    // We only run on startup.
+    resource.addOrUpdate(
+        resource
+            .createEntity(ENTITY_TYPE)
             .setSchemaUrl(SCHEMA_URL)
             .withId(
                 id -> {

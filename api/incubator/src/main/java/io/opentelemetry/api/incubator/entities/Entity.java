@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.extension.incubator.entities;
+package io.opentelemetry.api.incubator.entities;
 
 import io.opentelemetry.api.common.Attributes;
 import javax.annotation.Nullable;
@@ -59,13 +59,4 @@ public interface Entity {
    * Returns a new {@link EntityBuilder} instance populated with the data of this {@link Entity}.
    */
   EntityBuilder toBuilder();
-
-  /**
-   * Returns a new {@link EntityBuilder} instance for creating arbitrary {@link Entity}.
-   *
-   * @param entityType the entity type string of this entity.
-   */
-  public static EntityBuilder builder(String entityType) {
-    return PassthroughEntity.builder(entityType);
-  }
 }
