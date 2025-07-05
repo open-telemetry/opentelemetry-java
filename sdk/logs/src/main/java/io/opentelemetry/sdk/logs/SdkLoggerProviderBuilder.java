@@ -12,7 +12,6 @@ import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.internal.DefaultExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.internal.ScopeConfigurator;
 import io.opentelemetry.sdk.internal.ScopeConfiguratorBuilder;
@@ -40,7 +39,7 @@ public final class SdkLoggerProviderBuilder {
   private ScopeConfiguratorBuilder<LoggerConfig> loggerConfiguratorBuilder =
       LoggerConfig.configuratorBuilder();
   private ExceptionAttributeResolver exceptionAttributeResolver =
-      DefaultExceptionAttributeResolver.getInstance();
+      ExceptionAttributeResolver.getDefault();
 
   SdkLoggerProviderBuilder() {}
 

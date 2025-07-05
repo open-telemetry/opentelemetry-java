@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.internal.DefaultExceptionAttributeResolver;
+import io.opentelemetry.sdk.internal.ExceptionAttributeResolver;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +29,7 @@ class LoggerSharedStateTest {
             LogLimits::getDefault,
             logRecordProcessor,
             Clock.getDefault(),
-            DefaultExceptionAttributeResolver.getInstance());
+            ExceptionAttributeResolver.getDefault());
     state.shutdown();
     state.shutdown();
     verify(logRecordProcessor, times(1)).shutdown();
