@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.autoconfigure.internal.ComponentLoader;
 import io.opentelemetry.sdk.extension.incubator.fileconfig.internal.model.OpenTelemetryConfigurationModel;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -202,9 +201,13 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
     }
     Object value = simpleEntries.get(name);
     if (value instanceof List) {
-      return (List<T>)
-          ((List<Object>) value)
-              .stream()
+      List<Object> objectList = ((List<Object>) value);
+      if (objectList.isEmpty()) {
+        return Collections.emptyList();
+      }
+      List<T> result =
+          (List<T>)
+              objectList.stream()
                   .map(
                       entry -> {
                         if (scalarType == String.class) {
@@ -220,6 +223,10 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
                       })
                   .filter(Objects::nonNull)
                   .collect(toList());
+      if (result.isEmpty()) {
+        return null;
+      }
+      return result;
     }
     return null;
   }
@@ -294,17 +301,6 @@ public final class YamlDeclarativeConfigProperties implements DeclarativeConfigP
     listEntries.forEach((key, value) -> joiner.add(key + "=" + value));
     mapEntries.forEach((key, value) -> joiner.add(key + "=" + value));
     return joiner.toString();
-  }
-
-  /** Return a map representation of the data. */
-  public Map<String, Object> toMap() {
-    Map<String, Object> result = new HashMap<>(simpleEntries);
-    listEntries.forEach(
-        (key, value) ->
-            result.put(
-                key, value.stream().map(YamlDeclarativeConfigProperties::toMap).collect(toList())));
-    mapEntries.forEach((key, value) -> result.put(key, value.toMap()));
-    return Collections.unmodifiableMap(result);
   }
 
   /** Return the {@link ComponentLoader}. */
