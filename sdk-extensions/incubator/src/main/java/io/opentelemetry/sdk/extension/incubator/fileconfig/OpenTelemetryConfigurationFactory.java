@@ -39,7 +39,7 @@ final class OpenTelemetryConfigurationFactory
     // TODO(jack-berg): log warning if version is not exact match, which may result in unexpected
     // behavior for experimental properties.
 
-    if (Objects.equals(Boolean.TRUE, model.getDisabled())) {
+    if (Objects.equals(true, model.getDisabled())) {
       return builder.build();
     }
 

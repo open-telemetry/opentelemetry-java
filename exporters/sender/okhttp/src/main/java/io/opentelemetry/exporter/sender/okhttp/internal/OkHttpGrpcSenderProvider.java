@@ -20,15 +20,16 @@ public class OkHttpGrpcSenderProvider implements GrpcSenderProvider {
 
   @Override
   public <T extends Marshaler> GrpcSender<T> createSender(GrpcSenderConfig<T> grpcSenderConfig) {
-    return new OkHttpGrpcSender<>(
-        grpcSenderConfig.getEndpoint().resolve(grpcSenderConfig.getEndpointPath()).toString(),
-        grpcSenderConfig.getCompressor(),
-        grpcSenderConfig.getTimeoutNanos(),
-        grpcSenderConfig.getConnectTimeoutNanos(),
-        grpcSenderConfig.getHeadersSupplier(),
-        grpcSenderConfig.getRetryPolicy(),
-        grpcSenderConfig.getSslContext(),
-        grpcSenderConfig.getTrustManager(),
-        grpcSenderConfig.getExecutorService());
+    return new OkHttpGrpcSenderBuilder<T>(
+            grpcSenderConfig.getEndpoint().resolve(grpcSenderConfig.getEndpointPath()).toString(),
+            grpcSenderConfig.getTimeoutNanos(),
+            grpcSenderConfig.getConnectTimeoutNanos(),
+            grpcSenderConfig.getHeadersSupplier())
+        .setCompressor(grpcSenderConfig.getCompressor())
+        .setRetryPolicy(grpcSenderConfig.getRetryPolicy())
+        .setSslContext(grpcSenderConfig.getSslContext())
+        .setTrustManager(grpcSenderConfig.getTrustManager())
+        .setExecutorService(grpcSenderConfig.getExecutorService())
+        .createOkHttpGrpcSender();
   }
 }
