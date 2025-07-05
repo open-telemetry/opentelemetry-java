@@ -208,7 +208,7 @@ public final class ZipkinSpanExporterBuilder {
     joiner.add("endpoint=" + endpoint);
     joiner.add("compressionEnabled=" + compressionEnabled);
     joiner.add("readTimeoutMillis=" + readTimeoutMillis);
-    joiner.add("internalTelemetrySchemaVersion=" + internalTelemetryVersion);
+    joiner.add("internalTelemetryVersion=" + internalTelemetryVersion);
     // Note: omit sender because we can't log the configuration in any readable way
     // Note: omit encoder because we can't log the configuration in any readable way
     // Note: omit localIpAddressSupplier because we can't log the configuration in any readable way
