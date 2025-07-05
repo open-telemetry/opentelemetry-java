@@ -36,23 +36,22 @@ public final class ServiceDetector implements ResourceDetector {
   @Override
   public void configure(Resource resource) {
     // We only run on startup.
-    resource.addOrUpdate(
-        resource
-            .createEntity(ENTITY_TYPE)
-            .setSchemaUrl(SCHEMA_URL)
-            .withId(
-                id -> {
-                  // Note: Identifying attributes MUST be provided together.
-                  id.put(SERVICE_NAME, getServiceName())
-                      .put(SERVICE_INSTANCE_ID, getServiceInstanceId());
-                })
-            // No specified way to take these in.
-            // .withDescriptive(
-            //     builder -> {
-            //       if (!StringUtils.isNullOrEmpty(getVersion())) {
-            //         builder.put(SERVICE_VERSION, getVersion());
-            //       }
-            //     })
-            .build());
+    resource
+        .attachEntity(ENTITY_TYPE)
+        .setSchemaUrl(SCHEMA_URL)
+        .withId(
+            id -> {
+              // Note: Identifying attributes MUST be provided together.
+              id.put(SERVICE_NAME, getServiceName())
+                  .put(SERVICE_INSTANCE_ID, getServiceInstanceId());
+            })
+        // No specified way to take these in.
+        // .withDescriptive(
+        //     builder -> {
+        //       if (!StringUtils.isNullOrEmpty(getVersion())) {
+        //         builder.put(SERVICE_VERSION, getVersion());
+        //       }
+        //     })
+        .emit();
   }
 }

@@ -8,28 +8,18 @@ package io.opentelemetry.api.incubator.entities;
 /** The active resource for which Telemetry is being generated. */
 public interface Resource {
   /**
-   * Adds an {@link Entity} to this resource.
-   *
-   * <p>If the entity already exists, this updates the description.
-   *
-   * @param e The entity
-   * @return true if the entity was added or updated, false if there was a conflict.
-   */
-  public boolean addOrUpdate(Entity e);
-
-  /**
    * Removes an {@link Entity} from this resource.
    *
-   * @param e The entity
+   * @param entityType the type of entity to remove.
    * @return true if entity was found and removed.
    */
-  public boolean removeEntity(Entity e);
+  public boolean removeEntity(String entityType);
 
   /**
-   * Returns a builder that can construct an {@link Entity}.
+   * Attaches an entity to the current {@link Resource}.
    *
    * @param entityType The type of the entity.
-   * @return A builder that can construct an entity.
+   * @return A builder that can construct an {@link Entity}.
    */
-  public EntityBuilder createEntity(String entityType);
+  public EntityBuilder attachEntity(String entityType);
 }
