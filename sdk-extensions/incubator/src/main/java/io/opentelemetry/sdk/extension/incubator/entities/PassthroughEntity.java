@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.extension.incubator.entities;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.incubator.entities.Entity;
+import io.opentelemetry.api.incubator.entities.EntityBuilder;
 import javax.annotation.Nullable;
 
 final class PassthroughEntity implements Entity {

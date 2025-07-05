@@ -6,11 +6,9 @@
 package io.opentelemetry.sdk.extension.incubator.entities.detectors;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.incubator.entities.Resource;
 import io.opentelemetry.sdk.common.internal.OtelVersion;
-import io.opentelemetry.sdk.extension.incubator.entities.Entity;
-import io.opentelemetry.sdk.extension.incubator.entities.EntityDetector;
-import java.util.Collection;
-import java.util.Collections;
+import io.opentelemetry.sdk.extension.incubator.entities.ResourceDetector;
 
 /**
  * Detection for {@code telemetry.sdk} entity.
@@ -19,7 +17,7 @@ import java.util.Collections;
  * href="https://opentelemetry.io/docs/specs/semconv/resource/#telemetry-sdk">teleemtry.sdk
  * entity</a>
  */
-public class TelemetrySdkDetector implements EntityDetector {
+public final class TelemetrySdkDetector implements ResourceDetector {
   private static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.34.0";
   private static final String ENTITY_TYPE = "telemetry.sdk";
   private static final AttributeKey<String> TELEMETRY_SDK_LANGUAGE =
@@ -28,22 +26,18 @@ public class TelemetrySdkDetector implements EntityDetector {
       AttributeKey.stringKey("telemetry.sdk.name");
   private static final AttributeKey<String> TELEMETRY_SDK_VERSION =
       AttributeKey.stringKey("telemetry.sdk.version");
-  private static final Entity TELEMETRY_SDK;
 
-  static {
-    TELEMETRY_SDK =
-        Entity.builder(ENTITY_TYPE)
+  @Override
+  public void configure(Resource resource) {
+    resource.addOrUpdate(
+        resource
+            .createEntity(ENTITY_TYPE)
             .setSchemaUrl(SCHEMA_URL)
             .withId(
                 id -> {
                   id.put(TELEMETRY_SDK_NAME, "opentelemetry").put(TELEMETRY_SDK_LANGUAGE, "java");
                 })
             .withDescription(desc -> desc.put(TELEMETRY_SDK_VERSION, OtelVersion.VERSION))
-            .build();
-  }
-
-  @Override
-  public Collection<Entity> detect() {
-    return Collections.singletonList(TELEMETRY_SDK);
+            .build());
   }
 }
