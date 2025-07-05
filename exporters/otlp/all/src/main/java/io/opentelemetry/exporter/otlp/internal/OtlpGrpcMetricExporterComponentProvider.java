@@ -39,6 +39,7 @@ public class OtlpGrpcMetricExporterComponentProvider implements ComponentProvide
     OtlpDeclarativeConfigUtil.configureOtlpExporterBuilder(
         DATA_TYPE_METRICS,
         config,
+        builder::setComponentLoader,
         builder::setEndpoint,
         builder::addHeader,
         builder::setCompression,

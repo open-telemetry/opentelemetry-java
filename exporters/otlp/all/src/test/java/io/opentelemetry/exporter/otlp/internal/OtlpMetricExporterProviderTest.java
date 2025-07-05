@@ -121,6 +121,7 @@ class OtlpMetricExporterProviderTest {
         provider.createExporter(DefaultConfigProperties.createFromMap(Collections.emptyMap()))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcMetricExporter.class);
       verify(grpcBuilder, times(1)).build();
+      verify(grpcBuilder).setComponentLoader(any());
       verify(grpcBuilder, never()).setEndpoint(any());
       verify(grpcBuilder, never()).addHeader(any(), any());
       verify(grpcBuilder, never()).setCompression(any());
@@ -149,6 +150,7 @@ class OtlpMetricExporterProviderTest {
         provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcMetricExporter.class);
       verify(grpcBuilder, times(1)).build();
+      verify(grpcBuilder).setComponentLoader(any());
       verify(grpcBuilder).setEndpoint("https://localhost:443/");
       verify(grpcBuilder).addHeader("header-key", "header-value");
       verify(grpcBuilder).setCompression("gzip");
@@ -184,6 +186,7 @@ class OtlpMetricExporterProviderTest {
         provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(exporter).isInstanceOf(OtlpGrpcMetricExporter.class);
       verify(grpcBuilder, times(1)).build();
+      verify(grpcBuilder).setComponentLoader(any());
       verify(grpcBuilder).setEndpoint("https://localhost:443/");
       verify(grpcBuilder).addHeader("header-key", "header-value");
       verify(grpcBuilder).setCompression("gzip");
@@ -205,6 +208,7 @@ class OtlpMetricExporterProviderTest {
                     "otel.exporter.otlp.metrics.protocol", "http/protobuf")))) {
       assertThat(exporter).isInstanceOf(OtlpHttpMetricExporter.class);
       verify(httpBuilder, times(1)).build();
+      verify(httpBuilder).setComponentLoader(any());
       verify(httpBuilder, never()).setEndpoint(any());
       verify(httpBuilder, never()).addHeader(any(), any());
       verify(httpBuilder, never()).setCompression(any());
@@ -234,6 +238,7 @@ class OtlpMetricExporterProviderTest {
         provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(exporter).isInstanceOf(OtlpHttpMetricExporter.class);
       verify(httpBuilder, times(1)).build();
+      verify(httpBuilder).setComponentLoader(any());
       verify(httpBuilder).setEndpoint("https://localhost:443/v1/metrics");
       verify(httpBuilder).addHeader("header-key", "header-value");
       verify(httpBuilder).setCompression("gzip");
@@ -271,6 +276,7 @@ class OtlpMetricExporterProviderTest {
         provider.createExporter(DefaultConfigProperties.createFromMap(config))) {
       assertThat(exporter).isInstanceOf(OtlpHttpMetricExporter.class);
       verify(httpBuilder, times(1)).build();
+      verify(httpBuilder).setComponentLoader(any());
       verify(httpBuilder).setEndpoint("https://localhost:443/v1/metrics");
       verify(httpBuilder).addHeader("header-key", "header-value");
       verify(httpBuilder).setCompression("gzip");

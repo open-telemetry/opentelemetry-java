@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.Collections.singletonMap;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -23,6 +24,7 @@ import io.opentelemetry.api.incubator.config.ConfigProvider;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.api.incubator.config.GlobalConfigProvider;
 import io.opentelemetry.api.incubator.config.InstrumentationConfigUtil;
+import io.opentelemetry.context.ComponentLoader;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.internal.testing.CleanupExtension;
 import io.opentelemetry.internal.testing.slf4j.SuppressLogger;
@@ -40,7 +42,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
-import org.assertj.core.api.Assertions;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -134,15 +136,37 @@ class DeclarativeConfigurationTest {
         builder.setConfig(config).build();
     cleanup.addCloseable(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
 
-    Assertions.assertThat(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().toString())
+    assertThat(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk().toString())
         .isEqualTo(expectedSdk.toString());
     // AutoConfiguredOpenTelemetrySdk#getResource() is set to a dummy value when configuring from
     // file
-    Assertions.assertThat(autoConfiguredOpenTelemetrySdk.getResource())
-        .isEqualTo(Resource.getDefault());
+    assertThat(autoConfiguredOpenTelemetrySdk.getResource()).isEqualTo(Resource.getDefault());
     verify(builder, times(1)).shutdownHook(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
-    Assertions.assertThat(Runtime.getRuntime().removeShutdownHook(thread)).isTrue();
+    assertThat(Runtime.getRuntime().removeShutdownHook(thread)).isTrue();
     logCapturer.assertContains("Autoconfiguring from configuration file: " + configFilePath);
+  }
+
+  @Test
+  void configFile_setComponentLoader() {
+    ComponentLoader componentLoader =
+        ComponentLoader.forClassLoader(DeclarativeConfigurationTest.class.getClassLoader());
+    ConfigProperties config =
+        DefaultConfigProperties.createFromMap(
+            Collections.singletonMap("otel.experimental.config.file", configFilePath.toString()));
+
+    AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk =
+        AutoConfiguredOpenTelemetrySdk.builder()
+            .setConfig(config)
+            .setComponentLoader(componentLoader)
+            .build();
+    cleanup.addCloseable(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk());
+
+    assertThat(
+            Optional.ofNullable(AutoConfigureUtil.getConfigProvider(autoConfiguredOpenTelemetrySdk))
+                .map(ConfigProvider::getInstrumentationConfig)
+                .map(DeclarativeConfigProperties::getComponentLoader)
+                .orElse(null))
+        .isSameAs(componentLoader);
   }
 
   @Test
@@ -171,9 +195,7 @@ class DeclarativeConfigurationTest {
     OpenTelemetrySdk openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
     cleanup.addCloseable(openTelemetrySdk);
 
-    Assertions.assertThat(GlobalOpenTelemetry.get())
-        .extracting("delegate")
-        .isNotSameAs(openTelemetrySdk);
+    assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isNotSameAs(openTelemetrySdk);
     assertThat(GlobalConfigProvider.get())
         .isNotSameAs(autoConfiguredOpenTelemetrySdk.getConfigProvider());
   }
@@ -189,9 +211,7 @@ class DeclarativeConfigurationTest {
     OpenTelemetrySdk openTelemetrySdk = autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk();
     cleanup.addCloseable(openTelemetrySdk);
 
-    Assertions.assertThat(GlobalOpenTelemetry.get())
-        .extracting("delegate")
-        .isSameAs(openTelemetrySdk);
+    assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(openTelemetrySdk);
     assertThat(GlobalConfigProvider.get())
         .isSameAs(autoConfiguredOpenTelemetrySdk.getConfigProvider());
   }
