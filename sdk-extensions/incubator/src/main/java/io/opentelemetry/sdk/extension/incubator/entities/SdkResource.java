@@ -5,19 +5,15 @@
 
 package io.opentelemetry.sdk.extension.incubator.entities;
 
-import io.opentelemetry.api.incubator.entities.Entity;
 import io.opentelemetry.api.incubator.entities.EntityBuilder;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.resources.ResourceBuilder;
+import io.opentelemetry.sdk.resources.internal.Entity;
 import io.opentelemetry.sdk.resources.internal.EntityUtil;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.concurrent.atomic.AtomicReference;
 
 final class SdkResource implements io.opentelemetry.api.incubator.entities.Resource {
 
   private final AtomicReference<Resource> resource = new AtomicReference<>(Resource.empty());
-
   private final Object writeLock = new Object();
 
   /** Returns the currently active resource. */
@@ -31,48 +27,21 @@ final class SdkResource implements io.opentelemetry.api.incubator.entities.Resou
   }
 
   @Override
-  public boolean addOrUpdate(Entity e) {
+  public boolean removeEntity(String entityType) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'removeEntity'");
+  }
+
+  void attachEntityOnEmit(Entity e) {
     synchronized (writeLock) {
       Resource current = getResource();
-      Resource next =
-          EntityUtil.addEntity(Resource.builder(), ((PassthroughEntity) e).getPassthrough())
-              .build();
-      Resource result = current.merge(next);
-      // We rely on a volatile read to force this to be written.
-      resource.lazySet(result);
-      return EntityUtil.getEntities(result).stream()
-          .anyMatch(r -> r.getType().equals(e.getType()) && r.getId().equals(e.getId()));
+      Resource next = EntityUtil.addEntity(Resource.builder(), e).build();
+      resource.lazySet(current.merge(next));
     }
   }
 
   @Override
-  public boolean removeEntity(Entity e) {
-    synchronized (writeLock) {
-      Resource current = getResource();
-      Collection<io.opentelemetry.sdk.resources.internal.Entity> previousEntities =
-          EntityUtil.getEntities(current);
-      Collection<io.opentelemetry.sdk.resources.internal.Entity> currentEntities =
-          new ArrayList<>(previousEntities);
-      boolean result = currentEntities.removeIf(c -> c.getType().equals(e.getType()));
-      ResourceBuilder rb = Resource.builder();
-      EntityUtil.addAllEntity(rb, currentEntities);
-      rb.putAll(
-          current.getAttributes().toBuilder()
-              .removeIf(
-                  key ->
-                      previousEntities.stream()
-                          .anyMatch(
-                              pe ->
-                                  pe.getId().asMap().containsKey(key)
-                                      || pe.getDescription().asMap().containsKey(key)))
-              .build());
-      resource.lazySet(rb.build());
-      return result;
-    }
-  }
-
-  @Override
-  public EntityBuilder createEntity(String entityType) {
-    return PassthroughEntity.builder(entityType);
+  public EntityBuilder attachEntity(String entityType) {
+    return new SdkEntityBuilder(entityType, this::attachEntityOnEmit);
   }
 }

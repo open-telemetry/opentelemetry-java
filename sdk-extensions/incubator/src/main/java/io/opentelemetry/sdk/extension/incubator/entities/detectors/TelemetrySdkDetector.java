@@ -29,15 +29,14 @@ public final class TelemetrySdkDetector implements ResourceDetector {
 
   @Override
   public void configure(Resource resource) {
-    resource.addOrUpdate(
-        resource
-            .createEntity(ENTITY_TYPE)
-            .setSchemaUrl(SCHEMA_URL)
-            .withId(
-                id -> {
-                  id.put(TELEMETRY_SDK_NAME, "opentelemetry").put(TELEMETRY_SDK_LANGUAGE, "java");
-                })
-            .withDescription(desc -> desc.put(TELEMETRY_SDK_VERSION, OtelVersion.VERSION))
-            .build());
+    resource
+        .attachEntity(ENTITY_TYPE)
+        .setSchemaUrl(SCHEMA_URL)
+        .withId(
+            id -> {
+              id.put(TELEMETRY_SDK_NAME, "opentelemetry").put(TELEMETRY_SDK_LANGUAGE, "java");
+            })
+        .withDescription(desc -> desc.put(TELEMETRY_SDK_VERSION, OtelVersion.VERSION))
+        .emit();
   }
 }

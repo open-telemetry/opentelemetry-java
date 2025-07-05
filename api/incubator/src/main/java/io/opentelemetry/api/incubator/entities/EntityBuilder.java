@@ -10,8 +10,20 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.function.Consumer;
 
 /**
- * A builder of {@link Entity} that allows to add identifying or descriptive {@link Attributes}, as
- * well as type and schema_url.
+ * A builder of an Entity that allows to add identifying or descriptive {@link Attributes}, as well
+ * as type and schema_url.
+ *
+ * <p>Entity represents an object of interest associated with produced telemetry: traces, metrics or
+ * logs.
+ *
+ * <p>For example, telemetry produced using OpenTelemetry SDK is normally associated with a Service
+ * entity. Similarly, OpenTelemetry defines system metrics for a host. The Host is the entity we
+ * want to associate metrics with in this case.
+ *
+ * <p>Entities may be also associated with produced telemetry indirectly. For example a service that
+ * produces telemetry is also related with a process in which the service runs, so we say that the
+ * Service entity is related to the Process entity. The process normally also runs on a host, so we
+ * say that the Process entity is related to the Host entity.
  */
 public interface EntityBuilder {
   /**
@@ -38,6 +50,6 @@ public interface EntityBuilder {
    */
   EntityBuilder withId(Consumer<AttributesBuilder> f);
 
-  /** Create the {@link Entity} from this. */
-  Entity build();
+  /** Emits the current entity. */
+  void emit();
 }

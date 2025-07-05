@@ -6,15 +6,17 @@
 package io.opentelemetry.sdk.extension.incubator.entities;
 
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.incubator.entities.Entity;
 import io.opentelemetry.api.incubator.entities.EntityBuilder;
+import io.opentelemetry.sdk.resources.internal.Entity;
 import java.util.function.Consumer;
 
-final class PassthroughEntityBuilder implements EntityBuilder {
+final class SdkEntityBuilder implements EntityBuilder {
   private final io.opentelemetry.sdk.resources.internal.EntityBuilder builder;
+  private final Consumer<Entity> emitter;
 
-  PassthroughEntityBuilder(io.opentelemetry.sdk.resources.internal.EntityBuilder builder) {
-    this.builder = builder;
+  SdkEntityBuilder(String entityType, Consumer<Entity> emitter) {
+    this.builder = Entity.builder(entityType);
+    this.emitter = emitter;
   }
 
   @Override
@@ -36,7 +38,7 @@ final class PassthroughEntityBuilder implements EntityBuilder {
   }
 
   @Override
-  public Entity build() {
-    return new PassthroughEntity(builder.build());
+  public void emit() {
+    emitter.accept(builder.build());
   }
 }

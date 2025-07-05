@@ -8,17 +8,12 @@ package io.opentelemetry.api.incubator.entities;
 final class NoopResource implements Resource {
 
   @Override
-  public boolean addOrUpdate(Entity e) {
+  public boolean removeEntity(String entityType) {
     return false;
   }
 
   @Override
-  public boolean removeEntity(Entity e) {
-    return false;
-  }
-
-  @Override
-  public EntityBuilder createEntity(String entityType) {
+  public EntityBuilder attachEntity(String entityType) {
     return new NoopEntityBuilder();
   }
 }
